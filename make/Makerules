@@ -27,8 +27,8 @@ $(DIROBJ)/%.o : %.c
 	$(COMPILE.c) $< -o $@
 
 $(DIRSHOBJ)/%.o : %.c
-	@echo "@@@ Compiling $< ..."
-	$(COMPILE.c) $(SHARELIB_CFLAGS) $< -o $@
+	@echo "@@@ Compiling shared object $< ..."
+	$(COMPILE.c) $(SHLIB_CFLAGS) $< -o $@
 
 % : %.c
 	@echo "@@@ Linking $< ..."
@@ -111,15 +111,15 @@ $(DIRSHLIB)/$(SHLIB_TARGET).so.1.0 : $(DIRLIB)/$(LIB_TARGET).a
 	  ln -s $(SHLIB_TARGET).so.1.0 $(SHLIB_TARGET).so; \
 	)
 
-$(DIRSHLIB)/$(SCRIPT_SHLIB_TARGET).so.1.0 : 
+$(DIRSHLIB)/$(SCRIPT_SHLIB_TARGET).so : 
 	@echo "Making shared library..."
-	$(LD) $(SHAREDLIB_LDFLAGS) $(OBJECTS) -o $(DIRSHLIB)/$(SCRIPT_SHLIB_TARGET).so.1.0 
+	$(LD) $(SHLIB_LDFLAGS) $(SHOBJECTS) -o $(DIRSHLIB)/$(SCRIPT_SHLIB_TARGET).so
 
-make_shlib : $(DIRSHLIB)/$(SCRIPT_SHLIB_TARGET).so.1.0
+make_shlib : $(DIRSHLIB)/$(SCRIPT_SHLIB_TARGET).so
 
 remove_shlib:
 	@echo "removing shared library..."
-	$(RM) $(DIRSHLIB)/$(SCRIPT_SHLIB_TARGET).so.*
+	$(RM) $(DIRSHLIB)/$(SCRIPT_SHLIB_TARGET).so
 
 # shared includes section
 # -----------------------
