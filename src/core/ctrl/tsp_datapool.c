@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_datapool.c,v 1.5 2002-10-01 15:20:13 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_datapool.c,v 1.6 2002-10-09 07:41:17 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -29,7 +29,7 @@ consumer
 #include "tsp_time.h"
 
 /* Pool time waiting for  consumer connection µs */
-#define TSP_LOCAL_WORKER_CONNECTION_POOL_TIME (1e5)
+#define TSP_LOCAL_WORKER_CONNECTION_POOL_TIME ((int)(1e5))
 
 /*-----------------------------------------------------*/
 
