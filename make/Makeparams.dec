@@ -1,7 +1,5 @@
 # Makeparams.dec
 
-BUILD_BB = no
-
 # Default tools
 # -------------
 # Using standard tools
@@ -12,7 +10,7 @@ RPCGEN=$(DEVBASE)/../tools/rpcgen/vxrpcgen.suncdt.vxworks
 # ---------------
 ARFLAGS = rvs
 CFLAGS =  
-CPPFLAGS +=  -DUSE_STRACE -DTSP_NO_XDR_ENCODE  -D_REENTRANT -D_OSF_SOURCE
-#-D_OSF_SOURCE -D_XOPEN_SOURCE -DPOSIX_4D9 -D_PTHREAD_ENV_ALPHA
+CPPFLAGS +=  -DUSE_STRACE -DTSP_NO_XDR_ENCODE  -D_REENTRANT -D_OSF_SOURCE -Dinline=
+#-D_OSF_SOURCE -D_XOPEN_SOURCE -DPOSIX_4D9 -D_PTHREAD_ENV_ALPHA -Dinline=
 
 LDLIBS =   -lm -lpthread  -lrt

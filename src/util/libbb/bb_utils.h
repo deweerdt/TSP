@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_utils.h,v 1.3 2004-11-12 17:29:47 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_utils.h,v 1.4 2005-02-23 17:28:11 dufy Exp $
 
 -----------------------------------------------------------------------
 
@@ -36,6 +36,8 @@ Purpose   : Blackboard Idiom utilities
  */
 #ifndef _BB_UTILS_H_
 #define _BB_UTILS_H_
+
+#include "tsp_abs_types.h"
 
 #include <sys/ipc.h>
 #include <sys/types.h>

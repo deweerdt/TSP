@@ -24,7 +24,7 @@ build:: export_include
 	if [ "${BUILD_PROVIDER}" = "yes" ]; then \
 		$(MAKE) RPC_LIB_SUFFIX=tsp_provider rpc.server.lib ;  \
 		$(MAKE) "CFLAGS += -DTSP_RPC_CLEANUP" \
-			"LDLIBS += -ltsp_provider -lnsl" main_cleanup ; \
+			"LDLIBS += -ltsp_provider" main_cleanup ; \
 	fi ;\
 	if [ "${BUILD_CONSUMER}" = "yes" ]; then \
 		$(MAKE) RPC_LIB_SUFFIX=tsp_consumer rpc.client.lib;   \
