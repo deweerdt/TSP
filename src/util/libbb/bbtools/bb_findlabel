@@ -1,0 +1,15 @@
+#!/bin/sh
+
+usage ()
+{
+    printf "%s: Search a symbol in a TSP BlackBoard\n" "`basename $0`"
+    printf "%s\n" "Usage: `basename $0` <bbname> <symbolpattern>"    
+} # end of usage
+
+if [ $# -lt 2 ];
+then
+    usage
+    exit 1
+fi
+
+bb_dump $1 | awk '{if ($0 ~ /---------- </) {print $0} }' | grep "$2"
