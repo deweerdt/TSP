@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_hosts.c,v 1.1 2004-06-17 21:07:41 esteban Exp $
+$Id: gdisp_hosts.c,v 1.2 2004-06-26 20:51:04 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -44,8 +44,8 @@ File      : HOSTS Management.
  * System includes.
  */
 #include <stdio.h>
-#include <getopt.h>
 #include <assert.h>
+#include <string.h>
 
 
 /*
@@ -61,6 +61,37 @@ File      : HOSTS Management.
  --------------------------------------------------------------------
 */
 
+/*
+ * Find a host by its name.
+ */
+static Host_T*
+gdisp_findHostByName ( Kernel_T *kernel,
+		       gchar    *hostName )
+{
+
+  Host_T *host     = (Host_T*)NULL;
+  GList  *hostItem =  (GList*)NULL;
+
+  /*
+   * Loop over the kernel host list.
+   */
+  hostItem = g_list_first(kernel->hostList);
+  while (hostItem != (GList*)NULL) {
+
+    host = (Host_T*)hostItem->data;
+
+    if (strcmp(host->hName->str,hostName) == 0) {
+      return host;
+    }
+
+    hostItem = g_list_next(hostItem);
+
+  }
+
+  return (Host_T*)NULL;
+
+}
+
 
 /*
  --------------------------------------------------------------------
@@ -73,47 +104,65 @@ File      : HOSTS Management.
  * Build the host list according to user specifications.
  */
 void
-gdisp_buildHostList ( Kernel_T *kernel )
+gdisp_addHost ( Kernel_T *kernel,
+		gchar    *hostName )
 {
 
-  gint    opt  = 0;
   Host_T *host = (Host_T*)NULL;
 
+
   /*
-   * The user can specify several host to be looked at, with the '-h' option.
+   * Add a new host into the host list, if this host does not already exist.
    */
-  while ((opt = getopt(kernel->argCounter,
-		       kernel->argTable,
-		       "h:")) != EOF) {
+  if (gdisp_findHostByName(kernel,hostName) == (Host_T*)NULL) {
 
-    switch (opt) {
+    /*
+     * Allocate a host structure.
+     */
+    host = g_malloc0(sizeof(Host_T));
+    assert(host);
 
-    case 'h' :
+    host->hName = g_string_new(hostName);
 
-      /*
-       * FIXME : avoid same names...
-       */
+    /*
+     * Insert this new host into the host list.
+     */
+    kernel->hostList = g_list_append(kernel->hostList,
+				     (gpointer)host);
 
-      /*
-       * Allocate a host structure.
-       */
-      host = g_malloc0(sizeof(Host_T));
-      assert(host);
-      host->hName = g_string_new(optarg);
+  }
 
-      /*
-       * Insert this new host into the host list.
-       */
-      kernel->hostList = g_list_append(kernel->hostList,
-				       (gpointer)host);
+}
 
-      break;
 
-    default :
-      break;
+/*
+ * Destroy host list.
+ */
+void
+gdisp_destroyHosts ( Kernel_T *kernel )
+{
 
-    } /* end switch */
+  GList  *hostItem =  (GList*)NULL;
+  Host_T *host     = (Host_T*)NULL;
 
-  } /* end while */
+
+  /*
+   * Release all hosts.
+   */
+  hostItem = g_list_first(kernel->hostList);
+  while (hostItem != (GList*)NULL) {
+
+    host = (Host_T*)hostItem->data;
+
+    g_string_free(host->hName,TRUE);
+
+    g_free(host);
+
+    hostItem = g_list_next(hostItem);
+
+  }
+
+  g_list_free(kernel->hostList);
+  kernel->hostList = (GList*)NULL;
 
 }

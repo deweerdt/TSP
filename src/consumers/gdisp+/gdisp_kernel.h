@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_kernel.h,v 1.7 2004-06-17 21:07:41 esteban Exp $
+$Id: gdisp_kernel.h,v 1.8 2004-06-26 20:51:04 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -248,6 +248,7 @@ typedef struct Provider_T_ {
 
   TSP_provider_t    pHandle;
   guint             pIdentity;
+  Host_T           *pHost;
 
   ProviderStatus_T  pStatus;
   GString          *pName;

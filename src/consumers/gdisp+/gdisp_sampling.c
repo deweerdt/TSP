@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_sampling.c,v 1.5 2004-05-19 14:53:54 dufy Exp $
+$Id: gdisp_sampling.c,v 1.6 2004-06-26 20:51:04 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -871,6 +871,53 @@ gdisp_startSamplingProcess (Kernel_T *kernel)
 
 
   /*
+   * Compute now the period (expressed in milli-seconds that
+   * must be given to the GTK timer that performs steps on plots.
+   * Each graphic plot is asked its own period, then the minimum
+   * period is given to the GTK timer.
+   */
+  kernel->stepTimerPeriod = G_MAXINT; /* will be overwritten */
+  kernel->stepGlobalCycle = 0;
+
+  gdisp_loopOnGraphicPlots(kernel,
+			   gdisp_computeTimerPeriod,
+			   (void*)&kernel->stepTimerPeriod);
+
+  if (kernel->stepTimerPeriod == G_MAXINT /* no plot created */) {
+
+    /*
+     * Error message.
+     */
+    messageString =
+      g_string_new("You should create a graphic plot before sampling...");
+    kernel->outputFunc(kernel,messageString,GD_ERROR);
+
+    return FALSE;
+
+  }
+  
+  if (kernel->stepTimerPeriod < GD_TIMER_MIN_PERIOD) {
+
+    /*
+     * GTK is not precise enough... it is not real time...
+     * 100 milli-seconds is a minimum minimorum.
+     */
+    kernel->stepTimerPeriod = GD_TIMER_MIN_PERIOD;
+
+  }
+  
+  gdisp_loopOnGraphicPlots(kernel,
+			   gdisp_computePlotCycles,
+			   (void*)&kernel->stepTimerPeriod);
+
+  messageString = g_string_new((gchar*)NULL);
+  g_string_sprintf(messageString,
+		   "Step process period is %d milli-seconds.",
+		   kernel->stepTimerPeriod);
+  kernel->outputFunc(kernel,messageString,GD_MESSAGE);
+
+
+  /*
    * Before starting anything, ask all graphic plots if they
    * are ready to perform real-time steps.
    * If one answer is NO (ie FALSE), abort operation.
@@ -903,41 +950,6 @@ gdisp_startSamplingProcess (Kernel_T *kernel)
     return FALSE;
 
   }
-
-
-  /*
-   * Compute now the period (expressed in milli-seconds that
-   * must be given to the GTK timer that performs steps on plots.
-   * Each graphic plot is asked its own period, then the minimum
-   * period is given to the GTK timer.
-   */
-  kernel->stepTimerPeriod = G_MAXINT; /* will be overwritten */
-  kernel->stepGlobalCycle = 0;
-
-  gdisp_loopOnGraphicPlots(kernel,
-			   gdisp_computeTimerPeriod,
-			   (void*)&kernel->stepTimerPeriod);
-
-  if (kernel->stepTimerPeriod < GD_TIMER_MIN_PERIOD ||
-      kernel->stepTimerPeriod == G_MAXINT /* no plot created */) {
-
-    /*
-     * GTK is not precise enough... it is not real time...
-     * 100 milli-seconds is a minimum minimorum.
-     */
-    kernel->stepTimerPeriod = GD_TIMER_MIN_PERIOD;
-
-  }
-  
-  gdisp_loopOnGraphicPlots(kernel,
-			   gdisp_computePlotCycles,
-			   (void*)&kernel->stepTimerPeriod);
-
-  messageString = g_string_new((gchar*)NULL);
-  g_string_sprintf(messageString,
-		   "Step process period is %d milli-seconds.",
-		   kernel->stepTimerPeriod);
-  kernel->outputFunc(kernel,messageString,GD_MESSAGE);
 
 
   /*

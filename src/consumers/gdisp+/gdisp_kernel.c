@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_kernel.c,v 1.6 2004-06-17 20:03:02 esteban Exp $
+$Id: gdisp_kernel.c,v 1.7 2004-06-26 20:51:04 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -411,15 +411,11 @@ gdisp_destroyKernel (Kernel_T *kernel)
   gdisp_destroyFonts(kernel->fonts);
 
   /*
-   * Destroy our colormap.
-   */
-  gdisp_destroyColormap(kernel);
-
-  /*
    * Free Kernel.
    */
   gtk_timeout_remove(kernel->kernelTimerIdentity);
   g_ptr_array_free(kernel->kernelRegisteredActions,FALSE);
+
   memset(kernel,0,sizeof(Kernel_T));
   g_free(kernel);
 

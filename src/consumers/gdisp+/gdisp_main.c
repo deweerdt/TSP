@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_main.c,v 1.3 2004-06-17 21:07:41 esteban Exp $
+$Id: gdisp_main.c,v 1.4 2004-06-26 20:51:04 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -45,6 +45,8 @@ File      : Graphic Tool main part.
  */
 #include <stdio.h>
 #include <assert.h>
+#include <unistd.h>
+#include <libgen.h> /* basename function */
 
 
 /*
@@ -55,6 +57,88 @@ File      : Graphic Tool main part.
 
 
 /*
+ --------------------------------------------------------------------
+                             STATIC ROUTINES
+ --------------------------------------------------------------------
+*/
+
+/*
+ * Usage.
+ */
+static void
+gdisp_usage ( Kernel_T *kernel,
+	      gchar    *applicationName )
+{
+
+  /*
+   * Print application usage.
+   */
+  fprintf(stdout,
+	  "------------------------------------------------------------\n");
+
+  fprintf(stdout,
+	  "Usage : %s [ -h host1 [ -h host2 ... ] ]\n",
+	  basename(applicationName));
+
+  fprintf(stdout,
+	  "  -h : insert one or several additional hosts.\n");
+
+  fprintf(stdout,
+	  "       'localhost' is always taken into account.\n");
+
+  fprintf(stdout,
+	  "------------------------------------------------------------\n");
+
+  fflush (stdout);
+
+}
+
+
+/*
+ * Analyse all arguments given by the user.
+ * Returns TRUE in case of error.
+ */
+static gboolean
+gdisp_analyseUserArguments ( Kernel_T *kernel )
+{
+
+  gint     opt      = 0;
+  gboolean mustStop = FALSE;
+
+  /*
+   * The user can specify several host to be looked at, with the '-h' option.
+   */
+  while ((opt = getopt(kernel->argCounter,
+		       kernel->argTable,
+		       "h:")) != EOF) {
+
+    switch (opt) {
+
+    case 'h' :
+      gdisp_addHost(kernel,optarg);
+      break;
+
+    default :
+      mustStop = TRUE;
+      break;
+
+    } /* end switch */
+
+  } /* end while */
+
+  return mustStop;
+
+}
+
+
+/*
+ --------------------------------------------------------------------
+                             PUBLIC ROUTINES
+ --------------------------------------------------------------------
+*/
+
+
+/*
  * GDISP+ main part.
  */
 gint
@@ -62,6 +146,7 @@ main (int argc, char **argv)
 {
 
   Kernel_T *gdispKernel = (Kernel_T*)NULL;
+  gboolean  mustStop    = FALSE;
 
 
   /*
@@ -78,6 +163,26 @@ main (int argc, char **argv)
    * on the command line.
    */
   gdispKernel = gdisp_createKernel(argc,argv);
+
+
+  /*
+   * Discover all options given by the user.
+   */
+  mustStop = gdisp_analyseUserArguments(gdispKernel);
+  if (mustStop == TRUE) {
+
+    /*
+     * Write the usage.
+     */
+    gdisp_usage(gdispKernel,argv[0]);
+
+    /*
+     * Destroy kernel, and exit.
+     */
+    gdisp_destroyKernel(gdispKernel);
+    return -1;
+
+  }
 
 
   /*
@@ -100,12 +205,6 @@ main (int argc, char **argv)
 
 
   /*
-   * Discover all hosts that are requested by the user.
-   */
-  gdisp_buildHostList(gdispKernel);
-
-
-  /*
    * Initialize consuming environment.
    */
   gdisp_consumingInit(gdispKernel);
@@ -123,6 +222,12 @@ main (int argc, char **argv)
    * Close consuming environment.
    */
   gdisp_consumingEnd(gdispKernel);
+
+
+  /*
+   * Destroy our colormap.
+   */
+  gdisp_destroyColormap(gdispKernel);
 
 
   /*

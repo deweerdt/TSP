@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_prototypes.h,v 1.6 2004-06-17 21:07:41 esteban Exp $
+$Id: gdisp_prototypes.h,v 1.7 2004-06-26 20:51:04 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -61,7 +61,9 @@ void       gdisp_affectRequestedSymbolsToProvider (Kernel_T *kernel);
 /*
  * From gdisp_hosts.c
  */
-void       gdisp_buildHostList (Kernel_T *kernel);
+void       gdisp_addHost      (Kernel_T *kernel,
+			       gchar    *hostName);
+void       gdisp_destroyHosts (Kernel_T *kernel);
 
 
 /*

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_providers.c,v 1.5 2004-06-17 20:03:02 esteban Exp $
+$Id: gdisp_providers.c,v 1.6 2004-06-26 20:51:04 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -185,7 +185,7 @@ gdisp_poolProviderThreadStatus ( Kernel_T *kernel )
 	    '%');
 
     gtk_clist_set_text(GTK_CLIST(provider->pCList),
-		       5 /* provider load row */,
+		       6 /* provider load row */,
 		       1 /* information       */,
 		       rowBuffer);
 
@@ -343,7 +343,7 @@ gdisp_createProviderList ( Kernel_T  *kernel,
      * Set the style of the frame.
      */
     sprintf(rowBuffer," %d ",provider->pIdentity + 1);
-    frame = gtk_frame_new(rowBuffer);
+    frame = gtk_frame_new((gchar*)NULL /* rowBuffer */);
 
     gtk_frame_set_label_align(GTK_FRAME(frame),0.1,0.0);
     gtk_frame_set_shadow_type(GTK_FRAME(frame),GTK_SHADOW_ETCHED_IN);
@@ -458,6 +458,12 @@ gdisp_createProviderList ( Kernel_T  *kernel,
     rowNumber  = gtk_clist_append(GTK_CLIST(provider->pCList),
 				  rowInfo);
 
+    rowInfo[0] = "Hosted By";
+    sprintf(rowInfo[1],"%s",provider->pHost->hName->str);
+
+    rowNumber  = gtk_clist_append(GTK_CLIST(provider->pCList),
+				  rowInfo);
+
     /* ----------------------------------------------------------- */
 
     rowInfo[0] = "Detected Flow";
@@ -465,6 +471,8 @@ gdisp_createProviderList ( Kernel_T  *kernel,
 
     rowNumber  = gtk_clist_append(GTK_CLIST(provider->pCList),
 				  rowInfo);
+
+    /* FIXME : be careful with 'rowNumber' value */
 
     /* ----------------------------------------------------------- */
 

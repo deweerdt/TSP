@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_colormap.c,v 1.3 2004-05-11 19:47:35 esteban Exp $
+$Id: gdisp_colormap.c,v 1.4 2004-06-26 20:51:04 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -745,9 +745,13 @@ gdisp_destroyColormap (Kernel_T *kernel)
    */
   if (kernel->visual->type == GDK_VISUAL_PSEUDO_COLOR) {
 
-    gdk_colormap_free_colors(kernel->colormap,
-			     kernel->colors,
-			     kernel->colorNumber);
+    if (kernel->colorNumber > 0) {
+
+      gdk_colormap_free_colors(kernel->colormap,
+			       kernel->colors,
+			       kernel->colorNumber);
+
+    }
 
   }
 
@@ -755,7 +759,9 @@ gdisp_destroyColormap (Kernel_T *kernel)
   /*
    * Free mempry.
    */
-  g_free(kernel->colors);
+  if (kernel->colors != (GdkColor*)NULL) {
+    g_free(kernel->colors);
+  }
 
   kernel->colors      = (GdkColor*)NULL;
   kernel->colorNumber = 0;

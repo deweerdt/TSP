@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_consumers.c,v 1.4 2004-06-17 21:07:41 esteban Exp $
+$Id: gdisp_consumers.c,v 1.5 2004-06-26 20:51:04 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -89,10 +89,12 @@ gdisp_sortProviderByName(gconstpointer data1,
  */
 static void
 gdisp_insertHostProviders ( Kernel_T *kernel,
-			    gchar    *hostName )
+			    Host_T   *host )
 {
 
   GString        *messageString    = (GString*)NULL;
+
+  gchar          *hostName         = (gchar*)NULL;
 
   guint           providerIdentity = 0;
   TSP_provider_t *providerList     = (TSP_provider_t*)NULL;
@@ -109,6 +111,7 @@ gdisp_insertHostProviders ( Kernel_T *kernel,
   /*
    * Connect to all found providers on the given host.
    */
+  hostName = host->hName->str;
   TSP_consumer_connect_all(hostName,
 			   &providerList,
 			   &providerListSize);
@@ -157,6 +160,7 @@ gdisp_insertHostProviders ( Kernel_T *kernel,
      * Set up its status to 'SESSION_CLOSED'.
      * Insert it into the kernel provider list.
      */
+    newProvider->pHost     = host;
     newProvider->pHandle   = providerList[providerCpt];
     newProvider->pIdentity = providerIdentity++;
     newProvider->pName     =
@@ -290,7 +294,7 @@ gdisp_consumingInit (Kernel_T *kernel)
 {
 
 #define _HOST_NAME_MAX_LEN_ 256
-  gchar           hostName[_HOST_NAME_MAX_LEN_];
+  gchar           localHostName[_HOST_NAME_MAX_LEN_];
   gint            hostStatus       = 0;
   GList          *hostList         = (GList*)NULL;
   GString        *messageString    = (GString*)NULL;
@@ -303,9 +307,8 @@ gdisp_consumingInit (Kernel_T *kernel)
 
   /*
    * Get back local host.
-   * By now, we assume that all available providers are on the local host.
    */
-  hostStatus    = gethostname(hostName,_HOST_NAME_MAX_LEN_);
+  hostStatus    = gethostname(localHostName,_HOST_NAME_MAX_LEN_);
   messageString = g_string_new((gchar*)NULL);
 
   if (hostStatus == -1) {
@@ -313,18 +316,15 @@ gdisp_consumingInit (Kernel_T *kernel)
     g_string_sprintf(messageString,"Local host is UNKNOWN.");
     kernel->outputFunc(kernel,messageString,GD_ERROR);
 
-    /*
-     * Leave.
-     */
-    return;
-
   }
   else {
 
     g_string_sprintf(messageString,
 		     "Local host is '%s'.",
-		     hostName);
+		     localHostName);
     kernel->outputFunc(kernel,messageString,GD_MESSAGE);
+
+    gdisp_addHost(kernel,localHostName);
 
   }
 
@@ -354,23 +354,13 @@ gdisp_consumingInit (Kernel_T *kernel)
   /* ------------------------ HOST LIST ------------------------- */
 
   /*
-   * Insert local host.
-   */
-  gdisp_insertHostProviders ( kernel,
-			      hostName );
-
-  /*
-   * FIXME : the local host must be treated as all other hosts.
-   */
-
-  /*
-   * Insert other hosts, if any.
+   * Insert all hosts.
    */
   hostList = g_list_first(kernel->hostList);
   while (hostList != (GList*)NULL) {
 
-    gdisp_insertHostProviders ( kernel,
-				((Host_T*)hostList->data)->hName->str );
+    gdisp_insertHostProviders (kernel,
+			       (Host_T*)hostList->data);
 
     hostList = g_list_next(hostList);
 
@@ -412,8 +402,6 @@ gdisp_consumingEnd (Kernel_T *kernel)
 
   GList      *providerItem =      (GList*)NULL;
   Provider_T *provider     = (Provider_T*)NULL;
-  GList      *hostItem     =      (GList*)NULL;
-  Host_T     *host         =     (Host_T*)NULL;
 
   assert(kernel);
 
@@ -442,23 +430,9 @@ gdisp_consumingEnd (Kernel_T *kernel)
 
 
   /*
-   * Release all hosts.
+   * Destroy all hosts.
    */
-  hostItem = g_list_first(kernel->hostList);
-  while (hostItem != (GList*)NULL) {
-
-    host = (Host_T*)hostItem->data;
-
-    g_string_free(host->hName,TRUE);
-
-    g_free(host);
-
-    hostItem = g_list_next(hostItem);
-
-  }
-
-  g_list_free(kernel->hostList);
-  kernel->hostList = (GList*)NULL;
+  gdisp_destroyHosts(kernel);
 
 
   /*
