@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_abs_types.h,v 1.1 2002-08-27 08:56:09 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_abs_types.h,v 1.2 2002-08-29 13:05:31 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -19,8 +19,9 @@ Purpose   :
 
 /*** Platform specific ***/
 
-/* SUN / sparc */
-#if defined (__SOLARIS__) && defined (__sparc__)
+/* SUN / sparc (32 bits) */
+#if  defined(__sun) && defined(__sparc) && !defined(__sparcv9)
+
 
 typedef signed char gint8;
 typedef unsigned char guint8;
@@ -69,7 +70,61 @@ typedef unsigned long long guint64;
 
 #define G_GUINT64_FORMAT "llu"
 
+
 #endif /* SUN / sparc */
+
+
+
+/* SUN / sparcv9 (64 bits) */
+#if  defined(__sun) && defined(__sparcv9)
+
+
+typedef signed char gint8;
+typedef unsigned char guint8;
+typedef signed short gint16;
+typedef unsigned short guint16;
+typedef signed int gint32;
+typedef unsigned int guint32;
+#define G_HAVE_GINT64 1
+
+typedef signed long gint64;
+typedef unsigned long guint64;
+
+#define G_GINT64_CONSTANT(val)	(val##L)
+
+#define GPOINTER_TO_INT(p)	((gint)  (glong) (p))
+#define GPOINTER_TO_UINT(p)	((guint) (gulong) (p))
+
+#define GINT_TO_POINTER(i)	((gpointer) (glong) (i))
+#define GUINT_TO_POINTER(u)	((gpointer) (gulong) (u))
+
+#define GINT16_TO_BE(val)	((gint16) (val))
+#define GUINT16_TO_BE(val)	((guint16) (val))
+#define GINT16_TO_LE(val)	((gint16) GUINT16_SWAP_LE_BE (val))
+#define GUINT16_TO_LE(val)	(GUINT16_SWAP_LE_BE (val))
+#define GINT32_TO_BE(val)	((gint32) (val))
+#define GUINT32_TO_BE(val)	((guint32) (val))
+#define GINT32_TO_LE(val)	((gint32) GUINT32_SWAP_LE_BE (val))
+#define GUINT32_TO_LE(val)	(GUINT32_SWAP_LE_BE (val))
+#define GINT64_TO_BE(val)	((gint64) (val))
+#define GUINT64_TO_BE(val)	((guint64) (val))
+#define GINT64_TO_LE(val)	((gint64) GUINT64_SWAP_LE_BE (val))
+#define GUINT64_TO_LE(val)	(GUINT64_SWAP_LE_BE (val))
+#define GLONG_TO_LE(val)	((glong) GINT64_TO_LE (val))
+#define GULONG_TO_LE(val)	((gulong) GUINT64_TO_LE (val))
+#define GLONG_TO_BE(val)	((glong) GINT64_TO_BE (val))
+#define GULONG_TO_BE(val)	((gulong) GUINT64_TO_BE (val))
+#define GINT_TO_LE(val)		((gint) GINT32_TO_LE (val))
+#define GUINT_TO_LE(val)	((guint) GUINT32_TO_LE (val))
+#define GINT_TO_BE(val)		((gint) GINT32_TO_BE (val))
+#define GUINT_TO_BE(val)	((guint) GUINT32_TO_BE (val))
+
+#define G_BYTE_ORDER G_BIG_ENDIAN
+
+#define G_GUINT64_FORMAT "lu"
+
+#endif /* SUN / sparcv9 (64 bits) */
+
 
 /* Linux / Intel */
 #if defined (__linux__) && defined (__i386__)
@@ -138,7 +193,7 @@ typedef unsigned int guint32;
 typedef signed long gint64;
 typedef unsigned long guint64;
 
-#define G_GINT64_CONSTANT(val)  (val##LL)
+#define G_GINT64_CONSTANT(val)  (val##L)
 
 #define GPOINTER_TO_INT(p)	((gint)  (glong) (p))
 #define GPOINTER_TO_UINT(p)	((guint) (gulong) (p))
