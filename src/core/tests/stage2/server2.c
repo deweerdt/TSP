@@ -19,7 +19,7 @@ int main(int argc, char *argv[])
   /* Init server */
     if(TSP_provider_init(&argc, &argv))
     {
-      TSP_provider_run();
+      TSP_provider_run(TRUE);
     }
 
     
