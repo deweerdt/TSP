@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_provider.c,v 1.16 2002-12-24 14:14:19 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_provider.c,v 1.17 2003-01-31 08:29:13 SyntDev1 Exp $
 
 -----------------------------------------------------------------------
 
@@ -460,6 +460,7 @@ void  TSP_provider_request_sample_init(TSP_request_sample_init_t* req_info,
  
   if(req_info->version_id <= TSP_VERSION)
     {
+      ans_sample->version_id = req_info->version_id;
       /* If the sample server is a lazy pasive server, we need a thread per session*/
       start_local_thread = ( X_glu_is_active ? FALSE : TRUE );
       
