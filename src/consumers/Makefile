@@ -10,6 +10,7 @@ else
 		test_group \
 		res_writer \
 		tutorial \
+		gdisp+ \
 		gdisp
 	ifeq (${BUILD_JAVA},yes)
 		SUBDIRS += jstdout jsynoptic
