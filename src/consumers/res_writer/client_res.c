@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: client_res.c,v 1.11 2004-09-27 13:47:01 tractobob Exp $
+$Id: client_res.c,v 1.12 2004-10-05 12:18:41 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -89,18 +89,19 @@ void catch_ctrl_c(int i)
 
 void usage (char *txt)
 {
-  STRACE_ERROR(("USAGE : %s -f [-u] [-tmdh]", txt));
-  printf("\t -f filename  : output RES format filename\n");
-  printf("\t[-u URL]      : TSP Universal Resource Locator (rpc://host/name:port)\n");
-  printf("\t[-t period]   : expressed in provider's cycles (1-N), default 1\n");
-  printf("\t[-m mode]     : recording mode (1-3), default 1\n");
-  printf("\t                1 = All variables, retry connection forever\n");
-  printf("\t                2 = 3 variables (first, middle, last)\n");
-  printf("\t                3 = 10 first variables\n");
-  printf("\t[-d]          : use IEEE-754 double format for RES file\n");
-  printf("\t[-h]          : this help\n");
+  STRACE_ERROR(("USAGE : %s -f: [-u:] [-tmdh]", txt));
+  printf("\t -f filename   : output RES format filename\n");
+  printf("\t[-u serverURL] : TSP Universal Resource Locator\n\n");
+  printf(TSP_URL_FORMAT_USAGE);
+  printf("\n\t[-t period]    : expressed in provider's cycles (1-N), default 1\n");
+  printf("\t[-m mode]      : recording mode (1-3), default 1\n");
+  printf("\t                 1 = All variables, retry connection forever\n");
+  printf("\t                 2 = 3 variables (first, middle, last)\n");
+  printf("\t                 3 = 10 first variables\n");
+  printf("\t[-d]           : use IEEE-754 double format for RES file\n");
+  printf("\t[-h]           : this help\n");
   printf("\t[--tsp-stream-init-start file[.res] --tsp-stream-init-stop]\n");
-  printf("\t              : stream sent to TSP provider\n");
+  printf("\t               : stream sent to TSP provider\n");
   
   printf("Note : CTRL+C cleanly save RES file and quit\n");
   exit(-1);
