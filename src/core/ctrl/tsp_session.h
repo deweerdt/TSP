@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.h,v 1.7 2002-12-02 15:14:45 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.h,v 1.8 2002-12-05 10:54:13 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -31,7 +31,7 @@ int TSP_add_session(channel_id_t* new_channel_id, GLU_handle_t glu_h);
 
 void TSP_session_init(void);
 
-void TSP_close_session_by_channel(channel_id_t channel_id);
+void TSP_session_close_session_by_channel(channel_id_t channel_id);
 
 int TSP_session_add_symbols(TSP_sample_symbol_info_list_t* symbols);
 
@@ -61,6 +61,8 @@ int TSP_session_get_symbols_global_index_by_channel(channel_id_t channel_id,
 						   TSP_sample_symbol_info_list_t* symbol_list);
 
 int TSP_session_is_consumer_connected_by_channel(channel_id_t channel_id);
+
+int TSP_session_get_garbage_session(channel_id_t* channel_id);
 
 
 
