@@ -1,6 +1,6 @@
 /*!  \file 
  
-$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_const_def.h,v 1.21 2004-09-14 16:48:26 dufy Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_const_def.h,v 1.22 2004-09-19 22:59:11 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -42,6 +42,8 @@ Purpose   : definitions and const that must have a program wide scope
 #define TSP_VERSION 1
 
 #include "tsp_abs_types.h"
+
+#define TSP_MAX_SYSMSG_SIZE 256
 
 /**
  * Size of ringbuf  receiver 
