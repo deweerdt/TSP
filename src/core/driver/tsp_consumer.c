@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.29 2004-10-04 08:44:32 tractobob Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.30 2004-10-06 09:44:38 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -821,19 +821,21 @@ int TSP_consumer_request_information(TSP_provider_t provider)
 
       /* allocate memory to store those symbols */
       otsp->information.symbols.len = symbols_number;
-      otsp->information.symbols.val = 
-	(TSP_consumer_symbol_info_t* )calloc(symbols_number,sizeof(TSP_consumer_symbol_info_t));
-      TSP_CHECK_ALLOC(otsp->information.symbols.val, FALSE);
+      if(symbols_number > 0)
+	{
+	  otsp->information.symbols.val = 
+	    (TSP_consumer_symbol_info_t* )calloc(symbols_number,sizeof(TSP_consumer_symbol_info_t));
+	  TSP_CHECK_ALLOC(otsp->information.symbols.val, FALSE);
 		
-      for(i = 0 ; i< symbols_number ; i++)
-	{		
-	  otsp->information.symbols.val[i].index =
-	    ans_sample->symbols.TSP_sample_symbol_info_list_t_val[i].provider_global_index;
-	  otsp->information.symbols.val[i].name =
-	    strdup(ans_sample->symbols.TSP_sample_symbol_info_list_t_val[i].name);				
-	  TSP_CHECK_ALLOC(otsp->information.symbols.val[i].name, FALSE);			
-	}
-        
+	  for(i = 0 ; i< symbols_number ; i++)
+	    {		
+	      otsp->information.symbols.val[i].index =
+		ans_sample->symbols.TSP_sample_symbol_info_list_t_val[i].provider_global_index;
+	      otsp->information.symbols.val[i].name =
+		strdup(ans_sample->symbols.TSP_sample_symbol_info_list_t_val[i].name);				
+	      TSP_CHECK_ALLOC(otsp->information.symbols.val[i].name, FALSE);			
+	    }
+        }
     }
   else
     {
