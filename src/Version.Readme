@@ -108,4 +108,7 @@ V-0.6.1: Creation 26/05/04	tag TSP_0_6_1	YD
 V-0.6.x: Creation ??/??/04	tag TSP_0_6_X	??	
 	- Change get_next_item to push method			- YD
 	- Add OpenBSD Support					- FD
-        - What was done						-  ??
+	- Defined an URL strategy for connection		- RP
+	- Use a 'port free' detection strategy for RPC init	- RP
+	- Make again the things work on DEC/Alpha stations	- RP
+        - What was done						- ??
