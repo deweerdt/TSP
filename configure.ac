@@ -148,6 +148,10 @@ case "$host" in
 	LDLIBS="-lm  -lpthread"
 	CPPFLAGS="-D_REENTRANT  -DUSE_STRACE -DTSP_NO_XDR_ENCODE"
         ;;
+    *openbsd*)
+	AC_MSG_RESULT([OpenBSD is OK])	
+	HOST_TARGET=openbsd
+        ;;
     sparc-sun-solaris*)
 	AC_MSG_RESULT([Sparc Solaris is OK])	
 	HOST_TARGET=sun
