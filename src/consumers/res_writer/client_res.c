@@ -1,7 +1,42 @@
-#include "tsp_sys_headers.h"
-#include <math.h>
-#include <signal.h>
+/*!  \file 
 
+$Id: client_res.c,v 1.2 2003-02-03 09:52:08 tsp_admin Exp $
+
+-----------------------------------------------------------------------
+
+TSP Library - core components for a generic Transport Sampling Protocol.
+
+Copyright (c) 2002 Yves DUFRENNE, Stephane GALLES, Eric NOULARD and Robert PAGNOT 
+
+This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 2.1 of the License, or (at your option) any later version.
+
+This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public
+License along with this library; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+-----------------------------------------------------------------------
+
+Project   : TSP
+Maintainer: tsp@astrium-space.com
+Component : Consumer
+
+-----------------------------------------------------------------------
+
+Purpose   : Simple consummer for testing groups configuration
+
+-----------------------------------------------------------------------
+*/
+
+#include "tsp_sys_headers.h"
+#include <signal.h>
 #include "tsp_prjcfg.h"
 #include "tsp_consumer.h"
 #include "tsp_time.h"
@@ -79,14 +114,8 @@ int main(int argc, char *argv[]){
   char* out_file_res;
   int res_value_i;
   char* custom_argv[10];
-  
   int all_data_ok = TRUE;
-
-      
-
-
   TSP_provider_t* providers;
-
   int requested_nb;
   int group_nb;
  
@@ -97,7 +126,7 @@ int main(int argc, char *argv[]){
 
   STRACE_INFO(("Autodetect CPU : %d bits", sizeof(long)*8));
 
-    /* TSP Init */
+  /* TSP Init */
   if(!TSP_consumer_init(&argc, &argv))
     {
       STRACE_ERROR(("TSP init failed"));
@@ -113,11 +142,11 @@ int main(int argc, char *argv[]){
       out_file_res = argv[3];
       if(!strcmp("f", argv[4]))
 	{
-	   _use_dbl = 0;
+	  _use_dbl = 0;
 	}
       else if(!strcmp("d", argv[4]))
 	{
-	   _use_dbl = 1;
+	  _use_dbl = 1;
 	}
       else
 	{
@@ -171,7 +200,7 @@ int main(int argc, char *argv[]){
   if(!TSP_consumer_request_open(providers[0], 0, 0 ))
     {
       STRACE_ERROR(("TSP_request_provider_open failed"));
-	  return -1;
+      return -1;
     }
   
 
@@ -210,7 +239,7 @@ int main(int argc, char *argv[]){
       symbols.val[1] = symbols.val[ symbols.len/2];
       symbols.val[2] = symbols.val[ symbols.len-1];
       symbols.len = 3;
-    break;
+      break;
     case 3 :     
       symbols.len = 10;
       break;
@@ -221,9 +250,9 @@ int main(int argc, char *argv[]){
 
  
   
-/*-------------------------------------------------------------------------------------------------------*/ 
-/* TEST : STAGE 001 | STEP 004 */
-/*-------------------------------------------------------------------------------------------------------*/ 
+  /*-------------------------------------------------------------------------------------------------------*/ 
+  /* TEST : STAGE 001 | STEP 004 */
+  /*-------------------------------------------------------------------------------------------------------*/ 
   if(!TSP_consumer_request_sample(providers[0],&symbols))
     {
       STRACE_ERROR(("TSP_request_provider_sample failed"));
@@ -265,11 +294,7 @@ int main(int argc, char *argv[]){
 
       if(new_sample)
 	{
-
 	  double calc;
-
-	  /* overide time */
-	  /*if(  0 == res_value_i ) sample.user_value = ((double)count)/40.0;*/
 
 	  if(_use_dbl)
 	    {
@@ -300,8 +325,6 @@ int main(int argc, char *argv[]){
       else
 	{
 	  tsp_usleep(TSP_NANOSLEEP_PERIOD_US); 
-
-	 
 	}
     }
 
@@ -310,5 +333,4 @@ int main(int argc, char *argv[]){
   TSP_consumer_end();
 
   return 0;
-
 }
