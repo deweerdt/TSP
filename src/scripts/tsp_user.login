@@ -88,8 +88,8 @@ alias go_scripts 'cd ${TSP_BASE}/src/scripts'
 # CVS 
 ##############################
 unsetenv CVSROOT 
-alias lcvs "cvs -d $LOCAL_MOUNT/tnt/"
-alias gcvs "cvs -d $LOCAL_MOUNT/dev442/"
+alias lcvs "cvs -d $LOCAL_MOUNT/tnt/CVSROOT"
+alias gcvs "cvs -d $LOCAL_MOUNT/dev442/CVSROOT"
 
 
 
