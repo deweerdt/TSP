@@ -1,3 +1,4 @@
-SUBDIRS = include rpc ctrl driver tests
+SUBDIRS = include services rpc ctrl driver tests
 
 include $(DEVBASE)/make/Makesubdirs
+
