@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_providers.c,v 1.6 2004-06-26 20:51:04 esteban Exp $
+$Id: gdisp_providers.c,v 1.7 2004-10-15 10:07:33 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -26,7 +26,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 -----------------------------------------------------------------------
 
 Project   : TSP
-Maintainer: tsp@astrium-space.com
+Maintainer: tsp@astrium.eads.net
 Component : Graphic Tool
 
 -----------------------------------------------------------------------
@@ -407,8 +407,8 @@ gdisp_createProviderList ( Kernel_T  *kernel,
 
     /* ------------------ LABELS WITH INFORMATION ------------------- */
 
-    rowInfo[0] = "Name";
-    rowInfo[1] = provider->pName->str;
+    rowInfo[0] = "URL";
+    rowInfo[1] = provider->pUrl->str;
 
     rowNumber  = gtk_clist_append(GTK_CLIST(provider->pCList),
 				  rowInfo);
@@ -424,7 +424,7 @@ gdisp_createProviderList ( Kernel_T  *kernel,
       gtk_clist_set_pixtext(GTK_CLIST(provider->pCList),
 			    rowNumber,
 			    1, /* second column */
-			    provider->pName->str,
+			    provider->pUrl->str,
 			    5, /* spacing */
 			    pixmap,
 			    mask);
@@ -454,12 +454,6 @@ gdisp_createProviderList ( Kernel_T  *kernel,
 
     rowInfo[0] = "Sampled Symbols";
     sprintf(rowInfo[1],"%d",provider->pSampleList.len);
-
-    rowNumber  = gtk_clist_append(GTK_CLIST(provider->pCList),
-				  rowInfo);
-
-    rowInfo[0] = "Hosted By";
-    sprintf(rowInfo[1],"%s",provider->pHost->hName->str);
 
     rowNumber  = gtk_clist_append(GTK_CLIST(provider->pCList),
 				  rowInfo);

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_sampling.c,v 1.6 2004-06-26 20:51:04 esteban Exp $
+$Id: gdisp_sampling.c,v 1.7 2004-10-15 10:07:33 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -26,7 +26,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 -----------------------------------------------------------------------
 
 Project   : TSP
-Maintainer: tsp@astrium-space.com
+Maintainer: tsp@astrium.eads.net
 Component : Graphic Tool
 
 -----------------------------------------------------------------------
@@ -810,7 +810,7 @@ gdisp_preSamplingThread (void *data )
     if (provider->pSampleList.len != 0) {
 
       threadStatus = gdisp_createThread(kernel,
-					provider->pName->str,
+					provider->pUrl->str,
 					&provider->pSamplingThread,
 					(const pthread_attr_t*)NULL,
 					gdisp_samplingThread,

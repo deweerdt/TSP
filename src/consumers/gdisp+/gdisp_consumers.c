@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_consumers.c,v 1.7 2004-10-05 12:32:20 tractobob Exp $
+$Id: gdisp_consumers.c,v 1.8 2004-10-15 10:07:32 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -79,7 +79,7 @@ gdisp_sortProviderByName(gconstpointer data1,
   Provider_T *provider1 = (Provider_T*)data1,
              *provider2 = (Provider_T*)data2;
 
-  return (strcmp(provider1->pName->str,provider2->pName->str));
+  return (strcmp(provider1->pUrl->str,provider2->pUrl->str));
 
 }
 
@@ -87,19 +87,17 @@ gdisp_sortProviderByName(gconstpointer data1,
 /*
  * Manage a new provider -> read information and add symbols.
  */
-static void
-gdisp_insertHostProviders ( Kernel_T *kernel,
-			    Host_T   *host )
+
+
+static int
+gdisp_insertProvider ( Kernel_T *kernel,
+		       gchar    *url )
 {
 
   GString        *messageString    = (GString*)NULL;
 
-  gchar           hostUrl[256];
-
-  guint           providerIdentity = 0;
-  TSP_provider_t  *providerList[TSP_MAX_REQUEST_HANDLERS], *trial;
-  gint            providerListSize = 0;
-  gint            providerCpt      = 0;
+  static guint     providerIdentity = 0;
+  TSP_provider_t  *provider        = NULL;
   gint            symbolCpt        = 0;
 
   Provider_T     *newProvider      = (Provider_T*)NULL;
@@ -108,79 +106,43 @@ gdisp_insertHostProviders ( Kernel_T *kernel,
   const TSP_consumer_information_t *providerInfo =
                                   (const TSP_consumer_information_t*)NULL;
 
-  /*
-   * Look for providers on the given host.
-   */
-  for (providerCpt=0; providerCpt<TSP_MAX_SERVER_NUMBER; providerCpt++)
-    {
-      sprintf(hostUrl, "//%s/:%d", host->hName->str, providerCpt);
-  
-      trial = TSP_consumer_connect_url(hostUrl);
-      if(trial)
-	{
-	  providerList[providerListSize] = trial;
-	  providerListSize++;
-	}
-    }
 
-  /*
-   * Report the number of providers that have been found.
-   */
-  messageString = g_string_new((gchar*)NULL);
-  if (providerListSize == 0) {
+  provider = TSP_consumer_connect_url(url);
+  if(provider) {
+    /*
+     * Store all available information for this provider.
+     */
 
-    g_string_sprintf(messageString,
-		     "No TSP provider found on host %s.",
-		     host->hName->str);
-
-  }
-  else {
-
-    g_string_sprintf(messageString,
-		     "%d TSP provider(s) found on host %s.",
-		     providerListSize,
-		     host->hName->str);
-
-  }
-  kernel->outputFunc(kernel,messageString,GD_WARNING);
-
-
-  /*
-   * Store all available information for each provider.
-   */
-  for (providerCpt=0; providerCpt<providerListSize; providerCpt++) {
-
-
+    
     /*
      * Allocate memory for this new provider.
      * Set up its status to 'FROM_SCRATCH'.
      */
     newProvider = (Provider_T*)g_malloc0(sizeof(Provider_T));
     assert(newProvider);
-
+    
     newProvider->pStatus = GD_FROM_SCRATCH;
-
-
+    
+    
     /*
      * Now store the handle, get back the name.
      * Set up its status to 'SESSION_CLOSED'.
      * Insert it into the kernel provider list.
      */
-    newProvider->pHost     = host;
-    newProvider->pHandle   = providerList[providerCpt];
+    newProvider->pHandle   = provider;
     newProvider->pIdentity = providerIdentity++;
-    newProvider->pName     =
+    newProvider->pUrl      =
       g_string_new(TSP_consumer_get_connected_name(newProvider->pHandle));
-    assert(newProvider->pName);
-
+    assert(newProvider->pUrl);
+    
     newProvider->pStatus = GD_SESSION_CLOSED;
-
+    
     kernel->providerList = g_list_insert_sorted(kernel->providerList,
 						(gpointer)newProvider,
 						gdisp_sortProviderByName);
     assert(kernel->providerList);
-
-
+    
+    
     /*
      * Ask the provider for a new consumer session.
      * Set up its status to 'SESSION_OPENED'.
@@ -189,14 +151,14 @@ gdisp_insertHostProviders ( Kernel_T *kernel,
 					      (gint)NULL,
 					      (gchar**)NULL);
     if (requestStatus == TRUE) {
-
+      
       /*
        * Now the session is opened, get back all available information.
        * Keep the current status, since symbols are not requested here.
        */
       requestStatus = TSP_consumer_request_information(newProvider->pHandle);
       if (requestStatus == TRUE) {
-
+	
 	/* Do not free 'providerInfo' structure */
 	providerInfo = TSP_consumer_get_information(newProvider->pHandle);
 	assert(providerInfo);
@@ -240,6 +202,13 @@ gdisp_insertHostProviders ( Kernel_T *kernel,
 	 */
 	newProvider->pStatus = GD_SESSION_OPENED;
 
+	messageString = g_string_new((gchar*)NULL);
+	g_string_sprintf(messageString,
+			 "Session opened on <%s>",
+			 newProvider->pUrl->str);
+	kernel->outputFunc(kernel,messageString,GD_MESSAGE);
+
+
       } /* requestStatus == TRUE (TSP_consumer_request_information) */
 
       else {
@@ -251,7 +220,7 @@ gdisp_insertHostProviders ( Kernel_T *kernel,
 	messageString = g_string_new((gchar*)NULL);
 	g_string_sprintf(messageString,
 			 "<%s> provider. Session is closed.",
-			 newProvider->pName->str);
+			 newProvider->pUrl->str);
 	kernel->outputFunc(kernel,messageString,GD_ERROR);
 
       }
@@ -267,24 +236,61 @@ gdisp_insertHostProviders ( Kernel_T *kernel,
       messageString = g_string_new((gchar*)NULL);
       g_string_sprintf(messageString,
 		       "<%s> provider. Aborting.",
-		       newProvider->pName->str);
+		       newProvider->pUrl->str);
       kernel->outputFunc(kernel,messageString,GD_ERROR);
 
     }
     
-  } /* End loop over available providers */
+  } /* End if available provider */
 
 
-  /*
-   * Avoid lack of memory.
-   * Free the list previously allocated within TSP library.
-   */
-  if (providerListSize > 0)
-    free(providerList);
+  return (provider == NULL ? -1 : 0);
 
 }
 
+static void
+gdisp_insertHostProviders ( Kernel_T *kernel,
+			    Host_T   *host )
+{
+  GString        *messageString    = (GString*)NULL;
+  gint            providerCpt      = 0;
+  gint            providersFound   = 0;
+  gchar          *hostUrl          = (gchar*) NULL;
 
+  /*
+   * Look for and insert providers on the given host.
+   */
+  hostUrl = g_malloc0(strlen(host->hName->str) + 10);
+  for (providerCpt=0; providerCpt<TSP_MAX_SERVER_NUMBER; providerCpt++)
+    {
+      sprintf(hostUrl, "//%s/:%d", host->hName->str, providerCpt);
+      if(!gdisp_insertProvider(kernel, hostUrl))
+	providersFound++;
+    }
+  g_free(hostUrl);
+
+  /*
+   * Report the number of providers that have been found.
+   */
+  messageString = g_string_new((gchar*)NULL);
+  if (providersFound == 0) {
+
+    g_string_sprintf(messageString,
+		     "No TSP provider found on host %s.",
+		     host->hName->str);
+
+  }
+  else {
+
+    g_string_sprintf(messageString,
+		     "%d TSP provider(s) found on host %s.",
+		     providersFound,
+		     host->hName->str);
+
+  }
+  kernel->outputFunc(kernel,messageString,GD_WARNING);
+
+}
 /*
  --------------------------------------------------------------------
                              PUBLIC ROUTINES
@@ -295,7 +301,7 @@ gdisp_insertHostProviders ( Kernel_T *kernel,
 /*
  * GDISP+ is a TSP consumer.
  * Initialize here the consummation management.
- *  - retreive all available providers on a given hosts.
+ *  - retreive all available providers on a given URLs/hosts.
  *  - ...
  */
 void
@@ -306,6 +312,8 @@ gdisp_consumingInit (Kernel_T *kernel)
   gchar           localHostName[_HOST_NAME_MAX_LEN_];
   gint            hostStatus       = 0;
   GList          *hostList         = (GList*)NULL;
+  GList          *urlList          = (GList*)NULL;
+  gint            urlsFound        = 0;
   GString        *messageString    = (GString*)NULL;
 
   /*
@@ -313,29 +321,6 @@ gdisp_consumingInit (Kernel_T *kernel)
    */
   assert(kernel);
 
-
-  /*
-   * Get back local host.
-   */
-  hostStatus    = gethostname(localHostName,_HOST_NAME_MAX_LEN_);
-  messageString = g_string_new((gchar*)NULL);
-
-  if (hostStatus == -1) {
-
-    g_string_sprintf(messageString,"Local host is UNKNOWN.");
-    kernel->outputFunc(kernel,messageString,GD_ERROR);
-
-  }
-  else {
-
-    g_string_sprintf(messageString,
-		     "Local host is '%s'.",
-		     localHostName);
-    kernel->outputFunc(kernel,messageString,GD_MESSAGE);
-
-    gdisp_addHost(kernel,localHostName);
-
-  }
 
 
   /* --------------------- TSP INITIALISATION ---------------------- */
@@ -360,7 +345,48 @@ gdisp_consumingInit (Kernel_T *kernel)
   }
 
 
+  /* ------------------------ URL LIST ------------------------- */
+
+  /*
+   * Insert all URLs.
+   */
+  urlList = g_list_first(kernel->urlList);
+  while (urlList != (GList*)NULL) {
+
+    if(!gdisp_insertProvider (kernel,
+			      (gchar*)urlList->data))
+      urlsFound++;
+
+    urlList = g_list_next(urlList);
+
+  }
+
   /* ------------------------ HOST LIST ------------------------- */
+
+  /*
+   * Get back local host and insert it if no URL found.
+   */
+  if(urlsFound == 0) {
+    hostStatus    = gethostname(localHostName,_HOST_NAME_MAX_LEN_);
+    messageString = g_string_new((gchar*)NULL);
+    
+    if (hostStatus == -1) {
+      
+      g_string_sprintf(messageString,"Local host is UNKNOWN.");
+      kernel->outputFunc(kernel,messageString,GD_ERROR);
+      
+    }
+    else {
+      
+      g_string_sprintf(messageString,
+		       "Local host is '%s'.",
+		       localHostName);
+      kernel->outputFunc(kernel,messageString,GD_MESSAGE);
+      
+      gdisp_addHost(kernel,localHostName);
+
+    }
+  }
 
   /*
    * Insert all hosts.
@@ -374,7 +400,6 @@ gdisp_consumingInit (Kernel_T *kernel)
     hostList = g_list_next(hostList);
 
   }
-
 }
 
 
@@ -439,9 +464,10 @@ gdisp_consumingEnd (Kernel_T *kernel)
 
 
   /*
-   * Destroy all hosts.
+   * Destroy all hosts & URLs.
    */
   gdisp_destroyHosts(kernel);
+  gdisp_destroyUrls(kernel);
 
 
   /*

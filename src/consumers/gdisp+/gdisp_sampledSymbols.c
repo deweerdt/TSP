@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_sampledSymbols.c,v 1.3 2004-06-17 20:03:02 esteban Exp $
+$Id: gdisp_sampledSymbols.c,v 1.4 2004-10-15 10:07:33 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -26,7 +26,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 -----------------------------------------------------------------------
 
 Project   : TSP
-Maintainer: tsp@astrium-space.com
+Maintainer: tsp@astrium.eads.net
 Component : Graphic Tool
 
 -----------------------------------------------------------------------
@@ -332,10 +332,10 @@ gdisp_createProviderNode(Kernel_T      *kernel,
   GdkBitmap    *idPixmapMask                = (GdkBitmap*)NULL;
 
   /*
-   * The name of the node is the name of the provider.
+   * The name of the node is the URL of the provider.
    * Get back provider pixmap according to its identity.
    */
-  pNames[0] = provider->pName->str;
+  pNames[0] = provider->pUrl->str;
 
   gdisp_getProviderIdPixmap(kernel,
 			    parent,
@@ -701,7 +701,7 @@ gdisp_poolSampledSymbolList ( Kernel_T *kernel )
       messageString = g_string_new((gchar*)NULL);
       g_string_sprintf(messageString,
 		       "%s provider has no anchor for symbols.",
-		       provider->pName->str);
+		       provider->pUrl->str);
       kernel->outputFunc(kernel,messageString,GD_ERROR);
 
     }

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_hosts.c,v 1.2 2004-06-26 20:51:04 esteban Exp $
+$Id: gdisp_hosts.c,v 1.3 2004-10-15 10:07:33 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -26,7 +26,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 -----------------------------------------------------------------------
 
 Project   : TSP
-Maintainer: tsp@astrium-space.com
+Maintainer: tsp@astrium.eads.net
 Component : Graphic Tool
 
 -----------------------------------------------------------------------
@@ -101,7 +101,7 @@ gdisp_findHostByName ( Kernel_T *kernel,
 
 
 /*
- * Build the host list according to user specifications.
+ * Build the host or URL list according to user specifications.
  */
 void
 gdisp_addHost ( Kernel_T *kernel,
@@ -134,9 +134,30 @@ gdisp_addHost ( Kernel_T *kernel,
 
 }
 
+void
+gdisp_addUrl ( Kernel_T *kernel,
+		gchar    *urlName )
+{
+  gchar *url = NULL;
+
+  /*
+   * Duplicate URL name
+   */
+  url = strdup(urlName);
+  assert(url);
+
+  /*
+   * Insert this new URL into the kernel URL list.
+   */
+  kernel->urlList = g_list_append(kernel->urlList,
+				  (gpointer)url);
+
+}
+
+
 
 /*
- * Destroy host list.
+ * Destroy host/URL list.
  */
 void
 gdisp_destroyHosts ( Kernel_T *kernel )
@@ -164,5 +185,32 @@ gdisp_destroyHosts ( Kernel_T *kernel )
 
   g_list_free(kernel->hostList);
   kernel->hostList = (GList*)NULL;
+
+}
+
+void
+gdisp_destroyUrls ( Kernel_T *kernel )
+{
+
+  GList  *urlItem =  (GList*)NULL;
+  gchar  *url     = (gchar*)NULL;
+
+
+  /*
+   * Release all URLs.
+   */
+  urlItem = g_list_first(kernel->urlList);
+  while (urlItem != (GList*)NULL) {
+
+    url = (gchar*)urlItem->data;
+
+    free(url);
+
+    urlItem = g_list_next(urlItem);
+
+  }
+
+  g_list_free(kernel->urlList);
+  kernel->urlList = (GList*)NULL;
 
 }

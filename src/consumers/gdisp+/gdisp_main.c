@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_main.c,v 1.5 2004-10-04 08:57:26 tractobob Exp $
+$Id: gdisp_main.c,v 1.6 2004-10-15 10:07:33 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -77,14 +77,16 @@ gdisp_usage ( Kernel_T *kernel,
 	  "------------------------------------------------------------\n");
 
   fprintf(stdout,
-	  "Usage : %s [ -h host1 [ -h host2 ... ] ]\n",
+	  "Usage : %s [ -u url1 [ -u url2 ... ] ] [ -h host1 [ -h host2 ... ] ]\n",
 	  basename(applicationName));
 
+  fprintf(stdout,
+	  "  -u : insert one or several specific URLs.\n");
   fprintf(stdout,
 	  "  -h : insert one or several additional hosts.\n");
 
   fprintf(stdout,
-	  "       'localhost' is always taken into account.\n");
+	  "       'localhost' is always taken into account if no URL specified.\n");
 
   fprintf(stdout,
 	  "------------------------------------------------------------\n");
@@ -110,12 +112,16 @@ gdisp_analyseUserArguments ( Kernel_T *kernel )
    */
   while ((opt = getopt(kernel->argCounter,
 		       kernel->argTable,
-		       "h:")) != EOF) {
+		       "h:u:")) != EOF) {
 
     switch (opt) {
 
     case 'h' :
       gdisp_addHost(kernel,optarg);
+      break;
+
+    case 'u' :
+      gdisp_addUrl(kernel,optarg);
       break;
 
     default :

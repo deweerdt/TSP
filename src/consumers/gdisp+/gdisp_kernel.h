@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_kernel.h,v 1.9 2004-10-04 08:57:26 tractobob Exp $
+$Id: gdisp_kernel.h,v 1.10 2004-10-15 10:07:33 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -26,7 +26,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 -----------------------------------------------------------------------
 
 Project   : TSP
-Maintainer: tsp@astrium-space.com
+Maintainer: tsp@astrium.eads.net
 Component : Graphic Tool
 
 -----------------------------------------------------------------------
@@ -249,10 +249,9 @@ typedef struct Provider_T_ {
 
   TSP_provider_t    pHandle;
   guint             pIdentity;
-  Host_T           *pHost;
 
   ProviderStatus_T  pStatus;
-  GString          *pName;
+  GString          *pUrl;
   gdouble           pBaseFrequency;
   gint              pMaxPeriod;
   gint              pMaxClientNumber;
@@ -524,9 +523,10 @@ typedef struct Kernel_T_ {
   void             (*assignSymbolsToProviders)(Kernel_T_Ptr);
 
   /*
-   * Host management.
+   * Host/URL management.
    */
   GList             *hostList;
+  GList             *urlList;
 
   /*
    * Provider management.
