@@ -25,11 +25,18 @@ V-0.3: Creation 18/09/02	tag TSP_0_3 SG
 	Test automatisation for stage001 thrue tsp_autotest001
 	Complete target autodetection thrue source tsp_dev.login
 
+V-0.3.1: Creation 19/09/02	tag TSP_0_3_1 SG
+	Same as V-0.3 
+	test STAGE2 used to test groups calculation
 
-
-
-
-
-
+	As this version is still with n ringbuf on the client side,
+	here is a CPU load information for this version (1 server, 1 client, 1000 symbols
+	100 Hz on host tibain) :
+  	PID USERNAME THR PRI NICE  SIZE   RES STATE   TIME    CPU COMMAND
+	27172 galles     3  41    0   18M   17M sleep   0:49 35.10% tsp_client1
+	27334 galles     1  31    0 1504K 1344K cpu     0:00  1.21% top5.5
+	27330 galles     1  51    0 1224K 1096K sleep   0:00  0.52% top
+	26713 galles     1  58    0 3200K 2776K sleep   0:00  0.20% xterm
+	27169 galles     5  58    0   33M   33M sleep   0:00  0.14% tsp_serveur1
 
 
