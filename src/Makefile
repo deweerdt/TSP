@@ -21,6 +21,7 @@ build::
 	- mkdir -p $(DIRSCRIPT)
 	- mkdir -p $(CLASSBASE)
 	- mkdir -p $(JARBASE)
+	- ln -s $(DEVBASE)/exec/DEV $(DEVBASE)/exec/current
 
 destroy::
 	find . -name .make.state -exec rm -f {} \; -print
