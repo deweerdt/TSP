@@ -5,6 +5,7 @@ SUBDIRS = \
 	test_group \
 	res_writer \
 	tutorial \
+	jstdout \
 	gdisp
 
 include $(DEVBASE)/make/Makesubdirs
