@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/providers/bb_provider/bb_tsp_provider.c,v 1.3 2004-09-20 20:55:59 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/providers/bb_provider/bb_tsp_provider.c,v 1.4 2004-10-18 20:40:49 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -34,10 +34,11 @@ Purpose   : Blackboard TSP Provider
 
 -----------------------------------------------------------------------
  */
-#include <bb_core.h>
-#include <bb_simple.h>
-#include <bb_tsp_provider.h>
-#include <tsp_provider_init.h>
+#include "bb_core.h"
+#include "bb_simple.h"
+#include "bb_tsp_provider.h"
+#include "tsp_provider_init.h"
+#include "tsp_datapool.h"
 
 /*
  * Declaration crado pour demarrage TSP en douceur
