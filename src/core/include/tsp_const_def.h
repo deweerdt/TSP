@@ -1,6 +1,6 @@
 /*!  \file 
  
-$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_const_def.h,v 1.20 2004-08-31 09:58:52 dufy Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_const_def.h,v 1.21 2004-09-14 16:48:26 dufy Exp $
 
 -----------------------------------------------------------------------
 
@@ -228,7 +228,7 @@ typedef struct  TSP_otsp_server_info_t TSP_otsp_server_info_t;
 /** Time out for client connection to server (secondes) )
  * FIXME : not used yet 
  */ 
-#define TSP_RPC_CONNECT_TIMEOUT 20
+#define TSP_RPC_CONNECT_TIMEOUT 60
 
 /*------- SYSTEM -------*/
 

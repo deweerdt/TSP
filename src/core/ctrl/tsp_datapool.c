@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_datapool.c,v 1.17 2004-07-28 13:05:37 mia Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_datapool.c,v 1.18 2004-09-14 16:48:26 dufy Exp $
 
 -----------------------------------------------------------------------
 
@@ -65,7 +65,7 @@ struct TSP_datapool_item_t
    * string.
    */
   double user_value;
-	
+  int is_wanted;	/* Is the symbol wanted by some consummers */
 };
 
 typedef struct TSP_datapool_item_t TSP_datapool_item_t;
@@ -84,29 +84,19 @@ struct TSP_datapool_table_t
 
   /** List of items in the datapool */
   TSP_datapool_item_t* items;
-
   int size;
-  
-  pthread_t worker_id;
 
-  /** Only for local thread id.
-   * The id of the session linked to the local datapool
-   */
-  channel_id_t session_channel_id;
-
-
-  /** is the datapool local or global ? */
-  int is_global;
+  /** Reverse list of wanted items index */
+  int *reverse_index;
+  int nb_wanted_items;
 
 };
 
 typedef struct TSP_datapool_table_t TSP_datapool_table_t;
 
-
-
 /*-----------------------------------------------------*/
 
-TSP_datapool_table_t X_global_datapool = {FALSE,FALSE,0,0,0,0};
+TSP_datapool_table_t X_global_datapool = {FALSE,FALSE,0,0,0};
 
 /*-----------------------------------------------------*/
 
@@ -121,13 +111,84 @@ TSP_datapool_table_t X_global_datapool = {FALSE,FALSE,0,0,0,0};
 
 
 /**
+ * Get the reverse list of global_index wanted by some consumers
+ * @param nb   : pointer on where to store the number of items
+ * @param list : pointer on list of global_index
+ */ 
+void TSP_datapool_get_reverse_list (int *nb, int **list)
+{
+  *nb = X_global_datapool.nb_wanted_items;
+  *list = X_global_datapool.reverse_index;
+}
+
+
+/**
+ * Insted of thread created, we push directly the data
+ * @param item : what to push
+ */ 
+inline int TSP_datapool_push_next_item(glu_item_t* item)
+{
+  X_global_datapool.items[item->provider_global_index].user_value = item->value;
+}
+
+/**
+ * End of push, we commit the whole
+ * @param time : date of datapool items
+ * @param state: ok or error (reconf,eof, ...)
+ */ 
+int TSP_datapool_push_commit(time_stamp_t time_stamp, GLU_get_state_t state)
+{
+  STRACE_DEBUG(("Datapool push new item time %d",time_stamp)); 
+
+  /* Yep ! throw data to client */
+  /* Send data to all clients  */	      		  
+  /* For a global datapool, the thread must not end, even if a client is disconnected, so
+     we do not check any returned value from TSP_session_all_session_send_data */
+  TSP_session_all_session_send_data(time_stamp);		  
+
+   /* Send end status message */
+  if (state != GLU_GET_NEW_ITEM) 
+    {
+      TSP_msg_ctrl_t msg_ctrl;  
+      switch(state)
+	{
+	case   GLU_GET_EOF :
+	  msg_ctrl = TSP_MSG_CTRL_EOF;
+	  STRACE_INFO(("GLU sent EOF"));
+	  break;
+	case   GLU_GET_RECONF :
+	  msg_ctrl = TSP_MSG_CTRL_RECONF;
+	  STRACE_INFO(("GLU sent RECONF"));
+	  break;
+	case   GLU_GET_DATA_LOST :
+	  msg_ctrl = TSP_MSG_CTRL_GLU_DATA_LOST;
+	  STRACE_INFO(("GLU sent DATA_LOST"));
+	  break;
+	default:
+	  STRACE_ERROR(("?"));
+	  assert(0);
+	}
+
+      /* The lastest data were not sent coz we did not compare the latest timestamp. So, send them !*/
+      /* Send data to all clients  */	      
+      TSP_session_all_session_send_data(time_stamp);		  
+      TSP_session_all_session_send_msg_ctrl(msg_ctrl);		  
+
+      /* End of thread. Our datapool is dead */
+      X_global_datapool.terminated = TRUE;
+    }
+  
+}
+
+/* DON'T WANT ANYMORE this fucking thread passive callback f....cking philo */
+#define USE_DATA_POOL_THREAD 0 
+#if USE_DATA_POOL_THREAD
+/**
  * Thread created per session when the sample server is a pasive one.
  * @param datapool The datapool object instance that will be linked to the thread
  */ 
 void* TSP_datapool_thread(void* datapool)
 {
-
-  SFUNC_NAME(TSP_local_worker);
 
   time_stamp_t time_stamp;
   glu_item_t item;
@@ -139,29 +200,10 @@ void* TSP_datapool_thread(void* datapool)
 
   STRACE_IO(("-->IN"));
   
-  STRACE_DEBUG(("Datapool thread started for session %d",obj_datapool->session_channel_id)); 
-  
-
-  if( obj_datapool->is_global )
-    {
-      /* FIXME : The datapool might not be coherent when a client is already
-	 connected and this thread starts after the connection
-	 for the client */
-      STRACE_DEBUG(("Data Pool is GLOBAL (active GLU)"));
-    }
-  else
-    {
-      /* Wait for consumer connection before we send data */    
-      while(!TSP_session_is_consumer_connected_by_channel(obj_datapool->session_channel_id))
-	{
-	  tsp_usleep(TSP_LOCAL_WORKER_CONNECTION_POLL_TIME);
-	}
-      STRACE_INFO(("Consumer connected for session id %d",obj_datapool->session_channel_id)); 
-
-    }
-
-  /* Flush old data, we do not want to get a GLU_GET_DATA_LOST now */
-  GLU_forget_data(obj_datapool->h_glu);
+  /* FIXME : The datapool might not be coherent when a client is already
+     connected and this thread starts after the connection
+     for the client */
+  STRACE_DEBUG(("Data Pool is GLOBAL (active GLU)"));
 
   /* get first item */
   STRACE_DEBUG(("Waiting for First Item from GLU..."));
@@ -184,19 +226,9 @@ void* TSP_datapool_thread(void* datapool)
 	  if( time_stamp != item.time )
 	    {
 	      /* Yep ! throw data to client */
-	      if( obj_datapool->is_global )
-		{
-		  assert(obj_datapool->h_glu == GLU_GLOBAL_HANDLE );
-		  /* Send data to all clients  */	      		  
-		  /* For a global datapool, the thread must not end, even if a client is disconnected, so
-		     we do not check any returned value from TSP_session_all_session_send_data */
-		  TSP_session_all_session_send_data(time_stamp);		  
-		}
-	      else
-		{
-		  /* send data to one client, and check client state */
-		  data_link_ok = TSP_session_send_data_by_channel(obj_datapool->session_channel_id, time_stamp);	  
-		}
+	      /* For a global datapool, the thread must not end, even if a client is disconnected, so
+		 we do not check any returned value from TSP_session_all_session_send_data */
+	      TSP_session_all_session_send_data(time_stamp);		  
 	      time_stamp = item.time;
 	    }
 	  /* Update datapool */
@@ -229,19 +261,9 @@ void* TSP_datapool_thread(void* datapool)
 	}
 
       /* The lastest data were not sent coz we did not compare the latest timestamp. So, send them !*/
-      if( obj_datapool->is_global )
-	{
-	  /* Send data to all clients  */	      
-	  assert(obj_datapool->h_glu == GLU_GLOBAL_HANDLE );
-	  TSP_session_all_session_send_data(time_stamp);		  
-	  TSP_session_all_session_send_msg_ctrl(msg_ctrl);		  
-	}
-      else
-	{
-	  /* send data to one client */
-	  TSP_session_send_data_by_channel(obj_datapool->session_channel_id, time_stamp);	  
-	  TSP_session_send_msg_ctrl_by_channel(obj_datapool->session_channel_id, msg_ctrl);
-	}
+      /* Send data to all clients  */	      
+      TSP_session_all_session_send_data(time_stamp);		  
+      TSP_session_all_session_send_msg_ctrl(msg_ctrl);		  
     }
 
   /* End of thread. Our datapool is dead */
@@ -252,6 +274,7 @@ void* TSP_datapool_thread(void* datapool)
 }
 
 
+
 /**
  * Wait for the local datapool thread end per session.
  * Only used when the sample server is a pasive one
@@ -259,7 +282,6 @@ void* TSP_datapool_thread(void* datapool)
  */ 
 int TSP_local_datapool_wait_for_end_thread(TSP_datapool_t datapool)
 {
-  SFUNC_NAME(TSP_local_datapool_wait_for_end_thread);
   int status;
   TSP_datapool_table_t* obj_datapool = (TSP_datapool_table_t*)datapool;
 
@@ -281,11 +303,13 @@ int TSP_local_datapool_wait_for_end_thread(TSP_datapool_t datapool)
  */ 
 int TSP_local_datapool_start_thread(TSP_datapool_t datapool)
 {
-  SFUNC_NAME(TSP_local_datapool_start_thread);
   int status;
   TSP_datapool_table_t* obj_datapool = (TSP_datapool_table_t*)datapool;
 
   STRACE_IO(("-->IN"));
+
+  STRACE_ERROR(("Func is deprecated, use global datapool"));
+  return -1;
 
   status = pthread_create(&(obj_datapool->worker_id), NULL, TSP_datapool_thread,  datapool);
   TSP_CHECK_THREAD(status, FALSE);
@@ -294,6 +318,7 @@ int TSP_local_datapool_start_thread(TSP_datapool_t datapool)
   return TRUE;
 
 }
+#endif
 
 /**
  * Start global datapool thread.
@@ -303,9 +328,6 @@ int TSP_local_datapool_start_thread(TSP_datapool_t datapool)
 static int TSP_global_datapool_init(void)
 {
 	 
-  SFUNC_NAME(TSP_global_datapool_init);
-
-	
   TSP_sample_symbol_info_list_t symbols;
   int i;
   int status;
@@ -314,11 +336,6 @@ static int TSP_global_datapool_init(void)
   STRACE_IO(("-->IN"));
 	
   /* Here the datapool is global */
-
-  /* FIXME : remettre l'assertion */
-  /*assert(0 == X_global_datapool.h_glu);*/
-
-
   X_global_datapool.h_glu = GLU_GLOBAL_HANDLE;   
 
   GLU_get_sample_symbol_info_list(X_global_datapool.h_glu, &symbols);
@@ -326,16 +343,16 @@ static int TSP_global_datapool_init(void)
   X_global_datapool.size = symbols.TSP_sample_symbol_info_list_t_len;
 
   X_global_datapool.items = 
-    (TSP_datapool_item_t*)calloc(X_global_datapool.size,
-				 sizeof(TSP_datapool_item_t));
+    (TSP_datapool_item_t*)calloc(X_global_datapool.size, sizeof(TSP_datapool_item_t));
   TSP_CHECK_ALLOC(X_global_datapool.items, FALSE);
 
-  /* Actually all session are link to a global datapool */
-  X_global_datapool.session_channel_id = -1;
-  X_global_datapool.is_global = TRUE;
+  X_global_datapool.reverse_index = (int*)calloc(X_global_datapool.size, sizeof(int));
+  TSP_CHECK_ALLOC(X_global_datapool.reverse_index, FALSE);
+  X_global_datapool.nb_wanted_items = 0;
 
-  status = pthread_create(&(X_global_datapool.worker_id), NULL, TSP_datapool_thread,  &X_global_datapool);
-  TSP_CHECK_THREAD(status, FALSE);
+  STRACE_INFO(("No More datapool thread "));
+  /*status = pthread_create(&(X_global_datapool.worker_id), NULL, TSP_datapool_thread,  &X_global_datapool);
+  TSP_CHECK_THREAD(status, FALSE);*/
 
   X_global_datapool.initialized = TRUE;
   X_global_datapool.terminated = FALSE;
@@ -360,12 +377,9 @@ void TSP_local_datapool_destroy(TSP_datapool_t datapool)
 }
 
 
-TSP_datapool_t TSP_local_datapool_allocate(channel_id_t session_channel_id, int symbols_number, GLU_handle_t h_glu )
+TSP_datapool_t TSP_local_datapool_allocate(int symbols_number, GLU_handle_t h_glu )
 {
 	 
-  SFUNC_NAME(TSP_local_datapool_allocate);
-
-	
   TSP_sample_symbol_info_list_t symbols;
   TSP_datapool_table_t* datapool;
      
@@ -379,10 +393,6 @@ TSP_datapool_t TSP_local_datapool_allocate(channel_id_t session_channel_id, int 
   datapool->items = (TSP_datapool_item_t*)calloc(datapool->size,sizeof(TSP_datapool_item_t));
   TSP_CHECK_ALLOC(datapool->items, 0);
     
-  /* set session linked to this datapool*/
-  datapool->session_channel_id = session_channel_id;
-  datapool->is_global = FALSE;
-
   datapool->h_glu = h_glu;
   datapool->initialized = TRUE;
   datapool->terminated = FALSE;
@@ -395,9 +405,6 @@ TSP_datapool_t TSP_local_datapool_allocate(channel_id_t session_channel_id, int 
 
 void* TSP_datapool_get_symbol_value(TSP_datapool_t datapool, int provider_global_index, xdr_and_sync_type_t type)
 {
-  SFUNC_NAME(TSP_datapool_get_symbol_value);
-
-	
   void* p = 0;
   TSP_datapool_table_t* obj_datapool = (TSP_datapool_table_t*)datapool;
 	
@@ -406,9 +413,14 @@ void* TSP_datapool_get_symbol_value(TSP_datapool_t datapool, int provider_global
 	
   TSP_CHECK_PROVIDER_GLOBAL_INDEX(*obj_datapool, provider_global_index, 0);
 
+  /* Someone will ask for this symbols */
+  if (obj_datapool->items[provider_global_index].is_wanted == FALSE)
+    {
+      obj_datapool->items[provider_global_index].is_wanted = TRUE; 
+      obj_datapool->reverse_index[obj_datapool->nb_wanted_items++] = provider_global_index;
+    }
 
   p = &(obj_datapool->items[provider_global_index].user_value);
-
 
   /* FIXME : manages different types RAW, DOUBLE, STRING...,
      see how to implement this when the data will be RAW in the datapool */
@@ -438,7 +450,7 @@ TSP_datapool_t TSP_global_datapool_get_instance(void)
   if( TRUE == X_global_datapool.terminated )
     {
       /* Wait for thread to end */
-      pthread_join(X_global_datapool.worker_id, NULL);
+      /* pthread_join(X_global_datapool.worker_id, NULL);*/
       /* Yes, clean up previous datapool */
       TSP_datapool_internal_free(&X_global_datapool);
       /* Now, the datapool is not initialized anymore */
@@ -452,6 +464,6 @@ TSP_datapool_t TSP_global_datapool_get_instance(void)
       TSP_global_datapool_init();
     }
 
-  assert( GLU_GLOBAL_HANDLE == X_global_datapool.h_glu);
   return &X_global_datapool;
 }
+

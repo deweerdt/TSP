@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: client_stdout.c,v 1.5 2004-08-31 15:39:19 dufy Exp $
+$Id: client_stdout.c,v 1.6 2004-09-14 16:48:26 dufy Exp $
 
 -----------------------------------------------------------------------
 
@@ -58,6 +58,7 @@ int main(int argc, char *argv[]){
   int period=0;
   char* name;
   int count_samples = 0;
+  int nb_samples = -1;
   char symbol_buf[50];
   int test_ok = TRUE;
   int test_mode = 0;
@@ -76,20 +77,21 @@ int main(int argc, char *argv[]){
       return -1;
     }
 
-  if (argc>2)
-    {   
-      name = argv[1];
-      period = atoi (argv[2]);
-      /* Anything after name and perdio --> test mode */
-      if (argc>3)
-	test_mode = atoi(argv[3]);  /* 0 = no, 1=infinite loop */
-
-    }
-  else
-    {
-      STRACE_ERROR(("USAGE %s : server period <test_mode>\n", argv[0]));
+  switch (argc-1) { /* No Breaks please */
+  case 5: 
+    nb_samples = atoi(argv[5]);  /* nb-sample */
+  case 4:
+    test_mode = atoi(argv[4]);  /* 0 = no, 1=infinite loop */
+  case 3:       /* Anything after name and perdio --> test mode */
+  case 2:
+    period = atoi (argv[2]);
+  case 1:      
+    name = argv[1];
+    break;
+  default : 
+      STRACE_ERROR(("USAGE %s : server period <test mode nb_sample> \n", argv[0]));
       return -1;
-    }
+  }
 
  once_again:
   
@@ -182,16 +184,22 @@ printf("%s != %s\n", symbol_buf,  information->symbols.val[i].name);
       
   STRACE_TEST(("STAGE 001 | STEP 003 : PASSED"));
 
-  symbols.val = (TSP_consumer_symbol_requested_t*)calloc(information->symbols.len, sizeof(TSP_consumer_symbol_requested_t));
+  if (nb_samples>0)
+    symbols.len = nb_samples;
+  else
+    symbols.len = information->symbols.len;
+  symbols.val = (TSP_consumer_symbol_requested_t*)calloc(symbols.len, sizeof(TSP_consumer_symbol_requested_t));
   TSP_CHECK_ALLOC(symbols.val, -1);
-  symbols.len = information->symbols.len;
+
   /* Change period of sampling for each client */
-  for(i = 0 ; i < information->symbols.len ; i++)
+  for(i = 0 ; i < symbols.len ; i++)
     {
       symbols.val[i].name = information->symbols.val[i].name;
       symbols.val[i].period = period;
       symbols.val[i].phase = 0;
     }
+
+  STRACE_INFO(("Asking for %d symboles", symbols.len));
   /*-------------------------------------------------------------------------------------------------------*/ 
   /* TEST : STAGE 001 | STEP 004 */
   /*-------------------------------------------------------------------------------------------------------*/ 

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_datapool.h,v 1.8 2003-07-15 14:21:17 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_datapool.h,v 1.9 2004-09-14 16:48:26 dufy Exp $
 
 -----------------------------------------------------------------------
 
@@ -46,14 +46,34 @@ Purpose   : Datapool implementation
 typedef  void* TSP_datapool_t;
 
 /**
+ * Get the reverse list of global_index wanted by some consumers
+ * @param nb   : pointer on where to store the number of items
+ * @param list : pointer on list of global_index
+ */ 
+void TSP_datapool_get_reverse_list (int *nb, int **list);
+
+/**
+ * Insted of thread created, we push directly the data
+ * @param item : what to push
+ */ 
+inline int TSP_datapool_push_next_item(glu_item_t* item);
+
+/**
+ * End of push, we commit the whole
+ * @param time : date of datapool items
+ * @param state: ok or error (reconf,eof, ...)
+ */ 
+int TSP_datapool_push_commit(time_stamp_t time_stamp, GLU_get_state_t state);
+
+
+/**
  * Allocation of a local datapool.
  * Only used when the sample server is a passive one.
- * @param session_channel_id Id of the session that must be linked to this datapool
  * @param symbols_number Total number of symbols for this datapool
  * @param h_glu Handle for the GLU that mus be linked to this datapool
  * @return The datapool handle
  */ 
-TSP_datapool_t TSP_local_datapool_allocate(channel_id_t session_channel_id, int symbols_number, GLU_handle_t h_glu );
+TSP_datapool_t TSP_local_datapool_allocate(int symbols_number, GLU_handle_t h_glu );
 
 /**
  * Destroy a local datapool.

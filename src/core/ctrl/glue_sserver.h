@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: glue_sserver.h,v 1.16 2004-02-01 23:04:53 erk Exp $
+$Id: glue_sserver.h,v 1.17 2004-09-14 16:48:26 dufy Exp $
 
 -----------------------------------------------------------------------
 
@@ -170,6 +170,13 @@ char* GLU_get_server_name(void);
 */
 int GLU_init(int fallback_argc, char* fallback_argv[]);
 
+/**
+* Start the loop that will had data to datapool whith pus_next_item
+* @return status 
+*/
+
+int GLU_start(void);
+
 
 /**
 * GLU server type : ACTIVE or PASSIVE.
@@ -227,13 +234,20 @@ int  GLU_get_sample_symbol_info_list(GLU_handle_t h_glu, TSP_sample_symbol_info_
 */
 double GLU_get_base_frequency(void);
 
-/**
-* Get next available sample item
-* @param h_glu Handle for the GLU (when the GLU is ACTIVE, it is always equal to GLU_GLOBAL_HANDLE)
-* @param item The sample item
-* @return status (see GLU_get_state_t values description)
+
+
+/** @} */
+
+#endif /*_TSP_GLUESERVER_H*/
+
+/* Might be remove
+int GLU_add_block(GLU_handle_t h_glu,int provider_global_index, xdr_and_sync_type_t type);
+
+int GLU_commit_add_block(GLU_handle_t h_glu);
 */
-GLU_get_state_t GLU_get_next_item(GLU_handle_t h_glu,glu_item_t* item);
+
+/* Has been removed  
+GLU_get_state_t GLU_get_next_item(GLU_handle_t h_glu,glu_item_t* item); */
 
 /**
 * The GLU must forget all bufferized data.
@@ -245,14 +259,4 @@ GLU_get_state_t GLU_get_next_item(GLU_handle_t h_glu,glu_item_t* item);
 * This function is meaningless for a PASSIVE GLU (it should do nothing in this case)
 * @param h_glu Handle for the GLU (when the GLU is ACTIVE, it is always equal to GLU_GLOBAL_HANDLE)
 */
-void GLU_forget_data(GLU_handle_t h_glu);
-
-/** @} */
-
-#endif /*_TSP_GLUESERVER_H*/
-
-/* Might be remove
-int GLU_add_block(GLU_handle_t h_glu,int provider_global_index, xdr_and_sync_type_t type);
-
-int GLU_commit_add_block(GLU_handle_t h_glu);
-*/
+/*void GLU_forget_data(GLU_handle_t h_glu);*/

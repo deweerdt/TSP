@@ -2,16 +2,14 @@
 
 
 build debug destroy print config::
-	@echo "### $(SUBDIRS)"
-	@echo "### $(TSP_TARGET)"
 	@for dir in $(SUBDIRS); \
 	 do \
-		(cd $$dir; $(MAKE) "LEVEL=$$LEVEL---" $@); \
+		(cd $$dir; $(MAKE) -s "LEVEL=$$LEVEL---" $@); \
 		if [ $$? -ne 0 ]; then \
 			exit 1; \
 		fi; \
 	 done
 
 # less verbosity
-#		echo ">>>$(LEVEL) BEGIN (`pwd`/$$dir) [$@]"; \
+
 #		echo ">>>$(LEVEL) END (`pwd`/$$dir)"; \

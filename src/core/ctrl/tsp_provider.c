@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: tsp_provider.c,v 1.20 2004-07-28 13:05:38 mia Exp $
+$Id: tsp_provider.c,v 1.21 2004-09-14 16:48:26 dufy Exp $
 
 -----------------------------------------------------------------------
 
@@ -87,7 +87,6 @@ static int TSP_cmd_line_parser(int* argc, char** argv[])
   char* p;
   int ret = TRUE;
 
-  SFUNC_NAME((TSP_cmd_line_parser));
   STRACE_IO(("-->IN"));
 
   /* FIXME : FUITE */
@@ -244,8 +243,6 @@ int TSP_provider_get_server_number(void)
 void TSP_provider_request_open(const TSP_request_open_t* req_open,
 		      TSP_answer_open_t* ans_open)
 {
-  SFUNC_NAME(TSP_provider_request_open);
-
   GLU_handle_t glu_h;
   char* error_info;
   int i;
@@ -324,7 +321,6 @@ void TSP_provider_request_open(const TSP_request_open_t* req_open,
 
 static void TSP_provider_request_close_priv(channel_id_t channel_id)
 {
-  SFUNC_NAME(TSP_provider_request_close_priv);		
   STRACE_IO(("-->IN"));
 
   TSP_session_destroy_symbols_table_by_channel(channel_id);
@@ -336,7 +332,6 @@ static void TSP_provider_request_close_priv(channel_id_t channel_id)
 void TSP_provider_request_close(const TSP_request_close_t* req_close)
 
 {
-  SFUNC_NAME(TSP_provider_request_close);		
   TSP_LOCK_MUTEX(&X_tsp_request_mutex,);
 
   STRACE_IO(("-->IN"));
@@ -351,13 +346,8 @@ void TSP_provider_request_close(const TSP_request_close_t* req_close)
 void  TSP_provider_request_information(TSP_request_information_t* req_info, 
  			      TSP_answer_sample_t* ans_sample)
 {
-  SFUNC_NAME(tsp_request_information);	
-
-
   int ret;
   TSP_LOCK_MUTEX(&X_tsp_request_mutex,);
-  STRACE_IO(("-->IN"));
-       
   
   ans_sample->version_id = TSP_VERSION;
   ans_sample->channel_id = req_info->channel_id;
@@ -398,23 +388,12 @@ void  TSP_provider_request_information(TSP_request_information_t* req_info,
 
 void TSP_provider_request_sample_free_call(TSP_answer_sample_t* ans_sample)
 {
-  SFUNC_NAME(TSP_provider_request_sample_free_call);
-
-  STRACE_IO(("-->IN"));
-
   TSP_session_create_symbols_table_by_channel_free_call(ans_sample);
-
-  STRACE_IO(("-->OUT"));
 }
 
 void  TSP_provider_request_sample(TSP_request_sample_t* req_info, 
 			 TSP_answer_sample_t* ans_sample)
 {
-  SFUNC_NAME(TSP_request_sample);
-
-
-  int use_global_datapool;
-
   TSP_LOCK_MUTEX(&X_tsp_request_mutex,);	
   STRACE_IO(("-->IN"));
 
@@ -435,13 +414,11 @@ void  TSP_provider_request_sample(TSP_request_sample_t* req_info,
     {
       if(TSP_session_get_symbols_global_index_by_channel(req_info->channel_id, &(req_info->symbols) ))
 	{     
-	  /* Must we use a session or global data pool ? */
-	  use_global_datapool = ( X_glu_is_active ? TRUE : FALSE );
-      
 	  /* The datapool will be created here (if it does not already exist) */
-	  if(TSP_session_create_symbols_table_by_channel(req_info, ans_sample, use_global_datapool)) 
+	  if(TSP_session_create_symbols_table_by_channel(req_info, ans_sample)) 
 	    {
 	      ans_sample->status = TSP_STATUS_OK;
+	      GLU_start(); /* FIXME Y.D : Why start now the thread */
 	    }
 	  else  
 	    {
@@ -470,9 +447,6 @@ void  TSP_provider_request_sample(TSP_request_sample_t* req_info,
 void  TSP_provider_request_sample_init(TSP_request_sample_init_t* req_info, 
 				       TSP_answer_sample_init_t* ans_sample)
 {  
-  SFUNC_NAME(TSP_request_sample_init);
-
-
   int start_local_thread;
   TSP_LOCK_MUTEX(&X_tsp_request_mutex,);    
   STRACE_IO(("-->IN"));
@@ -515,8 +489,6 @@ void  TSP_provider_request_sample_init(TSP_request_sample_init_t* req_info,
 
 static void TSP_provider_request_sample_destroy_priv(channel_id_t channel_id)
 {
-  SFUNC_NAME(TSP_provider_request_sample_destroy_priv);     
-
   int stop_local_thread = ( X_glu_is_active ? FALSE : TRUE );  
   if(!TSP_session_destroy_data_sender_by_channel(channel_id, stop_local_thread))
     {
@@ -527,11 +499,8 @@ static void TSP_provider_request_sample_destroy_priv(channel_id_t channel_id)
 void  TSP_provider_request_sample_destroy(TSP_request_sample_destroy_t* req_info, 
 					  TSP_answer_sample_destroy_t* ans_sample)
 {
-  SFUNC_NAME(TSP_provider_request_sample_destroy);
   TSP_LOCK_MUTEX(&X_tsp_request_mutex,);
 
-  STRACE_IO(("-->IN"));
-    
   ans_sample->version_id = req_info->version_id;
   ans_sample->channel_id = req_info->channel_id;
   ans_sample->status = TSP_STATUS_OK;
@@ -547,17 +516,13 @@ void  TSP_provider_request_sample_destroy(TSP_request_sample_destroy_t* req_info
       ans_sample->status = TSP_STATUS_ERROR_VERSION;
     }
 
-  STRACE_IO(("-->OUT"));
   TSP_UNLOCK_MUTEX(&X_tsp_request_mutex,);
 } /* End of  TSP_provider_request_sample_destroy */
 
 
 void* TSP_provider_garbage_collector_thread(void* dummy)
 {
-   SFUNC_NAME(TSP_provider_garbage_collector_thread);
    channel_id_t channel_id;
-
-   STRACE_IO(("-->IN"));
 
    /* Save memory ! */
    pthread_detach(pthread_self());
@@ -574,14 +539,11 @@ void* TSP_provider_garbage_collector_thread(void* dummy)
        tsp_usleep(TSP_GARBAGE_COLLECTOR_POLL_TIME_US);
      }
 
-   STRACE_IO(("-->OUT"));
 }
 
 
 int TSP_provider_private_init(int* argc, char** argv[])
 {
-  SFUNC_NAME(TSP_provider_private_init);
-
   int ret = TRUE;
   int status;
   pthread_t thread;
@@ -609,7 +571,6 @@ int TSP_provider_private_init(int* argc, char** argv[])
     }
 
   X_tsp_provider_init_ok = ret;
-  STRACE_IO(("-->OUT"));
   
   return ret;
 } /* End of TSP_provider_private_init */

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.h,v 1.10 2002-12-24 14:14:19 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.h,v 1.11 2004-09-14 16:48:26 dufy Exp $
 
 -----------------------------------------------------------------------
 
@@ -70,19 +70,16 @@ void TSP_session_close_session_by_channel(channel_id_t channel_id);
  * FIXME : remove thoses RPC struct for this function
  * @param req_sample The symbols list
  * @param ans_sample The computed answer
- * @param use_global_datapool TRUE is the datapool must be global for the program
  * @return TRUE or FALSE. TRUE = OK.
  */
 int TSP_session_create_symbols_table_by_channel(const TSP_request_sample_t* req_sample,
-						TSP_answer_sample_t* ans_sample,
-						int use_global_datapool);
+						TSP_answer_sample_t* ans_sample);
+
 
 /**
  * Calculate the symbol table.
  * FIXME : remove thoses RPC struct for this function
- * @param req_sample The symbols list
  * @param ans_sample The computed answer
- * @param use_global_datapool TRUE is the datapool must be global for the program
  * @return TRUE or FALSE. TRUE = OK.
  */
 void TSP_session_create_symbols_table_by_channel_free_call(TSP_answer_sample_t* ans_sample);

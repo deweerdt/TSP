@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.c,v 1.14 2004-08-31 09:58:52 dufy Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.c,v 1.15 2004-09-14 16:48:26 dufy Exp $
 
 -----------------------------------------------------------------------
 
@@ -108,9 +108,6 @@ static pthread_mutex_t X_session_list_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 static TSP_session_t* TSP_get_session(channel_id_t channel_id)
 {
-
-  SFUNC_NAME(TSP_get_session);
-
 	
   TSP_session_t* session = 0;
   int i = 0;
@@ -133,8 +130,6 @@ static TSP_session_t* TSP_get_session(channel_id_t channel_id)
 
     }
 	
-  STRACE_IO(("-->OUT"));
-
   return session ;
 }
 
@@ -143,8 +138,6 @@ static void TSP_print_object_session(TSP_session_t* o)
   SFUNC_NAME(TSP_print_object_tsp);
 
 	
-  STRACE_IO(("-->IN"));
-
   /*STRACE_INFO(("----------------------------------------------"));
 
     STRACE_INFO(("SERVER_INFO->INFO='%s'\n", o->server_info.info));
@@ -152,18 +145,12 @@ static void TSP_print_object_session(TSP_session_t* o)
     STRACE_INFO(("----------------------------------------------"));
 
   */
-  STRACE_IO(("-->OUT"));
-
 }
 
 static void TSP_session_close_session(channel_id_t channel_id)
 {
-  SFUNC_NAME(TSP_session_close_session_by_channel);
   int i;
   int ret = FALSE;
-
-  STRACE_IO(("-->IN"));
-
 
   for( i = 0 ;  i < X_session_nb ; i++)
     {
@@ -184,8 +171,6 @@ static void TSP_session_close_session(channel_id_t channel_id)
       STRACE_WARNING(("Unable to find session number %d", channel_id));
     }
 
-  STRACE_IO(("-->OUT"));
-
 }
 
 static  void TSP_session_destroy_symbols_table(TSP_session_t* session)
@@ -204,8 +189,6 @@ static  void TSP_session_destroy_symbols_table(TSP_session_t* session)
 
 void TSP_session_init(void)
 {
-  SFUNC_NAME(TSP_session_init);
-
 		
   STRACE_IO(("-->IN"));
 
@@ -230,8 +213,6 @@ void TSP_session_close_session_by_channel(channel_id_t channel_id)
   int i;
   int ret = FALSE;
 
-  STRACE_IO(("-->IN"));
-
   TSP_LOCK_MUTEX(&X_session_list_mutex,);
 
   TSP_session_close_session(channel_id);
@@ -245,8 +226,6 @@ int TSP_session_get_nb_session(void)
 {
   int client_number;
 
-  SFUNC_NAME(TSP_session_get_nb_session);
-  
   TSP_LOCK_MUTEX(&X_session_list_mutex,-1);
   
   client_number = X_session_nb;
@@ -258,8 +237,6 @@ int TSP_session_get_nb_session(void)
 
 int TSP_add_session(channel_id_t* new_channel_id, GLU_handle_t glu_h)
 {
-  SFUNC_NAME(TSP_add_session);
-
   channel_id_t channel_id = (channel_id_t)(UNDEFINED_CHANNEL_ID);
   
   TSP_sample_symbol_info_list_t symbol_list;
@@ -319,8 +296,6 @@ int TSP_add_session(channel_id_t* new_channel_id, GLU_handle_t glu_h)
 
 void TSP_session_destroy_symbols_table_by_channel(channel_id_t channel_id)
 {
-  SFUNC_NAME(TSP_session_destroy_symbols_table_by_channel);
-
   TSP_session_t* session = 0;
    
   STRACE_IO(("-->IN"));
@@ -338,11 +313,9 @@ void TSP_session_destroy_symbols_table_by_channel(channel_id_t channel_id)
 
 
 int TSP_session_create_symbols_table_by_channel(const TSP_request_sample_t* req_sample,
-						TSP_answer_sample_t* ans_sample,
-						int use_global_datapool)
+						TSP_answer_sample_t* ans_sample)
+
 {
-  SFUNC_NAME(TSP_session_create_symbols_table_by_channel);
-  	
   int ret = FALSE;
   char port[200];
   TSP_session_t* session = 0;
@@ -357,30 +330,14 @@ int TSP_session_create_symbols_table_by_channel(const TSP_request_sample_t* req_
   /* The functions could have been called several time, so clean up first */
   TSP_session_destroy_symbols_table(session);    
     
-  /* Use global datapool, or local datapool ? */
-  if(use_global_datapool)
-    {
-      target_datapool = TSP_global_datapool_get_instance();
-    }
-  else
-    {
-      /* Nop. Create a brand new data pool for each session 
-	 we provide the channel_id of the session to the datapool */
-      target_datapool = TSP_local_datapool_allocate(session->channel_id,
-								    session->session_data->symbols_number,
-								    session->session_data->glu_h);
-      TSP_CHECK_ALLOC(target_datapool,FALSE);
-      /* each session has its own datapool */
-      session->session_data->datapool = target_datapool;
-       
-    }
-    
+  /* Use global datapool */
+  target_datapool = TSP_global_datapool_get_instance();
+
   /* Creating group table*/
   ret  = TSP_group_algo_create_symbols_table(&(req_sample->symbols),
 					     &(ans_sample->symbols), 
 					     &(session->session_data->groups),
 					     target_datapool);   
-
   
   /* Set total group number */
   if(ret)
@@ -394,7 +351,6 @@ int TSP_session_create_symbols_table_by_channel(const TSP_request_sample_t* req_
 
     }
     
-    
   TSP_UNLOCK_MUTEX(&X_session_list_mutex,FALSE);
 
   STRACE_IO(("-->OUT"));
@@ -405,13 +361,7 @@ int TSP_session_create_symbols_table_by_channel(const TSP_request_sample_t* req_
 
 void TSP_session_create_symbols_table_by_channel_free_call(TSP_answer_sample_t* ans_sample)
 {
-    SFUNC_NAME(TSP_session_create_symbols_table_by_channel_free_call);
-    
-    STRACE_IO(("-->IN"));
-
     TSP_group_algo_create_symbols_table_free_call(&ans_sample->symbols);
-
-    STRACE_IO(("-->OUT"));
 }
 
 int  TSP_session_get_sample_symbol_info_list_by_channel(channel_id_t channel_id,
@@ -423,8 +373,6 @@ int  TSP_session_get_sample_symbol_info_list_by_channel(channel_id_t channel_id,
   TSP_session_t* session;
   int ret;
 
-  STRACE_IO(("-->IN"));
-
   TSP_LOCK_MUTEX(&X_session_list_mutex,FALSE);
 	
   TSP_GET_SESSION(session, channel_id, FALSE);
@@ -433,16 +381,12 @@ int  TSP_session_get_sample_symbol_info_list_by_channel(channel_id_t channel_id,
   
   TSP_UNLOCK_MUTEX(&X_session_list_mutex,FALSE);
   
-  STRACE_IO(("-->OUT"));
-    
   return ret;
 
 }
 
 int TSP_session_send_msg_ctrl_by_channel(channel_id_t channel_id, TSP_msg_ctrl_t msg_ctrl)
 {
-  SFUNC_NAME(TSP_session_send_data_msg_ctrl_by_channel);
-
   TSP_session_t* session;
   int ret;
 
@@ -471,8 +415,6 @@ int TSP_session_send_msg_ctrl_by_channel(channel_id_t channel_id, TSP_msg_ctrl_t
 
 int TSP_session_send_data_by_channel(channel_id_t channel_id, time_stamp_t t)
 {
-
-  SFUNC_NAME(TSP_session_send_data_by_channel);
 
   TSP_session_t* session;
   int ret;
@@ -504,9 +446,6 @@ int TSP_session_send_data_by_channel(channel_id_t channel_id, time_stamp_t t)
 
 void TSP_session_all_session_send_data(time_stamp_t t)
 {
-
-  SFUNC_NAME(TSP_session_all_session_send_data);
-    
   int i;
 
   TSP_LOCK_MUTEX(&X_session_list_mutex,);
@@ -535,9 +474,6 @@ void TSP_session_all_session_send_data(time_stamp_t t)
 
 void TSP_session_all_session_send_msg_ctrl(TSP_msg_ctrl_t msg_ctrl)
 {
-
-  SFUNC_NAME(TSP_session_all_session_send_msg_ctrl);
-    
   int i;
 
   TSP_LOCK_MUTEX(&X_session_list_mutex,);
@@ -564,14 +500,9 @@ void TSP_session_all_session_send_msg_ctrl(TSP_msg_ctrl_t msg_ctrl)
 int TSP_session_create_data_sender_by_channel(channel_id_t channel_id, int no_fifo)
 {
 
-  SFUNC_NAME(TSP_session_create_data_sender_by_channel);
-
   TSP_session_t* session;
   int ret = TRUE;
   int ringbuf_size;
-
-
-  STRACE_IO(("-->IN"));
 
   TSP_LOCK_MUTEX(&X_session_list_mutex,FALSE);
 	
@@ -618,7 +549,7 @@ int TSP_session_create_data_sender_by_channel(channel_id_t channel_id, int no_fi
 	     datapool per client */
 	  if (no_fifo)
 	    {
-	      ret = TSP_local_datapool_start_thread(session->session_data->datapool);
+	      ret = 0; /*TSP_local_datapool_start_thread(session->session_data->datapool);*/
 	      if(!ret)
 		{
 		  STRACE_ERROR(("Unable to launch local datapool worker thread"));
@@ -635,20 +566,14 @@ int TSP_session_create_data_sender_by_channel(channel_id_t channel_id, int no_fi
   
   TSP_UNLOCK_MUTEX(&X_session_list_mutex,FALSE);
   
-  STRACE_IO(("-->OUT"));
-    
   return ret;
 
 }
 
 int TSP_session_destroy_data_sender_by_channel(channel_id_t channel_id, int stop_local_thread)
 {
-    SFUNC_NAME(TSP_session_destroy_data_sender_by_channel);
-
   TSP_session_t* session;
   int ret = TRUE;
-
-  STRACE_IO(("-->IN"));
 
   TSP_LOCK_MUTEX(&X_session_list_mutex,FALSE);
 	
@@ -660,15 +585,13 @@ int TSP_session_destroy_data_sender_by_channel(channel_id_t channel_id, int stop
   /* For a pasive server we must wait for the session thread to end */
   if(stop_local_thread)
     {
-      TSP_local_datapool_wait_for_end_thread(session->session_data->datapool);
+      /*TSP_local_datapool_wait_for_end_thread(session->session_data->datapool);*/
     }
   
   TSP_data_sender_destroy(session->session_data->sender);
   session->session_data->sender = 0;
 
   TSP_UNLOCK_MUTEX(&X_session_list_mutex,FALSE);
-
-  STRACE_IO(("-->OUT"));
 
   return ret;
 
@@ -678,12 +601,8 @@ int TSP_session_destroy_data_sender_by_channel(channel_id_t channel_id, int stop
 const char* TSP_session_get_data_address_string_by_channel(channel_id_t channel_id)
 {
 
-  SFUNC_NAME(TSP_session_get_data_address_string_by_channel);
-
   TSP_session_t* session;
   const char* data_address;
-
-  STRACE_IO(("-->IN"));
 
   TSP_LOCK_MUTEX(&X_session_list_mutex,FALSE);
 
@@ -704,10 +623,6 @@ const char* TSP_session_get_data_address_string_by_channel(channel_id_t channel_
 
 int TSP_session_is_consumer_connected_by_channel(channel_id_t channel_id)
 {
-
-  
-  SFUNC_NAME(TSP_session_is_consumer_connected_by_channel);
-					
   TSP_session_t* session;
   int consumer_is_connected;
     
@@ -726,13 +641,10 @@ int TSP_session_is_consumer_connected_by_channel(channel_id_t channel_id)
 int TSP_session_get_symbols_global_index_by_channel(channel_id_t channel_id,
 						   TSP_sample_symbol_info_list_t* symbol_list)
 {
-  SFUNC_NAME(TSP_session_check_requested_symbols_by_channel);
-					
   TSP_session_t* session;
   TSP_sample_symbol_info_list_t origin_sym_list;
   int i,j;
   int ret = TRUE;
-  STRACE_IO(("-->IN"));
     
   TSP_LOCK_MUTEX(&X_session_list_mutex,FALSE);
   TSP_GET_SESSION(session, channel_id, FALSE);
@@ -771,21 +683,15 @@ int TSP_session_get_symbols_global_index_by_channel(channel_id_t channel_id,
    
   TSP_UNLOCK_MUTEX(&X_session_list_mutex,FALSE);
 
-  STRACE_IO(("-->OUT"));
   return ret;
 
 }
 
 int TSP_session_get_garbage_session(channel_id_t* channel_id)
 {
-
-  SFUNC_NAME(TSP_session_get_garbage_session);
-	
   int i;
   int found = FALSE;
 	
-  STRACE_IO(("-->IN"));
-
   TSP_LOCK_MUTEX(&X_session_list_mutex,FALSE);
   
   for( i = 0 ;  i < X_session_nb ; i++)
@@ -802,8 +708,6 @@ int TSP_session_get_garbage_session(channel_id_t* channel_id)
     }
 	
   TSP_UNLOCK_MUTEX(&X_session_list_mutex,FALSE);
-
-  STRACE_IO(("-->OUT"));
 
   return found ;
 }
