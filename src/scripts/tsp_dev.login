@@ -34,13 +34,14 @@ else
 endif
 
 
-
+#Manage multiple mount points
 if ( "$HOST_TARGET" != "dec" ) then
-	setenv HOST_BASE "/home2/breiz/tnt/$HOST_TARGET"
+	set LOCAL_MOUNT="/home2/breiz"
 else
-	setenv HOST_BASE "/net/breiz/home2/breiz/tnt/dec"
+	set LOCAL_MOUNT="/net/breiz/home2/breiz"
 endif
 
+setenv HOST_BASE "$LOCAL_MOUNT/tnt/$HOST_TARGET"
 
 echo "Using HOST_TARGET=$HOST_TARGET"
 
@@ -118,8 +119,8 @@ alias go_scripts 'cd ${TSP_BASE}/src/scripts'
 # CVS 
 ##############################
 unsetenv CVSROOT
-alias lcvs 'cvs -d /net/breiz/home2/breiz/tnt/CVSROOT '
-alias gcvs 'cvs -d /net/breiz/home2/breiz/dev442/CVSROOT'
+alias lcvs "cvs -d $LOCAL_MOUNT/tnt/"
+alias gcvs "cvs -d $LOCAL_MOUNT/dev442/"
 
 
 
