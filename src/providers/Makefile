@@ -1,6 +1,10 @@
-#Just simple makefile for building in all subdirs
+include $(DEVBASE)/make/Makeparams
 
-SUBDIRS = stub \
-	res_reader
+ifeq (${EXCLUDE_PROVIDER},yes)
+	# nothing to do
+else
+	SUBDIRS = stub res_reader
+	include $(DEVBASE)/make/Makesubdirs
+endif
 
-include $(DEVBASE)/make/Makesubdirs
+

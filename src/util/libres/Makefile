@@ -1,5 +1,4 @@
-
-include $(DEVBASE)/make/Makeparams.$(T)
+include $(DEVBASE)/make/Makeparams
 
 RPC=NONE
 
@@ -23,38 +22,19 @@ SOURCES = \
 	var_adres.c \
 	iadr.c
 
-
-
 OBJECTS=$(SOURCES:%.c=%.o) 
-
 
 TARGET=$(DIRLIB)/libtsp_res.a
 
-.PRECIOUS: $(TARGET)
 
-all::
-	$(MAKE) common debug
+# -----------------------------------------------------------
+# No label all:: because it's in Makeparams and calls build::	
+# same thing for clean:: that calls destroy::
+# -----------------------------------------------------------
 
-common:
-	$(MAKE) T=consumer$(D)	build
-	$(MAKE) T=provider$(D)	build	
+build:: $(TARGET)($(OBJECTS))
 
-debug::
-	$(MAKE) D=.debug	common
-
-build : $(TARGET)($(OBJECTS))
-
-
-clean::
-	$(MAKE) clean_common clean_debug
-
-clean_debug:
-	$(MAKE) D=.debug clean_common
-
-clean_common:
-	$(MAKE) T=provider$(D) destroy
-
-destroy :
+destroy::
 	$(RM) 	 $(TARGET) 
 
 

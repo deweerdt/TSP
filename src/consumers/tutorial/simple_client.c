@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: simple_client.c,v 1.1 2003-02-03 17:12:18 tsp_admin Exp $
+$Id: simple_client.c,v 1.2 2003-03-13 18:08:50 yduf Exp $
 
 -----------------------------------------------------------------------
 
@@ -89,15 +89,19 @@ int main(int argc, char *argv[])
 
   /* Get the provider information asked by TSP_consumer_request_information */
   information = TSP_consumer_get_information(providers[0]);
+  if (wanted_sym > information->symbols.len)
+	wanted_sym = information->symbols.len;
 
   /* Will use only the "wanted_sym" first symbols of provider */
   symbols.val = (TSP_consumer_symbol_requested_t*)calloc(wanted_sym, sizeof(TSP_consumer_symbol_requested_t));
+
   symbols.len = wanted_sym;
   for(i = 0 ; i < wanted_sym ; i++)
     {
       symbols.val[i].name = information->symbols.val[i].name;
       symbols.val[i].period = 1;	/* at max frequency */
       symbols.val[i].phase = 0;		/* with no offset */
+      printf ("Asking for symbol = %s\n", symbols.val[i].name);
     }
 
   /*-------------------------------------------------------------------------------------------------------*/ 

@@ -1,4 +1,4 @@
-include $(DEVBASE)/make/Makeparams.$(T)
+include $(DEVBASE)/make/Makeparams
 
 # ---------------------
 # Vars to build project
@@ -6,25 +6,23 @@ include $(DEVBASE)/make/Makeparams.$(T)
 SOURCES = \
 	client_res.c
 
-ADD_LIB =  $(DIRLIB)/libtsp_consumer.a $(DIRLIB)/libtsp_rpc_client.a $(DIRLIB)/libtsp_services.a $(DIRLIB)/libtsp_res.a
+ADD_LIB =  $(DIRLIB)/libtsp_consumer.a  $(DIRLIB)/libtsp_services.a $(DIRLIB)/libtsp_res.a
 
 TARGET=$(DIRBIN)/tsp_res_writer
 
-# ---------------------
-# How to build
-# ---------------------
-all::
-	$(MAKE) T=consumer	build 
+CPPFLAGS += -I../../util/libres
 
-build : $(TARGET) 
+# -----------------------------------------------------------
+# No label all:: because it's in Makeparams and calls build::	
+# same thing for clean:: that calls destroy::
+# -----------------------------------------------------------
+
+build:: $(TARGET) 
 
 $(TARGET): $(SOURCES)
 	$(LINK.c) -o $@ $(SOURCES) $(ADD_LIB) $(LDLIBS)
 
-clean::
-	$(MAKE) T=consumer	destroy
-
-destroy :
+destroy::
 	$(RM) 	 $(TARGET) *.o
 
 include $(DEVBASE)/make/Makerules

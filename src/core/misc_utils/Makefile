@@ -1,9 +1,9 @@
-include $(DEVBASE)/make/Makeparams.$(T)
+include $(DEVBASE)/make/Makeparams
 
-XINC    = tsp_time.h tsp_ringbuf.h  tsp_mtgprof.h
+XINC    = tsp_ringbuf.h  tsp_time.h
+#XINC    = tsp_time.h tsp_ringbuf.h  tsp_mtgprof.h
 
 XSCRIPT = 
-
 
 SOURCES = \
 	tsp_time.c \
@@ -13,40 +13,20 @@ CPPFLAGS += -I.
 
 OBJECTS=$(SOURCES:%.c=%.o) 
 
-
 TARGET=$(DIRLIB)/libtsp_services.a
 
-.PRECIOUS: $(TARGET)
 
-all::
-	$(MAKE) common debug
-common:
-	$(MAKE) T=consumer$(D)	build
-	$(MAKE) T=provider$(D)	build
+# -----------------------------------------------------------
+# No label all:: because it's in Makeparams and calls build::	
+# same thing for clean:: that calls destroy::
+# -----------------------------------------------------------
 
-debug::
-	$(MAKE) D=.debug	common
+build:: $(TARGET)($(OBJECTS))
+	$(MAKE) export_include
 
-
-build : $(TARGET)($(OBJECTS))
-
-
-#----------------------------------
-
-clean::
-	$(MAKE) clean_common clean_debug
-
-clean_debug:
-	$(MAKE) D=.debug clean_common
-
-clean_common:
-	$(MAKE) T=provider$(D) destroy
-	$(MAKE) T=consumer$(D) destroy
-
-destroy :
-	$(RM) 	$(TARGET)
-
-
+destroy::
+	$(RM) 	$(TARGET) $(OBJECTS)
+	$(MAKE) remove_include
 
 
 include $(DEVBASE)/make/Makerules

@@ -53,7 +53,8 @@ AC_MSG_RESULT([Enabled, will be configured])
 AC_CHECK_PROG([JAVA],[java],[`which java`],[notfound],[$PATH],[rej])
 AC_CHECK_PROG([JAVAC],[javac],[`which javac`],[notfound],[$PATH],[rej])
 AC_CHECK_PROG([JAVADOC],[javadoc],[`which javadoc`],[notfound],[$PATH],[rej])
-ENABLED_TSP_TARGET=$ENABLED_TSP_TARGET:java
+JTSP="yes"
+#ENABLED_TSP_TARGET=$ENABLED_TSP_TARGET:java  # java is not a real target
 else
 AC_MSG_RESULT([Disabled, won't be configured])
 fi
@@ -161,25 +162,84 @@ AC_MSG_NOTICE([Enabled TSP target are <$ENABLED_TSP_TARGET>])
 
 AC_ARG_ENABLE(tsp-consumer,   [  --enable-tsp-consumer        map TSP target to the TSP consumer],
 	      TSPCONSUMER=$enableval,
-	      TSPCONSUMER=$HOST_TARGET)
+	      TSPCONSUMER="yes")
 
-AC_ARG_ENABLE(tsp-providerr,   [  --enable-tsp-provider        map TSP target to the TSP provider],
-	      TSPCONSUMER=$enableval,
-	      TSPCONSUMER=$HOST_TARGET)
+AC_ARG_ENABLE(tsp-provider,   [  --enable-tsp-provider        map TSP target to the TSP provider],
+	      TSPPROVIDER=$enableval,
+	      TSPPROVIDER="yes")
 
+############################################################################
+# Choice of compile mode : debug, opt or both
+############################################################################
+AC_ARG_ENABLE(tsp-build-debug,   [  --enable-tsp-build-debug        Select build mode debug],
+	      TSPBUILD_DEBUG=$enableval,
+	      TSPBUILD_DEBUG="yes")
+
+AC_ARG_ENABLE(tsp-build-opt,   [  --enable-tsp-build-opt        Select build mode optimized],
+	      TSPBUILD_OPT=$enableval,
+	      TSPBUILD_OPT="no")
+
+if test "$TSPBUILD_DEBUG" = "yes" ; then
+	if test "$TSPBUILD_OPT" = "yes" ; then
+		TSPBUILD="debug:opt"
+	else
+		TSPBUILD="debug"
+	fi
+else
+	if test "$TSPBUILD_OPT" = "yes" ; then
+		TSPBUILD="opt"
+	else
+		echo "Need to compile etiher debug or opt mode. Debug is selected "
+		TSPBUILD="debug"
+	fi
+fi
+
+
+############################################################################
+# Generate list of compilation
+############################################################################
 # define TSPBASE
 TSP_BASE=`pwd`
+
+list_targets=`echo $ENABLED_TSP_TARGET | sed -e "s/\:/ /g" `
+list_modes=`echo $TSPBUILD | sed -e "s/\:/ /g" `
+dest=$TSP_BASE/make/Makebuild.list
+echo "Generating list of targets and modes build in $dest"
+
+
+echo "# Generated from configure " > $dest
+
+echo "all::" >> $dest
+for target in $list_targets; do
+	for mode in $list_modes; do
+		echo "	\$(MAKE) TSP_TARGET=$target TSP_MODE=$mode		build" >> $dest
+	done
+done
+
+echo "clean::" >> $dest
+for target in $list_targets; do
+	for mode in $list_modes; do
+		echo "	\$(MAKE) TSP_TARGET=$target TSP_MODE=$mode		destroy" >> $dest
+	done
+done
+
+
+############################################################################
 
 # 
 #  Substitute Shell VARIABLES to OUTPUT VARIABLES
 AC_SUBST(HOST_TARGET)
 AC_SUBST(TSP_BASE)
 AC_SUBST(ENABLED_TSP_TARGET)
+AC_SUBST(JTSP)
+AC_SUBST(TSPCONSUMER)
+AC_SUBST(TSPPROVIDER)
 
 
 # Config for outputed files
 AC_CONFIG_FILES([src/scripts/tsp_dev.login
 		src/scripts/tsp_dev.login.sh
+		make/Makeparams
 		src/doxy/Makefile:src/doxy/doc.mk])
 
 dnl AC_CONFIG_FILES([doc/latex/Makefile

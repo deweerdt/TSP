@@ -3,8 +3,8 @@
 # Find host type
 ##############################
 
-export HOST_TARGET=@HOST_TARGET@
-echo "Using host target <$HOST_TARGET>"
+export HOST_ARCH=@HOST_TARGET@
+echo "Using host target <$HOST_ARCH>"
 
 # %%tsp_base%% will be set by the configure script 
 export TSP_BASE=@TSP_BASE@
@@ -15,7 +15,7 @@ echo "Using TSP_BASE=$TSP_BASE"
 ##############################
 
 export HOME_EXEC_BASE=$TSP_BASE/exec
-export HOME_EXEC_CURRENT=$HOME_EXEC_BASE/current
+export HOME_EXEC_CURRENT=$HOME_EXEC_BASE/current/${HOST_ARCH}/debug
 
 
 ##############################
@@ -23,7 +23,7 @@ export HOME_EXEC_CURRENT=$HOME_EXEC_BASE/current
 ##############################
 
 
-export PATH=${TSP_BASE}/src/scripts:${HOME_EXEC_CURRENT}/bin.consumer:${HOME_EXEC_CURRENT}/bin.provider:${PATH}
+export PATH=${TSP_BASE}/src/scripts:${HOME_EXEC_CURRENT}/bin:${PATH}
 
 
 ##############################
@@ -40,13 +40,10 @@ fi
 echo "Using STRACE_DEBUG=$STRACE_DEBUG"
 
 
-alias go_ec='cd ${HOME_EXEC_CURRENT}/bin.consumer'
-alias go_ecd='cd ${HOME_EXEC_CURRENT}/bin.consumer.debug'
-alias go_ep='cd ${HOME_EXEC_CURRENT}/bin.provider'
-alias go_epd='cd ${HOME_EXEC_CURRENT}/bin.provider.debug'
+alias go_bin='cd ${HOME_EXEC_CURRENT}/bin'
 alias go_tsp='cd ${TSP_BASE}'
 alias go_scripts='cd ${TSP_BASE}/src/scripts'
-alias go_tests='cd ${TSP_BASE}/src/core/tests'
+alias go_tests='cd ${TSP_BASE}/tests'
 
 
 

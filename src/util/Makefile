@@ -1,7 +1,9 @@
 include $(DEVBASE)/make/Makeproject
 
-SUBDIRS =  \
-	libcalc \
-	libres 
+ifeq (${HOST_TARGET},java)
+#	SUBDIRS = 
+else
+	SUBDIRS = libcalc libres
+endif
 
 include $(DEVBASE)/make/Makesubdirs

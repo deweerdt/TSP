@@ -1,6 +1,7 @@
-include $(DEVBASE)/make/Makeparams.$(T)
+include $(DEVBASE)/make/Makeparams
 
-XINC = tsp_rpc.h tsp_client.h tsp_datastruct.h tsp_server.h
+XINC = tsp_rpc.h tsp_datastruct.h  # FIXME : shoudl not need to export tsp_datastruct.h
+#XINC = tsp_rpc.h tsp_client.h tsp_datastruct.h tsp_server.h
 
 RPC = tsp_rpc
 
@@ -11,38 +12,27 @@ RPC_CLIENT_SRC = tsp_client.c tsp_rpc_confprogid.c
 RPC_SERVER_SRC = tsp_server.c tsp_rpc_confprogid.c
 
 
-all::
-	$(MAKE) common debug
-common:
-	$(MAKE) T=provider$(D) rpcgen
-	$(MAKE) T=provider$(D) RPC_LIB_SUFFIX=_server rpc.server.lib
-	$(MAKE) T=consumer$(D) RPC_LIB_SUFFIX=_client rpc.client.lib 
+# -----------------------------------------------------------
+# No label all:: because it's in Makeparams and calls build::	
+# same thing for clean:: that calls destroy::
+# -----------------------------------------------------------
 
-debug::
-	$(MAKE) D=.debug	common
-
-
-
-clean::
-	$(MAKE) destroy clean_debug
-
-clean_debug:
-	$(MAKE) D=.debug destroy
+build::
+	$(MAKE) rpcgen
+	if [ "${BUILD_PROVIDER}" = "yes" ]; then \
+		$(MAKE) RPC_LIB_SUFFIX=tsp_provider rpc.server.lib ;  \
+	fi ;\
+	if [ "${BUILD_CONSUMER}" = "yes" ]; then \
+		$(MAKE) RPC_LIB_SUFFIX=tsp_consumer rpc.client.lib;   \
+	fi
+	$(MAKE) export_include
 
 destroy::
-	$(MAKE) T=provider$(D) RPC_LIB_SUFFIX=_client rpc.clean
-	$(MAKE) T=consumer$(D) RPC_LIB_SUFFIX=_server rpc.clean
-
-
+	$(MAKE) RPC_LIB_SUFFIX=tsp_consumer rpc.clean
+	$(MAKE) RPC_LIB_SUFFIX=tsp_provider rpc.clean
+	$(MAKE) remove_include
 
 include $(DEVBASE)/make/Makerules
-
-
-
-
-
-
-
 
 
 

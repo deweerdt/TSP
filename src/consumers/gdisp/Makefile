@@ -1,4 +1,4 @@
-include $(DEVBASE)/make/Makeparams.$(T)
+include $(DEVBASE)/make/Makeparams
 
 # ---------------------
 # Vars to build project
@@ -8,18 +8,13 @@ TARGET=$(DIRBIN)/tsp_gdisp
 # ---------------------
 # How to build
 # ---------------------
-all::
-	$(MAKE) T=consumer	build 
 
-build : $(TARGET)
+build::$(TARGET)
 
-$(TARGET) : $(HOST_TARGET)/tsp_gdisp
-	cp $(HOST_TARGET)/tsp_gdisp $(TARGET)
+$(TARGET) : $(TSP_TARGET)/tsp_gdisp
+	cp $(TSP_TARGET)/tsp_gdisp $(TARGET)
 
-clean::
-	$(MAKE) T=consumer	destroy
-
-destroy :
+destroy::
 	$(RM)	$(TARGET) 
 
 include $(DEVBASE)/make/Makerules

@@ -1,34 +1,34 @@
-include $(DEVBASE)/make/Makeproject
-all::
-	$(MAKE) dirs
+include $(DEVBASE)/make/Makeparams
 
-dirs:
-	- mkdir -p $(BINBASE)
-	- chmod a+ws $(BINBASE)
+
+ifeq (${BUILD_JAVA},yes)
+	SUBDIRS = core jcore util providers consumers
+else
+	SUBDIRS = core util providers consumers
+endif
+
+
+# -----------------------------------------------------------
+# No label all:: because it's in Makeparams and calls build::	
+# same thing for clean:: that calls destroy::
+# -----------------------------------------------------------
+
+build::
+	- mkdir -p $(DIRBIN)
+	- chmod a+ws $(DIRBIN)
 	- mkdir -p $(DIRINC)
-	- mkdir -p $(LIBBASE)
-	- mkdir -p $(LIBBASE)/lib.consumer
-	- mkdir -p $(LIBBASE)/lib.consumer.debug
-	- mkdir -p $(LIBBASE)/lib.provider
-	- mkdir -p $(LIBBASE)/lib.provider.debug
+	- mkdir -p $(DIRLIB)
 	- mkdir -p $(DIRSCRIPT)
-	- mkdir -p $(BINBASE)/bin.consumer
-	- mkdir -p $(BINBASE)/bin.consumer.debug
-	- mkdir -p $(BINBASE)/bin.provider
-	- mkdir -p $(BINBASE)/bin.provider.debug
 	- mkdir -p $(CLASSBASE)
 	- mkdir -p $(JARBASE)
 
-clean::
+destroy::
 	find . -name .make.state -exec rm -f {} \; -print
-	$(RM) -r $(BINBASE).old
-	mv -i $(BINBASE) $(BINBASE).old
+	$(RM) -r $(DIRBASE).old
+	if [ -d $(DIRBASE) ] ; then \
+		mv -i $(DIRBASE) $(DIRBASE).old ; \
+	fi
 
-SUBDIRS =  \
-	core \
-	jcore \
-	util \
-	providers \
-	consumers 
 
 include $(DEVBASE)/make/Makesubdirs
+

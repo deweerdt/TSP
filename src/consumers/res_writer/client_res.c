@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: client_res.c,v 1.3 2003-02-27 15:38:34 tsp_admin Exp $
+$Id: client_res.c,v 1.4 2003-03-13 18:08:50 yduf Exp $
 
 -----------------------------------------------------------------------
 
@@ -37,9 +37,8 @@ Purpose   : Simple consummer for testing groups configuration
 
 #include "tsp_sys_headers.h"
 #include <signal.h>
-#include "tsp_prjcfg.h"
+#include "tsp_prjcfg.h" 
 #include "tsp_consumer.h"
-#include "tsp_time.h"
 #include "libUTIL.h"
 
 

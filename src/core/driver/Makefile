@@ -1,6 +1,7 @@
-include $(DEVBASE)/make/Makeparams.$(T)
+include $(DEVBASE)/make/Makeparams
 
-XINC    = tsp_consumer.h  tsp_group.h tsp_group_data.h \
+XINC    = tsp_consumer.h  
+#XINC    = tsp_consumer.h  tsp_group.h tsp_group_data.h \
           tsp_stream_receiver.h tsp_data_receiver.h tsp_sample_ringbuf.h 
 
 XSCRIPT = 
@@ -12,40 +13,23 @@ SOURCES = \
     tsp_stream_receiver.c \
     tsp_data_receiver.c  
 
-
-
 OBJECTS=$(SOURCES:%.c=%.o) 
-
 
 TARGET=$(DIRLIB)/libtsp_consumer.a
 
-.PRECIOUS: $(TARGET)
+CPPFLAGS += -I../rpc -I../misc_utils
 
-all::
-	$(MAKE) common debug
-common:
-	$(MAKE) T=consumer$(D)	build
+# -----------------------------------------------------------
+# No label all:: because it's in Makeparams and calls build::	
+# same thing for clean:: that calls destroy::
+# -----------------------------------------------------------
 
-debug::
-	$(MAKE) D=.debug	common
+build:: $(TARGET)($(OBJECTS))
+	$(MAKE) export_include
 
-build : $(TARGET)($(OBJECTS))
-
-
-
-
-
-clean::
-	$(MAKE) clean_common clean_debug
-
-clean_debug:
-	$(MAKE) D=.debug clean_common
-
-clean_common:
-	$(MAKE) T=provider$(D) destroy
-
-destroy :
+destroy::
 	$(RM) 	 $(TARGET) 
+	$(MAKE) remove_include
 
 
 
