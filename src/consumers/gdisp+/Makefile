@@ -22,11 +22,16 @@ SOURCES = \
 	gdisp_defaultPlot.c    \
 	gdisp_plot2D.c         \
 	gdisp_plotText.c       \
-	gdisp_plotOrbital.c    \
 	gdisp_pointArray.c     \
 	gdisp_pixmaps.c        \
-	gdisp_openglUtils.c    \
-	gdisp_utils.c
+	gdisp_utils.c          
+
+ifeq (${USABLE_OPENGL},yes)
+SOURCES += \
+	gdisp_plotOrbital.c    \
+	gdisp_openglUtils.c    
+CPPFLAGS += -D_USE_OPENGL
+endif
 
 OBJECTS = $(SOURCES:%.c=$(DIROBJ)/%.o) 
 
@@ -37,7 +42,9 @@ TARGET=$(DIRBIN)/tsp_gdisp+
 CPPFLAGS += `gtk-config --cflags gtk`  
 LDFLAGS  += `gtk-config --libs ` 
 LDFLAGS  += `xml2-config --libs ` 
+ifeq (${USABLE_OPENGL},yes)
 LDFLAGS  += -lGL -lGLU
+endif
 
 # ---------------------
 # How to build

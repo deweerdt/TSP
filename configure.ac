@@ -4,7 +4,7 @@
 # THIS FILE NEED TO BE PROCESSED WITH AUTOCONF
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # 
-AC_INIT([the Transport Sampling Protocol], [0.6.4], [tsp@astrium.eads.net], [tsp])
+AC_INIT([the Transport Sampling Protocol], [0.6.4a], [tsp@astrium.eads.net], [tsp])
 
 echo "**********************************************************"
 echo "*  TSP: AC_PACKAGE_NAME, version AC_PACKAGE_VERSION       "
@@ -33,11 +33,10 @@ ENABLED_TSP_TARGET="host"
 ##########################
 # Setup C part of TSP
 ##########################
-
+AC_LANG(C)
 ### You may force the C compiler to be used by configure ###
 AC_ARG_WITH(host-cc,         [  --with-host-cc=C_COMPILER         chose the TSP host C compiler],
             CC=$withval,)
-
 AC_ARG_ENABLE(ctsp,   [  --enable-ctsp                enable C TSP library build],
 	      CTSP=$enableval,
 	      CTSP="yes")
@@ -47,6 +46,32 @@ AC_MSG_RESULT([Enabled, will be configured])
 AC_PROG_CC(gcc cc icc kcc)
 else
 AC_MSG_RESULT([Disabled, won't be configured])
+fi
+
+
+####################################################################
+# C part has been enabled verify libraries, headers and functions 
+####################################################################
+if test "$CTSP" = "yes"; then
+# Checks for libraries.
+# Check for pthread (-lpthread)
+AC_HAVE_LIBRARY([pthread],,AC_MSG_WARN([Won't be able to build C version of TSP]))
+# Check for math (-lm) for src/util/libcalc
+AC_HAVE_LIBRARY([m],,AC_MSG_WARN([Won't be able to build src/util/libcalc]))
+
+# Checks for header files.
+AC_HEADER_STDC
+AC_CHECK_HEADERS([unistd.h errno.h fcntl.h memory.h netdb.h netinet/in.h stdlib.h string.h strings.h sys/param.h sys/socket.h sys/time.h])
+
+# Checks for typedefs, structures, and compiler characteristics.
+AC_C_CONST
+AC_HEADER_TIME
+
+# Checks for library functions.
+AC_FUNC_MALLOC
+AC_FUNC_MMAP
+AC_TYPE_SIGNAL
+AC_CHECK_FUNCS([bzero gethostbyname gethostname gethrtime gettimeofday memset munmap socket strdup strstr strtol])
 fi
 ##########################
 ### End of C Setup     ###
@@ -118,6 +143,36 @@ fi
 ### End of GTK devel check   ###
 ################################
 
+######################################
+# OpenGL part for TSP consumers
+######################################
+AC_ARG_ENABLE(openGL,   [  --enable-openGL              enable openGL use for TSP consumers  (this feature is ALPHA)],
+	      OPENGLOK=$enableval,
+	      OPENGLOK="no")
+AC_MSG_CHECKING([enabling OpenGL use])
+if test "$OPENGLOK" = "yes"; then
+  AC_MSG_RESULT([Enabled, will be configured])
+  AC_CHECK_HEADERS([GL/gl.h GL/glu.h],[GL_OK="yes"],[GL_OK="no"])
+  AC_MSG_CHECKING([usable OpenGL installation])
+  if test "$GL_OK" = "yes"; then
+     AC_MSG_RESULT([OK, Basic OpenGL headers ok will enable openGL use in TSP])
+  else 
+     AC_MSG_RESULT([NOK, Basic OpenGL headers NOT disabling openGL use in TSP])
+  fi
+  AC_CHECK_HEADERS([GL/glut.h],[GLUT_OK="yes"],[GLUT_OK="no"])
+  AC_MSG_CHECKING([usable OpenGL/GLUT installation])
+  if test "$GLUT_OK" = "yes"; then
+     AC_MSG_RESULT([OK, GLUT OpenGL headers ok will enable GLUT openGL use in TSP])
+  else 
+     AC_MSG_RESULT([NOK, GLUT OpenGL headers NOT disabling GLUT openGL use in TSP])
+  fi
+else
+  AC_MSG_RESULT([Disabled, won't be configured])
+fi
+#######################################
+### End OpenGL part for TSP consumers
+#######################################
+
 ################################
 # BlackBoard part of TSP
 ################################
@@ -163,41 +218,20 @@ AC_ARG_WITH(host-cxx,        [  --with-host-cxx=CXX_COMPILER      chose the TSP 
 AC_ARG_ENABLE(cxxtsp, [  --enable-cxxtsp              enable TSP C++ binding],
 	      CXXTSP=$enableval,
 	      CXXTSP="no")
+
 AC_MSG_CHECKING([C++ binding the TSP])
 if test "$CXXTSP" = "yes"; then
 AC_MSG_RESULT([Enabled, will be configured])
+AC_LANG_PUSH(C++)
 AC_PROG_CXX(g++ CC)
+AC_LANG_POP(C++)
 else
 AC_MSG_RESULT([Disabled, won't be configured])
 fi
+
 ##########################
 ### End of C++ Setup   ###
 ##########################
-
-####################################################################
-# C part has been enabled verify libraries, headers and functions 
-####################################################################
-if test "$CTSP" = "yes"; then
-# Checks for libraries.
-# Check for pthread (-lpthread)
-AC_HAVE_LIBRARY([pthread],,AC_MSG_WARN([Won't be able to build C version of TSP]))
-# Check for math (-lm) for src/util/libcalc
-AC_HAVE_LIBRARY([m],,AC_MSG_WARN([Won't be able to build src/util/libcalc]))
-
-# Checks for header files.
-AC_HEADER_STDC
-AC_CHECK_HEADERS([errno.h fcntl.h memory.h netdb.h netinet/in.h stdlib.h string.h strings.h sys/param.h sys/socket.h sys/time.h unistd.h])
-
-# Checks for typedefs, structures, and compiler characteristics.
-AC_C_CONST
-AC_HEADER_TIME
-
-# Checks for library functions.
-AC_FUNC_MALLOC
-AC_FUNC_MMAP
-AC_TYPE_SIGNAL
-AC_CHECK_FUNCS([bzero gethostbyname gethostname gethrtime gettimeofday memset munmap socket strdup strstr strtol])
-fi
 
 #####################|##|############################|############
 # Get the system type from AC
@@ -376,13 +410,14 @@ AC_SUBST(LDLIBS)
 AC_SUBST(TSP_BASE)
 AC_SUBST(ENABLED_TSP_TARGET)
 AC_SUBST(BB)
+AC_SUBST(GL_OK)
+AC_SUBST(GLUT_OK)
 AC_SUBST(SCRIPT_BINDING)
 AC_SUBST(TSPCONSUMER)
 AC_SUBST(XML2_CONFIG_USER)
 AC_SUBST(GTK_BASED_CONSUMER)
 AC_SUBST(LEX_YACC_PARSER)
 AC_SUBST(TSPPROVIDER)
-
 
 
 # Config for outputed files

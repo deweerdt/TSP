@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_kernel.c,v 1.9 2005-03-08 21:28:17 esteban Exp $
+$Id: gdisp_kernel.c,v 1.10 2005-03-25 23:42:08 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -345,7 +345,9 @@ gdisp_createKernel (gint    argc,
       break;
 
     case GD_PLOT_ORBITAL :
+#if _USE_OPENGL
       gdisp_initOrbitalPlotSystem(kernel,plotSystem);
+#endif
       break;
 
     default :
