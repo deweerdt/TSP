@@ -10,6 +10,6 @@ DIRSCRIPT = $(DEVBASE)/exec/DEV/scripts
 BINBASE = $(DEVBASE)/exec/DEV
 LIBBASE = $(DEVBASE)/exec/DEV/.lib
 
-
+RPCGEN=rpcgen
 
 CPPFLAGS += -I$(DIRINC)

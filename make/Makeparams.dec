@@ -6,8 +6,8 @@ include $(DEVBASE)/make/Makeproject
 
 # Default tools
 # -------------
-# Using standard tools
 
+RPCGEN=$(DEVBASE)/tools/rpcgen/vxrpcgen
 
 # Default options
 # ---------------

@@ -1,8 +1,9 @@
 # Makerules.rpc
 
-RPCGEN = rpcgen
-#RPCGEN.VX = $(DEVBASE)/tools/rpcgen/vxrpcgen
-RPCGEN.UNIX = /usr/bin/rpcgen
+#default RPCGEN is defined in Makeproject
+
+#RPCGEN=$(DEVBASE)/tools/rpcgen/vxrpcgen
+RPCGEN.UNIX = $(RPCGEN)
 RPCGEN.VX = $(RPCGEN.UNIX)
 
 #---------------------------------------------------------------#
