@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_rpc.x,v 1.7 2002-09-19 08:37:04 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_rpc.x,v 1.8 2002-10-01 15:45:07 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -15,19 +15,31 @@ Purpose   :
 -----------------------------------------------------------------------
  */
 
+enum TSP_status_t 
+{
+	TSP_STATUS_OK,
+	TSP_STATUS_ERROR_UNKNOWN,
+	TSP_STATUS_ERROR_SEE_STRING,	
+	TSP_STATUS_ERROR_VERSION	
+	
+};
 
 
 struct TSP_answer_open_t
 {
 	int version_id;
 	unsigned int channel_id;
+	TSP_status_t status;
+	string status_str<>;
 
-	/* int status; FIXME : implementer, mettre un enum ?*/
 };
 
 struct TSP_request_open_t
 {
 	int version_id;
+	string stream_init<>;
+	int use_stream_init;
+
 };
 
 struct TSP_request_close_t
@@ -93,7 +105,7 @@ typedef TSP_sample_symbol_info_t TSP_sample_symbol_info_list_t<>;
 
 /*
 FIXME : utiliser...
-struct TSP_endianity_t 
+enum TSP_endianity_t 
 {
 	TSP_PSEUDO_XDR_LITTLE_ENDIAN,
 	TSP_XDR_BIG_ENDIAN
