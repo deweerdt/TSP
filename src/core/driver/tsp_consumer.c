@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.9 2002-10-09 08:23:27 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.10 2002-10-24 13:28:28 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -23,6 +23,7 @@ Purpose   : Main implementation for the TSP consumer library
 #include "tsp_group.h"
 #include "tsp_data_receiver.h"
 #include "tsp_sample_ringbuf.h"
+#include "tsp_datastruct.h"
 
 
 /* Pool time for network data read (µs) */
@@ -92,7 +93,7 @@ struct TSP_otsp_t
    * List of symbols avaible in the producer.
    * The consumer must chose its symbols in this list
    */
-  TSP_sample_symbol_info_list_t symbols;
+  TSP_consumer_information_t information;
   
   /**
    * Groups table.
@@ -164,8 +165,8 @@ static TSP_otsp_t* TSP_new_object_tsp(	TSP_server_t server,
   /* Init */
   obj->channel_id = UNDEFINED_CHANNEL_ID;
 	
-  obj->symbols.TSP_sample_symbol_info_list_t_len = 0;
-  obj->symbols.TSP_sample_symbol_info_list_t_val = 0;
+  obj->information.symbols.len = 0;
+  obj->information.symbols.val = 0;
   obj->groups = 0;
   obj->receiver = 0;
   obj->sample_fifo = NULL;
@@ -541,6 +542,7 @@ int TSP_consumer_request_open(TSP_provider_t provider, int custom_argc, char* cu
 	      STRACE_WARNING(("Provider unknown error"));
 	      break;
 	    default:
+	      STRACE_ERROR(("The provider sent an unreferenced error. It looks like a bug."));
 	      break;
 	    }
 	}
@@ -645,10 +647,10 @@ int TSP_consumer_request_information(TSP_provider_t provider)
 	  ret = TRUE;
 	  break;
 	case TSP_STATUS_ERROR_UNKNOWN :
-	  STRACE_ERROR(("Provider unknown error"));
+	  STRACE_WARNING(("Provider unknown error"));
 	  break;
 	default:
-	  STRACE_ERROR(("Provider unknown error"));
+	  STRACE_ERROR(("The provider sent an unreferenced error. It looks like a bug."));
 	  break;
 	}
     }
@@ -660,26 +662,29 @@ int TSP_consumer_request_information(TSP_provider_t provider)
 	ans_sample->symbols.TSP_sample_symbol_info_list_t_len;
       unsigned int i;
 	
-      otsp->symbols.TSP_sample_symbol_info_list_t_len = symbols_number;
+
+      otsp->information.base_frequency = ans_sample->base_frequency;
+      otsp->information.max_period = ans_sample->max_period;
+      otsp->information.max_client_number = ans_sample->max_client_number;
+      otsp->information.current_client_number = ans_sample->current_client_number;
 			
       STRACE_DEBUG(("Total number of symbols found = %d",symbols_number));
+      STRACE_INFO(("Provider base frequency = %f Hz", ans_sample->base_frequency));
 
-			
-      otsp->symbols.TSP_sample_symbol_info_list_t_val = 
-	(TSP_sample_symbol_info_t* )calloc(1,symbols_number*sizeof(TSP_sample_symbol_info_t));
-      TSP_CHECK_ALLOC(otsp->symbols.TSP_sample_symbol_info_list_t_val, FALSE);
-
+      /* allocate memory to store those symbols */
+      otsp->information.symbols.len = symbols_number;
+      otsp->information.symbols.val = 
+	(TSP_consumer_symbol_info_t* )calloc(symbols_number,sizeof(TSP_consumer_symbol_info_t));
+      TSP_CHECK_ALLOC(otsp->information.symbols.val, FALSE);
 		
       for(i = 0 ; i< symbols_number ; i++)
-	{
-	  otsp->symbols.TSP_sample_symbol_info_list_t_val[i] = 
-	    ans_sample->symbols.TSP_sample_symbol_info_list_t_val[i];
-				
-	  otsp->symbols.TSP_sample_symbol_info_list_t_val[i].name =
-	    strdup(ans_sample->symbols.TSP_sample_symbol_info_list_t_val[i].name);
-				
-	  TSP_CHECK_ALLOC(otsp->symbols.TSP_sample_symbol_info_list_t_val[i].name, FALSE);
-			
+	{		
+	  /* FIXME : ajouter les autres valeurs */
+	  otsp->information.symbols.val[i].index =
+	    ans_sample->symbols.TSP_sample_symbol_info_list_t_val[i].provider_global_index;
+	  otsp->information.symbols.val[i].name =
+	    strdup(ans_sample->symbols.TSP_sample_symbol_info_list_t_val[i].name);				
+	  TSP_CHECK_ALLOC(otsp->information.symbols.val[i].name, FALSE);			
 	}
         
     }
@@ -703,7 +708,7 @@ int TSP_consumer_request_information(TSP_provider_t provider)
  * @param provider the provider on which apply the action
  * @return The symbol list.
  */
-TSP_sample_symbol_info_list_t*  TSP_consumer_get_information(TSP_provider_t provider)
+const TSP_consumer_information_t*  TSP_consumer_get_information(TSP_provider_t provider)
 {
   SFUNC_NAME(TSP_get_provider_information);
 
@@ -718,7 +723,7 @@ TSP_sample_symbol_info_list_t*  TSP_consumer_get_information(TSP_provider_t prov
   STRACE_IO(("-->OUT"));
 
 	
-  return &(otsp->symbols);
+  return &(otsp->information);
 	
 
 }
@@ -730,14 +735,15 @@ TSP_sample_symbol_info_list_t*  TSP_consumer_get_information(TSP_provider_t prov
  * @param provider the provider on which apply the action
  * @return The action result (TRUE or FALSE)
  */
-int TSP_consumer_request_sample(TSP_request_sample_t* req_sample, TSP_provider_t provider)
+int TSP_consumer_request_sample(TSP_provider_t provider, TSP_consumer_symbol_requested_list_t* symbols)
 {
-  SFUNC_NAME(TSP_request_provider_sample);
+  SFUNC_NAME(TSP_consumer_request_sample);
 
 	
   TSP_otsp_t* otsp = (TSP_otsp_t*)provider;
   int ret = FALSE;
   TSP_answer_sample_t* ans_sample = 0;
+  TSP_request_sample_t req_sample;
   int i;
 	
   STRACE_IO(("-->IN"));
@@ -745,11 +751,25 @@ int TSP_consumer_request_sample(TSP_request_sample_t* req_sample, TSP_provider_t
 	
   TSP_CHECK_SESSION(otsp, FALSE);
 	
-  req_sample->version_id = TSP_VERSION;
-  req_sample->channel_id = otsp->channel_id;
+  req_sample.version_id = TSP_VERSION;
+  req_sample.channel_id = otsp->channel_id;
+  req_sample.symbols.TSP_sample_symbol_info_list_t_len = symbols->len;
+  req_sample.symbols.TSP_sample_symbol_info_list_t_val = 
+    (TSP_sample_symbol_info_t*)calloc(symbols->len, sizeof(TSP_sample_symbol_info_t));
+  TSP_CHECK_ALLOC(req_sample.symbols.TSP_sample_symbol_info_list_t_val, FALSE);
+
+  for(i = 0 ; i <  symbols->len ; i++)
+    {
+      /* FIXME ; ajouter les membres maquants */
+      req_sample.symbols.TSP_sample_symbol_info_list_t_val[i].provider_global_index = symbols->val[i].index;
+      req_sample.symbols.TSP_sample_symbol_info_list_t_val[i].period = symbols->val[i].period;
+      req_sample.symbols.TSP_sample_symbol_info_list_t_val[i].phase = symbols->val[i].phase;
+    }
 	
-  ans_sample = TSP_request_sample(req_sample, otsp->server);
-    
+  ans_sample = TSP_request_sample(&req_sample, otsp->server);
+
+  /*free allocated request sample symbol list */
+  free(req_sample.symbols.TSP_sample_symbol_info_list_t_val);  
        
   if( 0 != ans_sample)
     {      
@@ -760,10 +780,10 @@ int TSP_consumer_request_sample(TSP_request_sample_t* req_sample, TSP_provider_t
 	  ret = TRUE;
 	  break;
 	case TSP_STATUS_ERROR_UNKNOWN :
-	  STRACE_ERROR(("Provider unknown error"));
+	  STRACE_WARNING(("Provider unknown error"));
 	  break;
 	default:
-	  STRACE_ERROR(("Provider unknown error"));
+	  STRACE_ERROR(("The provider sent an unreferenced error. It looks like a bug."));
 	  break;
 	}
 
