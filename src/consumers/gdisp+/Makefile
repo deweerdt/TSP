@@ -3,7 +3,7 @@ include $(DEVBASE)/make/Makeparams
 # ---------------------
 # Vars to build project
 # ---------------------
-
+CC=gcc
 SOURCES = \
 	gdisp_main.c        \
 	gdisp_kernel.c      \

@@ -60,6 +60,8 @@ typedef struct _DoublePointArray
 
 } DoublePointArray_T;
 
+/* FIXME : What is ths duplicate struct ?*/
+#if 0
 typedef struct _DoublePointArrayPtr
 {
 
@@ -71,6 +73,7 @@ typedef struct _DoublePointArrayPtr
   guint          maxSamples;  // maximum samples possible to be added.
 
 } DoublePointArrayPtr_T;
+#endif
 
 /*
  * Return a DoublePoint sample element form an Array and an index.

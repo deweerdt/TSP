@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_kernel.h,v 1.1 2004-02-04 20:32:09 esteban Exp $
+$Id: gdisp_kernel.h,v 1.2 2004-02-18 09:49:15 dufy Exp $
 
 -----------------------------------------------------------------------
 
@@ -44,6 +44,7 @@ File      : Graphic Tool Kernel Interface.
 #define __KERNEL_H__
 
 #include <gtk/gtk.h>
+#include <pthread.h>
 
 
 /*

@@ -65,7 +65,6 @@ void
 dparray_addSample (DoublePointArray_T *pArray,
 		   DoublePoint_T      *point)
 {
-
   pArray->samples[pArray->current] = *point;
   pArray->current = (pArray->current + 1 ) % pArray->maxSamples;
 
