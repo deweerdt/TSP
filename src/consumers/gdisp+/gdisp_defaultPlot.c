@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_defaultPlot.c,v 1.3 2004-05-11 19:47:36 esteban Exp $
+$Id: gdisp_defaultPlot.c,v 1.4 2004-10-22 20:17:34 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -754,8 +754,7 @@ static void
 gdisp_addSymbolsToDefaultPlot (Kernel_T *kernel,
 			       void     *data,
 			       GList    *symbolList,
-			       guint     xDrop,
-			       guint     yDrop)
+			       guchar    zoneId)
 {
 
   /*
@@ -873,6 +872,21 @@ gdisp_getDefaultPlotPeriod (Kernel_T *kernel,
 
 
 /*
+ * Get back the zones that have been defined on that plot.
+ */
+static GArray*
+gdisp_getDefaultPlotDropZones (Kernel_T *kernel)
+{
+
+  /*
+   * No zones on default plots.
+   */
+  return (GArray*)NULL;
+
+}
+
+
+/*
  * This procedure is called whenever all symbols have been time-tagged
  * by the corresponding provider sampling thread.
  * The last value of all symbols can now be retreived by the graphic plot.
@@ -925,6 +939,7 @@ gdisp_initDefaultPlotSystem (Kernel_T     *kernel,
   plotSystem->psGetInformation    = gdisp_getDefaultPlotInformation;
   plotSystem->psTreatSymbolValues = gdisp_treatDefaultPlotSymbolValues;
   plotSystem->psGetPeriod         = gdisp_getDefaultPlotPeriod;
+  plotSystem->psGetDropZones      = gdisp_getDefaultPlotDropZones;
 
 }
 

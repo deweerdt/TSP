@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_providers.c,v 1.7 2004-10-15 10:07:33 tractobob Exp $
+$Id: gdisp_providers.c,v 1.8 2004-10-22 20:17:34 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -185,7 +185,7 @@ gdisp_poolProviderThreadStatus ( Kernel_T *kernel )
 	    '%');
 
     gtk_clist_set_text(GTK_CLIST(provider->pCList),
-		       6 /* provider load row */,
+		       5 /* provider load row */,
 		       1 /* information       */,
 		       rowBuffer);
 
@@ -196,13 +196,6 @@ gdisp_poolProviderThreadStatus ( Kernel_T *kernel )
   } /* while (providerItem != (GList*)NULL) */
 
 }
-
-
-/*
- * Include Provider Logos.
- */
-#include "pixmaps/gdisp_stubLogo.xpm"
-#include "pixmaps/gdisp_resLogo.xpm"
 
 
 /*
@@ -271,9 +264,7 @@ gdisp_createProviderList ( Kernel_T  *kernel,
   GtkWidget        *hBox             =  (GtkWidget*)NULL;
   GtkWidget        *scrolledWindow   =  (GtkWidget*)NULL;
   GtkWidget        *pixmapWidget     =  (GtkWidget*)NULL;
-  GdkPixmap        *pixmap           =  (GdkPixmap*)NULL;
-  GdkBitmap        *mask             =  (GdkBitmap*)NULL;
-  GtkStyle         *style            =   (GtkStyle*)NULL;
+  Pixmap_T         *pixmap           =   (Pixmap_T*)NULL;
 
   GList            *providerItem     =      (GList*)NULL;
   Provider_T       *provider         = (Provider_T*)NULL;
@@ -372,13 +363,13 @@ gdisp_createProviderList ( Kernel_T  *kernel,
     /*
      * Use GDK services to create provider Logo (XPM format).
      */
-    style  = gtk_widget_get_style(scrolledWindow);
-    pixmap = gdk_pixmap_create_from_xpm_d(scrolledWindow->window,
-					  &mask,
-					  &style->bg[GTK_STATE_NORMAL],
-					  (gchar**)gdisp_stubLogo);
+    pixmap = gdisp_getPixmapById(kernel,
+				 GD_PIX_stubProvider,
+				 scrolledWindow);
 
-    pixmapWidget = gtk_pixmap_new(pixmap,mask);
+    pixmapWidget = gtk_pixmap_new(pixmap->pixmap,
+				  pixmap->mask);
+
     gtk_box_pack_start(GTK_BOX(hBox),
 		       pixmapWidget,
 		       FALSE, /* expand  */
@@ -415,19 +406,17 @@ gdisp_createProviderList ( Kernel_T  *kernel,
 
     if (gdisp_getProviderNumber(kernel) > 1) {
 
-      gdisp_getProviderIdPixmap(kernel,
-				provider->pCList,
-				provider->pIdentity,
-				&pixmap,
-				&mask);
+      pixmap = gdisp_getProviderIdPixmap(kernel,
+					 provider->pCList,
+					 provider->pIdentity);
 
       gtk_clist_set_pixtext(GTK_CLIST(provider->pCList),
 			    rowNumber,
 			    1, /* second column */
 			    provider->pUrl->str,
 			    5, /* spacing */
-			    pixmap,
-			    mask);
+			    pixmap->pixmap,
+			    pixmap->mask);
 
     }
 

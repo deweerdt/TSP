@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_sampledSymbols.c,v 1.4 2004-10-15 10:07:33 tractobob Exp $
+$Id: gdisp_sampledSymbols.c,v 1.5 2004-10-22 20:17:34 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -61,9 +61,6 @@ File      : Information / Actions upon available sampled symbols.
                              STATIC ROUTINES
  --------------------------------------------------------------------
 */
-
-#include "pixmaps/gdisp_collapsedNode.xpm"
-#include "pixmaps/gdisp_expandedNode.xpm"
 
 #define GD_TREE_NB_COLUMNS 2
 #define GD_TREE_SPACING    3
@@ -328,8 +325,7 @@ gdisp_createProviderNode(Kernel_T      *kernel,
   gchar        *pNames [GD_TREE_NB_COLUMNS] = { (gchar*)NULL,  (gchar*)NULL };
   GtkCTreeNode *iNode                       = (GtkCTreeNode*)NULL;
   GtkCTreeNode *sNode                       = (GtkCTreeNode*)NULL;
-  GdkPixmap    *idPixmap                    = (GdkPixmap*)NULL;
-  GdkBitmap    *idPixmapMask                = (GdkBitmap*)NULL;
+  Pixmap_T     *pPixmap                     = (Pixmap_T*)NULL;
 
   /*
    * The name of the node is the URL of the provider.
@@ -337,21 +333,19 @@ gdisp_createProviderNode(Kernel_T      *kernel,
    */
   pNames[0] = provider->pUrl->str;
 
-  gdisp_getProviderIdPixmap(kernel,
-			    parent,
-			    provider->pIdentity,
-			    &idPixmap,
-			    &idPixmapMask);
+  pPixmap = gdisp_getProviderIdPixmap(kernel,
+				      parent,
+				      provider->pIdentity);
 
   provider->pNode = gtk_ctree_insert_node(GTK_CTREE(tree),
 					  (GtkCTreeNode*)NULL, /* parent  */
 					  (GtkCTreeNode*)NULL, /* sibling */
 					  pNames,
 					  GD_TREE_SPACING,
-					  idPixmap,
-					  idPixmapMask,
-					  idPixmap,
-					  idPixmapMask,
+					  pPixmap->pixmap,
+					  pPixmap->mask,
+					  pPixmap->pixmap,
+					  pPixmap->mask,
 					  FALSE, /* is a leave  */
 					  TRUE); /* is expanded */
 
@@ -367,15 +361,20 @@ gdisp_createProviderNode(Kernel_T      *kernel,
    * Insert information node.
    */
   pNames[0] = "Information";
+
+  pPixmap = gdisp_getPixmapById(kernel,
+				GD_PIX_info,
+				parent);
+
   iNode = gtk_ctree_insert_node(GTK_CTREE(tree),
 				provider->pNode, /* provider is the parent */
 				(GtkCTreeNode*)NULL, /* no sibling node */
 				pNames,
 				GD_TREE_SPACING,
-				kernel->widgets.mainBoardInfoPixmap,
-				kernel->widgets.mainBoardInfoPixmapMask,
-				kernel->widgets.mainBoardInfoPixmap,
-				kernel->widgets.mainBoardInfoPixmapMask,
+				pPixmap->pixmap,
+				pPixmap->mask,
+				pPixmap->pixmap,
+				pPixmap->mask,
 				FALSE, /* is a leave  */
 				FALSE); /* is expanded */
 
@@ -392,10 +391,10 @@ gdisp_createProviderNode(Kernel_T      *kernel,
 				(GtkCTreeNode*)NULL, /* no sibling node */
 				pNames,
 				GD_TREE_SPACING,
-				kernel->widgets.collapsedNodePixmap,
-				kernel->widgets.collapsedNodePixmapMask,
-				kernel->widgets.expandedNodePixmap,
-				kernel->widgets.expandedNodePixmapMask,
+				kernel->widgets.collapsedNodePixmap->pixmap,
+				kernel->widgets.collapsedNodePixmap->mask,
+				kernel->widgets.expandedNodePixmap->pixmap,
+				kernel->widgets.expandedNodePixmap->mask,
 				FALSE, /* is a leave  */
 				FALSE); /* is expanded */
 
@@ -773,6 +772,12 @@ gdisp_poolSampledSymbolList ( Kernel_T *kernel )
   } /* loop over all providers */
 
   /*
+   * Finalise.
+   */
+  gdisp_finaliseHierarchicalTree(kernel,
+				 cTree);
+
+  /*
    * Activate again the unselect handler.
    */
   gtk_signal_handler_unblock_by_func(GTK_OBJECT(cTree),
@@ -898,22 +903,14 @@ gdisp_createSampledSymbolList ( Kernel_T  *kernel,
    * Create expanded/collapsed node pixmap & mask.
    */
   kernel->widgets.expandedNodePixmap =
-    gdk_pixmap_create_from_xpm_d(GTK_WIDGET(scrolledWindow)->window,
-				 &kernel->widgets.expandedNodePixmapMask,
-				 (GdkColor*)NULL,
-				 gdisp_expandedNode);
-
-  gdk_pixmap_ref(kernel->widgets.expandedNodePixmap);
-  gdk_bitmap_ref(kernel->widgets.expandedNodePixmapMask);
+    gdisp_getPixmapById(kernel,
+			GD_PIX_expandedNode,
+			GTK_WIDGET(scrolledWindow));
 
   kernel->widgets.collapsedNodePixmap =
-    gdk_pixmap_create_from_xpm_d(GTK_WIDGET(scrolledWindow)->window,
-				 &kernel->widgets.collapsedNodePixmapMask,
-				 (GdkColor*)NULL,
-				 gdisp_collapsedNode);
-
-  gdk_pixmap_ref(kernel->widgets.collapsedNodePixmap);
-  gdk_bitmap_ref(kernel->widgets.collapsedNodePixmapMask);
+    gdisp_getPixmapById(kernel,
+			GD_PIX_collapseNode,
+			GTK_WIDGET(scrolledWindow));
 
   /* ------------------------ PER PROVIDER ---------------------- */
 
@@ -1018,20 +1015,10 @@ gdisp_destroySampledSymbolList ( Kernel_T *kernel )
   kernel->widgets.unselectedNodeStyle = (GtkStyle*)NULL;
 
   /*
-   * Destroy pixmaps & masks.
-   */
-  gdk_pixmap_unref(kernel->widgets.expandedNodePixmap);
-  gdk_pixmap_unref(kernel->widgets.collapsedNodePixmap);
-  gdk_bitmap_unref(kernel->widgets.expandedNodePixmapMask);
-  gdk_bitmap_unref(kernel->widgets.collapsedNodePixmapMask);
-
-  /*
    * Destroy the tree.
    */
-  kernel->widgets.expandedNodePixmap      = (GdkPixmap*)NULL;
-  kernel->widgets.expandedNodePixmapMask  = (GdkBitmap*)NULL;
-  kernel->widgets.collapsedNodePixmap     = (GdkPixmap*)NULL;
-  kernel->widgets.collapsedNodePixmapMask = (GdkBitmap*)NULL;
-  kernel->widgets.sampledSymbolHTree      = (GtkWidget*)NULL;
-  
+  kernel->widgets.expandedNodePixmap  = (Pixmap_T*)NULL;
+  kernel->widgets.collapsedNodePixmap = (Pixmap_T*)NULL;
+  kernel->widgets.sampledSymbolHTree  = (GtkWidget*)NULL;
+ 
 }

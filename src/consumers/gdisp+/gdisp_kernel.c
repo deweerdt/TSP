@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_kernel.c,v 1.7 2004-06-26 20:51:04 esteban Exp $
+$Id: gdisp_kernel.c,v 1.8 2004-10-22 20:17:34 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -406,9 +406,10 @@ gdisp_destroyKernel (Kernel_T *kernel)
   assert(kernel);
 
   /*
-   * Initialise all fonts.
+   * Destroy all fonts and pixmaps.
    */
-  gdisp_destroyFonts(kernel->fonts);
+  gdisp_destroyFonts  (kernel->fonts);
+  gdisp_destroyPixmaps(kernel);
 
   /*
    * Free Kernel.

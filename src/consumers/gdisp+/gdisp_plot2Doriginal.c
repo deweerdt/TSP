@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_plot2Doriginal.c,v 1.2 2004-03-26 21:09:17 esteban Exp $
+$Id: gdisp_plot2Doriginal.c,v 1.3 2004-10-22 20:17:34 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -1157,8 +1157,7 @@ static void
 gdisp_addSymbolsToPlot2D (Kernel_T *kernel,
 			  void     *data,
 			  GList    *symbolList,
-			  guint     xDrop, /* plot coordinates */
-			  guint     yDrop  /* plot coordinates */ )
+			  guchar    zoneId)
 {
 
   Plot2D_T *plot   = (Plot2D_T*)data;

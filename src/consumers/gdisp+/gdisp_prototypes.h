@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_prototypes.h,v 1.7 2004-06-26 20:51:04 esteban Exp $
+$Id: gdisp_prototypes.h,v 1.8 2004-10-22 20:17:34 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -64,6 +64,9 @@ void       gdisp_affectRequestedSymbolsToProvider (Kernel_T *kernel);
 void       gdisp_addHost      (Kernel_T *kernel,
 			       gchar    *hostName);
 void       gdisp_destroyHosts (Kernel_T *kernel);
+void       gdisp_addUrl       (Kernel_T *kernel,
+			       gchar    *urlName);
+void       gdisp_destroyUrls  (Kernel_T *kernel);
 
 
 /*
@@ -92,7 +95,7 @@ void       gdisp_createProviderList (Kernel_T  *kernel,
 				     GtkWidget *parent);
 void       gdisp_providerTimer      (Kernel_T  *kernel,
 				     gboolean   timerIsStarted);
-void       gdisp_destroyProviderList(Kernel_T *kernel);
+void       gdisp_destroyProviderList(Kernel_T  *kernel);
 
 
 /*
@@ -110,7 +113,7 @@ void       gdisp_destroySampledSymbolList (Kernel_T  *kernel);
  */
 void       gdisp_createGraphicList (Kernel_T  *kernel,
 				    GtkWidget *parent);
-void       gdisp_destroyGraphicList(Kernel_T *kernel);
+void       gdisp_destroyGraphicList(Kernel_T  *kernel);
 
 
 /*
@@ -135,13 +138,13 @@ void       gdisp_createSymbolList    (Kernel_T  *kernel,
 				      GtkWidget *parent);
 void       gdisp_symbolApplyCallback (GtkWidget *applyButtonWidget,
 				      gpointer   data);
-void       gdisp_destroySymbolList   (Kernel_T *kernel);
+void       gdisp_destroySymbolList   (Kernel_T  *kernel);
 
 /*
  * From gdisp_pages.c
  */
-void       gdisp_createGraphicPage  (gpointer  factoryData,
-				     guint     pageDimension);
+void       gdisp_createGraphicPage (gpointer  factoryData,
+				    guint     pageDimension);
 GList*     gdisp_getSymbolsInPages (Kernel_T *kernel);
 
 /*
@@ -163,13 +166,27 @@ void       gdisp_initPlotTextSystem (Kernel_T     *kernel,
 				     PlotSystem_T *plotSystem);
 
 /*
+ * From gdisp_pixmaps.c
+ */
+Pixmap_T *gdisp_getPixmapById   ( Kernel_T    *kernel,
+				  Pixmap_ID   pixmapId,
+				  GtkWidget  *pixmapParent );
+
+Pixmap_T *gdisp_getPixmapByAddr ( Kernel_T   *kernel,
+				  gchar     **pixmapAddr,
+				  GtkWidget  *pixmapParent );
+
+void      gdisp_destroyPixmaps  ( Kernel_T   *kernel       );
+
+/*
  * From gdisp_utils.c
  */
 HRTime_T   gdisp_getHRTime         (void);
 void       gdisp_uSleep            (guint       uSeconds);
 HRTime_T   gdisp_waitTime          (HRTime_T    timeStamp,
 				    HRTime_T    time2wait);
-GtkWidget *gdisp_createButtonBar   (GtkWidget  *window,
+GtkWidget *gdisp_createButtonBar   (Kernel_T   *kernel,
+				    GtkWidget  *window,
 				    GtkWidget **aButton,
 				    GtkWidget **dButton);
 void       gdisp_loadFonts         (GdkFont    *fonts[GD_FONT_MAX_SIZE]
@@ -181,11 +198,9 @@ GtkWidget *gdisp_getMessagePixmaps (Kernel_T   *kernel,
 				    Message_T   messageType,
 				    gchar      *message);
 
-void       gdisp_getProviderIdPixmap (Kernel_T   *kernel,
+Pixmap_T  *gdisp_getProviderIdPixmap (Kernel_T   *kernel,
 				      GtkWidget  *parent,
-				      guint       providerIdentity,
-				      GdkPixmap **identityPixmap,
-				      GdkBitmap **identityPixmapMask);
+				      guint       providerIdentity);
 
 void       gdisp_getStringTableFromStringList ( gchar   *stringList,
 						gchar ***stringTable,
@@ -203,6 +218,10 @@ void       gdisp_loopOnGraphicPlots ( Kernel_T  *kernel,
 							   void*),
 				      void      *userData );
 
-gboolean   gdisp_pointIsInsidePolygon ( );
+gboolean   gdisp_positionIsInsideZone (PlotSystemZone_T *zone,
+				       gdouble           x,
+				       gdouble           y);
+guint      gdisp_computePgcd          (guint             a,
+				       guint             b);
 				    
 #endif /* __PROTOTYPES_H__ */

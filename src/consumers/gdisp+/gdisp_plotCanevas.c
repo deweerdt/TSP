@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_plotCanevas.c,v 1.2 2004-03-26 21:09:17 esteban Exp $
+$Id: gdisp_plotCanevas.c,v 1.3 2004-10-22 20:17:34 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -209,8 +209,7 @@ static void
 gdisp_addSymbolsTo<<<-canevas->>> (Kernel_T *kernel,
 				   void     *data,
 				   GList    *symbolList,
-				   guint     xDrop,
-				   guint     yDrop)
+				   guchar    zoneId)
 {
 
   <<<-canevas->>>_T *plot = (<<<-canevas->>>_T*)data;
@@ -354,6 +353,21 @@ gdisp_treat<<<-canevas->>>SymbolValues (Kernel_T *kernel,
 
 
 /*
+ * Get back the zones that have been defined on that plot.
+ */
+static GArray*
+gdisp_get<<<-canevas->>>DropZones (Kernel_T *kernel)
+{
+
+  /*
+   * No zones on that plot.
+   */
+  return (GArray*)NULL;
+
+}
+
+
+/*
  --------------------------------------------------------------------
                              PUBLIC ROUTINES
  --------------------------------------------------------------------
@@ -384,6 +398,7 @@ gdisp_init<<<-canevas->>>System (Kernel_T     *kernel,
   plotSystem->psGetInformation    = gdisp_get<<<-canevas->>>Information;
   plotSystem->psTreatSymbolValues = gdisp_treat<<<-canevas->>>SymbolValues;
   plotSystem->psGetPeriod         = gdisp_get<<<-canevas->>>Period;
+  plotSystem->psGetDropZones      = gdisp_get<<<-canevas->>>DropZones;
 
 }
 

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_graphics.c,v 1.2 2004-06-17 20:03:02 esteban Exp $
+$Id: gdisp_graphics.c,v 1.3 2004-10-22 20:17:34 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -64,7 +64,6 @@ File      : Information / Actions upon available graphic plots.
 
 #define GD_TABLE_SPACING 20
 
-#include "pixmaps/gdisp_gdispLogo.xpm"
 
 /*
  * This callback is called whenever a "press button" is pressed.
@@ -141,9 +140,7 @@ gdisp_createGraphicList ( Kernel_T  *kernel,
   guint             columnNumber   = 0;
 
   GtkWidget        *pixmapWidget   = (GtkWidget*)NULL;
-  GdkPixmap        *pixmap         = (GdkPixmap*)NULL;
-  GdkBitmap        *mask           = (GdkBitmap*)NULL;
-  GtkStyle         *style          =  (GtkStyle*)NULL;
+  Pixmap_T         *pixmap         =  (Pixmap_T*)NULL;
 
 
   /* ------------------------ TOOLTIP GROUP ------------------------ */
@@ -268,32 +265,32 @@ gdisp_createGraphicList ( Kernel_T  *kernel,
 	  /*
 	   * Use GDK services to create GDISP+ Logo (XPM format).
 	   */
-	  style  = gtk_widget_get_style(kernel->widgets.dataBookWindow);
 	  if (plotInformation.psLogo == (gchar**)NULL) {
 
-	    pixmap = gdk_pixmap_create_from_xpm_d(
-				      kernel->widgets.dataBookWindow->window,
-				      &mask,
-				      &style->bg[GTK_STATE_NORMAL],
-				      (gchar**)gdisp_gdispLogo);
+	    pixmap = gdisp_getPixmapById(
+                                      kernel,
+				      GD_PIX_gdispLogo,
+				      kernel->widgets.dataBookWindow);
 
 	  }
 	  else {
 
-	    pixmap = gdk_pixmap_create_from_xpm_d(
-				      kernel->widgets.dataBookWindow->window,
-				      &mask,
-				      &style->bg[GTK_STATE_NORMAL],
-				      (gchar**)plotInformation.psLogo);
+	    pixmap = gdisp_getPixmapByAddr(
+				      kernel,
+				      (gchar**)plotInformation.psLogo,
+				      kernel->widgets.dataBookWindow);
 
 	  }
 
 	  /*
 	   * Create a pixmap widget to contain the pixmap.
 	   */
-	  pixmapWidget = gtk_pixmap_new(pixmap,mask);
+	  pixmapWidget = gtk_pixmap_new(pixmap->pixmap,
+					pixmap->mask);
+
 	  gtk_container_add(GTK_CONTAINER(pressButton),
 			    pixmapWidget);
+
 	  gtk_widget_show(pixmapWidget);
 
 	  /**********************************************************/

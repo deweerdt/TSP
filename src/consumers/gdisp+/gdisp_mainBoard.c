@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_mainBoard.c,v 1.2 2004-03-26 21:09:17 esteban Exp $
+$Id: gdisp_mainBoard.c,v 1.3 2004-10-22 20:17:34 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -332,12 +332,6 @@ gdispMainBoardMenuDefinitions[] = {
 
 
 /*
- * Include for TSP Logo.
- */
-#include "pixmaps/gdisp_gdispLogo.xpm"
-
-
-/*
  --------------------------------------------------------------------
                              PUBLIC ROUTINES
  --------------------------------------------------------------------
@@ -364,9 +358,7 @@ gdisp_createMainBoard (Kernel_T *kernel)
   GtkAccelGroup  *accelGroup      =  (GtkAccelGroup*)NULL;
   gint            menuItemNb      =                  0;
   GtkWidget      *pixmapWidget    =      (GtkWidget*)NULL;
-  GdkPixmap      *pixmap          =      (GdkPixmap*)NULL;
-  GdkBitmap      *mask            =      (GdkBitmap*)NULL;
-  GtkStyle       *style           =       (GtkStyle*)NULL;
+  Pixmap_T       *pixmap          =       (Pixmap_T*)NULL;
 
   assert(kernel);
 
@@ -611,17 +603,15 @@ gdisp_createMainBoard (Kernel_T *kernel)
   /*
    * Use GDK services to create GDISP+ Logo (XPM format).
    */
-  style  = gtk_widget_get_style(kernel->widgets.mainBoardWindow);
-  pixmap = gdk_pixmap_create_from_xpm_d(
-                               kernel->widgets.mainBoardWindow->window,
-			       &mask,
-			       &style->bg[GTK_STATE_NORMAL],
-			       (gchar**)gdisp_gdispLogo);
+  pixmap = gdisp_getPixmapById(kernel,
+			       GD_PIX_gdispLogo,
+                               kernel->widgets.mainBoardWindow);
 
   /*
    * Create a pixmap widget to contain the pixmap.
    */
-  pixmapWidget = gtk_pixmap_new(pixmap,mask);
+  pixmapWidget = gtk_pixmap_new(pixmap->pixmap,
+				pixmap->mask);
   gtk_box_pack_start(GTK_BOX(mainHBox),
 		     pixmapWidget,
 		     FALSE /* expand  */,

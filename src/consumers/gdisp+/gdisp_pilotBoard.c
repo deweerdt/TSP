@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_pilotBoard.c,v 1.1 2004-03-26 21:09:17 esteban Exp $
+$Id: gdisp_pilotBoard.c,v 1.2 2004-10-22 20:17:34 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -117,39 +117,35 @@ gdisp_showTime ( Kernel_T *kernel )
 #define GD_2PTS_WIDTH                 9
 #define GD_DIGIT_HEIGHT              21
 
-  GdkPixmap      *digitPixmap = (GdkPixmap*)NULL;
-  GtkWidget      *timeArea    = (GtkWidget*)NULL;
-  GdkGC          *timeContext =     (GdkGC*)NULL;
+  GdkPixmap      *digitPixmap  = (GdkPixmap*)NULL;
+  GtkWidget      *timeArea     = (GtkWidget*)NULL;
+  GdkGC          *timeContext  =     (GdkGC*)NULL;
 
-  struct timeval  localTime;
+  time_t          nowTime      =     (time_t)NULL;
+  struct tm      *localNowTime = (struct tm*)NULL;
 
-  guint           seconds     = 0;
-  guint           minutes     = 0;
-  guint           hours       = 0;
-  guint           xPos        = 0;
-  guint           yPos        = 0;
+  guint           seconds      = 0;
+  guint           minutes      = 0;
+  guint           hours        = 0;
+  guint           xPos         = 0;
+  guint           yPos         = 0;
   
 
   /*
    * Get back current time.
    */
-  gettimeofday(&localTime,(void*)NULL);
+  nowTime      = time((time_t*)NULL);
+  localNowTime = localtime(&nowTime);
 
-  seconds = localTime.tv_sec % 60;
-  localTime.tv_sec -= seconds;
-  localTime.tv_sec /= 60;
-
-  minutes = localTime.tv_sec % 60;
-  localTime.tv_sec -= minutes;
-  localTime.tv_sec /= 60;
-
-  hours   = localTime.tv_sec % 24;
+  seconds      = localNowTime->tm_sec;
+  minutes      = localNowTime->tm_min;
+  hours        = localNowTime->tm_hour;
 
 
   /*
    * Init.
    */
-  digitPixmap = kernel->widgets.pilotBoardDigitPixmap;
+  digitPixmap = kernel->widgets.pilotBoardDigitPixmap->pixmap;
   timeArea    = kernel->widgets.pilotBoardTimeArea;
   timeContext = kernel->widgets.pilotBoardTimeContext;
 
@@ -297,14 +293,6 @@ gdisp_timeAreaExpose (GtkWidget       *area,
 
 
 /*
- * Include for TSP Logo.
- */
-#include "pixmaps/gdisp_stopButton.xpm"
-#include "pixmaps/gdisp_okButton.xpm"
-#include "pixmaps/gdisp_timeDigits.xpm"
-
-
-/*
  --------------------------------------------------------------------
                              PUBLIC ROUTINES
  --------------------------------------------------------------------
@@ -321,12 +309,9 @@ gdisp_createPilotBoard (Kernel_T *kernel)
   GtkWidget *pilotBox     = (GtkWidget*)NULL;
   GtkWidget *timeFrame    = (GtkWidget*)NULL;
   GtkWidget *pixmapWidget = (GtkWidget*)NULL;
-  GdkPixmap *pixmap       = (GdkPixmap*)NULL;
-  GdkBitmap *mask         = (GdkBitmap*)NULL;
-  GtkStyle  *style        =  (GtkStyle*)NULL;
+  Pixmap_T  *pixmap       =  (Pixmap_T*)NULL;
   GtkWidget *timeArea     = (GtkWidget*)NULL;
   GdkGC     *timeContext  =     (GdkGC*)NULL;
-  GdkPixmap *digitPixmap  = (GdkPixmap*)NULL;
 
   assert(kernel);
 
@@ -373,14 +358,11 @@ gdisp_createPilotBoard (Kernel_T *kernel)
 
   gtk_container_add(GTK_CONTAINER(timeFrame),timeArea);
 
-  style       = gtk_widget_get_style(kernel->widgets.mainBoardWindow);
-  digitPixmap = gdk_pixmap_create_from_xpm_d(
-                               kernel->widgets.mainBoardWindow->window,
-			       &mask,
-			       &style->bg[GTK_STATE_NORMAL],
-			       (gchar**)gdisp_timeDigits);
+  pixmap = gdisp_getPixmapById(kernel,
+			       GD_PIX_timeDigits,
+                               kernel->widgets.mainBoardWindow);
 
-  kernel->widgets.pilotBoardDigitPixmap = digitPixmap;
+  kernel->widgets.pilotBoardDigitPixmap = pixmap;
 
   gtk_widget_show(timeArea);
 
@@ -390,17 +372,15 @@ gdisp_createPilotBoard (Kernel_T *kernel)
   /*
    * OK button.
    */
-  style  = gtk_widget_get_style(kernel->widgets.mainBoardWindow);
-  pixmap = gdk_pixmap_create_from_xpm_d(
-                               kernel->widgets.mainBoardWindow->window,
-			       &mask,
-			       &style->bg[GTK_STATE_NORMAL],
-			       (gchar**)gdisp_okButton);
+  pixmap = gdisp_getPixmapById(kernel,
+			       GD_PIX_okButton,
+                               kernel->widgets.mainBoardWindow);
 
   /*
    * Create a pixmap widget to contain the pixmap.
    */
-  pixmapWidget = gtk_pixmap_new(pixmap,mask);
+  pixmapWidget = gtk_pixmap_new(pixmap->pixmap,
+				pixmap->mask);
   gtk_widget_show(pixmapWidget);
 
   /*
@@ -424,17 +404,15 @@ gdisp_createPilotBoard (Kernel_T *kernel)
   /*
    * STOP button.
    */
-  style  = gtk_widget_get_style(kernel->widgets.mainBoardWindow);
-  pixmap = gdk_pixmap_create_from_xpm_d(
-                               kernel->widgets.mainBoardWindow->window,
-			       &mask,
-			       &style->bg[GTK_STATE_NORMAL],
-			       (gchar**)gdisp_stopButton);
+  pixmap = gdisp_getPixmapById(kernel,
+			       GD_PIX_stopButton,
+                               kernel->widgets.mainBoardWindow);
 
   /*
    * Create a pixmap widget to contain the pixmap.
    */
-  pixmapWidget = gtk_pixmap_new(pixmap,mask);
+  pixmapWidget = gtk_pixmap_new(pixmap->pixmap,
+				pixmap->mask);
   gtk_widget_show(pixmapWidget);
 
   /*

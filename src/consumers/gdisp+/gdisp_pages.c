@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_pages.c,v 1.5 2004-06-17 20:03:02 esteban Exp $
+$Id: gdisp_pages.c,v 1.6 2004-10-22 20:17:34 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -73,7 +73,7 @@ File      : Graphic page management.
 #define GD_PAGE_BORDER_WIDTH  5
 #define GD_PAGE_ROW_SPACINGS 10
 #define GD_PAGE_COL_SPACINGS 10
-
+#define GD_PAGE_ICON_OFFSET  20
 
 /*
  --------------------------------------------------------------------
@@ -296,6 +296,94 @@ gdisp_endDNDCallback (GtkWidget      *pageWindow,
 
 
 /*
+ * Analyse mouse position over a plot.
+ */
+static gboolean
+gdisp_analysePositionOverPlot ( Kernel_T          *kernel,
+				PlotSystemData_T  *plotSystemData,
+				gdouble            xPosition,
+				gdouble            yPosition,
+				PlotSystemZone_T **zone )
+{
+
+  GArray           *plotZones       =           (GArray*)NULL;
+  guint             currentZoneId   =                       0;
+  PlotSystem_T     *plotSystem      =     (PlotSystem_T*)NULL;
+  PlotSystemZone_T *currentZone     = (PlotSystemZone_T*)NULL;
+  gboolean          isInsideZone    =                   FALSE;
+  gboolean          canDrop         =                    TRUE;
+
+  /*
+   * Retreive plot zones.
+   * Default plot ? If it is, use the currently selected plot type
+   * in order to get its zones.
+   */
+  *zone = (PlotSystemZone_T*)NULL;
+
+  if ((*plotSystemData->plotSystem->psGetType)
+      (kernel,plotSystemData->plotData) == GD_PLOT_DEFAULT) {
+
+    /* change plot system */
+    plotSystem = &kernel->plotSystems[kernel->currentPlotType];
+    plotZones = (*plotSystem->psGetDropZones)(kernel);
+
+  }
+  else {
+
+    plotZones = (*plotSystemData->plotSystem->psGetDropZones)(kernel);
+
+  }
+
+  /*
+   * If there is no zone, drop is allowed everywhere.
+   * If one or several zones exist, drop is allowed according to the
+   * zone the mouse is over.
+   * If one or several zones exist and the mouse is over none of them,
+   * drop is refused.
+   */
+  if (plotZones != (GArray*)NULL) {
+
+    /*
+     * Search the zone the mouse is over.
+     */
+    while (currentZoneId < plotZones->len && isInsideZone == FALSE) {
+
+      currentZone = &g_array_index(plotZones,PlotSystemZone_T,currentZoneId);
+
+      isInsideZone = gdisp_positionIsInsideZone(currentZone,
+						xPosition,
+						yPosition);
+
+      if (isInsideZone == FALSE) {
+	currentZoneId++;
+      }
+
+    } /* loop over all declared zones */
+
+    /*
+     * Proceed if we have found a zone.
+     */
+    if (isInsideZone == TRUE) {
+
+      *zone   = currentZone;
+      canDrop = currentZone->pszAcceptDrops;
+
+    }
+    else {
+
+      *zone   = (PlotSystemZone_T*)NULL;
+      canDrop = FALSE;
+
+    }
+
+  } /* plotZones != (GArray*)NULL */
+
+  return canDrop;
+
+}
+
+
+/*
  * DND "drag_motion" handler is called whenever the pointer is
  * dragging over the target widget.
  */
@@ -308,7 +396,28 @@ gdisp_dragMotionDNDCallback (GtkWidget      *pageWindow,
 			     gpointer        data)
 {
 
-  Kernel_T *kernel = (Kernel_T*)data;
+  Kernel_T         *kernel          =         (Kernel_T*)data;
+  Page_T           *page            =           (Page_T*)NULL;
+
+  guint             plotWidth       =                       0;
+  guint             plotHeight      =                       0;
+  guint             nColumn         =                       0;
+  guint             nRow            =                       0;
+  guint             xPositionInPlot =                       0;
+  guint             yPositionInPlot =                       0;
+  gdouble           xRatioInPlot    =                     0.0;
+  gdouble           yRatioInPlot    =                     0.0;
+
+  PlotSystemData_T *plotSystemData  = (PlotSystemData_T*)NULL;
+  guint             plotIdentity    =                       0;
+  gboolean          canDrop         =                   FALSE;
+  PlotSystemZone_T *currentZone     = (PlotSystemZone_T*)NULL;
+
+  gint              windowAttrMask  =                       0;
+  GdkWindowAttr     windowAttr;
+
+  Pixmap_T         *iconPixmap      =         (Pixmap_T*)NULL;
+
 
   /*
    * Put any needed drag motion code here.
@@ -331,6 +440,188 @@ gdisp_dragMotionDNDCallback (GtkWidget      *pageWindow,
   gdk_drag_status(dragContext,
 		  GDK_ACTION_COPY,
 		  time);
+
+  /*
+   * Compute the size of each plot of the table.
+   */
+  page = (Page_T*)gtk_object_get_data(GTK_OBJECT(pageWindow),
+				      "pageInformation");
+
+  plotWidth  =
+    (pageWindow->allocation.width - (2 * GD_PAGE_BORDER_WIDTH) -
+     ((page->pColumns - 1) * GD_PAGE_COL_SPACINGS)) / page->pColumns;
+
+  plotHeight =
+    (pageWindow->allocation.height - (2 * GD_PAGE_BORDER_WIDTH) -
+     ((page->pRows    - 1) * GD_PAGE_ROW_SPACINGS)) / page->pRows;
+
+  /*
+   * Deduce on what plot the drop operation occurs.
+   */
+  if (xPositionInPageWindow > GD_PAGE_BORDER_WIDTH &&
+      yPositionInPageWindow > GD_PAGE_BORDER_WIDTH    ) {
+
+    nColumn =
+      (xPositionInPageWindow - GD_PAGE_BORDER_WIDTH) /
+      (plotWidth  + GD_PAGE_COL_SPACINGS);
+
+    nRow    = 
+      (yPositionInPageWindow - GD_PAGE_BORDER_WIDTH) /
+      (plotHeight + GD_PAGE_ROW_SPACINGS);
+
+    /*
+     * Am I over a plot ?
+     */
+    if ((xPositionInPageWindow <
+	 (nColumn * (plotWidth  + GD_PAGE_COL_SPACINGS) + plotWidth )) &&
+	(yPositionInPageWindow <
+	 (nRow    * (plotHeight + GD_PAGE_ROW_SPACINGS) + plotHeight))) {
+
+      /*
+       * Yes, I am over a plot.
+       * Compute drop coordinates in the plot reference.
+       */
+      xPositionInPlot = (xPositionInPageWindow - GD_PAGE_BORDER_WIDTH) -
+	(nColumn * (plotWidth  + GD_PAGE_COL_SPACINGS));
+
+      yPositionInPlot = (yPositionInPageWindow - GD_PAGE_BORDER_WIDTH) -
+	(nRow    * (plotHeight + GD_PAGE_ROW_SPACINGS));
+
+      yPositionInPlot = plotHeight - yPositionInPlot;
+
+      /*
+       * GDK windows may have different sizes, compute the drop
+       * coordinates as a percentage of the plot dimensions.
+       */
+      xRatioInPlot = (gdouble)xPositionInPlot / (gdouble)plotWidth;
+      yRatioInPlot = (gdouble)yPositionInPlot / (gdouble)plotHeight;
+
+      /*
+       * Retreive current plot handle.
+       */
+      plotIdentity   = nRow * page->pColumns + nColumn;
+      plotSystemData = &page->pPlotSystemData[plotIdentity];
+
+      /*
+       * Analyse position over plot.
+       */
+      canDrop = gdisp_analysePositionOverPlot(kernel,
+					      plotSystemData,
+					      xRatioInPlot,
+					      yRatioInPlot,
+					      &currentZone);
+
+    } /* i am over a plot */
+
+  }
+
+  /*
+   * Have we already built the icon window ?
+   * No ? So create it.
+   * Yes ? Check if the parent has changed (drag over several windows).
+   */
+  if (kernel->dndIconWindow == (GdkWindow*)NULL) {
+
+    memset(&windowAttr,0,sizeof(GdkWindowAttr));
+
+    windowAttr.event_mask  = GDK_EXPOSURE_MASK;
+    windowAttr.x           = xPositionInPageWindow - GD_PAGE_ICON_OFFSET;
+    windowAttr.y           = yPositionInPageWindow - GD_PAGE_ICON_OFFSET;
+    windowAttr.width       = GD_PAGE_ICON_OFFSET;
+    windowAttr.height      = GD_PAGE_ICON_OFFSET;
+    windowAttr.window_type = GDK_WINDOW_CHILD;
+    windowAttr.wclass      = GDK_INPUT_OUTPUT;
+    windowAttr.visual      = kernel->visual;
+    windowAttr.colormap    = kernel->colormap;
+    windowAttrMask         = GDK_WA_X        |
+                             GDK_WA_Y        |
+                             GDK_WA_COLORMAP |
+                             GDK_WA_VISUAL;
+
+    kernel->dndIconWindowParent = GTK_WIDGET(page->pWindow)->window;
+
+    kernel->dndIconWindow = gdk_window_new(kernel->dndIconWindowParent,
+					   &windowAttr,
+					   windowAttrMask);
+
+    gdk_window_show(kernel->dndIconWindow);
+
+    kernel->dndIconWindowGc = gdk_gc_new(kernel->dndIconWindow);
+
+  }
+  else {
+
+    /*
+     * D&D Icon window exists. Check if the icon window must be reparented.
+     * It is typically the case when the mouse crosses window borders during
+     * the drag process.
+     */
+    if (kernel->dndIconWindowParent != GTK_WIDGET(page->pWindow)->window) {
+
+      kernel->dndIconWindowParent = GTK_WIDGET(page->pWindow)->window;
+
+      gdk_window_reparent(kernel->dndIconWindow,
+			  kernel->dndIconWindowParent,
+			  xPositionInPageWindow - GD_PAGE_ICON_OFFSET,
+			  yPositionInPageWindow - GD_PAGE_ICON_OFFSET);
+
+    } /* end of reparent operation */
+
+  }
+
+  /*
+   * Move icon window according to mouse position.
+   * Update content with the correct pixmap according to drop authorization.
+   */
+  if (currentZone == (PlotSystemZone_T*)NULL) {
+
+    if (canDrop == TRUE) {
+
+      iconPixmap = gdisp_getPixmapById(kernel,
+				       GD_PIX_okButton2,
+				       page->pWindow);
+
+    }
+    else {
+
+      iconPixmap = gdisp_getPixmapById(kernel,
+				       GD_PIX_error,
+				       page->pWindow);
+
+    }
+
+  }
+  else {
+
+      iconPixmap = gdisp_getPixmapByAddr(kernel,
+					 currentZone->pszIcon,
+					 page->pWindow);
+
+  }
+
+  kernel->dndIconPixmap     = iconPixmap->pixmap;
+  kernel->dndIconPixmapMask = iconPixmap->mask;
+
+  gdk_window_move_resize(kernel->dndIconWindow,
+			 xPositionInPageWindow - iconPixmap->width,
+			 yPositionInPageWindow - iconPixmap->height,
+			 iconPixmap->width,
+			 iconPixmap->height);
+
+  gdk_draw_pixmap(kernel->dndIconWindow,
+		  kernel->dndIconWindowGc,
+		  kernel->dndIconPixmap,
+		  0,
+		  0,
+		  0,
+		  0,
+		  iconPixmap->width,
+		  iconPixmap->height);
+
+  gdk_window_shape_combine_mask(kernel->dndIconWindow,
+				kernel->dndIconPixmapMask,
+				0,
+				0);
 
   return FALSE;
 
@@ -385,8 +676,7 @@ gdisp_finalizeDragAndDropOperation(Kernel_T         *kernel,
 				   guint             plotHeight,
 				   guint             nColumn,
 				   guint             nRow,
-				   guint             xPositionInPlot,
-				   guint             yPositionInPlot)
+				   guchar            zoneId)
 {
 
   GtkWidget        *plotTopLevel        =    (GtkWidget*)NULL;
@@ -490,8 +780,7 @@ gdisp_finalizeDragAndDropOperation(Kernel_T         *kernel,
   (*plotSystemData->plotSystem->psAddSymbols)(kernel,
 					      plotSystemData->plotData,
 					      kernel->dndSelection,
-					      xPositionInPlot,
-					      yPositionInPlot);
+					      zoneId);
 
   /*
    * Do not forget to update symbols <-> providers assignments.
@@ -537,6 +826,9 @@ gdisp_dataReceivedDNDCallback (GtkWidget        *pageWindow,
 
   PlotSystemData_T *plotSystemData  = (PlotSystemData_T*)NULL;
   guint             plotIdentity    =                       0;
+
+  gboolean          canDrop         =                   FALSE;
+  PlotSystemZone_T *currentZone     = (PlotSystemZone_T*)NULL;
 
 
   /*
@@ -615,82 +907,71 @@ gdisp_dataReceivedDNDCallback (GtkWidget        *pageWindow,
       /*
        * Deduce on what plot the drop operation occurs.
        */
-      nColumn =
-	(xPositionInPageWindow - GD_PAGE_BORDER_WIDTH) /
-	(plotWidth  + GD_PAGE_COL_SPACINGS);
+      if (xPositionInPageWindow > GD_PAGE_BORDER_WIDTH &&
+	  yPositionInPageWindow > GD_PAGE_BORDER_WIDTH    ) {
 
-      nRow    = 
-	(yPositionInPageWindow - GD_PAGE_BORDER_WIDTH) /
-	(plotHeight + GD_PAGE_ROW_SPACINGS);
+	nColumn =
+	  (xPositionInPageWindow - GD_PAGE_BORDER_WIDTH) /
+	  (plotWidth  + GD_PAGE_COL_SPACINGS);
 
-      /*
-       * Am I over a plot ?
-       */
-      if ((xPositionInPageWindow <
-	   (nColumn * (plotWidth  + GD_PAGE_COL_SPACINGS) + plotWidth )) &&
-	  (yPositionInPageWindow <
-	   (nRow    * (plotHeight + GD_PAGE_ROW_SPACINGS) + plotHeight))) {
+	nRow    = 
+	  (yPositionInPageWindow - GD_PAGE_BORDER_WIDTH) /
+	  (plotHeight + GD_PAGE_ROW_SPACINGS);
 
 	/*
-	 * Yes, I am over a plot.
-	 * Compute drop coordinates in the plot reference.
+	 * Am I over a plot ?
 	 */
-	xPositionInPlot = xPositionInPageWindow -
-	  (nColumn * (plotWidth  + GD_PAGE_COL_SPACINGS));
-
-	yPositionInPlot = yPositionInPageWindow -
-	  (nRow    * (plotHeight + GD_PAGE_ROW_SPACINGS));
-
-	yPositionInPlot = plotHeight - yPositionInPlot;
-
-	/*
-	 * For BROADCAST purpose, as GDK windows may have different
-	 * sizes, compute the drop coordinates as a percentage of the
-	 * plot dimensions.
-	 */
-	xRatioInPlot = (gdouble)xPositionInPlot / (gdouble)plotWidth;
-	yRatioInPlot = (gdouble)yPositionInPlot / (gdouble)plotHeight;
-
-	/*
-	 * Take care of Drag & Drop operation scope.
-	 */
-	switch (kernel->dndScope) {
-
-	case GD_DND_UNICAST :
+	if ((xPositionInPageWindow <
+	     (nColumn * (plotWidth  + GD_PAGE_COL_SPACINGS) + plotWidth )) &&
+	    (yPositionInPageWindow <
+	     (nRow    * (plotHeight + GD_PAGE_ROW_SPACINGS) + plotHeight))) {
 
 	  /*
-	   * Retreive current plot handle.
+	   * Yes, I am over a plot.
+	   * Compute drop coordinates in the plot reference.
 	   */
-	  plotIdentity   = nRow * page->pColumns + nColumn;
-	  plotSystemData = &page->pPlotSystemData[plotIdentity];
+	  xPositionInPlot = (xPositionInPageWindow - GD_PAGE_BORDER_WIDTH) -
+	    (nColumn * (plotWidth  + GD_PAGE_COL_SPACINGS));
+
+	  yPositionInPlot = (yPositionInPageWindow - GD_PAGE_BORDER_WIDTH) -
+	    (nRow    * (plotHeight + GD_PAGE_ROW_SPACINGS));
+
+	  yPositionInPlot = plotHeight - yPositionInPlot;
 
 	  /*
-	   * Finalize Drag & Drop operation according to Drag & Drop scope.
+	   * For BROADCAST purpose, as GDK windows may have different
+	   * sizes, compute the drop coordinates as a percentage of the
+	   * plot dimensions.
 	   */
-	  gdisp_finalizeDragAndDropOperation(kernel,
-					     page,
-					     plotSystemData,
-					     plotWidth,
-					     plotHeight,
-					     nColumn,
-					     nRow,
-					     xPositionInPlot,
-					     yPositionInPlot);
-
-	  break;
-
-	case GD_DND_MULTICAST :
+	  xRatioInPlot = (gdouble)xPositionInPlot / (gdouble)plotWidth;
+	  yRatioInPlot = (gdouble)yPositionInPlot / (gdouble)plotHeight;
 
 	  /*
-	   * Loop over all graphic plots of the current page.
+	   * Take care of Drag & Drop operation scope.
 	   */
-	  for (nRow=0; nRow<page->pRows; nRow++) {
+	  switch (kernel->dndScope) {
 
-	    for (nColumn=0; nColumn<page->pColumns; nColumn++) {
+	  case GD_DND_UNICAST :
 
-	      plotIdentity   = nRow * page->pColumns + nColumn;
-	      plotSystemData = &page->pPlotSystemData[plotIdentity];
+	    /*
+	     * Retreive current plot handle.
+	     */
+	    plotIdentity   = nRow * page->pColumns + nColumn;
+	    plotSystemData = &page->pPlotSystemData[plotIdentity];
 
+	    /*
+	     * Analyse position over plot.
+	     */
+	    canDrop = gdisp_analysePositionOverPlot(kernel,
+						    plotSystemData,
+						    xRatioInPlot,
+						    yRatioInPlot,
+						    &currentZone);
+
+	    /*
+	     * Finalize Drag & Drop operation according to Drag & Drop scope.
+	     */
+	    if (canDrop == TRUE)
 	      gdisp_finalizeDragAndDropOperation(kernel,
 						 page,
 						 plotSystemData,
@@ -698,42 +979,16 @@ gdisp_dataReceivedDNDCallback (GtkWidget        *pageWindow,
 						 plotHeight,
 						 nColumn,
 						 nRow,
-						 xPositionInPlot,
-						 yPositionInPlot);
+						 currentZone ?
+						 currentZone->pszId : 0);
 
-	    } /* columns */
+	    break;
 
-	  } /* rows */
+	  case GD_DND_MULTICAST :
 
-	  break;
-
-	case GD_DND_BROADCAST :
-
-	  /*
-	   * Loop over all graphic plots of all existing graphic pages.
-	   * The difference between the BROADCAST mode and the two previous
-	   * ones is that we loop here upon all graphic pages that MAY have
-	   * different sizes.
-	   * So "plotWidth", "plotHeight" and drop coordinates have to be
-	   * recomputed for each page.
-	   */
-	  pageItem = g_list_first(kernel->pageList);
-	  while (pageItem != (GList*)NULL) {
-
-	    page       = (Page_T*)pageItem->data;
-	    pageWindow = page->pWindow;
-
-	    plotWidth  =
-	      (pageWindow->allocation.width  - (2 * GD_PAGE_BORDER_WIDTH) -
-	       ((page->pColumns - 1) * GD_PAGE_COL_SPACINGS)) / page->pColumns;
-
-	    plotHeight =
-	      (pageWindow->allocation.height - (2 * GD_PAGE_BORDER_WIDTH) -
-	       ((page->pRows    - 1) * GD_PAGE_ROW_SPACINGS)) / page->pRows;
-
-	    xPositionInPlot = (guint)(xRatioInPlot * (gdouble)plotWidth );
-	    yPositionInPlot = (guint)(yRatioInPlot * (gdouble)plotHeight);
-
+	    /*
+	     * Loop over all graphic plots of the current page.
+	     */
 	    for (nRow=0; nRow<page->pRows; nRow++) {
 
 	      for (nColumn=0; nColumn<page->pColumns; nColumn++) {
@@ -741,34 +996,99 @@ gdisp_dataReceivedDNDCallback (GtkWidget        *pageWindow,
 		plotIdentity   = nRow * page->pColumns + nColumn;
 		plotSystemData = &page->pPlotSystemData[plotIdentity];
 
-		gdisp_finalizeDragAndDropOperation(kernel,
-						   page,
-						   plotSystemData,
-						   plotWidth,
-						   plotHeight,
-						   nColumn,
-						   nRow,
-						   xPositionInPlot,
-						   yPositionInPlot);
+		canDrop = gdisp_analysePositionOverPlot(kernel,
+							plotSystemData,
+							xRatioInPlot,
+							yRatioInPlot,
+							&currentZone);
+
+		if (canDrop == TRUE)
+		  gdisp_finalizeDragAndDropOperation(kernel,
+						     page,
+						     plotSystemData,
+						     plotWidth,
+						     plotHeight,
+						     nColumn,
+						     nRow,
+						     currentZone ?
+						     currentZone->pszId : 0);
 
 	      } /* columns */
 
 	    } /* rows */
 
-	    pageItem = g_list_next(pageItem);
+	    break;
 
-	  } /* while */
+	  case GD_DND_BROADCAST :
 
-	  break;
+	    /*
+	     * Loop over all graphic plots of all existing graphic pages.
+	     * The difference between the BROADCAST mode and the two previous
+	     * ones is that we loop here upon all graphic pages that MAY have
+	     * different sizes.
+	     * So "plotWidth", "plotHeight" and drop coordinates have to be
+	     * recomputed for each page.
+	     */
+	    pageItem = g_list_first(kernel->pageList);
+	    while (pageItem != (GList*)NULL) {
 
-	default :
+	      page       = (Page_T*)pageItem->data;
+	      pageWindow = page->pWindow;
 
-	  break;
+	      plotWidth  =
+		(pageWindow->allocation.width  - (2 * GD_PAGE_BORDER_WIDTH) -
+		 ((page->pColumns - 1) * GD_PAGE_COL_SPACINGS)) / page->pColumns;
 
-	} /* end of switch (kernel->dndScope) */
+	      plotHeight =
+		(pageWindow->allocation.height - (2 * GD_PAGE_BORDER_WIDTH) -
+		 ((page->pRows    - 1) * GD_PAGE_ROW_SPACINGS)) / page->pRows;
 
-      } /* Am I over a plot ? */
+	      xPositionInPlot = (guint)(xRatioInPlot * (gdouble)plotWidth );
+	      yPositionInPlot = (guint)(yRatioInPlot * (gdouble)plotHeight);
 
+	      for (nRow=0; nRow<page->pRows; nRow++) {
+
+		for (nColumn=0; nColumn<page->pColumns; nColumn++) {
+
+		  plotIdentity   = nRow * page->pColumns + nColumn;
+		  plotSystemData = &page->pPlotSystemData[plotIdentity];
+
+		  canDrop = gdisp_analysePositionOverPlot(kernel,
+							  plotSystemData,
+							  xRatioInPlot,
+							  yRatioInPlot,
+							  &currentZone);
+
+		  if (canDrop == TRUE)
+		    gdisp_finalizeDragAndDropOperation(kernel,
+						       page,
+						       plotSystemData,
+						       plotWidth,
+						       plotHeight,
+						       nColumn,
+						       nRow,
+						       currentZone ?
+						       currentZone->pszId : 0);
+
+		} /* columns */
+
+	      } /* rows */
+
+	      pageItem = g_list_next(pageItem);
+
+	    } /* while */
+
+	    break;
+
+	  default :
+
+	    break;
+
+	  } /* end of switch (kernel->dndScope) */
+
+	} /* Am I over a plot ? */
+
+      }
 
     }
     else {
@@ -778,6 +1098,22 @@ gdisp_dataReceivedDNDCallback (GtkWidget        *pageWindow,
     }
 
   } /* test on 'entryInfo' */
+
+  /*
+   * Now all is done, what about removing icon window ?
+   */
+  if (kernel->dndIconWindow != (GdkWindow*)NULL) {
+
+    gdk_window_destroy(kernel->dndIconWindow);
+    kernel->dndIconWindow       = (GdkWindow*)NULL;
+    kernel->dndIconWindowParent = (GdkWindow*)NULL;
+    kernel->dndIconPixmap       = (GdkPixmap*)NULL;
+    kernel->dndIconPixmapMask   = (GdkBitmap*)NULL;
+
+    gdk_gc_destroy(kernel->dndIconWindowGc);
+    kernel->dndIconWindowGc = (GdkGC*)NULL;
+
+  }
 
 }
 

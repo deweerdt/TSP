@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_consumers.c,v 1.8 2004-10-15 10:07:32 tractobob Exp $
+$Id: gdisp_consumers.c,v 1.9 2004-10-22 20:17:34 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -87,8 +87,6 @@ gdisp_sortProviderByName(gconstpointer data1,
 /*
  * Manage a new provider -> read information and add symbols.
  */
-
-
 static int
 gdisp_insertProvider ( Kernel_T *kernel,
 		       gchar    *url )
@@ -106,13 +104,16 @@ gdisp_insertProvider ( Kernel_T *kernel,
   const TSP_consumer_information_t *providerInfo =
                                   (const TSP_consumer_information_t*)NULL;
 
-
+  /*
+   * Try to connect to the URL.
+   */
   provider = TSP_consumer_connect_url(url);
-  if(provider) {
+
+  if (provider != (TSP_provider_t*)NULL) {
+
     /*
      * Store all available information for this provider.
      */
-
     
     /*
      * Allocate memory for this new provider.
@@ -170,12 +171,13 @@ gdisp_insertProvider ( Kernel_T *kernel,
 	                                providerInfo->current_client_number;
 	newProvider->pSymbolNumber        = providerInfo->symbols.len;
 
-	if(newProvider->pSymbolNumber > 0)
-	  {
-	    newProvider->pSymbolList          = (Symbol_T*)
-	      g_malloc0(newProvider->pSymbolNumber * sizeof(Symbol_T));
-	    assert(newProvider->pSymbolList);
-	  }
+	if (newProvider->pSymbolNumber > 0) {
+
+	  newProvider->pSymbolList = (Symbol_T*)
+	    g_malloc0(newProvider->pSymbolNumber * sizeof(Symbol_T));
+	  assert(newProvider->pSymbolList);
+
+	}
 
 	for (symbolCpt=0; symbolCpt<newProvider->pSymbolNumber; symbolCpt++) {
 
@@ -248,25 +250,32 @@ gdisp_insertProvider ( Kernel_T *kernel,
 
 }
 
+
+/*
+ * Insert possible providers on a host.
+ */
 static void
 gdisp_insertHostProviders ( Kernel_T *kernel,
 			    Host_T   *host )
 {
   GString        *messageString    = (GString*)NULL;
+  gchar          *hostUrl          = (gchar*) NULL;
   gint            providerCpt      = 0;
   gint            providersFound   = 0;
-  gchar          *hostUrl          = (gchar*) NULL;
 
   /*
    * Look for and insert providers on the given host.
    */
   hostUrl = g_malloc0(strlen(host->hName->str) + 10);
-  for (providerCpt=0; providerCpt<TSP_MAX_SERVER_NUMBER; providerCpt++)
-    {
-      sprintf(hostUrl, "//%s/:%d", host->hName->str, providerCpt);
-      if(!gdisp_insertProvider(kernel, hostUrl))
-	providersFound++;
+  for (providerCpt=0; providerCpt<TSP_MAX_SERVER_NUMBER; providerCpt++) {
+
+    sprintf(hostUrl, "//%s/:%d", host->hName->str, providerCpt);
+
+    if (gdisp_insertProvider(kernel,hostUrl) == 0) {
+      providersFound++;
     }
+
+  }
   g_free(hostUrl);
 
   /*
@@ -288,9 +297,12 @@ gdisp_insertHostProviders ( Kernel_T *kernel,
 		     host->hName->str);
 
   }
+
   kernel->outputFunc(kernel,messageString,GD_WARNING);
 
 }
+
+
 /*
  --------------------------------------------------------------------
                              PUBLIC ROUTINES
@@ -353,9 +365,10 @@ gdisp_consumingInit (Kernel_T *kernel)
   urlList = g_list_first(kernel->urlList);
   while (urlList != (GList*)NULL) {
 
-    if(!gdisp_insertProvider (kernel,
-			      (gchar*)urlList->data))
+    if (gdisp_insertProvider(kernel,
+			     (gchar*)urlList->data) == 0) {
       urlsFound++;
+    }
 
     urlList = g_list_next(urlList);
 
@@ -366,7 +379,8 @@ gdisp_consumingInit (Kernel_T *kernel)
   /*
    * Get back local host and insert it if no URL found.
    */
-  if(urlsFound == 0) {
+  if (urlsFound == 0) {
+
     hostStatus    = gethostname(localHostName,_HOST_NAME_MAX_LEN_);
     messageString = g_string_new((gchar*)NULL);
     
@@ -467,7 +481,7 @@ gdisp_consumingEnd (Kernel_T *kernel)
    * Destroy all hosts & URLs.
    */
   gdisp_destroyHosts(kernel);
-  gdisp_destroyUrls(kernel);
+  gdisp_destroyUrls (kernel);
 
 
   /*

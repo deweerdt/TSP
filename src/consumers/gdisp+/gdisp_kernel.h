@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_kernel.h,v 1.10 2004-10-15 10:07:33 tractobob Exp $
+$Id: gdisp_kernel.h,v 1.11 2004-10-22 20:17:34 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -342,6 +342,19 @@ typedef struct PlotSystemInfo_T_ {
 
 } PlotSystemInfo_T;
 
+typedef struct PlotSystemZone_T_ {
+
+#define GD_ZONE_MAX_POINTS 5
+  guchar     pszId; /* different from 0 in order to be valid */
+  gdouble    pszX[GD_ZONE_MAX_POINTS];
+  gdouble    pszY[GD_ZONE_MAX_POINTS];
+  guint      pszPointNb;
+  gchar    **pszIcon;
+  gboolean   pszAcceptDrops;
+  gchar     *pszComment;
+
+} PlotSystemZone_T;
+
 typedef struct PlotSystem_T_ {
 
   /* DO NOT PUT ANYTHING BEFORE THE FOLLOWING FUNCTIONS     */
@@ -357,28 +370,29 @@ typedef struct PlotSystem_T_ {
    */
 
   /* FIRST TYPE : Kernel only.                  */
-  void       (*psGetInformation)   (Kernel_T_Ptr,PlotSystemInfo_T*       );
-  void      *(*psCreate )          (Kernel_T_Ptr                         );
+  void       (*psGetInformation)   (Kernel_T_Ptr,PlotSystemInfo_T*  );
+  void      *(*psCreate )          (Kernel_T_Ptr                    );
+  GArray    *(*psGetDropZones)     (Kernel_T_Ptr                    );
 
   /* SECOND TYPE : Kernel and opaque structure. */
-  void       (*psDestroy)          (Kernel_T_Ptr,void*                   );
-  void       (*psSetParent)        (Kernel_T_Ptr,void*,GtkWidget*        );
-  GtkWidget *(*psGetTopLevelWidget)(Kernel_T_Ptr,void*                   );
-  void       (*psShow)             (Kernel_T_Ptr,void*                   );
-  PlotType_T (*psGetType)          (Kernel_T_Ptr,void*                   );
-  void       (*psSetDimensions)    (Kernel_T_Ptr,void*,guint,guint       );
-  void       (*psAddSymbols)       (Kernel_T_Ptr,void*,GList*,guint,guint);
-  GList     *(*psGetSymbols)       (Kernel_T_Ptr,void*,gchar             );
-  gboolean   (*psStartStep)        (Kernel_T_Ptr,void*                   );
-  void       (*psStep)             (Kernel_T_Ptr,void*                   );
-  void       (*psStopStep)         (Kernel_T_Ptr,void*                   );
-  void       (*psTreatSymbolValues)(Kernel_T_Ptr,void*                   );
-  guint      (*psGetPeriod)        (Kernel_T_Ptr,void*                   );
+  void       (*psDestroy)          (Kernel_T_Ptr,void*              );
+  void       (*psSetParent)        (Kernel_T_Ptr,void*,GtkWidget*   );
+  GtkWidget *(*psGetTopLevelWidget)(Kernel_T_Ptr,void*              );
+  void       (*psShow)             (Kernel_T_Ptr,void*              );
+  PlotType_T (*psGetType)          (Kernel_T_Ptr,void*              );
+  void       (*psSetDimensions)    (Kernel_T_Ptr,void*,guint,guint  );
+  void       (*psAddSymbols)       (Kernel_T_Ptr,void*,GList*,guchar);
+  GList     *(*psGetSymbols)       (Kernel_T_Ptr,void*,gchar        );
+  gboolean   (*psStartStep)        (Kernel_T_Ptr,void*              );
+  void       (*psStep)             (Kernel_T_Ptr,void*              );
+  void       (*psStopStep)         (Kernel_T_Ptr,void*              );
+  void       (*psTreatSymbolValues)(Kernel_T_Ptr,void*              );
+  guint      (*psGetPeriod)        (Kernel_T_Ptr,void*              );
 
   /*
    * Kernel verification.
    */
-  gboolean psIsSupported;
+  gboolean     psIsSupported;
 
 } PlotSystem_T;
 
@@ -425,22 +439,16 @@ typedef struct Page_T_ {
  * A structure that hols all GtkWidgets that must be recorded in order
  * to manage all top-level callbacks.
  */
+#include "gdisp_pixmaps.h"
+
 typedef struct KernelWidget_T_ {
 
   GtkWidget         *mainBoardWindow;
   GtkWidget         *mainBoardOkButton;
   GtkWidget         *mainBoardStopButton;
-  GdkPixmap         *mainBoardInfoPixmap;
-  GdkBitmap         *mainBoardInfoPixmapMask;
-  GdkPixmap         *mainBoardWarningPixmap;
-  GdkBitmap         *mainBoardWarningPixmapMask;
-  GdkPixmap         *mainBoardErrorPixmap;
-  GdkBitmap         *mainBoardErrorPixmapMask;
   GtkWidget         *mainBoardOutputList;
   guint              mainBoardOutputListSize;
-  GdkPixmap         *providerPixmaps    [GD_MAX_PROVIDER_NUMBER];
-  GdkBitmap         *providerPixmapMasks[GD_MAX_PROVIDER_NUMBER];
-  GdkPixmap         *pilotBoardDigitPixmap;
+  Pixmap_T          *pilotBoardDigitPixmap;
   GtkWidget         *pilotBoardTimeArea;
   GdkGC             *pilotBoardTimeContext;
   GtkWidget         *dataBookWindow;
@@ -458,11 +466,11 @@ typedef struct KernelWidget_T_ {
   GtkWidget         *filterEntry;
   GtkStyle          *selectedNodeStyle;
   GtkStyle          *unselectedNodeStyle;
-  GdkPixmap         *expandedNodePixmap;
-  GdkBitmap         *expandedNodePixmapMask;
-  GdkPixmap         *collapsedNodePixmap;
-  GdkBitmap         *collapsedNodePixmapMask;
+  Pixmap_T          *expandedNodePixmap;
+  Pixmap_T          *collapsedNodePixmap;
   GtkWidget         *sampledSymbolHTree;
+
+  GList             *pixmapTable;
 
 } KernelWidget_T;
 
@@ -477,12 +485,6 @@ typedef struct Kernel_T_ {
    */
   gint               argCounter;
   gchar            **argTable;
-
-  /*
-   * Drag & Dop process.
-   */
-  GList             *dndSelection;
-  DndScope_T         dndScope;
 
   /*
    * GTK timer identity and period in milli-seconds.
@@ -558,6 +560,17 @@ typedef struct Kernel_T_ {
    * Graphic pages.
    */
   GList             *pageList;
+
+  /*
+   * Drag & Dop process.
+   */
+  GList             *dndSelection;
+  DndScope_T         dndScope;
+  GdkWindow         *dndIconWindow;
+  GdkWindow         *dndIconWindowParent;
+  GdkGC             *dndIconWindowGc;
+  GdkPixmap         *dndIconPixmap;
+  GdkBitmap         *dndIconPixmapMask;
 
   /*
    * Widget management.

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_plotText.c,v 1.4 2004-10-05 12:31:12 tractobob Exp $
+$Id: gdisp_plotText.c,v 1.5 2004-10-22 20:17:34 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -122,6 +122,25 @@ gdisp_sortSymbolByName(gconstpointer data1,
 
 
 /*
+ * Callback when a row is selected into the list.
+ */
+static void
+gdisp_selectPlotTextRow (GtkCList       *clist,
+			 gint            row,
+			 gint            column,
+			 GdkEventButton *event,
+			 gpointer        data)
+{
+
+  /*
+   * Nothing by now.
+   * Info : Kernel_T *kernel = (Kernel_T*)data;
+   */
+
+}
+
+
+/*
  * Create a 'text plot' by providing an opaque structure to the
  * caller. This opaque structure will be given as an argument to all
  * plot function. These functions remain generic.
@@ -174,7 +193,15 @@ gdisp_createPlotText (Kernel_T *kernel)
 			       0, /* left button */
 			       GTK_BUTTON_SELECTS);
 
+  gtk_clist_set_selection_mode(GTK_CLIST(plot->pttCList),
+			       GTK_SELECTION_EXTENDED);
+
   gtk_clist_column_titles_show(GTK_CLIST(plot->pttCList));
+
+  gtk_signal_connect(GTK_OBJECT(plot->pttCList),
+		     "select-row",
+		     gdisp_selectPlotTextRow,
+		     (gpointer)kernel);
 
   gtk_object_set_data(GTK_OBJECT(plot->pttCList),
 		      "plotPointer",
@@ -374,8 +401,7 @@ static void
 gdisp_addSymbolsToPlotText (Kernel_T *kernel,
 			    void     *data,
 			    GList    *symbolList,
-			    guint     xDrop, /* CList coordinates */
-			    guint     yDrop  /* CList coordinates */ )
+			    guchar    zoneId)
 {
 
   PlotText_T *plot       = (PlotText_T*)data;
@@ -528,8 +554,8 @@ gdisp_stepOnPlotText (Kernel_T *kernel,
 			    GD_SYMBOL_NAME_COLUMN,
 			    symbol->sInfo.name,
 			    10, /* spacing */
-			    kernel->widgets.mainBoardInfoPixmap,
-			    kernel->widgets.mainBoardInfoPixmapMask);
+			    pixmap,
+			    mask);
 
 #endif
 
@@ -625,6 +651,21 @@ gdisp_treatPlotTextSymbolValues (Kernel_T *kernel,
 
 
 /*
+ * Get back the zones that have been defined on that plot.
+ */
+static GArray*
+gdisp_getPlotTextDropZones (Kernel_T *kernel)
+{
+
+  /*
+   * No zones on text plots.
+   */
+  return (GArray*)NULL;
+
+}
+
+
+/*
  --------------------------------------------------------------------
                              PUBLIC ROUTINES
  --------------------------------------------------------------------
@@ -656,6 +697,7 @@ gdisp_initPlotTextSystem (Kernel_T     *kernel,
   plotSystem->psGetInformation    = gdisp_getPlotTextInformation;
   plotSystem->psTreatSymbolValues = gdisp_treatPlotTextSymbolValues;
   plotSystem->psGetPeriod         = gdisp_getPlotTextPeriod;
+  plotSystem->psGetDropZones      = gdisp_getPlotTextDropZones;
 
 }
 

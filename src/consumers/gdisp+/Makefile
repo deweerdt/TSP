@@ -23,6 +23,7 @@ SOURCES = \
 	gdisp_plot2D.c         \
 	gdisp_plotText.c       \
 	gdisp_pointArray.c     \
+	gdisp_pixmaps.c        \
 	gdisp_utils.c
 
 OBJECTS = $(SOURCES:%.c=$(DIROBJ)/%.o) 

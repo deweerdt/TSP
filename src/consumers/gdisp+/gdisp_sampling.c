@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_sampling.c,v 1.7 2004-10-15 10:07:33 tractobob Exp $
+$Id: gdisp_sampling.c,v 1.8 2004-10-22 20:17:34 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -166,7 +166,7 @@ gdisp_computeTimerPeriod ( Kernel_T         *kernel,
   plotPeriod = (*plotSystemData->plotSystem->psGetPeriod)
                                       (kernel,plotSystemData->plotData);
 
-  *timerPeriod = MIN(*timerPeriod,plotPeriod);
+  *timerPeriod = gdisp_computePgcd(*timerPeriod,plotPeriod);
 
 }
 

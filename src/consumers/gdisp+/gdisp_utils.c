@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_utils.c,v 1.4 2004-06-17 20:03:02 esteban Exp $
+$Id: gdisp_utils.c,v 1.5 2004-10-22 20:17:34 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -71,22 +71,16 @@ File      : GDISP utilities.
  * Button with a label and a pixmap.
  */
 static GtkWidget*
-gdisp_createLabelPixmapBox (GtkWidget  *parent,
-			    gchar     **pixmapData,
-			    gchar      *labelData)
+gdisp_createLabelPixmapBox (Kernel_T  *kernel,
+			    GtkWidget *parent,
+			    Pixmap_ID  pixmapId,
+			    gchar     *labelData)
 {
 
   GtkWidget *hBox    = (GtkWidget*)NULL;
   GtkWidget *label   = (GtkWidget*)NULL;
   GtkWidget *wPixmap = (GtkWidget*)NULL;
-  GdkPixmap *pixmap  = (GdkPixmap*)NULL;
-  GdkBitmap *mask    = (GdkBitmap*)NULL;
-  GtkStyle  *style   =  (GtkStyle*)NULL;
-
-
-  assert(pixmapData);
-  assert(labelData);
-
+  Pixmap_T  *pixmap  =  (Pixmap_T*)NULL;
 
   /*
    * Create horizontal box for nesting the pixmap and the label.
@@ -97,19 +91,14 @@ gdisp_createLabelPixmapBox (GtkWidget  *parent,
 
 
   /*
-   * Get the style of the button to get the background color.
-   */
-  style = gtk_widget_get_style(parent);
-
-
-  /*
    * Now, create the pixmap according to specified data.
    */
-  pixmap = gdk_pixmap_create_from_xpm_d(parent->window,
-					&mask,
-					&style->bg[GTK_STATE_NORMAL],
-					pixmapData);
-  wPixmap = gtk_pixmap_new(pixmap,mask);
+  pixmap = gdisp_getPixmapById(kernel,
+			       pixmapId,
+			       parent);
+
+  wPixmap = gtk_pixmap_new(pixmap->pixmap,
+			   pixmap->mask);
 
 
   /*
@@ -150,10 +139,6 @@ gdisp_createLabelPixmapBox (GtkWidget  *parent,
 }
 
 
-#include "pixmaps/gdisp_applyLogo.xpm"
-#include "pixmaps/gdisp_doneLogo.xpm"
-
-
 /*
  --------------------------------------------------------------------
                              PUBLIC ROUTINES
@@ -165,24 +150,23 @@ gdisp_createLabelPixmapBox (GtkWidget  *parent,
  * PGCD computation.
  */
 guint
-gdisp_computePgcd (void)
+gdisp_computePgcd ( guint a,
+		    guint b )
 {
 
-  guint a = 8136;
-  guint b =  492;
-  guint c =    1;
+  guint pgcd    = MAX(a,b);
+  guint divisor = MIN(a,b);
+  guint remain  = 1;
 
-  while (c != 0) {
+  while (remain != 0) {
 
-    c = a % b;
-
-    a = b;
-
-    b = c;
+    remain  = pgcd % divisor;
+    pgcd    = divisor;
+    divisor = remain;
 
   }
 
-  return a;
+  return pgcd;
 
 }
 
@@ -279,7 +263,8 @@ gdisp_waitTime (HRTime_T timeStamp,
  * By now, only 'apply' and 'done' buttons are available.
  */
 GtkWidget*
-gdisp_createButtonBar (GtkWidget  *window,
+gdisp_createButtonBar (Kernel_T   *kernel,
+		       GtkWidget  *window,
 		       GtkWidget **applyButton,
 		       GtkWidget **doneButton)
 {
@@ -305,8 +290,9 @@ gdisp_createButtonBar (GtkWidget  *window,
      * Create a new button.
      */
     *doneButton = gtk_button_new();
-    hBoxButton  = gdisp_createLabelPixmapBox(window,
-					     gdisp_doneLogo,
+    hBoxButton  = gdisp_createLabelPixmapBox(kernel,
+					     window,
+					     GD_PIX_doneButton,
 					     "Done");
     gtk_container_add(GTK_CONTAINER(*doneButton),
 		      hBoxButton);
@@ -331,8 +317,9 @@ gdisp_createButtonBar (GtkWidget  *window,
      * Create a new button.
      */
     *applyButton = gtk_button_new();
-    hBoxButton   = gdisp_createLabelPixmapBox(window,
-					      gdisp_applyLogo,
+    hBoxButton   = gdisp_createLabelPixmapBox(kernel,
+					      window,
+					      GD_PIX_applyButton,
 					      "Apply");
     gtk_container_add(GTK_CONTAINER(*applyButton),
 		      hBoxButton);
@@ -422,10 +409,6 @@ gdisp_destroyFonts(GdkFont *fonts[GD_FONT_MAX_SIZE][GD_FONT_MAX_TYPE])
 /*
  * Get back pixmap according to message type.
  */
-#include "pixmaps/gdisp_warningLogo.xpm"
-#include "pixmaps/gdisp_errorLogo.xpm"
-#include "pixmaps/gdisp_infoLogo.xpm"
-
 GtkWidget*
 gdisp_getMessagePixmaps (Kernel_T  *kernel,
 			 GtkWidget *parent,
@@ -434,10 +417,9 @@ gdisp_getMessagePixmaps (Kernel_T  *kernel,
 {
 
   GtkWidget *pixmapWidget = (GtkWidget*)NULL;
-  GdkBitmap *mask         = (GdkBitmap*)NULL;
   GtkWidget *hBox         = (GtkWidget*)NULL;
   GtkWidget *label        = (GtkWidget*)NULL;
-  GtkStyle  *style        =  (GtkStyle*)NULL;
+  Pixmap_T  *pixmap       =  (Pixmap_T*)NULL;
 
 
   /*
@@ -453,76 +435,36 @@ gdisp_getMessagePixmaps (Kernel_T  *kernel,
    * Avoid creating the pixmap each time the function is called.
    * Remember the pixmap address in the Kernel.
    */
-  style = gtk_widget_get_style(parent);
   switch (messageType) {
 
   case GD_MESSAGE :
 
-    if (kernel->widgets.mainBoardInfoPixmap == (GdkPixmap*)NULL) {
-
-      kernel->widgets.mainBoardInfoPixmap =
-	gdk_pixmap_create_from_xpm_d(parent->window,
-				     &mask,
-				     &style->bg[GTK_STATE_NORMAL],
-				     (gchar**)gdisp_infoLogo);
-      kernel->widgets.mainBoardInfoPixmapMask = mask;
-
-      gdk_pixmap_ref(kernel->widgets.mainBoardInfoPixmap);
-      gdk_bitmap_ref(kernel->widgets.mainBoardInfoPixmapMask);
-
-    }
-
-    pixmapWidget = gtk_pixmap_new(kernel->widgets.mainBoardInfoPixmap,
-				  kernel->widgets.mainBoardInfoPixmapMask);
-    gtk_widget_show(pixmapWidget);
+    pixmap = gdisp_getPixmapById(kernel,
+				 GD_PIX_info,
+				 parent);
     break;
 
   case GD_WARNING :
 
-    if (kernel->widgets.mainBoardWarningPixmap == (GdkPixmap*)NULL) {
-
-      kernel->widgets.mainBoardWarningPixmap =
-	gdk_pixmap_create_from_xpm_d(parent->window,
-				     &mask,
-				     &style->bg[GTK_STATE_NORMAL],
-				     (gchar**)gdisp_warningLogo);
-      kernel->widgets.mainBoardWarningPixmapMask = mask;
-
-      gdk_pixmap_ref(kernel->widgets.mainBoardWarningPixmap);
-      gdk_bitmap_ref(kernel->widgets.mainBoardWarningPixmapMask);
-
-    }
-
-    pixmapWidget = gtk_pixmap_new(kernel->widgets.mainBoardWarningPixmap,
-				  kernel->widgets.mainBoardWarningPixmapMask);
-    gtk_widget_show(pixmapWidget);
+    pixmap = gdisp_getPixmapById(kernel,
+				 GD_PIX_warning,
+				 parent);
     break;
 
   case GD_ERROR   :
+  default         :
 
-    if (kernel->widgets.mainBoardErrorPixmap == (GdkPixmap*)NULL) {
-
-      kernel->widgets.mainBoardErrorPixmap =
-	gdk_pixmap_create_from_xpm_d(parent->window,
-				     &mask,
-				     &style->bg[GTK_STATE_NORMAL],
-				     (gchar**)gdisp_errorLogo);
-      kernel->widgets.mainBoardErrorPixmapMask = mask;
-
-      gdk_pixmap_ref(kernel->widgets.mainBoardErrorPixmap);
-      gdk_bitmap_ref(kernel->widgets.mainBoardErrorPixmapMask);
-
-    }
-
-    pixmapWidget = gtk_pixmap_new(kernel->widgets.mainBoardErrorPixmap,
-				  kernel->widgets.mainBoardErrorPixmapMask);
-    gtk_widget_show(pixmapWidget);
-    break;
-
-  default :
+    pixmap = gdisp_getPixmapById(kernel,
+				 GD_PIX_error,
+				 parent);
     break;
 
   }
+
+  pixmapWidget = gtk_pixmap_new(pixmap->pixmap,
+				pixmap->mask);
+
+  gtk_widget_show(pixmapWidget);
 
   gtk_box_pack_start(GTK_BOX(hBox),
 		     pixmapWidget,
@@ -551,55 +493,29 @@ gdisp_getMessagePixmaps (Kernel_T  *kernel,
 /*
  * Get back pixmap according to provider identity.
  */
-#include "pixmaps/gdisp_magentaBall.xpm"
-#include "pixmaps/gdisp_cyanBall.xpm"
-#include "pixmaps/gdisp_yellowBall.xpm"
-#include "pixmaps/gdisp_blueBall.xpm"
-#include "pixmaps/gdisp_greenBall.xpm"
-#include "pixmaps/gdisp_redBall.xpm"
-
-void
+Pixmap_T*
 gdisp_getProviderIdPixmap ( Kernel_T   *kernel,
 			    GtkWidget  *parent,
-			    guint       providerIdentity,
-			    GdkPixmap **identityPixmap,
-			    GdkBitmap **identityPixmapMask )
+			    guint       providerIdentity)
 {
 
-  GtkStyle   *style  =  (GtkStyle*)NULL;
-  GdkPixmap  *pixmap = (GdkPixmap*)NULL;
-  GdkBitmap  *mask   = (GdkBitmap*)NULL;
-  gchar     **pixmapTable[GD_MAX_PROVIDER_NUMBER] = { gdisp_magentaBall,
-						      gdisp_cyanBall,
-						      gdisp_yellowBall,
-						      gdisp_blueBall,
-						      gdisp_greenBall,
-						      gdisp_redBall };
+  Pixmap_T  *pixmap = (Pixmap_T*)NULL;
+  Pixmap_ID  pixmapTable[GD_MAX_PROVIDER_NUMBER] = { GD_PIX_magentaBall,
+						     GD_PIX_cyanBall,
+						     GD_PIX_yellowBall,
+						     GD_PIX_blueBall,
+						     GD_PIX_greenBall,
+						     GD_PIX_redBall };
 
   /*
    * Get back the correct pixmap according to provider identity.
    * Create the pixmap if it does not already exist.
    */
-  pixmap = kernel->widgets.providerPixmaps[providerIdentity];
-  if (pixmap == (GdkPixmap*)NULL) {
+  pixmap = gdisp_getPixmapById(kernel,
+			       pixmapTable[providerIdentity],
+			       parent);
 
-    style = gtk_widget_get_style(parent);
-
-    pixmap = gdk_pixmap_create_from_xpm_d(parent->window,
-					  &mask,
-					  &kernel->colors[_WHITE_],
-					  pixmapTable[providerIdentity]);
-
-    gdk_pixmap_ref(pixmap);
-    gdk_bitmap_ref(mask);
-
-    kernel->widgets.providerPixmaps    [providerIdentity] = pixmap;
-    kernel->widgets.providerPixmapMasks[providerIdentity] = mask;
-
-  }
-
-  *identityPixmap     = pixmap;
-  *identityPixmapMask = mask;
+  return pixmap;
 
 }
 
@@ -778,29 +694,31 @@ gdisp_loopOnGraphicPlots ( Kernel_T  *kernel,
  * Determine whether a point is inside a closed polygon.
  */
 gboolean
-gdisp_pointIsInsidePolygon ( )
+gdisp_positionIsInsideZone ( PlotSystemZone_T *zone,
+			     gdouble           x,
+			     gdouble           y)
 {
-
-#if defined(FIXME_LATER)
 
   guint    i        = 0;
   guint    j        = 0;
   gboolean isInside = FALSE;
 
-  for (i=0; i<polySides; i++) {
+  for (i=0; i<zone->pszPointNb; i++) {
 
     j++;
 
-    if (j == polySides) {
+    if (j == zone->pszPointNb) {
       j=0;
     }
 
-    if (polyY[i] < y && polyY[j] >= y || polyY[j] < y && polyY[i] >= y) {
+    if (zone->pszY[i] < y && zone->pszY[j] >= y ||
+	zone->pszY[j] < y && zone->pszY[i] >= y    ) {
 
-      if (polyX[i] + (y - polyY[i]) /
-	  (polyY[j] - polyY[i]) * (polyX[j] -polyX[i]) < x) {
+      if (zone->pszX[i] + (y - zone->pszY[i]) /
+	  (zone->pszY[j] - zone->pszY[i]) *
+	  (zone->pszX[j] - zone->pszX[i]) < x) {
 
-        isInside = (isInside == FALSE);
+        isInside = (isInside == FALSE ? TRUE : FALSE);
 
       }
 
@@ -809,7 +727,5 @@ gdisp_pointIsInsidePolygon ( )
   }
 
   return isInside;
-
-#endif
 
 }

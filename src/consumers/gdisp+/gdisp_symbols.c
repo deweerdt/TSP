@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_symbols.c,v 1.4 2004-06-17 20:03:02 esteban Exp $
+$Id: gdisp_symbols.c,v 1.5 2004-10-22 20:17:34 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -85,8 +85,7 @@ gdispInsertAndSortSymbols (Kernel_T  *kernel,
 						      "n/a",
 						      "undefined" };
 #if defined(GD_MAKE_DIFFERENCE_WITH_PIXMAP)
-  GdkPixmap  *idPixmap       = (GdkPixmap*)NULL;
-  GdkBitmap  *idPixmapMask   = (GdkBitmap*)NULL;
+  Pixmap_T   *idPixmap       = (Pixmap_T*)NULL;
 #endif
 
   assert(kernel);
@@ -135,19 +134,17 @@ gdispInsertAndSortSymbols (Kernel_T  *kernel,
 
 #if defined(GD_MAKE_DIFFERENCE_WITH_PIXMAP)
 
-	      gdisp_getProviderIdPixmap(kernel,
-					kernel->widgets.symbolCList,
-					provider->pIdentity,
-					&idPixmap,
-					&idPixmapMask);
+	      idPixmap = gdisp_getProviderIdPixmap(kernel,
+						   kernel->widgets.symbolCList,
+						   provider->pIdentity);
 
 	      gtk_clist_set_pixtext(GTK_CLIST(kernel->widgets.symbolCList),
 				    rowNumber,
 				    0, /* first column */
 				    symbolPtr->sInfo.name,
 				    5, /* spacing */
-				    idPixmap,
-				    idPixmapMask);
+				    idPixmap->pixmap,
+				    idPixmap->mask);
 
 #else
 
@@ -309,6 +306,54 @@ gdisp_changeDnDScopeCallback (GtkWidget *radioButtonWidget,
 
 
 /*
+ * List Selection callback.
+ */
+static void
+gdisp_listSelectionCallback ( GtkWidget      *widget /* symbol cList */,
+			      gint            row, 
+			      gint            column,
+			      GdkEventButton *event,
+			      gpointer        data )
+{
+
+  Kernel_T *kernel = (Kernel_T*)data;
+
+  /*
+   * Add the selected symbol into the DND selection list.
+   */
+  kernel->dndSelection =
+    g_list_append(kernel->dndSelection,
+		  gtk_clist_get_row_data(GTK_CLIST(widget),
+					 row));
+
+}
+
+
+/*
+ * List Deselection callback.
+ */
+static void
+gdisp_listDeselectionCallback ( GtkWidget      *widget /* symbol cList */,
+				gint            row, 
+				gint            column,
+				GdkEventButton *event,
+				gpointer        data )
+{
+
+  Kernel_T *kernel = (Kernel_T*)data;
+
+  /*
+   * Remove the selected symbol from the DND selection list.
+   */
+  kernel->dndSelection =
+    g_list_remove(kernel->dndSelection,
+		  gtk_clist_get_row_data(GTK_CLIST(widget),
+					 row));
+
+}
+
+
+/*
  * DND "drag_begin" handler : this is called whenever a drag starts.
  */
 static void
@@ -317,10 +362,7 @@ gdisp_beginDNDCallback (GtkWidget      *widget /* symbol cList */,
 			gpointer        data)
 {
 
-  Kernel_T *kernel       = (Kernel_T*)data;
-  GList    *selectedRows =    (GList*)NULL;
-  guint     row          =               0;
-
+  Kernel_T *kernel = (Kernel_T*)data;
 
   /*
    * Put any needed drag begin setup code here.
@@ -334,28 +376,9 @@ gdisp_beginDNDCallback (GtkWidget      *widget /* symbol cList */,
 #endif
 
   /*
-   * Retreive symbols that are selected and put them into the
-   * kernel DND selection list.
+   * Noting to be done.
    */
-  assert(kernel->dndSelection == (GList*)NULL);
 
-  selectedRows =
-    g_list_first(GTK_CLIST(kernel->widgets.symbolCList)->selection);
-
-  while (selectedRows != (GList*)NULL) {
-
-    row = (guint)selectedRows->data;
-
-    kernel->dndSelection =
-      g_list_append(
-           kernel->dndSelection,
-	   gtk_clist_get_row_data(GTK_CLIST(kernel->widgets.symbolCList),
-				  row));
-
-    selectedRows = g_list_next(selectedRows);
-
-  }
-  
 }
 
 
@@ -396,6 +419,22 @@ gdisp_endDNDCallback (GtkWidget      *widget /* symbol cList */,
 
     g_list_free(kernel->dndSelection);
     kernel->dndSelection = (GList*)NULL;
+
+  }
+
+  /*
+   * Now all is done, what about removing icon window ?
+   */
+  if (kernel->dndIconWindow != (GdkWindow*)NULL) {
+
+    gdk_window_destroy(kernel->dndIconWindow);
+    kernel->dndIconWindow       = (GdkWindow*)NULL;
+    kernel->dndIconWindowParent = (GdkWindow*)NULL;
+    kernel->dndIconPixmap       = (GdkPixmap*)NULL;
+    kernel->dndIconPixmapMask   = (GdkBitmap*)NULL;
+
+    gdk_gc_destroy(kernel->dndIconWindowGc);
+    kernel->dndIconWindowGc = (GdkGC*)NULL;
 
   }
 
@@ -697,7 +736,7 @@ gdisp_createSymbolList ( Kernel_T  *kernel,
    * Multiple selection is possible.
    */
   gtk_clist_set_selection_mode(GTK_CLIST(cList),
-			       GTK_SELECTION_MULTIPLE);
+			       GTK_SELECTION_EXTENDED);
 
   /*
    * What however is important, is that we set the column widths as
@@ -711,7 +750,17 @@ gdisp_createSymbolList ( Kernel_T  *kernel,
 			       0, /* left button performs selection & DND */
 			       GTK_BUTTON_SELECTS | GTK_BUTTON_DRAGS);
   gtk_clist_set_use_drag_icons(GTK_CLIST(cList),
-                               TRUE /* use icons */);
+                               FALSE /* use icons */);
+
+  gtk_signal_connect(GTK_OBJECT(cList),
+		     "select_row",
+		     gdisp_listSelectionCallback,
+		     kernel);
+
+  gtk_signal_connect(GTK_OBJECT(cList),
+		     "unselect_row",
+		     gdisp_listDeselectionCallback,
+		     kernel);
 
   /*
    * Add the CList widget to the vertical box and show it.

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_dataBook.c,v 1.3 2004-06-17 20:03:02 esteban Exp $
+$Id: gdisp_dataBook.c,v 1.4 2004-10-22 20:17:34 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -438,7 +438,8 @@ gdisp_showDataBook (gpointer factoryData,
 
   /* ------------------------ PACKING BOX ------------------------ */
 
-  mainHBox = gdisp_createButtonBar(kernel->widgets.dataBookWindow,
+  mainHBox = gdisp_createButtonBar(kernel,
+				   kernel->widgets.dataBookWindow,
 				   &applyButton,
 				   &closeButton);
 

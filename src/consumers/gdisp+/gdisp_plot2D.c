@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_plot2D.c,v 1.6 2004-05-19 15:10:57 dufy Exp $
+$Id: gdisp_plot2D.c,v 1.7 2004-10-22 20:17:34 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -196,55 +196,6 @@ gdisp_dereferenceSymbolList ( GList *symbolList )
     g_list_free(symbolList);
 
   }
-
-}
-
-
-/*
- * Are the drop coordinates inside the X zone ?
- * 'x' and 'y' are in plot coordinates.
- */
-static gboolean
-gdisp_isInsideXZone (Plot2D_T *plot,
-		     guint     x,
-		     guint     y)
-{
-
-  /*
-   * Y
-   * |       Y zone
-   * |
-   * | /--------------------
-   * |/        X zone
-   * +-----------------------> X
-   *
-   */
-
-  guint coefficient = 2; /* 50 % */
-
-  /*
-   * Apply filter.
-   */
-  if (x < plot->p2dAreaWidth / coefficient) {
-
-    if (y < (plot->p2dAreaHeight * x / plot->p2dAreaWidth)) {
-
-      return TRUE;
-
-    }
-
-  }
-  else {
-
-    if (y < plot->p2dAreaHeight / coefficient) {
-
-      return TRUE;
-
-    }
-
-  }
-
-  return FALSE;
 
 }
 
@@ -1225,7 +1176,7 @@ gdisp_plot2DDrawBackBufferCurves (Kernel_T       *kernel,
 
       lastIndex = cptPoint;
 
-      pSample        = DP_ARRAY_GET_SAMPLE_PTR(pArray,cptPoint);
+      pSample        = dparray_getSamplePtr(pArray,cptPoint);
       currentPixel.x = X_SAMPLE_TO_WIN(plot,pSample->x);
       currentPixel.y = Y_SAMPLE_TO_WIN(plot,pSample->y);
 
@@ -1976,8 +1927,7 @@ static void
 gdisp_addSymbolsToPlot2D (Kernel_T *kernel,
 			  void     *data,
 			  GList    *symbolList,
-			  guint     xDrop, /* plot coordinates */
-			  guint     yDrop  /* plot coordinates */ )
+			  guchar    zoneId)
 {
 
   Plot2D_T *plot       = (Plot2D_T*)data;
@@ -1993,9 +1943,7 @@ gdisp_addSymbolsToPlot2D (Kernel_T *kernel,
    * CAUTION : we bet the X will be monotonic increasing 
    * try plot y=f(t). Realtime will warn us if not.
    */
-  if (gdisp_isInsideXZone(plot,
-			  xDrop,
-			  yDrop) == TRUE) {
+  if (zoneId == 'X') {
 
     /*
      * We cannot change X symbol while plot is been working...
@@ -2033,7 +1981,7 @@ gdisp_addSymbolsToPlot2D (Kernel_T *kernel,
     } /* p2dIsWorking == FALSE */
 
   }
-  else {
+  else if (zoneId == 'Y') {
 
     /*
      * Incoming symbols are to be attached to the Y axis.
@@ -2239,11 +2187,11 @@ gdisp_stepOnPlot2D (Kernel_T *kernel,
     /*
      * Try to know whether F2T becomes F2X...
      */
-    pLastPoint = DP_ARRAY_GET_SAMPLE_PTR(pArray,startIndex-1);
+    pLastPoint = dparray_getSamplePtr(pArray,startIndex-1);
 
     for (cptPoint=startIndex; cptPoint<startIndex+nbPoints; cptPoint++) {
 
-      pSample = DP_ARRAY_GET_SAMPLE_PTR(pArray,cptPoint);
+      pSample = dparray_getSamplePtr(pArray,cptPoint);
 
       /*
        * Check if plot2D is still monotonic increasing on X.
@@ -2485,6 +2433,64 @@ gdisp_treatPlot2DSymbolValues (Kernel_T *kernel,
 
 
 /*
+ * Get back the zones that have been defined on that plot.
+ */
+static GArray*
+gdisp_getPlot2DDropZones (Kernel_T *kernel)
+{
+
+#include "pixmaps/gdisp_xLogo.xpm"
+#include "pixmaps/gdisp_yLogo.xpm"
+
+  static GArray    *p2dDropZones = (GArray*)NULL;
+
+  PlotSystemZone_T  zone;
+
+
+  /*
+   * Allocate and define drop zones.
+   */
+  if (p2dDropZones == (GArray*)NULL) {
+
+    p2dDropZones = g_array_new(FALSE, /* zero_terminated */
+			       TRUE,  /* clear           */
+			       sizeof(PlotSystemZone_T));
+
+    /* X zone definition */
+    zone.pszId          = 'X';
+    zone.pszX[0] = 0.0;  zone.pszX[1] = 1.0;  zone.pszX[2] = 1.0;
+    zone.pszY[0] = 0.0;  zone.pszY[1] = 0.0;  zone.pszY[2] = 1.0;
+    zone.pszPointNb     = 3;
+    zone.pszAcceptDrops = TRUE;
+    zone.pszComment     = "X";
+    zone.pszIcon        = gdisp_xLogo;
+    g_array_append_val(p2dDropZones,zone);
+
+    /* Y zone definition */
+    zone.pszId          = 'Y';
+    zone.pszX[0] = 0.0;  zone.pszX[1] = 1.0;  zone.pszX[2] = 0.0;
+    zone.pszY[0] = 0.0;  zone.pszY[1] = 1.0;  zone.pszY[2] = 1.0;
+    zone.pszPointNb     = 3;
+    zone.pszAcceptDrops = TRUE;
+    zone.pszComment     = "Y";
+    zone.pszIcon        = gdisp_yLogo;
+    g_array_append_val(p2dDropZones,zone);
+
+    /* adjust mempry */
+    p2dDropZones = g_array_set_size(p2dDropZones,
+				    2 /* two zones */ );
+
+  }
+
+  /*
+   * X and Y zones on 2D plots.
+   */
+  return p2dDropZones;
+
+}
+
+
+/*
  --------------------------------------------------------------------
                              PUBLIC ROUTINES
  --------------------------------------------------------------------
@@ -2518,6 +2524,7 @@ gdisp_initPlot2DSystem (Kernel_T     *kernel,
   plotSystem->psGetInformation    = gdisp_getPlot2DInformation;
   plotSystem->psTreatSymbolValues = gdisp_treatPlot2DSymbolValues;
   plotSystem->psGetPeriod         = gdisp_getPlot2DPeriod;
+  plotSystem->psGetDropZones      = gdisp_getPlot2DDropZones;
 
   /*
    * Manage debug traces.
@@ -2526,17 +2533,3 @@ gdisp_initPlot2DSystem (Kernel_T     *kernel,
   gdispVerbosity = (trace != (gchar*)NULL) ? atoi(trace) : 1;
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-

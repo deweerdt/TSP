@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_hosts.c,v 1.3 2004-10-15 10:07:33 tractobob Exp $
+$Id: gdisp_hosts.c,v 1.4 2004-10-22 20:17:34 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -101,7 +101,7 @@ gdisp_findHostByName ( Kernel_T *kernel,
 
 
 /*
- * Build the host or URL list according to user specifications.
+ * Build the host list according to user specifications.
  */
 void
 gdisp_addHost ( Kernel_T *kernel,
@@ -134,11 +134,16 @@ gdisp_addHost ( Kernel_T *kernel,
 
 }
 
+
+/*
+ * Build the URL list according to user specifications.
+ */
 void
 gdisp_addUrl ( Kernel_T *kernel,
-		gchar    *urlName )
+	       gchar    *urlName )
 {
-  gchar *url = NULL;
+
+  gchar *url = (gchar*)NULL;
 
   /*
    * Duplicate URL name
@@ -155,9 +160,8 @@ gdisp_addUrl ( Kernel_T *kernel,
 }
 
 
-
 /*
- * Destroy host/URL list.
+ * Destroy host list.
  */
 void
 gdisp_destroyHosts ( Kernel_T *kernel )
@@ -188,11 +192,15 @@ gdisp_destroyHosts ( Kernel_T *kernel )
 
 }
 
+
+/*
+ * Destroy URL list.
+ */
 void
 gdisp_destroyUrls ( Kernel_T *kernel )
 {
 
-  GList  *urlItem =  (GList*)NULL;
+  GList  *urlItem = (GList*)NULL;
   gchar  *url     = (gchar*)NULL;
 
 
@@ -204,7 +212,7 @@ gdisp_destroyUrls ( Kernel_T *kernel )
 
     url = (gchar*)urlItem->data;
 
-    free(url);
+    g_free(url);
 
     urlItem = g_list_next(urlItem);
 
