@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: glue_stub.c,v 1.4 2003-02-27 18:07:23 tsp_admin Exp $
+$Id: glue_stub.c,v 1.5 2004-02-10 03:42:19 sgalles Exp $
 
 -----------------------------------------------------------------------
 
@@ -209,6 +209,16 @@ GLU_get_state_t GLU_get_next_item(GLU_handle_t h_glu,glu_item_t* item)
       else
 	{
 	  res = GLU_GET_NO_ITEM;
+
+          /* Maybe there's no item coz the thread is not started : start it !
+             And yes, this is ugly. In a perfect world, this should be in GLU_get_instance,
+             but it does not work : the fifo may be full before the very first
+             GLU_get_next_item
+          */ 
+          if(!thread_id)
+            {
+              pthread_create(&thread_id, NULL, GLU_thread, NULL);
+            }        
 	}
     }
   else
@@ -225,11 +235,6 @@ GLU_handle_t GLU_get_instance(int argc, char* argv[], char** error_info)
 {
   SFUNC_NAME(GLU_get_instance);
 
-  /* At first consumer connection : start thread */
-  if(!thread_id)
-    {
-      TSP_CHECK_THREAD( (pthread_create(&thread_id, NULL, GLU_thread, NULL)), FALSE);
-    }
 
   if(error_info)
     *error_info = "";
