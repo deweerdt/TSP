@@ -1,11 +1,7 @@
 include $(DEVBASE)/make/Makeparams
 
 
-ifeq (${BUILD_JAVA},yes)
-	SUBDIRS = core jcore util providers consumers
-else
-	SUBDIRS = core util providers consumers
-endif
+SUBDIRS = core util providers consumers
 
 
 # -----------------------------------------------------------

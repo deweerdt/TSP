@@ -1,4 +1,4 @@
-/* $Id: TspDataInputStream.java,v 1.2 2004-02-02 12:11:02 dufy Exp $
+/* $Id: TspDataInputStream.java,v 1.3 2004-11-06 11:45:58 sgalles Exp $
  * -----------------------------------------------------------------------
  * 
  * TSP Library - core components for a generic Transport Sampling Protocol.
@@ -46,21 +46,24 @@ import java.io.IOException;
  */
 public class TspDataInputStream implements TspDecodingStream {
 
-    public TspDataInputStream(Socket streamingSocket)
-	throws IOException
+    public TspDataInputStream(Socket streamingSocket) throws TspCommonException
     {
-	tspStream    = streamingSocket.getInputStream();
-	bufSize      = 1024;
-	buffer       = new byte[bufSize];
-	bufReadIndex = 0;
+		try {
+			tspStream    = streamingSocket.getInputStream();
+			bufSize      = 1024;
+			buffer       = new byte[bufSize];
+			bufReadIndex = 0;
+		}
+		catch (IOException e) {
+			throw new TspCommonException(e);
+		}
     }
 
     /**
      * Verify if the stream may be able to read
      * the specified amount of byte.
      */
-    public synchronized boolean available(int howmany)
-	throws TspException
+    public synchronized boolean available(int howmany) throws TspCommonException	
     {	
 	if (howmany > bufSize) {
 	    TspConfig.log(TspConfig.LOG_SEVERE,
@@ -78,7 +81,7 @@ public class TspDataInputStream implements TspDecodingStream {
     } /* end of available */
 
     protected synchronized void getData()
-	throws TspException
+	throws TspCommonException
     {
 	try {
 	    /* move all data at the beginning of the buffer */
@@ -88,7 +91,7 @@ public class TspDataInputStream implements TspDecodingStream {
 	    }
 	    int n = tspStream.read(buffer,available,bufSize-available);
 	    if (n<0) {
-		throw new TspException("End of TSP stream");
+		throw new TspCommonException("End of TSP stream");
 	    }
 	    else {
 		available += n;
@@ -102,8 +105,8 @@ public class TspDataInputStream implements TspDecodingStream {
     }
 
 
-    public synchronized double tspDecodeDouble() 
-	throws TspException	
+    public synchronized double tspDecodeDouble() throws TspCommonException 
+		
     {	
 	double a = 0.0;
 	long  l;
@@ -128,7 +131,7 @@ public class TspDataInputStream implements TspDecodingStream {
     }
 
     public synchronized int tspDecodeInt() 
-	 throws TspException
+	 throws TspCommonException
     {
 	int i = 0;
 

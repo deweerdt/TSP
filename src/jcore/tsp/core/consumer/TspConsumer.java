@@ -1,4 +1,4 @@
-/* $Id: TspConsumer.java,v 1.1 2003-02-07 16:09:48 SyntDev1 Exp $
+/* $Id: TspConsumer.java,v 1.2 2004-11-06 11:45:58 sgalles Exp $
  * -----------------------------------------------------------------------
  * 
  * TSP Library - core components for a generic Transport Sampling Protocol.
@@ -33,6 +33,7 @@
 
 package tsp.core.consumer;
 
+import java.net.UnknownHostException;
 import java.util.HashMap;
 
 import tsp.core.common.*;
@@ -67,25 +68,31 @@ public class TspConsumer {
 	sessionMap = new HashMap();
     }
 
-    /**
-     * Open a new Tsp Session with a TSP provider.
-     * @param hostname the name of the host where the TSP provider resides.
-     * @param tspProgramId the program Id of the TSP provider in case
-     *                     there is multiple TSP provider on the specified host.
-     * @return the TSP session id.
-     */
-    public int openSession(String hostname, int tspProgramId) {
+/**
+ * Open a new Tsp Session with a TSP provider.
+ * @param hostname the name of the host where the TSP provider resides.
+ * @param tspProgramId the program Id of the TSP provider in case
+ *                     there is multiple TSP provider on the specified host.
+ * @return the TSP session id.
+ */
+public int openSession(String hostname, int tspProgramId) throws UnknownHostException, TspConsumerException {
 
-	TspConfig.log(TspConfig.LOG_FINE,"Open Session on <"+hostname+"> prog id ="+tspProgramId);
-	
-	TspSession  mySession = new TspSession();
-	
-	int sessionId = mySession.open(hostname,tspProgramId);
-      
-	sessionMap.put(new Integer(sessionId),mySession);
+	try {
+		TspConfig.log(TspConfig.LOG_FINE, "Open Session on <" + hostname + "> prog id =" + tspProgramId);
 
-	return sessionId;
-    }
+		TspSession mySession = new TspSession();
+
+		int sessionId = mySession.open(hostname, tspProgramId);
+
+		sessionMap.put(new Integer(sessionId), mySession);
+
+		return sessionId;
+	}
+	catch (TspRpcException e) {
+		throw new TspConsumerException(e);
+	}
+
+}
 
     /**
      * @return the number of Opened TSP Session for this consumer.
@@ -105,7 +112,7 @@ public class TspConsumer {
      * Send Request Infos on the specified session.
      * @param tspSessionId the Id of the TSP Session
      */
-    public TspAnswerSample requestInfos(int tspSessionId) {
+    public TspAnswerSample requestInfos(int tspSessionId) throws TspConsumerException {
 	TspConfig.log(TspConfig.LOG_FINE,"Sending request infos, Session id = "+tspSessionId);
 	TspSession mySession = getSession(tspSessionId);	
 	TspRequestInfos  reqI = new TspRequestInfos(mySession.answerOpen.theAnswer.version_id,
@@ -118,7 +125,7 @@ public class TspConsumer {
      * Close an opened Tsp Session.    
      * @param tspSessionId the Id of the TSP Session to close.
      */
-    public void closeSession(int tspSessionId) {
+    public void closeSession(int tspSessionId) throws TspConsumerException {
 	TspConfig.log(TspConfig.LOG_FINE,	"Closing Session id = "+tspSessionId);
 	TspSession mySession = getSession(tspSessionId);	
 	mySession.close();

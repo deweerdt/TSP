@@ -1,4 +1,4 @@
-/* $Id: TspDecodingStream.java,v 1.1 2003-02-07 16:09:48 SyntDev1 Exp $
+/* $Id: TspDecodingStream.java,v 1.2 2004-11-06 11:45:58 sgalles Exp $
  * -----------------------------------------------------------------------
  * 
  * TSP Library - core components for a generic Transport Sampling Protocol.
@@ -35,7 +35,7 @@ package tsp.core.common;
 
 public interface TspDecodingStream {
 
-    public abstract boolean available(int howmany) throws TspException;
-    public abstract double tspDecodeDouble() throws TspException;
-    public abstract int tspDecodeInt() throws TspException;
+    public abstract boolean available(int howmany) throws TspCommonException;
+    public abstract double tspDecodeDouble() throws TspCommonException;
+    public abstract int tspDecodeInt() throws TspCommonException;
 }

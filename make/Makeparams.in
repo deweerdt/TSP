@@ -11,10 +11,6 @@ DIRBASE   = $(DEVBASE)/exec/DEV
 DIRINC    = $(DIRBASE)/include
 DIRSCRIPT = $(DIRBASE)/scripts
 
-# Java binaries location
-CLASSBASE = $(DIRBASE)/java/classes
-JARBASE = $(DIRBASE)/java/classes
-
 RPCGEN=rpcgen
 
 CPPFLAGS += -I. -I$(DIRINC) 
@@ -47,7 +43,6 @@ LDLIBS		= @LDLIBS@
 # TSP component list
 # can build java, provider or consumer part
 # ----------------
-BUILD_JAVA	= @JTSP@
 BUILD_PROVIDER	= @TSPPROVIDER@
 BUILD_CONSUMER	= @TSPCONSUMER@
 BUILD_GTK_BASED_CONSUMER = @GTK_BASED_CONSUMER@

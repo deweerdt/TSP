@@ -26,7 +26,7 @@
  * Individual:
  * 				Christophe Pecquerie
  * 
- * $Id: TspHandler.java,v 1.2 2004-02-13 12:12:01 cpecquerie Exp $
+ * $Id: TspHandler.java,v 1.3 2004-11-06 11:45:58 sgalles Exp $
  * 
  * Changes ------- 11-Dec-2003 : Creation Date (NB);
  *  
@@ -43,6 +43,7 @@ import tsp.core.common.TspRequestSample;
 import tsp.core.common.TspSample;
 import tsp.core.common.TspSampleSymbols;
 import tsp.core.consumer.TspConsumer;
+import tsp.core.consumer.TspConsumerException;
 import tsp.core.consumer.TspSession;
 import tsp.core.rpc.TSP_sample_symbol_info_list_t;
 import tsp.core.rpc.TSP_sample_symbol_info_t;
@@ -97,8 +98,7 @@ public class TspHandler extends TspConsumer implements Serializable {
 	 * @throws UnknownHostException When the hostname could not be resolved
 	 * @throws TspProviderNotFoundException	When the RPC programm is not found
 	 */
-	public TspHandler(String hostname, int provider)
-		throws UnknownHostException, TspProviderNotFoundException {
+	public TspHandler(String hostname, int provider) throws UnknownHostException, TspProviderNotFoundException {
 
 		super();
 
@@ -113,40 +113,49 @@ public class TspHandler extends TspConsumer implements Serializable {
 		phase_ = 0;
 
 		try {
-			InetAddress.getByName(hostName_);
-		} catch (UnknownHostException e) {
-			throw e;
+			sessionId_ = openSession(hostName_, provider_);
+
+			if (sessionId_ >= 0) {
+
+				tspSession_ = getSession(sessionId_);
+				providerInfo_ = requestInfos(sessionId_);
+
+				//Save the base frequency of provider
+				providerBaseFrequency_ = providerInfo_.theAnswer.base_frequency;
+
+				//Get the symbolList from the provider
+				TspSampleSymbols symbolList = new TspSampleSymbols(providerInfo_);
+
+				//Create a new array of TspSampleSymbolsInfo
+				setSymbolTab(new TspSampleSymbolInfo[symbolList.nbSymbols()]);
+				//Fill in the array
+				for (int i = 0; i < getSymbolTab().length; i++)
+					getSymbolTab()[i] = new TspSampleSymbolInfo(symbolList.getSymbolByRank(i));
+
+			}
+			else {
+				throw new TspProviderNotFoundException();
+			}
+
+		}
+		catch (TspConsumerException e) {
+			throw new TspProviderNotFoundException();
 		}
 
-		sessionId_ = openSession(hostName_, provider_);
-		if (sessionId_ >= 0) {
-
-			tspSession_ = getSession(sessionId_);
-			providerInfo_ = requestInfos(sessionId_);
-			
-			//Save the base frequency of provider
-			providerBaseFrequency_ = providerInfo_.theAnswer.base_frequency;
-
-			//Get the symbolList from the provider
-			TspSampleSymbols symbolList = new TspSampleSymbols(providerInfo_);
-
-			//Create a new array of TspSampleSymbolsInfo
-			setSymbolTab(new TspSampleSymbolInfo[symbolList.nbSymbols()]);
-			//Fill in the array
-			for (int i = 0; i < getSymbolTab().length; i++)
-				getSymbolTab()[i] =
-					new TspSampleSymbolInfo(symbolList.getSymbolByRank(i));
-		} else
-			throw new TspProviderNotFoundException();
 	}
-
 	/**
 	 * Close session
 	 *
 	 */
 	public void close() {
-		if(tspSession_ != null)
-			closeSession(sessionId_);
+		try {
+			if(tspSession_ != null)
+				closeSession(sessionId_);
+		}
+		catch (TspConsumerException e) {
+			// TODO What can we do ?
+			e.printStackTrace();
+		}
 	}
 
 	/**
@@ -350,36 +359,35 @@ public class TspHandler extends TspConsumer implements Serializable {
 		
 		in.defaultReadObject();
 		
-		try {
-			InetAddress.getByName(hostName_);
-		}
-		catch(UnknownHostException e) {
-			return;
-		}
 		
+		try {
+			sessionId_ = openSession(hostName_, provider_);
+			if (sessionId_ >= 0) {
 
-
-		sessionId_ = openSession(hostName_, provider_);
-		if (sessionId_ >= 0) {
-
-			tspSession_ = getSession(sessionId_);
-			providerInfo_ = requestInfos(sessionId_);
+				tspSession_ = getSession(sessionId_);
+				providerInfo_ = requestInfos(sessionId_);
 			
-			//Save the base frequency of provider
-			providerBaseFrequency_ = providerInfo_.theAnswer.base_frequency;
+				//Save the base frequency of provider
+				providerBaseFrequency_ = providerInfo_.theAnswer.base_frequency;
 
-			//Get the symbolList from the provider
-			TspSampleSymbols symbolList = new TspSampleSymbols(providerInfo_);
+				//Get the symbolList from the provider
+				TspSampleSymbols symbolList = new TspSampleSymbols(providerInfo_);
 
-			//Create a new array of TspSampleSymbolsInfo
-			setSymbolTab(new TspSampleSymbolInfo[symbolList.nbSymbols()]);
+				//Create a new array of TspSampleSymbolsInfo
+				setSymbolTab(new TspSampleSymbolInfo[symbolList.nbSymbols()]);
 			
-			//Fill in the array
-			for (int i = 0; i < getSymbolTab().length; i++)
-				getSymbolTab()[i] =
-					new TspSampleSymbolInfo(symbolList.getSymbolByRank(i));
+				//Fill in the array
+				for (int i = 0; i < getSymbolTab().length; i++)
+					getSymbolTab()[i] =
+						new TspSampleSymbolInfo(symbolList.getSymbolByRank(i));
 			
-		} 
+			}
+		}		
+		catch (TspConsumerException e1) {			
+			e1.printStackTrace();
+			throw new TspProviderNotFoundException();
+		}
+ 
 	}
 
 	/**
@@ -407,30 +415,43 @@ public class TspHandler extends TspConsumer implements Serializable {
 	 * Requests Samples to the Tsp provider by sending it requestedSymbolTab_
 	 * Initiates sampling.
 	 */
-	public void startSampling() {
-		int[] fw = { 0, 0, 0, 0 }; /* not used */
-		TspRequestSample rqs =
-			new TspRequestSample(
-				tspSession_.answerOpen.theAnswer.version_id,
-				tspSession_.answerOpen.theAnswer.channel_id,
-				fw,
-				1,
-				new TSP_sample_symbol_info_list_t());
-
-		rqs.setTspSSIArray(requestedSymbolTab_);
-		/* send the requestSample */
-		tspSession_.requestSample(rqs);
-		tspSession_.requestSampleInit();
-		isSampling_ = true;
+	public void startSampling() throws TspProviderNotFoundException  {
+		
+		try{
+			int[] fw = { 0, 0, 0, 0 }; /* not used */
+			TspRequestSample rqs =
+				new TspRequestSample(
+					tspSession_.answerOpen.theAnswer.version_id,
+					tspSession_.answerOpen.theAnswer.channel_id,
+					fw,
+					1,
+					new TSP_sample_symbol_info_list_t());
+			
+			rqs.setTspSSIArray(requestedSymbolTab_);
+			/* send the requestSample */
+			tspSession_.requestSample(rqs);
+			tspSession_.requestSampleInit();
+			isSampling_ = true;
+		}
+		catch (TspConsumerException e) {
+			e.printStackTrace();
+			throw new TspProviderNotFoundException();
+		}
 	}
 
 	/**
 	 * Stop sampling
 	 *
 	 */
-	public void stopSampling() {
-		isSampling_ = false;
-		tspSession_.requestSampleFinalize();
+	public void stopSampling() throws TspProviderNotFoundException{
+		try{
+			isSampling_ = false;
+			tspSession_.requestSampleFinalize();
+		}
+		catch (TspConsumerException e) {
+			e.printStackTrace();
+			throw new TspProviderNotFoundException();
+		}
 	}
 
 	/**

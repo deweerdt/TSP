@@ -13,10 +13,6 @@ ifeq (${BUILD_GTK_BASED_CONSUMER},yes)
 	SUBDIRS += gdisp gdisp+ 
 endif
 
-ifeq (${BUILD_JAVA},yes)
-	SUBDIRS += jstdout
-endif
-
 include $(DEVBASE)/make/Makesubdirs
 
 

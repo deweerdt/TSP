@@ -1,6 +1,5 @@
 # Makeparams.dec
 
-BUILD_JAVA = no
 BUILD_BB = no
 
 # Default tools

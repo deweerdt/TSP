@@ -1,4 +1,4 @@
-/* $Id: TspStreamReader.java,v 1.1 2003-02-07 16:09:48 SyntDev1 Exp $
+/* $Id: TspStreamReader.java,v 1.2 2004-11-06 11:45:58 sgalles Exp $
  * -----------------------------------------------------------------------
  * 
  * TSP Library - core components for a generic Transport Sampling Protocol.
@@ -55,7 +55,7 @@ public class TspStreamReader implements Runnable {
      * @param i the number of teh TSP group to be read
      */
     public void readGroup(int i)  
-	throws TspException
+	throws TspCommonException
     {	
 	TspGroup     g = groups[i];
 	double       value;
@@ -110,7 +110,7 @@ public class TspStreamReader implements Runnable {
 		}
 	    } /* infinite while */
 	}
-	catch (TspException e) {
+	catch (TspCommonException e) {
 	    TspConfig.log(TspConfig.LOG_INFO,
 			  "End of TSP stream");
 	}

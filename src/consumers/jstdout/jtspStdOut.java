@@ -1,4 +1,4 @@
-/* $Id: jtspStdOut.java,v 1.1 2003-02-07 16:04:02 SyntDev1 Exp $
+/* $Id: jtspStdOut.java,v 1.2 2004-11-06 11:45:58 sgalles Exp $
  * -----------------------------------------------------------------------
  * 
  * TSP Library - core components for a generic Transport Sampling Protocol.
@@ -30,7 +30,10 @@
  * 
  * -----------------------------------------------------------------------
  */
+
 package tsp.consumer;
+
+import java.net.UnknownHostException;
 
 import tsp.core.consumer.*;
 import tsp.core.common.*;
@@ -39,93 +42,118 @@ import tsp.core.config.*;
 
 class jtspStdOut {
 
-    public static void main(String [] args) {
-	TspConsumer  maisPasTrop = new TspConsumer();
+	public static void main(String[] args) {
 
-	/* Set up Logging level */
-	TspConfig.setLogLevel(TspConfig.LOG_FINER);
-
-	/* Initialize consumer*/
-	maisPasTrop.initialize(args);
-	
-	int tspProgramId = Integer.decode(args[0]).intValue();
-	String hostname  = "localhost";
-	int  symbol_rank = 0;
-	int  nb_print    = 100;
-	if (args.length>1) {
-	    hostname  = args[1];
-	}
-	if (args.length>2) {
-	    symbol_rank = Integer.decode(args[2]).intValue();
-	}
-	if (args.length>3) {
-	    nb_print = Integer.decode(args[3]).intValue();
-	}
-
-	/* open Session */
-	int sessionId = maisPasTrop.openSession(hostname,tspProgramId);
-	TspSession mySession = maisPasTrop.getSession(sessionId);
-
-	/* request Infos */
-	TspAnswerSample asi = maisPasTrop.requestInfos(sessionId);
-
-	/* build request sample */
-	TspSampleSymbols sampleSymbols = new TspSampleSymbols(asi);
-	
-	/* We keep all symbols before symbol_rank */
-	for (int i=sampleSymbols.nbSymbols()-1; i>symbol_rank;--i) {	   
-	    sampleSymbols.symbols.remove(i);
-	}
-// 	for (int i=symbol_rank; i>0;--i) {
-// 	    sampleSymbols.getSymbolByRank(i).period=i;
-// 	}
-	
-	int[] fw = {0,0,0,0}; /* not used */
-	
-	TspRequestSample rqs = new TspRequestSample(mySession.answerOpen.theAnswer.version_id,
-						    mySession.answerOpen.theAnswer.channel_id,
-						    fw,
-						    1,
-						    new TSP_sample_symbol_info_list_t());
-
-	rqs.setTspSSIArray(sampleSymbols.toTspSSIArray());
-	/* send the requestSample */
-	mySession.requestSample(rqs);
-	
-	/* begin sampling */
-	mySession.requestSampleInit();
-
-	/* print 50 sample value */
-	TspSample sample = null;
-	System.out.println("Waiting first element in FIFO...");
-	while (mySession.sampleFifo.nbSample() == 0) {		
-	    System.out.print(".");
-	    try {
-		Thread.sleep(1000);
-	    }
-	    catch (InterruptedException e) {
-		System.err.println("jtspStdOut::interrupted");	
-	    }
-	}
-	System.out.println("Got it go!!");
-
-	for (int k=0; k < nb_print;++k) {	   
-	    if (mySession.sampleFifo.nbSample() == 0) {
 		try {
-		    Thread.sleep(100);
+
+			TspConsumer maisPasTrop = new TspConsumer();
+
+			/* Set up Logging level */
+			TspConfig.setLogLevel(TspConfig.LOG_FINER);
+
+			/* Initialize consumer*/
+			maisPasTrop.initialize(args);
+
+			int tspProgramId = Integer.decode(args[0]).intValue();
+			String hostname = "localhost";
+			int symbol_rank = 0;
+			int nb_print = 100;
+			if (args.length > 1) {
+				hostname = args[1];
+			}
+			if (args.length > 2) {
+				symbol_rank = Integer.decode(args[2]).intValue();
+			}
+			if (args.length > 3) {
+				nb_print = Integer.decode(args[3]).intValue();
+			}
+
+			/* open Session */
+			int sessionId = maisPasTrop.openSession(hostname, tspProgramId);
+			TspSession mySession = maisPasTrop.getSession(sessionId);
+
+			/* request Infos */
+			TspAnswerSample asi = maisPasTrop.requestInfos(sessionId);
+
+			/* build request sample */
+			TspSampleSymbols sampleSymbols = new TspSampleSymbols(asi);
+
+			/* We keep all symbols before symbol_rank */
+			for (int i = sampleSymbols.nbSymbols() - 1; i > symbol_rank; --i) {
+				sampleSymbols.symbols.remove(i);
+			}
+			// 	for (int i=symbol_rank; i>0;--i) {
+			// 	    sampleSymbols.getSymbolByRank(i).period=i;
+			// 	}
+
+			int[] fw = { 0, 0, 0, 0 }; /* not used */
+
+			TspRequestSample rqs =
+				new TspRequestSample(
+					mySession.answerOpen.theAnswer.version_id,
+					mySession.answerOpen.theAnswer.channel_id,
+					fw,
+					1,
+					new TSP_sample_symbol_info_list_t());
+
+			rqs.setTspSSIArray(sampleSymbols.toTspSSIArray());
+			/* send the requestSample */
+			mySession.requestSample(rqs);
+
+			/* begin sampling */
+			mySession.requestSampleInit();
+
+			/* print 50 sample value */
+			TspSample sample = null;
+			System.out.println("Waiting first element in FIFO...");
+			while (mySession.sampleFifo.nbSample() == 0) {
+				System.out.print(".");
+				try {
+					Thread.sleep(1000);
+				}
+				catch (InterruptedException e) {
+					System.err.println("jtspStdOut::interrupted");
+				}
+			}
+			System.out.println("Got it go!!");
+
+			for (int k = 0; k < nb_print; ++k) {
+				if (mySession.sampleFifo.nbSample() == 0) {
+					try {
+						Thread.sleep(100);
+					}
+					catch (InterruptedException e) {
+					}
+				}
+				sample = mySession.sampleFifo.getSample();
+
+				System.out.println(
+					"Sample <"
+						+ k
+						+ "> = { time_stamp ="
+						+ sample.time_stamp
+						+ ",  provider_global_index ="
+						+ sample.provider_global_index
+						+ ", value="
+						+ sample.value);
+			}
+			/* end sampling */
+			mySession.requestSampleFinalize();
+			/* close Session */
+			maisPasTrop.closeSession(sessionId);
+
 		}
-		catch (Exception e) {}
-	    }
-	    sample = mySession.sampleFifo.getSample();
-	    
-	    System.out.println("Sample <"+k+"> = { time_stamp ="+
-			       sample.time_stamp + ",  provider_global_index ="+
-			       sample.provider_global_index + ", value="+
-			       sample.value);
-	}
-	/* end sampling */
-	mySession.requestSampleFinalize();
-	/* close Session */
-	maisPasTrop.closeSession(sessionId);
-    } /* end of main */
+		catch (TspConsumerException e) {
+			e.printStackTrace();
+		}
+		catch (UnknownHostException e) {
+			System.out.println("Provided host in unknown. Try with an other name");
+			e.printStackTrace();
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+
+	} /* end of main */
+
 }

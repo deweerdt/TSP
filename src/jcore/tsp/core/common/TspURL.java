@@ -1,4 +1,4 @@
-/* $Id: TspURL.java,v 1.1 2004-11-02 05:11:41 sgalles Exp $
+/* $Id: TspURL.java,v 1.2 2004-11-06 11:45:58 sgalles Exp $
  * -----------------------------------------------------------------------
  * 
  * TSP Library - core components for a generic Transport Sampling Protocol.
@@ -51,7 +51,7 @@ public class TspURL {
 	public TspURL() {
 	}
 
-	public TspURL(String url) throws TspException {
+	public TspURL(String url) throws TspCommonException {
 		for (int i = 0; i < EMPTY_URL.length; i++) {
 			if (url.equals(EMPTY_URL[i])) {
 				return;
@@ -82,7 +82,7 @@ public class TspURL {
 		return i != null ? i.toString() : "";
 	}
 
-	private void splitURL(String url) throws TspException {
+	private void splitURL(String url) throws TspCommonException {
 
 		// Let's do some Functional Programming, create an array of functor
 		final ValueFeeder[] feeders = { new ProtocolFeeder(), new HostFeeder(), new ServerNameFeeder(), new ServerNumberFeeder()};
@@ -92,7 +92,7 @@ public class TspURL {
 		}
 	}
 
-	private static String feedFromUrl(String url, ValueFeeder feeder) throws TspException {
+	private static String feedFromUrl(String url, ValueFeeder feeder) throws TspCommonException {
 		String token = feeder.getToken();
 		String remainingUrl;
 		if (token != null) {
@@ -105,7 +105,7 @@ public class TspURL {
 				remainingUrl = url.substring(lastPos + token.length(), url.length());
 			}
 			else {
-				throw new TspException("Malformed URL, unable to find token " + token);
+				throw new TspCommonException("Malformed URL, unable to find token " + token);
 			}
 		}
 		else {
@@ -178,7 +178,7 @@ public class TspURL {
 	 * Interface used to created functors used to set the attributes of the class
 	 */
 	private static interface ValueFeeder {
-		public void feed(String value) throws TspException;
+		public void feed(String value) throws TspCommonException;
 		public String getToken();
 	}
 
@@ -223,13 +223,13 @@ public class TspURL {
 		 * functor (as inner class) that sets the SERVERNUMBER
 		 */
 	private class ServerNumberFeeder implements ValueFeeder {
-		public void feed(String value) throws TspException {
+		public void feed(String value) throws TspCommonException {
 
 			try {
 				setServerNumber(new Integer(value));
 			}
 			catch (NumberFormatException e) {
-				throw new TspException("Bad URL, '" + value + "' is not an integer");
+				throw new TspCommonException("Bad URL, '" + value + "' is not an integer");
 			}
 		}
 

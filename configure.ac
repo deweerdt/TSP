@@ -52,41 +52,6 @@ fi
 ### End of C Setup     ###
 ##########################
 
-##########################
-# Setup Java part of TSP
-##########################
-AC_ARG_ENABLE(jtsp,   [  --enable-jtsp                enable Java TSP library build],
-	      JTSP=$enableval,
-	      JTSP="yes")
-AC_MSG_CHECKING([Java part of the TSP])
-if test "$JTSP" = "yes"; then
-AC_MSG_RESULT([Enabled, will be configured])
-AC_CHECK_PROG([JAVA],[java],[`which java`],[notfound],[$PATH],[rej])
-AC_CHECK_PROG([JAVAC],[javac],[`which javac`],[notfound],[$PATH],[rej])
-AC_CHECK_PROG([JAVADOC],[javadoc],[`which javadoc`],[notfound],[$PATH],[rej])
-AC_MSG_CHECKING([Java setup verification...])
-if test "$JAVA" = "notfound"; then
-  AC_MSG_RESULT([NOK: Java executer (java) not found java TSP target is DISABLED])
-  JTSP="no"
-elif test "$JAVAC" = "notfound"; then
-  AC_MSG_RESULT([NOK: Java compiler (javac) not found java TSP target is DISABLED])
-  JTSP="no"
-elif test "$JAVADOC" = "notfound"; then
-  AC_MSG_RESULT([Ok (but see warning)])	
-  AC_MSG_WARN([Java Documentation generator (javadoc) not found, check your java setup])
-  JTSP="yes"
-else
-  AC_MSG_RESULT([Ok])
-  JTSP="yes"
-fi
-#ENABLED_TSP_TARGET=$ENABLED_TSP_TARGET:java  # java is TSP pseudo target
-else
-AC_MSG_RESULT([Disabled, won't be configured])
-fi
-##########################
-### End of Java Setup  ###
-##########################
-
 ################################
 # GTK based consumer.
 # is gtk-config present ?
@@ -225,7 +190,6 @@ ENABLED_TSP_TARGET=`echo $ENABLED_TSP_TARGET | sed -e "s/host/$HOST_TARGET/g"`
 # --with-tsp-target-<targetname>-cc
 # vxworks
 # the host target (linux, sun, sun64, dec) is automagically enabled
-# the java target is enabled by the enable-jtsp
 # the vxworks target is enabled by the enable-vxworks, and disable others
 ############################################################################
 AC_ARG_ENABLE(tsp-target-vxworks,   [  --enable-tsp-target-vxworks  enable VxWorks TSP target],
@@ -241,11 +205,7 @@ AC_ARG_WITH(tsp-target-vxworks-cc,  [  --with-tsp-target-vxworks-cc=C_CROSS_COMP
 ############################################################################
 
 AC_MSG_NOTICE([Enabled TSP target are <$ENABLED_TSP_TARGET>])
-if test "$JTSP" = yes; then
-AC_MSG_NOTICE([TSP Java pseudo-target (jtsp) is ENABLED])
-else
-AC_MSG_NOTICE([TSP Java pseudo-target (jtsp) is DISABLED])
-fi
+
 
 AC_ARG_ENABLE(tsp-consumer,   [  --enable-tsp-consumer        map TSP target to the TSP consumer],
 	      TSPCONSUMER=$enableval,
@@ -286,11 +246,10 @@ fi
 ############################################################################
 if test "$TSPTARGET_VXWORKS" = "yes"; then
 AC_MSG_CHECKING([for VxWorks TSP target config])
-AC_MSG_WARN([Disabling TSP CONSUMERs, BB and JAVA parts])
+AC_MSG_WARN([Disabling TSP CONSUMERs and BB parts])
 ENABLED_TSP_TARGET=vxworks
 TSPCONSUMER="no"
 GTK_BASED_CONSUMER="no"
-JTSP="no"
 BB="no"
 TSPBUILD="opt"
 fi
@@ -345,7 +304,6 @@ AC_SUBST(LDLIBS)
 
 AC_SUBST(TSP_BASE)
 AC_SUBST(ENABLED_TSP_TARGET)
-AC_SUBST(JTSP)
 AC_SUBST(BB)
 AC_SUBST(TSPCONSUMER)
 AC_SUBST(GTK_BASED_CONSUMER)

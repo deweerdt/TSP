@@ -23,7 +23,7 @@
  *     Individual: 
  * 		   Christophe Pecquerie
  *
- * $Id: TspDataSourceCollection.java,v 1.2 2004-02-13 12:12:01 cpecquerie Exp $
+ * $Id: TspDataSourceCollection.java,v 1.3 2004-11-06 11:45:58 sgalles Exp $
  * 
  * Changes ------- 06-Jan-2004 : Creation Date (NB);
  *  
@@ -41,6 +41,7 @@ import simtools.data.ValueProvider;
 import simtools.data.buffer.DelayedBuffer;
 import tsp.consumer.jsynoptic.impl.TspHandler;
 import tsp.consumer.jsynoptic.impl.TspSampleSymbolInfo;
+import tsp.consumer.jsynoptic.impl.TspHandler.TspProviderNotFoundException;
 import tsp.consumer.jsynoptic.ui.TspDialogAddSource;
 import tsp.core.rpc.TSP_sample_symbol_info_t;
 
@@ -48,9 +49,7 @@ public class TspDataSourceCollection
 	extends DynamicDataSourceCollection
 	implements ActionListener, ContextualActionProvider {
 
-	public TspHandler tspHandler_;
-	private String hostname_;
-	private int provider_;
+	public TspHandler tspHandler_;	
 	protected SamplingThread thread;
 	private DataInfo collectionInfo_; 
 
@@ -62,7 +61,7 @@ public class TspDataSourceCollection
 	/**
 	 * Starts producing data automatically
 	 */
-	public void start() {
+	public void start() throws TspProviderNotFoundException {
 		//Create a new array containing the symbols'id
 		String[] symbolList = new String[sourceInfo.length];
 		for (int i=0; i< sourceInfo.length; i++) {
@@ -79,7 +78,7 @@ public class TspDataSourceCollection
 	/**
 	 * Stops producing data automatically
 	 */
-	public void stop() {
+	public void stop() throws TspProviderNotFoundException {
 		tspHandler_.stopSampling();
 		thread.stop = true;
 	}
@@ -177,22 +176,28 @@ public class TspDataSourceCollection
 	 */
 	public boolean doAction(double x, double y, Object o, String action) {
 
-		if (action.equals("Start")) {
-			start();
+		try {
+			if (action.equals("Start")) {
+				start();
+			}
+			
+			if (action.equals("Step")) {
+				step();
+			}
+			
+			if (action.equals("Stop")) {
+				stop();
+			}
+			
+			if (action.equals("Add Source")) {
+				addSymbols();
+			}
 		}
-
-		if (action.equals("Step")) {
-			step();
+		catch (TspProviderNotFoundException e) {
+			// TODO : What can we do here ?			
+			e.printStackTrace();
 		}
-
-		if (action.equals("Stop")) {
-			stop();
-		}
-
-		if (action.equals("Add Source")) {
-			addSymbols();
-		}
-
+		
 		return false;
 	}
 

@@ -1,4 +1,4 @@
-/* $Id: TspURLTest.java,v 1.1 2004-11-02 05:11:41 sgalles Exp $
+/* $Id: TspURLTest.java,v 1.2 2004-11-06 11:45:58 sgalles Exp $
  * -----------------------------------------------------------------------
  * 
  * TSP Library - core components for a generic Transport Sampling Protocol.
@@ -162,7 +162,7 @@ public class TspURLTest extends TestCase {
 			new TspURL(url);
 			fail("A TspException should have been thrown");
 		}
-		catch (TspException e) {
+		catch (TspCommonException e) {
 			assertEquals("Malformed URL, unable to find token ://", e.getMessage());
 		}
 		catch (Exception e) {
@@ -177,7 +177,7 @@ public class TspURLTest extends TestCase {
 			new TspURL(url);
 			fail("A TspException should have been thrown");
 		}
-		catch (TspException e) {
+		catch (TspCommonException e) {
 			assertEquals("Malformed URL, unable to find token /", e.getMessage());
 		}
 		catch (Exception e) {
@@ -191,7 +191,7 @@ public class TspURLTest extends TestCase {
 			new TspURL(url);
 			fail("A TspException should have been thrown");
 		}
-		catch (TspException e) {
+		catch (TspCommonException e) {
 			assertEquals("Malformed URL, unable to find token :", e.getMessage());
 		}
 		catch (Exception e) {
@@ -205,7 +205,7 @@ public class TspURLTest extends TestCase {
 			new TspURL(url);			
 			fail("A TspException should have been thrown");
 		}
-		catch (TspException e) {
+		catch (TspCommonException e) {
 			assertEquals("Bad URL, 'A' is not an integer", e.getMessage());
 		}
 		catch (Exception e) {
