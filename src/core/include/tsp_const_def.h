@@ -1,6 +1,6 @@
 /*!  \file 
  
-$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_const_def.h,v 1.6 2002-09-17 09:43:16 fancelli Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_const_def.h,v 1.7 2002-10-01 15:39:51 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -20,12 +20,13 @@ Purpose   :
 
 #define TSP_VERSION 1
 
-/* Size of ringbuf per symbol between client socket and consumer */
+/* Size of ringbuf  receiver */
 /* FIXME : faire l'allocation en fonction de la frequence de base */
-#define TSP_CONSUMER_RINGBUF_SIZE 100 * 10
+/* 1000*100*10 = 10 sec of buf for 1000 symbols 100Hz */
+#define TSP_CONSUMER_RINGBUF_SIZE (1000 * 100) * 3
 
 /* Glue server ringbuf size */
-#define GLU_RING_BUFSIZE (1000 * 100 * 20)
+#define GLU_RING_BUFSIZE (1000 * 100 * 3)
 
 
 
@@ -56,6 +57,12 @@ that will be sent thrue the socket */
 /* Socket in and out buffer for Write and Read
 operations */
 #define TSP_DATA_STREAM_SOCKET_BUFFER_SIZE 80*1024
+
+/* PROTOCOL */
+
+#define TSP_RESERVED_GROUPE_EOF        0xFFFFFFFF
+
+#define TSP_RESERVED_GROUPE_ASYNCHRONE 0xFFFFFFFE
 
 /*-------- XDR --------*/
 
