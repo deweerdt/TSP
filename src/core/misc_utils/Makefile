@@ -23,24 +23,29 @@ common:
 	$(MAKE) T=consumer$(D)	build
 	$(MAKE) T=provider$(D)	build
 
-clean::
-	$(MAKE) 	destroy
-
 debug::
 	$(MAKE) D=.debug	common
+
 
 build : $(TARGET)($(OBJECTS))
 
 
-destroy :
-	$(RM) 	 $(TARGET) 
+#----------------------------------
 
-print:
-	@for file in Makefile $(INCLUDES) global_type.x DESC.GLOBAL $(SOURCES); \
-	 do \
-		echo "printing $$file..."; \
-		il $$file; \
-	 done
+clean::
+	$(MAKE) clean_common clean_debug
+
+clean_debug:
+	$(MAKE) D=.debug clean_common
+
+clean_common:
+	$(MAKE) T=provider$(D) destroy
+	$(MAKE) T=consumer$(D) destroy
+
+destroy :
+	$(RM) 	$(TARGET)
+
+
 
 
 include $(DEVBASE)/make/Makerules

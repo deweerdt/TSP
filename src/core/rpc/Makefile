@@ -17,19 +17,22 @@ common:
 	$(MAKE) T=provider$(D) rpcgen
 	$(MAKE) T=provider$(D) RPC_LIB_SUFFIX=_server rpc.server.lib
 	$(MAKE) T=consumer$(D) RPC_LIB_SUFFIX=_client rpc.client.lib 
-clean::
-	$(MAKE) T=provider$(D) RPC_LIB_SUFFIX=_client rpc.clean
-	$(MAKE) T=consumer$(D) RPC_LIB_SUFFIX=_server rpc.clean
 
 debug::
 	$(MAKE) D=.debug	common
 
-print:
-	@for file in Makefile tsp_rpc.x $(RPC_CLIENT_SRC) $(RPC_SERVER_SRC); \
-	 do \
-		echo "printing $$file..."; \
-		il $$file; \
-	 done
+
+
+clean::
+	$(MAKE) destroy clean_debug
+
+clean_debug:
+	$(MAKE) D=.debug destroy
+
+destroy::
+	$(MAKE) T=provider$(D) RPC_LIB_SUFFIX=_client rpc.clean
+	$(MAKE) T=consumer$(D) RPC_LIB_SUFFIX=_server rpc.clean
+
 
 
 include $(DEVBASE)/make/Makerules
