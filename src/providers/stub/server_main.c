@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: server_main.c,v 1.2 2004-09-15 15:02:01 dufy Exp $
+$Id: server_main.c,v 1.3 2004-09-24 15:46:56 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -25,7 +25,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 -----------------------------------------------------------------------
 
 Project   : TSP
-Maintainer: tsp@astrium-space.com
+Maintainer: tsp@astrium.eads.net
 Component : Provider
 
 -----------------------------------------------------------------------
@@ -48,8 +48,12 @@ int main(int argc, char *argv[])
   /* Init server */
   if(TSP_provider_init(&argc, &argv))
     {
-      TSP_provider_run(TRUE);
+      TSP_provider_run(TSP_ASYNC_REQUEST_SIMPLE | TSP_ASYNC_REQUEST_NON_BLOCKING);
+      TSP_provider_urls(TSP_PUBLISH_URLS_PRINT);
+      sigwait();
+      TSP_provider_end();
     }
+
   return 0;
 }
   

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl_init/tsp_provider_init.h,v 1.6 2003-07-15 14:42:24 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl_init/tsp_provider_init.h,v 1.7 2004-09-24 15:46:56 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -25,7 +25,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 -----------------------------------------------------------------------
 
 Project   : TSP
-Maintainer : tsp@astrium-space.com
+Maintainer : tsp@astrium.eads.net
 Component : Provider
 
 -----------------------------------------------------------------------
@@ -56,10 +56,12 @@ int TSP_provider_init(int* argc, char** argv[]);
  * The different value of the TSP
  * asynchronous request handling mode
  */
-#define TSP_ASYNC_REQUEST_SIMPLE_NON_BLOCKING      0x00
-#define TSP_ASYNC_REQUEST_SIMPLE_BLOCKING          0x01
-#define TSP_ASYNC_REQUEST_DYNAMIC_BLOCKING         0x11
-#define TSP_ASYNC_REQUEST_DYNAMIC_NON_BLOCKING     0x10
+#define TSP_ASYNC_REQUEST_NON_BLOCKING   0x00000
+#define TSP_ASYNC_REQUEST_BLOCKING       0x00001
+
+#define TSP_ASYNC_REQUEST_SIMPLE         0x00000
+#define TSP_ASYNC_REQUEST_DYNAMIC        0x00010
+
 /*@}*/ 
 
 /**
@@ -78,6 +80,30 @@ int TSP_provider_init(int* argc, char** argv[]);
  * @return TRUE or FALSE. OK = TRUE.
  */
 int TSP_provider_run(int spawn_mode);
+
+
+/*@{*/ 
+/**
+ * The different value of the TSP
+ * asynchronous request URLs publishing mode
+ */
+#define TSP_PUBLISH_URLS_NONE    0x0000
+#define TSP_PUBLISH_URLS_PRINT   0x0010
+#define TSP_PUBLISH_URLS_SNMP    0x0100
+/*@}*/ 
+
+/**
+ * Universal Resource Locators of a TSP provider.
+ * Call this function to select a mode of URLs publication after the
+ * initialisation. Function always returns a string table of URLs
+ * @param pub_mode 
+ *       - 0x0000 do nothing else.
+ *       - 0x0010 print to stdout.
+ *       - 0x0100 publish to local SNMP agent (TODO).
+ * @return String table or NULL.
+ */
+char **TSP_provider_urls(int pub_mode);
+
 
 void TSP_provider_print_usage(void);
 

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: tsp_provider.h,v 1.10 2003-01-22 13:17:05 erk Exp $
+$Id: tsp_provider.h,v 1.11 2004-09-24 15:46:56 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -24,9 +24,9 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 -----------------------------------------------------------------------
 
-Project   : TSP
-Maintainer : tsp@astrium-space.com
-Component : Provider
+Project    : TSP
+Maintainer : tsp@astrium.eads.net
+Component  : Provider
 
 -----------------------------------------------------------------------
 

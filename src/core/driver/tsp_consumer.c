@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.25 2004-09-23 16:11:57 tractobob Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.26 2004-09-24 15:46:56 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -24,9 +24,9 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 -----------------------------------------------------------------------
 
-Project   : TSP
-Maintainer : tsp@astrium-space.com
-Component : Consumer
+Project    : TSP
+Maintainer : tsp@astrium.eads.net
+Component  : Consumer
 
 -----------------------------------------------------------------------
 
@@ -403,83 +403,127 @@ TSP_provider_t* TSP_consumer_connect_url(const char*  url)
   int i, servernumber;
   char url_tok[MAXHOSTNAMELEN], *protocol, *hostname, *servername, *p;
 
-  /* Parse (simply ...) URL */
+  /** Parse (simply ...) URL **/
+  /** Possible uses are :
+
+      PROTOCOL://HOST/SERVER:PORT
+      PROTOCOL://HOST/SERVER     = PROTOCOL://HOST/SERVER:(find first)
+      PROTOCOL://HOST/:0         = PROTOCOL://HOST/(find any):0
+      PROTOCOL://HOST            = PROTOCOL://HOST/(find any):(find first)
+      PROTOCOL://                = PROTOCOL://localhost/(find any):(find first)
+      /// or :///                 = rpc://localhost/(find any):(find first)
+
+      Others may have unpredictable results ... 
+  **/
+ 
   protocol = NULL;
   hostname = NULL;
   servername = NULL;
   servernumber = -1;
 
+  bzero(url_tok, sizeof(url_tok));
   strcpy(url_tok, url);
+
   protocol = url_tok;
-  p = strstr(protocol, "://");
-  if(p)
+  p = strstr(url_tok, "://");
+  if(!p)
     {
+      /* set p to hostname field */
+      p = strstr(url_tok, "//");
+      if(p) p += 2;
+      else p = url_tok;
+
+      /* no protocol specified, use default */
+      protocol = strdup(TSP_RPC_PROTOCOL);
+   }
+  else
+    {
+      /* protocol should be OK (start of URL), set p to hostname field */
+      if(p == url_tok) protocol = strdup(TSP_RPC_PROTOCOL);
       *p = '\0';
       p += 3;
-      hostname = p;
-      p = strstr(hostname, "/");
     }
-  if(p)
-    {
-      *p = '\0';
-      p += 1;
-      servername = p;
-      p = strstr(servername, ":");
-    }
-   if(p)
-    {
-      *p = '\0';
-      p += 1;
-      if(*p)
-	servernumber = atoi(p);
-    }
-     
-  if(p)
-    {
-      if(strlen(hostname) == 0) hostname = "localhost";
 
-	
-      /** Full URL, or without server name : try to connect to server number **/
-      if( strlen(protocol) != 0 && servernumber >= 0 )
+  hostname = p;
+  p = strstr(hostname, "/");
+  if(p == hostname)
+    {
+      /* no hostname provided, use default & set p to server name field */
+      hostname = strdup("localhost");
+      p += 1;
+    }
+  else if(!p)
+    {
+      /* end of string ... hostname should be OK, set p to the end */
+      p = hostname + strlen(hostname);
+    }
+  else
+    {
+      /* hostname is OK, set p to server name field */
+      *p = '\0';
+      p += 1;
+    }
+
+  servername = p;
+  p = strstr(servername, ":");
+  if(!p)
+    {
+      /* servername should be OK (or 0 length), set p to number field */
+      p = servername;
+    }
+  else
+    {
+      /* servername is OK, set p to number field */
+      *p = '\0';
+      p += 1;
+    }
+
+  if(*p)
+    servernumber = atoi(p);
+
+  printf("\nLooking for URL <");
+  printf(TSP_URL_FORMAT, protocol, hostname, servername, servernumber);
+  printf(">\n");
+
+  /** Full URL, or without server name : try to connect to server number **/
+  if( strlen(protocol) != 0 && servernumber >= 0 )
+    {
+      /* Is server number alive on given host ?*/ 
+      STRACE_DEBUG(("Trying to open server %d on %s", servernumber, hostname ));
+      /* FIXME : should we try server_name here ? */
+      if(TSP_remote_open_server(  protocol,
+				  hostname,
+				  servernumber, 
+				  &server,
+				  server_info))
 	{
-	  /* Is server number alive on given host ?*/ 
-	  STRACE_DEBUG(("Trying to open server %d on %s", servernumber, hostname ));
-	  /* FIXME : should we try server_name here ? */
-	  if(TSP_remote_open_server(  protocol,
-				      hostname,
-				      servernumber, 
-				      &server,
-				      server_info))
+	  /* yes, check whether server name is OK and allocate */
+	  if(strncmp(servername, server_info, strlen(servername)) == 0)
 	    {
-	      /* yes, check whether server name is OK and allocate */
-	      if(strncmp(servername, server_info, strlen(servername)) == 0)
-		{
-		  /* yes, got it !!! */
-		  return TSP_new_object_tsp(server, server_info);
-		}
+	      /* yes, got it !!! */
+	      return (TSP_provider_t*)TSP_new_object_tsp(server, server_info);
 	    }
-
-	  STRACE_ERROR(("No such TSP provider on URL %s", url));
-	  return NULL;
 	}
       
+      STRACE_ERROR(("No such TSP provider on URL %s", url));
+      return NULL;
+    }
+else
+    {
       /** Partial URL, without server number : try to find one **/
-      if( strlen(protocol) != 0 && strlen(servername) != 0 )
+      int server_max_number = TSP_get_server_max_number();
+      char new_url[MAXHOSTNAMELEN];
+      
+      for(i = 0; i < server_max_number; i++)
 	{
-	  int server_max_number = TSP_get_server_max_number();
-	  char new_url[MAXHOSTNAMELEN];
-	  
-	  for(i = 0; i < server_max_number; i++)
-	    {
-	      sprintf(new_url, TSP_URL_FORMAT, protocol, hostname, servername, i);
-	      provider = TSP_consumer_connect_url(new_url);
-	      if(provider)
-		return provider;
-	    }
-	  STRACE_ERROR(("No such TSP provider on URL %s", url));
-	  return NULL;
-	  
+	  sprintf(new_url, TSP_URL_FORMAT, protocol, hostname, servername, i);
+	  provider = TSP_consumer_connect_url(new_url);
+	  if(provider)
+	    return provider;
 	}
+      STRACE_ERROR(("No such TSP provider on URL %s", url));
+      return NULL;
+      
     }
 
   STRACE_ERROR(("Cannot parse such URL %s", url));
@@ -512,7 +556,7 @@ void TSP_consumer_connect_all(const char*  host_name, TSP_provider_t** providers
 	  STRACE_DEBUG(("Trying to open server No %d", i));
 
 	  /* Is server number 'i' alive ?*/ 
-	  if(TSP_remote_open_server(  "",
+	  if(TSP_remote_open_server(  TSP_RPC_PROTOCOL,
 				      host_name,
 				      i, 
 				      &server,

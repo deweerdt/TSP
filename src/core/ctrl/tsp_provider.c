@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: tsp_provider.c,v 1.23 2004-09-23 16:11:57 tractobob Exp $
+$Id: tsp_provider.c,v 1.24 2004-09-24 15:46:56 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -24,9 +24,9 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 -----------------------------------------------------------------------
 
-Project   : TSP
-Maintainer : tsp@astrium-space.com
-Component : Provider
+Project    : TSP
+Maintainer : tsp@astrium.eads.net
+Component  : Provider
 
 -----------------------------------------------------------------------
 
@@ -40,7 +40,6 @@ Purpose   : Main implementation for the producer module
 #include "tsp_provider.h"
 
 #include "tsp_session.h"
-#include "tsp_server.h"
 #include "tsp_datapool.h"
 #include "glue_sserver.h"	
 #include "tsp_time.h"	

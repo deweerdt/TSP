@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: tsp_request.c,v 1.4 2004-09-23 16:11:57 tractobob Exp $
+$Id: tsp_request.c,v 1.5 2004-09-24 15:46:56 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -24,9 +24,9 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 -----------------------------------------------------------------------
 
-Project   : TSP
-Maintainer : tsp@astrium-space.com
-Component : Provider
+Project    : TSP
+Maintainer : tsp@astrium.eads.net
+Component  : Provider
 
 -----------------------------------------------------------------------
 
@@ -78,7 +78,6 @@ TSP_provider_request_handler_t*
 TSP_provider_rqh_manager_get(int rank) {
 
   TSP_provider_request_handler_t*  retval = NULL;
-  STRACE_IO(("-->IN"));
 
   if ((rank<0) || (rank>TSP_provider_rqh_manager_get_max_nb())) {
     STRACE_ERROR(("Invalid request handler RANK=%d, max=%d",rank,TSP_provider_rqh_manager_get_max_nb()));
@@ -87,12 +86,24 @@ TSP_provider_rqh_manager_get(int rank) {
     retval = &rqh_manager_if.request_handlers[rank];
   }
   
-  STRACE_IO(("-->OUT"));
   return retval;
 } /* End of TSP_provider_rqh_manager_get */
 
+char* 
+TSP_provider_rqh_manager_get_url(int rank) {
+
+  TSP_provider_request_handler_t*  rqh_p;
+
+  rqh_p = TSP_provider_rqh_manager_get(rank);
+  if(rqh_p)
+    return rqh_p->url(rqh_p);
+  else
+    return NULL;
+
+} /* End of TSP_provider_rqh_manager_get_url */
+
 int 
-TSP_provider_rqh_manager_install(int rank, TSP_provider_request_handler_t rqh) {
+TSP_provider_rqh_manager_install(int rank, tsp_request_handler_ft rqh_constructor) {
 
   int retval = TRUE;
   TSP_provider_request_handler_t* rqh_p;
@@ -104,24 +115,17 @@ TSP_provider_rqh_manager_install(int rank, TSP_provider_request_handler_t rqh) {
     retval=FALSE;
   }
   else {
-    /* Verify the adressed rqh is not running */
-    if (rqh_p->status == TSP_RQH_STATUS_RUNNING) {
-      STRACE_ERROR(("Could not replace a running request handler"));
+    /* Verify the adressed rqh was not already installed */
+    if (rqh_p->status != TSP_RQH_STATUS_NOTINSTALLED) {
+      STRACE_ERROR(("Could not replace an installed request handler"));
       retval = FALSE;
     }
     else {
-      /* Verify the structure passed as a parameter */
-      if ((rqh.config == NULL) || (rqh.run == NULL) || (rqh.stop ==NULL)) {
-	STRACE_ERROR(("Invalid request handler descriptor"));
+       /* Really install handler */
+      if (!rqh_constructor(rqh_p)) {
+	STRACE_ERROR(("Invalid request handler constructor"));
 	retval = FALSE;
       }
-      /* Really install handler */
-      else {
-	*rqh_p = rqh;
-	rqh_p->status             = TSP_RQH_STATUS_IDLE;
-	rqh_p->tid                = -1;
-	rqh_p->request_handler_id = 0;
-      } /* if ((rqh.config == NULL) ... [else] */
     } /* (rqh_p->status == TSP_RQH_STATUS_RUNNING) [else] */
   } /* if  (!rqh_p) [else] */
 
@@ -150,7 +154,6 @@ TSP_provider_rqh_manager_init(void) {
   rqh_manager_if.nb_running_rhq = 0;
   /* RAZ handlers array */ 
   for (i=0;i<TSP_provider_rqh_manager_get_max_nb();++i) {
-    rqh_manager_if.request_handlers[i].request_handler_id = 0;
     rqh_manager_if.request_handlers[i].tid                = 0;
     rqh_manager_if.request_handlers[i].status             = TSP_RQH_STATUS_NOTINSTALLED;
     rqh_manager_if.request_handlers[i].config_param       = NULL;
@@ -169,43 +172,106 @@ TSP_provider_rqh_manager_init(void) {
 int 
 TSP_provider_rqh_manager_refresh(void) {
 
-  int retval = TRUE;
+  int retval = TRUE, timeout;
+  TSP_provider_request_handler_t *rqh_p;
+  int rank, nb, tstatus;
 
   /* 
-   * FIXME this is for testing purpose only 
    * configure and run all TSP request handlers
    * which are installed, but not running
    */
-  int i = 0;
   STRACE_IO(("-->IN"));
   TSP_LOCK_MUTEX(&rqh_manager_if.mutex,FALSE);
 
-  while ( (i<TSP_provider_rqh_manager_get_max_nb()) &&
-	  (TRUE==retval)
-	  ) {
-    if (rqh_manager_if.request_handlers[i].status == TSP_RQH_STATUS_IDLE) {
-      rqh_manager_if.request_handlers[i].url = rqh_manager_if.request_handlers[i].config(&rqh_manager_if.request_handlers[i].config_param);
-      if (rqh_manager_if.request_handlers[i].url != NULL) {
-	int tstatus;
-	rqh_manager_if.request_handlers[i].status = TSP_RQH_STATUS_CONFIGURED;
-	tstatus = pthread_create(&rqh_manager_if.request_handlers[i].tid,
-				 NULL,
-				 rqh_manager_if.request_handlers[i].run,
-				 rqh_manager_if.request_handlers[i].config_param);
+  nb = TSP_provider_rqh_manager_get_max_nb();
+  rank = 0;
+  while (rank < nb && TRUE == retval)
+    {
+      rqh_p = TSP_provider_rqh_manager_get(rank);
+
+      if (rqh_p->status == TSP_RQH_STATUS_IDLE)
+	{
+	  retval = rqh_p->config(rqh_p);
+	  if (retval)
+	    {
+	      tstatus = pthread_create(&rqh_p->tid, NULL, rqh_p->run, rqh_p);
 	
-	if (0 == tstatus) {
-	  rqh_manager_if.request_handlers[i].status = TSP_RQH_STATUS_RUNNING;
-	  rqh_manager_if.nb_running_rhq++;
+	      if (0 == tstatus)
+		{
+		  /* wait for handler to be really running, 1 second */
+		  timeout = 100;
+		  while(rqh_p->status != TSP_RQH_STATUS_RUNNING && timeout)
+		    {
+		      tsp_usleep(10000);
+		      timeout --;
+		    }
+
+		  if(rqh_p->status == TSP_RQH_STATUS_RUNNING)
+		    {
+		      rqh_manager_if.nb_running_rhq++;
+		      STRACE_INFO(("Request handler # %d started with URL %s", rank, TSP_rpc_request_url(rqh_p)));
+		    }
+		  else
+		    {
+		      STRACE_ERROR(("Request handler # %d could not start properly"));
+		    }
+		}
+	    }
 	}
-      }
-    }
-    ++i;
-  } /* End while loop over configured request handlers */
+      rank++;
+    } /* End while loop over configured request handlers */
 
   TSP_UNLOCK_MUTEX(&rqh_manager_if.mutex,FALSE);
   STRACE_IO(("-->OUT"));
   return retval;
 }  /* End of TSP_provider_rqh_manager_refresh */
+
+
+
+int TSP_provider_rqh_manager_end(void)
+{
+  int timeout;
+  TSP_provider_request_handler_t *rqh_p;
+  int rank, nb;
+
+  /* 
+   * call stop for all TSP request handlers
+   * that are running
+   */
+  STRACE_IO(("-->IN"));
+  TSP_LOCK_MUTEX(&rqh_manager_if.mutex,FALSE);
+
+  nb = TSP_provider_rqh_manager_get_max_nb();
+  for(rank = 0; rank < nb; rank++)
+    {
+      rqh_p = TSP_provider_rqh_manager_get(rank);
+
+      if (rqh_p->status == TSP_RQH_STATUS_RUNNING)
+	{
+	  rqh_p->stop(rqh_p);
+
+	  /* wait for handler to be really stopped, 1 second */
+	  timeout = 100;
+	  while(rqh_p->status != TSP_RQH_STATUS_STOPPED && timeout)
+	    {
+	      tsp_usleep(10000);
+	      timeout --;
+	    }
+
+	  if(rqh_p->status != TSP_RQH_STATUS_STOPPED)
+	    {
+	      STRACE_ERROR(("Could not stop handler # %d, canceling", rank));
+	      pthread_cancel(rqh_p->tid);
+	    }
+	  rqh_manager_if.nb_running_rhq--;
+	}
+    } /* End while loop over running request handlers */
+
+  TSP_UNLOCK_MUTEX(&rqh_manager_if.mutex,FALSE);
+  STRACE_IO(("-->OUT"));
+  return TRUE;
+} /* end of TSP_provider_rqh_manager_end */
+
 
 void TSP_provider_rqh_manager_waitend(void) {
 

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: tsp_server.h,v 1.7 2004-09-23 16:11:57 tractobob Exp $
+$Id: tsp_server.h,v 1.8 2004-09-24 15:46:56 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -48,14 +48,12 @@ Purpose   :
  * @{
  */
 
-typedef struct {
-  int  server_number;
-  char url[256];
-} TSP_rpc_request_config_t;
 
-char* TSP_rpc_request_config(void** config_param);
-void* TSP_rpc_request_run(void* config_param);
-int TSP_rpc_request_stop(void);
+int TSP_rpc_request(TSP_provider_request_handler_t* this);
+int TSP_rpc_request_config(TSP_provider_request_handler_t* this);
+void TSP_rpc_request_run(TSP_provider_request_handler_t* this);
+int TSP_rpc_request_stop(TSP_provider_request_handler_t* this);
+char* TSP_rpc_request_url(TSP_provider_request_handler_t* this);
 
 /** @} end group Server */ 
 

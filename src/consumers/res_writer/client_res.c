@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: client_res.c,v 1.9 2004-09-23 16:12:10 tractobob Exp $
+$Id: client_res.c,v 1.10 2004-09-24 15:46:56 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -25,7 +25,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 -----------------------------------------------------------------------
 
 Project   : TSP
-Maintainer: tsp@astrium-space.com
+Maintainer: tsp@astrium.eads.net
 Component : Consumer
 
 -----------------------------------------------------------------------
@@ -119,7 +119,7 @@ int main(int argc, char *argv[]){
   int base_frequency = 1e6;
   TSP_sample_t sample;
   int res_value_i, res_values_nb;
-  TSP_provider_t* providers;
+  TSP_provider_t providers[TSP_MAX_SERVER_NUMBER];
   int buffersBeforeStop = 0;
 
   char myopt; /* Options */

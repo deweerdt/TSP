@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: tsp_request.h,v 1.3 2004-09-23 16:11:57 tractobob Exp $
+$Id: tsp_request.h,v 1.4 2004-09-24 15:46:56 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -24,9 +24,9 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 -----------------------------------------------------------------------
 
-Project   : TSP
-Maintainer : tsp@astrium-space.com
-Component : Provider
+Project    : TSP
+Maintainer : tsp@astrium.eads.net
+Component  : Provider
 
 -----------------------------------------------------------------------
 
@@ -54,18 +54,22 @@ Purpose   : TSP request handling API
 /**
  * The different methods of the TSP
  * asynchronous request handler.
+ * The tsp_request_handler_ft is the object constructor
  * The tsp_request_handler_config_ft should be a function
  * which always return. The void* parameter will be allocated and 
- * filled in by the function itself. The char* returned shall be the connection URL string
+ * filled in by the function itself.
  * The tsp_request_handler_run_ft may be passed as the start_routine
  * of pthread_create(3), it is supposed to take the configuration parameter
  * taken from the cofiguration step. This function should not return unless
  * it terminates.
- * The tsp_request_handler_stop_ft is supposed to ??? what FIXME ???
- */
-typedef char* (* tsp_request_handler_config_ft)(void **);
-typedef void * (* tsp_request_handler_run_ft)(void *);
-typedef int (* tsp_request_handler_stop_ft)(void);
+ * The tsp_request_handler_stop_ft is supposed to stop the request handler
+ * The tsp_request_handler_url_ft shall return the connection URL string 
+*/
+struct TSP_provider_request_handler_t;
+typedef int   (* tsp_request_handler_config_ft)(struct TSP_provider_request_handler_t*);
+typedef void  (* tsp_request_handler_run_ft)   (struct TSP_provider_request_handler_t*);
+typedef int   (* tsp_request_handler_stop_ft)  (struct TSP_provider_request_handler_t*);
+typedef char* (* tsp_request_handler_url_ft)   (struct TSP_provider_request_handler_t*);
 /*@}*/ 
 
 /** Request handler status */
@@ -83,8 +87,6 @@ enum TSP_request_handler_status_t
   TSP_RQH_STATUS_CONFIGURED,
   /** The request handler is RUNNING */  
   TSP_RQH_STATUS_RUNNING,
-  /** The request handler must be by the next refresh STOPPED */  
-  TSP_RQH_STATUS_TO_BE_STOPPED,
   /** The request handler is STOPPED */  
   TSP_RQH_STATUS_STOPPED
 };
@@ -98,20 +100,21 @@ typedef enum TSP_request_handler_status_t TSP_request_handler_status_t;
  */
 struct TSP_provider_request_handler_t {
 
-  int request_handler_id; /**< The request handler id */
   pthread_t tid;          /**< The request handler thread Id */
   int status;             /**< The request handler status (NotInstalled,Idle, Configured, 
                                                            Running, ToBeStopped, Stopped) */
   void* config_param;     /**< The parameter used for the config step */ 
+
   tsp_request_handler_config_ft  config; /**< The function to be called in order to initialize the request
 					    handler */
   tsp_request_handler_run_ft     run;    /**< Launch the request handler */
   tsp_request_handler_stop_ft    stop;   /**< Stop the request handler */
 
-  char *url;             /**<The Universal Resource Locator to connect to this request handler>**/
+  tsp_request_handler_url_ft     url;    /**<Get Universal Resource Locator to connect to this request handler>**/
 };
 
 typedef struct TSP_provider_request_handler_t TSP_provider_request_handler_t;
+typedef int   (* tsp_request_handler_ft)       (TSP_provider_request_handler_t*);
 
 /**
  * The TSP rqh manager data structure.
@@ -159,10 +162,17 @@ int TSP_provider_rqh_manager_get_nb_running(void);
 TSP_provider_request_handler_t* TSP_provider_rqh_manager_get(int rank);
 
 /**
+ * Get the URL for this request handler
+ * @return the string for the URL
+ *         pointer may be NULL if rank is invalid or handler is KO.
+ */
+char* TSP_provider_rqh_manager_get_url(int rank);
+
+/**
  * Install a TSP request handler
  * @return TRUE on success FALSE on failure
  */
-int TSP_provider_rqh_manager_install(int rank, TSP_provider_request_handler_t rqh);
+int TSP_provider_rqh_manager_install(int rank, tsp_request_handler_ft rqh_constructor);
 
 /**
  * Set-up TSP initial request handlers.

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl_init/tsp_provider_init.c,v 1.8 2004-09-23 16:11:57 tractobob Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl_init/tsp_provider_init.c,v 1.9 2004-09-24 15:46:56 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -24,9 +24,9 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 -----------------------------------------------------------------------
 
-Project   : TSP
-Maintainer : tsp@astrium-space.com
-Component : Provider
+Project    : TSP
+Maintainer : tsp@astrium.eads.net
+Component  : Provider
 
 -----------------------------------------------------------------------
 
@@ -39,8 +39,8 @@ Purpose   : Function calls to launch a TSP Provider program
 #include "tsp_sys_headers.h"
 
 #include "tsp_provider.h"
-#include "tsp_server.h"
 #include "tsp_request.h"
+#include "tsp_server.h"
 #include "tsp_provider_init.h"
 
 int TSP_provider_init(int* argc, char** argv[])
@@ -67,20 +67,20 @@ int TSP_provider_run(int spawn_mode)
   
   if(TSP_provider_is_initialized())
     {            
-      /* build and install default request handlers */
-      TSP_provider_request_handler_t rqh;
-      rqh.config = TSP_rpc_request_config;
-      rqh.run    = TSP_rpc_request_run;
-      rqh.stop   = TSP_rpc_request_stop;
-      
-      TSP_provider_rqh_manager_install(0,rqh);
+      /* build and install default request handler (RPC) */
+      TSP_provider_rqh_manager_install(0,TSP_rpc_request);
 
-      /*
-       * un-comment this if you want to test
-       * more then one RPC request handler
-       * TSP_provider_rqh_manager_install(1,rqh);
-       */
-      
+      if (spawn_mode & TSP_ASYNC_REQUEST_DYNAMIC) {
+	/*
+	 * un-comment this if you want to test
+	 * more then one RPC request handler
+	 * TSP_provider_rqh_manager_install(1,TSP_rpc_request);
+	 */
+
+	/* TODO : call TSP_provider_rqh_manager_install with new ranks
+	   & other protocols (XML, CORBA, ...) */
+      }
+
       ret = TSP_provider_rqh_manager_refresh();
 
 
@@ -88,32 +88,64 @@ int TSP_provider_run(int spawn_mode)
        * Wait for every request handler thread to terminate
        * !!! Thread MUST NOT DETACHED themslevs though !!!
        */
-      if (spawn_mode) {
+      if (spawn_mode & TSP_ASYNC_REQUEST_BLOCKING) {
 	TSP_provider_rqh_manager_waitend();
       }
     }
   else
     {
       STRACE_ERROR(("Call TSP_provider_init first, and then call TSP_provider_run ! "))
-    }
+	}
   
   STRACE_IO(("-->OUT"));
   return ret;  
   
-  } /* TSP_provider_run */
+} /* TSP_provider_run */
 
+
+int TSP_provider_end(void)
+{
+  /* TODO : call flush on streams */
+
+  TSP_provider_rqh_manager_end();
+
+  return TRUE;
+}
 
 void TSP_provider_print_usage(void)
 {
    printf(TSP_ARG_PROVIDER_USAGE"\n");
 }
 
-char *TSP_provider_url(int rank)
+char **TSP_provider_urls(int pub_mode)
 {
-  /* Check running handlers and return their URLs */
-  if(rank >= 0 && rank < TSP_provider_rqh_manager_get_nb_running())
-    return  TSP_provider_rqh_manager_get(rank)->url;
-  else
-    return NULL;
+  int rank, nb;
+  char **urls = NULL, *url;
+
+  /* Check running handlers and copy their URLs */
+  nb = TSP_provider_rqh_manager_get_nb_running();
+  if(nb > 0)
+    {
+      urls = (char**)calloc(nb,sizeof(char*));
+      for(rank = 0; rank < nb; rank ++)
+	{
+	  url = TSP_provider_rqh_manager_get_url(rank);
+	  if(url)
+	    {
+	      urls[rank] = strdup(url);
+	      if(pub_mode & TSP_PUBLISH_URLS_PRINT)
+		printf("TSP Provider #%d URL : <%s>\n", rank, url);
+	      if(pub_mode & TSP_PUBLISH_URLS_SNMP)
+		/* TODO */
+		STRACE_ERROR(("SNMP publication of TSP URLs not yet implemented\n"));
+	    }
+	  else
+	    {
+	      STRACE_ERROR(("Request Handler #%d did not provided an URL"));
+	      urls[rank] = strdup("");
+	    }
+	}
+    }
+  return urls;
 }
 
