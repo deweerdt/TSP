@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_data_sender.c,v 1.6 2002-11-26 14:02:21 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_data_sender.c,v 1.7 2002-11-29 17:25:09 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -141,6 +141,34 @@ TSP_data_sender_t TSP_data_sender_create(int fifo_size)
     
   return sender;
 
+}
+
+void TSP_data_sender_destroy(TSP_data_sender_t sender)
+{
+  SFUNC_NAME(TSP_data_sender_send);
+
+  TSP_struct_data_sender_t* data_sender = (TSP_struct_data_sender_t*)sender;
+
+  STRACE_IO(("-->IN"));
+  
+  TSP_stream_sender_destroy(data_sender->stream_sender);
+  free(data_sender->buf);data_sender->buf = 0;
+  free(data_sender);
+
+  STRACE_IO(("-->OUT"));
+}
+
+void TSP_data_sender_stop(TSP_data_sender_t sender)
+{
+  SFUNC_NAME(TSP_data_sender_send);
+
+  TSP_struct_data_sender_t* data_sender = (TSP_struct_data_sender_t*)sender;
+
+  STRACE_IO(("-->IN"));
+  
+  TSP_stream_sender_stop(data_sender->stream_sender);
+
+  STRACE_IO(("-->OUT"));
 }
 
 /**

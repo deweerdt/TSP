@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_data_sender.h,v 1.4 2002-11-19 13:11:45 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_data_sender.h,v 1.5 2002-11-29 17:25:10 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -38,6 +38,8 @@ int TSP_data_sender_send(TSP_data_sender_t sender,
 			 time_stamp_t time_stamp) ;
 
 TSP_data_sender_t TSP_data_sender_create(int fifo_size);
+void TSP_data_sender_stop(TSP_data_sender_t sender);
+void TSP_data_sender_destroy(TSP_data_sender_t sender);
 
 const char* TSP_data_sender_get_data_address_string(TSP_data_sender_t sender);
 
