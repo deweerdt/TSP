@@ -1,6 +1,6 @@
 /*!  \file
 
-$Header: /home/def/zae/tsp/tsp/src/util/libres/Attic/datarwcpp.h,v 1.3 2003-02-06 22:43:18 sgalles Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libres/Attic/datarwcpp.h,v 1.4 2003-02-24 23:10:30 sgalles Exp $
 
 -----------------------------------------------------------------------
 
@@ -42,7 +42,7 @@ Purpose   :
 #include <string>
 #include <vector>
 
-namespace LibUtil
+namespace LibRes
 {
 
   class VarInfo
@@ -70,7 +70,8 @@ namespace LibUtil
 
     };
 
-  class Datarwcpp
+  
+ class ResReader
     {
 	 
     private:
@@ -94,29 +95,61 @@ namespace LibUtil
        public:
 	 
 	 /* C'tor */
-	 Datarwcpp();
+	 ResReader();
 	 
 	 /* D'tor */
-	 virtual ~Datarwcpp() ;
+	 virtual ~ResReader() ;
+	 
+	 bool open(const std::string& file);
 
-	 /* Read */
-	 bool r_open(const std::string& file);
-	 bool r_is_double() const;
-	 bool r_get_nb_rec() const;
-	 const std::vector<VarInfo>& r_get_vars_info() const;
-	 const std::vector<std::string>& r_get_comments() const;
+	 const std::vector<VarInfo>& get_vars_info() const;
+	 const std::vector<std::string>& get_comments() const;
 
-	 bool r_update_buf();
-	 const std::vector<float>& r_get_float_buf() const;
-	 const std::vector<double>& r_get_double_buf() const;
+	 bool is_double() const;
+	 bool get_nb_rec() const;
+
+	 void get_next_rec(const std::vector<float>*& rec);
+	 void get_next_rec(const std::vector<double>*& rec);
 	 
        private:
-	 int r_get_intern_nb_rec() const ;
-	 int r_get_intern_nb_vars() const ;
-	 int r_get_intern_nb_comments() const ;
-
+	 bool update_buf();
+	 int get_intern_nb_rec() const ;
+	 int get_intern_nb_vars() const ;
+	 int get_intern_nb_comments() const ;
 
        };
+
+ class ResWriter
+    {
+	 
+    private:
+	 /** wrapper class for C libUTIL handles.
+	  * Avoid C header in C++ header
+	  */
+	 class hwrapper;
+	 hwrapper* _h;
+
+	 bool _use_double;
+	 int _nb_vars;
+
+       public:
+	 
+	 /* C'tor */
+	 ResWriter();
+	 
+	 /* D'tor */
+	 virtual ~ResWriter() ;
+
+	 /* Read */
+	 bool open(const std::string& file,
+		   const std::vector<VarInfo>& vars,
+		   const std::vector<std::string>& coms);
+	 
+	 bool add_rec(const std::vector<float>& rec);
+	 bool add_rec(const std::vector<double>& rec);
+
+       };
+
 
 };
 
