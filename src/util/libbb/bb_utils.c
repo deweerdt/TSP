@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_utils.c,v 1.2 2004-09-20 20:55:59 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_utils.c,v 1.3 2004-10-05 22:08:06 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -154,7 +154,6 @@ bb_logMsg(const BB_LOG_LEVEL_T e_level, const char* pc_who, char* pc_fmt, ...) {
   va_end(args);
   
   fprintf(stderr,"WARNING : %s : %s\n",pc_who, message);
-  //LOG_Error(ERR_WARNING,"%s : %s\n",pc_who, message);
  
   return 0;
 }
