@@ -46,8 +46,8 @@ main (int argc, char ** argv) {
   }
   /* Creation BB */
   /***************/
-  n_data = 10000;
-  data_size = n_data*8 + 5000*30*4 + 200000*8;
+  n_data = 100;
+  data_size = n_data*8 + 500*30*4 + 20000*8;
   if (E_NOK==bb_create(&mybb,basename(argv[0]),n_data,data_size)) {
     bb_attach(&mybb,basename(argv[0]));
 /*     bb_destroy(&mybb); */
