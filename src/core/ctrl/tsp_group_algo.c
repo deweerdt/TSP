@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_group_algo.c,v 1.3 2002-10-01 15:21:22 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_group_algo.c,v 1.4 2002-10-09 07:35:20 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -236,13 +236,22 @@ TSP_group_algo_allocate_group_table(const TSP_sample_symbol_info_list_t* symbols
                                                                         group_id);
       /* Correct items pointer */
       table->groups[group_id].items = items_table;
+
+      /* Memorise max group len */
+      if (table->max_group_len <  table->groups[group_id].group_len)
+	{
+	  table->max_group_len = table->groups[group_id].group_len;
+	}
+
+      
                 
       /* Get ready for next round ! */        
       items_table += table->groups[group_id].group_len;
 
     }
     
-
+  
+  STRACE_INFO(("Max group size = %d", table->max_group_len));
   STRACE_IO(("-->OUT"));
 
     
