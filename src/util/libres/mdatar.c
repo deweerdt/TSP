@@ -1,6 +1,6 @@
 /*!  \file
 
-$Header: /home/def/zae/tsp/tsp/src/util/libres/Attic/mdatar.c,v 1.1 2003-01-31 18:32:56 tsp_admin Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libres/Attic/mdatar.c,v 1.2 2003-02-03 17:40:13 tsp_admin Exp $
 
 -----------------------------------------------------------------------
 
@@ -49,6 +49,7 @@ Purpose   :
 #include  <fcntl.h>
 #include  <stdio.h>
 #include  <string.h>
+#include  <assert.h>
 #include  <sys/types.h>
 #include  <sys/mman.h>
 #include  <sys/param.h>
@@ -65,7 +66,7 @@ RES_HANDLE *md_ropen(char *name)
 	int		fd;
 	int		zone;
 	char		*cptr;
-	void		*pa;
+	void		*pa, *ptmp;
 	int		len;
 	int		datalen;
 	RES_HANDLE	*ha;
@@ -204,6 +205,12 @@ RES_HANDLE *md_ropen(char *name)
 				datalen%(ha->nb_var*sizeof(float)) );
 	}
 
+	/* realloc data pointer for avoiding unaligned access */
+	ptmp = malloc(datalen);
+	assert(ptmp!=(void*)0);
+	memcpy(ptmp,ha->pdat,datalen);
+	ha->pdat=ptmp;
+	 
 	return ha;
 }
 
@@ -212,6 +219,7 @@ void md_rclose(RES_HANDLE *h1)
 	if((h1->pmmap != 0) && (h1->pmmap != MAP_FAILED))
 		munmap(h1->pmmap, h1->lmmap);
 
+	free(h1->pdat);
 	free(h1);
 
 	return;
