@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_consumers.c,v 1.3 2004-05-11 19:47:36 esteban Exp $
+$Id: gdisp_consumers.c,v 1.4 2004-06-17 21:07:41 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -85,25 +85,13 @@ gdisp_sortProviderByName(gconstpointer data1,
 
 
 /*
- --------------------------------------------------------------------
-                             PUBLIC ROUTINES
- --------------------------------------------------------------------
-*/
-
-
-/*
- * GDISP+ is a TSP consumer.
- * Initialize here the consummation management.
- *  - retreive all available providers on a given hosts.
- *  - ...
+ * Manage a new provider -> read information and add symbols.
  */
-void
-gdisp_consumingInit (Kernel_T *kernel)
+static void
+gdisp_insertHostProviders ( Kernel_T *kernel,
+			    gchar    *hostName )
 {
 
-#define _HOST_NAME_MAX_LEN_ 256
-  gchar           hostName[_HOST_NAME_MAX_LEN_];
-  gint            hostStatus       = 0;
   GString        *messageString    = (GString*)NULL;
 
   guint           providerIdentity = 0;
@@ -117,65 +105,6 @@ gdisp_consumingInit (Kernel_T *kernel)
 
   const TSP_consumer_information_t *providerInfo =
                                   (const TSP_consumer_information_t*)NULL;
-
-
-  /*
-   * Few checking...
-   */
-  assert(kernel);
-
-
-  /*
-   * Get back local host.
-   * By now, we assume that all available providers are on the local host.
-   */
-  hostStatus    = gethostname(hostName,_HOST_NAME_MAX_LEN_);
-  messageString = g_string_new((gchar*)NULL);
-
-  if (hostStatus == -1) {
-
-    g_string_sprintf(messageString,"Local host is UNKNOWN.");
-    kernel->outputFunc(kernel,messageString,GD_ERROR);
-
-    /*
-     * Leave.
-     */
-    return;
-
-  }
-  else {
-
-    g_string_sprintf(messageString,
-		     "Local host is '%s'.",
-		     hostName);
-    kernel->outputFunc(kernel,messageString,GD_MESSAGE);
-
-  }
-
-
-  /* --------------------- TSP INITIALISATION ---------------------- */
-
-  /*
-   * Initialisation for TSP library.
-   * This function removes the arguments it knows from the argument list,
-   * leaving anything it does not recognize for GDISP application to parse
-   * or ignore. 
-   */
-  hostStatus = TSP_consumer_init(&kernel->argCounter,
-				 &kernel->argTable);
-
-  if (hostStatus == FALSE) {
-
-    messageString = g_string_new((gchar*)NULL);
-    g_string_sprintf(messageString,"TSP Initialisation failed.");
-    kernel->outputFunc(kernel,messageString,GD_ERROR);
-
-    return;
-
-  }
-
-
-  /* ------------------------ PROVIDER LIST ------------------------- */
 
   /*
    * Connect to all found providers on the given host.
@@ -191,14 +120,17 @@ gdisp_consumingInit (Kernel_T *kernel)
   messageString = g_string_new((gchar*)NULL);
   if (providerListSize == 0) {
 
-    g_string_sprintf(messageString,"No TSP provider found on host.");
+    g_string_sprintf(messageString,
+		     "No TSP provider found on host %s.",
+		     hostName);
 
   }
   else {
 
     g_string_sprintf(messageString,
-		     "%d TSP provider(s) found on host.",
-		     providerListSize);
+		     "%d TSP provider(s) found on host %s.",
+		     providerListSize,
+		     hostName);
 
   }
   kernel->outputFunc(kernel,messageString,GD_WARNING);
@@ -341,6 +273,113 @@ gdisp_consumingInit (Kernel_T *kernel)
 
 
 /*
+ --------------------------------------------------------------------
+                             PUBLIC ROUTINES
+ --------------------------------------------------------------------
+*/
+
+
+/*
+ * GDISP+ is a TSP consumer.
+ * Initialize here the consummation management.
+ *  - retreive all available providers on a given hosts.
+ *  - ...
+ */
+void
+gdisp_consumingInit (Kernel_T *kernel)
+{
+
+#define _HOST_NAME_MAX_LEN_ 256
+  gchar           hostName[_HOST_NAME_MAX_LEN_];
+  gint            hostStatus       = 0;
+  GList          *hostList         = (GList*)NULL;
+  GString        *messageString    = (GString*)NULL;
+
+  /*
+   * Few checking...
+   */
+  assert(kernel);
+
+
+  /*
+   * Get back local host.
+   * By now, we assume that all available providers are on the local host.
+   */
+  hostStatus    = gethostname(hostName,_HOST_NAME_MAX_LEN_);
+  messageString = g_string_new((gchar*)NULL);
+
+  if (hostStatus == -1) {
+
+    g_string_sprintf(messageString,"Local host is UNKNOWN.");
+    kernel->outputFunc(kernel,messageString,GD_ERROR);
+
+    /*
+     * Leave.
+     */
+    return;
+
+  }
+  else {
+
+    g_string_sprintf(messageString,
+		     "Local host is '%s'.",
+		     hostName);
+    kernel->outputFunc(kernel,messageString,GD_MESSAGE);
+
+  }
+
+
+  /* --------------------- TSP INITIALISATION ---------------------- */
+
+  /*
+   * Initialisation for TSP library.
+   * This function removes the arguments it knows from the argument list,
+   * leaving anything it does not recognize for GDISP application to parse
+   * or ignore. 
+   */
+  hostStatus = TSP_consumer_init(&kernel->argCounter,
+				 &kernel->argTable);
+
+  if (hostStatus == FALSE) {
+
+    messageString = g_string_new((gchar*)NULL);
+    g_string_sprintf(messageString,"TSP Initialisation failed.");
+    kernel->outputFunc(kernel,messageString,GD_ERROR);
+
+    return;
+
+  }
+
+
+  /* ------------------------ HOST LIST ------------------------- */
+
+  /*
+   * Insert local host.
+   */
+  gdisp_insertHostProviders ( kernel,
+			      hostName );
+
+  /*
+   * FIXME : the local host must be treated as all other hosts.
+   */
+
+  /*
+   * Insert other hosts, if any.
+   */
+  hostList = g_list_first(kernel->hostList);
+  while (hostList != (GList*)NULL) {
+
+    gdisp_insertHostProviders ( kernel,
+				((Host_T*)hostList->data)->hName->str );
+
+    hostList = g_list_next(hostList);
+
+  }
+
+}
+
+
+/*
  * Return the number of available providers in the provider list.
  */
 guint
@@ -373,6 +412,8 @@ gdisp_consumingEnd (Kernel_T *kernel)
 
   GList      *providerItem =      (GList*)NULL;
   Provider_T *provider     = (Provider_T*)NULL;
+  GList      *hostItem     =      (GList*)NULL;
+  Host_T     *host         =     (Host_T*)NULL;
 
   assert(kernel);
 
@@ -398,6 +439,27 @@ gdisp_consumingEnd (Kernel_T *kernel)
 
   g_list_free(kernel->providerList);
   kernel->providerList = (GList*)NULL;
+
+
+  /*
+   * Release all hosts.
+   */
+  hostItem = g_list_first(kernel->hostList);
+  while (hostItem != (GList*)NULL) {
+
+    host = (Host_T*)hostItem->data;
+
+    g_string_free(host->hName,TRUE);
+
+    g_free(host);
+
+    hostItem = g_list_next(hostItem);
+
+  }
+
+  g_list_free(kernel->hostList);
+  kernel->hostList = (GList*)NULL;
+
 
   /*
    * Leave consumming services.

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_prototypes.h,v 1.5 2004-06-17 20:03:02 esteban Exp $
+$Id: gdisp_prototypes.h,v 1.6 2004-06-17 21:07:41 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -56,6 +56,12 @@ void       gdisp_destroyKernel   (Kernel_T *kernel);
 gboolean   gdisp_startSamplingProcess             (Kernel_T *kernel);
 void       gdisp_stopSamplingProcess              (Kernel_T *kernel);
 void       gdisp_affectRequestedSymbolsToProvider (Kernel_T *kernel);
+
+
+/*
+ * From gdisp_hosts.c
+ */
+void       gdisp_buildHostList (Kernel_T *kernel);
 
 
 /*

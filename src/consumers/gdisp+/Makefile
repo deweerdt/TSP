@@ -10,6 +10,7 @@ SOURCES = \
 	gdisp_mainBoard.c      \
 	gdisp_pilotBoard.c     \
 	gdisp_dataBook.c       \
+	gdisp_hosts.c          \
 	gdisp_providers.c      \
 	gdisp_consumers.c      \
 	gdisp_symbols.c        \

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_kernel.h,v 1.6 2004-06-17 20:03:02 esteban Exp $
+$Id: gdisp_kernel.h,v 1.7 2004-06-17 21:07:41 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -106,6 +106,17 @@ typedef gint64 HRTime_T;
 #define _100_MILLISECONDS_IN_MICROSECONDS_       100000LL
 #define _250_MILLISECONDS_IN_MICROSECONDS_       250000LL
 #define _ONE_SECOND_IN_MICROSECONDS_            1000000LL
+
+
+/*
+ * HOST management.
+ * Few things by now... be patient...
+ */
+typedef struct Host_T_ {
+
+  GString *hName;
+  
+} Host_T;
 
 
 /*
@@ -509,6 +520,11 @@ typedef struct Kernel_T_ {
   void             (*unRegisterAction)        (Kernel_T_Ptr,
 					       void(*action)(Kernel_T_Ptr));
   void             (*assignSymbolsToProviders)(Kernel_T_Ptr);
+
+  /*
+   * Host management.
+   */
+  GList             *hostList;
 
   /*
    * Provider management.

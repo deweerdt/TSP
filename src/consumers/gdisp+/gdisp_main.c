@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_main.c,v 1.2 2004-03-26 21:09:17 esteban Exp $
+$Id: gdisp_main.c,v 1.3 2004-06-17 21:07:41 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -97,6 +97,12 @@ main (int argc, char **argv)
    * Create our colormap.
    */
   gdisp_createColormap(gdispKernel);
+
+
+  /*
+   * Discover all hosts that are requested by the user.
+   */
+  gdisp_buildHostList(gdispKernel);
 
 
   /*
