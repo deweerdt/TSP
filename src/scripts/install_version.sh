@@ -54,6 +54,10 @@ if [ ! -d $DDEST ]; then
     exit 1
 fi
 
+# should remove an eventual existing link
+# since GNU ln would create a link 'inside' current if
+# not removed
+\rm -f current
 \ln -sf $DDEST current
 echo "Post-installing Version $DDEST..."
 
