@@ -1,7 +1,7 @@
 
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_tools.c,v 1.3 2005-02-23 01:28:28 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_tools.c,v 1.4 2005-02-23 01:34:48 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -271,6 +271,9 @@ bbtools(bbtools_request_t* req) {
   case E_BBTOOLS_SYNCHRO_RECV:
     bbtools_synchro_recv(req);
     break;
+  case E_BBTOOLS_MEMSET:
+    bbtools_memset(req);
+    break;
   default:
     req->stream = stderr;
     req->cmd    = E_BBTOOLS_UNKNOWN;
@@ -360,6 +363,8 @@ bbtools_usage(bbtools_request_t* req) {
   case E_BBTOOLS_SYNCHRO_SEND:
     break;
   case E_BBTOOLS_SYNCHRO_RECV:
+    break;
+  case E_BBTOOLS_MEMSET:
     break;
   default:
     fprintf(req->stream, 
@@ -664,3 +669,10 @@ bbtools_synchro_recv(bbtools_request_t* req) {
   retcode = bbtools_unimplemented_cmd(bbtools_cmdname_tab[E_BBTOOLS_SYNCHRO_RECV]);
   return retcode;
 } /* end of bbtools_synchro_recv */
+
+int32_t
+bbtools_memset(bbtools_request_t* req) {
+  int32_t retcode = 0;
+  retcode = bbtools_unimplemented_cmd(bbtools_cmdname_tab[E_BBTOOLS_MEMSET]);
+  return retcode;
+} /* end of bbtools_memset */

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_tools.h,v 1.3 2005-02-23 01:28:28 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_tools.h,v 1.4 2005-02-23 01:34:48 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -107,6 +107,7 @@ typedef enum {E_BBTOOLS_UNKNOWN=0,
               E_BBTOOLS_PUBLISH, 
               E_BBTOOLS_SYNCHRO_SEND,
               E_BBTOOLS_SYNCHRO_RECV,
+	      E_BBTOOLS_MEMSET,
               E_BBTOOLS_LASTCMD} E_BBTOOLS_CMD_T;
 
 typedef struct bbtools_request {
@@ -136,6 +137,7 @@ const char* bbtools_cmdname_tab[] = {"bb_unknown",
 				     "bb_publish",
 				     "bb_synchro_send",
 				     "bb_synchro_recv",
+				     "bb_memset",
 				     "bb_last_cmd"
 };
 
@@ -152,6 +154,7 @@ const char* bbtools_cmdhelp_tab[] = {"unknown bbtools command",
 				     "publish symbol in blackboard",
 				     "send synchro message through blackboard MSQ queue",
 				     "recv [wait] synchro message from blackboard MSQ queue",
+				     "memset blackboard data region",
 				     "BB LAST COMMAND"
 };
 #else
@@ -289,6 +292,13 @@ bbtools_synchro_send(bbtools_request_t* req);
 int32_t
 bbtools_synchro_recv(bbtools_request_t* req);
 
+
+/**
+ *
+ * @ingroup BBTools_API
+ */
+int32_t
+bbtools_memset(bbtools_request_t* req);
 
 END_C_DECLS
 

@@ -1,11 +1,11 @@
 - update doxygen documentation
 - write a tutorial
 - make bbtools use a common bbtools
-  may be like busybox style
+  may be like busybox style [ongoing]
 
 - use hcreate to improve symbol search and lookup
 
-- add bb_memset command and API to reset 
+- add bb_memset command and API to reset [API is ok]
   BB data area without destroying BB
 
 - add bb_publish and bb_synchro_xx to bbtools in order
