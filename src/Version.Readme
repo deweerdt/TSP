@@ -80,6 +80,13 @@ V-0.5: Creation 18/12/02 	tag TSP_0_5 SG
 
 V-0.5.1: Creation 24/12/02 	tag TSP_0_5_1 SG
 	- Plenty of comments added in header files
+
 V-0.5.2: Creation 01/02/03  	tag TSP_0_5_2 YD
 	- Moved tests upper, and split consumers & providers
 	- add tsp_gdisp for graphical consumer
+
+V-0.5.3: Creation 14/03/03  	tag TSP_0_5_3 YD
+	- Change Makefile philosophy
+	- Bug Fix : Tsp_gdisp corrected by commiting in binary type
+	- Bug Fix : res_reader don't forgot any more the two first lines
+
