@@ -4,7 +4,7 @@
 # THIS FILE NEED TO BE PROCESSED WITH AUTOCONF
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # 
-AC_INIT([the Transport Sampling Protocol], [0.6.3a], [tsp@astrium.eads.net], [tsp])
+AC_INIT([the Transport Sampling Protocol], [0.6.4], [tsp@astrium.eads.net], [tsp])
 
 echo "**********************************************************"
 echo "*  TSP: AC_PACKAGE_NAME, version AC_PACKAGE_VERSION       "
@@ -121,11 +121,30 @@ fi
 ################################
 # BlackBoard part of TSP
 ################################
-AC_ARG_ENABLE(blackboard,   [  --enable-blackboard                enable BlackBoard library and TSP BlackBoard Provider],
+AC_ARG_ENABLE(blackboard,   [  --enable-blackboard          enable BlackBoard library and TSP BlackBoard Provider],
 	      BB=$enableval,
 	      BB="yes")
 AC_MSG_CHECKING([BlackBoard part of the TSP])
 if test "$BB" = "yes"; then
+AC_MSG_RESULT([Enabled, will be configured])
+else
+AC_MSG_RESULT([Disabled, won't be configured])
+fi
+################################
+### End of BlackBoard Setup  ###
+################################
+
+###############################################
+# Scripting API for TSP
+# this is an alpha feature which will
+# make the TSP usable from srcipting language
+# like Tcl or Python.
+###############################################
+AC_ARG_ENABLE(script-binding,   [  --enable-script-binding      enable scripting language binding of the TSP (this feature is ALPHA)],
+	      SCRIPT_BINDING=$enableval,
+	      SCRIPT_BINDING="no")
+AC_MSG_CHECKING([Scripting binding for the TSP])
+if test "$SCRIPT_BINDING" = "yes"; then
 AC_MSG_RESULT([Enabled, will be configured])
 else
 AC_MSG_RESULT([Disabled, won't be configured])
@@ -267,11 +286,11 @@ AC_ARG_ENABLE(tsp-provider,   [  --enable-tsp-provider        map TSP target to 
 ############################################################################
 # Choice of compile mode : debug, opt or both
 ############################################################################
-AC_ARG_ENABLE(tsp-build-debug,   [  --enable-tsp-build-debug        Select build mode debug],
+AC_ARG_ENABLE(tsp-build-debug,   [  --enable-tsp-build-debug     select build mode debug],
 	      TSPBUILD_DEBUG=$enableval,
 	      TSPBUILD_DEBUG="yes")
 
-AC_ARG_ENABLE(tsp-build-opt,   [  --enable-tsp-build-opt        Select build mode optimized],
+AC_ARG_ENABLE(tsp-build-opt,   [  --enable-tsp-build-opt       select build mode optimized],
 	      TSPBUILD_OPT=$enableval,
 	      TSPBUILD_OPT="no")
 
@@ -357,6 +376,7 @@ AC_SUBST(LDLIBS)
 AC_SUBST(TSP_BASE)
 AC_SUBST(ENABLED_TSP_TARGET)
 AC_SUBST(BB)
+AC_SUBST(SCRIPT_BINDING)
 AC_SUBST(TSPCONSUMER)
 AC_SUBST(XML2_CONFIG_USER)
 AC_SUBST(GTK_BASED_CONSUMER)
