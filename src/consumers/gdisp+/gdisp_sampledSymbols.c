@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_sampledSymbols.c,v 1.5 2004-10-22 20:17:34 esteban Exp $
+$Id: gdisp_sampledSymbols.c,v 1.6 2005-03-08 21:28:17 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -618,12 +618,6 @@ gdisp_finaliseHierarchicalTree ( Kernel_T  *kernel,
 {
 
   guint optimalWidth = 0;
-
-  /*
-   * Do not known what this 'stub' is...
-   */
-  gtk_ctree_set_show_stub(GTK_CTREE(cTree),
-			  TRUE);
 
   /*
    * Change tree global aspect.

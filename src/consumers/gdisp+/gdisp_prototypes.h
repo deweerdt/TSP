@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_prototypes.h,v 1.9 2005-02-19 21:35:20 esteban Exp $
+$Id: gdisp_prototypes.h,v 1.10 2005-03-08 21:28:17 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -164,6 +164,12 @@ void       gdisp_initPlot2DSystem (Kernel_T     *kernel,
  */
 void       gdisp_initPlotTextSystem (Kernel_T     *kernel,
 				     PlotSystem_T *plotSystem);
+
+/*
+ * From gdisp_plotOrbital.c
+ */
+void       gdisp_initOrbitalPlotSystem (Kernel_T     *kernel,
+					PlotSystem_T *plotSystem);
 
 /*
  * From gdisp_pixmaps.c

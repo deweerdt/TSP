@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_kernel.h,v 1.12 2004-11-15 23:14:49 dufy Exp $
+$Id: gdisp_kernel.h,v 1.13 2005-03-08 21:28:17 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -283,17 +283,18 @@ typedef struct Provider_T_ {
 /*
  * Plot types.
  *  - GD_PLOT_DEFAULT : when the graphic page has just been created.
+ *  - GD_PLOT_TEXT    : alphanumeric evolution of symbols.
  *  - GD_PLOT_2D      : y = f(t) or y = f(x)
- *  - GD_PLOT_2D5     : z = f(x,y)
- *  - GD_PLOT_3D      : full colored tri-dimensional object.
+ *  - GD_PLOT_ORBITAL : a spacecraft orbiting around the Earth.
+ *  - GD_PLOT_2D5     : z = f(x,y). (not implemented)
+ *  - GD_PLOT_3D      : full colored tri-dimensional object. (not implemented)
  */
 typedef enum {
 
   GD_PLOT_DEFAULT = 0,
   GD_PLOT_TEXT,
   GD_PLOT_2D,
-  GD_PLOT_2D5,
-  GD_PLOT_3D,
+  GD_PLOT_ORBITAL,
   GD_MAX_PLOT /* this last one defines the limit */
 
 } PlotType_T;

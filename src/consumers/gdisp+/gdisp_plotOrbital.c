@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_plotCanevas.c,v 1.4 2005-03-08 21:28:17 esteban Exp $
+$Id: gdisp_plotOrbital.c,v 1.1 2005-03-08 21:28:17 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -34,8 +34,7 @@ Component : Graphic Tool
 Purpose   : Graphic Tool based on GTK+ that provide several kinds of
             plot. This tool is to be used with the generic TSP protocol.
 
-File      : << extra ressource >>
-            Give a skeleton that must be followed by any kind of plots.
+File      : A spacecraft orbiting around the Earth.
 
 -----------------------------------------------------------------------
 */
@@ -57,7 +56,7 @@ File      : << extra ressource >>
 #include "gdisp_kernel.h"
 #include "gdisp_prototypes.h"
 
-#include "gdisp_<<<-canevas->>>.h"
+#include "gdisp_plotOrbital.h"
 
 
 /*
@@ -74,10 +73,10 @@ File      : << extra ressource >>
  * plot function. These functions remain generic.
  */
 static void*
-gdisp_create<<<-canevas->>> (Kernel_T *kernel)
+gdisp_createPlotOrbital (Kernel_T *kernel)
 {
 
-  <<<-canevas->>>_T *plot = (<<<-canevas->>>_T*)NULL;
+  PlotOrbital_T *plot = (PlotOrbital_T*)NULL;
 
 
   /*
@@ -92,11 +91,11 @@ gdisp_create<<<-canevas->>> (Kernel_T *kernel)
  * Destroy a plot opaque structure.
  */
 static void
-gdisp_destroy<<<-canevas--->(Kernel_T *kernel,
-			     void     *data)
+gdisp_destroyPlotOrbital(Kernel_T *kernel,
+			 void     *data)
 {
 
-  <<<-canevas->>>_T *plot = (<<<-canevas->>>_T*)data;
+  PlotOrbital_T *plot = (PlotOrbital_T*)data;
 
   /*
    * Now destroy everything.
@@ -106,7 +105,7 @@ gdisp_destroy<<<-canevas--->(Kernel_T *kernel,
   /*
    * Free opaque structure.
    */
-  memset(plot,0,sizeof(<<<-canevas->>>_T));
+  memset(plot,0,sizeof(PlotOrbital_T));
   g_free(plot);
 
 }
@@ -116,12 +115,12 @@ gdisp_destroy<<<-canevas--->(Kernel_T *kernel,
  * Record parent widget.
  */
 static void
-gdisp_set<<<-canevas->>>ParentWidget (Kernel_T  *kernel,
-				      void      *data,
-				      GtkWidget *parent)
+gdisp_setPlotOrbitalParent (Kernel_T  *kernel,
+			    void      *data,
+			    GtkWidget *parent)
 {
 
-  <<<-canevas->>>_T *plot = (<<<-canevas->>>_T*)data;
+  PlotOrbital_T *plot = (PlotOrbital_T*)data;
 
   /*
    * Store parent widget.
@@ -134,13 +133,13 @@ gdisp_set<<<-canevas->>>ParentWidget (Kernel_T  *kernel,
  * Record initial dimensions provided by the calling process.
  */
 static void
-gdisp_set<<<-canevas->>>InitialDimensions (Kernel_T *kernel,
-					   void     *data,
-					   guint     width,
-					   guint     height)
+gdisp_setPlotOrbitalInitialDimensions (Kernel_T *kernel,
+				       void     *data,
+				       guint     width,
+				       guint     height)
 {
 
-  <<<-canevas->>>_T *plot = (<<<-canevas->>>_T*)data;
+  PlotOrbital_T *plot = (PlotOrbital_T*)data;
 
   /*
    * Remeber here initial dimensions of the viewport.
@@ -155,13 +154,13 @@ gdisp_set<<<-canevas->>>InitialDimensions (Kernel_T *kernel,
  * dynamic X management.
  */
 static GtkWidget*
-gdisp_get<<<-canevas->>>TopLevelWidget (Kernel_T  *kernel,
-					void      *data)
+gdisp_getPlotOrbitalTopLevelWidget (Kernel_T  *kernel,
+				    void      *data)
 {
 
-  <<<-canevas->>>_T *plot = (<<<-canevas->>>_T*)data;
+  PlotOrbital_T *plot = (PlotOrbital_T*)data;
 
-  return (GtkWidget*)<<<-topLevelWidget->>>;
+  return (GtkWidget*)plot->poTable;
 
 }
 
@@ -171,11 +170,11 @@ gdisp_get<<<-canevas->>>TopLevelWidget (Kernel_T  *kernel,
  * Show them here.
  */
 static void
-gdisp_show<<<-canevas->>> (Kernel_T  *kernel,
-			   void      *data)
+gdisp_showPlotOrbital (Kernel_T  *kernel,
+		       void      *data)
 {
 
-  <<<-canevas->>>_T *plot = (<<<-canevas->>>_T*)data;
+  PlotOrbital_T *plot = (PlotOrbital_T*)data;
 
   /*
    * Now show everything.
@@ -188,16 +187,16 @@ gdisp_show<<<-canevas->>> (Kernel_T  *kernel,
  * Return to calling process what king of plot we are.
  */
 static PlotType_T
-gdisp_get<<<-canevas->>>Type (Kernel_T *kernel,
-			      void     *data)
+gdisp_getPlotOrbitalType (Kernel_T *kernel,
+			  void     *data)
 {
 
-  <<<-canevas->>>_T *plot = (<<<-canevas->>>_T*)data;
+  PlotOrbital_T *plot = (PlotOrbital_T*)data;
 
   /*
    * Return the type of the plot.
    */
-  return <<<-canevas-type->>>;
+  return GD_PLOT_ORBITAL;
 
 }
 
@@ -206,13 +205,13 @@ gdisp_get<<<-canevas->>>Type (Kernel_T *kernel,
  * Record any incoming symbols.
  */
 static void
-gdisp_addSymbolsTo<<<-canevas->>> (Kernel_T *kernel,
-				   void     *data,
-				   GList    *symbolList,
-				   guchar    zoneId)
+gdisp_addSymbolsToPlotOrbital (Kernel_T *kernel,
+			       void     *data,
+			       GList    *symbolList,
+			       guchar    zoneId)
 {
 
-  <<<-canevas->>>_T *plot = (<<<-canevas->>>_T*)data;
+  PlotOrbital_T *plot = (PlotOrbital_T*)data;
 
   /*
    * Record here all incoming symbols.
@@ -225,12 +224,12 @@ gdisp_addSymbolsTo<<<-canevas->>> (Kernel_T *kernel,
  * Broadcast all recorded symbols.
  */
 static GList*
-gdisp_getSymbolsFrom<<<-canevas->>> (Kernel_T *kernel,
-				     void     *data,
-				     gchar     axis)
+gdisp_getSymbolsFromPlotOrbital (Kernel_T *kernel,
+				 void     *data,
+				 gchar     axis)
 {
 
-  <<<-canevas->>>_T *plot = (<<<-canevas->>>_T*)data;
+  PlotOrbital_T *plot = (PlotOrbital_T*)data;
 
   /*
    * Return the list of symbols.
@@ -244,8 +243,8 @@ gdisp_getSymbolsFrom<<<-canevas->>> (Kernel_T *kernel,
  * Real time Starting Step Action.
  */
 static gboolean
-gdisp_startStepOn<<<-canecas->>> (Kernel_T *kernel,
-				  void     *data)
+gdisp_startStepOnPlotOrbital (Kernel_T *kernel,
+			      void     *data)
 {
 
   /*
@@ -266,11 +265,11 @@ gdisp_startStepOn<<<-canecas->>> (Kernel_T *kernel,
  * Real time Step Action.
  */
 static void
-gdisp_stepOn<<<-canevas->>> (Kernel_T *kernel,
-			     void     *data)
+gdisp_stepOnPlotOrbital (Kernel_T *kernel,
+			 void     *data)
 {
 
-  <<<-canevas->>>_T *plot = (<<<-canevas->>>_T*)data;
+  PlotOrbital_T *plot = (PlotOrbital_T*)data;
 
   /*
    * Do anything you want to perform steps.
@@ -282,11 +281,11 @@ gdisp_stepOn<<<-canevas->>> (Kernel_T *kernel,
  * Real time Starting Step Action.
  */
 static void
-gdisp_stopStepOn<<<-canevas->>> (Kernel_T *kernel,
-				 void     *data)
+gdisp_stopStepOnPlotOrbital (Kernel_T *kernel,
+			     void     *data)
 {
 
-  <<<-canevas->>>_T *plot = (<<<-canevas->>>_T*)data;
+  PlotOrbital_T *plot = (PlotOrbital_T*)data;
 
   /*
    * Do anything you want when steps are stopped.
@@ -299,8 +298,8 @@ gdisp_stopStepOn<<<-canevas->>> (Kernel_T *kernel,
  * Get back to the calling procedure my information.
  */
 static void
-gdisp_get<<<-canevas->>>Information (Kernel_T         *kernel,
-				     PlotSystemInfo_T *information)
+gdisp_getPlotOrbitalInformation (Kernel_T         *kernel,
+				 PlotSystemInfo_T *information)
 {
 
   /*
@@ -308,9 +307,9 @@ gdisp_get<<<-canevas->>>Information (Kernel_T         *kernel,
    *   - Formula,
    *   - Descripton for tooltip purpose.
    */
-  information->psName        = "Give me a name";
-  information->psFormula     = "Y = F ( X )";
-  information->psDescription = "A typical skeleton for plots";
+  information->psName        = "Orbital Plot";
+  information->psFormula     = "Spacecraft + Earth";
+  information->psDescription = "A spacecraft orbiting around the Earth";
 
 }
 
@@ -321,8 +320,8 @@ gdisp_get<<<-canevas->>>Information (Kernel_T         *kernel,
  *           Should not be lower than 100.
  */
 static guint
-gdisp_get<<<-canevas->>>Period (Kernel_T         *kernel,
-				void             *data)
+gdisp_getPlotOrbitalPeriod (Kernel_T         *kernel,
+			    void             *data)
 {
 
   /*
@@ -342,8 +341,8 @@ gdisp_get<<<-canevas->>>Period (Kernel_T         *kernel,
  * other procedures of the graphic plot that are called by GTK main thread.
  */
 static void
-gdisp_treat<<<-canevas->>>SymbolValues (Kernel_T *kernel,
-					void     *data)
+gdisp_treatPlotOrbitalSymbolValues (Kernel_T *kernel,
+				    void     *data)
 {
 
   /*
@@ -357,7 +356,7 @@ gdisp_treat<<<-canevas->>>SymbolValues (Kernel_T *kernel,
  * Get back the zones that have been defined on that plot.
  */
 static GArray*
-gdisp_get<<<-canevas->>>DropZones (Kernel_T *kernel)
+gdisp_getPlotOrbitalDropZones (Kernel_T *kernel)
 {
 
   /*
@@ -376,30 +375,30 @@ gdisp_get<<<-canevas->>>DropZones (Kernel_T *kernel)
 
 
 void
-gdisp_init<<<-canevas->>>System (Kernel_T     *kernel,
-				 PlotSystem_T *plotSystem)
+gdisp_initOrbitalPlotSystem (Kernel_T     *kernel,
+			     PlotSystem_T *plotSystem)
 {
 
   /*
    * We must here provide all plot private functions that remain
    * 'static' here, but accessible from everywhere via the kernel.
    */
-  plotSystem->psCreate            = gdisp_create<<<-canevas->>>;
-  plotSystem->psDestroy           = gdisp_destroy<<<-canevas->>>;
-  plotSystem->psSetParent         = gdisp_set<<<-canevas->>>Parent;
-  plotSystem->psGetTopLevelWidget = gdisp_get<<<-canevas->>>TopLevelWidget;
-  plotSystem->psSetDimensions     = gdisp_set<<<-canevas->>>InitialDimensions;
-  plotSystem->psShow              = gdisp_show<<<-canevas->>>;
-  plotSystem->psGetType           = gdisp_get<<<-canevas->>>Type;
-  plotSystem->psAddSymbols        = gdisp_addSymbolsTo<<<-canevas->>>;
-  plotSystem->psGetSymbols        = gdisp_getSymbolsFrom<<<-canevas->>>;
-  plotSystem->psStartStep         = gdisp_startStepOn<<<-canevas->>>;
-  plotSystem->psStep              = gdisp_stepOn<<<-canevas->>>;
-  plotSystem->psStopStep          = gdisp_stopStepOn<<<-canevas->>>;
-  plotSystem->psGetInformation    = gdisp_get<<<-canevas->>>Information;
-  plotSystem->psTreatSymbolValues = gdisp_treat<<<-canevas->>>SymbolValues;
-  plotSystem->psGetPeriod         = gdisp_get<<<-canevas->>>Period;
-  plotSystem->psGetDropZones      = gdisp_get<<<-canevas->>>DropZones;
+  plotSystem->psCreate            = gdisp_createPlotOrbital;
+  plotSystem->psDestroy           = gdisp_destroyPlotOrbital;
+  plotSystem->psSetParent         = gdisp_setPlotOrbitalParent;
+  plotSystem->psGetTopLevelWidget = gdisp_getPlotOrbitalTopLevelWidget;
+  plotSystem->psSetDimensions     = gdisp_setPlotOrbitalInitialDimensions;
+  plotSystem->psShow              = gdisp_showPlotOrbital;
+  plotSystem->psGetType           = gdisp_getPlotOrbitalType;
+  plotSystem->psAddSymbols        = gdisp_addSymbolsToPlotOrbital;
+  plotSystem->psGetSymbols        = gdisp_getSymbolsFromPlotOrbital;
+  plotSystem->psStartStep         = gdisp_startStepOnPlotOrbital;
+  plotSystem->psStep              = gdisp_stepOnPlotOrbital;
+  plotSystem->psStopStep          = gdisp_stopStepOnPlotOrbital;
+  plotSystem->psGetInformation    = gdisp_getPlotOrbitalInformation;
+  plotSystem->psTreatSymbolValues = gdisp_treatPlotOrbitalSymbolValues;
+  plotSystem->psGetPeriod         = gdisp_getPlotOrbitalPeriod;
+  plotSystem->psGetDropZones      = gdisp_getPlotOrbitalDropZones;
 
 }
 

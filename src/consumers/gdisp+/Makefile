@@ -22,6 +22,7 @@ SOURCES = \
 	gdisp_defaultPlot.c    \
 	gdisp_plot2D.c         \
 	gdisp_plotText.c       \
+	gdisp_plotOrbital.c    \
 	gdisp_pointArray.c     \
 	gdisp_pixmaps.c        \
 	gdisp_utils.c
