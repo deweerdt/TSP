@@ -6,7 +6,9 @@ include $(DEVBASE)/make/Makeparams
 XSCRIPT = bb_findlabel bb_find \
 	bb_dump \
 	bb_read bb_write \
-	bb_checkid bb_destroy
+	bb_checkid bb_destroy \
+	bb_synchro_send bb_synchro_recv \
+	bb_memset
 SOURCES = \
 	bb_simu.c \
 	bb_tools_main.c

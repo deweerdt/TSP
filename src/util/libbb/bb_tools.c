@@ -1,7 +1,7 @@
 
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_tools.c,v 1.7 2005-02-25 21:49:28 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_tools.c,v 1.8 2005-03-21 19:10:48 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -507,8 +507,8 @@ bbtools_write(bbtools_request_t* req) {
 		       bbtools_cmdname_tab[E_BBTOOLS_WRITE],
 		       sym_data_desc.name,
 		       req->bbname);
-	array_index = 0;
       }
+      array_index = 0;
     } else { /* single array element case */      
       if (req->verbose) {
 	bbtools_logMsg(req->stream,
