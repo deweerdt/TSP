@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: glue_stub.c,v 1.7 2004-09-14 16:48:26 dufy Exp $
+$Id: glue_stub.c,v 1.8 2004-09-15 13:31:43 dufy Exp $
 
 -----------------------------------------------------------------------
 
@@ -42,6 +42,7 @@ Purpose   : Implementation for the glue_server, for stub test
 #include "glue_sserver.h"
 #include "tsp_ringbuf.h"
 #include "tsp_time.h"
+#include "tsp_datapool.h"
 #include "calc_func.h"
 
 /*RINGBUF_DECLARE_TYPE_DYNAMIC(glu_ringbuf,glu_item_t);*/
@@ -52,7 +53,7 @@ Purpose   : Implementation for the glue_server, for stub test
 /* TSP glue server defines */
 #define TSP_STUB_FREQ 100.0 /*Hz*/
 #define TSP_USLEEP_PERIOD_US (1000000/TSP_STUB_FREQ) /*given in µS, value 10ms*/
-#define GLU_MAX_SYMBOLS 200000
+#define GLU_MAX_SYMBOLS 1000
 
 /* Nasty static variables */
 static TSP_sample_symbol_info_t *X_sample_symbol_info_list_val;
@@ -87,8 +88,6 @@ int  GLU_get_symbol_number(void)
 static void* GLU_thread(void* arg)
 {
   
-  SFUNC_NAME(GLU_thread);
-
   static int last_missed = 0;
   int i, symbols_nb, *ptr_index;
   tsp_hrtime_t current_time;
