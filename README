@@ -46,9 +46,15 @@ the library and the exemples.
 The exemple must now be in your path !
 (Or go in $DEVBASE/exec/DEV/[myTarget]/[myOpt]/bin
 
-launch the provider on a host :
+launch the provider on a UNIX host :
 
 % tsp_server_stub
+
+or on a VxWorks host (be sure your VxWorks implements POSIX) :
+
+% ld < tsp_stub_server.o
+% sysClkRateSet [more than 200 Hz]
+% TSP_launcher
 
 launch the consumer on an other host
 
