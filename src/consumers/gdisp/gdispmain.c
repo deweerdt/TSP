@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/consumers/gdisp/gdispmain.c,v 1.4 2004-10-05 12:35:38 tractobob Exp $
+$Header: /home/def/zae/tsp/tsp/src/consumers/gdisp/gdispmain.c,v 1.5 2004-10-05 13:06:17 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -15,8 +15,11 @@ Purpose   : main functions for GDISP program
 -----------------------------------------------------------------------
 */
 
+#include <unistd.h>
 #include <stdio.h>
 #include <assert.h>
+
+extern char *optarg;
 
 #include "interface.h"
 #include "page.h"
