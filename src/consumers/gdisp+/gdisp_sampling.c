@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_sampling.c,v 1.9 2004-11-16 21:38:36 esteban Exp $
+$Id: gdisp_sampling.c,v 1.10 2004-11-17 09:29:36 dufy Exp $
 
 -----------------------------------------------------------------------
 
@@ -677,9 +677,9 @@ gdisp_samplingThread (void *data )
 				  gdisp_treatSymbolOnOneGraphicPlot,
 				  (void*)NULL);
 
-	sampleRefTimeTag = (guint)sampleValue.time;
-
       }
+      
+      sampleRefTimeTag = (guint)sampleValue.time;
 
       /*
        * Treat symbol.

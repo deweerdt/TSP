@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_plot2D.c,v 1.9 2004-11-16 09:32:00 dufy Exp $
+$Id: gdisp_plot2D.c,v 1.10 2004-11-17 09:29:36 dufy Exp $
 
 -----------------------------------------------------------------------
 
@@ -1707,7 +1707,6 @@ gdisp_createPlot2D (Kernel_T *kernel)
    */
   plot->p2dHasFocus  = FALSE;
   plot->p2dIsWorking = FALSE;
-  plot->p2dIsFirstTime = TRUE;
   plot->p2dType      = GD_PLOT_2D;
   plot->p2dSubType   = GD_2D_F2T;
 
@@ -2493,11 +2492,6 @@ gdisp_treatPlot2DSymbolValues (Kernel_T *kernel,
   guint           cptCurve   = 0;
   guint           nbCurves   = 0;
   DoublePoint_T   aPoint;
-  static double x;
-  /* FIXME Euskady : 
-     The first point you add inside my widget is always {0,0} 
-     I don't want it cause it blow up my autoscale.
-     Maybe it's inside TSP Core ? */
 
   /*
    * Get X (or T) last value.
@@ -2517,19 +2511,12 @@ gdisp_treatPlot2DSymbolValues (Kernel_T *kernel,
     symbol   = (Symbol_T*)symbolItem->data;
     aPoint.y = symbol->sLastValue;
 
-    if (plot->p2dIsFirstTime) {
-      plot->p2dIsFirstTime = FALSE;
-    } else {
-      dparray_addSample((DoublePointArray_T*)
+    dparray_addSample((DoublePointArray_T*)
 			plot->p2dSampleArray->pdata[cptCurve],
 			&aPoint);
-      //printf ("%f %f %s\n", aPoint.x , aPoint.y, (x<aPoint.x) ? "OK" : "KO" );
-    }
-    x = aPoint.x;
     symbolItem = g_list_next(symbolItem);
 
   }
-  //gdisp_debugDumpData ("add", plot);
 
 }
 
