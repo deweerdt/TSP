@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.h,v 1.6 2002-10-24 13:28:29 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.h,v 1.7 2002-11-19 13:20:19 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -18,13 +18,8 @@ Purpose   : Main interface for the TSP consumer library
 #ifndef _TSP_CONSUMER_H
 #define _TSP_CONSUMER_H
 
-#include "tsp_prjcfg.h"
-
-
-#include "tsp_sample_ringbuf.h"
-
 /*------------------------------ ENUM ---------------------------------*/
-
+ 
 enum TSP_consumer_status_t {
 	TSP_CONSUMER_STATUS_OK,
 	TSP_CONSUMER_STATUS_ERROR_UNKNOWN,
@@ -33,8 +28,23 @@ enum TSP_consumer_status_t {
 
 /*-------------------------- STRUCTURES -------------------------------*/
 
+/** Structure to get each sample */
+struct TSP_sample_t
+{
+  int time;
+  int provider_global_index;
+  double user_value;
+
+
+};
+
+typedef struct TSP_sample_t TSP_sample_t;
+
+
+/** Structure used to request symbols */
 struct TSP_consumer_symbol_requested_t
 {
+  char* name;
   int index;
   int period;
   int phase;
@@ -52,6 +62,8 @@ struct TSP_consumer_symbol_requested_list_t
 
 typedef struct TSP_consumer_symbol_requested_list_t TSP_consumer_symbol_requested_list_t;
 
+
+/** Structure used to read all symbols info */
 struct TSP_consumer_symbol_info_t
 {
   char* name;
@@ -71,6 +83,7 @@ struct TSP_consumer_symbol_info_list_t
 
 typedef struct TSP_consumer_symbol_info_list_t TSP_consumer_symbol_info_list_t;
 
+/** return all information about a provider */
 struct TSP_consumer_information_t
 {
   /* FIXME : int provider_timeout;*/
@@ -124,7 +137,7 @@ void TSP_consumer_open_all(const char* host_name,
  * @param provider The provider handle
  * @return TRUE or FALSE. TRUE = OK.
  */				  
-const TSP_otsp_server_info_t* TSP_consumer_get_server_info(TSP_provider_t provider);			  
+const char* TSP_consumer_get_server_info(TSP_provider_t provider);			  
 
 /** 
  * Ask the provider for a new consumer session.
@@ -177,13 +190,25 @@ const TSP_consumer_information_t* TSP_consumer_get_information(TSP_provider_t pr
  * Ask the provider for a list of symbols.
  * When the list of available symbols was retreived via TSP_consumer_request_information,
  * and TSP_consumer_get_information, the consumer may choose some symbols, set their phase
- * and period and call this function to prepare the provider to sample these symbols
+ * and period and call this function to prepare the provider to sample these symbols.
+ * The symbol is retrieved by name. The 'index' member of the symbols->val structure is not used
+ * to look fo rthe symbol (to get the provider global index of a symbol uses the TSP_consumer_get_requested_sample
+ * function)
  * @param provider The provider handle
  * @param symbols The request symbols list
  * @return TRUE or FALSE. TRUE = OK.
  */				  
 int TSP_consumer_request_sample(TSP_provider_t provider,
 				TSP_consumer_symbol_requested_list_t* symbols);
+
+/** 
+ * Retrieve the symbols requested list.
+ * The function TSP_consumer_request_sample must be called first.
+ * This function may be called multiple times per session.
+ * @param provider The provider handle
+ * @return the requested symbols list.
+ */				  
+const TSP_consumer_symbol_requested_list_t* TSP_consumer_get_requested_sample(TSP_provider_t provider);
 
 /** 
  * Prepare the sampling sequence.

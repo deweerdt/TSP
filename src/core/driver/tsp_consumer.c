@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.11 2002-10-28 14:19:09 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.12 2002-11-19 13:20:18 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -95,6 +95,11 @@ struct TSP_otsp_t
    */
   TSP_consumer_information_t information;
   
+  /** 
+   * List of symbols that were requested
+   */
+  TSP_consumer_symbol_requested_list_t requested_sym;
+
   /**
    * Groups table.
    * This group table is calculated by the provider when the symbols
@@ -167,6 +172,8 @@ static TSP_otsp_t* TSP_new_object_tsp(	TSP_server_t server,
 	
   obj->information.symbols.len = 0;
   obj->information.symbols.val = 0;
+  obj->requested_sym.len = 0;
+  obj->requested_sym.val = 0;
   obj->groups = 0;
   obj->receiver = 0;
   obj->sample_fifo = NULL;
@@ -478,11 +485,11 @@ void TSP_consumer_close(TSP_provider_t provider)
  * @param provider the provider from which the string must be read
  * @return The information structure for the provider
  */
-const TSP_otsp_server_info_t* TSP_consumer_get_server_info(TSP_provider_t provider)			  
+const char* TSP_consumer_get_server_info(TSP_provider_t provider)			  
 {
   TSP_otsp_t* otsp = (TSP_otsp_t*)provider;
 	
-  return(&(otsp->server_info));
+  return(otsp->server_info.info);
 }
 
 
@@ -540,6 +547,9 @@ int TSP_consumer_request_open(TSP_provider_t provider, int custom_argc, char* cu
 	      break;
 	    case TSP_STATUS_ERROR_UNKNOWN :
 	      STRACE_WARNING(("Provider unknown error"));
+	      break;
+	    case TSP_STATUS_ERROR_VERSION :
+	      STRACE_WARNING(("Provider version error"));
 	      break;
 	    default:
 	      STRACE_ERROR(("The provider sent an unreferenced error. It looks like a bug."));
@@ -603,7 +613,7 @@ int TSP_consumer_request_close(TSP_provider_t provider)
       STRACE_DEBUG(("channel_id=%u is closed", otsp->channel_id));
 
     }
-	
+
   STRACE_IO(("-->OUT"));
 
 	
@@ -648,6 +658,9 @@ int TSP_consumer_request_information(TSP_provider_t provider)
 	  break;
 	case TSP_STATUS_ERROR_UNKNOWN :
 	  STRACE_WARNING(("Provider unknown error"));
+	  break;
+	case TSP_STATUS_ERROR_VERSION :
+	  STRACE_WARNING(("Provider version error"));
 	  break;
 	default:
 	  STRACE_ERROR(("The provider sent an unreferenced error. It looks like a bug."));
@@ -728,13 +741,45 @@ const TSP_consumer_information_t*  TSP_consumer_get_information(TSP_provider_t p
 
 }
 
-/**
- * Configure the list of symbols that will be sampled.
- * !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
- * MISSING : consumer_timeout & feature_words
- * @param provider the provider on which apply the action
- * @return The action result (TRUE or FALSE)
- */
+static int TSP_consumer_store_requested_symbols(TSP_consumer_symbol_requested_list_t* stored_sym,
+						TSP_sample_symbol_info_list_t* new_sym)
+{
+  SFUNC_NAME(TSP_consumer_store_requested_symbols);
+
+  int i;
+  /* store requested symbols */
+  /* FIXME : faire la desallocation */
+  /* Free memory if it was already allocated */
+  if(stored_sym->val)
+    {
+      for (i = 0 ;  i < stored_sym->len ; i++)
+	{
+	  /* free strdup */
+	  free(stored_sym->val[i].name);
+	}
+      free(stored_sym->val);
+    }
+  stored_sym->len = new_sym->TSP_sample_symbol_info_list_t_len;	
+  stored_sym->val = 
+    (TSP_consumer_symbol_requested_t* )calloc(stored_sym->len,
+					      sizeof(TSP_consumer_symbol_requested_t));
+  TSP_CHECK_ALLOC(stored_sym->val, FALSE);
+		
+  /* For each requested symbol, we store it */
+  for(i = 0 ; i< stored_sym->len ; i++)
+    {		
+      /* FIXME : ajouter les autres valeurs */
+      stored_sym->val[i].name = strdup(new_sym->TSP_sample_symbol_info_list_t_val[i].name);
+      TSP_CHECK_ALLOC(stored_sym->val[i].name, FALSE);
+      stored_sym->val[i].index = new_sym->TSP_sample_symbol_info_list_t_val[i].provider_global_index;
+      stored_sym->val[i].phase = new_sym->TSP_sample_symbol_info_list_t_val[i].phase;
+      stored_sym->val[i].period = new_sym->TSP_sample_symbol_info_list_t_val[i].period;
+    }
+
+}
+
+
+/* FIXME : peut etre appelé plusieurs fois */
 int TSP_consumer_request_sample(TSP_provider_t provider, TSP_consumer_symbol_requested_list_t* symbols)
 {
   SFUNC_NAME(TSP_consumer_request_sample);
@@ -761,10 +806,10 @@ int TSP_consumer_request_sample(TSP_provider_t provider, TSP_consumer_symbol_req
   for(i = 0 ; i <  symbols->len ; i++)
     {
       /* FIXME ; ajouter les membres maquants */
-      req_sample.symbols.TSP_sample_symbol_info_list_t_val[i].provider_global_index = symbols->val[i].index;
+      req_sample.symbols.TSP_sample_symbol_info_list_t_val[i].provider_global_index = -1;
       req_sample.symbols.TSP_sample_symbol_info_list_t_val[i].period = symbols->val[i].period;
       req_sample.symbols.TSP_sample_symbol_info_list_t_val[i].phase = symbols->val[i].phase;
-      req_sample.symbols.TSP_sample_symbol_info_list_t_val[i].name = "";
+      req_sample.symbols.TSP_sample_symbol_info_list_t_val[i].name = symbols->val[i].name;
     }
 	
   ans_sample = TSP_request_sample(&req_sample, otsp->server);
@@ -783,31 +828,30 @@ int TSP_consumer_request_sample(TSP_provider_t provider, TSP_consumer_symbol_req
 	case TSP_STATUS_ERROR_UNKNOWN :
 	  STRACE_WARNING(("Provider unknown error"));
 	  break;
+	case TSP_STATUS_ERROR_VERSION :
+	  STRACE_WARNING(("Provider version error"));
+	  break;
+	case TSP_STATUS_ERROR_SYMBOLS :
+	  STRACE_WARNING(("Provider symbols error"));
+	  break;
 	default:
 	  STRACE_ERROR(("The provider sent an unreferenced error. It looks like a bug."));
 	  break;
 	}
 
+
+      /*-------------------------------------------------*/
+      /* Create group table and store requested symbols */
+      /*-------------------------------------------------*/
       if(ret)
 	{
-	  for( i = 0 ; i< ans_sample->symbols.TSP_sample_symbol_info_list_t_len ; i++)
-	    {
-	      STRACE_DEBUG(("N=%s Id=%d Gr=%d Rank=%d", 
-			    ans_sample->symbols.TSP_sample_symbol_info_list_t_val[i].name,
-			    ans_sample->symbols.TSP_sample_symbol_info_list_t_val[i].provider_global_index,
-			    ans_sample->symbols.TSP_sample_symbol_info_list_t_val[i].provider_group_index,
-			    ans_sample->symbols.TSP_sample_symbol_info_list_t_val[i].provider_group_rank));    
-	    }
 	  STRACE_INFO(("Total groupe number = %d", ans_sample->provider_group_number));
-      
-
-    
 	  /* Create group table */
 	  /* FIXME : faire la desallocation */
 	  otsp->groups = TSP_group_create_group_table(&(ans_sample->symbols), ans_sample->provider_group_number);
 	  if( 0 != otsp->groups)
 	    {
-	      ret = TRUE;
+	      ret = TSP_consumer_store_requested_symbols(&otsp->requested_sym,&ans_sample->symbols);
 	    }
 	  else
 	    {
@@ -827,6 +871,27 @@ int TSP_consumer_request_sample(TSP_provider_t provider, TSP_consumer_symbol_req
 
 	
   return ret;
+}
+
+const TSP_consumer_symbol_requested_list_t* TSP_consumer_get_requested_sample(TSP_provider_t provider)
+{
+  SFUNC_NAME(TSP_consumer_get_requested_sample);
+	
+  TSP_otsp_t* otsp = (TSP_otsp_t*)provider;
+	
+  STRACE_IO(("-->IN"));
+	
+  TSP_CHECK_SESSION(otsp, 0);
+	
+  STRACE_IO(("-->OUT"));
+  
+  if(otsp->requested_sym.val)
+    return &(otsp->requested_sym);
+  else
+    {
+      STRACE_ERROR(("TSP_consumer_request_sample must be called first"));
+      return 0;
+    }
 }
 
 static void* TSP_request_provider_thread_receiver(void* arg)
@@ -945,7 +1010,7 @@ int TSP_consumer_read_sample(TSP_provider_t provider, TSP_sample_t* sample, int*
   int ret = TRUE;
     
   STRACE_IO(("-->IN"));
-
+ 
   if(0 != otsp->sample_fifo)
     {
       if ((*new_sample) =  (!(RINGBUF_PTR_ISEMPTY(otsp->sample_fifo))))
@@ -955,9 +1020,25 @@ int TSP_consumer_read_sample(TSP_provider_t provider, TSP_sample_t* sample, int*
 	   (mémoriser un etat dans le thread), faire également un EOF ?*/
 
 	  /* end of stream ? */
-	  if ( TSP_DUMMY_PROVIDER_GLOBAL_INDEX_EOF == sample->provider_global_index )
+	  if ( sample->provider_global_index < 0 )
 	    {
 	      ret = FALSE;
+
+	      STRACE_INFO(("Received status message %X",  sample->provider_global_index));
+	      switch(sample->provider_global_index)
+		{
+		case TSP_DUMMY_PROVIDER_GLOBAL_INDEX_EOF :
+		  STRACE_INFO (("status message EOF"));
+		  /* FIXME : get last error à gerer ? */
+		  break;
+		case TSP_DUMMY_PROVIDER_GLOBAL_INDEX_RECONF :
+		  STRACE_INFO (("status message RECONF"));
+		  /* FIXME : get last error à gerer ? */
+		  break;
+		default:
+		  STRACE_ERROR (("Unknown status message"));
+		  /* FIXME : get last error à gerer ? */
+		}
 	    }
 	}
     }      
