@@ -1,6 +1,6 @@
 # -*- Makefile -*-
 
-include $(DEVBASE)/make/Makeparams.java
+include $(DEVBASE)/make/Makeparams
 
 JPACKAGE=tsp.consumer
 JPACKAGEDIR=$(subst .,/,$(JPACKAGE))
@@ -8,8 +8,9 @@ JPACKAGEDIR=$(subst .,/,$(JPACKAGE))
 SOURCES = \
 	jtspStdOut.java 
 
-
-OBJECTS=$(SOURCES:%.java=$(CLASSBASE)/$(JPACKAGEDIR)/%.class)
+ifeq (${BUILD_JAVA},yes)
+    OBJECTS=$(SOURCES:%.java=$(CLASSBASE)/$(JPACKAGEDIR)/%.class)
+endif
 
 all::
 	$(MAKE) build
@@ -19,9 +20,6 @@ build:: $(OBJECTS)
 debug::
 	@echo "No debug for yet"
 #	$(MAKE) D=.debug common
-
-destroy::
-	$(MAKE) clean
 
 include $(DEVBASE)/make/Makerules.java
 

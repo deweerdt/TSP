@@ -16,7 +16,9 @@ OBJECTS = $(SOURCES:%.c=%.o)
 
 ADD_LIB =  $(DIRLIB)/libtsp_consumer.a $(DIRLIB)/libtsp_services.a $(DIRLIB)/libtsp_page_config.a
 
-TARGET=$(DIRBIN)/tsp_gdisp
+ifeq (${BUILD_CONSUMER},yes)
+    TARGET=$(DIRBIN)/tsp_gdisp
+endif
 
 #CPPFLAGS += -D_REENTRANT -I. -I$(TSP_INCLIB) -I$(DIRINC) 
 CPPFLAGS += `gtk-config --cflags gtk`  

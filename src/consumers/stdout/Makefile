@@ -8,7 +8,9 @@ SOURCES = \
 
 ADD_LIB =  $(DIRLIB)/libtsp_consumer.a $(DIRLIB)/libtsp_services.a $(DIRLIB)/libtsp_calc.a
 
-TARGET=$(DIRBIN)/tsp_stdout_client
+ifeq (${BUILD_CONSUMER},yes)
+	TARGET=$(DIRBIN)/tsp_stdout_client
+endif
 
 # ---------------------
 # How to build

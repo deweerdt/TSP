@@ -10,7 +10,9 @@ ADD_LIB =  $(DIRLIB)/libtsp_consumer.a $(DIRLIB)/libtsp_services.a $(DIRLIB)/lib
 
 ADD_INCLUDE = -I $(DEVBASE)/src/util/libcalc
 
-TARGET=$(DIRBIN)/tsp_stdout_client_callback
+ifeq (${BUILD_CONSUMER},yes)
+    TARGET=$(DIRBIN)/tsp_stdout_client_callback
+endif
 
 # ---------------------
 # How to build

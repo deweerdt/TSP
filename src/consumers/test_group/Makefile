@@ -8,7 +8,9 @@ SOURCES = \
 
 ADD_LIB =  $(DIRLIB)/libtsp_consumer.a  $(DIRLIB)/libtsp_services.a $(DIRLIB)/libtsp_calc.a
 
-TARGET=$(DIRBIN)/tsp_testgrp_client
+ifeq (${BUILD_CONSUMER},yes)
+    TARGET=$(DIRBIN)/tsp_testgrp_client
+endif
 
 # not very nice, but allow to use tsp_group_dta.h for direct checks
 CPPFLAGS += -I../../core/driver -I../../core/rpc -I../../core/misc_utils
