@@ -5,7 +5,7 @@ if ($#argv <> 1) then
 	exit (1)
 endif
 
-alias lcvs 'cvs -d /home2/breiz/tnt/CVSROOT '
+alias lcvs 'cvs -d /home2/breiz/tnt/CVSROOT'
 alias gcvs 'cvs -d /home2/breiz/dev442/CVSROOT'
 
 set dirtarget = $1
@@ -14,13 +14,10 @@ cd $dirtarget
 echo "INFO : $0 will checkout sources files in $dirtarget"
 
 
-#------ make ------
-lcvs checkout -P make
-
-#------ src ------
-lcvs checkout -P src/Makefile  src/scripts  src/doxy
+#------ tsp ------
+lcvs checkout -P tsp
 
 #------ services generiques ------
-cd src
+cd tsp/src
 gcvs checkout -P tsp
 
