@@ -7,8 +7,7 @@
 set SYSTEM_NAME=`uname -a | awk '{ print $1 }'`
 
 if ( "$SYSTEM_NAME" == "Linux" )  then
-      set SYSTEM_NAME="linux"
-
+	set SYSTEM_NAME="linux"
 else if ( "$SYSTEM_NAME" == "SunOS") then
       set SYSTEM_NAME="sun"
 else if ( "$SYSTEM_NAME" == "OSF1") then
