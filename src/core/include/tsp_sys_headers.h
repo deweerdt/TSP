@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_sys_headers.h,v 1.14 2004-09-23 16:11:57 tractobob Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_sys_headers.h,v 1.15 2004-10-07 08:53:59 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -25,7 +25,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 -----------------------------------------------------------------------
 
 Project   : TSP
-Maintainer : tsp@astrium-space.com
+Maintainer : tsp@astrium.eads.net
 Component : Consumer / Provider
 
 -----------------------------------------------------------------------
@@ -70,6 +70,6 @@ Do not use this with others targets */
 /*#include "dec_pthread.h"*/
 #include <pthread.h>
 #include <sys/time.h>
-
+#include <sys/param.h>
 
 #endif
