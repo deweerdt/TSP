@@ -43,7 +43,7 @@ OUTPUT_DIRECTORY      = $(DEVBASE)/doc
 # Dutch, French, Italian, Czech, Swedish, German, Finnish, Japanese, 
 # Spanish, Russian, Croatian and Polish.
 
-OUTPUT_LANGUAGE       = French
+OUTPUT_LANGUAGE       = English
 
 # The HTML_HEADER tag can be used to specify a personal HTML header for 
 # each generated HTML page. If it is left blank doxygen will generate a 
@@ -68,12 +68,12 @@ DISABLE_INDEX         = NO
 # Private class members and static file members will be hidden unless 
 # the EXTRACT_PRIVATE and EXTRACT_STATIC tags are set to YES 
 
-EXTRACT_ALL           = YES
+EXTRACT_ALL           = NO
 
 # If the EXTRACT_PRIVATE tag is set to YES all private members of a class 
 # will be included in the documentation. 
 
-EXTRACT_PRIVATE       = YES
+EXTRACT_PRIVATE       = NO
 
 # If the EXTRACT_STATIC tag is set to YES all static members of a file 
 # will be included in the documentation. 
@@ -149,7 +149,7 @@ SOURCE_BROWSER        = YES
 # Setting the INLINE_SOURCES tag to YES will include the body 
 # of functions and classes directly in the documentation. 
 
-INLINE_SOURCES        = YES
+INLINE_SOURCES        = NO
 
 # Setting the STRIP_CODE_COMMENTS tag to YES (the default) will instruct 
 # doxygen to hide any special comment blocks from generated source code 
@@ -175,7 +175,7 @@ HIDE_SCOPE_NAMES      = NO
 # will generate a verbatim copy of the header file for each class for 
 # which an include is specified. Set to NO to disable this. 
 
-VERBATIM_HEADERS      = YES
+VERBATIM_HEADERS      = NO
 
 # If the SHOW_INCLUDE_FILES tag is set to YES (the default) then Doxygen 
 # will put list of the files that are included by a file in the documentation 
@@ -194,7 +194,7 @@ JAVADOC_AUTOBRIEF     = YES
 # member inherits the documentation from any documented member that it 
 # reimplements. 
 
-INHERIT_DOCS          = YES
+INHERIT_DOCS          = NO
 
 # If the INLINE_INFO tag is set to YES (the default) then a tag [inline] 
 # is inserted in the documentation for inline members. 
@@ -362,7 +362,7 @@ GENERATE_HTMLHELP     = YES
 # If the GENERATE_LATEX tag is set to YES (the default) Doxygen will 
 # generate Latex output. 
 
-GENERATE_LATEX        = NO
+GENERATE_LATEX        = YES
 
 # The LATEX_OUTPUT tag is used to specify where the LaTeX docs will be put. 
 # If a relative path is entered the value of OUTPUT_DIRECTORY will be 
@@ -399,7 +399,7 @@ LATEX_HEADER          =
 # contain links (just like the HTML output) instead of page references 
 # This makes the output suitable for online browsing using a pdf viewer. 
 
-PDF_HYPERLINKS        = NO
+PDF_HYPERLINKS        = YES
 
 # If the LATEX_BATCHMODE tag is set to YES, doxygen will add the \\batchmode. 
 # command to the generated LaTeX files. This will instruct LaTeX to keep 
