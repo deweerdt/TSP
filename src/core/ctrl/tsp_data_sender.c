@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_data_sender.c,v 1.8 2002-12-03 16:14:15 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_data_sender.c,v 1.9 2002-12-04 12:12:41 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -174,7 +174,7 @@ void TSP_data_sender_stop(TSP_data_sender_t sender)
 
 
 
-static inline TSP_stream_sender_item_t* TSP_data_sender_get_out_item(TSP_struct_data_sender_t* data_sender)
+static TSP_stream_sender_item_t* TSP_data_sender_get_out_item(TSP_struct_data_sender_t* data_sender)
 {
 
   SFUNC_NAME(TSP_data_sender_get_out_item);
@@ -226,7 +226,7 @@ static inline TSP_stream_sender_item_t* TSP_data_sender_get_out_item(TSP_struct_
   return ret_item;
 }
 
-static inline int TSP_data_sender_to_stream_sender(TSP_struct_data_sender_t* data_sender,
+static int TSP_data_sender_to_stream_sender(TSP_struct_data_sender_t* data_sender,
 						   TSP_stream_sender_item_t* tosend)
 {
   SFUNC_NAME(TSP_data_sender_to_stream_sender);
