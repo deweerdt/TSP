@@ -3,11 +3,11 @@
 #-----------------------------------------------
 #CUSTOMIZE : input RES File name 
 # FILE1 must be smaller that FILE2 (timing problem with test, else...)
-set CUSTOM_RESFILE2="IQT_GLOBAL_07.sync.res"
+set CUSTOM_RESFILE2="file1.res"
 #double of float
-set OUTFILETYPE2="d"
+set OUTFILETYPE2="f"
 
-set CUSTOM_RESFILE1="A_NCK01_020701_1834_tmA.res"
+set CUSTOM_RESFILE1="file2.res"
 #double of float
 set OUTFILETYPE1="f"
 #-----------------------------------------------
@@ -19,9 +19,10 @@ set TESTNB=`echo $0 | perl -n -e  '~/([1-9][0-9]*)$/;print $1'`
 echo "------------------------------------"
 echo "---------- AUTOTEST $TESTNB ------------"
 echo "------------------------------------"
-echo " - pasive data stream check "
+echo " - pasive data stream check with RES file"
+echo " We transfer two files and then compare them"
 echo " - STEP 1 : check all symbols "
-echo " - STEP 2 : check first, middle, and last symbol "
+echo " - STEP 2 : transfer only first, middle, and last symbol of files"
 
 set TESTPATH=$DEVBASE/src/tsp/tests/stage3
 set BIN2ASC=$DEVBASE/../plot442/versions/CURRENT/bin/bin2asc
