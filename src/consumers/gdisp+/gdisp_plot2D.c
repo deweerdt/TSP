@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_plot2D.c,v 1.5 2004-05-11 19:47:38 esteban Exp $
+$Id: gdisp_plot2D.c,v 1.6 2004-05-19 15:10:57 dufy Exp $
 
 -----------------------------------------------------------------------
 
@@ -220,7 +220,7 @@ gdisp_isInsideXZone (Plot2D_T *plot,
    *
    */
 
-  guint coefficient = 5; /* 20 % */
+  guint coefficient = 2; /* 50 % */
 
   /*
    * Apply filter.
@@ -1216,10 +1216,10 @@ gdisp_plot2DDrawBackBufferCurves (Kernel_T       *kernel,
       
 
     /*
-     * TODO : A color per draw ?
+     * TODO: A color per draw ?
      */
     gdk_gc_set_foreground(plot->p2dGContext,
-			  &kernel->colors[_GREEN_ + cptCurve * 7]);
+			  &kernel->colors[_YELLOW_ + cptCurve * 7]);
       
     for (cptPoint=startIndex; cptPoint<startIndex+nbPoints; cptPoint++) {
 
@@ -1268,10 +1268,10 @@ gdisp_plot2DDrawBackBufferCurves (Kernel_T       *kernel,
     if (nbPoints > 0) {
 
       /*
-       * FIXME for Duf : Confirm "-1" ...
+       * Must Redtart from the previous last point
        */
       dparray_setMarkerIndex(pArray,
-			     lastIndex /* - 1 */);
+			     lastIndex -1);
 
     }
 
@@ -1942,7 +1942,7 @@ gdisp_showPlot2D (Kernel_T  *kernel,
   gtk_widget_show(plot->p2dTable );
 
   /*
-   * These 'show' operations generate 'configure" events. Strange.
+   * These 'show' operations generate 'configure' events. Strange.
    */
 
 }
@@ -2526,5 +2526,17 @@ gdisp_initPlot2DSystem (Kernel_T     *kernel,
   gdispVerbosity = (trace != (gchar*)NULL) ? atoi(trace) : 1;
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
 
 

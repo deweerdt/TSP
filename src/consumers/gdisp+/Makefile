@@ -3,6 +3,7 @@ include $(DEVBASE)/make/Makeparams
 # ---------------------
 # Vars to build project
 # ---------------------
+CC = gcc
 SOURCES = \
 	gdisp_main.c           \
 	gdisp_kernel.c         \
@@ -29,7 +30,7 @@ ADD_LIB =  $(DIRLIB)/libtsp_consumer.a $(DIRLIB)/libtsp_services.a
 
 TARGET=$(DIRBIN)/tsp_gdisp+
 
-CPPFLAGS += -Wall `gtk-config --cflags gtk`  
+CPPFLAGS += `gtk-config --cflags gtk`  
 LDFLAGS  += `gtk-config --libs ` 
 LDFLAGS  += `xml2-config --libs ` 
 
