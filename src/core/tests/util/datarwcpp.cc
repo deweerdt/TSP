@@ -1,6 +1,6 @@
 /*!  \file
 
-$Header: /home/def/zae/tsp/tsp/src/core/tests/util/Attic/datarwcpp.cc,v 1.1 2003-01-22 22:56:58 sgalles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/tests/util/Attic/datarwcpp.cc,v 1.2 2003-01-28 22:54:12 sgalles Exp $
 
 -----------------------------------------------------------------------
 
@@ -42,24 +42,72 @@ Purpose   :
 #define _LIBUTIL_REENTRANT
 #include "libUTIL.h"
 
+using namespace std;
+
+#define CHECK_USAGE(target, ret)   \
+{ \
+     assert( _usage == target ); \
+     if ( _usage != target ) return ret; \
+} while(0)
+
+
 /* Avoid libUTIL C header in C++ header */
 class LibUtil::Datarwcpp::hwrapper
 {
 public :
   ::d_rhandle hr;
   ::d_rhandle hw;
+
 };
 
-using namespace std;
 
-
-LibUtil::Datarwcpp::Datarwcpp(const std::string file, direction_t direction) : _file(file), _direction(direction), h(NULL)
+LibUtil::Datarwcpp::Datarwcpp(const string& file, usage_t usage) : 
+_file(file), 
+_usage(usage), 
+_h(NULL)
 {
-  h = new hwrapper();
-  assert(h);
+  _h = new hwrapper();
+  assert(_h);
 }
 
 LibUtil::Datarwcpp::~Datarwcpp()
 {
+  delete(_h); _h = NULL;
 }
 
+bool LibUtil::Datarwcpp::ropen(LibUtil::ResInfo& info)
+{
+
+  CHECK_USAGE(READER, false);  
+  
+  int iuse_dbl;
+  _h->hr = d_ropen_r((char*)_file.c_str(), &iuse_dbl);
+  info.set_use_double((iuse_dbl != 0) ? true : false);
+
+  return ( (_h->hr != 0) ? true : false);
+
+}
+
+int  LibUtil::Datarwcpp::rget_nb_rec() const
+{
+   CHECK_USAGE(READER, 0);  
+   assert(_h->hr);
+
+   return d_rval_r(_h->hr, 'r');
+}
+
+int  LibUtil::Datarwcpp::rget_nb_var() const 
+{
+   CHECK_USAGE(READER, 0);  
+   assert(_h->hr);
+
+   return d_rval_r(_h->hr, 'v');
+}
+
+int  LibUtil::Datarwcpp::rget_nb_com() const 
+{
+   CHECK_USAGE(READER, 0);  
+   assert(_h->hr);
+
+   return d_rval_r(_h->hr, 'c');
+}

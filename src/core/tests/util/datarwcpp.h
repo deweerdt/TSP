@@ -1,6 +1,6 @@
 /*!  \file
 
-$Header: /home/def/zae/tsp/tsp/src/core/tests/util/Attic/datarwcpp.h,v 1.1 2003-01-22 22:56:58 sgalles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/tests/util/Attic/datarwcpp.h,v 1.2 2003-01-28 22:54:13 sgalles Exp $
 
 -----------------------------------------------------------------------
 
@@ -40,35 +40,83 @@ Purpose   :
 
 #include <iostream>
 #include <string>
-
+#include <vector>
 
 namespace LibUtil
 {
 
+  class VarInfo
+    {
+      std::string _name;
+      std::string _description;
+
+    public:
+      VarInfo() {}
+      VarInfo (const std::string& name, const std::string& description) :
+	_name(name), _description(description) {}
+	
+      ~VarInfo() {}
+      const VarInfo& VarInfo::operator= (const VarInfo& right)
+	{
+	  _name = right.get_name();
+	  _description = right.get_description();
+	}
+
+      const std::string& get_name() const { return _name; }
+      const std::string& get_description() const { return _description; }   
+
+    };
+
+  class ResInfo
+    {
+      
+      std::vector<VarInfo> _VarsInfo;
+      std::vector<std::string> _comments;
+      int _nb_rec;
+      bool _use_double;
+
+    public:
+      void add_comment(const std::string& comment) { _comments.push_back(comment); }
+      void add_var_info(const VarInfo& var) { _VarsInfo.push_back(var); }
+      void set_use_double(bool use_double) { _use_double = use_double; }
+      void set_nb_rec(int nb_rec) { _nb_rec = nb_rec; }
+    };
+
   class Datarwcpp
-       {
-	 enum direction_t
+    {
+	 
+	 /** wrapper class for C libUTIL handles.
+	  * Avoid C header in C++ header
+	  */
+	 class hwrapper;
+ 
+	 enum usage_t
 	   {
 	     READER,
 	     WRITER
 	   };
 	 
 	 const std::string _file;
-	 const direction_t _direction;	 
+	 const usage_t _usage;	 
 
-	 /* Avoid libUTIL C header in C++ header */
-	 class hwrapper;
-	 hwrapper* h;
+	 hwrapper* _h;
 
        public:
 	 
 	 /* C'tor */
-	 Datarwcpp(const std::string file, direction_t direction);
+	 Datarwcpp(const std::string& file, usage_t usage);
 	 
 	 /* D'tor */
 	 virtual ~Datarwcpp() ;
 
+	 /* Read */
+	 bool ropen(ResInfo& info);
 	 
+       private:
+	 int rget_nb_rec() const ;
+	 int rget_nb_var() const ;
+	 int rget_nb_com() const ;
+
 
        };
 
