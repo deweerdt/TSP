@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_abs_types.h,v 1.11 2004-08-31 09:58:52 dufy Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_abs_types.h,v 1.12 2004-08-31 13:39:50 dufy Exp $
 
 -----------------------------------------------------------------------
 
@@ -89,6 +89,15 @@ Purpose   : Type abstraction : Stolen from GLIB public headers
 # define TSP_HAVE_INT64 1
 # define TSP_INT64_CONSTANT(val)  (val##LL)
 #endif /* VXWORKS */
+
+/* OpenBSD / i386 (32 bits) (From Fred&Co) */
+#if defined (__OpenBSD__) &&  defined (__i386__)
+# define TSP_INT64_CONSTANT(val)  (val##LL)
+# define TSP_BYTE_ORDER TSP_LITTLE_ENDIAN
+# define TSP_GUINT64_FORMAT "llu"
+# define TSP_SYSTEM_HAVE_NANOSLEEP
+# define TSP_HAVE_INT64 1
+#endif /* OpenBSD / i386 */
 
 /*-----------------------------------------------------*/
 
