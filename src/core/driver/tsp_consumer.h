@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.h,v 1.10 2002-12-05 10:49:50 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.h,v 1.11 2002-12-05 17:36:05 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -96,10 +96,17 @@ struct TSP_consumer_information_t
 
 typedef struct TSP_consumer_information_t TSP_consumer_information_t;
 
-/*----------------------------------- TYPES ---------------------------------*/
 
 /** Opaque handle type for provider */
 typedef  void* TSP_provider_t;
+
+#ifndef	FALSE
+#define	FALSE	(0)
+#endif
+
+#ifndef	TRUE
+#define	TRUE	(!FALSE)
+#endif
 
 /*--------------------------------- FUNCTIONS -------------------------------*/
 
