@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_data_sender.c,v 1.9 2002-12-04 12:12:41 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_data_sender.c,v 1.10 2002-12-05 10:52:00 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -48,6 +48,7 @@ struct TSP_struct_data_sender_t
 
   /** flag that tells if data were lost for the consumer 'coz' the fifo was full */
   int fifo_full;
+
 
   
 };
@@ -231,23 +232,27 @@ static int TSP_data_sender_to_stream_sender(TSP_struct_data_sender_t* data_sende
 {
   SFUNC_NAME(TSP_data_sender_to_stream_sender);
 
-  int ret = TRUE;
-  if(data_sender->use_fifo)
+  /* First check for a valid connection */
+  int ret = TSP_stream_sender_is_connection_ok(data_sender->stream_sender);
+  if(ret)
     {
-      RINGBUF_PTR_PUTBYADDR_COMMIT(data_sender->out_fifo);
+      if(data_sender->use_fifo)
+	{
+	  /* we use a fifo */
+	  RINGBUF_PTR_PUTBYADDR_COMMIT(data_sender->out_fifo);
+	}
+      else
+	{            
+	  /* no fifo. send data now */
+	  if(!TSP_stream_sender_send(data_sender->stream_sender,
+				     tosend->buf,
+				     tosend->len) )
+	    {
+	      STRACE_WARNING(("Function TSP_stream_sender_send failed "));
+	      ret = FALSE;
+	    }  
+	}
     }
-  else
-    {            
-      /* no fifo. send data now */
-      if(!TSP_stream_sender_send(data_sender->stream_sender,
-				 tosend->buf,
-				 tosend->len) )
-      {
-	STRACE_WARNING(("Function TSP_stream_sender_send failed "));
-	ret = FALSE;
-      }  
-    }
-
   return ret;
 }
 
