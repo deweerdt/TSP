@@ -1,8 +1,8 @@
-/*!  \file 
+/*
 
 @configure_input@
 
-$Id: tsp_prjcfg.h.in,v 1.5 2004-11-09 20:11:25 erk Exp $
+$Id: tsp_prjcfg.h.in,v 1.6 2004-11-09 20:39:01 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -54,7 +54,7 @@ Purpose   : some includes
  */
 
 /**
- * @defgruop TSP_Lib
+ * @defgroup TSP_Lib
  * The TSP programming library
  * @ingroup TSP
  */
