@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/tests/stage2/Attic/glue_sserver2.c,v 1.4 2002-10-09 08:31:55 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/tests/stage2/Attic/glue_sserver2.c,v 1.5 2002-10-24 13:34:08 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -22,7 +22,7 @@ Purpose   : Implementation for the glue_server
 #include "tsp_ringbuf.h"
 #include "tsp_time.h"
 
-
+RINGBUF_DECLARE_TYPE_DYNAMIC(glu_ringbuf,glu_item_t);
 
 /*µS*/
 #define TSP_USLEEP_PERIOD_US 10*1000
@@ -57,10 +57,6 @@ static char* X_server_name = "ServeurPetitScarabe";
 
 static time_stamp_t my_time = 0;
 
-glu_ringbuf* GLU_active_get_ringbuf(GLU_handle_t h_glu)
-{
-  return glu_ring;
-}
 
 char* GLU_get_server_name(void)
 {
@@ -243,9 +239,10 @@ GLU_server_type_t GLU_get_server_type(void)
 }
 
 /* not used */
-int GLU_pasive_get_next_item(GLU_handle_t h_glu, glu_item_t* item)
+GLU_get_state_t GLU_get_next_item(GLU_handle_t h_glu, glu_item_t* item)
 {
-  return FALSE;
+  /* We do nothing here because the test 2 does not call GLU_get_next_item */
+  return GLU_GET_EOF;
 }
 
 GLU_handle_t GLU_get_instance(int argc, char* argv[], char** error_info)

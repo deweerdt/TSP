@@ -86,8 +86,7 @@ int main(int argc, char *argv[]){
   SFUNC_NAME(main);
 
 
-  TSP_answer_sample_t* ans_sample;
-  TSP_request_sample_t req_sample;
+  TSP_consumer_symbol_requested_list_t symbols;
 
   int i, j, count=0;
   int nb_providers;
@@ -186,22 +185,20 @@ int main(int argc, char *argv[]){
   STRACE_INFO(("Total number of requested symbols = %d", requested_nb));
 
 
-  req_sample.symbols.TSP_sample_symbol_info_list_t_len = requested_nb;
-  req_sample.symbols.TSP_sample_symbol_info_list_t_val = 
-    (TSP_sample_symbol_info_t*)calloc(requested_nb, sizeof(TSP_sample_symbol_info_t));
+  symbols.len = requested_nb;
+  symbols.val = (TSP_consumer_symbol_requested_t*)calloc(requested_nb, sizeof(TSP_consumer_symbol_requested_t));
   
   /* Initialize data of sampling */
-  for(i = 0 ; i < req_sample.symbols.TSP_sample_symbol_info_list_t_len ; i++)
+  for(i = 0 ; i <requested_nb ; i++)
     {
-      req_sample.symbols.TSP_sample_symbol_info_list_t_val[i].name = "";
-      req_sample.symbols.TSP_sample_symbol_info_list_t_val[i].phase = data_test[i].phase ;
-      req_sample.symbols.TSP_sample_symbol_info_list_t_val[i].period = data_test[i].period ;
-      req_sample.symbols.TSP_sample_symbol_info_list_t_val[i].provider_global_index = data_test[i].index ;
+      symbols.val[i].phase = data_test[i].phase ;
+      symbols.val[i].period = data_test[i].period ;
+      symbols.val[i].index = data_test[i].index ;
     }
   /*-------------------------------------------------------------------------------------------------------*/ 
   /* TEST : STAGE 002 | STEP 004 */
   /*-------------------------------------------------------------------------------------------------------*/ 
-  if(!TSP_consumer_request_sample(&req_sample, providers[0]))
+  if(!TSP_consumer_request_sample(providers[0], &symbols))
     {
       STRACE_ERROR(("TSP_request_provider_sample failed"));
       STRACE_TEST(("STAGE 002 | STEP 001 : FAILED"));

@@ -1,5 +1,6 @@
 #include "tsp_sys_headers.h"
 #include <math.h>
+#include <signal.h>
 
 #include "tsp_prjcfg.h"
 #include "tsp_consumer.h"
@@ -16,14 +17,52 @@
 /* libUTIL */
 extern _use_dbl;
 
+typedef void Sigfunc(int);
+
+static old_sigfunc;
+
+static stop = FALSE;
+static stop_end = FALSE;
+
+static int count = 0;
+
+static Sigfunc* signal(int signo, Sigfunc* func)
+{
+  struct sigaction act, oact;
+  
+  act.sa_handler = func;
+  sigemptyset(&act.sa_mask);
+  act.sa_flags = 0;
+  if(signo == SIGALRM )
+    {
+#ifdef SA_INTERRUPT
+      act.sa_flags |= SA_INTERRUPT; /*SunOS 4;x */
+#endif
+    }
+  else
+    {
+#ifdef SA_RESTART
+      act.sa_flags |= SA_RESTART; /*SVR4, 4.4BSD*/
+#endif
+    }
+  if(sigaction(signo, &act, &oact) < 0)
+    return(SIG_ERR);
+  return (oact.sa_handler);
+} 
+
+void catch_ctrl_c(int i)
+{
+  SFUNC_NAME(main);
+  stop = TRUE;
+
+  STRACE_TEST(("Waiting eol and saving file..."));
+}
 
 int main(int argc, char *argv[]){
 
   SFUNC_NAME(main);
-
-  TSP_sample_symbol_info_list_t*  symbols;
-  TSP_answer_sample_t* ans_sample;
-  TSP_request_sample_t req_sample;
+  const TSP_consumer_information_t*  information;
+  TSP_consumer_symbol_requested_list_t symbols;
 
   int i, j, count=0;
   int nb_providers;
@@ -52,7 +91,8 @@ int main(int argc, char *argv[]){
   int group_nb;
  
 
-
+  /* catch ctrl-c */
+  signal(SIGINT, catch_ctrl_c);
 
 
   STRACE_INFO(("Autodetect CPU : %d bits", sizeof(long)*8));
@@ -94,6 +134,7 @@ int main(int argc, char *argv[]){
       STRACE_ERROR(("- 1 : All variables"));
       STRACE_ERROR(("- 2 : 3 variables (first, middle, last)"));
       STRACE_ERROR(("- 3 : 10 first variables"));
+      STRACE_ERROR(("Note : CTRL+C cleanly save res file and quit"));
 
       return -1;
     }
@@ -144,18 +185,22 @@ int main(int argc, char *argv[]){
       return -1;
     }
 
-  symbols = TSP_consumer_get_information(providers[0]);
+  information = TSP_consumer_get_information(providers[0]);
 
+  symbols.val = (TSP_consumer_symbol_requested_t*)calloc(information->symbols.len, sizeof(TSP_consumer_symbol_requested_t));
+  TSP_CHECK_ALLOC(symbols.val, -1);
+  symbols.len = information->symbols.len;  
 
-  for( i = 0 ; i< symbols->TSP_sample_symbol_info_list_t_len ; i++)
+  for( i = 0 ; i< information->symbols.len ; i++)
     {
-      STRACE_INFO(("Id=%d Sym='%s'",i, symbols->TSP_sample_symbol_info_list_t_val[i].name));
-      
+      STRACE_INFO(("Id=%d Sym='%s'",i, information->symbols.val[i].name));
+      symbols.val[i].index = information->symbols.val[i].index;;
+      symbols.val[i].period = period;
+      symbols.val[i].phase = 0;
     }
-
-
-  		       
   
+  
+      
 
   /* take only the first, midle and last variable in 'first_last' mode*/
   switch(test_mode)
@@ -164,12 +209,12 @@ int main(int argc, char *argv[]){
       /* all variables */
       break;
     case 2 :
-      symbols->TSP_sample_symbol_info_list_t_val[1] = symbols->TSP_sample_symbol_info_list_t_val[ symbols->TSP_sample_symbol_info_list_t_len/2];
-      symbols->TSP_sample_symbol_info_list_t_val[2] = symbols->TSP_sample_symbol_info_list_t_val[ symbols->TSP_sample_symbol_info_list_t_len-1];
-      symbols->TSP_sample_symbol_info_list_t_len = 3;
+      symbols.val[1] = symbols.val[ symbols.len/2];
+      symbols.val[2] = symbols.val[ symbols.len-1];
+      symbols.len = 3;
     break;
     case 3 :     
-      symbols->TSP_sample_symbol_info_list_t_len = 10;
+      symbols.len = 10;
       break;
     default:
       STRACE_ERROR(("Unknown test number"));
@@ -178,19 +223,10 @@ int main(int argc, char *argv[]){
 
  
   
-
-
-  /* Change period of sampling for each client */
-  for(i = 0 ; i < symbols->TSP_sample_symbol_info_list_t_len ; i++)
-    {
-      symbols->TSP_sample_symbol_info_list_t_val[i].period = period;
-    }
-
-  req_sample.symbols = (*symbols);  
 /*-------------------------------------------------------------------------------------------------------*/ 
 /* TEST : STAGE 001 | STEP 004 */
 /*-------------------------------------------------------------------------------------------------------*/ 
-  if(!TSP_consumer_request_sample(&req_sample, providers[0]))
+  if(!TSP_consumer_request_sample(providers[0],&symbols))
     {
       STRACE_ERROR(("TSP_request_provider_sample failed"));
       return -1;
@@ -214,19 +250,19 @@ int main(int argc, char *argv[]){
   STRACE_INFO(("file=%s", out_file_res));
   d_wopen(out_file_res);
   d_wcom("");
-  for (i = 0; i < symbols->TSP_sample_symbol_info_list_t_len; i++)
+  for (i = 0; i < symbols.len; i++)
     {
-      d_wnam(symbols->TSP_sample_symbol_info_list_t_val[i].name, "");
+      d_wnam(information->symbols.val[symbols.val[i].index].name, "");
       
     }
 
   res_values = _use_dbl ? 
-    calloc(( symbols->TSP_sample_symbol_info_list_t_len+1),sizeof(double)) :
-      calloc(( symbols->TSP_sample_symbol_info_list_t_len+1),sizeof(float)) ;
+    calloc(( symbols.len+1),sizeof(double)) :
+      calloc(( symbols.len+1),sizeof(float)) ;
   assert(res_values);
   
   res_value_i = 0;
-  while(TSP_consumer_read_sample(providers[0],&sample, &new_sample))
+  while(TSP_consumer_read_sample(providers[0],&sample, &new_sample) && !stop_end )
     {
 
       if(new_sample)
@@ -234,10 +270,14 @@ int main(int argc, char *argv[]){
 
 	  double calc;
 
+	  /* overide time */
+	  /*if(  0 == res_value_i ) sample.user_value = ((double)count)/40.0;*/
+
 	  if(_use_dbl)
 	    {
 	      double* d_res_values = (double*)res_values;
 	      d_res_values[res_value_i++] = sample.user_value;
+	       
 	    }
 	  else
 	    {
@@ -245,10 +285,17 @@ int main(int argc, char *argv[]){
 	      f_res_values[res_value_i++] = sample.user_value;	      
 	    }
 
-	  if( res_value_i == symbols->TSP_sample_symbol_info_list_t_len )
+	  if( res_value_i == symbols.len )
 	    {
+	      count++;
 	      d_writ(res_values);
+	      STRACE_INFO(("Write %f", *(float*)res_values));
 	      res_value_i = 0;
+	      if(stop)
+		{
+		  stop_end = TRUE;
+		}
+
 
 	    }
 	}

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/tests/stage3/Attic/glue_sserver3.c,v 1.4 2002-10-09 08:31:57 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/tests/stage3/Attic/glue_sserver3.c,v 1.5 2002-10-24 13:34:10 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -59,11 +59,6 @@ typedef struct GLU_state_t GLU_state_t;
 
 
 
-glu_ringbuf* GLU_active_get_ringbuf(GLU_handle_t h_glu)
-{
-  return 0;
-}
-
 char* GLU_get_server_name(void)
 {
   return "RES Server";
@@ -95,7 +90,7 @@ char* GLU_get_server_name(void)
 
 
 
-int GLU_pasive_get_next_item(GLU_handle_t h_glu, glu_item_t* item)
+GLU_get_state_t GLU_get_next_item(GLU_handle_t h_glu, glu_item_t* item)
 {
   SFUNC_NAME(GLU_pasive_get_next_item);
   GLU_state_t* obj = (GLU_state_t*)h_glu;
@@ -115,7 +110,7 @@ int GLU_pasive_get_next_item(GLU_handle_t h_glu, glu_item_t* item)
 
 	}*/
 
-      return TRUE;
+      return GLU_GET_NEW_ITEM;
     }
   else
     {
@@ -129,12 +124,12 @@ int GLU_pasive_get_next_item(GLU_handle_t h_glu, glu_item_t* item)
       item->provider_global_index = obj->current_var;
       obj->current_var++;
       item->time = obj->time_stamp;
-      return TRUE;
+      return GLU_GET_NEW_ITEM;
 
 	}   
       else
 	{
-	  return FALSE;
+	  return GLU_GET_EOF;
 	}
     }
 
