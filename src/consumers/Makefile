@@ -5,6 +5,7 @@ ifeq (${EXCLUDE_CONSUMER},yes)
 	# nothing to do
 else
 	SUBDIRS = \
+		stdout_callback \
 		stdout \
 		test_group \
 		res_writer \
