@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_datapool.c,v 1.8 2002-10-24 13:27:45 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_datapool.c,v 1.9 2002-11-19 13:13:07 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -151,6 +151,7 @@ static void* TSP_datapool_thread(void* datapool)
   int more_items;
   TSP_datapool_table_t* obj_datapool = (TSP_datapool_table_t*)datapool;  
   GLU_get_state_t state;
+  TSP_msg_ctrl_t msg_ctrl;
 
   STRACE_IO(("-->IN"));
   
@@ -188,7 +189,7 @@ static void* TSP_datapool_thread(void* datapool)
   /* Update datapool */
   obj_datapool->items[item.provider_global_index].user_value = item.value;           
   
-  while( GLU_GET_EOF != state )
+  while( (GLU_GET_NEW_ITEM == state) || (GLU_GET_NO_ITEM == state) )
     {
       while(GLU_GET_NEW_ITEM == (state=GLU_get_next_item(obj_datapool->h_glu, &item)) )
 	{       
@@ -216,13 +217,41 @@ static void* TSP_datapool_thread(void* datapool)
        tsp_usleep(TSP_DATAPOOL_POOL_PERIOD);
     }      
 
-  /* FIXME : S'il y un EOF tout de suite on envoi de la boue une fois...bof...*/
-  /* The lastest data were not sent coz we did not compare the latest timestamp*/
-  TSP_session_send_data_by_channel(obj_datapool->session_channel_id, time_stamp);
+   /* Send end status message */
+  switch(state)
+    {
+    case   GLU_GET_EOF :
+      msg_ctrl = TSP_MSG_CTRL_EOF;
+      break;
+    case   GLU_GET_RECONF :
+      msg_ctrl = TSP_MSG_CTRL_RECONF;
+      break;
+    default:
+      STRACE_ERROR(("?"));
+      assert(0);
+    }
 
-  /* Send group EOF */
-  TSP_session_send_data_eof_by_channel(obj_datapool->session_channel_id);
-    
+   /* FIXME : S'il y un EOF tout de suite on envoi de la boue une fois...bof...*/
+    /* The lastest data were not sent coz we did not compare the latest timestamp*/
+   if( obj_datapool->is_global )
+    {
+       /* Send data to all clients  */	      
+      assert(obj_datapool->h_glu == GLU_GLOBAL_HANDLE );
+      TSP_session_all_session_send_data(time_stamp);		  
+      TSP_session_all_session_send_msg_ctrl(msg_ctrl);		  
+    }
+  else
+    {
+      /* send data to one client */
+       TSP_session_send_data_by_channel(obj_datapool->session_channel_id, time_stamp);	  
+       TSP_session_send_msg_ctrl_by_channel(obj_datapool->session_channel_id, msg_ctrl);
+    }
+
+   /*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
+   /* MEGAFIXME : Fuites...Etc...Synchronisation ? */
+   /*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
+
+   obj_datapool->initialized = FALSE;
       
   STRACE_IO(("-->OUT"));
 
@@ -274,7 +303,11 @@ static int TSP_global_datapool_init(void)
   STRACE_IO(("-->IN"));
 	
   /* Here the datapool is global */
-  assert(0 == X_global_datapool.h_glu);
+
+  /* FIXME : remettre l'assertion */
+  /*assert(0 == X_global_datapool.h_glu);*/
+
+
   X_global_datapool.h_glu = GLU_GLOBAL_HANDLE;   
 
   GLU_get_sample_symbol_info_list(X_global_datapool.h_glu, &symbols);
