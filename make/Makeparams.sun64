@@ -4,13 +4,12 @@
 # Default tools
 # -------------
 # Using standard tools
-CC=gcc -mcpu=v9 -m64 
-#CC = cc -xarch=v9
+CC = gcc
 
 # Default options
 # ---------------
 ARFLAGS = rvs
-CFLAGS = 
+CFLAGS = -mcpu=v9 -m64
 CPPFLAGS +=  -D__EXTENSIONS__ -D_REENTRANT  -DUSE_STRACE -DTSP_NO_XDR_ENCODE
 LDLIBS = -lsocket -lnsl -lm -lposix4 -lgen -lpthread  
 
