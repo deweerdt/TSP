@@ -3,8 +3,13 @@
 #-----------------------------------------------
 #CUSTOMIZE : input RES File name 
 # FILE1 must be smaller that FILE2 (timing problem with test, else...)
-set CUSTOM_RESFILE2="A_NCK01_020701_1834.res"
+set CUSTOM_RESFILE2="IQT_GLOBAL_07.sync.res"
+#double of float
+set OUTFILETYPE2="d"
+
 set CUSTOM_RESFILE1="A_NCK01_020701_1834_tmA.res"
+#double of float
+set OUTFILETYPE1="f"
 #-----------------------------------------------
 
 
@@ -18,7 +23,7 @@ echo " - pasive data stream check "
 echo " - STEP 1 : check all symbols "
 echo " - STEP 2 : check first, middle, and last symbol "
 
-set TESTPATH=$DEVBASE/../../tools/test/res
+set TESTPATH=$DEVBASE/src/tsp/tests/stage3
 
 set PROVIDER=tsp_server$TESTNB
 set CONSUMER=tsp_client$TESTNB
@@ -49,8 +54,8 @@ sleep 1
 
 
 #Run consumer test 1
-$CONSUMER localhost 1  $IN_RESFILE1 $OUT_RESFILE1 1 &
-$CONSUMER localhost 1  $IN_RESFILE2 $OUT_RESFILE2 1
+$CONSUMER localhost 1  $IN_RESFILE1 $OUT_RESFILE1 $OUTFILETYPE1 1 &
+$CONSUMER localhost 1  $IN_RESFILE2 $OUT_RESFILE2 $OUTFILETYPE2 1
 sleep 3
 
 #1-> Create variable list from initial .res
@@ -107,8 +112,8 @@ endif
 #------------------------------------------------
 
 #We keep the same provider
-$CONSUMER localhost 1  $IN_RESFILE1 $OUT_RESFILE1 2 &
-$CONSUMER localhost 1  $IN_RESFILE2 $OUT_RESFILE2 2
+$CONSUMER localhost 1  $IN_RESFILE1 $OUT_RESFILE1 $OUTFILETYPE1 2 &
+$CONSUMER localhost 1  $IN_RESFILE2 $OUT_RESFILE2 $OUTFILETYPE2 2
 sleep 3
 
 
