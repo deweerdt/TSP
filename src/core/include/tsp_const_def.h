@@ -1,6 +1,6 @@
 /*!  \file 
  
-$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_const_def.h,v 1.8 2002-10-04 15:28:38 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_const_def.h,v 1.9 2002-10-09 08:24:12 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -15,7 +15,6 @@ Purpose   :
  */
 
 #ifndef _TSP_CONST_DEF_H
-
 #define _TSP_CONST_DEF_H
 
 
@@ -33,16 +32,49 @@ Purpose   :
 #define GLU_RING_BUFSIZE (1000 * 100 * 3)
 
 
-
-
 /* Max client total number */
-#define TSP_MAX_CLIENT_NUMBER 200
+#define TSP_MAX_CLIENT_NUMBER 100
 
 /* Max server total number */
 #define TSP_MAX_SERVER_NUMBER 20
 
+/** Max period that can be asked by a consumer, for a symbol */
+#define TSP_MAX_PERIOD 100000
+
 /* Data Pool period (µS) */
 #define TSP_DATAPOOL_POOL_PERIOD 5000
+
+/*-------- SOCKET --------*/
+
+/* Size of buffer used to create the bite stream
+that will be sent thrue the socket */
+#define TSP_DATA_STREAM_CREATE_BUFFER_SIZE 1024*48
+
+/** Socket in and out buffer for Write and Read
+operations.
+ex : 8*1000*15 must be enough for 15000 elements in a group,
+for a 5 sec fifo, at 100Hz --> 40 Mo */
+/* FIXME : verifier cette taille par rappor a la taille du groupe max */
+/* FIXME : Il faut un ringbuf dont la taille peut etre allouee a la volee*/
+#define TSP_DATA_STREAM_SOCKET_BUFFER_SIZE (8*1000*15)
+
+/** Duration of stream sender fifo in secondes */
+#define TSP_STREAM_SENDER_RINGBUF_SIZE 10
+
+/** Size of stream sender fifo item.
+ * must be the size of the socket buffer, because this buffer
+ * must be copied into this fifo.
+ */
+#define TSP_STREAM_SENDER_RINBUF_ITEM_SIZE  TSP_DATA_STREAM_SOCKET_BUFFER_SIZE
+
+
+/* PROTOCOL */
+
+#define TSP_RESERVED_GROUPE_EOF        0xFFFFFFFF
+
+#define TSP_RESERVED_GROUPE_ASYNCHRONE 0xFFFFFFFE
+
+/*-------- MISC --------*/
 
 typedef guint32 channel_id_t;
 typedef guint32 version_id_t;
@@ -76,21 +108,6 @@ typedef guint32 time_stamp_t;
                                  " commands ... " TSP_ARG_STREAM_INIT_STOP "] " \
                                  " [" TSP_ARG_SERVER_NUMBER " number ]"
 
-/*-------- SOCKET --------*/
-
-/* Size of buffer used to create the bite stream
-that will be sent thrue the socket */
-#define TSP_DATA_STREAM_CREATE_BUFFER_SIZE 1024*48
-
-/* Socket in and out buffer for Write and Read
-operations */
-#define TSP_DATA_STREAM_SOCKET_BUFFER_SIZE 80*1024
-
-/* PROTOCOL */
-
-#define TSP_RESERVED_GROUPE_EOF        0xFFFFFFFF
-
-#define TSP_RESERVED_GROUPE_ASYNCHRONE 0xFFFFFFFE
 
 /*-------- XDR --------*/
 
