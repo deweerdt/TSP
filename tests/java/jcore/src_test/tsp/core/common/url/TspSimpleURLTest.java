@@ -1,4 +1,4 @@
-/* $Id: TspSimpleURLTest.java,v 1.1 2004-11-09 05:49:46 sgalles Exp $
+/* $Id: TspSimpleURLTest.java,v 1.2 2004-11-11 06:29:32 sgalles Exp $
  * -----------------------------------------------------------------------
  * 
  * TSP Library - core components for a generic Transport Sampling Protocol.
@@ -38,74 +38,58 @@ import junit.framework.TestCase;
 
 public class TspSimpleURLTest extends TestCase {
 
-	public void testAllFields() {
-		try {
+	public void testAllFields() throws Exception {
+		
 			final String url = "myprotocol://myhost/myserver:1";
 			TspURL o = new TspSimpleURL(url);
 			assertEquals("myprotocol", o.getProtocol());
 			assertEquals("myhost", o.getHost());
 			assertEquals("myserver", o.getServerName());
 			assertEquals(new Integer(1), o.getServerNumber());
-		}
-		catch (Exception e) {
-			fail("Unexpected exception : " + e);
-		}
+		
 	}
 
-	public void testNoServerName() {
-		try {
+	public void testNoServerName() throws Exception{
+		
 			final String url = "myprotocol://myhost/:1";
 			TspURL o = new TspSimpleURL(url);
 			assertEquals("myprotocol", o.getProtocol());
 			assertEquals("myhost", o.getHost());
 			assertEquals(null, o.getServerName());
 			assertEquals(new Integer(1), o.getServerNumber());
-		}
-		catch (Exception e) {
-			fail("Unexpected exception : " + e);
-		}
+		
 	}
 
-	public void testNoProtocol() {
-		try {
+	public void testNoProtocol() throws Exception{
+		
 			final String url = "://myhost/myserver:1";
 			TspURL o = new TspSimpleURL(url);
 			assertEquals(null, o.getProtocol());
 			assertEquals("myhost", o.getHost());
 			assertEquals("myserver", o.getServerName());
 			assertEquals(new Integer(1), o.getServerNumber());
-		}
-		catch (Exception e) {
-			fail("Unexpected exception : " + e);
-		}
+		
 	}
 
-	public void testNoHost() {
-		try {
+	public void testNoHost() throws Exception{
+		
 			final String url = "myprotocol:///myserver:1";
 			TspURL o = new TspSimpleURL(url);
 			assertEquals("myprotocol", o.getProtocol());
 			assertEquals(null, o.getHost());
 			assertEquals("myserver", o.getServerName());
 			assertEquals(new Integer(1), o.getServerNumber());
-		}
-		catch (Exception e) {
-			fail("Unexpected exception : " + e);
-		}
+		
 	}
 
-	public void testNoServerNumber() {
-		try {
+	public void testNoServerNumber() throws Exception{
+
 			final String url = "myprotocol://myhost/myserver:";
 			TspURL o = new TspSimpleURL(url);
 			assertEquals("myprotocol", o.getProtocol());
 			assertEquals("myhost", o.getHost());
 			assertEquals("myserver", o.getServerName());
 			assertEquals(null, o.getServerNumber());
-		}
-		catch (Exception e) {
-			fail("Unexpected exception : " + e);
-		}
 	}
 
 	private void assertUrlIsEmpty(TspURL o) {
@@ -115,107 +99,99 @@ public class TspSimpleURLTest extends TestCase {
 		assertEquals(null, o.getServerNumber());
 	}
 
-	public void testEmptyUrl() {
-		try {
+	public void testEmptyUrl() throws Exception{
+		
 			assertUrlIsEmpty(new TspSimpleURL(""));
 			assertUrlIsEmpty(new TspSimpleURL("/"));
 			assertUrlIsEmpty(new TspSimpleURL("//"));
 			assertUrlIsEmpty(new TspSimpleURL("///"));
 			assertUrlIsEmpty(new TspSimpleURL(":///"));
 			assertUrlIsEmpty(new TspSimpleURL(":///:"));
-		}
-		catch (Exception e) {
-			fail("Unexpected exception : " + e);
-		}
+		
 	}
 
-	public void testMixedEmpty1() {
-		try {
+	public void testMixedEmpty1() throws Exception{
+		
 			final String url = "myprotocol:///myserver:";
 			TspURL o = new TspSimpleURL(url);
 			assertEquals("myprotocol", o.getProtocol());
 			assertEquals(null, o.getHost());
 			assertEquals("myserver", o.getServerName());
 			assertEquals(null, o.getServerNumber());
-		}
-		catch (Exception e) {
-			fail("Unexpected exception : " + e);
-		}
+		
 	}
 
-	public void testMixedEmpty2() {
-		try {
+	public void testMixedEmpty2() throws Exception{
+		
 			final String url = "://myhost/:1";
 			TspURL o = new TspSimpleURL(url);
 			assertEquals(null, o.getProtocol());
 			assertEquals("myhost", o.getHost());
 			assertEquals(null, o.getServerName());
 			assertEquals(new Integer(1), o.getServerNumber());
-		}
-		catch (Exception e) {
-			fail("Unexpected exception : " + e);
-		}
+		
 	}
 
-	public void testBadUrlMissingTokenProtocol() {
-		fail("I'll refactor with regexp");
-		try {
-			final String url = ":myhost/:1";
-			new TspSimpleURL(url);
-			fail("A TspException should have been thrown");
-		}
-		catch (TspMalformedURLException e) {
-			assertEquals("Malformed URL, unable to find token ://", e.getMessage());
-		}
-		catch (Exception e) {
-			fail("Unexpected Exception : " + e);
-		}
-
+	public void testSimplifiedSyntaxProtocolOnly() throws Exception {		
+		
+			final String url = "myprotocol";
+			TspURL o = new TspSimpleURL(url);
+			assertEquals( "myprotocol", o.getProtocol());
+			assertEquals(null, o.getHost());
+			assertEquals(null, o.getServerName());
+			assertEquals(null, o.getServerNumber());			
+	}
+	
+	public void testSimplifiedSyntaxProtocolAndToken()  throws Exception{		
+		
+			final String url = "myprotocol://";
+			TspURL o = new TspSimpleURL(url);
+			assertEquals( "myprotocol", o.getProtocol());
+			assertEquals(null, o.getHost());
+			assertEquals(null, o.getServerName());
+			assertEquals(null, o.getServerNumber());			
 	}
 
-	public void testBadUrlMissingTokenHost() {
-		fail("refactor with regexp");
-		try {
-			final String url = "://myhost1";
-			new TspSimpleURL(url);
-			fail("A TspException should have been thrown");
-		}
-		catch (TspMalformedURLException e) {
-			assertEquals("Malformed URL, unable to find token /", e.getMessage());
-		}
-		catch (Exception e) {
-			fail("Unexpected Exception : " + e);
-		}
+	public void testSimplifiedSyntaxProtocolHost()  throws Exception{		
+		
+			final String url = "myprotocol://myhost";
+			TspURL o = new TspSimpleURL(url);
+			assertEquals( "myprotocol", o.getProtocol());
+			assertEquals("myhost", o.getHost());
+			assertEquals(null, o.getServerName());
+			assertEquals(null, o.getServerNumber());			
 	}
-
-	public void testBadUrlMissingTokenServerName() {
-		fail("refactor with regexp");
-		try {
-			final String url = "://myhost/1";
-			new TspSimpleURL(url);
-			fail("A TspException should have been thrown");
-		}
-		catch (TspMalformedURLException e) {
-			assertEquals("Malformed URL, unable to find token :", e.getMessage());
-		}
-		catch (Exception e) {
-			fail("Unexpected Exception : " + e);
-		}
+	
+	public void testSimplifiedSyntaxProtocolHostServer()  throws Exception{		
+		
+			final String url = "myprotocol://myhost/myserver";
+			TspURL o = new TspSimpleURL(url);
+			assertEquals( "myprotocol", o.getProtocol());
+			assertEquals("myhost", o.getHost());
+			assertEquals("myserver", o.getServerName());
+			assertEquals(null, o.getServerNumber());			
 	}
-
-	public void testBadUrlMissingServerNumberNotInteger() {
-		fail("refactor with regexp");
-		try {
+	
+	public void testBadUrlServerNumberNotInteger() throws Exception{
+		try{		
 			final String url = "myprotocol://myhost/myserver:A";
 			new TspSimpleURL(url);			
 			fail("An exception should have been thrown");
 		}
 		catch (TspMalformedURLException e) {
-			assertEquals("Bad URL, 'A' is not an integer", e.getMessage());
+			assertEquals(null, e.getMessage());
+		}		
+	}
+	
+	public void testBadUrlReallyWeird() throws Exception{
+		try{		
+			final String url = "myprotocol://myhost/myserver/1";
+			new TspSimpleURL(url);			
+			fail("An exception should have been thrown");
 		}
-		catch (Exception e) {
-			fail("Unexpected Exception : " + e);
-		}
+		catch (TspMalformedURLException e) {
+			assertEquals(null, e.getMessage());
+		}		
 	}
 	
 	public void testBadUrlNull() {
@@ -225,10 +201,7 @@ public class TspSimpleURLTest extends TestCase {
 		}
 		catch (TspMalformedURLException e) {
 			assertEquals("null URL String", e.getMessage());
-		}
-		catch (Exception e) {
-			fail("Unexpected Exception : " + e);
-		}
+		}		
 	}
 	
 	public void testBuildURL(){
