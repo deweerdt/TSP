@@ -9,6 +9,7 @@
   consumer developper.
 
 @sgalles
+- Add wildcard management for ServerName in URL
 - Correcte Bug with jsynoptic triggered by URL class not serializable...Oops...
 - Replace System.out with TspLog
 - Update Javadoc for exceptions
