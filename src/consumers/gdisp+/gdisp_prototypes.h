@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_prototypes.h,v 1.8 2004-10-22 20:17:34 esteban Exp $
+$Id: gdisp_prototypes.h,v 1.9 2005-02-19 21:35:20 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -202,26 +202,29 @@ Pixmap_T  *gdisp_getProviderIdPixmap (Kernel_T   *kernel,
 				      GtkWidget  *parent,
 				      guint       providerIdentity);
 
-void       gdisp_getStringTableFromStringList ( gchar   *stringList,
-						gchar ***stringTable,
-						guint   *stringTableSize );
-void       gdisp_freeStringTable              ( gchar ***stringTable,
-				                guint   *stringTableSize );
-gchar     *gdisp_strStr                       ( gchar   *name,
-				                gchar  **stringTable,
-				                guint    stringTableSize );
+void       gdisp_getStringTableFromStringList (gchar   *stringList,
+					       gchar ***stringTable,
+					       guint   *stringTableSize);
+void       gdisp_freeStringTable              (gchar ***stringTable,
+					       guint   *stringTableSize);
+gchar     *gdisp_strStr                       (gchar   *name,
+					       gchar  **stringTable,
+					       guint    stringTableSize);
 
-void       gdisp_loopOnGraphicPlots ( Kernel_T  *kernel,
-				      void     (*callback)(Kernel_T*,
-							   Page_T*,
-							   PlotSystemData_T*,
-							   void*),
-				      void      *userData );
+void       gdisp_loopOnGraphicPlots (Kernel_T  *kernel,
+				     void     (*callback)(Kernel_T*,
+							  Page_T*,
+							  PlotSystemData_T*,
+							  void*),
+				     void      *userData);
 
 gboolean   gdisp_positionIsInsideZone (PlotSystemZone_T *zone,
 				       gdouble           x,
 				       gdouble           y);
-guint      gdisp_computePgcd          (guint             a,
-				       guint             b);
+
+guint      gdisp_computePgcd          (guint a,
+				       guint b);
 				    
+void       gdisp_dereferenceSymbolList (GList *symbolList);
+
 #endif /* __PROTOTYPES_H__ */

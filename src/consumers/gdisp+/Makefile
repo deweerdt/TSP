@@ -46,7 +46,7 @@ $(TARGET): $(OBJECTS)
 	$(LINK.c) -o $@ $(OBJECTS) $(ADD_LIB) $(LDLIBS)
 
 destroy ::
-	$(RM)	$(TARGET) $(OBJECTS)
+	$(RM)	$(TARGET) $(OBJECTS) *~
 
 include $(DEVBASE)/make/Makerules
 

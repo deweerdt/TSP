@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_pixmaps.c,v 1.2 2005-02-16 21:25:08 esteban Exp $
+$Id: gdisp_pixmaps.c,v 1.3 2005-02-19 21:35:20 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -188,7 +188,7 @@ gdisp_createPixmap ( Kernel_T   *kernel,
   }
 
   /*
-   * Tke into account the parent style for transparency purpose.
+   * Take into account the parent style for transparency purpose.
    */
   style = gtk_widget_get_style(pixmapParent);
 
@@ -321,5 +321,7 @@ gdisp_destroyPixmaps ( Kernel_T *kernel )
     pixmapItem = g_list_next(pixmapItem);
 
   }
+
+  g_list_free(kernel->widgets.pixmapTable);
 
 }

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_plot2D.c,v 1.11 2004-11-19 13:50:15 dufy Exp $
+$Id: gdisp_plot2D.c,v 1.12 2005-02-19 21:35:20 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -89,6 +89,7 @@ gdisp_manageSymbolNameWindow ( Kernel_T *kernel,
 static void
 gdisp_debugDumpData (char *txt, Plot2D_T       *plot);
 
+
 /*
  * Verbosity management.
  */
@@ -167,43 +168,6 @@ gdisp_freeSampledPointTables( Kernel_T *kernel,
 
     g_ptr_array_free(plot->p2dSampleArray,FALSE);
     plot->p2dSampleArray = (GPtrArray*)NULL;
-
-  }
-
-}
-
-
-/*
- * Loop over all elements of the list.
- * Each element is a TSP symbol the 'sReference' parameter of
- * which must be decremented.
- */
-static void
-gdisp_dereferenceSymbolList ( GList *symbolList )
-{
-
-  GList    *symbolItem =    (GList*)NULL;
-  Symbol_T *symbol     = (Symbol_T*)NULL;
-
-  /*
-   * Loop over all elements of the list.
-   * Do not forget to decrement the 'sReference' of each symbol.
-   */
-  if (symbolList != (GList*)NULL) {
-
-    symbolItem = g_list_first(symbolList);
-
-    while (symbolItem != (GList*)NULL) {
-
-      symbol = (Symbol_T*)symbolItem->data;
-
-      symbol->sReference--;
-
-      symbolItem = g_list_next(symbolItem);
-
-    }
-
-    g_list_free(symbolList);
 
   }
 
@@ -529,12 +493,12 @@ gdisp_deleteSelectedSymbolName ( Kernel_T *kernel,
     /*
      * Reset bounding box.
      */
-    plot->p2dPtMin.x = 0.0;
-    plot->p2dPtMin.y = 0.0;
-    plot->p2dPtMax.x = 0.0;
-    plot->p2dPtMax.y = 0.0;
-    plot->p2dPtSlope.x=1.0;
-    plot->p2dPtSlope.y=1.0;
+    plot->p2dPtMin.x   = 0.0;
+    plot->p2dPtMin.y   = 0.0;
+    plot->p2dPtMax.x   = 0.0;
+    plot->p2dPtMax.y   = 0.0;
+    plot->p2dPtSlope.x = 1.0;
+    plot->p2dPtSlope.y = 1.0;
 
     /*
      * Destroy all Gdk windows.
@@ -971,9 +935,15 @@ gdisp_plot2DSwapBuffers (Kernel_T       *kernel,
 
   GDISP_TRACE(3,"Swaping front and back buffers\n");
 
-  /* Something might need a full redraw instead of a nice add sample (start, move, ...) */
-  if (plot->p2dIsDirty)
+  /*
+   * Something might need a full redraw instead
+   * of a nice add sample (start, move, ...)
+   */
+  if (plot->p2dIsDirty) {
+
     drawType = GD_2D_FULL_REDRAW;
+
+  }
 
   /*
    * Take care of draw type.
@@ -1013,6 +983,7 @@ gdisp_plot2DSwapBuffers (Kernel_T       *kernel,
   }
 
   plot->p2dIsDirty = FALSE; /* now it is clean and well updated */
+
 }
 
 
@@ -1075,8 +1046,12 @@ gdisp_plot2DDrawBackBufferBackground (Kernel_T       *kernel,
    * We need to scroll the X axis.
    */
   else if (drawType == GD_2D_SCROLL_X_AXIS) {
-    int pix_scroll = (int)(plot->p2dPtScroll.x*plot->p2dPtSlope.x+0.5); 
-    /*(gint)ceil(plot->p2dArea->allocation.width *GDISP_2D_MARGIN_RATIO)*/
+
+    int pix_scroll = (int)(plot->p2dPtScroll.x * plot->p2dPtSlope.x + 0.5); 
+
+    /*
+     * (gint)ceil(plot->p2dArea->allocation.width * GDISP_2D_MARGIN_RATIO)
+     */
     GDISP_TRACE(2,"Drawing into back buffer -> background : SCROLL_X\n");
 
     /*
@@ -1245,10 +1220,11 @@ gdisp_plot2DDrawBackBufferBackground (Kernel_T       *kernel,
 }
 
 
-
-
-/* It's a guess, that on a 1000x1000 draw area, you won't fill it more than 10%*/
-#define MAX_PIXEL_ON_CURVE	10000  
+/*
+ * It's a guess, that on a 1000x1000 draw area,
+ * you won't fill it more than 10%.
+ */
+#define MAX_PIXEL_ON_CURVE 10000  
 
 static void
 gdisp_plot2DDrawBackBufferCurves (Kernel_T       *kernel,
@@ -1267,6 +1243,10 @@ gdisp_plot2DDrawBackBufferCurves (Kernel_T       *kernel,
   ShortPoint_T        lastPixel;
   ShortPoint_T        currentPixel;
   /* Sorry, I didn't want to allocate memory on each refresh */
+  /*
+   * From esteban : you are foregiven, duf. It is now more your
+   *                algorithm than mine.
+   */
   static GdkPoint     pixelList[MAX_PIXEL_ON_CURVE]; 
   guint		      nbPixels;
 
@@ -1341,13 +1321,17 @@ gdisp_plot2DDrawBackBufferCurves (Kernel_T       *kernel,
 	plot->p2dPtRedrawMax.y = currentPixel.y;
       }
 
-      if ((cptPoint == startIndex ) || /* Need two points to test the difference :} */
+      /*
+       * Need two points to test the difference :
+       */
+      if ((cptPoint == startIndex ) ||
 	  (lastPixel.x != currentPixel.x || lastPixel.y != currentPixel.y)) {
 
 	assert (nbPixels<MAX_PIXEL_ON_CURVE);
 	pixelList[nbPixels].x = currentPixel.x;
 	pixelList[nbPixels].y = currentPixel.y;
 	nbPixels++;
+
       }
 
       lastPixel = currentPixel;
@@ -1355,9 +1339,10 @@ gdisp_plot2DDrawBackBufferCurves (Kernel_T       *kernel,
     } /* end of loop for drawing one curve */
 
     gdk_draw_lines(plot->p2dBackBuffer,
-		     plot->p2dGContext,
-		     pixelList,
-		     nbPixels);
+		   plot->p2dGContext,
+		   pixelList,
+		   nbPixels);
+
     /*
      * Mark the last plotted position, for next drawBackBuffer optimisation.
      */
@@ -1388,8 +1373,11 @@ gdisp_plot2DDrawBackBuffer (Kernel_T       *kernel,
   GDISP_TRACE(3,"Drawing into back buffer\n");
 
   /* This might not be very fast, but should fix the growing min/max */
-  if (drawType == GD_2D_FULL_REDRAW || plot->p2dIsDirty)
+  if (drawType == GD_2D_FULL_REDRAW || plot->p2dIsDirty) {
+
     drawType = gdisp_plot2DRecomputeMinMax (plot,plot->p2dIsDirty);
+
+  }
 
   /*
    * Do not redraw background when simply adding new samples.
@@ -2338,12 +2326,16 @@ gdisp_stepOnPlot2D (Kernel_T *kernel,
     /*
      * Try to know whether F2T becomes F2X...
      */
-    if (totalNbSamples) {
-      lastPoint        = dparray_getSample(pArray,startIndex); /* And NOT getSamplePtr !!! */
+    if (totalNbSamples != 0) {
+
+      lastPoint = dparray_getSample(pArray,startIndex);
+      /* And NOT getSamplePtr !!! */
+
     }
+
     for (cptPoint=startIndex; cptPoint<startIndex+nbPoints; cptPoint++) {
 
-      pSample        = dparray_getSamplePtr(pArray,cptPoint);
+      pSample = dparray_getSamplePtr(pArray,cptPoint);
 
       /*
        * Check if plot2D is still monotonic increasing on X.
@@ -2358,6 +2350,7 @@ gdisp_stepOnPlot2D (Kernel_T *kernel,
 	  plot->p2dSubType = GD_2D_F2X;
 	  drawType         = GD_2D_FULL_REDRAW;
 	  GDISP_TRACE(1,"gdisp_stepOnPlot2D : changing type to F2X\n");
+
 	}
 
       }
@@ -2646,29 +2639,36 @@ gdisp_initPlot2DSystem (Kernel_T     *kernel,
 }
 
 
-
-
-
+/*
+ --------------------------------------------------------------------
+                             DEBUG ROUTINE
+ --------------------------------------------------------------------
+*/
 
 static void
-gdisp_debugDumpData (char *txt, Plot2D_T       *plot)
+gdisp_debugDumpData ( char     *txt,
+		      Plot2D_T *plot )
 {
 
-  gint               nbCurves   =                         0;
-  gint               cptCurve   =                         0;
-  gint               cptPoint   =                         0;
+  gint                nbCurves   =                         0;
+  gint                cptCurve   =                         0;
+  gint                cptPoint   =                         0;
   DoublePointArray_T *pArray     = (DoublePointArray_T*)NULL;
   DoublePoint_T      *pSample    =      (DoublePoint_T*)NULL;
-  gint               startIndex =                         0;
-  gint               lastIndex  =                         0;
-  gint               nbPoints   =                         0;
+  gint                startIndex =                         0;
+  gint                lastIndex  =                         0;
+  gint                nbPoints   =                         0;
   ShortPoint_T        lastPixel;
   ShortPoint_T        currentPixel;
   /* Sorry, I didn't want to allocate memory on each refresh */
-  guint		      nbPixels;
-  static int findex=0;
-  char fname[1024];
-  FILE *fp;
+  guint		      nbPixels   =                         0;
+  static int          findex     =                         0;
+  char                fname[1024];
+  FILE               *fp         =               (FILE*)NULL;
+
+  /*
+   * Init.
+   */
   sprintf (fname, "/tmp/%d_%s.plot", findex++, txt);
   fp = fopen(fname, "w");
   assert (fp!=0);
@@ -2678,25 +2678,42 @@ gdisp_debugDumpData (char *txt, Plot2D_T       *plot)
    */
   nbCurves = plot->p2dSampleArray->len;
   for (cptCurve=0; cptCurve<nbCurves; cptCurve++) {
-    pArray = plot->p2dSampleArray->pdata[cptCurve]; 
+
+    pArray     = plot->p2dSampleArray->pdata[cptCurve]; 
     startIndex = dparray_getFirstIndex(pArray);
     nbPoints   = dparray_getNbSamples (pArray);
-    nbPixels = 0;      
+    nbPixels   = 0;      
+
     for (cptPoint=startIndex; cptPoint<startIndex+nbPoints; cptPoint++) {
-      lastIndex = cptPoint;
+
+      lastIndex      = cptPoint;
       pSample        = dparray_getSamplePtr(pArray,cptPoint);
       currentPixel.x = X_SAMPLE_TO_WIN(plot,pSample->x);
       currentPixel.y = Y_SAMPLE_TO_WIN(plot,pSample->y);
-      if ( (lastPixel.x != currentPixel.x || lastPixel.y != currentPixel.y)) {
-	fprintf (fp, "pixel[%d] = {%f,%f} => {%d,%d} %s\n", cptPoint, 
-		pSample->x, pSample->y, currentPixel.x, currentPixel.y,  
-		(currentPixel.x < lastPixel.x) ? "BAD" : "GOOD" );
+
+      if ( (lastPixel.x != currentPixel.x) ||
+	   (lastPixel.y != currentPixel.y))   {
+
+	fprintf (fp,
+		 "pixel[%d] = {%f,%f} => {%d,%d} %s\n",
+		 cptPoint, 
+		 pSample->x,
+		 pSample->y,
+		 currentPixel.x,
+		 currentPixel.y,  
+		 (currentPixel.x < lastPixel.x) ? "BAD" : "GOOD" );
+
       }
+
       lastPixel = currentPixel;
+
     } /* end of loop for drawing one curve */
+
     fprintf (fp, "\n");
 
   } /* end of loop on every curves */
+
   fclose (fp);
+
 }
 

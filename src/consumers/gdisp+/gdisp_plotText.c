@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_plotText.c,v 1.5 2004-10-22 20:17:34 esteban Exp $
+$Id: gdisp_plotText.c,v 1.6 2005-02-19 21:35:20 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -65,43 +65,6 @@ File      : Text plot system.
 */
 
 #undef DEBUG_TEXT
-
-
-/*
- * Loop over all elements of the list.
- * Each element is a TSP symbol the 'sReference' parameter of
- * which must be decremented.
- */
-static void
-gdisp_dereferenceSymbolList ( GList *symbolList )
-{
-
-  GList    *symbolItem =    (GList*)NULL;
-  Symbol_T *symbol     = (Symbol_T*)NULL;
-
-  /*
-   * Loop over all elements of the list.
-   * Do not forget to decrement the 'sReference' of each symbol.
-   */
-  if (symbolList != (GList*)NULL) {
-
-    symbolItem = g_list_first(symbolList);
-
-    while (symbolItem != (GList*)NULL) {
-
-      symbol = (Symbol_T*)symbolItem->data;
-
-      symbol->sReference--;
-
-      symbolItem = g_list_next(symbolItem);
-
-    }
-
-    g_list_free(symbolList);
-
-  }
-
-}
 
 
 /*
