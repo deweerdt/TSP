@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_data_receiver.c,v 1.2 2002-08-27 14:56:31 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_data_receiver.c,v 1.3 2002-08-28 09:16:12 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -63,9 +63,11 @@ static int TSP_data_receiver_double_decoder(void* out_double,  char* in_buf)
   
   SFUNC_NAME(TSP_encode_double withOUT XDR);
 
-  /* FIXME : dans ce cas la fonction reussit toujours pas besoin du return */
+  /* FIXME : dans ce cas la fonction reussit toujours pas besoin du return */ 
 
   *(gint64*)out_double = TSP_DECODE_DOUBLE_TO_GUINT64(in_buf);
+   
+  
   return TRUE;
 
 #endif
@@ -86,6 +88,8 @@ TSP_data_receiver_t TSP_data_receiver_create(const char* data_address)
   TSP_CHECK_ALLOC(receiver, 0);
 
   /* FIXME : desallouer */
+
+  /* Allocate buffer for reception*/
   receiver->buf = (char*)calloc(TSP_DATA_STREAM_CREATE_BUFFER_SIZE, sizeof(char));
   TSP_CHECK_ALLOC(receiver->buf, 0);
     
