@@ -44,6 +44,7 @@ the library and the exemples.
 ...
 
 The exemple must now be in your path !
+(Or go in $DEVBASE/exec/DEV/[myTarget]/[myOpt]/bin
 
 launch the provider on a host :
 
@@ -51,7 +52,7 @@ launch the provider on a host :
 
 launch the consumer on an other host
 
-% tsp_client_printer ProviderHostName 1
+% tsp_stdout_client ProviderHostName 1
 
 replace ProviderHostName with the name of the host
 where the provider was launched (or 'localhost'
