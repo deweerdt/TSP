@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/tests/stage3/Attic/glue_sserver3.c,v 1.3 2002-10-04 15:23:28 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/tests/stage3/Attic/glue_sserver3.c,v 1.4 2002-10-09 08:31:57 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -339,4 +339,10 @@ GLU_handle_t GLU_get_instance(int argc, char* argv[], char** error_info)
 
  return obj;
 
+}
+
+double GLU_get_base_frequency(void)
+{
+  /* Server is pasive, no frequency at all*/
+  return 0.0;
 }

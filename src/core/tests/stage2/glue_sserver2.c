@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/tests/stage2/Attic/glue_sserver2.c,v 1.3 2002-10-04 15:23:25 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/tests/stage2/Attic/glue_sserver2.c,v 1.4 2002-10-09 08:31:55 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -253,4 +253,10 @@ GLU_handle_t GLU_get_instance(int argc, char* argv[], char** error_info)
   if(error_info)
     *error_info = "";
   return GLU_GLOBAL_HANDLE;
+}
+
+double GLU_get_base_frequency(void)
+{
+  /* Calculate base frequency */
+  return 1.0/( TSP_USLEEP_PERIOD_US * (1e-6));
 }
