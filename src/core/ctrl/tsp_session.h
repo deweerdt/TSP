@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.h,v 1.2 2002-10-01 15:25:49 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.h,v 1.3 2002-10-09 07:44:02 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -35,7 +35,7 @@ int TSP_session_add_symbols(TSP_sample_symbol_info_list_t* symbols);
 void TSP_session_free_create_symbols_table_call(TSP_answer_sample_t** ans_sample);
 
 int TSP_session_create_symbols_table_by_channel(const TSP_request_sample_t* req_sample,
-						TSP_answer_sample_t** ans_sample,
+						TSP_answer_sample_t* ans_sample,
 						int use_global_datapool);
 
 /* FIXME : en faire un return int ? */
@@ -53,5 +53,11 @@ int  TSP_session_get_sample_symbol_info_list_by_channel(channel_id_t channel_id,
 
 
 int TSP_session_is_consumer_connected_by_channel(channel_id_t channel_id);
+
+/**
+ * Get current total number of session.
+ * @return Total number of session
+ */
+int TSP_session_get_nb_session(void);
 
 #endif /* _TSP_SESSION_H */

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.c,v 1.3 2002-10-01 15:25:49 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.c,v 1.4 2002-10-09 07:44:02 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -201,6 +201,21 @@ int TSP_close_session_by_channel(channel_id_t channel_id)
 
 }
 
+int TSP_session_get_nb_session(void)
+{
+  int client_number;
+
+  SFUNC_NAME(TSP_session_get_nb_session);
+  
+  TSP_LOCK_MUTEX(&X_session_list_mutex,-1);
+  
+  client_number = X_session_nb;
+  
+  TSP_UNLOCK_MUTEX(&X_session_list_mutex,-1);
+
+  return client_number;
+}
+
 int TSP_add_session(channel_id_t* new_channel_id, GLU_handle_t glu_h)
 {
   SFUNC_NAME(TSP_add_session);
@@ -261,7 +276,7 @@ int TSP_add_session(channel_id_t* new_channel_id, GLU_handle_t glu_h)
 }
 
 int TSP_session_create_symbols_table_by_channel(const TSP_request_sample_t* req_sample,
-						TSP_answer_sample_t** ans_sample,
+						TSP_answer_sample_t* ans_sample,
 						int use_global_datapool)
 {
   SFUNC_NAME(TSP_session_create_symbols_table);
@@ -279,9 +294,6 @@ int TSP_session_create_symbols_table_by_channel(const TSP_request_sample_t* req_
     
   session =  TSP_get_session(req_sample->channel_id);
     
-  (*ans_sample) = (TSP_answer_sample_t*)calloc(1, sizeof(TSP_answer_sample_t));
-  TSP_CHECK_ALLOC((*ans_sample),FALSE);
-    
   /* Use global datapool, or local datapool ? */
   if(use_global_datapool)
     {
@@ -289,7 +301,7 @@ int TSP_session_create_symbols_table_by_channel(const TSP_request_sample_t* req_
       
       /* Create table*/
       ret  = TSP_group_algo_create_symbols_table(&(req_sample->symbols),
-						 &((*ans_sample)->symbols), 
+						 &(ans_sample->symbols), 
 						 &(session->session_data->groups),
 						 global_datapool);
     }
@@ -304,15 +316,16 @@ int TSP_session_create_symbols_table_by_channel(const TSP_request_sample_t* req_
        
       /* Creation table*/
       ret  = TSP_group_algo_create_symbols_table(&(req_sample->symbols),
-						 &((*ans_sample)->symbols), 
+						 &(ans_sample->symbols), 
 						 &(session->session_data->groups),
 						 session->session_data->datapool);   
     }
     
   
+  /* Set total group number */
   if(ret)
     {
-      (*ans_sample)->provider_group_number = 
+      ans_sample->provider_group_number = 
 	TSP_group_algo_get_group_number(session->session_data->groups);
     }
   else
@@ -410,7 +423,7 @@ void TSP_session_send_data_eof_by_channel(channel_id_t channel_id)
 void TSP_session_send_data_by_channel(channel_id_t channel_id, time_stamp_t t)
 {
 
-  SFUNC_NAME(TSP_session_all_session_send_data);
+  SFUNC_NAME(TSP_session_send_data_by_channel);
 
   TSP_session_t* session;
   /*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
@@ -448,10 +461,8 @@ void TSP_session_all_session_send_data(time_stamp_t t)
 {
 
   SFUNC_NAME(TSP_session_all_session_send_data);
-
     
   int i;
-    
   /* STRACE_IO(("-->IN"));*/
 
   TSP_LOCK_MUTEX(&X_session_list_mutex,);
@@ -477,10 +488,11 @@ void TSP_session_all_session_send_data(time_stamp_t t)
 				       X_session_t[i].session_data->groups, 
 				       t))
 		{
-		  STRACE_ERROR(("Function TSP_data_sender_send failed"));
+		  STRACE_WARNING(("Function TSP_data_sender_send failed for session %d",X_session_t[i].channel_id ));
 		  X_session_t[i].session_data->data_link_broken = TRUE;
 		  
 		}
+
 	    }
             
 	}
@@ -499,6 +511,7 @@ int TSP_session_create_data_sender_by_channel(channel_id_t channel_id, int start
 
   TSP_session_t* session;
   int ret = TRUE;
+  int want_out_fifo = !start_local_thread;
 
   STRACE_IO(("-->IN"));
 
@@ -507,7 +520,15 @@ int TSP_session_create_data_sender_by_channel(channel_id_t channel_id, int start
   TSP_GET_SESSION(session, channel_id, FALSE);
 
   /* Create a sender */
-  session->session_data->sender = TSP_data_sender_create();
+  if(want_out_fifo)
+    {
+      session->session_data->sender = TSP_data_sender_create(1000);
+    }
+  else
+    {
+      session->session_data->sender = TSP_data_sender_create(0);
+    }
+
   if(0 != session->session_data->sender)
     {
       /*FIXME : il ne faudrait pas lancer le worker avant le start feature : mettre le thread en etat d'attente*/
