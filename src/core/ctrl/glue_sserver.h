@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/Attic/glue_sserver.h,v 1.8 2002-10-24 13:25:41 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/Attic/glue_sserver.h,v 1.9 2002-11-19 13:09:23 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -34,6 +34,7 @@ enum GLU_get_state_t
   GLU_GET_NEW_ITEM,
   GLU_GET_NO_ITEM,
   GLU_GET_EOF,
+  GLU_GET_RECONF,
 
 };
 
