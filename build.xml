@@ -24,6 +24,14 @@
 		</fileset>
 	</path>
 	
+	<!-- External : JUnit -->
+	<property name="ext.junit.dir" value="${ext.dir}/JUnit" />
+	<path id="ext.junit.classpath">
+		<fileset dir="${ext.junit.dir}">
+			<include name="*.jar"/>
+		</fileset>
+	</path>
+	
 	<!-- TSP Project configuration -->
 	<property name="project.class" value="${project.build}/class-tsp" />
 	<property name="project.jar" value="${project.build}/jar" />
@@ -88,6 +96,50 @@ Jar :
 		</delete>
 	</target>
 	
+	 <!-- Tests -->
+	 <property name="project.test.class" value="${project.build}/class-test-tsp" />	 
+	 <property name="project.test.src" value="${tsp.home}/tests/java/jcore/src_test" />	 
+	 <property name="project.test.report" value="${project.build}/report-test" />	 
+	 <property name="project.test.work" value="${project.test.report}/work" />	 
+	 <property name="project.test.html" value="${project.test.report}/html" />	 
+	 
+	 <target name="test" depends="project-jar">
+		<delete dir="${project.test.class}"/>
+		<mkdir dir="${project.test.class}"/>
+		<javac srcdir="${project.test.src}" destdir="${project.test.class}" >
+			<classpath refid="project.client.classpath"/>
+		    <classpath refid="ext.junit.classpath"/>				
+			<include name="**/*.java"/>
+		</javac>
+		<delete dir="${project.test.report}"/>
+		<mkdir dir="${project.test.report}"/>
+		<mkdir dir="${project.test.work}"/>
+		<junit printsummary="withOutAndErr" fork="yes">
+			<formatter type="xml"/>
+			<classpath>
+				<path refid="project.client.classpath"/>
+				<path refid="ext.junit.classpath"/>				
+				<pathelement location="${project.test.class}"/>
+			</classpath>
+			<batchtest todir="${project.test.work}">
+				<fileset dir="${project.test.class}" includes="**/*Test.class"/>
+			</batchtest>		    		    
+		</junit>
+	</target>
+		
+	<target name="test-report" depends="test">
+		    <delete dir="${project.test.html}"/>	    	
+		 	<junitreport todir="${project.test.work}">
+				  <fileset dir="${project.test.work}">
+				    <include name="TEST-*.xml"/>
+				  </fileset>
+				  <report format="frames" todir="${project.test.html}"/>
+			</junitreport>
+			<echo>Test report generated at : ${project.test.html}/index.html </echo>
+	</target>
+		
+	
+	
 	<!-- Consumers -->
 	<property name="client.jar.dir" value="${project.jar}/consumers" />
 	<property name="client-bundle.jar.dir"
@@ -96,9 +148,17 @@ Jar :
 	<!-- Targets -->
 	<target name="consumers" depends="jsynoptic,jstdout">
 <echo>
-Commands that you can use to launch consumers :
+Commands that you can use to launch the consumers :
    ant jstdout-run
    ant jsynoptic-run
+   
+You can run TSP JUnit test with the command :
+   ant test-report   
+but to do this, you need to
+- 1) copy junit.jar into directory ${ext.junit.dir}
+- 2) copy junit.jar into the lib directory of your ant installation (or add
+junit.jar to your global CLASSPATH)
+You can get junit.jar at : http://www.junit.org
 </echo>
 	</target>
 	
