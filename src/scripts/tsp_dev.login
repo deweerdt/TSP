@@ -64,7 +64,6 @@ setenv HOME_EXEC_CURRENT $HOME_EXEC_BASE/current
 setenv PATH ${TSP_BASE}/src/scripts:${HOME_EXEC_CURRENT}/bin.consumer.debug:${HOME_EXEC_CURRENT}/bin.provider.debug:${TSP_BASE}/src/tsp/tests/etape1:${PATH}
 
 
-
 ##############################
 # DEVBASE
 ##############################
@@ -77,6 +76,35 @@ if ( ! $?STRACE_DEBUG ) then
 	setenv STRACE_DEBUG 3
 endif
 echo "Using STRACE_DEBUG=$STRACE_DEBUG"
+
+
+######################################
+#begin TEMPORARY : for sun64 go find our own gcc 64
+######################################
+
+if ( "$HOST_TARGET" == "sun64" ) then
+set CUSTOM_GCC_VERSION=3.2
+set CUSTOM_GDB_VERSION=5.2
+
+# set to v9-
+set CUSTOM_V9=v9-
+
+
+set CUSTOM_GCC=$DEVBASE/tools/gcc-local-$CUSTOM_V9$CUSTOM_GCC_VERSION
+set CUSTOM_GDB=$DEVBASE/tools/gdb-local-gcc$CUSTOM_GCC_VERSION-$CUSTOM_V9$CUSTOM_GDB_VERSION
+
+echo CUSTOM_GCC=$CUSTOM_GCC
+echo CUSTOM_GDB=$CUSTOM_GDB
+
+setenv LD_LIBRARY_PATH $CUSTOM_GDB/lib:$CUSTOM_GCC/lib:/usr/ccs/lib/sparcv9:$LD_LIBRARY_PATH
+
+setenv PATH  $CUSTOM_GDB/bin:$CUSTOM_GCC/bin:/usr/ccs/bin/sparcv9:$PATH
+
+unsetenv LANGUAGES
+
+endif 
+
+# End temporary
 
 
 ##############################
