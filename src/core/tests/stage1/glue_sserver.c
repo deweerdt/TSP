@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/tests/stage1/Attic/glue_sserver.c,v 1.2 2002-12-16 18:24:03 dufrenne Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/tests/stage1/Attic/glue_sserver.c,v 1.3 2002-12-17 15:29:10 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -115,7 +115,7 @@ static void* GLU_thread(void* arg)
       
       my_time++;    
       
-      if (!(my_time%100))  STRACE_INFO(("TOP !"));
+      if (!(my_time%1000))  STRACE_INFO(("TOP %d!", my_time));
       
     }
     
