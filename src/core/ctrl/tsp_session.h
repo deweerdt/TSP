@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.h,v 1.6 2002-11-29 17:33:23 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.h,v 1.7 2002-12-02 15:14:45 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -46,8 +46,8 @@ void TSP_session_destroy_symbols_table_by_channel(channel_id_t channel_id);
 void TSP_session_all_session_send_data(time_stamp_t t);
 void TSP_session_all_session_send_msg_ctrl(TSP_msg_ctrl_t msg_ctrl);
 
-void TSP_session_send_data_by_channel(channel_id_t channel_id, time_stamp_t t);
-void TSP_session_send_msg_ctrl_by_channel(channel_id_t channel_id, TSP_msg_ctrl_t msg_ctrl);
+int TSP_session_send_data_by_channel(channel_id_t channel_id, time_stamp_t t);
+int TSP_session_send_msg_ctrl_by_channel(channel_id_t channel_id, TSP_msg_ctrl_t msg_ctrl);
 
 const char* TSP_session_get_data_address_string_by_channel(channel_id_t channel_id);
 

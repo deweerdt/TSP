@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_stream_receiver.c,v 1.3 2002-11-29 17:33:31 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_stream_receiver.c,v 1.4 2002-12-02 15:14:50 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -21,6 +21,10 @@ stream  from the producer for the asked symbols. This layer is the network layer
 #include <netinet/in.h>
 #include <netinet/tcp.h>
 #include <sys/socket.h>
+
+#ifndef SHUT_RDWR
+#define SHUT_RDWR 2
+#endif
 
 #include "tsp_stream_receiver.h"
 

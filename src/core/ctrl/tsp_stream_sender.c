@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_stream_sender.c,v 1.7 2002-11-29 17:33:23 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_stream_sender.c,v 1.8 2002-12-02 15:14:45 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -24,6 +24,10 @@ stream  from the producer for the asked symbols. This layer is the network layer
 #include <pthread.h>
 #include <signal.h>
 #include <time.h>
+
+#ifndef SHUT_RDWR
+#define SHUT_RDWR 2
+#endif
 
 #include "tsp_stream_sender.h"
 
@@ -455,6 +459,7 @@ void TSP_stream_sender_stop(TSP_stream_sender_t sender)
    STRACE_IO(("-->IN"));
    
    sock->is_stopped = TRUE;
+
    shutdown(sock->socketId, SHUT_RDWR);
    shutdown(sock->hClient, SHUT_RDWR);
    close(sock->socketId);

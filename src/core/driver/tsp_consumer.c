@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.13 2002-11-29 17:33:30 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.14 2002-12-02 15:14:49 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -468,13 +468,12 @@ void TSP_consumer_open_all(const char*  host_name, TSP_provider_t** providers, i
  * This function is used to clean up after a 
  * @param provider the providers that must be close.
  */
-int TSP_consumer_close_all(TSP_provider_t providers[])
+void TSP_consumer_close_all(TSP_provider_t providers[])
 {	
   SFUNC_NAME(TSP_consumer_close_all);
 
   int server_max_number;
   int i;
-  int ret = TRUE;
 	
   STRACE_IO(("-->IN"));
 	
@@ -486,7 +485,7 @@ int TSP_consumer_close_all(TSP_provider_t providers[])
 	{
 	  if(providers[i])
 	    {
-	      ret = (ret && TSP_consumer_close(providers[i]));
+	      TSP_consumer_close(providers[i]);
 	      providers[i] = 0;
 	    }
 				
@@ -497,11 +496,6 @@ int TSP_consumer_close_all(TSP_provider_t providers[])
       STRACE_ERROR(("Unable to get server max number"));
     }
   
-  if(!ret)
-    {
-      STRACE_WARNING(("Some close operations failed"));
-    }
-	
   free(providers);
 	
   STRACE_IO(("-->OUT"));
@@ -512,12 +506,11 @@ int TSP_consumer_close_all(TSP_provider_t providers[])
  * Close a provider.
  * @param provider the provider that must be close.
  */
-int TSP_consumer_close(TSP_provider_t provider)
+void TSP_consumer_close(TSP_provider_t provider)
 {	
   SFUNC_NAME(TSP_consumer_close);
 	
   TSP_otsp_t* otsp = (TSP_otsp_t*)provider;
-    int ret;
 
   STRACE_IO(("-->IN"));
   
@@ -525,8 +518,6 @@ int TSP_consumer_close(TSP_provider_t provider)
   TSP_delete_object_tsp(otsp);
   	
   STRACE_IO(("-->OUT"));
-
-  return ret;
 
 }
 

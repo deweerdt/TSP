@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_data_receiver.c,v 1.7 2002-11-29 17:33:30 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_data_receiver.c,v 1.8 2002-12-02 15:14:50 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -198,8 +198,7 @@ int TSP_data_receiver_receive(TSP_data_receiver_t _receiver,
   int ret = FALSE;
   int* buf_int;  
   TSP_sample_t* sample;
-
-
+  int receiver_stopped;
 
   *fifo_full = FALSE;
 
@@ -214,7 +213,10 @@ int TSP_data_receiver_receive(TSP_data_receiver_t _receiver,
       ret = TSP_stream_receiver_receive(receiver->stream_receiver,
 					(char*)buf_int,
 					sizeof(int)*2);
-      if(ret)
+      /* Check if the receiver was not stopped */
+      receiver_stopped = TSP_stream_receiver_is_stopped(receiver->stream_receiver);
+
+      if(ret && !receiver_stopped)
 	{
 	  int buf_len;
 	  time_stamp = TSP_DECODE_INT(buf_int[0]);
@@ -228,8 +230,11 @@ int TSP_data_receiver_receive(TSP_data_receiver_t _receiver,
 	      ret = TSP_stream_receiver_receive(receiver->stream_receiver,
 						receiver->buf,
 						groups[group_index].sizeof_encoded_group);    
+
+	      /* Check if the receiver was not stopped */
+	      receiver_stopped = TSP_stream_receiver_is_stopped(receiver->stream_receiver);
                                            
-	      if(ret)
+	      if(ret && !receiver_stopped)
 		{
 		  char* in_buf = receiver->buf;
 		  int rank;	
@@ -277,7 +282,7 @@ int TSP_data_receiver_receive(TSP_data_receiver_t _receiver,
 		}
 	      else
 		{
-		  if(!TSP_stream_receiver_is_stopped(receiver->stream_receiver))
+		  if(!receiver_stopped)
 		    {
 		      STRACE_WARNING(("Unable to receive samples"));
 		      /* Add in fifo a message to report the incident via the read_sample API*/
@@ -301,7 +306,7 @@ int TSP_data_receiver_receive(TSP_data_receiver_t _receiver,
 	}
       else
 	{
-	  if(!TSP_stream_receiver_is_stopped(receiver->stream_receiver))
+	  if(!receiver_stopped)
 	    {		  
 	      STRACE_WARNING(("Unable to receive group size and time stamp"));
 	      /* Add in fifo a message to report the incident via the read sample API*/

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.c,v 1.7 2002-11-29 17:33:23 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.c,v 1.8 2002-12-02 15:14:45 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -302,6 +302,7 @@ void TSP_session_destroy_symbols_table_by_channel(channel_id_t channel_id)
    
 }
 
+
 int TSP_session_create_symbols_table_by_channel(const TSP_request_sample_t* req_sample,
 						TSP_answer_sample_t* ans_sample,
 						int use_global_datapool)
@@ -404,15 +405,15 @@ int  TSP_session_get_sample_symbol_info_list_by_channel(channel_id_t channel_id,
 
 }
 
-void TSP_session_send_msg_ctrl_by_channel(channel_id_t channel_id, TSP_msg_ctrl_t msg_ctrl)
+int TSP_session_send_msg_ctrl_by_channel(channel_id_t channel_id, TSP_msg_ctrl_t msg_ctrl)
 {
   SFUNC_NAME(TSP_session_send_data_msg_ctrl_by_channel);
 
   TSP_session_t* session;
+  int ret;
 
-  /*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
-  /*FIXME :  Warning : the session must not be suppressed when the send is active */
-  /*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
+  /* The mutex can not be kept 'coz' we are going to block other sessions */
+  /*So, warning : the session must not be suppressed when the send is active */
   TSP_LOCK_MUTEX(&X_session_list_mutex,);
   TSP_GET_SESSION(session, channel_id,);
   TSP_UNLOCK_MUTEX(&X_session_list_mutex,);
@@ -424,26 +425,27 @@ void TSP_session_send_msg_ctrl_by_channel(channel_id_t channel_id, TSP_msg_ctrl_
       if(!TSP_data_sender_send_msg_ctrl(session->session_data->sender, msg_ctrl))
 
 	{
-	  STRACE_ERROR(("Function TSP_data_sender_send_eof failed"));
+	  STRACE_INFO(("Data link broken for session %d",channel_id ));
 	  session->session_data->data_link_broken = TRUE;
 	  
 	}
     }
 
-
-
+  ret = !(session->session_data->data_link_broken);
+  return ret;
+  
 }
 
-void TSP_session_send_data_by_channel(channel_id_t channel_id, time_stamp_t t)
+int TSP_session_send_data_by_channel(channel_id_t channel_id, time_stamp_t t)
 {
 
   SFUNC_NAME(TSP_session_send_data_by_channel);
 
   TSP_session_t* session;
-  /*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
-  /*FIXME :  Warning : the session must not be suppressed when the send is active */
-  /*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
+  int ret;
 
+  /* The mutex can not be kept 'coz' we are going to block other sessions */
+  /*So, warning : the session must not be suppressed when the send is active */
   TSP_LOCK_MUTEX(&X_session_list_mutex,);
   TSP_GET_SESSION(session, channel_id,);
   TSP_UNLOCK_MUTEX(&X_session_list_mutex,);
@@ -456,12 +458,15 @@ void TSP_session_send_data_by_channel(channel_id_t channel_id, time_stamp_t t)
 			       session->session_data->groups, 
 			       t))
 	{
-	  STRACE_ERROR(("Function TSP_data_sender_send failed"));
+	  STRACE_INFO(("Data link broken for session %d",channel_id ));
 	  session->session_data->data_link_broken = TRUE;
 	  
 	}
     }
-    
+  
+  ret = !(session->session_data->data_link_broken);
+  return ret;
+
 }
 
 /**
@@ -477,44 +482,27 @@ void TSP_session_all_session_send_data(time_stamp_t t)
   SFUNC_NAME(TSP_session_all_session_send_data);
     
   int i;
-  /* STRACE_IO(("-->IN"));*/
 
   TSP_LOCK_MUTEX(&X_session_list_mutex,);
 
   for( i = 0 ; i< X_session_nb ; i++)
     {
     
-      /* FIXME !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-	 session_data->sender sert à savoir si sample init
-	 a ete fait, et session_data->groups si le sample tout
-	 court a ete fait. Les remettre a 0 en cas de destruction
-	 de la connection */
-    
       if( X_session_t[i].session_data->groups /* The sample request was done */
-	  && X_session_t[i].session_data->sender /* The sample request init was done */)
+	  && X_session_t[i].session_data->sender /* The sample request init was done */
+	  && (X_session_t[i].session_data->data_link_broken == FALSE))
 	{
-                      
-          assert(X_session_t[i].session_data);
-
-	  if( X_session_t[i].session_data->data_link_broken == FALSE)
+	  if(!TSP_data_sender_send(X_session_t[i].session_data->sender, 
+				   X_session_t[i].session_data->groups, 
+				   t))
 	    {
-	      if(!TSP_data_sender_send(X_session_t[i].session_data->sender, 
-				       X_session_t[i].session_data->groups, 
-				       t))
-		{
-		  STRACE_WARNING(("Function TSP_data_sender_send failed for session %d",X_session_t[i].channel_id ));
-		  X_session_t[i].session_data->data_link_broken = TRUE;
-		  
-		}
-
+	      STRACE_INFO(("Data link broken for session %d",X_session_t[i].channel_id ));
+	      X_session_t[i].session_data->data_link_broken = TRUE;		  
 	    }
-            
 	}
     }
 
   TSP_UNLOCK_MUTEX(&X_session_list_mutex,);
-
-  /*STRACE_IO(("-->OUT"));*/
 
 }
 
@@ -532,43 +520,25 @@ void TSP_session_all_session_send_msg_ctrl(TSP_msg_ctrl_t msg_ctrl)
   SFUNC_NAME(TSP_session_all_session_send_msg_ctrl);
     
   int i;
-  /* STRACE_IO(("-->IN"));*/
 
   TSP_LOCK_MUTEX(&X_session_list_mutex,);
 
   for( i = 0 ; i< X_session_nb ; i++)
     {
-    
-      /* FIXME !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-	 session_data->sender sert à savoir si sample init
-	 a ete fait, et session_data->groups si le sample tout
-	 court a ete fait. Les remettre a 0 en cas de destruction
-	 de la connection */
-    
       if( X_session_t[i].session_data->groups /* The sample request was done */
-	  && X_session_t[i].session_data->sender /* The sample request init was done */)
+	  && X_session_t[i].session_data->sender /* The sample request init was done */
+	  && (X_session_t[i].session_data->data_link_broken == FALSE))
 	{
-                      
-          assert(X_session_t[i].session_data);
 
-	  if( X_session_t[i].session_data->data_link_broken == FALSE)
+	  if(!TSP_data_sender_send_msg_ctrl(X_session_t[i].session_data->sender, msg_ctrl))
 	    {
-	      if(!TSP_data_sender_send_msg_ctrl(X_session_t[i].session_data->sender, msg_ctrl))
-		{
-		  STRACE_WARNING(("Function TSP_data_sender_send_msg_ctrl failed for session %d",X_session_t[i].channel_id ));
-		  X_session_t[i].session_data->data_link_broken = TRUE;
-		  
-		}
-
-	    }
-            
+	      STRACE_INFO(("Data link broken for session %d",X_session_t[i].channel_id ));
+	      X_session_t[i].session_data->data_link_broken = TRUE;	      
+	    }	  
 	}
     }
 
   TSP_UNLOCK_MUTEX(&X_session_list_mutex,);
-
-  /*STRACE_IO(("-->OUT"));*/
-
 }
 
 
@@ -669,10 +639,11 @@ int TSP_session_destroy_data_sender_by_channel(channel_id_t channel_id, int stop
   /* Stop the session */
   TSP_data_sender_stop(session->session_data->sender);
 
-  /* Must we wait for the local data pool thread to end ? */
-  /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
-  /* FIXME */
-  
+  /* For a pasive server we must wait for the session thread to end */
+  if(stop_local_thread)
+    {
+      TSP_local_datapool_wait_for_end_thread(session->session_data->datapool);
+    }
   
   TSP_data_sender_destroy(session->session_data->sender);
   session->session_data->sender = 0;

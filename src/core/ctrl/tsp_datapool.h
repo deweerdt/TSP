@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_datapool.h,v 1.4 2002-11-29 17:26:16 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_datapool.h,v 1.5 2002-12-02 15:14:45 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -34,8 +34,6 @@ void TSP_local_datapool_destroy(TSP_datapool_t datapool);
 
 TSP_datapool_t TSP_global_datapool_get_instance(void);
 
-int TSP_global_datapool_add_symbols(TSP_sample_symbol_info_list_t* symbols);
-
 void*
 TSP_datapool_get_symbol_value(TSP_datapool_t datapool, 
 			      int provider_global_index,
@@ -43,5 +41,7 @@ TSP_datapool_get_symbol_value(TSP_datapool_t datapool,
 
 
 int TSP_local_datapool_start_thread(TSP_datapool_t datapool);
+int TSP_local_datapool_wait_for_end_thread(TSP_datapool_t datapool);
+
 
 #endif _TSP_DATAPOOL_H

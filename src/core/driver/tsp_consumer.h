@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.h,v 1.8 2002-11-29 17:33:30 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.h,v 1.9 2002-12-02 15:14:50 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -244,9 +244,9 @@ int TSP_consumer_read_sample(TSP_provider_t provider,
 int TSP_consumer_request_close(TSP_provider_t provider);
 
 
-int TSP_consumer_close_all(TSP_provider_t providers[]);				  
+void TSP_consumer_close_all(TSP_provider_t providers[]);				  
 
-int TSP_consumer_close(TSP_provider_t provider);
+void TSP_consumer_close(TSP_provider_t provider);
 
 /**
 * End of TSP librairie use
