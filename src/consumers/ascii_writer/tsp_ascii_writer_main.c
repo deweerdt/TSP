@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer_main.c,v 1.3 2004-10-18 20:39:09 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer_main.c,v 1.4 2004-10-20 12:37:35 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -38,7 +38,6 @@ Purpose   : TSP ascii writer consumer (main)
 #include <unistd.h>
 #include <signal.h>
 #include <stdlib.h>
-#include <getopt.h>
 #include <string.h>
 
 #include "tsp_ascii_writer.h"
