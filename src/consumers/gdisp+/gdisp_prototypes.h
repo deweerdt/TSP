@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_prototypes.h,v 1.2 2004-03-26 21:09:17 esteban Exp $
+$Id: gdisp_prototypes.h,v 1.3 2004-03-30 20:17:44 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -53,8 +53,9 @@ void       gdisp_destroyKernel   (Kernel_T *kernel);
 /*
  * From gdisp_sampling.c
  */
-gboolean   gdisp_startSamplingProcess (Kernel_T *kernel);
-void       gdisp_stopSamplingProcess  (Kernel_T *kernel);
+gboolean   gdisp_startSamplingProcess             (Kernel_T *kernel);
+void       gdisp_stopSamplingProcess              (Kernel_T *kernel);
+void       gdisp_affectRequestedSymbolsToProvider (Kernel_T *kernel);
 
 
 /*

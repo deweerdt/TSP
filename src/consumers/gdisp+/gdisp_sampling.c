@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_sampling.c,v 1.2 2004-03-26 21:09:17 esteban Exp $
+$Id: gdisp_sampling.c,v 1.3 2004-03-30 20:17:44 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -144,111 +144,6 @@ gdisp_createThread ( Kernel_T               *kernel,
   }
 
   return threadStatus;
-
-}
-
-
-/*
- * All symbols that must be plotted do not belong to the same
- * provider. So give back requested symbols to the provider each
- * of them belongs to.
- */
-static void
-gdisp_affectRequestedSymbolsToProvider ( Kernel_T *kernel )
-{
-
-  GArray     *requestedSymbolArray =     (GArray*)NULL;
-  GList      *providerItem         =      (GList*)NULL;
-  Provider_T *provider             = (Provider_T*)NULL;
-  GList      *symbolList           =      (GList*)NULL;
-  GList      *symbolItem           =      (GList*)NULL;
-  Symbol_T   *symbol               =   (Symbol_T*)NULL;
-  guint       elementSize          =                 0;
-
-  /*
-   * Get back requested symbols from graphic pages.
-   */
-  symbolList = gdisp_getSymbolsInPages(kernel);
-
-
-  /*
-   * Loop over all providers, cancel any previous sampling
-   * configuration, attach new symbols if any.
-   */
-  providerItem = g_list_first(kernel->providerList);
-  while (providerItem != (GList*)NULL) {
-
-    provider = (Provider_T*)providerItem->data;
-
-    if (provider->pStatus == GD_SESSION_OPENED) {
-
-      /*
-       * Cancel any previous sampling configuration.
-       */
-      provider->pSampleList.len = 0;
-      if (provider->pSampleList.val != (TSP_consumer_symbol_requested_t*)NULL)
-	free(provider->pSampleList.val);
-      provider->pSampleList.val = (TSP_consumer_symbol_requested_t*)NULL;
-
-
-      /*
-       * Temporary ressource.
-       */
-      elementSize = sizeof(TSP_consumer_symbol_requested_t);
-      requestedSymbolArray = g_array_new(FALSE, /* zero_terminated */
-					 TRUE,  /* clear           */
-					 (guint)elementSize);
-
-
-      /*
-       * Loop on every symbol that must be sampled.
-       */
-      symbolItem = g_list_first(symbolList);
-      while (symbolItem != (GList*)NULL) {
-
-	symbol = (Symbol_T*)symbolItem->data;
-
-	/*
-	 * The symbol belongs to the current provider because its
-	 * address is in the good address interval.
-	 */
-	if (provider->pSymbolList <= symbol &&
-	    symbol < provider->pSymbolList + provider->pSymbolNumber) {
-
-	  g_array_append_val(requestedSymbolArray,symbol->sInfo);
-
-	}
-
-	symbolItem = g_list_next(symbolItem);
-
-      }
-
-
-      /*
-       * Transfer information to provider.
-       */
-      provider->pSampleList.len = requestedSymbolArray->len;
-      provider->pSampleList.val =
-	(TSP_consumer_symbol_requested_t*)requestedSymbolArray->data;
-
-
-      /*
-       * Free temporary ressource.
-       * Free the table, not the content.
-       */
-      g_array_free(requestedSymbolArray,FALSE);
-
-    } /* provider->pStatus == GD_SESSION_OPENED */
-
-    providerItem = g_list_next(providerItem);
-
-  }
-
-
-  /*
-   * Release ressource.
-   */
-  g_list_free(symbolList);
 
 }
 
@@ -500,6 +395,8 @@ gdisp_freeSymbolsForSampling (Kernel_T *kernel)
      * Release everything necessary here.
      */
 
+    /* nothing to be done by now */
+
     symbolList = g_list_next(symbolList);
 
   }
@@ -533,6 +430,8 @@ gdisp_allocateSymbolsForSampling (Kernel_T *kernel)
     /*
      * Do allocation here if necessary.
      */
+
+    /* nothing to be done by now */
 
     symbolList = g_list_next(symbolList);
 
@@ -733,7 +632,12 @@ gdisp_samplingThread (void *data )
 
   /*
    * Sample... Do it...
+   * As load is concerned, only "double" values are supported by TSP.
    */
+  provider->pLoad    = 0;
+  provider->pMaxLoad = provider->pBaseFrequency  *
+                       provider->pSampleList.len * sizeof(gdouble);
+
   provider->pSamplingThreadStatus = GD_THREAD_RUNNING;
 
   while (kernel->samplingThreadMustExit == FALSE) {
@@ -752,6 +656,12 @@ gdisp_samplingThread (void *data )
     }
 
     if (sampleHasArrived == TRUE) {
+
+      /*
+       * Count the number of incoming values in order to deduce
+       * the provider load (bytes per seconds).
+       */
+      provider->pLoad += sizeof(gdouble);
 
       /*
        * Check out new incoming frame.
@@ -1009,7 +919,8 @@ gdisp_startSamplingProcess (Kernel_T *kernel)
 			   gdisp_computeTimerPeriod,
 			   (void*)&kernel->stepTimerPeriod);
 
-  if (kernel->stepTimerPeriod < GD_TIMER_MIN_PERIOD) {
+  if (kernel->stepTimerPeriod < GD_TIMER_MIN_PERIOD ||
+      kernel->stepTimerPeriod == G_MAXINT /* no plot created */) {
 
     /*
      * GTK is not precise enough... it is not real time...
@@ -1111,5 +1022,110 @@ gdisp_stopSamplingProcess (Kernel_T *kernel)
   gdisp_loopOnGraphicPlots(kernel,
 			   gdisp_stopStepOnOneGraphicPlot,
 			   (void*)NULL);
+
+}
+
+
+/*
+ * All symbols that must be plotted do not belong to the same
+ * provider. So give back requested symbols to the provider each
+ * of them belongs to.
+ */
+void
+gdisp_affectRequestedSymbolsToProvider ( Kernel_T *kernel )
+{
+
+  GArray     *requestedSymbolArray =     (GArray*)NULL;
+  GList      *providerItem         =      (GList*)NULL;
+  Provider_T *provider             = (Provider_T*)NULL;
+  GList      *symbolList           =      (GList*)NULL;
+  GList      *symbolItem           =      (GList*)NULL;
+  Symbol_T   *symbol               =   (Symbol_T*)NULL;
+  guint       elementSize          =                 0;
+
+  /*
+   * Get back requested symbols from graphic pages.
+   */
+  symbolList = gdisp_getSymbolsInPages(kernel);
+
+
+  /*
+   * Loop over all providers, cancel any previous sampling
+   * configuration, attach new symbols if any.
+   */
+  providerItem = g_list_first(kernel->providerList);
+  while (providerItem != (GList*)NULL) {
+
+    provider = (Provider_T*)providerItem->data;
+
+    if (provider->pStatus == GD_SESSION_OPENED) {
+
+      /*
+       * Cancel any previous sampling configuration.
+       */
+      provider->pSampleList.len = 0;
+      if (provider->pSampleList.val != (TSP_consumer_symbol_requested_t*)NULL)
+	free(provider->pSampleList.val);
+      provider->pSampleList.val = (TSP_consumer_symbol_requested_t*)NULL;
+
+
+      /*
+       * Temporary ressource.
+       */
+      elementSize = sizeof(TSP_consumer_symbol_requested_t);
+      requestedSymbolArray = g_array_new(FALSE, /* zero_terminated */
+					 TRUE,  /* clear           */
+					 (guint)elementSize);
+
+
+      /*
+       * Loop on every symbol that must be sampled.
+       */
+      symbolItem = g_list_first(symbolList);
+      while (symbolItem != (GList*)NULL) {
+
+	symbol = (Symbol_T*)symbolItem->data;
+
+	/*
+	 * The symbol belongs to the current provider because its
+	 * address is in the good address interval.
+	 */
+	if (provider->pSymbolList <= symbol &&
+	    symbol < provider->pSymbolList + provider->pSymbolNumber) {
+
+	  g_array_append_val(requestedSymbolArray,symbol->sInfo);
+
+	}
+
+	symbolItem = g_list_next(symbolItem);
+
+      }
+
+
+      /*
+       * Transfer information to provider.
+       */
+      provider->pSampleList.len = requestedSymbolArray->len;
+      provider->pSampleList.val =
+	(TSP_consumer_symbol_requested_t*)requestedSymbolArray->data;
+
+
+      /*
+       * Free temporary ressource.
+       * Free the table, not the content.
+       */
+      g_array_free(requestedSymbolArray,FALSE);
+
+    } /* provider->pStatus == GD_SESSION_OPENED */
+
+    providerItem = g_list_next(providerItem);
+
+  }
+
+
+  /*
+   * Release ressource.
+   */
+  g_list_free(symbolList);
 
 }

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_kernel.c,v 1.2 2004-03-26 21:09:17 esteban Exp $
+$Id: gdisp_kernel.c,v 1.3 2004-03-30 20:17:43 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -381,6 +381,11 @@ gdisp_createKernel (gint    argc,
     gtk_timeout_add(1000, /* milli-seconds */
 		    gdisp_activateRegisteredActions,
 		    (void*)kernel);
+
+  /*
+   * Remember how to assign symbols to providers for sampling purpose.
+   */
+  kernel->assignSymbolsToProviders = gdisp_affectRequestedSymbolsToProvider;
 
   /*
    * Return the kernel itself.

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_providers.c,v 1.2 2004-03-26 21:09:17 esteban Exp $
+$Id: gdisp_providers.c,v 1.3 2004-03-30 20:17:44 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -133,6 +133,7 @@ gdisp_poolProviderThreadStatus ( Kernel_T *kernel )
 
   GList      *providerItem      =      (GList*)NULL;
   Provider_T *provider          = (Provider_T*)NULL;
+  guint       providerLoad      = 0;
   gchar       rowBuffer[128];
   guint       bgColorId         = _WHITE_;
 
@@ -160,6 +161,35 @@ gdisp_poolProviderThreadStatus ( Kernel_T *kernel )
 		       4 /* sample symbol row */,
 		       1 /* information       */,
 		       rowBuffer);
+
+    /* ----------------------------------------------------------- */
+
+    providerLoad    = provider->pLoad;
+    provider->pLoad = 0; /* re-init for next cycle */
+
+    if (providerLoad > provider->pMaxLoad) {
+
+      /*
+       * This may happend because GTK timers are not very precise...
+       * So a 1 second period timer does not occur exactly every second.
+       * So percentage may be higher than 100 %.
+       */
+      providerLoad = provider->pMaxLoad;
+
+    }
+
+    sprintf(rowBuffer,
+	    "%d Bytes/s, %d %c",
+	    providerLoad,
+	    (guint)(100.0 * (gfloat)providerLoad / (gfloat)provider->pMaxLoad),
+	    '%');
+
+    gtk_clist_set_text(GTK_CLIST(provider->pCList),
+		       5 /* provider load row */,
+		       1 /* information       */,
+		       rowBuffer);
+
+    /* ----------------------------------------------------------- */
 
     providerItem = g_list_next(providerItem);
 
@@ -248,6 +278,7 @@ gdisp_createProviderList ( Kernel_T  *kernel,
   GList            *providerItem     =      (GList*)NULL;
   Provider_T       *provider         = (Provider_T*)NULL;
   gint              providerCount    = 0;
+  guint             providerLoad     = 0;
 
   gchar            *rowInfo  [  2];
   gchar             rowBuffer[128];
@@ -409,6 +440,34 @@ gdisp_createProviderList ( Kernel_T  *kernel,
 
     gtk_clist_append(GTK_CLIST(provider->pCList),
 		     rowInfo);
+
+    /* ----------------------------------------------------------- */
+
+    providerLoad    = provider->pLoad;
+    provider->pLoad = 0; /* re-init for next cycle */
+
+    if (providerLoad > provider->pMaxLoad) {
+
+      /*
+       * This may happend because GTK timers are not very precise...
+       * So a 1 second period timer does not occur exactly every second.
+       * So percentage may be higher than 100 %.
+       */
+      providerLoad = provider->pMaxLoad;
+
+    }
+
+    rowInfo[0] = "Load";
+    sprintf(rowInfo[1],
+	    "%d Bytes/s, %d %c",
+	    providerLoad,
+	    (guint)(100.0 * (gfloat)providerLoad / (gfloat)provider->pMaxLoad),
+	    '%');
+
+    gtk_clist_append(GTK_CLIST(provider->pCList),
+		     rowInfo);
+
+    /* ----------------------------------------------------------- */
 
     gtk_box_pack_start(GTK_BOX(hBox),
 		       provider->pCList,

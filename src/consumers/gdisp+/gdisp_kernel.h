@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_kernel.h,v 1.3 2004-03-26 21:09:17 esteban Exp $
+$Id: gdisp_kernel.h,v 1.4 2004-03-30 20:17:43 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -226,7 +226,7 @@ typedef struct Provider_T_ {
 
   ProviderStatus_T  pStatus;
   GString          *pName;
-  double            pBaseFrequency;
+  gdouble           pBaseFrequency;
   gint              pMaxPeriod;
   gint              pMaxClientNumber;
   gint              pCurrentClientNumber;
@@ -235,6 +235,8 @@ typedef struct Provider_T_ {
   Symbol_T         *pSymbolList;
 
   SampleList_T      pSampleList;
+  guint             pLoad;
+  guint             pMaxLoad;
 
   /*
    * Thread management.
@@ -475,11 +477,14 @@ typedef struct Kernel_T_ {
   /*
    * Useful functions available in the kernel.
    */
-  void             (*outputFunc)      (Kernel_T_Ptr,GString*,Message_T);
-  void             (*registerAction)  (Kernel_T_Ptr,
-				       void(*action)(Kernel_T_Ptr));
-  void             (*unRegisterAction)(Kernel_T_Ptr,
-				       void(*action)(Kernel_T_Ptr));
+  void             (*outputFunc)              (Kernel_T_Ptr,
+					       GString*,
+					       Message_T);
+  void             (*registerAction)          (Kernel_T_Ptr,
+					       void(*action)(Kernel_T_Ptr));
+  void             (*unRegisterAction)        (Kernel_T_Ptr,
+					       void(*action)(Kernel_T_Ptr));
+  void             (*assignSymbolsToProviders)(Kernel_T_Ptr);
 
   /*
    * Provider management.

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_pages.c,v 1.2 2004-03-26 21:09:17 esteban Exp $
+$Id: gdisp_pages.c,v 1.3 2004-03-30 20:17:44 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -455,6 +455,11 @@ gdisp_finalizeDragAndDropOperation(Kernel_T         *kernel,
 					      xPositionInPlot,
 					      yPositionInPlot);
 
+  /*
+   * Do not forget to update symbols <-> providers assignments.
+   */
+  (*kernel->assignSymbolsToProviders)(kernel);
+
 }
 
 
@@ -671,6 +676,11 @@ gdisp_dataReceivedDNDCallback (GtkWidget        *pageWindow,
 		plotIdentity   = nRow * page->pColumns + nColumn;
 		plotSystemData = &page->pPlotSystemData[plotIdentity];
 
+		/*
+		 * FIXME : what happens if pages are not the same size ?
+		 *         BUG I guess....
+		 *         because {x,y}PositionInPlot are false.
+		 */
 		gdisp_finalizeDragAndDropOperation(kernel,
 						   page,
 						   plotSystemData,
