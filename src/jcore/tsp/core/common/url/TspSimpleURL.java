@@ -1,4 +1,4 @@
-/* $Id: TspSimpleURL.java,v 1.2 2004-11-11 06:29:32 sgalles Exp $
+/* $Id: TspSimpleURL.java,v 1.3 2004-11-11 12:43:02 sgalles Exp $
  * -----------------------------------------------------------------------
  * 
  * TSP Library - core components for a generic Transport Sampling Protocol.
@@ -44,12 +44,12 @@ class TspSimpleURL implements TspURL {
 	private static final String SEP_PROTOCOL = "://";
 	private static final String SEP_HOST = "/";
 	private static final String SEP_SERVERNAME = ":";
-	private static final String[] URL_REGEXP = {"([^:/]*)://([^:/]*)/([^:/]*):([0-9]*)",
-																						"([^:/]*)://([^:/]*)/([^:/]*)",
-																						"([^:/]*)://([^:/]*)",
-																						"([^:/]*)://",
-																						"([^:/]*)",
-																						"/", "//", "///",																						
+	private static final String[] URL_REGEXP = {"^([^:/]*)://([^:/]*)/([^:/]*):([0-9]*)$",
+																						"^([^:/]*)://([^:/]*)/([^:/]*)$",
+																						"^([^:/]*)://([^:/]*)$",
+																						"^([^:/]*)://$",
+																						"^([^:/]*)$",
+																						"^/$", "^//$", "^///$",																						
 																						};
 
 	private String protocol;
