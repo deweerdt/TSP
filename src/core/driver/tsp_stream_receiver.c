@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_stream_receiver.c,v 1.1 2002-08-27 08:56:09 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_stream_receiver.c,v 1.2 2002-09-05 09:11:12 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -122,11 +122,10 @@ TSP_stream_receiver_t TSP_stream_receiver_create(const  char* data_address)
 	}
 
       {
-#ifndef __OSF1__
-	long InAddr;
-#else
-	in_addr_t InAddr;
-#endif /* __OSF1__ */
+	/* we do not use in_addr_t, since it does not work with Solaris,
+	 and anyway, any system typedef this as an int or uint*/
+        guint32 InAddr;
+
 	struct sockaddr_in readAddr;
 
 	bcopy((char *) Host_p->h_addr, (char *) &InAddr, Host_p->h_length);
