@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.h,v 1.6 2004-11-12 17:29:47 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.h,v 1.7 2005-02-06 17:09:23 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -37,6 +37,7 @@ Purpose   : BlackBoard Idiom implementation
 #ifndef _BB_H_
 #define _BB_H_
 
+#include <tsp_abs_types.h>
 #include <stdio.h>
 #include <sys/sem.h>
 #if defined(__GNU_LIBRARY__) && !defined(_SEM_SEMUN_UNDEFINED)
@@ -198,6 +199,7 @@ typedef struct S_BB {
   int destroyed;
 } S_BB_T;
 
+BEGIN_C_DECLS
 
 /**
  * Return the size of a blackboard with 
@@ -329,6 +331,15 @@ bb_create(S_BB_T** bb,
  */
 int32_t 
 bb_destroy(S_BB_T** bb);
+
+/**
+ * Memset the data area of a BB.
+ * @param  bb INOUT BB pointer, should not be NULL.
+ * @param  c IN, the character used to memset each byte of the 
+ *               BlackBoard data area.
+ */
+int32_t
+bb_data_memset(S_BB_T* bb, const char c);
 
 /**
  * Lock blackboard.
@@ -512,4 +523,6 @@ bb_snd_msg(volatile S_BB_T *bb, S_BB_MSG_T* msg);
  */
 int32_t 
 bb_rcv_msg(volatile S_BB_T *bb, S_BB_MSG_T* msg);
+
+END_C_DECLS
 #endif /* _BB_H_ */

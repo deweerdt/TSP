@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.8 2004-12-05 13:37:56 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.9 2005-02-06 17:09:23 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -75,7 +75,7 @@ static const char* E_BB_2STRING[] = {"NoAType 0",
 
 int32_t 
 bb_size(const int32_t n_data, const int32_t data_size) {
-  /* The SHM segment os sized to:
+  /* The SHM segment is sized to:
    *  BB structure size +
    *  data descriptor array size +
    *  data zone size
@@ -597,6 +597,15 @@ bb_destroy(S_BB_T** bb) {
   return retcode;
 } /* end of bb_destroy */
 
+int32_t
+bb_data_memset(S_BB_T* bb, const char c) { 
+  int32_t retcode;  
+  assert(bb);
+  retcode = 0;
+  memset(bb_data(bb),c,bb->max_data_size);
+  return retcode;
+} /* end of bb_data_memset */
+
 int32_t 
 bb_lock(volatile S_BB_T* bb) {
   
@@ -736,7 +745,7 @@ void*
 bb_publish(volatile S_BB_T *bb, S_BB_DATADESC_T* data_desc) {
   
   void* retval;
-  int32_t nedeed_size;
+  int32_t needed_size;
 
   retval = NULL;
   assert(bb);
@@ -754,24 +763,24 @@ bb_publish(volatile S_BB_T *bb, S_BB_DATADESC_T* data_desc) {
     bb_lock(bb);
   } else {
     /* calcul de la taille demandee */
-    nedeed_size = data_desc->type_size*data_desc->dimension;    
+    needed_size = data_desc->type_size*data_desc->dimension;    
     /* verification espace disponible dans BB */
     if (bb->n_data >= bb->max_data_desc_size) {
       bb_logMsg(BB_LOG_SEVERE,"BlackBoard::bb_publish", 
 		"No more room in BB data descriptor!! [current n_data=%d]",
 		bb->n_data);
       /* verification taille donnee allouable */
-    } else if ((bb->max_data_size-bb->data_free_offset) < nedeed_size) {
+    } else if ((bb->max_data_size-bb->data_free_offset) < needed_size) {
       bb_logMsg(BB_LOG_SEVERE,"BlackBoard::bb_publish", 
 		"No more room in BB data zone!! [left <%d> byte(s) out of <%d> required]",
-		bb->max_data_size-bb->data_free_offset,nedeed_size);
+		bb->max_data_size-bb->data_free_offset,needed_size);
     } else {     
       /* Calcule de l'adresse libre */
       retval = (char*) bb_data(bb) + bb->data_free_offset;
       /* Mise a jour descripteur en retour */
       data_desc->data_offset = bb->data_free_offset;
       /* Mise a jour prochaine @ libre */
-      bb->data_free_offset  = bb->data_free_offset + nedeed_size;
+      bb->data_free_offset  = bb->data_free_offset + needed_size;
       /* Mise a jour descripteur de donnee */
       bb_data_desc(bb)[bb->n_data] = *data_desc;
       /* On augmente le nombre de donnees */
