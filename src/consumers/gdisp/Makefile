@@ -3,7 +3,27 @@ include $(DEVBASE)/make/Makeparams
 # ---------------------
 # Vars to build project
 # ---------------------
+
+SOURCES = \
+	interface.c \
+	support.c \
+	gdispmain.c  \
+	config.c \
+	plotwindow.c \
+	animation.c
+
+OBJECTS = $(SOURCES:%.c=%.o) 
+
+ADD_LIB =  $(DIRLIB)/libtsp_consumer.a $(DIRLIB)/libtsp_services.a $(DIRLIB)/libtsp_page_config.a
+
 TARGET=$(DIRBIN)/tsp_gdisp
+
+#CPPFLAGS += -D_REENTRANT -I. -I$(TSP_INCLIB) -I$(DIRINC) 
+CPPFLAGS += `gtk-config --cflags gtk`  
+CPPFLAGS += -I../../util/libpages
+LDFLAGS += `gtk-config --libs ` 
+LDFLAGS += `xml2-config --libs ` 
+ 
 
 # ---------------------
 # How to build
@@ -11,11 +31,11 @@ TARGET=$(DIRBIN)/tsp_gdisp
 
 build::$(TARGET)
 
-$(TARGET) : $(TSP_TARGET)/tsp_gdisp
-	cp $(TSP_TARGET)/tsp_gdisp $(TARGET)
+$(TARGET): $(OBJECTS)
+	$(LINK.c) -o $@ $(OBJECTS) $(ADD_LIB) $(LDLIBS)
 
-destroy::
-	$(RM)	$(TARGET) 
+destroy ::
+	$(RM)	$(TARGET) $(OBJECTS)
 
 include $(DEVBASE)/make/Makerules
 

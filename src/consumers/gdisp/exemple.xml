@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<page_config display_frequency="1.0" period="1"  widget="draw" visible="true" no_border="false" rows="3" duration="100.0">
+  <page title="Super" x="50" y="50" width="800" height="600" >   
+     <variable name="Symbol1" type="DOUBLE"   />
+     <variable name="Symbol2" type="DOUBLE"   />
+     <variable name="Symbol3" type="DOUBLE"   />
+     <variable name="Symbol4" type="DOUBLE"   />
+     <variable name="Symbol5" type="DOUBLE"   />
+     <variable name="Symbol6" type="DOUBLE"   />
+     <variable name="Symbol7" type="DOUBLE"   />
+     <variable name="Symbol8" type="DOUBLE"   />
+     <variable name="Symbol9" type="DOUBLE"   />
+  </page>
+  <page title="Super" x="150" y="150" width="0" height="0" widget="view" period="100">   
+     <variable name="Symbol101" type="DOUBLE"   />
+     <variable name="Symbol102" type="DOUBLE"   />
+     <variable name="Symbol103" type="DOUBLE"   widget="draw" period="1"/>
+     <variable name="Symbol104" type="DOUBLE"   />
+     <variable name="Symbol105" type="DOUBLE"   />
+     <variable name="Symbol106" type="DOUBLE"   /> 
+     <variable name="Symbol107" type="DOUBLE"   />
+     <variable name="Symbol108" type="DOUBLE"   />
+     <variable name="Symbol109" type="DOUBLE"   />
+  </page>
+  <page title="Super" x="250" y="250" width="800" height="600" >   
+     <variable name="Symbol201" type="DOUBLE"    />
+  </page>
+  <page title="Super" x="250" y="250" width="800" height="600" >   
+     <variable name="Symbol5" type="DOUBLE"    />
+  </page>
+ </page_config>
