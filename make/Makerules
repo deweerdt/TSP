@@ -28,15 +28,15 @@ $(DIROBJ)/%.o : %.c
 
 % : %.c
 	@echo "@@@ Linking $< ..."
-	$(LINK.c) $< -o $@ $(LDLIBS)
+	$(LINK.c) $< -o $@ -L$(DIRLIB) $(ADD_LIB) $(LDLIBS)
 
 $(DIRBIN)/% : %.c
 	@echo "@@@ Linking $< ..."
-	$(LINK.c) $< -o $@ $(LDLIBS)
+	$(LINK.c) $< -o $@ -L$(DIRLIB) $(ADD_LIB) $(LDLIBS)
 
 $(DIRBIN)/% : $(DIROBJ)/%.o
 	@echo "@@@ Linking $< ..."
-	$(LINK.c) $< -o $@ $(LDLIBS)
+	$(LINK.c) $< -o $@ -L$(DIRLIB) $(ADD_LIB) $(LDLIBS) 
 
 .o.a:
 	$(AR) $(ARFLAGS) $@ $% 
