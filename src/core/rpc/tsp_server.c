@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_server.c,v 1.16 2004-09-27 12:18:00 tractobob Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_server.c,v 1.17 2004-10-04 08:54:39 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -48,6 +48,8 @@ Purpose   :
 #include "tsp_server.h"
 
 #include "tsp_rpc.h"
+
+#ifndef TSP_RPC_CLEANUP
 
 
 typedef struct {
@@ -333,7 +335,7 @@ void TSP_rpc_request_run(TSP_provider_request_handler_t* this)
   servernumber = TSP_rpc_init(TSP_provider_get_server_base_number());
   if(servernumber < 0)
     {
-      STRACE_ERROR(("unable to register any RPC progid, check daemons"));
+      STRACE_ERROR(("unable to register any RPC progid :\n\tcheck RPC daemons, or use tsp_rpc_cleanup to clean-up all TSP RPC port mapping"));
     }
   else
     {
@@ -371,3 +373,15 @@ int TSP_rpc_request_stop(TSP_provider_request_handler_t* this)
   return retval;
 } /* end of TSP_rpc_request_stop */
 
+
+#else
+void main(void)
+{
+  int servernumber;
+  for(servernumber=0; servernumber<TSP_MAX_SERVER_NUMBER; servernumber++)
+    {
+      svc_unregister (TSP_get_progid(servernumber), TSP_RPC_VERSION_INITIAL);
+      pmap_unset (TSP_get_progid(servernumber), TSP_RPC_VERSION_INITIAL);
+    }
+}
+#endif /* TSP_RPC_CLEANUP */
