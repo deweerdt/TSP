@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_group_algo.c,v 1.2 2002-09-05 13:29:54 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_group_algo.c,v 1.3 2002-10-01 15:21:22 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -266,7 +266,8 @@ TSP_group_algo_allocate_group_table(const TSP_sample_symbol_info_list_t* symbols
 
 int TSP_group_algo_create_symbols_table(const TSP_sample_symbol_info_list_t* in_symbols,
 					TSP_sample_symbol_info_list_t* out_symbols,
-					TSP_groups_t* out_groups)
+					TSP_groups_t* out_groups,
+					TSP_datapool_t datapool)
 {
        
   SFUNC_NAME(TSP_group_algo_create_symbols_table);
@@ -330,7 +331,7 @@ int TSP_group_algo_create_symbols_table(const TSP_sample_symbol_info_list_t* in_
 
                                         
 		  table->groups[group_id].items[rank].data = 
-		    TSP_datapool_get_symbol_value(in_info->provider_global_index, 0);
+		    TSP_datapool_get_symbol_value(datapool, in_info->provider_global_index, 0);
                     
 		  /* 2 - In the out symbol table */
                     
