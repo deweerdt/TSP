@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_datapool.c,v 1.15 2002-12-24 14:14:18 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_datapool.c,v 1.16 2003-02-07 16:02:08 SyntDev1 Exp $
 
 -----------------------------------------------------------------------
 
@@ -141,7 +141,7 @@ static void* TSP_datapool_thread(void* datapool)
 
   STRACE_IO(("-->IN"));
   
-  STRACE_DEBUG(("Local datapool thread started for session %d",obj_datapool->session_channel_id)); 
+  STRACE_DEBUG(("Datapool thread started for session %d",obj_datapool->session_channel_id)); 
   
 
   if( obj_datapool->is_global )
@@ -149,6 +149,7 @@ static void* TSP_datapool_thread(void* datapool)
       /* FIXME : The datapool might not be coherent when a client is already
 	 connected and this thread starts after the connection
 	 for the client */
+      STRACE_DEBUG(("Data Pool is GLOBAL (active GLU)"));
     }
   else
     {
@@ -165,10 +166,13 @@ static void* TSP_datapool_thread(void* datapool)
   GLU_forget_data(obj_datapool->h_glu);
 
   /* get first item */
+  STRACE_DEBUG(("Waiting for First Item from GLU..."));
   while( ( GLU_GET_NEW_ITEM != (state=GLU_get_next_item(obj_datapool->h_glu, &item)))  )
     {
       tsp_usleep(TSP_DATAPOOL_POLL_PERIOD);
     }
+
+  STRACE_DEBUG(("First Item from GLU received!"));
 
   time_stamp = item.time;
   /* Update datapool */
@@ -274,7 +278,7 @@ int TSP_local_datapool_wait_for_end_thread(TSP_datapool_t datapool)
 
 /**
  * Start local datapool thread be per session.
- * Only used when the sample server is a pasive one
+ * Only used when the sample server is a passive one
  * @param datapool The datapool instance that will be linked to the thread
  */ 
 int TSP_local_datapool_start_thread(TSP_datapool_t datapool)
