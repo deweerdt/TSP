@@ -144,8 +144,9 @@ Commands that you can use to launch the consumers :
    
 You can run TSP JUnit test with the command :
    ant test-report   
-but to do this, you need to copy junit.jar into the lib directory of your ant installation (or you can add
-junit.jar to your global CLASSPATH if you do not want to modify ant lib directory)
+but to do this, you need to copy junit.jar into the lib directory of
+your ant installation (or you can add junit.jar to your global
+CLASSPATH if you do not want to modify ant lib directory)
 You can get junit.jar at : http://www.junit.org
 </echo>
 	</target>
