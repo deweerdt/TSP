@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.h,v 1.1 2002-08-27 08:56:09 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.h,v 1.2 2002-10-01 15:25:49 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -22,8 +22,9 @@ opened session from a client
 #include "tsp_prjcfg.h"
 
 #include "tsp_datastruct.h"
+#include "glue_sserver.h"
 
-int TSP_add_session(channel_id_t* new_channel_id);
+int TSP_add_session(channel_id_t* new_channel_id, GLU_handle_t glu_h);
 
 void TSP_session_init(void);
 
@@ -34,10 +35,23 @@ int TSP_session_add_symbols(TSP_sample_symbol_info_list_t* symbols);
 void TSP_session_free_create_symbols_table_call(TSP_answer_sample_t** ans_sample);
 
 int TSP_session_create_symbols_table_by_channel(const TSP_request_sample_t* req_sample,
-						TSP_answer_sample_t** ans_sample);
+						TSP_answer_sample_t** ans_sample,
+						int use_global_datapool);
 
+/* FIXME : en faire un return int ? */
 void TSP_session_all_session_send_data(time_stamp_t t);
+void TSP_session_send_data_by_channel(channel_id_t channel_id, time_stamp_t t);
+void TSP_session_send_data_eof_by_channel(channel_id_t channel_id);
 
 const char* TSP_session_get_data_address_string_by_channel(channel_id_t channel_id);
+
+int TSP_session_create_data_sender_by_channel(channel_id_t channel_id, int start_local_thread);
+
+
+int  TSP_session_get_sample_symbol_info_list_by_channel(channel_id_t channel_id,
+							TSP_sample_symbol_info_list_t* symbol_list);
+
+
+int TSP_session_is_consumer_connected_by_channel(channel_id_t channel_id);
 
 #endif /* _TSP_SESSION_H */

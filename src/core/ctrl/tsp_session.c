@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.c,v 1.2 2002-09-19 08:36:53 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.c,v 1.3 2002-10-01 15:25:49 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -22,6 +22,8 @@ opened session from a client
 #include "tsp_session.h"
 #include "tsp_group_algo.h"
 #include "tsp_data_sender.h"
+#include "tsp_datapool.h"
+
 
 #define TSP_GET_SESSION(session, channel_id, ret) \
 { \
@@ -42,6 +44,14 @@ struct TSP_session_data_t
   TSP_data_sender_t sender;
 
   int data_link_broken; /**< If data_link_broken = TRUE, the client is unreachable */
+
+  TSP_datapool_t datapool;
+
+  /** Handle on glu server instance (could be global or specific to session ) */
+  GLU_handle_t glu_h;
+
+  /** Total number of symbols in glu server */
+  int symbols_number;
 	
 };
 
@@ -191,11 +201,14 @@ int TSP_close_session_by_channel(channel_id_t channel_id)
 
 }
 
-int TSP_add_session(channel_id_t* new_channel_id)
+int TSP_add_session(channel_id_t* new_channel_id, GLU_handle_t glu_h)
 {
   SFUNC_NAME(TSP_add_session);
 
   channel_id_t channel_id = (channel_id_t)(UNDEFINED_CHANNEL_ID);
+  
+  TSP_sample_symbol_info_list_t symbol_list;
+
   *new_channel_id = 0;
 	
   STRACE_IO(("-->IN"));
@@ -221,8 +234,18 @@ int TSP_add_session(channel_id_t* new_channel_id)
   X_session_t[X_session_nb].channel_id = *new_channel_id;
   TSP_CHECK_ALLOC(X_session_t[X_session_nb].session_data, FALSE);
   
-  /* Intialize data_link_broken */
+  /* Intialize members */
   X_session_t[X_session_nb].session_data->data_link_broken = FALSE;
+  X_session_t[X_session_nb].session_data->datapool = 0; 
+  X_session_t[X_session_nb].session_data->glu_h = glu_h; 
+
+  /* Get symbols number */
+  if(!GLU_get_sample_symbol_info_list(glu_h,&symbol_list))
+    {
+      STRACE_ERROR(("Function GLU_get_sample_symbol_info_list failed"));
+      return FALSE;
+    }
+    X_session_t[X_session_nb].session_data->symbols_number = symbol_list.TSP_sample_symbol_info_list_t_len; 
 
   /* OK, there's a new session*/
   X_session_nb++;
@@ -238,34 +261,55 @@ int TSP_add_session(channel_id_t* new_channel_id)
 }
 
 int TSP_session_create_symbols_table_by_channel(const TSP_request_sample_t* req_sample,
-						TSP_answer_sample_t** ans_sample)
+						TSP_answer_sample_t** ans_sample,
+						int use_global_datapool)
 {
   SFUNC_NAME(TSP_session_create_symbols_table);
 
 	
   int ret = FALSE;
   char port[200];
+  TSP_datapool_t used_datapool = 0;
     
   TSP_session_t* session = 0;
     
   STRACE_IO(("-->IN"));
 
   TSP_LOCK_MUTEX(&X_session_list_mutex,FALSE);
-
     
   session =  TSP_get_session(req_sample->channel_id);
-    
-	
     
   (*ans_sample) = (TSP_answer_sample_t*)calloc(1, sizeof(TSP_answer_sample_t));
   TSP_CHECK_ALLOC((*ans_sample),FALSE);
     
-   
+  /* Use global datapool, or local datapool ? */
+  if(use_global_datapool)
+    {
+      TSP_datapool_t global_datapool = TSP_global_datapool_get_instance();
+      
+      /* Create table*/
+      ret  = TSP_group_algo_create_symbols_table(&(req_sample->symbols),
+						 &((*ans_sample)->symbols), 
+						 &(session->session_data->groups),
+						 global_datapool);
+    }
+  else
+    {
+      /* Nop. Create a brand new data pool for each session 
+	 we provider the channel_id of the session to the datapool */
+      session->session_data->datapool = TSP_local_datapool_allocate(session->channel_id,
+								    session->session_data->symbols_number,
+								    session->session_data->glu_h);
+      TSP_CHECK_ALLOC(session->session_data->datapool,FALSE);
+       
+      /* Creation table*/
+      ret  = TSP_group_algo_create_symbols_table(&(req_sample->symbols),
+						 &((*ans_sample)->symbols), 
+						 &(session->session_data->groups),
+						 session->session_data->datapool);   
+    }
     
-  /* Creation table*/
-  ret  = TSP_group_algo_create_symbols_table(&(req_sample->symbols),
-					     &((*ans_sample)->symbols), 
-					     &(session->session_data->groups));
+  
   if(ret)
     {
       (*ans_sample)->provider_group_number = 
@@ -306,6 +350,93 @@ void TSP_session_free_create_symbols_table_call(TSP_answer_sample_t** ans_sample
 
 }
 
+
+int  TSP_session_get_sample_symbol_info_list_by_channel(channel_id_t channel_id,
+							TSP_sample_symbol_info_list_t* symbol_list)
+{
+
+  SFUNC_NAME(TSP_session_get_sample_symbol_info_list_by_channel);
+
+  TSP_session_t* session;
+  int ret;
+
+  STRACE_IO(("-->IN"));
+
+  TSP_LOCK_MUTEX(&X_session_list_mutex,FALSE);
+	
+  TSP_GET_SESSION(session, channel_id, FALSE);
+
+  ret = GLU_get_sample_symbol_info_list(session->session_data->glu_h, symbol_list);
+  
+  TSP_UNLOCK_MUTEX(&X_session_list_mutex,FALSE);
+  
+  STRACE_IO(("-->OUT"));
+    
+  return ret;
+
+}
+
+
+void TSP_session_send_data_eof_by_channel(channel_id_t channel_id)
+{
+  SFUNC_NAME(TSP_session_send_data_eof_by_channel);
+
+  TSP_session_t* session;
+
+  /*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
+  /*FIXME :  Warning : the session must not be suppressed when the send is active */
+  /*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
+  TSP_LOCK_MUTEX(&X_session_list_mutex,);
+  TSP_GET_SESSION(session, channel_id,);
+  TSP_UNLOCK_MUTEX(&X_session_list_mutex,);
+
+  if( (session->session_data->data_link_broken == FALSE) 
+      &&  session->session_data->groups
+      &&  session->session_data->sender)
+    {
+      if(!TSP_data_sender_send_eof(session->session_data->sender))
+
+	{
+	  STRACE_ERROR(("Function TSP_data_sender_send_eof failed"));
+	  session->session_data->data_link_broken = TRUE;
+	  
+	}
+    }
+
+
+
+}
+
+void TSP_session_send_data_by_channel(channel_id_t channel_id, time_stamp_t t)
+{
+
+  SFUNC_NAME(TSP_session_all_session_send_data);
+
+  TSP_session_t* session;
+  /*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
+  /*FIXME :  Warning : the session must not be suppressed when the send is active */
+  /*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
+
+  TSP_LOCK_MUTEX(&X_session_list_mutex,);
+  TSP_GET_SESSION(session, channel_id,);
+  TSP_UNLOCK_MUTEX(&X_session_list_mutex,);
+
+  if( (session->session_data->data_link_broken == FALSE) 
+      &&  session->session_data->groups
+      &&  session->session_data->sender)
+    {
+      if(!TSP_data_sender_send(session->session_data->sender, 
+			       session->session_data->groups, 
+			       t))
+	{
+	  STRACE_ERROR(("Function TSP_data_sender_send failed"));
+	  session->session_data->data_link_broken = TRUE;
+	  
+	}
+    }
+    
+}
+
 /**
  * Send data to all clients.
  * This function is called by the datapool thread,
@@ -321,7 +452,7 @@ void TSP_session_all_session_send_data(time_stamp_t t)
     
   int i;
     
- /* STRACE_IO(("-->IN"));*/
+  /* STRACE_IO(("-->IN"));*/
 
   TSP_LOCK_MUTEX(&X_session_list_mutex,);
 
@@ -361,7 +492,7 @@ void TSP_session_all_session_send_data(time_stamp_t t)
 
 }
 
-int TSP_session_create_data_sender_by_channel(channel_id_t channel_id)
+int TSP_session_create_data_sender_by_channel(channel_id_t channel_id, int start_local_thread)
 {
 
   SFUNC_NAME(TSP_session_create_data_sender_by_channel);
@@ -372,22 +503,35 @@ int TSP_session_create_data_sender_by_channel(channel_id_t channel_id)
   STRACE_IO(("-->IN"));
 
   TSP_LOCK_MUTEX(&X_session_list_mutex,FALSE);
-
 	
   TSP_GET_SESSION(session, channel_id, FALSE);
 
+  /* Create a sender */
   session->session_data->sender = TSP_data_sender_create();
-  if(0 == session->session_data->sender)
+  if(0 != session->session_data->sender)
+    {
+      /*FIXME : il ne faudrait pas lancer le worker avant le start feature : mettre le thread en etat d'attente*/
+
+      /* If the sample server is a lazy pasive server, we need a thread per session*/
+      if (start_local_thread)
+	{
+	  ret = TSP_local_datapool_start_thread(session->session_data->datapool);
+	  if(!ret)
+	    {
+	      STRACE_ERROR(("Unable to launch local datapool worker thread"));
+	    }
+	}
+    }
+  else
     {
       ret = FALSE;
       STRACE_ERROR(("function TSP_data_sender_create failed"));
-
+      
     }
-    
+  
   TSP_UNLOCK_MUTEX(&X_session_list_mutex,FALSE);
-
+  
   STRACE_IO(("-->OUT"));
-
     
   return ret;
 
@@ -416,5 +560,26 @@ const char* TSP_session_get_data_address_string_by_channel(channel_id_t channel_
 
     
   return data_address;
+
+}
+
+
+int TSP_session_is_consumer_connected_by_channel(channel_id_t channel_id)
+{
+  /* TSP_data_sender_is_consumer_connected(*/
+  
+  SFUNC_NAME(TSP_session_is_consumer_connected_by_channel);
+					
+  TSP_session_t* session;
+  int consumer_is_connected;
+    
+  TSP_LOCK_MUTEX(&X_session_list_mutex,FALSE);
+  TSP_GET_SESSION(session, channel_id, FALSE);
+
+  consumer_is_connected = TSP_data_sender_is_consumer_connected(session->session_data->sender);
+
+  TSP_UNLOCK_MUTEX(&X_session_list_mutex,FALSE);
+
+  return consumer_is_connected;
 
 }
