@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_plotText.c,v 1.3 2004-06-17 20:03:02 esteban Exp $
+$Id: gdisp_plotText.c,v 1.4 2004-10-05 12:31:12 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -514,7 +514,7 @@ gdisp_stepOnPlotText (Kernel_T *kernel,
       /*
        * Insert symbol into the graphic list.
        */
-      sprintf(sValue,"%f ",symbol->sLastValue);
+      sprintf(sValue,"%g ",symbol->sLastValue);
 
       gtk_clist_set_text(GTK_CLIST(plot->pttCList),
 			 rowNumber,
