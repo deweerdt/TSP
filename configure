@@ -4980,6 +4980,13 @@ echo "${ECHO_T}Linux is OK" >&6
 echo "${ECHO_T}OpenBSD is OK" >&6
 	HOST_TARGET=openbsd
         ;;
+    i386-pc-solaris*)
+	echo "$as_me:$LINENO: result: i386 Solaris is OK" >&5
+echo "${ECHO_T}i386 Solaris is OK" >&6
+	CPPFLAGS="-D__EXTENSIONS__ -D_REENTRANT  -DUSE_STRACE -DTSP_NO_XDR_ENCODE -Wall"
+	LDLIBS="-lsocket -lnsl -lm -lposix4 -lgen -lpthread"
+	HOST_TARGET=sun
+        ;;
     sparc-sun-solaris*)
 	echo "$as_me:$LINENO: result: Sparc Solaris is OK" >&5
 echo "${ECHO_T}Sparc Solaris is OK" >&6

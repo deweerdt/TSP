@@ -186,6 +186,12 @@ case "$host" in
 	AC_MSG_RESULT([OpenBSD is OK])	
 	HOST_TARGET=openbsd
         ;;
+    i386-pc-solaris*)
+	AC_MSG_RESULT([i386 Solaris is OK])	
+	CPPFLAGS="-D__EXTENSIONS__ -D_REENTRANT  -DUSE_STRACE -DTSP_NO_XDR_ENCODE -Wall"
+	LDLIBS="-lsocket -lnsl -lm -lposix4 -lgen -lpthread"
+	HOST_TARGET=sun
+        ;;
     sparc-sun-solaris*)
 	AC_MSG_RESULT([Sparc Solaris is OK])	
 	CPPFLAGS="-D__EXTENSIONS__ -D_REENTRANT  -DUSE_STRACE -DTSP_NO_XDR_ENCODE -Wall"

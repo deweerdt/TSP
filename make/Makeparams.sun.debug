@@ -6,7 +6,7 @@ include $(DEVBASE)/make/Makeparams.sun
 
 # Default options
 # ---------------
-CFLAGS = -g 
+CFLAGS += -g 
 
 
 
