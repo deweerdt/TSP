@@ -1,4 +1,4 @@
-# Makeparams.suncdt
+# Makeparams.linux
 
 include $(DEVBASE)/make/Makeproject
 
@@ -10,12 +10,13 @@ DIRLIB = $(LIBBASE)/lib.linux
 # Default tools
 # -------------
 # Using standard tools
+CC=gcc
 
 
 # Default options
 # ---------------
 ARFLAGS = rvs
 CFLAGS = 
-CPPFLAGS +=  -D_REENTRANT  -DUSE_STRACE -DTSP_NO_XDR_ENCODE -D__linux__ -D__i386__
+CPPFLAGS +=  -D_REENTRANT  -DUSE_STRACE -DTSP_NO_XDR_ENCODE
 LDLIBS = -lsocket -lnsl -lm -lposix4 -lgen -lpthread  
 
