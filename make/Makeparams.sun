@@ -1,4 +1,4 @@
-# Makeparams.sun.debug
+# Makeparams.sun
 
 
 BUILD_BB = no
@@ -11,7 +11,10 @@ BUILD_BB = no
 # Default options
 # ---------------
 #ARFLAGS = rvs
-#CPPFLAGS += -D__EXTENSIONS__ -D_REENTRANT  -DUSE_STRACE -DTSP_NO_XDR_ENCODE  
+
+CPPFLAGS += -D_POSIX_PTHREAD_SEMANTICS
+#-D__EXTENSIONS__ -D_REENTRANT  -DUSE_STRACE -DTSP_NO_XDR_ENCODE  
+
 #LDLIBS = -lsocket -lnsl -lm -lposix4 -lgen -lpthread  
 
 
