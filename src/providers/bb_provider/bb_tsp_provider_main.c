@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/providers/bb_provider/bb_tsp_provider_main.c,v 1.2 2004-09-20 20:55:59 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/providers/bb_provider/bb_tsp_provider_main.c,v 1.3 2004-10-26 23:46:54 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -39,22 +39,34 @@ Purpose   : Blackboard TSP Provider
 #include <unistd.h>
 #include <stdlib.h>
 #include <math.h>
-#include <bb_tsp_provider.h>
+#include <signal.h>
+
+
+#include "bb_tsp_provider.h"
+#include "tsp_provider_init.h"
+
 
 int 
 main (int argc, char ** argv) {
 
-/*   if (bb_attach()) { */
-/*     exit(-1); */
-/*   } */
+  sigset_t allsigs;
+  int whatsig;
+
+  sigemptyset(&allsigs);
+  sigaddset(&allsigs, SIGINT);
+  sigprocmask(SIG_BLOCK, &allsigs, NULL);
+
   if (argc<2) {
     fprintf(stderr,"%s : argument missing\n",argv[0]);
     fprintf(stderr,"Usage: %s <bbname>\n",argv[0]);
     exit(-1);
   }
   
-  bb_tsp_provider_initialise(&argc,&argv,1,argv[1]);
-
-/*   return bb_detach(); */
+  bb_tsp_provider_initialise(&argc,&argv,
+			     TSP_ASYNC_REQUEST_SIMPLE | TSP_ASYNC_REQUEST_NON_BLOCKING,
+			     argv[1]);
+  sigwait(&allsigs, &whatsig);
+  bb_tsp_provider_finalize();
+  
   return 0;
 }

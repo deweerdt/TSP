@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/providers/bb_provider/bb_tsp_provider.h,v 1.5 2004-10-23 13:25:16 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/providers/bb_provider/bb_tsp_provider.h,v 1.6 2004-10-26 23:46:54 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -37,9 +37,8 @@ Purpose   : Blackboard TSP Provider
 #ifndef _BB_TSP_PROVIDER_H_
 #define _BB_TSP_PROVIDER_H_
 
-#ifndef HAVE_STDINT_H
-#include <stdint.h>
-#endif
+#include "tsp_abs_types.h"
+
 #include <pthread.h>
 
 #ifdef BB_TSP_PROVIDER_C
@@ -68,12 +67,17 @@ GLU_set_base_frequency(double d_frequence_provider);
  *             ne l'utilise.
  * @param argv Le parametre argc d'un main avant que le main
  *             ne l'utilise.
- * @param i_mode mode de démarrage 0 = non bloquant, 1 = bloquant.
+ * @param TSPRunMode mode de démarrage 0 = non bloquant, 1 = bloquant.
  * @param bbname le nom du blackboard auquel s'attacher
  * @return E_OK si initialisation réalisée E_NOK sinon.
  * @ingroup BlackBoard
  */
 int32_t
-bb_tsp_provider_initialise(int* argc, char** argv[],int i_mode, const char* bbname);
+bb_tsp_provider_initialise(int* argc, char** argv[],int TSPRunMode, const char* bbname);
 
+/**
+ *
+ */
+int32_t 
+bb_tsp_provider_finalize();
 #endif /* _BB_TSP_PROVIDER_H_ */

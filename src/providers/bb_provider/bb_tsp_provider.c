@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/providers/bb_provider/bb_tsp_provider.c,v 1.7 2004-10-19 20:01:14 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/providers/bb_provider/bb_tsp_provider.c,v 1.8 2004-10-26 23:46:54 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -358,7 +358,7 @@ GLU_get_instance(int custom_argc,
 
 
 int32_t 
-bb_tsp_provider_initialise(int* argc, char** argv[],int i_mode, const char* bbname) {
+bb_tsp_provider_initialise(int* argc, char** argv[],int TSPRunMode, const char* bbname) {
   
   int32_t retcode;
   
@@ -367,14 +367,14 @@ bb_tsp_provider_initialise(int* argc, char** argv[],int i_mode, const char* bbna
   /* Init LibTSP provider */
   TSP_provider_init(argc, argv);  
   /* demarrage provider */
-  TSP_provider_run(i_mode);
+  TSP_provider_run(TSPRunMode);
   /* 
    * Si demarrage en mode non bloquant 
    * attendre demarrage thread provider
    * FIXME ce mode "d'attente" est pourlingue il faut une
    * API TSP pour gérer ces synchros de démarrage de thread.
    */
-  if (0 == i_mode) {
+  if (TSP_ASYNC_REQUEST_NON_BLOCKING & TSPRunMode) {
     sleep(1);
     sched_yield();  
     while (TSP_provider_rqh_manager_get_nb_running()<1) {
@@ -386,3 +386,13 @@ bb_tsp_provider_initialise(int* argc, char** argv[],int i_mode, const char* bbna
   }  
   return retcode;
 } /* end of bb_tsp_provider_initialise */
+
+int32_t 
+bb_tsp_provider_finalize() {
+  int32_t retcode;
+  
+  TSP_provider_end();
+  retcode = E_OK;
+
+  return retcode;
+}
