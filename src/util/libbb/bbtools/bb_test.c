@@ -6,6 +6,13 @@
 #include <libgen.h>
 #include <bb_core.h>
 #include <bb_simple.h>
+#include "tsp_abs_types.h"
+
+typedef struct mytype {
+  int     a;
+  double  d;
+  uint8_t byte;
+} mytype_t;
 
 int 
 main (int argc, char ** argv) {
@@ -15,7 +22,7 @@ main (int argc, char ** argv) {
   int retcode=0;
   int data_size;
   int n_data;
-  u_int32_t* display_level;
+  uint32_t* display_level;
   int32_t* Toto;
   double* Titi;
   double* Tata;
@@ -23,6 +30,8 @@ main (int argc, char ** argv) {
   int i;
   int synchro;
   S_BB_T* mybb;
+  mytype_t* myvar;
+  char*     astring;
 
   /*
    * Analyse options de lancement
@@ -47,8 +56,16 @@ main (int argc, char ** argv) {
   /* Publish data in the BB */
   /**************************/
 
-  display_level = (u_int32_t*) bb_simple_publish(mybb,"display_level",basename(argv[0]),-1, E_BB_UINT32, sizeof(u_int32_t),1);
+  display_level = (uint32_t*) bb_simple_publish(mybb,"display_level",basename(argv[0]),-1, E_BB_UINT32, sizeof(uint32_t),1);
   *display_level = 0;
+  
+  myvar = (mytype_t*) bb_simple_publish(mybb,"mytype_t_var",basename(argv[0]),-1, E_BB_USER, sizeof(mytype_t),1);
+  myvar->a = 1;
+  myvar->d = 3.14159;
+  myvar->byte = 0xFF;
+
+  astring = (char*) bb_simple_publish(mybb,"astring",basename(argv[0]),-1, E_BB_CHAR, sizeof(char),20);
+  strncpy(astring,"A little string",20);
 
   Toto = (int32_t*) bb_simple_publish(mybb,"Toto",basename(argv[0]),1, E_BB_INT32, sizeof(int32_t),3);  
   for (i=0;i<3;++i) {

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.5 2004-10-18 20:36:56 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.6 2004-10-19 20:01:14 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -330,7 +330,7 @@ bb_data_footer_print(S_BB_DATADESC_T data_desc, FILE* pf, int32_t idx) {
 int32_t 
 bb_value_print(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc, FILE* pf, int32_t idx) {
   
-  int32_t i,ibeg,iend;
+  int32_t i,j,ibeg,iend;
   char* data;
   assert(bb);
   /* on recupere l'adresse de la donnee dans le BB */
@@ -372,10 +372,12 @@ bb_value_print(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc, FILE* pf, int32_t
       fprintf(pf,"0x%llx ",((uint64_t*) data)[i]);
       break;	
     case E_BB_CHAR:
-      fprintf(pf,"0x%x<%c> ",((char*) data)[i],((char*) data)[i]);
+      fprintf(pf,"0x%02x<%c> ",((char*) data)[i],((char*) data)[i]);
       break;
     case E_BB_USER:
-      fprintf(pf,"0x%x ",((char*) data)[i]);
+      for (j=0; j<data_desc.type_size; ++j) {
+	fprintf(pf,"0x%02x ",((uint8_t*) data)[i*data_desc.type_size+j]);
+      }
       break; 
     default:
       fprintf(pf,"0x%x ",((char*) data)[i]);

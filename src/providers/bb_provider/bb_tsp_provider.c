@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/providers/bb_provider/bb_tsp_provider.c,v 1.6 2004-10-18 21:45:04 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/providers/bb_provider/bb_tsp_provider.c,v 1.7 2004-10-19 20:01:14 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -162,7 +162,10 @@ GLU_init(int fallback_argc, char* fallback_argv[]) {
    */
   i_nb_item_scalaire = 0;
   for (i=0;i<bb_get_nb_item(shadow_bb);++i) {
-    i_nb_item_scalaire += bb_data_desc(shadow_bb)[i].dimension;
+    /* we skip unhandled BB_TYPE */
+    if (bb_data_desc(shadow_bb)[i].type < E_BB_CHAR) {
+      i_nb_item_scalaire += bb_data_desc(shadow_bb)[i].dimension;
+    }
   }
   /* On alloue une liste de symboles de la taille
    * correspondant au nombre de données (scalaire) enregistrées dans le BB
@@ -184,42 +187,40 @@ GLU_init(int fallback_argc, char* fallback_argv[]) {
      * donc on génère des noms de symboles postfixés par
      * l'index du tableau [%d]
      */
-    if (bb_data_desc(shadow_bb)[i].dimension > 1) {
-      for (j=0;j<bb_data_desc(shadow_bb)[i].dimension; ++j) {
-	i_temp = strlen(bb_data_desc(shadow_bb)[i].name)+9;
-	X_sample_symbol_info_list_val[i_pg_index].name = malloc(i_temp);
-	assert(X_sample_symbol_info_list_val[i_pg_index].name);
-	snprintf(X_sample_symbol_info_list_val[i_pg_index].name, 
-		 i_temp,
-		 "%s[%0d]",
-		 bb_data_desc(shadow_bb)[i].name,
-		 j);
+    /* we skip unhandled BB_TYPE */ 
+    if (bb_data_desc(shadow_bb)[i].type < E_BB_CHAR) {
+      if (bb_data_desc(shadow_bb)[i].dimension > 1) {
+	for (j=0;j<bb_data_desc(shadow_bb)[i].dimension; ++j) {
+	  i_temp = strlen(bb_data_desc(shadow_bb)[i].name)+9;
+	  X_sample_symbol_info_list_val[i_pg_index].name = malloc(i_temp);
+	  assert(X_sample_symbol_info_list_val[i_pg_index].name);
+	  snprintf(X_sample_symbol_info_list_val[i_pg_index].name, 
+		   i_temp,
+		   "%s[%0d]",
+		   bb_data_desc(shadow_bb)[i].name,
+		   j);
+	  X_sample_symbol_info_list_val[i_pg_index].provider_global_index = i_pg_index;
+	  X_sample_symbol_info_list_val[i_pg_index].period = 1;
+	  /* on pointe vers la valeur adéquate */
+	  value_by_pgi[i_pg_index]  = ((void*) ((char*)bb_data(shadow_bb) + bb_data_desc(shadow_bb)[i].data_offset)) + j*bb_data_desc(shadow_bb)[i].type_size;
+	  bbtype_by_pgi[i_pg_index] = bb_data_desc(shadow_bb)[i].type;
+	  ++i_pg_index;
+	}
+      } 
+      /* creation simple pour les scalaires */
+      else {
+	X_sample_symbol_info_list_val[i_pg_index].name = strdup(bb_data_desc(shadow_bb)[i].name);
 	X_sample_symbol_info_list_val[i_pg_index].provider_global_index = i_pg_index;
 	X_sample_symbol_info_list_val[i_pg_index].period = 1;
-	/* on pointe vers la valeur adéquate */
-	value_by_pgi[i_pg_index]  = ((void*) ((char*)bb_data(shadow_bb) + bb_data_desc(shadow_bb)[i].data_offset)) + j*bb_data_desc(shadow_bb)[i].type_size;
+	value_by_pgi[i_pg_index] = ((void*) ((char*)bb_data(shadow_bb) + bb_data_desc(shadow_bb)[i].data_offset));
 	bbtype_by_pgi[i_pg_index] = bb_data_desc(shadow_bb)[i].type;
 	++i_pg_index;
       }
-    } 
-    /* creation simple pour les scalaires */
-    else {
-      X_sample_symbol_info_list_val[i_pg_index].name = strdup(bb_data_desc(shadow_bb)[i].name);
-      X_sample_symbol_info_list_val[i_pg_index].provider_global_index = i_pg_index;
-      X_sample_symbol_info_list_val[i_pg_index].period = 1;
-      value_by_pgi[i_pg_index] = ((void*) ((char*)bb_data(shadow_bb) + bb_data_desc(shadow_bb)[i].data_offset));
-      bbtype_by_pgi[i_pg_index] = bb_data_desc(shadow_bb)[i].type;
-      ++i_pg_index;
+    } else  { /* skip unhandled BB type */ 
+      STRACE_INFO(("Skipping unhandled symbol type <%d> name <%s>",bb_data_desc(shadow_bb)[i].type,bb_data_desc(shadow_bb)[i].name));
     }
-  }
+  } /* loop over bb items */
   
-  /* initialisation ringbuffer */
- /*  if (TRUE == retcode) { */
-     /*    RINGBUF_PTR_INIT(glu_ringbuf, glu_ring, glu_item_t,  0, RINGBUF_SZ(GLU_RING_BUFSIZE)); */ 
-/*     RINGBUF_PTR_INIT(glu_ringbuf, glu_ring, glu_item_t,  0, RINGBUF_SZ(i_pg_index*32*10));  */
-/*     bb_logMsg(BB_LOG_CONFIG,"bb_tsp_provider::GLU_init","Ring Buffer Size is <%d>",glu_ring->size); */
-/*     RINGBUF_PTR_RESET_CONSUMER (glu_ring); */
-/*   } */
   return retcode;
 } /* end of GLU_init */
 
@@ -301,13 +302,7 @@ static void* GLU_thread(void* arg) {
      * Must be call at each step in case of new samples wanted 
      */
     TSP_datapool_get_reverse_list (&nb_consumed_symbols, &ptr_consumed_index); 
-   /*  bb_simple_synchro_go(BB_SIMPLE_MSGID_SYNCHRO_COPY_ACK); */
-/*     while ( RINGBUF_PTR_ITEMS_LEFT(glu_ring) < (nb_consumed_symbols*sizeof(item)+64) ) { */
-/*       usleep(300); */
-/*       bb_logMsg(BB_LOG_WARNING,"bb_tsp_provider::GLU_thread", */
-/* 		  "RINGBUF nb Item Left= <%d>",RINGBUF_PTR_ITEMS_LEFT(glu_ring)); */
-/*       sched_yield(); */
-/*     }  */
+    /*  bb_simple_synchro_go(BB_SIMPLE_MSGID_SYNCHRO_COPY_ACK); */
 
     /* PUSH des valeurs directement dans le datapool */
     for(i = 0 ; i <  nb_consumed_symbols ; ++i) {
@@ -325,7 +320,7 @@ static void* GLU_thread(void* arg) {
       
     ++glu_time;
 /*     if ( 0 == (glu_time%1000) ) { */
-/*       bb_logMsg(BB_LOG_INFO,"bb_tsp_provider::GLU_thread", */
+/*       bb_logMsg(BB_LOG_FINER,"bb_tsp_provider::GLU_thread", */
 /* 		  "Time Stamp <%d>\n",glu_time); */
 /*     } */
 
