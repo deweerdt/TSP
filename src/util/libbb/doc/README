@@ -1,0 +1,7 @@
+BlackBoard documentation
+
+High level doc moved to tsp_bbguide/ top-level CVS module:
+ cvs co tsp_bbguide.
+
+API doc is doxygen generated:
+ look at $DEVBASE/doc/html/index.html
