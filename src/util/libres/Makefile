@@ -6,21 +6,9 @@ XINC    = libUTIL.h
 
 
 SOURCES = \
-	alias.c \
 	use_dbl.c \
-	nl.c \
-	initsim.c \
-	outp_i.c \
-	outp_1.c \
-	sequenc.c \
 	datar.c \
-	mdatar.c \
-	dataw.c \
-	dataf.c \
-	tokex.c \
-	unit.c \
-	var_adres.c \
-	iadr.c
+	dataw.c
 
 OBJECTS=$(SOURCES:%.c=%.o) 
 

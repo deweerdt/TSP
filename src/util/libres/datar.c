@@ -1,6 +1,6 @@
 /*!  \file
 
-$Header: /home/def/zae/tsp/tsp/src/util/libres/datar.c,v 1.4 2004-09-06 16:07:33 tractobob Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libres/datar.c,v 1.5 2004-09-07 09:27:45 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -267,13 +267,13 @@ int	d_read_r (d_rhandle h, void *buf)
   if(obj->use_dbl)
     for(n=0; n<obj->recl; n+=sizeof(double))
       {
-	DOUBLE_TO_BE(p);
+	DOUBLE_FROM_BE(p);
 	p += sizeof(double);
       }
   else
     for(n=0; n<obj->recl; n+=sizeof(float))
       {
-	FLOAT_TO_BE(p);
+	FLOAT_FROM_BE(p);
 	p += sizeof(float);
       }
 

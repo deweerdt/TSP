@@ -1,6 +1,6 @@
 /*!  \file
 
-$Header: /home/def/zae/tsp/tsp/src/util/libres/libUTIL.h,v 1.3 2004-09-06 16:07:33 tractobob Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libres/libUTIL.h,v 1.4 2004-09-07 09:27:45 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -92,97 +92,26 @@ void	d_clos(void);
 
 /*-----------------------------------------------------*\
 |							|
-| Macros for endianity, taken from GLIB			|
+| Macros for endianity, taken from TSP			|
 |							|
 \*-----------------------------------------------------*/
-#include <sys/types.h>
+#include <tsp_abs_types.h>
 
-#define MY_LITTLE_ENDIAN 1234
-#define MY_BIG_ENDIAN    4321
-
-/*** Platform specific ***/
-
-/* SUN / sparc (32/64 bits) */
-#if  defined(__sun)  && defined(__sparc)
-# define MY_BYTE_ORDER MY_BIG_ENDIAN
-# if  defined(__sparcv9)
-#   define INT64_CONSTANT(val)  (val##L)
-# else /* not sparcv9, an old one */
-#   define INT64_CONSTANT(val)  (val##LL)
-#   ifndef _SYS_INT_TYPES_H
-#       ifndef _UINT32_T
-                typedef unsigned long   uint32_t;
-#               define _UINT32_T
-#       endif
-#       ifndef _UINT64_T
-                typedef u_longlong_t    uint64_t;
-#               define _UINT64_T
-#       endif
-#   endif /* Exists SYS_TYPES_H */
-# endif /* ! sparcv9 */
-#endif /* SUN */
-
-/* Linux / Intel */
-#if defined (__linux__) &&  defined (__i386__)
-# include <stdint.h>
-# define MY_BYTE_ORDER MY_LITTLE_ENDIAN
-# define INT64_CONSTANT(val)  (val##LL)
-#endif /* Linux / Intel */
-
-/* OSF1 / Alpha */
-#if defined (__osf__) && defined (__alpha)
-# include <inttypes.h>
-# define INT64_CONSTANT(val)  (val##L)
-# define MY_BYTE_ORDER MY_LITTLE_ENDIAN
-#endif /* OSF1 / Alpha */
-
-/* OpenBSD / i386 (32 bits) (From Fred&Co) */
-#if defined (__OpenBSD__) &&  defined (__i386__)
-# define INT64_CONSTANT(val)  (val##LL)
-# define MY_BYTE_ORDER MY_LITTLE_ENDIAN
-#endif /* OpenBSD / i386 */
-
-
-/* Basic bit swapping functions
- */
-#define FLOAT_SWAP_LE_BE(val)     ((uint32_t) ( \
-    (((uint32_t) (val) & (uint32_t) 0x000000ffU) << 24) | \
-    (((uint32_t) (val) & (uint32_t) 0x0000ff00U) <<  8) | \
-    (((uint32_t) (val) & (uint32_t) 0x00ff0000U) >>  8) | \
-    (((uint32_t) (val) & (uint32_t) 0xff000000U) >> 24)))
-
-#define DOUBLE_SWAP_LE_BE(val)   ((uint64_t) ( \
-      (((uint64_t) (val) &                                              \
-        (uint64_t) INT64_CONSTANT(0x00000000000000ffU)) << 56) |    \
-      (((uint64_t) (val) &                                              \
-        (uint64_t) INT64_CONSTANT(0x000000000000ff00U)) << 40) |    \
-      (((uint64_t) (val) &                                              \
-        (uint64_t) INT64_CONSTANT(0x0000000000ff0000U)) << 24) |    \
-      (((uint64_t) (val) &                                              \
-        (uint64_t) INT64_CONSTANT(0x00000000ff000000U)) <<  8) |    \
-      (((uint64_t) (val) &                                              \
-        (uint64_t) INT64_CONSTANT(0x000000ff00000000U)) >>  8) |    \
-      (((uint64_t) (val) &                                              \
-        (uint64_t) INT64_CONSTANT(0x0000ff0000000000U)) >> 24) |    \
-      (((uint64_t) (val) &                                              \
-        (uint64_t) INT64_CONSTANT(0x00ff000000000000U)) >> 40) |    \
-      (((uint64_t) (val) &                                              \
-        (uint64_t) INT64_CONSTANT(0xff00000000000000U)) >> 56)))
-
-#if MY_BYTE_ORDER == MY_BIG_ENDIAN
+#if TSP_BYTE_ORDER == TSP_BIG_ENDIAN
 #define FLOAT_TO_BE(pval)   
 #define DOUBLE_TO_BE(pval)  
+#define FLOAT_FROM_BE(pval)   
+#define DOUBLE_FROM_BE(pval)  
 #endif
 
-#if MY_BYTE_ORDER == MY_LITTLE_ENDIAN
-#define FLOAT_TO_BE(pval)  { \
-         uint32_t val32 = *(uint32_t*)(pval); \
-         *(uint32_t*)(pval) = FLOAT_SWAP_LE_BE(val32); \
-         }
-#define DOUBLE_TO_BE(pval) { \
-         uint64_t val64 = *(uint64_t*)(pval); \
-         *(uint64_t*)(pval) = FLOAT_SWAP_LE_BE(val64); \
-         }
+#if TSP_BYTE_ORDER == TSP_LITTLE_ENDIAN
+#define FLOAT_TO_BE(pval) *(uint32_t*)(pval) = TSP_UINT32_TO_BE(*(uint32_t*)(pval))
+
+#define DOUBLE_TO_BE(pval) *(uint64_t*)(pval) = TSP_UINT64_TO_BE(*(uint64_t*)(pval))
+
+#define FLOAT_FROM_BE(pval)   FLOAT_TO_BE(pval)
+#define DOUBLE_FROM_BE(pval)  DOUBLE_TO_BE(pval)
+
 #endif
 
 #endif /* _RES_INTERFACE_H */
