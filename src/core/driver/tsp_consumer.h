@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.h,v 1.14 2002-12-24 14:14:24 tntdev Exp $
+$Id: tsp_consumer.h,v 1.15 2003-01-22 13:17:05 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -37,6 +37,14 @@ Purpose   : Main interface for the TSP consumer library
 
 #ifndef _TSP_CONSUMER_H
 #define _TSP_CONSUMER_H
+
+/**
+ * @defgroup Consumer
+ * @ingroup Core
+ * The Consumer module is the set of all 
+ * consumer library interface.
+ * @{
+ */
 
 /*------------------------------ ENUM ---------------------------------*/
  
@@ -145,7 +153,7 @@ typedef  void* TSP_provider_t;
 /*--------------------------------- FUNCTIONS -------------------------------*/
 
 /**
-* Initialisation for TSP librarie.
+* Initialisation for TSP library.
 * Call this function before using main(argc, argv) function arguments. This function
 * removes the arguments it knows from the argument list, leaving anything
 * it does not recognize for your application to parse or ignore. 
@@ -158,8 +166,8 @@ typedef  void* TSP_provider_t;
 int TSP_consumer_init(int* argc, char** argv[]);
 
 /**
-* End of TSP librairie use
-* call this function when you are done with the librairie.
+* End of TSP library use
+* call this function when you are done with the librairy.
 * This function must be called once.
 */
 void TSP_consumer_end();
@@ -319,6 +327,6 @@ int TSP_consumer_read_sample(TSP_provider_t provider,
                     TSP_sample_t* sample,
                     int* new_sample);
 
-
+/** @} end group Consumer */ 
     
 #endif /* _TSP_CONSUMER_H */

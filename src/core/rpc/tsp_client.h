@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_client.h,v 1.4 2002-12-18 16:27:36 tntdev Exp $
+$Id: tsp_client.h,v 1.5 2003-01-22 13:17:05 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -42,6 +42,15 @@ Purpose   :
 
 #include "tsp_rpc.h"
 
+/**
+ * @defgroup Client
+ * The Client module is the set of functions which encapsulate
+ * the RPC machinery.
+ * @ingroup Consumer
+ * @{
+ */
+
+
 typedef  void* TSP_server_t;
 
 int TSP_remote_open_server( const char *target_name,
@@ -73,7 +82,6 @@ TSP_answer_sample_init_t * TSP_request_sample_init(
 TSP_answer_sample_destroy_t * TSP_request_sample_destroy(const TSP_request_sample_destroy_t* req_sample,
 							 TSP_server_t server);
 
-
-
+/** @} end group Client */ 
 
 #endif /* _TSP_CLIENT */

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_server.h,v 1.3 2002-12-18 16:27:36 tntdev Exp $
+$Id: tsp_server.h,v 1.4 2003-01-22 13:17:05 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -40,6 +40,13 @@ Purpose   :
 
 #include "tsp_prjcfg.h"
 
+/**
+ * @defgroup Server
+ * The Client module is the set of functions which encapsulate
+ * the RPC machinery.
+ * @ingroup Provider
+ * @{
+ */
 
 /**
 * Initialise command canal communication.
@@ -49,5 +56,7 @@ Purpose   :
 * @return TRUE = OK
 */
 int TSP_command_init(int server_number, int blocking);
+
+/** @} end group Server */ 
 
 #endif /* _TSP_SERVER_H */

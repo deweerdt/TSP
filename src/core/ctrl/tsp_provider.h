@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_provider.h,v 1.9 2002-12-18 16:27:17 tntdev Exp $
+$Id: tsp_provider.h,v 1.10 2003-01-22 13:17:05 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -42,7 +42,13 @@ Purpose   : Main interface for the producer module
 
 #include "tsp_datastruct.h"
 
-
+/**
+ * @defgroup Provider
+ * @ingroup  Core
+ * The Provider module is the set of all 
+ * provider library interface.
+ * @{
+ */
 
 int TSP_provider_private_init(int* argc, char** argv[]);
 
@@ -68,5 +74,7 @@ void  TSP_provider_request_sample_destroy(TSP_request_sample_destroy_t* req_info
 int TSP_provider_is_initialized(void);
 
 int TSP_provider_get_server_number(void);
+
+/** @} end group Provider */ 
 
 #endif /* _TSP_PROVIDER_H */

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/include/Attic/tsp_prjcfg.h,v 1.4 2002-12-24 14:14:27 tntdev Exp $
+$Id: tsp_prjcfg.h,v 1.5 2003-01-22 13:17:05 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -40,5 +40,12 @@ Purpose   : some includes
 #include "tsp_abs_types.h"
 #include "tsp_const_def.h"
 #include "tsp_simple_trace.h"
+
+/**
+ * @defgroup Core
+ * The TSP Core module is the module 
+ * includes core TSP framework utility.
+ */
+
 
 #endif /* _PRJCFG_H */
