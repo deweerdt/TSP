@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/misc_utils/tsp_ringbuf.h,v 1.4 2002-12-24 14:14:29 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/misc_utils/tsp_ringbuf.h,v 1.5 2003-01-28 13:24:52 SyntDev1 Exp $
 
 -----------------------------------------------------------------------
 
@@ -186,7 +186,7 @@ extern "C" {
 /* This reset is not safe for the producer */
 #define RINGBUF_RESET_CONSUMER(name) \
 	{ \
-		(name).get   = (name).put \
+		(name).get   = (name).put ; \
 		(name).missed = 0; \
 	}
 
