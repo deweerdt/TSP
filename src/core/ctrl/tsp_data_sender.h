@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_data_sender.h,v 1.1 2002-08-27 08:56:09 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_data_sender.h,v 1.2 2002-10-01 15:18:06 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -39,5 +39,9 @@ TSP_data_sender_t TSP_data_sender_create(void);
 const char* TSP_data_sender_get_data_address_string(TSP_data_sender_t sender);
 
 TSP_data_encoder_t TSP_data_sender_get_double_encoder(void);
+
+int TSP_data_sender_is_consumer_connected(TSP_data_sender_t sender);
+
+int TSP_data_sender_send_eof(TSP_data_sender_t _sender);
 
 #endif /* _TSP_DATA_SENDER_H */

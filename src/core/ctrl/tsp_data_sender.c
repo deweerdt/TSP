@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_data_sender.c,v 1.2 2002-09-05 09:02:42 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_data_sender.c,v 1.3 2002-10-01 15:18:05 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -112,6 +112,42 @@ TSP_data_sender_t TSP_data_sender_create(void)
 }
 
 /**
+ * Send groupe EOF.
+ * @param sender sender used to send the data
+ * The special group ID groupe EOF indicate the End of Stream for the consumer
+ * @return TRUE = OK
+ */
+int TSP_data_sender_send_eof(TSP_data_sender_t sender)
+{
+  SFUNC_NAME(TSP_data_sender_send);
+
+  TSP_struct_data_sender_t* data_sender = (TSP_struct_data_sender_t*)sender;
+  int* buf_int = (int*)(data_sender->buf);
+  int ret = TRUE;
+  
+  STRACE_IO(("-->IN"));
+  
+  /*Encode dummy time stamp */
+  buf_int[0] = TSP_ENCODE_INT(-1);
+  buf_int[1] = TSP_ENCODE_INT(TSP_RESERVED_GROUPE_EOF);
+  
+  if(!TSP_stream_sender_send(data_sender->stream_sender,
+			     data_sender->buf,
+			     sizeof(int)*2))
+    {
+      STRACE_ERROR(("Function TSP_stream_sender_send failed "));
+      ret = FALSE;
+      
+    }
+  
+  
+  STRACE_IO(("-->OUT"));
+  
+  return ret;
+ 
+}
+
+/**
  * For a given time stamp, send data to a client.
  * @param _sender sender used to send the data
  * @param _groups groups used to calculate the data
@@ -122,6 +158,7 @@ int TSP_data_sender_send(TSP_data_sender_t _sender, TSP_groups_t _groups, time_s
 {
     
   SFUNC_NAME(TSP_data_sender_send);
+
 
   TSP_struct_data_sender_t* data_sender = (TSP_struct_data_sender_t*)_sender;
   TSP_algo_table_t* groups_table = (TSP_algo_table_t*) _groups;
@@ -141,10 +178,13 @@ int TSP_data_sender_send(TSP_data_sender_t _sender, TSP_groups_t _groups, time_s
   group_index = time_stamp % groups_table->table_len;
   group = &(groups_table->groups[group_index]);
     
+
   buf_int = (int*)(data_sender->buf);
   *( buf_int++ ) = TSP_ENCODE_INT(time_stamp);
   *( buf_int++ ) = TSP_ENCODE_INT(group_index);
   buf_char = (char*)(buf_int);
+
+  
 
   if( group->group_len > 0)
     {
@@ -181,6 +221,9 @@ int TSP_data_sender_send(TSP_data_sender_t _sender, TSP_groups_t _groups, time_s
 	  ret = FALSE;
 
         }
+
+
+
     }
     
   STRACE_IO(("-->OUT"));
@@ -198,4 +241,13 @@ const char* TSP_data_sender_get_data_address_string(TSP_data_sender_t sender)
 TSP_data_encoder_t TSP_data_sender_get_double_encoder(void)
 {
   return TSP_data_sender_double_encoder;
+}
+
+
+
+int TSP_data_sender_is_consumer_connected(TSP_data_sender_t sender)
+{
+   TSP_struct_data_sender_t* data_sender = (TSP_struct_data_sender_t*)sender;
+
+   return TSP_stream_sender_is_client_connected(data_sender->stream_sender);
 }
