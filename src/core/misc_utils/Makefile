@@ -1,16 +1,15 @@
 include $(DEVBASE)/make/Makeparams.$(T)
 
-XINC    = tsp_time.h tsp_ringbuf.h fortify.h ufortify.h tsp_mtgprof.h
+XINC    = tsp_time.h tsp_ringbuf.h  tsp_mtgprof.h
 
 XSCRIPT = 
 
 
 SOURCES = \
 	tsp_time.c \
-	fortify.c \
 	tsp_mtgprof.c 
 
-
+CPPFLAGS += -I.
 
 OBJECTS=$(SOURCES:%.c=%.o) 
 

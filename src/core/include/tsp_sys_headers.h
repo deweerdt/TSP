@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_sys_headers.h,v 1.4 2002-12-03 10:31:00 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_sys_headers.h,v 1.5 2002-12-03 11:32:45 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -27,7 +27,7 @@ Purpose   :
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-#include "fortify.h"
+/*#include "fortify.h"*/
 
 #ifdef MT_GPROF
 #include "tsp_mtgprof.h"
