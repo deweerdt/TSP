@@ -1,8 +1,10 @@
 #!/bin/tcsh
 
 #-----------------------------------------------
-#CUSTOMIZE : input RES File name (must be in stage3 directory)
-set CUSTOM_RESFILE="file1.res"
+#CUSTOMIZE : input RES File name 
+# FILE1 must be smaller that FILE2 (timing problem with test, else...)
+set CUSTOM_RESFILE2="A_NCK01_020701_1834.res"
+set CUSTOM_RESFILE1="A_NCK01_020701_1834_tmA.res"
 #-----------------------------------------------
 
 
@@ -16,7 +18,7 @@ echo " - pasive data stream check "
 echo " - STEP 1 : check all symbols "
 echo " - STEP 2 : check first, middle, and last symbol "
 
-set TESTPATH=$DEVBASE/src/tsp/tests/stage$TESTNB
+set TESTPATH=$DEVBASE/../../tools/test/res
 
 set PROVIDER=tsp_server$TESTNB
 set CONSUMER=tsp_client$TESTNB
@@ -24,60 +26,78 @@ set CONSUMER=tsp_client$TESTNB
 #create a timetag (avoid mixing up files thrue parallel tests)
 set TIMETAG=`date| sed -e 's/[ :]//g'` 
 
-#create file names
-set IN_RESFILE=$TESTPATH/$CUSTOM_RESFILE
-set OUT_RESFILE="/tmp/tsp_test_stage3_out_file_$TIMETAG.res"
-set IN_ASCFILE="/tmp/tsp_test_stage3_in_file_$TIMETAG.asc"
-set OUT_ASCFILE="/tmp/tsp_test_stage3_out_file_$TIMETAG.asc"
-set IN_RESFILE_VARLIST="/tmp/tsp_test_stage3_in_file_$TIMETAG.var"
-set OUT_RESFILE_VARLIST="/tmp/tsp_test_stage3_out_file_$TIMETAG.var"
+#create file names 
+set IN_RESFILE1=$TESTPATH/$CUSTOM_RESFILE1
+set IN_RESFILE2=$TESTPATH/$CUSTOM_RESFILE2
+set OUT_RESFILE1="/tmp/tsp_test_stage3_out1_file_$TIMETAG.res"
+set OUT_RESFILE2="/tmp/tsp_test_stage3_out2_file_$TIMETAG.res"
+set IN_ASCFILE1="/tmp/tsp_test_stage3_in1_file_$TIMETAG.asc"
+set IN_ASCFILE2="/tmp/tsp_test_stage3_in2_file_$TIMETAG.asc"
+set OUT_ASCFILE1="/tmp/tsp_test_stage3_out1_file_$TIMETAG.asc"
+set OUT_ASCFILE2="/tmp/tsp_test_stage3_out2_file_$TIMETAG.asc"
+set IN_RESFILE_VARLIST1="/tmp/tsp_test_stage3_in1_file_$TIMETAG.var"
+set IN_RESFILE_VARLIST2="/tmp/tsp_test_stage3_in2_file_$TIMETAG.var"
+set OUT_RESFILE_VARLIST1="/tmp/tsp_test_stage3_out1_file_$TIMETAG.var"
+set OUT_RESFILE_VARLIST2="/tmp/tsp_test_stage3_out2_file_$TIMETAG.var"
 
 setenv STRACE_DEBUG 2
 
-#Run provider
-$PROVIDER 0  $IN_RESFILE > /dev/null &
+#Run provider with no file
+$PROVIDER 0 _ > /dev/null &
 sleep 1
 
-#Run consumer
-$CONSUMER localhost 1 $OUT_RESFILE
 
-#kill the provider
-custom_killall $PROVIDER
 
-#cat toto | perl -p -e 's/\s+/ /g; s/VT >//g;' | perl -n -e 'print "$_\n"' | bin2asc file1.res
+#Run consumer test 1
+$CONSUMER localhost 1  $IN_RESFILE1 $OUT_RESFILE1 1 &
+$CONSUMER localhost 1  $IN_RESFILE2 $OUT_RESFILE2 1
+sleep 3
 
 #1-> Create variable list from initial .res
 #2-> remove anoying 'VT >', replace tab, \n and multiple spaces by one space
 #3 -> Add \n at the end
 #by the way, we use >& because it seems that the var list is redirected to the err stream by bin2asc..
 #dont't ask me why.
-echo "-v" |  bin2asc $IN_RESFILE  >&  $IN_RESFILE_VARLIST
-perl -i -p -e 's/\s+/ /g; s/VT >//g;' $IN_RESFILE_VARLIST
-perl -i -n -e 'print "$_\n"' $IN_RESFILE_VARLIST
+echo "-v" |  bin2asc $IN_RESFILE1  >&  $IN_RESFILE_VARLIST1
+perl -i -p -e 's/\s+/ /g; s/VT >//g;' $IN_RESFILE_VARLIST1
+perl -i -n -e 'print "$_\n"' $IN_RESFILE_VARLIST1
+
+echo "-v" |  bin2asc $IN_RESFILE2  >&  $IN_RESFILE_VARLIST2
+perl -i -p -e 's/\s+/ /g; s/VT >//g;' $IN_RESFILE_VARLIST2
+perl -i -n -e 'print "$_\n"' $IN_RESFILE_VARLIST2
+
 
 #Create variable list from new .res
-echo "-v" |  bin2asc $OUT_RESFILE  >&  $OUT_RESFILE_VARLIST
-perl -i -p -e 's/\s+/ /g; s/VT >//g;' $OUT_RESFILE_VARLIST
-perl -i -n -e 'print "$_\n"' $OUT_RESFILE_VARLIST
+echo "-v" |  bin2asc $OUT_RESFILE1  >&  $OUT_RESFILE_VARLIST1
+perl -i -p -e 's/\s+/ /g; s/VT >//g;' $OUT_RESFILE_VARLIST1
+perl -i -n -e 'print "$_\n"' $OUT_RESFILE_VARLIST1
+
+echo "-v" |  bin2asc $OUT_RESFILE2  >&  $OUT_RESFILE_VARLIST2
+perl -i -p -e 's/\s+/ /g; s/VT >//g;' $OUT_RESFILE_VARLIST2
+perl -i -n -e 'print "$_\n"' $OUT_RESFILE_VARLIST2
 
 # create ascii file from in .res file for all variables
-cat $IN_RESFILE_VARLIST | bin2asc $IN_RESFILE > $IN_ASCFILE 
+cat $IN_RESFILE_VARLIST1 | bin2asc $IN_RESFILE1 > $IN_ASCFILE1 
+cat $IN_RESFILE_VARLIST2 | bin2asc $IN_RESFILE2 > $IN_ASCFILE2
+cat $OUT_RESFILE_VARLIST1 | bin2asc $OUT_RESFILE1 > $OUT_ASCFILE1 
+cat $OUT_RESFILE_VARLIST2 | bin2asc $OUT_RESFILE2 > $OUT_ASCFILE2 
 
-# create ascii file from in .res file for all variables
-cat $OUT_RESFILE_VARLIST | bin2asc $OUT_RESFILE > $OUT_ASCFILE 
 
 # calc file diff
 # well, if there are too many diff, the RES_DIFF will be too long and the script will fail. That's what we want anyway.
-set RES_DIFF=`diff  $IN_ASCFILE $OUT_ASCFILE`
+set RES_DIFF1=`diff  $IN_ASCFILE1 $OUT_ASCFILE1`
+set RES_DIFF2=`diff  $IN_ASCFILE2 $OUT_ASCFILE2`
 
+\rm $OUT_RESFILE1
+\rm $OUT_RESFILE2
+\rm $IN_ASCFILE1
+\rm $IN_ASCFILE2
+\rm $OUT_ASCFILE1
+\rm $OUT_ASCFILE2
+\rm $OUT_RESFILE_VARLIST1
+\rm $OUT_RESFILE_VARLIST2
 
-\rm $OUT_RESFILE
-\rm $IN_ASCFILE
-\rm $OUT_ASCFILE
-\rm $OUT_RESFILE_VARLIST
-
-
-if ( "$RES_DIFF" == "") then
+if ( ("$RES_DIFF1" == "") && ("$RES_DIFF2" == "") ) then
     echo "TEST||STAGE $TESTNB STEP 1 : PASSED"
 else
     echo "@@@@ TEST||STAGE $TESTNB STEP 1 : FAILED @@@@"
@@ -86,44 +106,56 @@ endif
 
 #------------------------------------------------
 
-#Run provider
-$PROVIDER 0  $IN_RESFILE > /dev/null &
-sleep 1
+#We keep the same provider
+$CONSUMER localhost 1  $IN_RESFILE1 $OUT_RESFILE1 2 &
+$CONSUMER localhost 1  $IN_RESFILE2 $OUT_RESFILE2 2
+sleep 3
 
-#Run consumer with test mode2 (only first and last var)
-$CONSUMER localhost 1 $OUT_RESFILE first_last
 
 #kill the provider
 custom_killall $PROVIDER
 
 #get first, midle and last variable name from all var names
-set FIRST_MIDLE_LAST_VAR=`perl -n -a -e 'print "$F[0] $F[int(($#F+1)/2)] $F[$#F]\n"' $IN_RESFILE_VARLIST`
+set FIRST_MIDLE_LAST_VAR1=`perl -n -a -e 'print "$F[0] $F[int(($#F+1)/2)] $F[$#F]\n"' $IN_RESFILE_VARLIST1`
+set FIRST_MIDLE_LAST_VAR2=`perl -n -a -e 'print "$F[0] $F[int(($#F+1)/2)] $F[$#F]\n"' $IN_RESFILE_VARLIST2`
 
 #create a whole new file from variable names from the new res file
-#normally the new var file must have only FIRST_VAR and LAST_VAR
+#normally the new var file must have only FIRST_VAR, MIDDLE_VAR and LAST_VAR
 #Create variable list from new .res
-echo "-v" |  bin2asc $OUT_RESFILE  >&  $OUT_RESFILE_VARLIST
-perl -i -p -e 's/\s+/ /g; s/VT >//g;' $OUT_RESFILE_VARLIST
-perl -i -n -e 'print "$_\n"' $OUT_RESFILE_VARLIST
+echo "-v" |  bin2asc $OUT_RESFILE1  >&  $OUT_RESFILE_VARLIST1
+perl -i -p -e 's/\s+/ /g; s/VT >//g;' $OUT_RESFILE_VARLIST1
+perl -i -n -e 'print "$_\n"' $OUT_RESFILE_VARLIST1
+
+echo "-v" |  bin2asc $OUT_RESFILE2  >&  $OUT_RESFILE_VARLIST2
+perl -i -p -e 's/\s+/ /g; s/VT >//g;' $OUT_RESFILE_VARLIST2
+perl -i -n -e 'print "$_\n"' $OUT_RESFILE_VARLIST2
 
 # create ascii file from in .res file for first, midle and last variables
-echo "$FIRST_MIDLE_LAST_VAR" | bin2asc $IN_RESFILE > $IN_ASCFILE 
+echo "$FIRST_MIDLE_LAST_VAR1" | bin2asc $IN_RESFILE1 > $IN_ASCFILE1 
+echo "$FIRST_MIDLE_LAST_VAR2" | bin2asc $IN_RESFILE2 > $IN_ASCFILE2 
 
 # create ascii file from in .res file for all variables for the new file
-cat $OUT_RESFILE_VARLIST | bin2asc $OUT_RESFILE > $OUT_ASCFILE 
+cat $OUT_RESFILE_VARLIST1 | bin2asc $OUT_RESFILE1 > $OUT_ASCFILE1 
+cat $OUT_RESFILE_VARLIST2 | bin2asc $OUT_RESFILE2 > $OUT_ASCFILE2 
 
 # calc file diff
 # well, if there are too many diff, the RES_DIFF will be too long and the script will fail. That's what we want anyway.
-set RES_DIFF=`diff  $IN_ASCFILE $OUT_ASCFILE`
+set RES_DIFF1=`diff  $IN_ASCFILE1 $OUT_ASCFILE1`
+set RES_DIFF2=`diff  $IN_ASCFILE2 $OUT_ASCFILE2`
 
-\rm $OUT_RESFILE
-\rm $IN_ASCFILE
-\rm $OUT_ASCFILE
-\rm $IN_RESFILE_VARLIST
-\rm $OUT_RESFILE_VARLIST
+\rm $OUT_RESFILE1
+\rm $OUT_RESFILE2
+\rm $IN_ASCFILE1
+\rm $IN_ASCFILE2
+\rm $OUT_ASCFILE1
+\rm $OUT_ASCFILE2
+\rm $IN_RESFILE_VARLIST1
+\rm $IN_RESFILE_VARLIST2
+\rm $OUT_RESFILE_VARLIST1
+\rm $OUT_RESFILE_VARLIST2
 
 
-if ( "$RES_DIFF" == "") then
+if ( ("$RES_DIFF1" == "") && ("$RES_DIFF2" == "") ) then
     echo "TEST||STAGE $TESTNB STEP 2 : PASSED"
 else
     echo "TEST||@@@@ STAGE $TESTNB STEP 2 : FAILED @@@@"
