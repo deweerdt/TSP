@@ -27,6 +27,8 @@ CPPFLAGS += -I../../util/libcalc
 
 build::	$(TARGET)
 
+$(OBJECTS) : $(ADD_LIB)
+
 $(TARGET): $(OBJECTS)
 	@echo "@@@ Specific Linking $@ ..."
 	$(LINK.c) -o $@ $(OBJECTS) $(ADD_LIB) $(LDLIBS)

@@ -27,6 +27,8 @@ CPPFLAGS += -I../../util/libbb
 
 build::	$(TARGET) 
 
+$(OBJECTS) : $(ADD_LIB)
+
 $(TARGET) : $(OBJECTS)
 	@echo "@@@ Specific Linking $< ..."
 	$(LINK.c) $(OBJECTS) -o $@ -L$(DIRLIB) $(ADD_LIB) $(LDLIBS)
