@@ -5,7 +5,6 @@ all::
 dirs:
 	- mkdir -p $(BINBASE)
 	- chmod a+ws $(BINBASE)
-	- chgrp essai $(BINBASE)
 	- mkdir -p $(DIRINC)
 	- mkdir -p $(LIBBASE)
 	- mkdir -p $(LIBBASE)/lib.consumer
