@@ -1,7 +1,7 @@
 
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_tools.c,v 1.5 2005-02-23 13:33:26 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_tools.c,v 1.6 2005-02-23 23:55:04 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -48,6 +48,7 @@ Purpose   : BlackBoard Idiom implementation
 #include <bb_utils.h>
 #define BB_TOOLS_C
 #include <bb_tools.h>
+#include <bb_simple.h>
 
 
 void 
@@ -359,14 +360,24 @@ bbtools_usage(bbtools_request_t* req) {
 	    bbtools_cmdname_tab[E_BBTOOLS_DESTROY]);    	  
     break;
   case E_BBTOOLS_CREATE:
+    fprintf(req->stream,"Usage : %s <bbname> <ndata> <datazonesize>\n",
+	    bbtools_cmdname_tab[E_BBTOOLS_CREATE]);  
     break;
   case E_BBTOOLS_PUBLISH:
+    fprintf(req->stream,"Usage : %s <bbname> <symname> <symtype>\n",
+	    bbtools_cmdname_tab[E_BBTOOLS_PUBLISH]);  
     break;
   case E_BBTOOLS_SYNCHRO_SEND:
+    fprintf(req->stream,"Usage : %s <bbname>\n",
+	    bbtools_cmdname_tab[E_BBTOOLS_SYNCHRO_SEND]); 
     break;
   case E_BBTOOLS_SYNCHRO_RECV:
+    fprintf(req->stream,"Usage : %s <bbname>\n",
+	    bbtools_cmdname_tab[E_BBTOOLS_SYNCHRO_RECV]); 
     break;
   case E_BBTOOLS_MEMSET:
+    fprintf(req->stream,"Usage : %s <bbname> <bytevalue>\n",
+	    bbtools_cmdname_tab[E_BBTOOLS_MEMSET]);   
     break;
   default:
     fprintf(req->stream, 
@@ -497,6 +508,7 @@ bbtools_write(bbtools_request_t* req) {
 		       bbtools_cmdname_tab[E_BBTOOLS_WRITE],
 		       sym_data_desc.name,
 		       req->bbname);
+	array_index = 0;
       }
     } else { /* single array element case */      
       if (req->verbose) {
@@ -543,8 +555,8 @@ bbtools_write(bbtools_request_t* req) {
 		       sym_data_desc.dimension);
       } else {
 	if (req->verbose) {
-	  bbtools_logMsg(req->stream,"Writing <%s>\n",
-			 req->argv[2]);
+	  bbtools_logMsg(req->stream,"Writing <%s> (index=%d)\n",
+			 req->argv[2],array_index);
 	}
 	bb_value_write(req->theBB,sym_data_desc,req->argv[2],array_index);
       }
@@ -576,20 +588,47 @@ bbtools_dump(bbtools_request_t* req) {
 
 int32_t
 bbtools_find(bbtools_request_t* req) {
-  int32_t retcode = 0;
-/*   char*   varmatch; */
-/*   int     i; */
+  int32_t    retcode = 0;
+  char*      varmatch;
+  int32_t    i; 
+  int32_t    nmatch = 0;
 
-  retcode = bbtools_unimplemented_cmd(bbtools_cmdname_tab[E_BBTOOLS_FIND]);
-  
-/*   for (i=0; i< req->theBB->n_data;++i) { */
-/*     if (!strncmp(req->argv[1],(bb_data_desc(req->theBB)[i]).name,VARNAME_MAX_SIZE+1)) { */
-/*       retcode = i; */
-/*       break; */
-/*     } */
-/*  } */ /* end for */
+  if (req->argc<2) {
+    bbtools_logMsg(req->stream,"%s: <%d> argument missing\n", 
+		   bbtools_cmdname_tab[E_BBTOOLS_FIND],
+		   1-req->argc);
+    bbtools_usage(req);
+    retcode = -1;
+    return retcode;
+  }
+
+  varmatch = strdup(req->argv[1]);
+
+  if (req->verbose) {
+    bbtools_logMsg(req->stream,
+		   "%s: find symbol matching <%s> in  BB <%s>\n",
+		   bbtools_cmdname_tab[E_BBTOOLS_FIND],
+		   varmatch,
+		   req->bbname);
+  }
+
+
+  for (i=0; i< req->theBB->n_data;++i) {
+    if (NULL != strstr((bb_data_desc(req->theBB)[i]).name,varmatch)) {
+      fprintf(req->stream,"%s\n",(bb_data_desc(req->theBB)[i]).name);
+      ++nmatch;
+     } 
+   } /* end for */
     
-
+  if (req->verbose) {
+    bbtools_logMsg(req->stream,
+		   "%s: found <%d> symbol(s) matching <%s> in  BB <%s>\n",
+		   bbtools_cmdname_tab[E_BBTOOLS_FIND],
+		   nmatch,
+		   varmatch,
+		   req->bbname);
+  }
+  free(varmatch);
   return retcode;
 }  /* end of bbtools_find */
 
@@ -681,20 +720,87 @@ bbtools_publish(bbtools_request_t* req) {
 int32_t
 bbtools_synchro_send(bbtools_request_t* req) {
   int32_t retcode = 0;
-  retcode = bbtools_unimplemented_cmd(bbtools_cmdname_tab[E_BBTOOLS_SYNCHRO_SEND]);
+  if (req->argc<1) {
+    bbtools_logMsg(req->stream,"%s: <%d> argument missing\n", 
+		   bbtools_cmdname_tab[E_BBTOOLS_SYNCHRO_SEND],
+		   1-req->argc);
+    bbtools_usage(req);
+    retcode = -1;
+    return retcode;
+  }
+  if (req->verbose) {
+    bbtools_logMsg(req->stream,
+		   "%s: sending synchro to BB <%s>\n",
+		   bbtools_cmdname_tab[E_BBTOOLS_SYNCHRO_SEND],
+		   req->bbname);
+  }
+  
+  /* FIXME simple synchro for now 
+   * should use bb_snd_msg and enrich 
+   * the API
+   */
+  retcode = bb_simple_synchro_go(req->theBB,BB_SIMPLE_MSGID_SYNCHRO_COPY);
   return retcode;
 } /* end of bbtools_synchro_send */
 
 int32_t
 bbtools_synchro_recv(bbtools_request_t* req) {
   int32_t retcode = 0;
-  retcode = bbtools_unimplemented_cmd(bbtools_cmdname_tab[E_BBTOOLS_SYNCHRO_RECV]);
+  if (req->argc<1) {
+    bbtools_logMsg(req->stream,"%s: <%d> argument missing\n", 
+		   bbtools_cmdname_tab[E_BBTOOLS_SYNCHRO_SEND],
+		   1-req->argc);
+    bbtools_usage(req);
+    retcode = -1;
+    return retcode;
+  }
+  if (req->verbose) {
+    bbtools_logMsg(req->stream,
+		   "%s: sending synchro to BB <%s>\n",
+		   bbtools_cmdname_tab[E_BBTOOLS_SYNCHRO_SEND],
+		   req->bbname);
+  }
+  
+  /* FIXME simple synchro for now 
+   * should use bb_snd_recv and enrich 
+   * the API
+   */
+  retcode = bb_simple_synchro_wait(req->theBB,BB_SIMPLE_MSGID_SYNCHRO_COPY);
   return retcode;
 } /* end of bbtools_synchro_recv */
 
 int32_t
 bbtools_memset(bbtools_request_t* req) {
   int32_t retcode = 0;
-  retcode = bbtools_unimplemented_cmd(bbtools_cmdname_tab[E_BBTOOLS_MEMSET]);
+  int32_t hexval;
+  char    value;
+
+  if (req->argc<2) {
+    bbtools_logMsg(req->stream,"%s: <%d> argument missing\n", 
+		   bbtools_cmdname_tab[E_BBTOOLS_MEMSET],
+		   1-req->argc);
+    bbtools_usage(req);
+    retcode = -1;
+    return retcode;
+  }
+
+  /* check if we enter hexa or decimal value for memset */
+  if ((NULL != strstr(req->argv[1],"0x")) | 
+      (NULL != strstr(req->argv[1],"0X"))
+      ) {
+    hexval = 1;
+  } else {
+    hexval = 0;
+  }
+
+  value  = (char) strtol(req->argv[1],(char **)NULL,hexval ? 16 : 10);
+  if (req->verbose) {
+    bbtools_logMsg(req->stream,
+		   "%s: setting all data zone of BB <%s> to <0x%02x>\n",
+		   bbtools_cmdname_tab[E_BBTOOLS_MEMSET],
+		   req->bbname,
+		   value,value);
+  }
+  retcode = bb_data_memset(req->theBB,value);
   return retcode;
 } /* end of bbtools_memset */
