@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer.c,v 1.4 2004-10-18 20:39:09 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer.c,v 1.5 2004-10-18 21:52:21 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -49,6 +49,7 @@ Purpose   : TSP ascii writer consumer
 #include <assert.h>
 #include <errno.h>
 
+int yyrestart(FILE*);
 int yyparse (void);
 extern FILE *yyin, *yyout;
 

@@ -22,7 +22,7 @@ ifeq (${BUILD_CONSUMER},yes)
 endif
 
 
-CPPFLAGS += -I.
+CPPFLAGS += -I. -DYY_NO_UNPUT
 
 # -----------------------------------------------------------
 # No label all:: because it's in Makeparams and calls build::	
