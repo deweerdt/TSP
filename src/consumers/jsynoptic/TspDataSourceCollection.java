@@ -21,10 +21,9 @@
  *         Astrium SAS 
  *         EADS CRC
  *     Individual: 
- *         Nicolas Brodu
  * 		   Christophe Pecquerie
  *
- * $Id: TspDataSourceCollection.java,v 1.1 2004-02-02 10:52:01 dufy Exp $
+ * $Id: TspDataSourceCollection.java,v 1.2 2004-02-13 12:12:01 cpecquerie Exp $
  * 
  * Changes ------- 06-Jan-2004 : Creation Date (NB);
  *  
@@ -41,6 +40,7 @@ import simtools.data.UnsupportedOperation;
 import simtools.data.ValueProvider;
 import simtools.data.buffer.DelayedBuffer;
 import tsp.consumer.jsynoptic.impl.TspHandler;
+import tsp.consumer.jsynoptic.impl.TspSampleSymbolInfo;
 import tsp.consumer.jsynoptic.ui.TspDialogAddSource;
 import tsp.core.rpc.TSP_sample_symbol_info_t;
 
@@ -52,15 +52,24 @@ public class TspDataSourceCollection
 	private String hostname_;
 	private int provider_;
 	protected SamplingThread thread;
+	private DataInfo collectionInfo_; 
 
 	public TspDataSourceCollection(TspHandler tspHandler) {
 		tspHandler_ = tspHandler;
+		collectionInfo_ = new DataInfo(tspHandler_.getId());
 	}
 
 	/**
 	 * Starts producing data automatically
 	 */
 	public void start() {
+		//Create a new array containing the symbols'id
+		String[] symbolList = new String[sourceInfo.length];
+		for (int i=0; i< sourceInfo.length; i++) {
+			symbolList[i] = sourceInfo[i].info.id;
+		}
+		//Pass this list to the tspHandler
+		tspHandler_.updateRequestSampleList(symbolList);
 		tspHandler_.startSampling();
 		thread = new SamplingThread();
 		thread.stop = false;
@@ -104,14 +113,7 @@ public class TspDataSourceCollection
 	}
 
 	public DataInfo getInformation() {
-		return new DataInfo(
-			"TSP "
-				+ tspHandler_.getHostname()
-				+ " ("
-				+ tspHandler_.getRoundedSamplingFrequencyString(2)
-				+ "Hz,"
-				+ tspHandler_.getSamplingPhase()
-				+ ")");
+		return collectionInfo_;
 	}
 
 	// -----------------------------------------------------------------------
@@ -188,41 +190,55 @@ public class TspDataSourceCollection
 		}
 
 		if (action.equals("Add Source")) {
-			addSource();
+			addSymbols();
 		}
 
 		return false;
 	}
 
-	public void addSource() {
+	//Add new sources to this Data Source Collection
+	public void addSymbols() {
+		//Save the old requestedSymbolTab for future comparison
+		TSP_sample_symbol_info_t[] oldRequestedSymbolTab = tspHandler_.getRequestedSymbolTab_();
+		//Create a dialog to add source
 		TspDialogAddSource dialog = new TspDialogAddSource(tspHandler_);
+		//Show it
 		boolean dialogValidate = dialog.showDialog();
+		//If the user clicked on the OK button
 		if (dialogValidate) {
-			TSP_sample_symbol_info_t[] requestedSymbolTab = tspHandler_.createRequestSampleList();
+			
+			TspSampleSymbolInfo[] symbolTab = tspHandler_.getSymbolTab();
+			//Create the new sources list
 			String hostname = tspHandler_.getHostname();
 			int channelID = tspHandler_.getProviderChannelId();
-			//remove old sources when new ones are added
-			removeAll(this);
-			if (requestedSymbolTab.length != 0) {
-				for (int i = 0; i < requestedSymbolTab.length; i++) {
-					TSP_sample_symbol_info_t symbol = requestedSymbolTab[i];
-					createDataSource(
-							new DataInfo(
-									symbol.name,
-									symbol.name,
-									"Symbolfrom " + hostname + ":" + channelID,
-							"NA"),
-							ValueProvider.DoubleProvider);
-					try {
-						int bufferSize = (int) (tspHandler_.getBufferDuration_() * tspHandler_.getSamplingFrequency());
-						bufferize(
-								i,
-								new DelayedBuffer(ValueProvider.DoubleProvider, bufferSize));
-					} catch (UnsupportedOperation e) {
-						e.printStackTrace();
+			
+			//Remove all removed sources
+			if(oldRequestedSymbolTab != null)
+			for(int i=0; i<oldRequestedSymbolTab.length; i++)
+				if(!symbolTab[oldRequestedSymbolTab[i].provider_global_index].sample)
+					removeDataSource(get(oldRequestedSymbolTab[i].name));
+			
+			//Add new symbols to the sources Vector
+			for (int i = 0; i < symbolTab.length; i++) {
+				if(symbolTab[i].sample) {
+					TspSampleSymbolInfo symbol = symbolTab[i];
+					if(get(symbol.name) == null) {
+						addSource(new DataInfo(symbol.name,symbol.name,"Symbol from " + hostname + ":" + channelID,"NA"));
 					}
 				}
 			}
+		}
+	}
+	
+	public void addSource(DataInfo di) {
+		createDataSource(di,ValueProvider.DoubleProvider);
+		try {
+			//Calculate the buffersize = bufferduration * samplingFrequency
+			int bufferSize = (int) (tspHandler_.getBufferDuration_() * tspHandler_.getSamplingFrequency());
+			//Create a delayed buffer for this source
+			bufferize(size()-1,new DelayedBuffer(ValueProvider.DoubleProvider, bufferSize));
+		} catch (UnsupportedOperation e) {
+			e.printStackTrace();
 		}
 	}
 
@@ -256,10 +272,19 @@ public class TspDataSourceCollection
 		return true;
 	}
 	
+	/**
+	 * 
+	 * @author pecquerie
+	 *
+	 * Thread which waits for new data from the Tsp Provider
+	 * then add it to the DataPool with the step method
+	 */
 	private class SamplingThread extends Thread {
 		public boolean stop;
 		
 		public void run() {
+			//The time to sleep between gets
+			//It depends on the frequency the provider provides samples
 			int timeToSleep = (int) (1000/tspHandler_.getSamplingFrequency());
 			while (!stop) {
 				try {

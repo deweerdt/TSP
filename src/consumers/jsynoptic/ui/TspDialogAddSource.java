@@ -21,10 +21,9 @@
  *         Astrium SAS 
  *         EADS CRC
  *     Individual: 
- *         Nicolas Brodu
  * 		   Christophe Pecquerie
  *
- * $Id: TspDialogAddSource.java,v 1.1 2004-02-02 10:52:01 dufy Exp $
+ * $Id: TspDialogAddSource.java,v 1.2 2004-02-13 12:12:01 cpecquerie Exp $
  * 
  * Changes ------- 22-Jan-2004 : Creation Date (NB);
  *  
@@ -33,6 +32,7 @@
 package tsp.consumer.jsynoptic.ui;
 
 import java.awt.Dimension;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -95,12 +95,12 @@ public class TspDialogAddSource extends JDialog implements ListDataListener{
 		bufferDuration_ = tspHandler_.getBufferDuration_();
 		
 		//Manually clone tspHandler_.symbolTab_
-		savedSymbolSamplingTab_ = new boolean[tspHandler_.symbolTab_.length];
+		savedSymbolSamplingTab_ = new boolean[tspHandler_.getSymbolTab().length];
 		for (int i=0; i<savedSymbolSamplingTab_.length; i++)
-			savedSymbolSamplingTab_[i] = tspHandler_.symbolTab_[i].sample;
+			savedSymbolSamplingTab_[i] = tspHandler_.getSymbolTab()[i].sample;
 
-		availableListModel_ = new TspSymbolListModel(tspHandler_.symbolTab_, true);
-		selectedListModel_ = new TspSymbolListModel(tspHandler_.symbolTab_, false);
+		availableListModel_ = new TspSymbolListModel(tspHandler_.getSymbolTab(), true);
+		selectedListModel_ = new TspSymbolListModel(tspHandler_.getSymbolTab(), false);
 		
 		//Init graphical components
 		initComponents();
@@ -111,7 +111,7 @@ public class TspDialogAddSource extends JDialog implements ListDataListener{
 		super.show();
 		if(!returnOK_) {
 			for (int i=0; i<savedSymbolSamplingTab_.length; i++)
-				tspHandler_.symbolTab_[i].sample = savedSymbolSamplingTab_[i];
+				tspHandler_.getSymbolTab()[i].sample = savedSymbolSamplingTab_[i];
 		}
 		return returnOK_;
 	}
@@ -120,7 +120,7 @@ public class TspDialogAddSource extends JDialog implements ListDataListener{
 		super.show();
 		if(!returnOK_) {
 			for (int i=0; i<savedSymbolSamplingTab_.length; i++)
-				tspHandler_.symbolTab_[i].sample = savedSymbolSamplingTab_[i];
+				tspHandler_.getSymbolTab()[i].sample = savedSymbolSamplingTab_[i];
 		}
 	}
     
@@ -269,11 +269,11 @@ public class TspDialogAddSource extends JDialog implements ListDataListener{
 
         	public void keyReleased(KeyEvent arg0) {
         		String pattern = filterInput_.getText();
-        		for (int i = 0; i < tspHandler_.symbolTab_.length; i++) {
-        			if((tspHandler_.symbolTab_[i].name.indexOf(pattern) >= 0) || (pattern.length() == 0))
-        				tspHandler_.symbolTab_[i].display = true;
+        		for (int i = 0; i < tspHandler_.getSymbolTab().length; i++) {
+        			if((tspHandler_.getSymbolTab()[i].name.indexOf(pattern) >= 0) || (pattern.length() == 0))
+        				tspHandler_.getSymbolTab()[i].display = true;
         			else
-        				tspHandler_.symbolTab_[i].display = false;
+        				tspHandler_.getSymbolTab()[i].display = false;
         		}
         		contentsChanged(null);    
         	}
@@ -339,17 +339,6 @@ public class TspDialogAddSource extends JDialog implements ListDataListener{
         gridBagConstraints.insets = new java.awt.Insets(2, 6, 2, 2);
         optionPanel_.add(bufferSizeLabel2_, gridBagConstraints);
 
-  
-
-/*        bufferSizeLabel3_.setText("        ");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
-        gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        optionPanel_.add(bufferSizeLabel3_, gridBagConstraints);*/
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 7;
@@ -388,7 +377,9 @@ public class TspDialogAddSource extends JDialog implements ListDataListener{
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         getContentPane().add(buttonPanel_, gridBagConstraints);
 
+        Dimension d=Toolkit.getDefaultToolkit().getScreenSize();				
         pack();
+        setLocation((d.width-getWidth())/2,(d.height-getHeight())/2);
     }
 
     private void setBufferSizeLabel() {
@@ -400,9 +391,9 @@ public class TspDialogAddSource extends JDialog implements ListDataListener{
     }
 
     private void removeAllSymbolButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeAllSymbolButtonActionPerformed
-    	for (int i = 0; i < tspHandler_.symbolTab_.length; i++)
-    		if (tspHandler_.symbolTab_[i].display)
-    			tspHandler_.symbolTab_[i].sample = false;
+    	for (int i = 0; i < tspHandler_.getSymbolTab().length; i++)
+    		if (tspHandler_.getSymbolTab()[i].display)
+    			tspHandler_.getSymbolTab()[i].sample = false;
     	selectedListModel_.getSize();
     }
 
@@ -412,7 +403,7 @@ public class TspDialogAddSource extends JDialog implements ListDataListener{
     	for (int i = 0; i < indicesToRemove.length; i++) 
     		indicesToUnsample[i] = ((TspSampleSymbolInfo) selectedListModel_.getElementAt(indicesToRemove[i])).provider_global_index;
     	for (int i = 0; i < indicesToUnsample.length; i++)
-    		tspHandler_.symbolTab_[indicesToUnsample[i]].sample = false;
+    		tspHandler_.getSymbolTab()[indicesToUnsample[i]].sample = false;
     	selectedListModel_.getSize();
     	contentsChanged(null);
     }
@@ -423,26 +414,26 @@ public class TspDialogAddSource extends JDialog implements ListDataListener{
    		for (int i = 0; i < indicesToAdd.length; i++) 
    			indicesToSample[i] = ((TspSampleSymbolInfo) availableListModel_.getElementAt(indicesToAdd[i])).provider_global_index;
    		for (int i = 0; i < indicesToSample.length; i++)
-   			tspHandler_.symbolTab_[indicesToSample[i]].sample = true;
+   			tspHandler_.getSymbolTab()[indicesToSample[i]].sample = true;
    		//selectedListModel_.getSize();
    		contentsChanged(null);
     }
 
     private void addAllSymbolButtonActionPerformed(java.awt.event.ActionEvent evt) {
-    	for (int i = 0; i < tspHandler_.symbolTab_.length; i++)
-    		if (tspHandler_.symbolTab_[i].display)
-    			tspHandler_.symbolTab_[i].sample = true;
+    	for (int i = 0; i < tspHandler_.getSymbolTab().length; i++)
+    		if (tspHandler_.getSymbolTab()[i].display)
+    			tspHandler_.getSymbolTab()[i].sample = true;
     	//selectedListModel_.getSize();
     	contentsChanged(null);
     }
     
     private void filterButtonActionPerformed(ActionEvent evt) {
     	String pattern = filterInput_.getText();
-    	for (int i = 0; i < tspHandler_.symbolTab_.length; i++) {
-    		if((tspHandler_.symbolTab_[i].name.indexOf(pattern) >= 0) || (pattern.length() == 0))
-    			tspHandler_.symbolTab_[i].display = true;
+    	for (int i = 0; i < tspHandler_.getSymbolTab().length; i++) {
+    		if((tspHandler_.getSymbolTab()[i].name.indexOf(pattern) >= 0) || (pattern.length() == 0))
+    			tspHandler_.getSymbolTab()[i].display = true;
     		else
-    			tspHandler_.symbolTab_[i].display = false;
+    			tspHandler_.getSymbolTab()[i].display = false;
     	}
     	contentsChanged(null);    
     }

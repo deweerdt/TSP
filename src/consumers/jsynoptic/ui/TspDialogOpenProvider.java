@@ -23,7 +23,7 @@
  *     Individual: 
  * 		   Christophe Pecquerie
  *
- * $Id: TspDialogOpenProvider.java,v 1.1 2004-02-02 10:52:01 dufy Exp $
+ * $Id: TspDialogOpenProvider.java,v 1.2 2004-02-13 12:12:01 cpecquerie Exp $
  * 
  * Changes ------- 14-Jan-2004 : Creation Date (NB);
  *  
@@ -68,8 +68,6 @@ import tsp.consumer.jsynoptic.impl.TspHandler.TspProviderNotFoundException;
 public class TspDialogOpenProvider extends JDialog {
 
 	private TspHandler tspHandler_;
-	protected String hostName_;
-	protected int provider_;
 	private double tempSamplingFrequency_;
 
 	private JButton buttonCancel_;
@@ -104,11 +102,41 @@ public class TspDialogOpenProvider extends JDialog {
 	
 	public static void main(String[] args) {
 		new TspDialogOpenProvider();
+		System.exit(0);
 	}
 
 	public TspDialogOpenProvider() {
 		super(JSynoptic.gui, "Open a TSP provider", true);
 		initComponents();
+		show();
+	}
+	
+	public TspDialogOpenProvider(TspHandler tspHandler) {
+		super(JSynoptic.gui, "Open a TSP provider", true);
+		tspHandler_ = tspHandler;
+		initComponents();
+		hostInput_.setText(tspHandler_.getHostname());
+		providerInput_.setText(Integer.toString(tspHandler_.getProviderId()));
+		frequencyInput_.setText(Double.toString(tspHandler_.getSamplingFrequency()));
+		phaseInput_.setText(Integer.toString(tspHandler_.getSamplingPhase()));
+		if(tspHandler_.getSessionId_() >= 0) {
+			printStatusOK("Connected to " + tspHandler_.getHostname() + ":" + tspHandler_.getProviderId());
+			buttonOK_.setEnabled(true);
+			infoChannelLabel2_.setText(
+					Integer.toString(tspHandler_.getProviderChannelId()));
+			infoNbClientsLabel2_.setText(
+					Integer.toString(tspHandler_.getProviderNbClients()));
+			infoVersionLabel2_.setText(
+					Integer.toString(tspHandler_.getProviderVersion()));
+			infoNbSymbolsLabel2_.setText(
+					Integer.toString(tspHandler_.getProviderNbSymbols()));
+			infoMaxFreqLabel2_.setText(
+					Double.toString(tspHandler_.getProviderBaseFrequency()));
+			getRootPane().setDefaultButton(buttonOK_);
+		}
+		else
+			printStatusError("No TSP provider found on this host");
+		
 		show();
 	}
 
@@ -308,7 +336,9 @@ public class TspDialogOpenProvider extends JDialog {
 		gridBagConstraints.insets = new Insets(2, 2, 2, 2);
 		getContentPane().add(inputPanel_, gridBagConstraints);
 		
+		Dimension d=Toolkit.getDefaultToolkit().getScreenSize();				
 		pack();
+		setLocation((d.width-getWidth())/2,(d.height-getHeight())/2);
 	}
 
 	private void exitForm(WindowEvent evt) {
@@ -321,13 +351,13 @@ public class TspDialogOpenProvider extends JDialog {
 	private void buttonConnect_ActionPerformed(ActionEvent evt) {
 		if (tspHandler_ != null)
 			tspHandler_.finalize();
-		hostName_ = hostInput_.getText();
-		provider_ = Integer.parseInt(providerInput_.getText());
-		if (hostName_.equals(""))
+		String hostName = hostInput_.getText();
+		int provider = Integer.parseInt(providerInput_.getText());
+		if (hostName.equals(""))
 			printStatusError("Please enter a hostname");
 		else {
 			try {
-				tspHandler_ = new TspHandler(hostName_, provider_);
+				tspHandler_ = new TspHandler(hostName, provider);
 				infoChannelLabel2_.setText(
 					Integer.toString(tspHandler_.getProviderChannelId()));
 				infoNbClientsLabel2_.setText(
@@ -338,7 +368,7 @@ public class TspDialogOpenProvider extends JDialog {
 					Integer.toString(tspHandler_.getProviderNbSymbols()));
 				infoMaxFreqLabel2_.setText(
 					Double.toString(tspHandler_.getProviderBaseFrequency()));
-				printStatusOK("Connected to " + hostName_ + ":" + provider_);
+				printStatusOK("Connected to " + hostName + ":" + provider);
 				buttonOK_.setEnabled(true);
 			} catch (UnknownHostException e) {
 				clearInfoLabels();
@@ -348,6 +378,11 @@ public class TspDialogOpenProvider extends JDialog {
 			} catch (TspProviderNotFoundException e) {
 				clearInfoLabels();
 				printStatusError("No TSP provider found on this host");
+				buttonOK_.setEnabled(false);
+				tspHandler_ = null;
+			} catch (Exception e) {
+				clearInfoLabels();
+				printStatusError(e.getMessage());
 				buttonOK_.setEnabled(false);
 				tspHandler_ = null;
 			}
@@ -399,10 +434,10 @@ public class TspDialogOpenProvider extends JDialog {
 		if(!isEntier(tempPeriod) && samplingFrequency != tempSamplingFrequency_){
 			
 			double newFrequency = (tspHandler_.getProviderBaseFrequency()/(int) Math.round(tempPeriod));
-			
 			String newFrequencyString = Double.toString(newFrequency);
 			int dotIndex = newFrequencyString.indexOf('.');
 			newFrequencyString = newFrequencyString.substring(0,dotIndex + 2);
+			tempSamplingFrequency_ = Double.parseDouble(newFrequencyString);
 			frequencyInput_.setText(newFrequencyString);
 			printStatusError("Frequency has been rounded to " + newFrequencyString);
 			return;

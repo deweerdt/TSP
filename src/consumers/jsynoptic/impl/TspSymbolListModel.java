@@ -21,10 +21,9 @@
  *         Astrium SAS 
  *         EADS CRC
  *     Individual: 
- *         Nicolas Brodu
  * 		   Christophe Pecquerie
  *
- * $Id: TspSymbolListModel.java,v 1.1 2004-02-02 10:52:01 dufy Exp $
+ * $Id: TspSymbolListModel.java,v 1.2 2004-02-13 12:12:01 cpecquerie Exp $
  * 
  * Changes ------- 20-Jan-2004 : Creation Date (NB);
  *  
@@ -35,9 +34,8 @@ import javax.swing.AbstractListModel;
 
 /**
  * @author pecquerie
- *
- * To change the template for this generated type comment go to
- * Window - Preferences - Java - Code Generation - Code and Comments
+ * A specialized ListModel to handle the two lists displayed in 
+ * TspDialogAddSource
  */
 public class TspSymbolListModel extends AbstractListModel {
 	
@@ -52,7 +50,7 @@ public class TspSymbolListModel extends AbstractListModel {
 		isLeftList_ = isAvailableList;
 	}
 
-	/* (non-Javadoc)
+	/**
 	 * @see javax.swing.ListModel#getSize()
 	 */
 	public int getSize() {
@@ -78,7 +76,7 @@ public class TspSymbolListModel extends AbstractListModel {
 		return nb;
 	}
 
-	/* (non-Javadoc)
+	/**
 	 * @see javax.swing.ListModel#getElementAt(int)
 	 */
 	public Object getElementAt(int index) {

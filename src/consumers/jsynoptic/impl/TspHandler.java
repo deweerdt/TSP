@@ -19,10 +19,14 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
  * 
- * (C) Copyright 2001-2003, by : Corporate: Astrium SAS EADS CRC Individual:
- * Nicolas Brodu Christophe Pecquerie
+ * (C) Copyright 2001-2003, by : 
+ * Corporate: 
+ * 				Astrium SAS 
+ * 				EADS CRC 
+ * Individual:
+ * 				Christophe Pecquerie
  * 
- * $Id: TspHandler.java,v 1.1 2004-02-02 10:52:01 dufy Exp $
+ * $Id: TspHandler.java,v 1.2 2004-02-13 12:12:01 cpecquerie Exp $
  * 
  * Changes ------- 11-Dec-2003 : Creation Date (NB);
  *  
@@ -38,35 +42,67 @@ import tsp.core.common.TspAnswerSample;
 import tsp.core.common.TspRequestSample;
 import tsp.core.common.TspSample;
 import tsp.core.common.TspSampleSymbols;
-import tsp.core.config.TspConfig;
 import tsp.core.consumer.TspConsumer;
 import tsp.core.consumer.TspSession;
 import tsp.core.rpc.TSP_sample_symbol_info_list_t;
 import tsp.core.rpc.TSP_sample_symbol_info_t;
 
+/**
+ * 
+ * @author pecquerie
+ * TspHandler is a handler for TSP as it is a Tsp Consumer which is always
+ * connected to a provider 
+ */
 public class TspHandler extends TspConsumer implements Serializable {
+	
+	static final long serialVersionUID = -1661631201145164554L;
+	
+	public class TspProviderNotFoundException extends Exception {
+		public TspProviderNotFoundException() {
+			super("A TSP provider was not found on the specified host");
+		}
+	}
 
-	public TspSampleSymbolInfo[] symbolTab_;
+	private String hostName_;						//Hostname
+	private int provider_;							//Provider number
+	private boolean isSampling_ = false;			//Flag telling if this handler is currently sampling
+	private int period_;							//Sampling period (default 100)
+	private double providerBaseFrequency_;			//Base frequency of the provider
+	private int phase_;								//Sampling phase (default 0)
+	private int bufferDuration_;					//Buffer duration (default 100s)
+	private transient int sessionId_;				//Session Id (channel ID) -1 if error
+	private transient TspSession tspSession_;		//The session
 
-	private String hostName_;
-	private int provider_;
-	private int phase_;
-	private int period_;
-	private int bufferDuration_;
+	private transient TspAnswerSample providerInfo_;		//The infos about the provider	
+	
+	/*
+	 *Array containing all the symbols to be sampled when requestSampling is launched
+	 *All periods and phases are set
+	 *This array is created in createRequestSampleList()
+	 */
+	private transient TSP_sample_symbol_info_t[] requestedSymbolTab_;
 
-	private TspAnswerSample providerInfo_;
-	private TspSession tspSession_;
-	private int sessionId_;
-	private TSP_sample_symbol_info_t[] requestedSymbolTab_;
-	private int[] providerIndexTab_;
-	private boolean isSampling_ = false;
+	/*
+	 *Array containing all the symbols provider by this host/provider
+	 *It is used in symbol selection/filtering
+	 */
+	private transient TspSampleSymbolInfo[] symbolTab_;
 
+	
+	/**
+	 * Constructor : A TspHandler is always connected to a provider.
+	 * If the provider is not found, the TspHandler should be finalized.
+	 * @param hostname The hostname of the provider
+	 * @param provider	The RPC provider ID
+	 * @throws UnknownHostException When the hostname could not be resolved
+	 * @throws TspProviderNotFoundException	When the RPC programm is not found
+	 */
 	public TspHandler(String hostname, int provider)
 		throws UnknownHostException, TspProviderNotFoundException {
 
 		super();
 
-		TspConfig.setLogLevel(TspConfig.LOG_FINER);
+		//TspConfig.setLogLevel(TspConfig.LOG_FINER);
 
 		hostName_ = hostname;
 		provider_ = provider;
@@ -87,23 +123,290 @@ public class TspHandler extends TspConsumer implements Serializable {
 
 			tspSession_ = getSession(sessionId_);
 			providerInfo_ = requestInfos(sessionId_);
+			
+			//Save the base frequency of provider
+			providerBaseFrequency_ = providerInfo_.theAnswer.base_frequency;
 
 			//Get the symbolList from the provider
 			TspSampleSymbols symbolList = new TspSampleSymbols(providerInfo_);
 
 			//Create a new array of TspSampleSymbolsInfo
-			symbolTab_ = new TspSampleSymbolInfo[symbolList.nbSymbols()];
+			setSymbolTab(new TspSampleSymbolInfo[symbolList.nbSymbols()]);
 			//Fill in the array
-			for (int i = 0; i < symbolTab_.length; i++)
-				symbolTab_[i] =
+			for (int i = 0; i < getSymbolTab().length; i++)
+				getSymbolTab()[i] =
 					new TspSampleSymbolInfo(symbolList.getSymbolByRank(i));
-
-			providerIndexTab_ = new int[symbolList.nbSymbols()];
-
 		} else
 			throw new TspProviderNotFoundException();
 	}
 
+	/**
+	 * Close session
+	 *
+	 */
+	public void close() {
+		if(tspSession_ != null)
+			closeSession(sessionId_);
+	}
+
+	/**
+	 * Create an array of requested symbols from symbolTab_
+	 * Each element has the same period/phase
+	 * @return An array of TSP_sample_symbol_info_t used to request sample
+	 */
+	public TSP_sample_symbol_info_t[] updateRequestSampleList(String[] symbolList) {
+
+		requestedSymbolTab_ = new TSP_sample_symbol_info_t[symbolList.length];
+		
+		for (int i = 0; i < getSymbolTab().length; i++) {
+			if (getSymbolTab()[i].sample) {
+				for(int j=0; j<symbolList.length; j++) {
+					if(getSymbolTab()[i].name.equals(symbolList[j])) {
+						requestedSymbolTab_[j] = (TSP_sample_symbol_info_t) getSymbolTab()[i];
+						requestedSymbolTab_[j].period = period_;
+						requestedSymbolTab_[j].phase = phase_;
+					}						
+				}
+			}
+		}
+
+		return requestedSymbolTab_;
+	}
+
+	/**
+	 * Finalize this Object (close session before calling gc)
+	 */
+	public void finalize() {
+		close();
+		try {
+			super.finalize();
+		} catch (Throwable e) {
+			System.err.println("Error while finalizing TspHandler");
+		}
+	}
+	
+	/**
+	 * @return Returns the buffer  duration in seconds.
+	 */
+	public int getBufferDuration_() {
+		return bufferDuration_;
+	}
+
+	/**
+	 * 
+	 * @return Returns the hostname
+	 */
+	public String getHostname() {
+		return hostName_;
+	}
+	
+	/**
+	 * @return Returns the period_.
+	 */
+	public int getPeriod_() {
+		return period_;
+	}
+	
+	/**
+	 * 
+	 * @return Returns the base frequency of the provider
+	 */
+	public double getProviderBaseFrequency() {
+		return providerBaseFrequency_;
+	}
+	
+	/**
+	 * 
+	 * @return Returns the TSP channel ID
+	 */
+	public int getProviderChannelId() {
+		return providerInfo_.theAnswer.channel_id;
+	}
+	
+	/**
+	 * @return Returns the max period supported by the provider
+	 */
+	public int getProviderMaxPeriod() {
+		return providerInfo_.theAnswer.max_period;
+	}
+
+	/**
+	 * @return Returns the number of clients connected to the provider
+	 * (maybe not the current number but rather the sum)
+	 */
+	public int getProviderNbClients() {
+		return providerInfo_.theAnswer.current_client_number;
+	}
+
+	/**
+	 * 
+	 * @return Returns the number of symbols provided by the provider
+	 */
+	public int getProviderNbSymbols() {
+		return providerInfo_.theAnswer.symbols.value.length;
+	}
+	
+	/**
+	 * 
+	 * @return Returns the version of TSP of the provider
+	 */
+	public int getProviderVersion() {
+		return providerInfo_.theAnswer.version_id;
+	}
+	
+	/**
+	 * @return Returns the requestedSymbolTab_.
+	 */
+	public TSP_sample_symbol_info_t[] getRequestedSymbolTab_() {
+		return requestedSymbolTab_;
+	}
+	
+	/**
+	 * 
+	 * @param nbFigures The number of decimals to display
+	 * @return A string representing the Sampling frequency with nbFigures of decimals
+	 */
+	public String getRoundedSamplingFrequencyString(int nbFigures) {
+		double samplingFrequency = getProviderBaseFrequency()/period_;
+		String samplingFrequencyString = Double.toString(samplingFrequency);
+		int dotIndex = samplingFrequencyString.indexOf('.');
+		if(dotIndex + nbFigures < samplingFrequencyString.length() && samplingFrequency > 1)
+			return samplingFrequencyString.substring(0,dotIndex + nbFigures + 1); 
+		else
+			return samplingFrequencyString;
+	}
+
+	/**
+	 * 
+	 * @return Returns the first TspSample in the Fifo
+	 */
+	public TspSample getSample() {
+		return tspSession_.sampleFifo.getSample();
+	}
+
+	/**
+	 * @return Returns the value of the sample
+	 */
+	public double getSampleValue() {
+		return tspSession_.sampleFifo.getSample().value;
+	}
+
+	/**
+	 * 
+	 * @return Returns the sampling frequency
+	 */
+	public double getSamplingFrequency() {
+		return (getProviderBaseFrequency()/period_);
+	}
+
+	/**
+	 * 
+	 * @return Returns the sampling phase
+	 */
+	public int getSamplingPhase() {
+		return phase_;
+	}
+
+	public void setSymbolTab(TspSampleSymbolInfo[] symbolTab_) {
+		this.symbolTab_ = symbolTab_;
+	}
+
+	public TspSampleSymbolInfo[] getSymbolTab() {
+		return symbolTab_;
+	}
+
+	/**
+	 * @return Returns the sessionId_.
+	 */
+	public int getSessionId_() {
+		return sessionId_;
+	}
+
+	/**
+	 * 
+	 * @return Returns true if this customer is sampling else returns false
+	 */
+	public boolean isSampling() {
+		return isSampling_;
+	}
+
+	/**
+	 * 
+	 * @return Returns the number of samples available in the FIFO
+	 */
+	public int nbSample() {
+		return tspSession_.sampleFifo.nbSample();
+	}
+
+	/**
+	 * Provides a method to deserialize TspHandler properly
+	 * @param in
+	 * @throws IOException
+	 * @throws ClassNotFoundException
+	 * @throws TspProviderNotFoundException
+	 */
+	private void readObject(java.io.ObjectInputStream in)
+		throws IOException, ClassNotFoundException, TspProviderNotFoundException {
+		
+		in.defaultReadObject();
+		
+		try {
+			InetAddress.getByName(hostName_);
+		}
+		catch(UnknownHostException e) {
+			return;
+		}
+		
+
+
+		sessionId_ = openSession(hostName_, provider_);
+		if (sessionId_ >= 0) {
+
+			tspSession_ = getSession(sessionId_);
+			providerInfo_ = requestInfos(sessionId_);
+			
+			//Save the base frequency of provider
+			providerBaseFrequency_ = providerInfo_.theAnswer.base_frequency;
+
+			//Get the symbolList from the provider
+			TspSampleSymbols symbolList = new TspSampleSymbols(providerInfo_);
+
+			//Create a new array of TspSampleSymbolsInfo
+			setSymbolTab(new TspSampleSymbolInfo[symbolList.nbSymbols()]);
+			
+			//Fill in the array
+			for (int i = 0; i < getSymbolTab().length; i++)
+				getSymbolTab()[i] =
+					new TspSampleSymbolInfo(symbolList.getSymbolByRank(i));
+			
+		} 
+	}
+
+	/**
+	 * @param bufferDuration_ The buffer duration to set in seconds
+	 */
+	public void setBufferDuration_(int bufferDuration_) {
+		this.bufferDuration_ = bufferDuration_;
+	}
+
+	/**
+	 * @param period_ The period to set.
+	 */
+	public void setPeriod_(int period_) {
+		this.period_ = period_;
+	}
+
+	/**
+	 * @param phase The phase to set.
+	 */
+	public void setSamplingPhase(int phase) {
+		phase_ = phase;
+	}
+
+	/**
+	 * Requests Samples to the Tsp provider by sending it requestedSymbolTab_
+	 * Initiates sampling.
+	 */
 	public void startSampling() {
 		int[] fw = { 0, 0, 0, 0 }; /* not used */
 		TspRequestSample rqs =
@@ -121,239 +424,49 @@ public class TspHandler extends TspConsumer implements Serializable {
 		isSampling_ = true;
 	}
 
+	/**
+	 * Stop sampling
+	 *
+	 */
 	public void stopSampling() {
 		isSampling_ = false;
 		tspSession_.requestSampleFinalize();
 	}
 
-	public int getProviderVersion() {
-		return providerInfo_.theAnswer.version_id;
-	}
-
-	public double getProviderBaseFrequency() {
-		return providerInfo_.theAnswer.base_frequency;
-	}
-
-	public int getProviderMaxPeriod() {
-		return providerInfo_.theAnswer.max_period;
-	}
-
-	public int getProviderNbClients() {
-		return providerInfo_.theAnswer.current_client_number;
-	}
-
-	public int getProviderChannelId() {
-		return providerInfo_.theAnswer.channel_id;
-	}
-
-	public int getProviderNbSymbols() {
-		return providerInfo_.theAnswer.symbols.value.length;
-	}
-
-	public TspSampleSymbolInfo[] getSymbolList() {
-		return symbolTab_;
-	}
-
-	public TspSampleSymbolInfo getSymbol(int i) {
-		return symbolTab_[i];
-	}
-
-	public String getHostname() {
-		return hostName_;
-	}
-
-	public boolean isSampling() {
-		return isSampling_;
-	}
-
-	public int nbSample() {
-		return tspSession_.sampleFifo.nbSample();
-	}
-
-	public double getSampleValue() {
-		return tspSession_.sampleFifo.getSample().value;
-	}
-
-	public TspSample getSample() {
-		return tspSession_.sampleFifo.getSample();
-	}
-
-	public int getListIndex(int providerIndex) {
-		return providerIndexTab_[providerIndex];
-	}
-
-	public void setSamplingPhase(int phase) {
-		phase_ = phase;
-	}
-
-	public int getSamplingPhase() {
-		return phase_;
-	}
-
-	public class TspProviderNotFoundException extends Exception {
-		public TspProviderNotFoundException() {
-			super("A TSP provider was not found on the specified host");
-		}
-	}
-
-	public void close() {
-		closeSession(sessionId_);
-	}
-
-	public void finalize() {
-		System.out.println("Finalizing");
-		close();
-		try {
-			super.finalize();
-		} catch (Throwable e) {
-			System.out.println("Erreur finalizing");
-		}
-	}
-
 	/**
-	 * @return Returns the bufferDuration_.
+	 * Provides a method a serialize TspHandler properly
+	 * @param out
+	 * @throws IOException
 	 */
-	public int getBufferDuration_() {
-		return bufferDuration_;
-	}
-
-	/**
-	 * @param bufferDuration_
-	 *            The bufferDuration_ to set.
-	 */
-	public void setBufferDuration_(int bufferDuration_) {
-		this.bufferDuration_ = bufferDuration_;
-	}
-
-	public TSP_sample_symbol_info_t[] createRequestSampleList() {
-		int nbSample = 0;
-		for (int i = 0; i < symbolTab_.length; i++) {
-			if (symbolTab_[i].sample) {
-				providerIndexTab_[symbolTab_[i].provider_global_index] = i;
-				nbSample++;
-			}
-		}
-		requestedSymbolTab_ = new TSP_sample_symbol_info_t[nbSample];
-		int j = 0;
-		for (int i = 0; i < symbolTab_.length; i++)
-			if (symbolTab_[i].sample) {
-				requestedSymbolTab_[j] =
-					(TSP_sample_symbol_info_t) symbolTab_[i];
-				requestedSymbolTab_[j].period = period_;
-				requestedSymbolTab_[j].phase = phase_;
-				j++;
-			}
-		return requestedSymbolTab_;
-	}
-
-	/**
-	 * @return Returns the requestedSymbolTab_.
-	 */
-	public TSP_sample_symbol_info_t[] getRequestedSymbolTab_() {
-		return requestedSymbolTab_;
-	}
-
 	private void writeObject(java.io.ObjectOutputStream out)
-		throws IOException {
-		out.writeObject(hostName_);
-		out.writeInt(provider_);
-		out.writeInt(period_);
-		out.writeInt(phase_);
-		out.writeInt(bufferDuration_);
-		out.writeInt(requestedSymbolTab_.length);
-		for (int i = 0; i < requestedSymbolTab_.length; i++)
-			out.writeObject(requestedSymbolTab_[i].name);
-	}
-
-	private void readObject(java.io.ObjectInputStream in)
-		throws IOException, ClassNotFoundException, TspProviderNotFoundException {
-		
-		String hostName = (String) in.readObject();
-		int provider = in.readInt();
-		int period = in.readInt();
-		int phase = in.readInt();
-		int bufferDuration = in.readInt();
-		int nbSymbols = in.readInt();
-		String[] requestedSymbols = new String[nbSymbols];
-		for (int i=0; i<nbSymbols; i++) 
-			requestedSymbols[i] = (String) in.readObject();
-		
-		//Construct TspHandler
-		hostName_ = hostName;
-		provider_ = provider;
-		bufferDuration_ = bufferDuration;
-		period_ = period;
-		phase_ = phase;
-
-		InetAddress.getByName(hostName_);
-
-
-		sessionId_ = openSession(hostName_, provider_);
-		if (sessionId_ >= 0) {
-
-			tspSession_ = getSession(sessionId_);
-			providerInfo_ = requestInfos(sessionId_);
-
-			//Get the symbolList from the provider
-			TspSampleSymbols symbolList = new TspSampleSymbols(providerInfo_);
-
-			//Create a new array of TspSampleSymbolsInfo
-			symbolTab_ = new TspSampleSymbolInfo[symbolList.nbSymbols()];
-			
-			//Fill in the array
-			for (int i = 0; i < symbolTab_.length; i++)
-				symbolTab_[i] =
-					new TspSampleSymbolInfo(symbolList.getSymbolByRank(i));
-
-			//Create a new array (TODO maybe remove?)
-			providerIndexTab_ = new int[symbolList.nbSymbols()];
-			
-			//Find the requestedSymbols in symbolTab_ by their name
-			//Set the sample flag to true for them
-			boolean found;
-			for(int i=0; i<requestedSymbols.length; i++) {
-				found = false;
-				for(int j=0; j<symbolTab_.length && !found; j++)
-					if(symbolTab_[j].name.equals(requestedSymbols[i])) {
-						symbolTab_[j].sample = true;
-						found = true;
-					}
-			}
-			createRequestSampleList();
-			
-		} else
-			throw new TspProviderNotFoundException();
-		
-	}
-	/**
-	 * @return Returns the period_.
-	 */
-	public int getPeriod_() {
-		return period_;
+		throws IOException {		
+		out.defaultWriteObject();
 	}
 
 	/**
-	 * @param period_ The period_ to set.
+	 * @return Returns the provider_.
 	 */
-	public void setPeriod_(int period_) {
-		this.period_ = period_;
+	public int getProviderId() {
+		return provider_;
 	}
 
 	/**
-	 * @return
+	 * @param provider_ The provider_ to set.
 	 */
-	public String getRoundedSamplingFrequencyString(int nbFigures) {
-		double samplingFrequency = getProviderBaseFrequency()/period_;
-		String samplingFrequencyString = Double.toString(samplingFrequency);
-		int dotIndex = samplingFrequencyString.indexOf('.');
-		if(dotIndex + nbFigures < samplingFrequencyString.length() && samplingFrequency > 1)
-			return samplingFrequencyString.substring(0,dotIndex + nbFigures + 1); 
-		else
-			return samplingFrequencyString;
+	public void setProviderId(int provider_) {
+		this.provider_ = provider_;
 	}
 	
-	public double getSamplingFrequency() {
-		return (getProviderBaseFrequency()/period_);
+	public String getId() {
+		return	"TSP "	
+		+ getHostname()
+		+ " (" 
+		+ getRoundedSamplingFrequencyString(2)
+		+ "Hz,"
+		+ getSamplingPhase()
+		+ ")";
 	}
+	
+	
 
 }

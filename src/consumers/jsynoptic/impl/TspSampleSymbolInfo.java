@@ -21,10 +21,9 @@
  *         Astrium SAS 
  *         EADS CRC
  *     Individual: 
- *         Nicolas Brodu
  * 		   Christophe Pecquerie
  *
- * $Id: TspSampleSymbolInfo.java,v 1.1 2004-02-02 10:52:01 dufy Exp $
+ * $Id: TspSampleSymbolInfo.java,v 1.2 2004-02-13 12:12:01 cpecquerie Exp $
  * 
  * Changes ------- 20-Jan-2004 : Creation Date (NB);
  *  
@@ -33,7 +32,13 @@ package tsp.consumer.jsynoptic.impl;
 
 import tsp.core.rpc.TSP_sample_symbol_info_t;
 
-public class TspSampleSymbolInfo extends TSP_sample_symbol_info_t {
+/**
+ * @author pecquerie
+ * A TspSampleSymbolInfo is a class that extends TSP_sample_symbol_info_t
+ * with two new fields used in TspDialogAddSource to display a symbol
+ * or not in the lists
+ */
+public class TspSampleSymbolInfo extends TSP_sample_symbol_info_t{
 	
 	public boolean display;
 	public boolean sample;
@@ -56,14 +61,4 @@ public class TspSampleSymbolInfo extends TSP_sample_symbol_info_t {
 	public String toString() {
 		return name;
 	}
-	
-	
-	/* (non-Javadoc)
-	 * @see java.lang.Object#clone()
-	 */
-	public Object clone() throws CloneNotSupportedException {
-		// TODO Auto-generated method stub
-		return super.clone();
-	}
-
 }
