@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.28 2004-09-27 13:48:18 tractobob Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.29 2004-10-04 08:44:32 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -424,7 +424,7 @@ TSP_provider_t* TSP_consumer_connect_url(const char*  url)
       /* set p to hostname field, if any */
       p = strstr(url_tok, "//");
       if(p) p += 2;
-      else p = url_tok + strlen(url_tok); /* end of string ! */
+      else p = url_tok; /* may start of string be the hostname ?! */
 
       /* no protocol specified, use default */
       protocol = strdup(TSP_RPC_PROTOCOL);
@@ -494,7 +494,8 @@ TSP_provider_t* TSP_consumer_connect_url(const char*  url)
 				  server_info))
 	{
 	  /* yes, got it !!! */
-	  return (TSP_provider_t*)TSP_new_object_tsp(server, server_info);
+	  sprintf(url_lkup, TSP_URL_FORMAT, protocol, hostname, server_info, servernumber);
+	  return (TSP_provider_t*)TSP_new_object_tsp(server, url_lkup);
 	}
       
       STRACE_ERROR(("No TSP provider on URL <%s>", url_lkup));
@@ -767,7 +768,6 @@ int TSP_consumer_request_information(TSP_provider_t provider)
   TSP_request_information_t req_info;
   TSP_answer_sample_t* ans_sample = 0;
   int ret = FALSE;
-  int i;
 	
   STRACE_IO(("-->IN"));
 
@@ -898,7 +898,7 @@ static int TSP_consumer_store_requested_symbols(TSP_consumer_symbol_requested_li
       stored_sym->val[i].phase = new_sym->TSP_sample_symbol_info_list_t_val[i].phase;
       stored_sym->val[i].period = new_sym->TSP_sample_symbol_info_list_t_val[i].period;
     }
-
+  return TRUE;
 }
 
 
@@ -1040,8 +1040,9 @@ static void* TSP_request_provider_thread_receiver(void* arg)
         }
  
     }
-    
+  
   STRACE_IO(("-->OUT"));
+  return (void*)NULL;
 }
 
 int TSP_consumer_request_sample_init(TSP_provider_t provider, TSP_sample_callback_t callback, void* user_data)
@@ -1051,7 +1052,6 @@ int TSP_consumer_request_sample_init(TSP_provider_t provider, TSP_sample_callbac
   int ret = FALSE;
   TSP_answer_sample_init_t* ans_sample = 0;
   TSP_request_sample_init_t req_sample;
-  int i;
 	
   STRACE_IO(("-->IN"));
   
@@ -1116,7 +1116,6 @@ int TSP_consumer_request_sample_destroy(TSP_provider_t provider)
   int ret = FALSE;
   TSP_answer_sample_destroy_t* ans_sample = 0;
   TSP_request_sample_destroy_t req_sample;
-  int i;
 	
   STRACE_IO(("-->IN"));
   

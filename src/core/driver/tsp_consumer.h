@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: tsp_consumer.h,v 1.17 2004-09-27 13:48:18 tractobob Exp $
+$Id: tsp_consumer.h,v 1.18 2004-10-04 08:44:32 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -200,17 +200,24 @@ void TSP_consumer_disconnect_all(TSP_provider_t providers[]);
 /**
 * Connects to a provider based on a given URL.
 * @param url   URL to the provider that must be opened
-* Possible formats for URL are :
-*      PROTOCOL://HOST/SERVER:PORT
-*      PROTOCOL://HOST/SERVER     = PROTOCOL://HOST/SERVER:(find first)
-*      PROTOCOL://HOST/:0         = PROTOCOL://HOST/(find any):0
-*      PROTOCOL://HOST            = PROTOCOL://HOST/(find any):(find first)
-*      PROTOCOL:// or PROTOCOL    = PROTOCOL://localhost/(find any):(find first)
-*      void, /, //, /// or :///   = rpc://localhost/(find any):(find first)
-*
-*      Others may have unpredictable results ... 
+*              Possible formats for URL are defined in following macro
+
 */
-TSP_provider_t* TSP_consumer_connect_url(const char* url);
+#define TSP_URL_FORMAT_USAGE  "\
+TSP URL format is defined by <PROTOCOL://HOST/SERVER:PORT>           \n\
+\tPROTOCOL   if omitted, is defaulted to 'rpc'                       \n\
+\tHOST       if omitted, is defaulted to 'localhost'                 \n\
+\tSERVER     if omitted, find any TSP server name                    \n\
+\tPORT       if omitted, find first TSP server number                \n\
+\tSimplified possible syntaxes :                                     \n\
+\t\tPROTOCOL://HOST/SERVER     = PROTOCOL://HOST/SERVER:(find first)         \n\
+\t\tPROTOCOL://HOST/:0         = PROTOCOL://HOST/(find any):0                \n\
+\t\tPROTOCOL://HOST            = PROTOCOL://HOST/(find any):(find first)     \n\
+\t\tPROTOCOL:// or PROTOCOL    = PROTOCOL://localhost/(find any):(find first)\n\
+\t\tvoid, /, //, /// or :///   = rpc://localhost/(find any):(find first)     \n\
+\tOthers may have unpredictable results .. \n"
+
+TSP_provider_t* TSP_consumer_connect_url(const char *url);
 
 
 /** 
