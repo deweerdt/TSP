@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/misc_utils/tsp_time.h,v 1.1 2002-09-05 08:53:07 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/misc_utils/tsp_time.h,v 1.2 2002-09-18 08:15:53 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -25,7 +25,9 @@ Purpose   : Interface for tsp time functions
 
 typedef gint64  tsp_hrtime_t;
 
-extern tsp_hrtime_t tsp_gethrtime(void);
+tsp_hrtime_t tsp_gethrtime(void);
+
+int tsp_usleep(int useconds);
 
 
 #endif _TSP_TIME_H
