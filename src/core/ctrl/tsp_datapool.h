@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_datapool.h,v 1.3 2002-10-24 13:27:45 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_datapool.h,v 1.4 2002-11-29 17:26:16 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -30,6 +30,7 @@ typedef  void* TSP_datapool_t;
 /*int TSP_global_datapool_init(void);*/
 
 TSP_datapool_t TSP_local_datapool_allocate(channel_id_t session_channel_id, int symbols_number, GLU_handle_t h_glu );
+void TSP_local_datapool_destroy(TSP_datapool_t datapool);
 
 TSP_datapool_t TSP_global_datapool_get_instance(void);
 

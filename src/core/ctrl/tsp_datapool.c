@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_datapool.c,v 1.9 2002-11-19 13:13:07 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_datapool.c,v 1.10 2002-11-29 17:26:16 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -337,6 +337,15 @@ static int TSP_global_datapool_init(void)
 
 }
 
+void TSP_local_datapool_destroy(TSP_datapool_t datapool)
+{
+   TSP_datapool_table_t* obj_datapool = (TSP_datapool_table_t*)datapool;
+
+   free(obj_datapool->items);obj_datapool->items = 0;
+   free(obj_datapool);
+   
+}
+
 
 TSP_datapool_t TSP_local_datapool_allocate(channel_id_t session_channel_id, int symbols_number, GLU_handle_t h_glu )
 {
@@ -349,8 +358,6 @@ TSP_datapool_t TSP_local_datapool_allocate(channel_id_t session_channel_id, int 
      
   STRACE_IO(("-->IN"));
 
-  /* FIXME : fuite, fuite, fuite ...*/
-
   datapool = (TSP_datapool_table_t*)calloc(1,sizeof(TSP_datapool_table_t));
   TSP_CHECK_ALLOC(datapool, 0);
 	
@@ -361,7 +368,7 @@ TSP_datapool_t TSP_local_datapool_allocate(channel_id_t session_channel_id, int 
     
   /* set session linked to this datapool*/
   datapool->session_channel_id = session_channel_id;
-  X_global_datapool.is_global = FALSE;
+  datapool->is_global = FALSE;
 
   datapool->h_glu = h_glu;
   datapool->initialized = TRUE;
