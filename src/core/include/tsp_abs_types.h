@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_abs_types.h,v 1.17 2005-02-01 22:54:48 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_abs_types.h,v 1.18 2005-02-06 16:55:13 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -37,6 +37,20 @@ Purpose   : Type abstraction : Stolen from GLIB public headers
 
 #ifndef  __TSP_ABS_TYPES_H
 #define  __TSP_ABS_TYPES_H 1
+
+/* excerpt from libtool manual */
+/* BEGIN_C_DECLS should be used at the beginning of your declarations,
+   so that C++ compilers don't mangle their names.  Use END_C_DECLS at
+   the end of C declarations. */
+#undef BEGIN_C_DECLS
+#undef END_C_DECLS
+#ifdef __cplusplus
+# define BEGIN_C_DECLS extern "C" {
+# define END_C_DECLS }
+#else
+# define BEGIN_C_DECLS /* empty */
+# define END_C_DECLS /* empty */
+#endif
 
 #define TSP_LITTLE_ENDIAN 1234
 #define TSP_BIG_ENDIAN    4321
