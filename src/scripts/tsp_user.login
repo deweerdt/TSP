@@ -60,7 +60,7 @@ setenv HOME_EXEC_CURRENT $HOME_EXEC_BASE/current
 ##############################
 
 
-setenv PATH ${PATH}:${HOME_EXEC_CURRENT}/bin.consumer:${HOME_EXEC_CURRENT}/bin.provider:${TSP_BASE}/src/tsp/tests/etape1:${TSP_BASE}/src/scripts:${TSP_BASE}/src/tsp/tests/stage2:${TSP_BASE}/src/tsp/tests/stage3
+setenv PATH ${PATH}:${HOME_EXEC_CURRENT}/bin.consumer:${HOME_EXEC_CURRENT}/bin.provider:${TSP_BASE}/src/tsp/tests/stage1:${TSP_BASE}/src/scripts:${TSP_BASE}/src/tsp/tests/stage2:${TSP_BASE}/src/tsp/tests/stage3
 
 
 
