@@ -1,4 +1,4 @@
-/* $Id: TspSession.java,v 1.4 2004-11-09 05:49:46 sgalles Exp $
+/* $Id: TspSession.java,v 1.5 2004-11-14 14:23:06 sgalles Exp $
  * -----------------------------------------------------------------------
  * 
  * TSP Library - core components for a generic Transport Sampling Protocol.
@@ -138,14 +138,13 @@ public class TspSession {
 	public int open(TspURL url) throws TspURLException, TspConsumerException {
 
 		try {
-			/* TODO : create a decorator for the URL */
-			if(url.getHost() == null) url.setHost("localhost");
-			if(url.getServerNumber() == null) url.setServerNumber(new Integer(0));
 			
+			/* TODO : remove when serverNumber scanning implemented */
+			if (url.getServerNumber() == null)
+				url.setServerNumber(new Integer(0));
 			/* try to open RPC link to TSP provider RPC server */
-					
 			requestSender = new TspRequestSender(InetAddress.getByName(url.getHost()), url.getServerNumber().intValue());
-
+								
 			state = TspSessionStatus.SENDER_READY;
 			/* Build the TSP request open */
 			TSP_request_open_t reqO = new TSP_request_open_t();

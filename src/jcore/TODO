@@ -26,5 +26,6 @@ and non bundled jar)
 - Removed remaining JAVA makefiles
 - Reorganize packages of consumers : the directory tree does not match the
 package structure ('tsp' should the root)
+- Update README
 
 
