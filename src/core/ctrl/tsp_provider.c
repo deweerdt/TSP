@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_provider.c,v 1.7 2002-10-07 08:36:04 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_provider.c,v 1.8 2002-10-09 08:01:40 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -291,15 +291,43 @@ void  TSP_provider_request_information(TSP_request_information_t* req_info,
  			      TSP_answer_sample_t* ans_sample)
 {
 
-  SFUNC_NAME(tsp_request_information);
-	
+  SFUNC_NAME(tsp_request_information);	
+  int ret;
+
   STRACE_IO(("-->IN"));
-	
+       
+  
   ans_sample->version_id = TSP_VERSION;
   ans_sample->channel_id = req_info->channel_id;
-  /* FIXME : gerer le retour */  
-  TSP_session_get_sample_symbol_info_list_by_channel(req_info->channel_id,
-						     &(ans_sample->symbols));
+  ans_sample->status = TSP_STATUS_ERROR_UNKNOWN;
+  ans_sample->provider_group_number = 0;
+  ans_sample->base_frequency = GLU_get_base_frequency();
+  ans_sample->max_client_number = TSP_MAX_CLIENT_NUMBER;
+  ans_sample->current_client_number = TSP_session_get_nb_session();
+  ans_sample->max_period = TSP_MAX_PERIOD;
+  ans_sample->symbols.TSP_sample_symbol_info_list_t_len = 0;
+  ans_sample->symbols.TSP_sample_symbol_info_list_t_val = 0;  
+  
+  if(req_info->version_id <= TSP_VERSION)
+    {
+      
+      ret = TSP_session_get_sample_symbol_info_list_by_channel(req_info->channel_id,						     &(ans_sample->symbols));
+      if(ret)
+	{
+	  ans_sample->status = TSP_STATUS_OK;
+	}
+      else
+	{
+	  STRACE_ERROR(("Function TSP_session_get_sample_symbol_info_list_by_channel failed"));
+	}
+    
+  }
+  else
+  {
+    STRACE_ERROR(("TSP version ERROR. Requested=%d Current=%d",req_info->version_id, TSP_VERSION ));
+    ans_sample->status = TSP_STATUS_ERROR_VERSION;
+  }
+
 
   		
   STRACE_IO(("-->OUT"));
@@ -361,16 +389,16 @@ int TSP_provider_init(int* argc, char** argv[])
   return ret;
 }
 
-int TSP_provider_run(void)
+int TSP_provider_run(int blocking)
 {
   assert(X_tsp_provider_init_ok);
   /* TSP_command_init must be the latest called init func, coz we will be blocked here forever */
-  return TSP_command_init(X_server_number);
+  return TSP_command_init(X_server_number, blocking);
   
 }
 
 void  TSP_provider_request_sample(TSP_request_sample_t* req_info, 
-			 TSP_answer_sample_t** ans_sample)
+			 TSP_answer_sample_t* ans_sample)
 {
   SFUNC_NAME(TSP_request_sample);
     
@@ -378,70 +406,105 @@ void  TSP_provider_request_sample(TSP_request_sample_t* req_info,
   int use_global_datapool;
 	
   STRACE_IO(("-->IN"));
-	
-  /* FIXME : ce n'est pas le meilleur endroit pour faire ca,
-     le faire plutot lors du sample_init avec les données
-     conservée dans la session*/
-  /*ret = TSP_global_datapool_add_symbols(&(req_info->symbols));*/
-  if(ret)
+
+  ans_sample->version_id = TSP_VERSION;
+  ans_sample->channel_id = req_info->channel_id;
+  ans_sample->status = TSP_STATUS_ERROR_UNKNOWN;
+  ans_sample->provider_group_number = 0;
+  ans_sample->base_frequency = GLU_get_base_frequency();
+  ans_sample->max_client_number = TSP_MAX_CLIENT_NUMBER;
+  ans_sample->current_client_number = TSP_session_get_nb_session();
+  ans_sample->max_period = TSP_MAX_PERIOD;
+  ans_sample->symbols.TSP_sample_symbol_info_list_t_len = 0;
+  ans_sample->symbols.TSP_sample_symbol_info_list_t_val = 0;
+ 
+  if(req_info->version_id <= TSP_VERSION)
     {
+      /* FIXME : ce n'est pas le meilleur endroit pour faire ca,
+	 le faire plutot lors du sample_init avec les données
+	 conservée dans la session*/
+      /*ret = TSP_global_datapool_add_symbols(&(req_info->symbols));*/
+
+      if(ret)
+	{
      
-      /* Must we use a session or global data pool ? */
-      if (  GLU_SERVER_TYPE_ACTIVE == GLU_get_server_type() )
-	  use_global_datapool = TRUE;
-      else
-	  use_global_datapool = FALSE;
+	  /* Must we use a session or global data pool ? */
+	  if (  GLU_SERVER_TYPE_ACTIVE == GLU_get_server_type() )
+	    use_global_datapool = TRUE;
+	  else
+	    use_global_datapool = FALSE;
 
       
-      ret = TSP_session_create_symbols_table_by_channel(req_info, ans_sample, use_global_datapool);
-      if(!ret) 
-        {
-	  STRACE_ERROR(("Function TSP_session_create_symbols_table_by_channel failed"));
-        }
+	  ret = TSP_session_create_symbols_table_by_channel(req_info, ans_sample, use_global_datapool);
+	  if(ret) 
+	    {
+	      ans_sample->status = TSP_STATUS_OK;
+	    }
+	  else  
+	    {
+	      STRACE_ERROR(("Function TSP_session_create_symbols_table_by_channel failed"));
+	    }
         
+	}
+      else
+	{
+	  STRACE_ERROR(("Function TSP_datapool_add_symbols failed"));
+	}
     }
   else
     {
-      STRACE_ERROR(("Function TSP_datapool_add_symbols failed"));
+      STRACE_ERROR(("TSP version ERROR. Requested=%d Current=%d",req_info->version_id, TSP_VERSION ));
+      ans_sample->status = TSP_STATUS_ERROR_VERSION;
     }
+
+
 	
   STRACE_IO(("-->OUT"));
 }
 
 void  TSP_provider_request_sample_init(TSP_request_sample_init_t* req_info, 
- 			      TSP_answer_sample_init_t** ans_sample)
+				       TSP_answer_sample_init_t* ans_sample)
 {
 
   SFUNC_NAME(TSP_request_sample_init);
-  int ret = FALSE;
-
   int start_local_thread;
-
     
   STRACE_IO(("-->IN"));
     
-
-  /*FIXME : oups, fuite de memoire*/
-  *ans_sample = (TSP_answer_sample_init_t*)calloc(1, sizeof(TSP_answer_sample_init_t));
-  TSP_CHECK_ALLOC(*ans_sample,);
-  
-  /* If the sample server is a lazy pasive server, we need a thread per session*/
-  if (  GLU_SERVER_TYPE_ACTIVE == GLU_get_server_type() )
-    start_local_thread = FALSE;
-  else
-    start_local_thread = TRUE;
-  
-  ret = TSP_session_create_data_sender_by_channel(req_info->channel_id, start_local_thread);
-  if(!ret)
+  ans_sample->version_id = UNDEFINED_VERSION_ID;
+  ans_sample->channel_id = req_info->channel_id;
+  ans_sample->status = TSP_STATUS_ERROR_UNKNOWN;
+ 
+  if(req_info->version_id <= TSP_VERSION)
     {
-      STRACE_ERROR(("TSP_data_sender_create failed"));
-    }
-    
-  /* send data address to client */
-  (*ans_sample)->data_address =
-    (char*)TSP_session_get_data_address_string_by_channel(req_info->channel_id);
+      /* If the sample server is a lazy pasive server, we need a thread per session*/
+      if (  GLU_SERVER_TYPE_ACTIVE == GLU_get_server_type() )
+	start_local_thread = FALSE;
+      else
+	start_local_thread = TRUE;
   
-  STRACE_INFO(("DATA_ADDRESS = '%s'", (*ans_sample)->data_address));
+      
+      if(TSP_session_create_data_sender_by_channel(req_info->channel_id, start_local_thread))
+	{
+	  ans_sample->status = TSP_STATUS_OK;
+	}
+      else     
+	{
+	  STRACE_ERROR(("TSP_data_sender_create failed"));
+	}
+    
+      /* send data address to client */
+      ans_sample->data_address =
+	(char*)TSP_session_get_data_address_string_by_channel(req_info->channel_id);
+  
+      STRACE_INFO(("DATA_ADDRESS = '%s'", ans_sample->data_address));
+    }
+  else
+    {
+      STRACE_ERROR(("TSP version ERROR. Requested=%d Current=%d",req_info->version_id, TSP_VERSION ));
+      ans_sample->status = TSP_STATUS_ERROR_VERSION;
+    }
+
   STRACE_IO(("-->OUT"));
 
 }
