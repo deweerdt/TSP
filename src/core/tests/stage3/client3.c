@@ -13,7 +13,8 @@
 /* Number of samples  that will be counted before the data check test pass */
 #define TSP_TEST_COUNT_SAMPLES 200000
 
-
+/* libUTIL */
+extern _use_dbl;
 
 
 int main(int argc, char *argv[]){
@@ -33,17 +34,16 @@ int main(int argc, char *argv[]){
   int test_ok = TRUE;
   int test_mode;
   int count_no_new_sample = 0;
-  float* res_values;
+  void* res_values;
   int new_sample;
   TSP_sample_t sample;
   char* out_file_res;
   char* in_file_res;
   int res_value_i;
-
+  
   int all_data_ok = TRUE;
 
       
-
 
 
   TSP_provider_t* providers;
@@ -51,11 +51,15 @@ int main(int argc, char *argv[]){
   int requested_nb;
   int group_nb;
  
+
+
+
+
   STRACE_INFO(("Autodetect CPU : %d bits", sizeof(long)*8));
 
     /* TSP Init */
 
-  if (argc>5)
+  if (argc>6)
     {   
       name = argv[1];
       period = atoi (argv[2]);
@@ -65,14 +69,27 @@ int main(int argc, char *argv[]){
 	  in_file_res = 0;
 	 
 	}
-
+     
       out_file_res = argv[4];
-      test_mode = atoi(argv[5]);
+      if(!strcmp("f", argv[5]))
+	{
+	   _use_dbl = 0;
+	}
+      else if(!strcmp("d", argv[5]))
+	{
+	   _use_dbl = 1;
+	}
+      else
+	{
+	  STRACE_ERROR(("param 5 must f or d for float of double"));
+	  return -1;
+	}
+      test_mode = atoi(argv[6]);
 
     }
   else
     {
-      STRACE_ERROR(("USAGE : %s server period   (in_file.res|_)  out_file.res (1|2|3) ", argv[0]));
+      STRACE_ERROR(("USAGE : %s server period   (in_file.res|_)  out_file.res (f|d) (1|2|3) ", argv[0]));
       STRACE_ERROR(("Last arg is mode test number :"));
       STRACE_ERROR(("- 1 : All variables"));
       STRACE_ERROR(("- 2 : 3 variables (first, middle, last)"));
@@ -151,6 +168,7 @@ int main(int argc, char *argv[]){
       symbols->TSP_sample_symbol_info_list_t_val[1] = symbols->TSP_sample_symbol_info_list_t_val[ symbols->TSP_sample_symbol_info_list_t_len/2];
       symbols->TSP_sample_symbol_info_list_t_val[2] = symbols->TSP_sample_symbol_info_list_t_val[ symbols->TSP_sample_symbol_info_list_t_len-1];
       symbols->TSP_sample_symbol_info_list_t_len = 3;
+    break;
     case 3 :     
       symbols->TSP_sample_symbol_info_list_t_len = 10;
       break;
@@ -203,7 +221,9 @@ int main(int argc, char *argv[]){
       
     }
 
-  res_values = (float *)calloc(( symbols->TSP_sample_symbol_info_list_t_len+1),sizeof(float));
+  res_values = _use_dbl ? 
+    calloc(( symbols->TSP_sample_symbol_info_list_t_len+1),sizeof(double)) :
+      calloc(( symbols->TSP_sample_symbol_info_list_t_len+1),sizeof(float)) ;
   assert(res_values);
   
   res_value_i = 0;
@@ -215,7 +235,16 @@ int main(int argc, char *argv[]){
 
 	  double calc;
 
-	  res_values[res_value_i++] = sample.user_value;
+	  if(_use_dbl)
+	    {
+	      double* d_res_values = (double*)res_values;
+	      d_res_values[res_value_i++] = sample.user_value;
+	    }
+	  else
+	    {
+	      float* f_res_values = (float*)res_values;
+	      f_res_values[res_value_i++] = sample.user_value;	      
+	    }
 
 	  if( res_value_i == symbols->TSP_sample_symbol_info_list_t_len )
 	    {
@@ -227,6 +256,7 @@ int main(int argc, char *argv[]){
       else
 	{
 	  tsp_usleep(TSP_NANOSLEEP_PERIOD_US); 
+
 	 
 	}
     }
