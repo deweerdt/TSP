@@ -42,8 +42,6 @@ $(DIRBIN)/% : $(DIROBJ)/%.o
 	$(AR) $(ARFLAGS) $@ $% 
 
 
-
-
 # Dependecies rule section
 # -----------------------------------------
 
@@ -99,13 +97,13 @@ $(DIRBIN)/%.unld :
 $(DIRSHLIB)/$(SHLIB_TARGET).so.1.0 : $(DIRLIB)/$(LIB_TARGET).a
 	@echo "making shared library ..."
 	( \
- 	  objs=`$(AR) -t $(DIRLIB)/$(LIB_TARGET).a`; \
- 	  $(AR) -x $(DIRLIB)/$(LIB_TARGET).a $${objs} ; \
- 	  $(LD) -o $(DIRSHLIB)/$(SHLIB_TARGET).so.1.0 -G -z text -h $(SHLIB_TARGET).so.1.0 $${objs} -R$(DIRSHLIB); \
- 	  $(RM) $${objs}; \
+	  objs=`$(AR) -t $(DIRLIB)/$(LIB_TARGET).a`; \
+	  $(AR) -x $(DIRLIB)/$(LIB_TARGET).a $${objs} ; \
+	  $(LD) -o $(DIRSHLIB)/$(SHLIB_TARGET).so.1.0 -G -z text -h $(SHLIB_TARGET).so.1.0 $${objs} -R$(DIRSHLIB); \
+	  $(RM) $${objs}; \
 	  cd $(DIRSHLIB); \
- 	  $(RM) $(SHLIB_TARGET).so; \
- 	  ln -s $(SHLIB_TARGET).so.1.0 $(SHLIB_TARGET).so; \
+	  $(RM) $(SHLIB_TARGET).so; \
+	  ln -s $(SHLIB_TARGET).so.1.0 $(SHLIB_TARGET).so; \
 	)
 
 make_shlib : $(DIRSHLIB)/$(SHLIB_TARGET).so.1.0
