@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_provider.c,v 1.10 2002-10-28 14:47:28 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_provider.c,v 1.11 2002-11-19 13:14:42 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -202,7 +202,7 @@ int TSP_provider_get_server_number(void)
 void TSP_provider_request_open(const TSP_request_open_t* req_open,
 		      TSP_answer_open_t* ans_open)
 {
-  SFUNC_NAME(TSP_request_open);
+  SFUNC_NAME(TSP_provider_request_open);
   GLU_handle_t glu_h;
   char* error_info;
   int i;
@@ -364,7 +364,7 @@ int TSP_provider_private_init(int* argc, char** argv[])
 
   if(!ret)
     {
-      STRACE_ERROR(("TSP init error"));
+      STRACE_INFO(("TSP init error"));
     }
 
   X_tsp_provider_init_ok = ret;
@@ -379,7 +379,6 @@ void  TSP_provider_request_sample(TSP_request_sample_t* req_info,
 {
   SFUNC_NAME(TSP_request_sample);
     
-  int ret = TRUE;
   int use_global_datapool;
 	
   STRACE_IO(("-->IN"));
@@ -394,43 +393,37 @@ void  TSP_provider_request_sample(TSP_request_sample_t* req_info,
   ans_sample->max_period = TSP_MAX_PERIOD;
   ans_sample->symbols.TSP_sample_symbol_info_list_t_len = 0;
   ans_sample->symbols.TSP_sample_symbol_info_list_t_val = 0;
- 
+
+
+
   if(req_info->version_id <= TSP_VERSION)
     {
-      /* FIXME : ce n'est pas le meilleur endroit pour faire ca,
-	 le faire plutot lors du sample_init avec les données
-	 conservée dans la session*/
-      /*ret = TSP_global_datapool_add_symbols(&(req_info->symbols));*/
-
-      if(ret)
-	{
-     
+      if(TSP_session_get_symbols_global_index_by_channel(req_info->channel_id, &(req_info->symbols) ))
+	{     
 	  /* Must we use a session or global data pool ? */
 	  if (  GLU_SERVER_TYPE_ACTIVE == GLU_get_server_type() )
 	    use_global_datapool = TRUE;
 	  else
 	    use_global_datapool = FALSE;
-
       
-	  ret = TSP_session_create_symbols_table_by_channel(req_info, ans_sample, use_global_datapool);
-	  if(ret) 
+	  if(TSP_session_create_symbols_table_by_channel(req_info, ans_sample, use_global_datapool)) 
 	    {
 	      ans_sample->status = TSP_STATUS_OK;
 	    }
 	  else  
 	    {
 	      STRACE_ERROR(("Function TSP_session_create_symbols_table_by_channel failed"));
-	    }
-        
+	    }        
 	}
       else
 	{
-	  STRACE_ERROR(("Function TSP_datapool_add_symbols failed"));
+	  STRACE_WARNING(("Function TSP_session_get_symbols_global_index_by_channel failed"));
+	  ans_sample->status = TSP_STATUS_ERROR_SYMBOLS;
 	}
     }
   else
     {
-      STRACE_ERROR(("TSP version ERROR. Requested=%d Current=%d",req_info->version_id, TSP_VERSION ));
+      STRACE_WARNING(("TSP version ERROR. Requested=%d Current=%d",req_info->version_id, TSP_VERSION ));
       ans_sample->status = TSP_STATUS_ERROR_VERSION;
     }
 
