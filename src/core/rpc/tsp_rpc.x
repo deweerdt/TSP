@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_rpc.x,v 1.5 2002-09-13 16:39:30 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_rpc.x,v 1.6 2002-09-17 09:47:28 fancelli Exp $
 
 -----------------------------------------------------------------------
 
@@ -14,6 +14,7 @@ Purpose   :
 
 -----------------------------------------------------------------------
  */
+
 
 
 struct TSP_answer_open_t

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_client.c,v 1.3 2002-09-05 13:30:07 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_client.c,v 1.4 2002-09-17 09:46:55 fancelli Exp $
 
 -----------------------------------------------------------------------
 
@@ -92,6 +92,8 @@ int TSP_remote_open_server( const char *target_name,
 			    TSP_server_info_string_t server_info)
 {
   SFUNC_NAME(TSP_remote_open_server);
+
+
 
   int prodid_max_number, progid;
   int ret = FALSE;
