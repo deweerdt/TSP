@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_rpc.x,v 1.1 2002-08-27 08:56:09 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_rpc.x,v 1.2 2002-09-05 09:24:37 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -158,6 +158,8 @@ program TSP_RPC {
 } = 0 ;
 
 
+
+
 #ifdef RPC_CLNT
 %
 %int global_rpcSetTimeout(CLIENT *client, int timeout)
@@ -172,3 +174,7 @@ program TSP_RPC {
 %}
 #endif 
 
+%#define TSP_STRACE_RPC_ERROR(cl, pResult) if(!pResult) \
+ { \
+      STRACE_ERROR(("%s", clnt_sperror(cl, ""))); \
+ }
