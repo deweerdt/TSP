@@ -1,6 +1,6 @@
 /*!  \file 
  
-$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_const_def.h,v 1.10 2002-10-24 13:29:03 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_const_def.h,v 1.11 2002-11-19 13:25:54 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -66,18 +66,33 @@ for a 5 sec fifo, at 100Hz --> 40 Mo */
 #define TSP_STREAM_SENDER_RINBUF_ITEM_SIZE  TSP_DATA_STREAM_SOCKET_BUFFER_SIZE
 
 
-/* PROTOCOL */
+/*-------- STREAM CONTROL -------*/
 
-#define TSP_RESERVED_GROUPE_EOF        0xFFFFFFFF
+enum TSP_msg_ctrl_t
+  {
+    TSP_MSG_CTRL_EOF,
+    TSP_MSG_CTRL_RECONF,
+  };
 
-#define TSP_RESERVED_GROUPE_ASYNCHRONE 0xFFFFFFFE
+typedef enum TSP_msg_ctrl_t TSP_msg_ctrl_t;
+
+/*-------- TSP PROTOCOL --------*/
+
+#define TSP_RESERVED_GROUP_EOF        0xFFFFFFFF
+
+#define TSP_RESERVED_GROUP_ASYNCHRONE 0xFFFFFFFE
+
+#define TSP_RESERVED_GROUP_RECONF     0xFFFFFFFD
 
 /*-------- MISC --------*/
 
 typedef guint32 channel_id_t;
 typedef guint32 version_id_t;
 typedef guint32 xdr_and_sync_type_t;
-typedef guint32 time_stamp_t;
+
+/* We do not want to use g types outside,
+and time stamp are used in the public consumer api */
+typedef int time_stamp_t;
 
 #define UNDEFINED_CHANNEL_ID (-1)
 #define UNDEFINED_VERSION_ID (-1)
