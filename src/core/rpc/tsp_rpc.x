@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_rpc.x,v 1.2 2002-09-05 09:24:37 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_rpc.x,v 1.3 2002-09-05 13:30:07 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -78,7 +78,7 @@ struct TSP_sample_symbol_info_t
 	/*int xdr_type;
 	int tsp_type;*/
 	unsigned int dimension;
-	int frequency_ratio;
+	int period;
 	int phase; 
 	opaque padding_t[2];
 };
@@ -162,7 +162,7 @@ program TSP_RPC {
 
 #ifdef RPC_CLNT
 %
-%int global_rpcSetTimeout(CLIENT *client, int timeout)
+%int tsp_wrap_rpc_clnt_set_timeout(CLIENT *client, int timeout)
 %{
 %	static struct timeval	tv;
 %    
@@ -172,7 +172,7 @@ program TSP_RPC {
 %	tv.tv_usec = 0;
 %	return clnt_control(client, CLSET_TIMEOUT, (char *)&tv);
 %}
-#endif 
+#endif
 
 %#define TSP_STRACE_RPC_ERROR(cl, pResult) if(!pResult) \
  { \

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_client.c,v 1.2 2002-09-05 09:23:14 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_client.c,v 1.3 2002-09-05 13:30:07 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -22,7 +22,6 @@ Purpose   :
 #include "tsp_rpc.h"
 #include "tsp_rpc_confprogid.h"
 
-/*static CLIENT          *globalClient;*/
 
 #define LOCAL_RPCCHECK_FALSE  	if( server == (TSP_server_t)0)  \
 				{ STRACE_ERROR(("RPCCHECK failed")) ; return FALSE ;} 
@@ -62,6 +61,9 @@ CLIENT* tsp_remote_open_progid(const char *target_name, int progid)
   STRACE_IO(("-->IN"));
 
   /*cl = clnt_create_timed(target_name, progid, TSP_RPC_VERSION_INITIAL, "tcp",&timeout );*/
+
+  
+
   cl = clnt_create(target_name, progid, TSP_RPC_VERSION_INITIAL, "tcp");
 
   if(cl == (CLIENT *)0)
@@ -71,11 +73,12 @@ CLIENT* tsp_remote_open_progid(const char *target_name, int progid)
   else
     {
       STRACE_INFO(("CONNECTED to server %s", target_name));
-      global_rpcSetTimeout(cl, 20);
+      /* Set time out */
+      tsp_wrap_rpc_clnt_set_timeout(cl, TSP_RPC_CONNECT_TIMEOUT);
 
     }
  
-	
+   
 
   STRACE_IO(("-->OUT"));
 
