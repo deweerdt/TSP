@@ -5,7 +5,6 @@ echo "           configuration for TSP compilation"
 echo "**********************************************************"
 echo "----------------------------------------------------------"
 echo "(FIXME 1 : This is NOT a real Autoconf/Automake configure )"
-echo "(FIXME 2 : All scripts need a tcsh or csh shell )"
 echo "----------------------------------------------------------"
 
 PWDPATH=`pwd`
