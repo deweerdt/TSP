@@ -1,32 +1,63 @@
-
-
+#!/bin/tcsh
 ##############################
-# La base = DEVBASE
+# Introspection
 ##############################
 
-set SYSTEM_NAME=`uname -a | awk '{ print $1 }'`
+set HOST_UNAME=`uname -a | awk '{ print $1 }'`
 
-if ( "$SYSTEM_NAME" == "Linux" )  then
-	set SYSTEM_NAME="linux"
-else if ( "$SYSTEM_NAME" == "SunOS") then
-      set SYSTEM_NAME="sun"
-else if ( "$SYSTEM_NAME" == "OSF1") then
-      set SYSTEM_NAME="dec"
+if ( "$HOST_UNAME" == "Linux" )  then
+	setenv HOST_TARGET "linux"
+else if ( "$HOST_UNAME" == "SunOS") then
+      setenv HOST_TARGET "sun"
+else if ( "$HOST_UNAME" == "OSF1") then
+      setenv HOST_TARGET "dec"
 else
-     echo "ERROR : Unknown system : $SYSTEM_NAME"
+     echo "ERROR : Unknown system : $HOST_UNAME"
      exit -1
 endif
 
 
-if ( ! $?DEVBASE ) then 
-	setenv DEVBASE /home2/breiz/tnt/$SYSTEM_NAME/tsp
+if ( "$HOST_TARGET" != "dec" ) then
+	setenv HOST_BASE "/home2/breiz/tnt/$HOST_TARGET"
+else
+	setenv HOST_BASE "/net/breiz/home2/breiz/tnt/dec"
 endif
-echo "Using DEVBASE         = $DEVBASE"
+
+
+echo "Using HOST_TARGET=$HOST_TARGET"
+
+setenv TSP_BASE $HOST_BASE/tsp
+echo "Using TSP_BASE=$TSP_BASE"
+
+##############################
+# HOME_EXEC_BASE / HOME_EXEC_CURRENT
+##############################
+
+setenv HOME_EXEC_BASE $TSP_BASE/exec
+setenv HOME_EXEC_CURRENT $HOME_EXEC_BASE/current
+
+
+##############################
+# Paths
+##############################
+
+
+setenv PATH ${TSP_BASE}/src/scripts:${HOME_EXEC_CURRENT}/bin.consumer.debug:${HOME_EXEC_CURRENT}/bin.provider.debug:${TSP_BASE}/src/tsp/tests/etape1:${PATH}
+
+
+
+##############################
+# DEVBASE
+##############################
+
+
+setenv DEVBASE $TSP_BASE
+echo "Using DEVBASE=$DEVBASE"
 
 if ( ! $?STRACE_DEBUG ) then 
 	setenv STRACE_DEBUG 3
 endif
-echo "Using STRACE_DEBUG= $STRACE_DEBUG"
+echo "Using STRACE_DEBUG=$STRACE_DEBUG"
 
 
 ##############################
@@ -55,20 +86,14 @@ setenv VX_68K_OPTION
 
 #endif
 
-##############################
-# Rajout de PATH
-##############################
+alias go_ec 'cd ${HOME_EXEC_CURRENT}/bin.consumer'
+alias go_ecd 'cd ${HOME_EXEC_CURRENT}/bin.consumer.d	ebug'
+alias go_ep 'cd ${HOME_EXEC_CURRENT}/bin.provider'
+alias go_epd 'cd ${HOME_EXEC_CURRENT}/bin.provider.debug'
+alias go_tsp 'cd ${TSP_BASE}'
+alias go_scripts 'cd ${TSP_BASE}/src/scripts'
 
-setenv PATH ${DEVBASE}/exec/DEV/bin.consumer:${DEVBASE}/exec/DEV/bin.provider:${PATH}:${DEVBASE}/src/scripts
 
-##############################
-# Navigation
-##############################
-alias go_ec 'cd ${DEVBASE}/exec/DEV/bin.consumer'
-alias go_ecd 'cd ${DEVBASE}/exec/DEV/bin.consumer.debug'
-alias go_ep 'cd ${DEVBASE}/exec/DEV/bin.provider'
-alias go_epd 'cd ${DEVBASE}/exec/DEV/bin.provider.debug'
-alias go_tsp 'cd ${DEVBASE}/src/tsp'
 
 
 ##############################
