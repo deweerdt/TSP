@@ -21,9 +21,9 @@ TARGET=$(DIRLIB)/libtsp_res.a
 # -----------------------------------------------------------
 
 ifneq (${TSP_TARGET},vxworks)
-build:: $(TARGET)($(OBJECTS))
+build:: $(TARGET)($(OBJECTS)) export_include
 
-destroy::
+destroy:: remove_include
 	$(RM) 	 $(TARGET) $(OBJECTS)
 endif
 
