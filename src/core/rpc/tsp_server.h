@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: tsp_server.h,v 1.8 2004-09-24 15:46:56 tractobob Exp $
+$Id: tsp_server.h,v 1.9 2004-10-07 08:56:33 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -51,7 +51,7 @@ Purpose   :
 
 int TSP_rpc_request(TSP_provider_request_handler_t* this);
 int TSP_rpc_request_config(TSP_provider_request_handler_t* this);
-void TSP_rpc_request_run(TSP_provider_request_handler_t* this);
+void* TSP_rpc_request_run(TSP_provider_request_handler_t* this);
 int TSP_rpc_request_stop(TSP_provider_request_handler_t* this);
 char* TSP_rpc_request_url(TSP_provider_request_handler_t* this);
 
