@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: client_stdout.c,v 1.3 2004-07-27 14:20:45 mia Exp $
+$Id: client_stdout.c,v 1.4 2004-07-28 12:56:30 mia Exp $
 
 -----------------------------------------------------------------------
 
@@ -43,7 +43,7 @@ Purpose   : Simple consummer test that print samples received to stdout
 
 
 /* Number of samples  that will be counted before the data check test pass */
-#define TSP_TEST_COUNT_SAMPLES 200*1000
+#define TSP_TEST_COUNT_SAMPLES 60
 #define TSP_NANOSLEEP_PERIOD_US (100*1000) /*µS*/
 
 int main(int argc, char *argv[]){
@@ -53,7 +53,7 @@ int main(int argc, char *argv[]){
   const TSP_consumer_information_t*  information;
   TSP_consumer_symbol_requested_list_t symbols;
 
-  int i, j, count=0;
+  int i, j;
   int nb_providers;
   int period=0;
   char* name;
@@ -250,9 +250,9 @@ printf("%s != %s\n", symbol_buf,  information->symbols.val[i].name);
 		    t = sample.time - 1; 
 		  }
 
-		count_samples++;
 		if(i == 1 )
 		  {
+		    count_samples++;
 		    printf ("TSP : Sample nb[%d] time=%d val=%f\n", count_samples, sample.time, sample.user_value);
 		  }
 
