@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_data_sender.c,v 1.5 2002-11-19 13:11:45 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_data_sender.c,v 1.6 2002-11-26 14:02:21 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -106,16 +106,19 @@ TSP_data_sender_t TSP_data_sender_create(int fifo_size)
   /* FIXME : a desallouer */
   
 
-  /* Create the sender stream */
+  /* Create the sender stream with its fifo size*/
   sender->stream_sender = (TSP_data_sender_t)TSP_stream_sender_create(fifo_size);
 
   if(sender->stream_sender)
     {
+
+      /* Check if the user wants any fifo */
       sender->use_stream_sender_fifo = fifo_size > 0 ? TRUE : FALSE ;
       if(sender->use_stream_sender_fifo)
 	{
 	  sender->buf = 0;
 	  sender->stream_sender_fifo = TSP_stream_sender_get_ringbuf(sender->stream_sender);
+	  assert( sender->stream_sender_fifo);
 	}
       else
 	{
