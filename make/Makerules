@@ -12,6 +12,7 @@ clean::
 
 # Building rules section
 # ----------------------
+
 %.o : %.c
 	@echo "@@@ Compiling $< ..."
 	$(COMPILE.c) $< -o $@
@@ -34,6 +35,37 @@ $(DIRBIN)/% : %.c
 
 .o.a:
 	$(AR) $(ARFLAGS) $@ $%
+
+
+
+# Dependecies rule section
+# -----------------------------------------
+
+
+
+.make.state: Makefile
+	@$(SHELL) -c ' \
+	echo "*** $@ : modified files : $? "; \
+	echo "*** $@ : generating dependencies for files :" *.c; \
+	$(COMPILE.c) -MM  *.c  \
+	| sed '\''s/\($*\)\.o[ :]*/\1.o $@ : /g'\'' > $@; \
+	cp -f $@ $@.tmp ; \
+	sed -e '\''s/.*://'\'' -e '\''s/\\$$//'\'' < $@.tmp | fmt -1 | \
+	sed -e '\''s/^ *//'\'' -e '\''s/$$/:/'\'' >> $@ ; \
+	rm -f $@.tmp '
+
+# For each file listed in the dependencies by -MM, we must
+# add a rule without command  or dependencies to calm down Make,
+# as a file may be deleted, and Make would try to construct
+# this file if this rule is not listed
+#   sed:    strip the target (everything before colon)
+#   sed:    remove any continuation backslashes
+#   fmt -1: list words one per line
+#   sed:    strip leading spaces
+#   sed:    add trailing colons
+
+
+FORCE_make_state:
 
 
 # export VXLOAD objects load script section
