@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_datapool.c,v 1.6 2002-10-09 07:41:17 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_datapool.c,v 1.7 2002-10-10 15:58:05 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -28,8 +28,12 @@ consumer
 #include "tsp_session.h"
 #include "tsp_time.h"
 
-/* Pool time waiting for  consumer connection µs */
+/* Pool time waiting for  consumer connection (µs) */
 #define TSP_LOCAL_WORKER_CONNECTION_POOL_TIME ((int)(1e5))
+
+/* Data Pool period (µs) */
+#define TSP_DATAPOOL_POOL_PERIOD ((int)(1e4))
+
 
 /*-----------------------------------------------------*/
 
@@ -53,9 +57,6 @@ struct TSP_datapool_table_t
   
   pthread_t worker_id;
 
-  /** Only for global thread id*/
-  glu_ringbuf* ring;
-
   /** Only for local thread id.
    * The id of the session linked to the local datapool
    */
@@ -63,6 +64,9 @@ struct TSP_datapool_table_t
 
   /** handle on GLU */
   GLU_handle_t h_glu;
+
+  /** is the datapool local or global ? */
+  int is_global;
 
 };
 
@@ -73,10 +77,6 @@ typedef struct TSP_datapool_table_t TSP_datapool_table_t;
 /*-----------------------------------------------------*/
 
 TSP_datapool_table_t X_global_datapool = {0,0,0};
-
-/*static TSP_datapool_item_t* X_datapool_t = 0;
-static int X_datapool_size = 0;
-static glu_ringbuf* X_ring = 0;*/
 
 /*-----------------------------------------------------*/
 
@@ -133,7 +133,7 @@ int* TSP_datapool_get_symbol_usage_counter(int provider_global_index, xdr_and_sy
  * Thread created per session when the sample server is a pasive one.
  * @param datapool The datapool object instance that will be linked to the thread
  */ 
-static void* TSP_local_worker(void* datapool)
+static void* TSP_datapool_thread(void* datapool)
 {
 
   /* FIXME : WARNING : la datapool a un pointeur sur le GLU, donc, ne pas détruire le
@@ -144,161 +144,85 @@ static void* TSP_local_worker(void* datapool)
   glu_item_t item;
   int more_items;
   TSP_datapool_table_t* obj_datapool = (TSP_datapool_table_t*)datapool;  
+  GLU_get_state_t state;
 
   STRACE_IO(("-->IN"));
   
   STRACE_INFO(("Local datapool thread started for session %d",obj_datapool->session_channel_id)); 
   
-  /* Wait for consumer connection before we send data */  
-  while(!TSP_session_is_consumer_connected_by_channel(obj_datapool->session_channel_id))
+
+  if( obj_datapool->is_global )
     {
-      tsp_usleep(TSP_LOCAL_WORKER_CONNECTION_POOL_TIME);
+      /* FIXME : dans le cas d'un datapool actif, gerer le fait le le datapool peut ne pas etre coherent
+	 pour le 1ere passage !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
     }
-  STRACE_INFO(("Consumer connected for session id %d",obj_datapool->session_channel_id)); 
-  /* FIXME : s'occuper des divers types raw, string... */
+  else
+    {
+      /* Wait for consumer connection before we send data */    
+      while(!TSP_session_is_consumer_connected_by_channel(obj_datapool->session_channel_id))
+	{
+	  tsp_usleep(TSP_LOCAL_WORKER_CONNECTION_POOL_TIME);
+	}
+      STRACE_INFO(("Consumer connected for session id %d",obj_datapool->session_channel_id)); 
+
+    }
+  
+      /* FIXME : s'occuper des divers types raw, string... */
+
+
 
   /* get first item */
-  more_items = GLU_pasive_get_next_item(obj_datapool->h_glu, &item);
-  if (more_items)
+  while( ( GLU_GET_NEW_ITEM != (state=GLU_get_next_item(obj_datapool->h_glu, &item)))  )
     {
-      time_stamp = item.time;
-      /* Update datapool */
-      obj_datapool->items[item.provider_global_index].user_value = item.value;           
+      tsp_usleep(TSP_DATAPOOL_POOL_PERIOD);
+    }
 
-      while(GLU_pasive_get_next_item(obj_datapool->h_glu, &item))
+  time_stamp = item.time;
+  /* Update datapool */
+  obj_datapool->items[item.provider_global_index].user_value = item.value;           
+  
+  while( GLU_GET_EOF != state )
+    {
+      while(GLU_GET_NEW_ITEM == (state=GLU_get_next_item(obj_datapool->h_glu, &item)) )
 	{       
 	  /* is the datapool coherent ? */
 	  if( time_stamp != item.time )
 	    {
 	      /* Yep ! throw data to client */
-	      TSP_session_send_data_by_channel(obj_datapool->session_channel_id, time_stamp);	  
+	      if( obj_datapool->is_global )
+		{
+		  /* Send data to all clients  */	      
+		  assert(obj_datapool->h_glu == GLU_GLOBAL_HANDLE );
+		  TSP_session_all_session_send_data(time_stamp);		  
+		}
+	      else
+		{
+		  /* send data to one client */
+		  TSP_session_send_data_by_channel(obj_datapool->session_channel_id, time_stamp);	  
+		}
 	      time_stamp = item.time;
- 
 	    }
 	  /* Update datapool */
 	  obj_datapool->items[item.provider_global_index].user_value = item.value;     
-	}      
+	}
 
-      /* The lastest data were not sent coz we did not compare the latest timestamp*/
-      TSP_session_send_data_by_channel(obj_datapool->session_channel_id, time_stamp);
+       tsp_usleep(TSP_DATAPOOL_POOL_PERIOD);
+    }      
 
-      /* Send group EOF */
-      TSP_session_send_data_eof_by_channel(obj_datapool->session_channel_id);
-    }
+  /* FIXME : S'il y un EOF tout de suite on envoi de la boue une fois...bof...*/
+  /* The lastest data were not sent coz we did not compare the latest timestamp*/
+  TSP_session_send_data_by_channel(obj_datapool->session_channel_id, time_stamp);
+
+  /* Send group EOF */
+  TSP_session_send_data_eof_by_channel(obj_datapool->session_channel_id);
+    
       
   STRACE_IO(("-->OUT"));
 
 }
 
-extern long count_add;
 
-/**
- * Thread created when the sample server is an active one
- * @param dummy Not used
- */ 
-static void* TSP_global_worker(void* dummy)
-{
-  SFUNC_NAME(TSP_global_worker);
-
-  tsp_hrtime_t apres_fifo=0, avant_fifo=0, apres_send=0,avant_send=0;
-  double total_send, total_fifo = 0;
-  double very_total_send = 0;
-  int nombre_send = 0;
-
-  glu_item_t* item_ptr=NULL;
-  glu_item_t item; 
-  time_stamp_t time_stamp = 0;
-  long count_remove = 0;
-
-  STRACE_IO(("-->IN"));
-    
-  /* wait for data */
-  while (RINGBUF_PTR_ISEMPTY(X_global_datapool.ring))
-    {
-      tsp_usleep(TSP_DATAPOOL_POOL_PERIOD);
-    }
-  RINGBUF_PTR_NOCHECK_GET(X_global_datapool.ring,item);
-
-  time_stamp = item.time;
-  count_remove ++;
-
-  /* flush ringbuff until first time_stamp of a whole new data set   */
-  do
-    {
-      if (!RINGBUF_PTR_ISEMPTY(X_global_datapool.ring))
-	{
-	  RINGBUF_PTR_NOCHECK_GET(X_global_datapool.ring, item); 
-	  count_remove ++;
-	}
-      else
-	{
-	  tsp_usleep(TSP_DATAPOOL_POOL_PERIOD);
-	}
-        
-    } while (item.time == time_stamp); 
-     
-  /*FIXME : gerer tous les machins avec les types user, raw...*/
-  /* Resfresh data pool with new value */
-  X_global_datapool.items[item.provider_global_index].user_value = item.value;     
-  time_stamp = item.time;
-
-  /* infinite loop on buff to update datapool */
-  while(1)
-    {
-      avant_fifo = tsp_gethrtime();
-      item_ptr = RINGBUF_PTR_GETBYADDR(X_global_datapool.ring);   
-
-      /* while data with same time in buff, fill datapool */
-      while(item_ptr && (time_stamp == item_ptr->time))
-	{
-	  count_remove ++;
-
-
-	  /* time stamp change, need to send every things */
-	  /*FIXME : gerer tous les machins avec les types user, raw...*/
-	  /* Resfresh data pool with new value */
-	  X_global_datapool.items[item_ptr->provider_global_index].user_value = item_ptr->value;
-  
-	  /*FIXME : gérer le fait qu'on peut perdre des données ! */            
-	  RINGBUF_PTR_GETBYADDR_COMMIT(X_global_datapool.ring);
-	  item_ptr = RINGBUF_PTR_GETBYADDR(X_global_datapool.ring);
-	}
-      
-      /*---*/
-      apres_fifo = tsp_gethrtime();
-      total_fifo += (double)(apres_fifo - avant_fifo)/1e6;
-      /*---*/
-
-      	  
-      if (item_ptr && (time_stamp != item_ptr->time))
-	{
-	  avant_send = tsp_gethrtime();
-
-	  /* Send data to all clients  */	      
-	  TSP_session_all_session_send_data(time_stamp);
-
-	  apres_send = tsp_gethrtime();	 
-	  total_send += (double)(apres_send - avant_send)/1e6;
-	  nombre_send ++;
-	  time_stamp = item_ptr->time;
-	}
-
-      if(!(time_stamp % 113))
-	{
-	  STRACE_INFO(("SEND_ALL  (tt=%d) msend=%f, mfifo=%f, nbsend=%d, diff=%d", 
-		       time_stamp, total_send/nombre_send, total_fifo/nombre_send, nombre_send, count_add - count_remove));
-	}
-      
-      /* wait for data */
-      while (RINGBUF_PTR_ISEMPTY(X_global_datapool.ring))
-	{
-	  tsp_usleep(TSP_DATAPOOL_POOL_PERIOD);
-	} 
-    }
-    
-  STRACE_IO(("-->OUT"));
-
-}
 
 /*---------------------------------------------------------*/
 /*                  FONCTIONS EXTERNE  			   */
@@ -317,7 +241,7 @@ int TSP_local_datapool_start_thread(TSP_datapool_t datapool)
 
   STRACE_IO(("-->IN"));
 
-  status = pthread_create(&(obj_datapool->worker_id), NULL, TSP_local_worker,  datapool);
+  status = pthread_create(&(obj_datapool->worker_id), NULL, TSP_datapool_thread,  datapool);
   TSP_CHECK_THREAD(status, FALSE);
 
   STRACE_IO(("-->OUT"));
@@ -354,14 +278,16 @@ int TSP_global_datapool_init(void)
     (TSP_datapool_item_t*)calloc(X_global_datapool.size,
 				 sizeof(TSP_datapool_item_t));
   TSP_CHECK_ALLOC(X_global_datapool.items, FALSE);
-    
-  /* Get ring buffer */
-  X_global_datapool.ring = GLU_active_get_ringbuf(X_global_datapool.h_glu);
+
+  /* Actually all session are link to a global datapool */
+  X_global_datapool.session_channel_id = -1;
+  X_global_datapool.is_global = TRUE;
+
     
   /* Demarrage du thread */
   /* FIXME : faire l'arret du thread */
   /* FIXME : detacher le thread */
-  status = pthread_create(&(X_global_datapool.worker_id), NULL, TSP_global_worker,  NULL);
+  status = pthread_create(&(X_global_datapool.worker_id), NULL, TSP_datapool_thread,  &X_global_datapool);
   TSP_CHECK_THREAD(status, FALSE);
 
     
@@ -394,11 +320,10 @@ TSP_datapool_t TSP_local_datapool_allocate(channel_id_t session_channel_id, int 
     
   /* set session linked to this datapool*/
   datapool->session_channel_id = session_channel_id;
+  X_global_datapool.is_global = FALSE;
 
   datapool->h_glu = h_glu;
 
-  /* No ring buffer at all for a local datapool*/
-  datapool->ring = 0;
     
   STRACE_IO(("-->OUT"));
   return datapool;
