@@ -67,6 +67,6 @@ V-0.4: Creation 03/10/02	tag TSP_0_4 SG
 		- [ --tsp-server-number number ] set the server number on the 
 		provider side (0 is default)
 	 
-	
-
-
+V-0.4.1: Creation 09/10/02 	tag TSP_0_4_1 SG
+	snapshot developpement version before huge modification for TL1 link
+	- fifo and thread send was implemented for socket write (active stream only)
