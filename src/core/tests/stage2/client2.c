@@ -157,7 +157,7 @@ int main(int argc, char *argv[]){
   /*-------------------------------------------------------------------------------------------------------*/ 
   /* Le 1er provider existe puisqu'il y en a au moins 1 */
 
-  if(!TSP_request_provider_open(providers[0]))
+  if(!TSP_request_provider_open(providers[0], 0))
     {
       STRACE_ERROR(("TSP_request_provider_open failed"));
       STRACE_TEST(("STAGE 002 | STEP 001 : FAILED"));

@@ -1,6 +1,8 @@
 #include "tsp_sys_headers.h"
 #include "tsp_prjcfg.h"
-#include "tsp_rpc.h"
+
+#include "tsp_provider.h"
+
 
 int main(int argc, char *argv[])
 {
@@ -25,7 +27,7 @@ int main(int argc, char *argv[])
     }
 
   /* Init server */
-  TSP_init(host_number);
+  TSP_init(host_number, NULL);
     
   STRACE_IO(("-->OUT"));
 

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/tests/stage2/Attic/glue_sserver2.c,v 1.1 2002-09-19 08:32:34 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/tests/stage2/Attic/glue_sserver2.c,v 1.2 2002-09-30 12:06:53 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -31,6 +31,8 @@ Purpose   : Implementation for the glue_server
 
 #define GLU_MAX_SYMBOLS 1000
 
+
+
 /*RINGBUF_DEFINE_DYNAMIC(glu_ringbuf, glu_ring,  RINGBUF_SZ(GLU_RING_BUFSIZE));*/
 
 
@@ -55,7 +57,7 @@ static char* X_server_name = "ServeurPetitScarabe";
 
 static time_stamp_t my_time = 0;
 
-glu_ringbuf* GLU_get_ringbuf(void)
+glu_ringbuf* GLU_active_get_ringbuf(GLU_handle_t h_glu)
 {
   return glu_ring;
 }
@@ -65,7 +67,7 @@ char* GLU_get_server_name(void)
   return X_server_name;
 }
 
-int  GLU_get_symbol_number(void)
+static int  GLU_get_symbol_number(void)
 
 {
   SFUNC_NAME(GLU_get_symbol_number);
@@ -157,7 +159,7 @@ static void* GLU_thread(void* arg)
 
 }
 
-int GLU_glue_sserver_init(void)
+int GLU_init(char* fallback_stream_init)
 {
   SFUNC_NAME(TSP_glue_sserver_init);
 
@@ -187,8 +189,7 @@ int GLU_glue_sserver_init(void)
   
 }
 
-void  GLU_get_sample_symbol_info_list
-(TSP_sample_symbol_info_list_t* symbol_list)
+int  GLU_get_sample_symbol_info_list(GLU_handle_t h_glu,TSP_sample_symbol_info_list_t* symbol_list)
 {
   SFUNC_NAME(TSP_DTP_get_sample_symbol_info_list);
 
@@ -209,9 +210,11 @@ void  GLU_get_sample_symbol_info_list
   symbol_list->TSP_sample_symbol_info_list_t_val = X_sample_symbol_info_list_val;
 	    
   STRACE_IO(("-->OUT : -Nombre symboles = %u", symbol_list->TSP_sample_symbol_info_list_t_len));
+
+  return TRUE;
 }
 
-int GLU_add_block(int provider_global_index, xdr_and_sync_type_t type)
+int GLU_add_block(GLU_handle_t h_glu,int provider_global_index, xdr_and_sync_type_t type)
 {
 
   SFUNC_NAME(GLU_add_block);
@@ -223,7 +226,7 @@ int GLU_add_block(int provider_global_index, xdr_and_sync_type_t type)
   return TRUE;
 }
 
-int GLU_commit_add_block(void)
+int GLU_commit_add_block(GLU_handle_t h_glu)
 {
   SFUNC_NAME(GLU_commit_add_block);
   STRACE_IO(("-->IN"));
@@ -232,4 +235,22 @@ int GLU_commit_add_block(void)
 	
   return TRUE;
 	
+}
+
+GLU_server_type_t GLU_get_server_type(void)
+{
+  return GLU_SERVER_TYPE_ACTIVE;
+}
+
+/* not used */
+int GLU_pasive_get_next_item(GLU_handle_t h_glu, glu_item_t* item)
+{
+  return FALSE;
+}
+
+GLU_handle_t GLU_get_instance(char *stream_init, char** error_info)
+{
+  if(error_info)
+    *error_info = "";
+  return GLU_GLOBAL_HANDLE;
 }
