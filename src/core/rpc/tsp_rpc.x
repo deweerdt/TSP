@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_rpc.x,v 1.4 2002-09-05 14:22:22 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_rpc.x,v 1.5 2002-09-13 16:39:30 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -19,7 +19,7 @@ Purpose   :
 struct TSP_answer_open_t
 {
 	int version_id;
-	unsigned hyper channel_id;
+	int channel_id;
 };
 
 struct TSP_request_open_t
@@ -30,19 +30,19 @@ struct TSP_request_open_t
 struct TSP_request_close_t
 {
 	int version_id;
-	unsigned hyper channel_id;
+	int channel_id;
 };
 
 struct TSP_request_information_t
 {
 	int version_id;
-	unsigned hyper channel_id;
+	int channel_id;
 };
 
 struct TSP_request_feature_t
 {
 	int version_id;
-	unsigned hyper channel_id;
+	int channel_id;
 	unsigned int feature_words[4];
 };
 
@@ -50,7 +50,7 @@ struct TSP_request_feature_t
 struct TSP_answer_feature_t
 {
 	int version_id;
-	unsigned hyper channel_id;
+	int channel_id;
 	unsigned int feature_words[4];
 	int int_value;
 	double double_value;
@@ -60,7 +60,7 @@ struct TSP_answer_feature_t
 struct TSP_exec_feature_t
 {
 	int version_id;
-	unsigned hyper channel_id;
+	int channel_id;
 	unsigned int feature_words[4];
 	int int_value;
 	double double_value;
@@ -95,7 +95,7 @@ typedef TSP_sample_symbol_info_t TSP_sample_symbol_info_list_t<>;
 struct TSP_request_sample_t
 {
 	int version_id;
-	unsigned hyper channel_id;
+	int channel_id;
 	unsigned int feature_words[4];
 	int consumer_timeout;
 	TSP_sample_symbol_info_list_t symbols;
@@ -104,7 +104,7 @@ struct TSP_request_sample_t
 struct TSP_answer_sample_t
 {
 	int version_id;
-	unsigned hyper channel_id;
+	int channel_id;
 	unsigned int feature_words[4];
 	int provider_timeout;
 	string data_address<>;

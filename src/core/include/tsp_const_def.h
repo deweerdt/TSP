@@ -1,6 +1,6 @@
 /*!  \file 
  
-$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_const_def.h,v 1.4 2002-09-05 13:30:44 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_const_def.h,v 1.5 2002-09-13 16:39:34 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -38,7 +38,7 @@ Purpose   :
 
 #define TSP_DATAPOOL_POOL_PERIOD 5e6
 
-typedef guint64 channel_id_t;
+typedef guint32 channel_id_t;
 typedef guint32 version_id_t;
 typedef guint32 xdr_and_sync_type_t;
 typedef guint32 time_stamp_t;
