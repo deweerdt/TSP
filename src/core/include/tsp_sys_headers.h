@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_sys_headers.h,v 1.13 2004-09-13 23:18:23 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_sys_headers.h,v 1.14 2004-09-23 16:11:57 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -53,7 +53,9 @@ int _rpcsvcdirty;
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 #include <errno.h>
+#include <netdb.h>
 /*#include "fortify.h"*/
 
 

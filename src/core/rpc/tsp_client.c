@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_client.c,v 1.8 2004-09-22 14:25:58 tractobob Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_client.c,v 1.9 2004-09-23 16:11:57 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -102,7 +102,8 @@ CLIENT* tsp_remote_open_progid(const char *target_name, int progid)
 	
 }
 
-int TSP_remote_open_server( const char *target_name,
+int TSP_remote_open_server( const char *protocol,
+			    const char *target_name,
 			    int server_id, 
 			    TSP_server_t* server,
 			    TSP_server_info_string_t server_info)
@@ -117,10 +118,13 @@ int TSP_remote_open_server( const char *target_name,
 	
   STRACE_IO(("-->IN"));
 
-	
   prodid_max_number = TSP_get_progid_total_number();
-	
-  if((server_id < prodid_max_number) && (server_id >=0) )
+
+  if(strcmp(protocol, TSP_RPC_PROTOCOL) != 0)
+    {
+      STRACE_ERROR(("Protocol %s not handled, use %s", protocol, TSP_RPC_PROTOCOL));
+    }
+  else if((server_id < prodid_max_number) && (server_id >=0) )
     {
       progid = TSP_get_progid(server_id);
       if(progid > 0) 

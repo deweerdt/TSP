@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: tsp_client.h,v 1.5 2003-01-22 13:17:05 erk Exp $
+$Id: tsp_client.h,v 1.6 2004-09-23 16:11:57 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -53,7 +53,8 @@ Purpose   :
 
 typedef  void* TSP_server_t;
 
-int TSP_remote_open_server( const char *target_name,
+int TSP_remote_open_server( const char *protocol,
+			    const char *target_name,
 			    int server_id, 
 			    TSP_server_t* server,
 			    TSP_server_info_string_t server_info);

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.24 2004-09-22 14:25:58 tractobob Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.25 2004-09-23 16:11:57 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -394,6 +394,98 @@ void TSP_consumer_end()
   STRACE_IO(("-->OUT"));
 }
 
+TSP_provider_t* TSP_consumer_connect_url(const char*  url)
+{	
+  TSP_provider_t *provider = NULL;
+  TSP_server_t server;
+  TSP_server_info_string_t server_info;
+
+  int i, servernumber;
+  char url_tok[MAXHOSTNAMELEN], *protocol, *hostname, *servername, *p;
+
+  /* Parse (simply ...) URL */
+  protocol = NULL;
+  hostname = NULL;
+  servername = NULL;
+  servernumber = -1;
+
+  strcpy(url_tok, url);
+  protocol = url_tok;
+  p = strstr(protocol, "://");
+  if(p)
+    {
+      *p = '\0';
+      p += 3;
+      hostname = p;
+      p = strstr(hostname, "/");
+    }
+  if(p)
+    {
+      *p = '\0';
+      p += 1;
+      servername = p;
+      p = strstr(servername, ":");
+    }
+   if(p)
+    {
+      *p = '\0';
+      p += 1;
+      if(*p)
+	servernumber = atoi(p);
+    }
+     
+  if(p)
+    {
+      if(strlen(hostname) == 0) hostname = "localhost";
+
+	
+      /** Full URL, or without server name : try to connect to server number **/
+      if( strlen(protocol) != 0 && servernumber >= 0 )
+	{
+	  /* Is server number alive on given host ?*/ 
+	  STRACE_DEBUG(("Trying to open server %d on %s", servernumber, hostname ));
+	  /* FIXME : should we try server_name here ? */
+	  if(TSP_remote_open_server(  protocol,
+				      hostname,
+				      servernumber, 
+				      &server,
+				      server_info))
+	    {
+	      /* yes, check whether server name is OK and allocate */
+	      if(strncmp(servername, server_info, strlen(servername)) == 0)
+		{
+		  /* yes, got it !!! */
+		  return TSP_new_object_tsp(server, server_info);
+		}
+	    }
+
+	  STRACE_ERROR(("No such TSP provider on URL %s", url));
+	  return NULL;
+	}
+      
+      /** Partial URL, without server number : try to find one **/
+      if( strlen(protocol) != 0 && strlen(servername) != 0 )
+	{
+	  int server_max_number = TSP_get_server_max_number();
+	  char new_url[MAXHOSTNAMELEN];
+	  
+	  for(i = 0; i < server_max_number; i++)
+	    {
+	      sprintf(new_url, TSP_URL_FORMAT, protocol, hostname, servername, i);
+	      provider = TSP_consumer_connect_url(new_url);
+	      if(provider)
+		return provider;
+	    }
+	  STRACE_ERROR(("No such TSP provider on URL %s", url));
+	  return NULL;
+	  
+	}
+    }
+
+  STRACE_ERROR(("Cannot parse such URL %s", url));
+  return NULL;
+}
+
 void TSP_consumer_connect_all(const char*  host_name, TSP_provider_t** providers, int* nb_providers)
 {	
 	
@@ -420,7 +512,8 @@ void TSP_consumer_connect_all(const char*  host_name, TSP_provider_t** providers
 	  STRACE_DEBUG(("Trying to open server No %d", i));
 
 	  /* Is server number 'i' alive ?*/ 
-	  if(TSP_remote_open_server(  host_name,
+	  if(TSP_remote_open_server(  "",
+				      host_name,
 				      i, 
 				      &server,
 				      server_info))

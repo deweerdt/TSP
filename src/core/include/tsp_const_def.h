@@ -1,6 +1,6 @@
 /*!  \file 
  
-$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_const_def.h,v 1.23 2004-09-20 20:55:59 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_const_def.h,v 1.24 2004-09-23 16:11:57 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -203,6 +203,10 @@ typedef int time_stamp_t;
 
 /*-------- SERVER INFORMATION --------*/
 
+/* URL format to connect to a provider :
+ <protocol:\\host\server_name:server_number> */
+#define TSP_URL_FORMAT "%s://%s/%s:%d"
+
 /* Size of the information string for the server */
 #define STRING_SIZE_SERVER_INFO 256
 typedef char TSP_server_info_string_t[STRING_SIZE_SERVER_INFO+1]; 
@@ -221,6 +225,7 @@ typedef struct  TSP_otsp_server_info_t TSP_otsp_server_info_t;
 
 /*-------- RPC --------*/
 
+#define TSP_RPC_PROTOCOL "rpc"
 /**
  * base RPC PROG_ID that will be used 
  * to calculate the PROG ID for each server

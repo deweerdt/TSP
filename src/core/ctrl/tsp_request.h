@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: tsp_request.h,v 1.2 2004-07-28 13:05:38 mia Exp $
+$Id: tsp_request.h,v 1.3 2004-09-23 16:11:57 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -55,15 +55,15 @@ Purpose   : TSP request handling API
  * The different methods of the TSP
  * asynchronous request handler.
  * The tsp_request_handler_config_ft should be a function
- * which always return. Its void* parameter will be allocated and 
- * filled in by the function itself.
+ * which always return. The void* parameter will be allocated and 
+ * filled in by the function itself. The char* returned shall be the connection URL string
  * The tsp_request_handler_run_ft may be passed as the start_routine
  * of pthread_create(3), it is supposed to take the configuration parameter
  * taken from the cofiguration step. This function should not return unless
  * it terminates.
  * The tsp_request_handler_stop_ft is supposed to ??? what FIXME ???
  */
-typedef int (* tsp_request_handler_config_ft)(void *);
+typedef char* (* tsp_request_handler_config_ft)(void **);
 typedef void * (* tsp_request_handler_run_ft)(void *);
 typedef int (* tsp_request_handler_stop_ft)(void);
 /*@}*/ 
@@ -107,6 +107,8 @@ struct TSP_provider_request_handler_t {
 					    handler */
   tsp_request_handler_run_ft     run;    /**< Launch the request handler */
   tsp_request_handler_stop_ft    stop;   /**< Stop the request handler */
+
+  char *url;             /**<The Universal Resource Locator to connect to this request handler>**/
 };
 
 typedef struct TSP_provider_request_handler_t TSP_provider_request_handler_t;

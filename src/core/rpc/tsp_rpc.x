@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_rpc.x,v 1.16 2004-07-28 13:05:38 mia Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_rpc.x,v 1.17 2004-09-23 16:11:57 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -22,6 +22,8 @@ Purpose   :
  * @ingroup Core
  * @{
  */
+
+
 
 /** Status for all functions */
 enum TSP_status_t 

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: client_res.c,v 1.8 2004-09-23 06:57:43 tractobob Exp $
+$Id: client_res.c,v 1.9 2004-09-23 16:12:10 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -89,10 +89,9 @@ void catch_ctrl_c(int i)
 
 void usage (char *txt)
 {
-  STRACE_ERROR(("USAGE : %s [s:f:p:t:m:dh]", txt));
-  printf("\t -s server    : TSP provider server name\n");
+  STRACE_ERROR(("USAGE : %s -f -u [-tmdh]", txt));
   printf("\t -f filename  : output RES format filename\n");
-  printf("\t[-p prov_num] : TSP provider number (0-N), default 0\n");
+  printf("\t -u URL       : TSP Universal Resource Locator (rpc://host/name:port)\n");
   printf("\t[-t period]   : expressed in provider's cycles (1-N), default 1\n");
   printf("\t[-m mode]     : recording mode (1-3), default 1\n");
   printf("\t                1 = All variables, retry connection forever\n");
@@ -110,21 +109,21 @@ void usage (char *txt)
 int main(int argc, char *argv[]){
 
   const TSP_consumer_information_t*  information;
-  TSP_consumer_symbol_requested_list_t symbols;
+  TSP_consumer_symbol_requested_list_t symbols[TSP_MAX_SERVER_NUMBER];
 
   int i, count=0;
-  int nb_providers;
+  int nb_providers = 0;
   void* res_values;
   int new_sample;
+  int provider;
+  int base_frequency = 1e6;
   TSP_sample_t sample;
-  int res_value_i;
+  int res_value_i, res_values_nb;
   TSP_provider_t* providers;
-  int buffersBeforeStop;
+  int buffersBeforeStop = 0;
 
   char myopt; /* Options */
-  char* name = NULL;
   char* out_file_res = NULL;
-  int provider=0;
   int period=1;
   int test_mode = 1;
 
@@ -145,13 +144,23 @@ int main(int argc, char *argv[]){
     }
     
   
-  while ((myopt = getopt(argc, argv, "s:f:p:t:m:dh")) != -1)
+  while ((myopt = getopt(argc, argv, "u:f:t:m:dh")) != -1)
     {
       switch(myopt)
 	{
-	case 's':   name = optarg;              break;
+	case 'u':
+	  /*-------------------------------------*/ 
+	  /* Connection to providers, URL based */
+	  /*-------------------------------------*/ 
+	  if(nb_providers < TSP_MAX_SERVER_NUMBER &&
+	     (providers[nb_providers] = TSP_consumer_connect_url(optarg)))
+	    nb_providers++;
+	  else
+	    {
+	      STRACE_ERROR(("Cannot connect to %s", optarg));
+	    }
+	  break;
 	case 'f':   out_file_res = optarg;      break;
-	case 'p':   provider = atoi(optarg);    break;
 	case 't':   period = atoi(optarg);      break;
 	case 'm':   test_mode = atoi(optarg);   break;
 	case 'd':   _use_dbl = 1;               break;
@@ -160,168 +169,173 @@ int main(int argc, char *argv[]){
 	}
     }
 
-  if(!name || !out_file_res)
+  if(!out_file_res || nb_providers < 1)
     usage(argv[0]);
 
-  
-  /*-------------------------------------------------------------------------------------------------------*/ 
-  /* Connection to providers */
-  /*-------------------------------------------------------------------------------------------------------*/ 
-  TSP_consumer_connect_all(name,&providers, &nb_providers);
-  if(nb_providers > 0)
+
+  for(provider=0; provider<nb_providers; provider++)
     {
-      for( i = 0 ; i<nb_providers ; i++)
+      /*-------------------------*/ 
+      /* Open requested provider */
+      /*-------------------------*/ 
+      if(!TSP_consumer_request_open(providers[provider], 0, 0 ))
 	{
-	  const char* info = TSP_consumer_get_connected_name(providers[i]) ;
-	  STRACE_INFO(("Server Nb %d, info = '%s'", i,info));
-	}
-
-      if(provider < 0 || provider >= nb_providers)
-	provider = 0;
-    }
-  else
-    {
-      STRACE_ERROR(("Unable to find any provider for host"));
-      return -1;
-    }
-
-
-
-
-  /*-------------------------------------------------------------------------------------------------------*/ 
-  /* Open requested provider */
-  /*-------------------------------------------------------------------------------------------------------*/ 
-  if(!TSP_consumer_request_open(providers[provider], 0, 0 ))
-    {
-      STRACE_ERROR(("TSP_request_provider_open failed"));
-      return -1;
-    }
-  
-
-
-  /*-------------------------------------------------------------------------------------------------------*/ 
-  /* TEST : STAGE 002 | STEP 003 */
-  /*-------------------------------------------------------------------------------------------------------*/
-  do
-    {
-      if(!TSP_consumer_request_information(providers[provider]))
-	{
-	  STRACE_ERROR(("TSP_request_provider_information failed"));
+	  STRACE_ERROR(("TSP_request_provider_open failed"));
 	  return -1;
 	}
+ 
+
+      /*-----------------------------*/ 
+      /* TEST : STAGE 002 | STEP 003 */
+      /*-----------------------------*/
+      do
+	{
+	  if(!TSP_consumer_request_information(providers[provider]))
+	    {
+	      STRACE_ERROR(("TSP_request_provider_information failed"));
+	      return -1;
+	    }
+	  
+	  information = TSP_consumer_get_information(providers[provider]);
+	  symbols[provider].len = information->symbols.len;
+	  if(!symbols[provider].len)
+	    tsp_usleep(TSP_NANOSLEEP_PERIOD_US);
+	}
+      while(!symbols[provider].len);
       
-      information = TSP_consumer_get_information(providers[provider]);
-      symbols.len = information->symbols.len;
-      if(!symbols.len)
-	tsp_usleep(TSP_NANOSLEEP_PERIOD_US);
-    }
-  while(!symbols.len);
+      symbols[provider].val = (TSP_consumer_symbol_requested_t*)calloc(symbols[provider].len, sizeof(TSP_consumer_symbol_requested_t));
+      TSP_CHECK_ALLOC(symbols[provider].val, -1);
+      
+      for( i = 0 ; i< symbols[provider].len ; i++)
+	{
+	  STRACE_INFO(("Id=%d Sym='%s'",i, information->symbols.val[i].name));
+	  symbols[provider].val[i].name = information->symbols.val[i].name;
+	  symbols[provider].val[i].period = period;
+	  symbols[provider].val[i].phase = 0;
+	}
+      
+      /* chose smallest frequency */
+      if(information->base_frequency < base_frequency)
+	base_frequency = information->base_frequency;
 
-  symbols.val = (TSP_consumer_symbol_requested_t*)calloc(information->symbols.len, sizeof(TSP_consumer_symbol_requested_t));
-  TSP_CHECK_ALLOC(symbols.val, -1);
+      
+      /* take only the first, midle and last variable in 'first_last' mode*/
+      switch(test_mode)
+	{
+	case 1 : 
+	  /* all variables */
+	  break;
+	case 2 :
+	  symbols[provider].val[1] = symbols[provider].val[ symbols[provider].len/2];
+	  symbols[provider].val[2] = symbols[provider].val[ symbols[provider].len-1];
+	  symbols[provider].len = 3;
+	  break;
+	case 3 :     
+	  symbols[provider].len = 10;
+	  break;
+	default:
+	  STRACE_ERROR(("Unknown test number"));
+	  return -1;
+	}
 
-  for( i = 0 ; i< information->symbols.len ; i++)
-    {
-      STRACE_INFO(("Id=%d Sym='%s'",i, information->symbols.val[i].name));
-      symbols.val[i].name = information->symbols.val[i].name;;
-      symbols.val[i].period = period;
-      symbols.val[i].phase = 0;
+     
+      /*-----------------------------------------------*/ 
+      /* Adjust period according to smallest frequency */
+      /*-----------------------------------------------*/ 
+      /* TODO */
+       
+  
+      /*---------------------*/ 
+      /* Ask for sample list */
+      /*---------------------*/ 
+      if(!TSP_consumer_request_sample(providers[provider],&symbols[provider]))
+	{
+	  STRACE_ERROR(("TSP_request_provider_sample failed"));
+	  return -1;
+	}
     }
 
   /* in case of stop request, flush N buffers (if any) before stopping */
-  buffersBeforeStop = information->base_frequency * 1 /* seconds */;
+  buffersBeforeStop = base_frequency * 1 /* seconds */;
 
-  /* take only the first, midle and last variable in 'first_last' mode*/
-  switch(test_mode)
+
+  for(provider=0; provider<nb_providers; provider++)
     {
-    case 1 : 
-      /* all variables */
-      break;
-    case 2 :
-      symbols.val[1] = symbols.val[ symbols.len/2];
-      symbols.val[2] = symbols.val[ symbols.len-1];
-      symbols.len = 3;
-      break;
-    case 3 :     
-      symbols.len = 10;
-      break;
-    default:
-      STRACE_ERROR(("Unknown test number"));
-      return -1;
+      /*----------------*/ 
+      /* Start sampling */
+      /*----------------*/ 
+      if(!TSP_consumer_request_sample_init(providers[provider],0,0))
+	{
+	  STRACE_ERROR(("TSP_request_provider_sample_init failed"));
+	  return -1;
+	}
     }
 
- 
   
-  /*-------------------------------------------------------------------------------------------------------*/ 
-  /* Ask for sample list */
-  /*-------------------------------------------------------------------------------------------------------*/ 
-  if(!TSP_consumer_request_sample(providers[provider],&symbols))
-    {
-      STRACE_ERROR(("TSP_request_provider_sample failed"));
-      return -1;
-    }
-
-
-  /*-------------------------------------------------------------------------------------------------------*/ 
-  /* Start sampling */
-  /*-------------------------------------------------------------------------------------------------------*/ 
-  if(!TSP_consumer_request_sample_init(providers[provider],0,0))
-    {
-      STRACE_ERROR(("TSP_request_provider_sample_init failed"));
-      return -1;
-    }
-
-  /*-------------------------------------------------------------------------------------------------------*/ 
+  /*-------------------*/ 
   /* Loop on data read */
-  /*-------------------------------------------------------------------------------------------------------*/ 
+  /*-------------------*/ 
   
   STRACE_INFO(("file=%s", out_file_res));
   d_wopen(out_file_res);
   d_wcom(""); /* No comment */
 
-  for (i = 0; i < symbols.len; i++)
+  res_values_nb = 0;
+  for(provider=0; provider<nb_providers; provider++)
     {
-      d_wnam(symbols.val[i].name, "?"); /* write header with no unit */
+      for (i = 0; i < symbols[provider].len; i++)
+	{
+	  d_wnam(symbols[provider].val[i].name, "?"); /* write header with no unit */
+	}
+      res_values_nb += symbols[provider].len;
     }
   
   res_values = _use_dbl ? 
-    calloc(( symbols.len+1),sizeof(double)) :
-      calloc(( symbols.len+1),sizeof(float)) ;
+    calloc(( res_values_nb+1),sizeof(double)) :
+      calloc(( res_values_nb+1),sizeof(float)) ;
   assert(res_values);
   
   res_value_i = 0;
-  while(TSP_consumer_read_sample(providers[provider],&sample, &new_sample) && !stop_end )
+  while(!stop_end)
     {
-      if(new_sample)
+      for(provider=0; provider<nb_providers; provider++)
 	{
-	  if(_use_dbl)
+	  if(!TSP_consumer_read_sample(providers[provider], &sample, &new_sample))
 	    {
-	      double* d_res_values = (double*)res_values;
-	      d_res_values[res_value_i++] = sample.user_value;
+	      stop_end = TRUE;
+	      break;
+	    }
+	  if(new_sample)
+	    {
+	      if(_use_dbl)
+		{
+		  double* d_res_values = (double*)res_values;
+		  d_res_values[res_value_i++] = sample.user_value;
+		}
+	      else
+		{
+		  float* f_res_values = (float*)res_values;
+		  f_res_values[res_value_i++] = sample.user_value;	      
+		}
+
+	      /* Received complete buffer, need to write */
+	      if( res_value_i == res_values_nb )
+		{
+		  count++;
+		  d_writ(res_values);
+		  res_value_i = 0;
+
+		  /* wait a little before stopping to flush buffers */
+		  if(stop) stop++;
+		  if(stop > buffersBeforeStop) stop_end = TRUE;
+		}
 	    }
 	  else
 	    {
-	      float* f_res_values = (float*)res_values;
-	      f_res_values[res_value_i++] = sample.user_value;	      
+	      tsp_usleep(TSP_NANOSLEEP_PERIOD_US);
+	      /* no more buffers, stop immediately */
+	      if(stop) stop_end = TRUE;
 	    }
-
-	  /* Received complete buffer, need to write */
-	  if( res_value_i == symbols.len )
-	    {
-	      count++;
-	      d_writ(res_values);
-	      res_value_i = 0;
-
-	      /* wait a little before stopping to flush buffers */
-	      if(stop) stop++;
-	      if(stop > buffersBeforeStop) stop_end = TRUE;
-	    }
-	}
-      else
-	{
-	  tsp_usleep(TSP_NANOSLEEP_PERIOD_US);
-	  /* no more buffers, stop immediately */
-	  if(stop) stop_end = TRUE;
 	}
     }
 

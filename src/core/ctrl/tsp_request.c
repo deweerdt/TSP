@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: tsp_request.c,v 1.3 2004-09-22 14:25:58 tractobob Exp $
+$Id: tsp_request.c,v 1.4 2004-09-23 16:11:57 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -157,6 +157,7 @@ TSP_provider_rqh_manager_init(void) {
     rqh_manager_if.request_handlers[i].config             = NULL;
     rqh_manager_if.request_handlers[i].run                = NULL;
     rqh_manager_if.request_handlers[i].stop               = NULL;
+    rqh_manager_if.request_handlers[i].url                = NULL;
   }
   
   TSP_UNLOCK_MUTEX(&rqh_manager_if.mutex,-1);
@@ -183,8 +184,8 @@ TSP_provider_rqh_manager_refresh(void) {
 	  (TRUE==retval)
 	  ) {
     if (rqh_manager_if.request_handlers[i].status == TSP_RQH_STATUS_IDLE) {
-      retval = rqh_manager_if.request_handlers[i].config(&rqh_manager_if.request_handlers[i].config_param);
-      if (TRUE == retval) {
+      rqh_manager_if.request_handlers[i].url = rqh_manager_if.request_handlers[i].config(&rqh_manager_if.request_handlers[i].config_param);
+      if (rqh_manager_if.request_handlers[i].url != NULL) {
 	int tstatus;
 	rqh_manager_if.request_handlers[i].status = TSP_RQH_STATUS_CONFIGURED;
 	tstatus = pthread_create(&rqh_manager_if.request_handlers[i].tid,

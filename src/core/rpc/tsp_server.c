@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_server.c,v 1.13 2004-09-22 14:25:58 tractobob Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_server.c,v 1.14 2004-09-23 16:11:57 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -39,6 +39,7 @@ Purpose   :
 
 #define PORTMAP
 #include <rpc/rpc.h>
+#include <netdb.h>
 
 #include "tsp_server.h"
 
@@ -209,11 +210,11 @@ void* tsp_exec_feature_1_svc(TSP_exec_feature_t exec_feature, struct svc_req * r
 void
 tsp_rpc_1(struct svc_req *rqstp, register SVCXPRT *transp) ;
 
-static TSP_rpc_init(int server_number)
+static int TSP_rpc_init(int server_number)
 {
-
   int ret = TRUE;
   register SVCXPRT *transp;
+
 
   /* Create prog id */
   int32_t rpc_progid = TSP_get_progid(server_number);
@@ -236,83 +237,77 @@ static TSP_rpc_init(int server_number)
     STRACE_ERROR(("Cannot create TCP service"));
     ret = FALSE;
   }
-  if (ret && !svc_register(transp,rpc_progid,TSP_RPC_VERSION_INITIAL , tsp_rpc_1, IPPROTO_TCP)) {
-    STRACE_ERROR(("unable to register (rpc_progid=%d, TSP_RPC_VERSION_INITIAL, tcp).",  rpc_progid))
-    fprintf (stderr, "%s", "unable to register (TSP_RPC, TSP_RPC_VERSION_INITIAL, tcp).");
-    ret = FALSE;
+  if (ret && !svc_register(transp,rpc_progid, TSP_RPC_VERSION_INITIAL, tsp_rpc_1, IPPROTO_TCP)) {
+    STRACE_ERROR(("RPC server unable to register ProgId=%X",  rpc_progid));
   }
-	
-  if (ret)
-    {
-      STRACE_DEBUG(("RPC server is going to be started with ProdId=%X",rpc_progid ));\
-      STRACE_DEBUG(("launching svc_run..."));
-      svc_run();
-      STRACE_INFO(("svc_run returned"));
-    }
-	
+
+  if(ret)
+    STRACE_DEBUG(("RPC server is ready to be started with ProgId=%X", rpc_progid));
+
   STRACE_IO(("-->OUT "));
 
-	
   return ret;
 }
 
-void* TSP_thread_rpc_init(void* arg)
+static void TSP_rpc_run(void)
 {
-  /* FIXME : creer le thread détaché */
-
-  int server_number = (int)arg;
-
-  pthread_detach(pthread_self());
-    
-  STRACE_IO(("-->IN"));
- 
-   TSP_rpc_init(server_number);
-      
-  STRACE_IO(("-->OUT"));
+  STRACE_DEBUG(("launching svc_run..."));
+  svc_run();
+  STRACE_INFO(("svc_run returned"));
 }
 
-int TSP_rpc_request_config(void* config_param)
+char* TSP_rpc_request_config(void** config_param)
 {
-
-  int retval = TRUE;
-  int** i = (int **) config_param;
+  char *ret = NULL, hostname[MAXHOSTNAMELEN], *servername;
+  int i, servernumber;
+  TSP_rpc_request_config_t *config;
 
   STRACE_IO(("-->IN"));
-  *i = calloc(1,sizeof(int));
-  **i = TSP_provider_get_server_number();
 
+  /* Recurse RPC init calls to find a free PROG ID,
+     limited to TSP_MAX_SERVER_NUMBER */
+  servernumber = TSP_provider_get_server_base_number();
+  for(i=0; i<TSP_MAX_SERVER_NUMBER; i++)
+    {
+      /* when TSP_rpc_init returns TRUE, svc_run was executed and exited OK */
+      if(TSP_rpc_init(servernumber + i))
+	break;
+    }
+  if(i == TSP_MAX_SERVER_NUMBER)
+    {
+      STRACE_ERROR(("unable to register any RPC progid, check daemons"));
+      *config_param = NULL;
+    }
+  else
+    {
+      config = calloc(1, sizeof(TSP_rpc_request_config_t));
+
+      config->server_number = servernumber + i;
+      gethostname(hostname, MAXHOSTNAMELEN);
+      servername = GLU_get_server_name();
+      sprintf(config->url, TSP_URL_FORMAT, TSP_RPC_PROTOCOL, hostname, servername, config->server_number);
+
+      *config_param = (void*)config;
+      ret = config->url;
+    }
   STRACE_IO(("-->OUT"));
-  return retval;
+  return ret;
 
 } /* end of TSP_rpc_request_config */
-
-int TSP_rpc_request_config2(void* config_param)
-{
-
-  int retval = TRUE;
-  int** i = (int **) config_param;
-
-  STRACE_IO(("-->IN"));
-  *i = calloc(1,sizeof(int));
-  **i = TSP_provider_get_server_number()+1;
-
-  STRACE_IO(("-->OUT"));
-  return retval;
-
-} /* end of TSP_rpc_request_config2 */
 
 
 void *TSP_rpc_request_run(void* config_param)
 {
 
-  int* server_number = (int *) config_param;
-
-  pthread_detach(pthread_self()); /* FIXME shoudl we do this */
+  TSP_rpc_request_config_t *config = (TSP_rpc_request_config_t*) config_param;
 
   STRACE_IO(("-->IN"));  
-  
-  TSP_rpc_init(*server_number);
-  
+ 
+  pthread_detach(pthread_self()); /* FIXME shoudl we do this */
+
+  if(config && config->server_number >= 0)
+    TSP_rpc_run();
+
   STRACE_IO(("-->OUT"));
   /* FIXME implements cond var notification */
 } /* end of TSP_rpc_request_run */
@@ -325,26 +320,3 @@ int TSP_rpc_request_stop(void)
   return retval;
 } /* end of TSP_rpc_request_stop */
 
-int TSP_command_init(int server_number, int blocking)
-{
-
-  int ret = FALSE;
-
-  STRACE_IO(("-->IN"));
-
-  if(!blocking)
-    {
-      pthread_t thread_id;
-      int status;
-      status = pthread_create(&thread_id, NULL, TSP_thread_rpc_init,  (void*)server_number);
-      TSP_CHECK_THREAD(status, FALSE);
-    }
-  else
-    {
-      ret = TSP_rpc_init(server_number);
-    }
-
-  STRACE_IO(("-->OUT"));
-
-  return ret;
-} /* end of TSP_command_init */

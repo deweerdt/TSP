@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl_init/tsp_provider_init.c,v 1.7 2004-09-22 14:25:58 tractobob Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl_init/tsp_provider_init.c,v 1.8 2004-09-23 16:11:57 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -60,15 +60,13 @@ int TSP_provider_init(int* argc, char** argv[])
 
 int TSP_provider_run(int spawn_mode)
 {
-
   int ret = FALSE;
+
   STRACE_IO(("-->IN"));
   
   
   if(TSP_provider_is_initialized())
     {            
-      int server_number = TSP_provider_get_server_number();
-      /* ret = TSP_command_init(server_number, spawn_mode); */
       /* build and install default request handlers */
       TSP_provider_request_handler_t rqh;
       rqh.config = TSP_rpc_request_config;
@@ -78,13 +76,13 @@ int TSP_provider_run(int spawn_mode)
       TSP_provider_rqh_manager_install(0,rqh);
 
       /*
-       * un-comment this if you want to tests
-       * two RPC request handler
-       * rqh.config = TSP_rpc_request_config2;
+       * un-comment this if you want to test
+       * more then one RPC request handler
        * TSP_provider_rqh_manager_install(1,rqh);
        */
       
       ret = TSP_provider_rqh_manager_refresh();
+
 
       /* If we are launched in a blocking mode 
        * Wait for every request handler thread to terminate
@@ -109,3 +107,13 @@ void TSP_provider_print_usage(void)
 {
    printf(TSP_ARG_PROVIDER_USAGE"\n");
 }
+
+char *TSP_provider_url(int rank)
+{
+  /* Check running handlers and return their URLs */
+  if(rank >= 0 && rank < TSP_provider_rqh_manager_get_nb_running())
+    return  TSP_provider_rqh_manager_get(rank)->url;
+  else
+    return NULL;
+}
+

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: tsp_provider.c,v 1.22 2004-09-16 07:53:18 dufy Exp $
+$Id: tsp_provider.c,v 1.23 2004-09-23 16:11:57 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -52,9 +52,10 @@ static  char** X_argv = 0;
 static  char** X_glu_argv = 0;
 static  int X_glu_argc = 0;
 
-/** default server number is 0, that's what we want
-when there is one single server on a given host*/
-static int X_server_number = 0;
+/** server base number is an offset allowing to distinguish TSP providers **/
+/** each Request handler shall look for a channel number from this offset,
+    and limited to TSP_MAX_SERVER_NUMBER **/
+static int X_server_base_number = 0;
 
 
 static int X_tsp_provider_init_ok = FALSE;
@@ -170,8 +171,8 @@ static int TSP_cmd_line_parser(int* argc, char** argv[])
 	    {
 	      /* Found arg for server number option */
 	      found_server_number_flag = FALSE;
-	      X_server_number = atoi((*argv)[i]);
-	      STRACE_INFO(("Server number = %d", X_server_number));
+	      X_server_base_number = atoi((*argv)[i]);
+	      STRACE_INFO(("Server base number = %d", X_server_base_number));
 	    }
 	  else
 	    {	      
@@ -231,11 +232,10 @@ int TSP_provider_is_initialized(void)
   return  X_tsp_provider_init_ok;
 }
 
-int TSP_provider_get_server_number(void)
+int TSP_provider_get_server_base_number(void)
 {
-  return  X_server_number;
+  return  X_server_base_number;
 }
-
 
 
 void TSP_provider_request_open(const TSP_request_open_t* req_open,
