@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer.c,v 1.1 2004-09-21 21:59:58 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer.c,v 1.2 2004-09-21 22:12:12 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -409,7 +409,9 @@ tsp_ascii_writer_start(FILE* sfile, int32_t nb_sample_max_infile) {
 	  fprintf(sfile,"\n");
 	  complete_line = 0;
 	  ++nb_sample;
-	  if (0 == (nb_sample % nb_sample_max_infile)) {
+	  if ((0 != nb_sample_max_infile) && 
+	      (0 == (nb_sample % nb_sample_max_infile ))
+	      ) {
 	    rewind(sfile);
 	  }
 	}
