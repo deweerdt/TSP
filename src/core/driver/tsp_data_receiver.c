@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_data_receiver.c,v 1.3 2002-08-28 09:16:12 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_data_receiver.c,v 1.4 2002-09-05 09:09:28 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -142,8 +142,8 @@ int TSP_data_receiver_receive(TSP_data_receiver_t _receiver,
   if(ret)
     {
       int buf_len;
-      time_stamp = buf_int[0];
-      group_index = buf_int[1];
+      time_stamp = TSP_DECODE_INT(buf_int[0]);
+      group_index = TSP_DECODE_INT(buf_int[1]);
 	
     
       /* Check if the group_index looks real */
