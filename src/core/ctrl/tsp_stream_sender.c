@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_stream_sender.c,v 1.2 2002-09-05 09:06:13 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_stream_sender.c,v 1.3 2002-10-01 15:27:58 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -37,6 +37,12 @@ struct TSP_socket_t
     
   /** String for the data address ex: Myhost:27015 */
   char data_address[TSP_DATA_ADDRESS_STRING_SIZE + 1];
+
+  /**
+   * client connection status.
+   * If TRUE, the client is connected to the socket
+   */
+  int client_is_connected;
 };
 
 typedef struct TSP_socket_t TSP_socket_t;
@@ -103,6 +109,9 @@ static void* TSP_streamer_sender_connector(void* arg)
 
   if(sock->hClient > 0)
     {
+
+      /* OK, the client is connected */
+      sock->client_is_connected = TRUE;
       STRACE_INFO(("New connection accepted on socket client socket %d", sock->hClient));
     }
   else
@@ -140,6 +149,13 @@ TSP_stream_sender_t TSP_stream_sender_create(void)
   pthread_t thread_connect_id;
   
   STRACE_IO(("-->IN"));
+
+  /*First disable SIGPIPE signal to avoir being crashed by a disconnected client*/
+  if( SIG_ERR == signal(SIGPIPE, SIG_IGN))
+    {
+      STRACE_ERROR(("Unable to disable SIGPIPE signal"));
+      return 0;
+    }
   
   if( -1 == gethostname(host, TSP_MAXHOSTNAMELEN))
     {
@@ -281,6 +297,11 @@ TSP_stream_sender_t TSP_stream_sender_create(void)
       /* Demarrage du thread */
       /* FIXME : faire l'arret du thread */
       /* FIXME : detacher le thread */
+
+      /* When the client is be connected, the thread function TSP_streamer_sender_connector will set the client_is_connected 
+	 var to TRUE */
+      sock->client_is_connected = FALSE;
+      /* Do the accept thrue a thread */
       status = pthread_create(&thread_connect_id, NULL, TSP_streamer_sender_connector,  sock);
       TSP_CHECK_THREAD(status, FALSE);
 
@@ -339,4 +360,17 @@ int TSP_stream_sender_send(TSP_stream_sender_t sender, const char *buffer, int b
   STRACE_IO(("-->OUT"));
 
   return(TRUE);
+}
+
+
+/**
+ * Tells is a client is connected to the socket.
+ * Note : Is a client crashes this still returns TRUE
+ * @return TRUE is the client is connected
+ */
+int TSP_stream_sender_is_client_connected(TSP_stream_sender_t sender)
+{
+  TSP_socket_t* sock = (TSP_socket_t*)sender;
+
+  return sock->client_is_connected;
 }

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_stream_sender.h,v 1.1 2002-08-27 08:56:09 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_stream_sender.h,v 1.2 2002-10-01 15:27:58 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -28,5 +28,7 @@ TSP_stream_sender_t TSP_stream_sender_create(void);
 int TSP_stream_sender_send(TSP_stream_sender_t sender, const char *buffer, int bufferLen);
 
 const char* TSP_stream_sender_get_data_address_string(TSP_stream_sender_t sender);
+
+int TSP_stream_sender_is_client_connected(TSP_stream_sender_t sender);
 
 #endif /*TSP_STREAM_SENDER_H*/
