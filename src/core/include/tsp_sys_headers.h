@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_sys_headers.h,v 1.15 2004-10-07 08:53:59 tractobob Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_sys_headers.h,v 1.16 2005-02-01 22:54:48 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -36,6 +36,10 @@ Purpose   :
 
 #ifndef __TSP_SYS_HEADERS_H
 #define __TSP_SYS_HEADERS_H 1
+
+#ifdef __FreeBSD__
+#include <rpc/rpc.h>
+#endif /* __FreeBSD__ */
 
 #ifdef __OpenBSD__
 #include <rpc/rpc.h>
