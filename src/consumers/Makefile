@@ -10,7 +10,7 @@ else
 		res_writer \
 		tutorial \
 		gdisp
-	ifeq (${EXCLUDE_JAVA},no)
+	ifeq (${BUILD_JAVA},yes)
 		SUBDIRS += jstdout
 	endif
 	include $(DEVBASE)/make/Makesubdirs
