@@ -2,4 +2,15 @@
 - write a tutorial
 - make bbtools use a common bbtools
   may be like busybox style
+
 - use hcreate to improve symbol search and lookup
+
+- add bb_memset command and API to reset 
+  BB data area without destroying BB
+
+- add bb_publish and bb_synchro_xx to bbtools in order
+  to be able script BB for demo and even practical
+  application control
+
+- add some direct scripting language binding
+  (TCL, python, ...) as bbtools for 'shell'
