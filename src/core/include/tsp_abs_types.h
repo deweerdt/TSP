@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_abs_types.h,v 1.4 2002-09-17 09:36:47 fancelli Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_abs_types.h,v 1.5 2002-09-18 08:16:40 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -72,6 +72,8 @@ typedef unsigned long long guint64;
 
 #define TSP_SYSTEM_HAVE_GETHRTIME 1
 
+#define TSP_SYSTEM_HAVE_NANOSLEEP 1
+
 #endif /* SUN / sparc */
 
 
@@ -125,6 +127,8 @@ typedef unsigned long guint64;
 #define G_GUINT64_FORMAT "lu"
 
 #define TSP_SYSTEM_HAVE_GETHRTIME 1
+
+#define TSP_SYSTEM_HAVE_NANOSLEEP 1
 
 #endif /* SUN / sparcv9 (64 bits) */
 
@@ -180,6 +184,7 @@ typedef unsigned long long guint64;
 
 #define G_GUINT64_FORMAT "llu"
 
+#define TSP_SYSTEM_HAVE_NANOSLEEP 1
 
 #endif /* Linux / Intel */
 
@@ -234,7 +239,7 @@ typedef unsigned long guint64;
 
 #define G_GUINT64_FORMAT "lu"
 
-
+#define TSP_SYSTEM_HAVE_THREADSAFE_USLEEP 1
 
 #endif /* OSF1 / Alpha */
 
