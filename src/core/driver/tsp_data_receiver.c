@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_data_receiver.c,v 1.1 2002-08-27 08:56:09 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_data_receiver.c,v 1.2 2002-08-27 14:56:31 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -171,8 +171,8 @@ int TSP_data_receiver_receive(TSP_data_receiver_t _receiver,
                   
 		  if( (sample = RINGBUF_PTR_PUTBYADDR(symbol_ringbuf))  )
 		    {
-		      /*Decode data*/
-		      assert(groups[group_index].items[rank].data_decoder);
+		      /* Call registered function to decode data */
+		      assert(groups[group_index].items[rank].data_decoder);		      
 		      ret = (groups[group_index].items[rank].data_decoder)(&(sample->user_value),in_buf);
 		      if(!ret)
 			{
