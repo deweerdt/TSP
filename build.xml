@@ -1,0 +1,118 @@
+<project name="JTsp" basedir="." default="consumers" >
+
+    <!-- TODO : Utiliser DEVBASE ? -->
+	<property name="tsp.home" value="." />		
+	<property name="tsp.consumers" value="${tsp.home}/src/consumers" />		
+						
+	 <!-- External Tools -->
+	 <property name="ext.dir" value="${tsp.home}/external" />	 
+	 
+	 <!-- External : RemoteTea (RPC)  -->
+ 	 <property name="ext.rpc.dir" value="${ext.dir}/RemoteTea" />
+ 	 <!-- use the nice ant custom task provided by RemoteTea -->
+ 	 <taskdef name="jrpcgen" classname="org.acplt.oncrpc.ant.JrpcgenTask" classpath="${ext.rpc.dir}/jrpcgen.jar"/>
+ 	 <path id="ext.rpc.classpath">
+ 	 	<pathelement location="${ext.rpc.dir}/oncrpc.jar"/>
+ 	 </path>
+ 	 
+ 	 <!-- External : JSynoptic -->
+ 	 <property name="ext.jsynoptic.dir" value="${ext.dir}/jSynoptic" />
+ 	 <path id="ext.jsynoptic.classpath">
+ 	 	<fileset dir="${ext.jsynoptic.dir}">
+        	<include name="*.jar"/>
+      	</fileset>
+ 	 </path>
+ 	  	  	 
+ 	<!-- TSP Project configuration -->
+ 	<property name="project.src" value="${tsp.home}/src/jcore" />	
+	<property name="project.build" value="${tsp.home}/exec/DEV/java/build" />
+	<property name="project.class" value="${project.build}/class-tsp" />
+	<property name="project.jar" value="${project.build}/jar" />	
+	<property name="jar.service" value="${project.jar}/tsp-service.jar" />
+	<property name="jar.consumer" value="${project.jar}/tsp-consumer.jar" />
+ 	 <!-- RPC for TSP -->
+ 	 <property name="rpc.pref" value="TSP_rpc" />
+ 	 <property name="rpc.package" value="tsp.core.rpc" />
+ 	 <property name="rpc.dir" value="${project.src}/tsp/core/rpc" />
+ 	 <property name="rpc.file" value="${rpc.dir}/${rpc.pref}.x" /> 	 
+ 	 <!-- Classpath -->
+ 	 <path id="project.classpath">
+ 	 	<path refid="ext.rpc.classpath"/>
+ 	 </path>
+ 	 <!-- Generic classpath for Tsp clients -->
+ 	 <path id="project.client.classpath">
+ 	 	<path refid="ext.rpc.classpath"/>
+ 	 	<pathelement location="${jar.consumer}"/>
+ 	 	<pathelement location="${jar.service}"/>
+ 	 </path>
+ 	  	  	  	  	  	  	  	 
+ 	 <!-- Targets --> 	  	  	 
+ 	 <target name="consumers" depends="jsynoptic,jstdout"/>
+ 	  	 
+ 	 <target name="project-rpc" depends="clean-project-rpc">
+ 	 	<jrpcgen srcfile="${rpc.file}" destdir="${project.src}" package="${rpc.package}"/>
+ 	 	<!-- Hum... jrpcgen custom task does not allow to set the client stub file name, 
+ 	 	that's the reason of this little hack so a to rename the generated class with the name we really want -->
+ 	 	<replace file="${rpc.dir}/TSP_rpcClient.java" token="TSP_rpcClient" value="TSP_rpcClientStub"/>
+ 	 	<move file="${rpc.dir}/TSP_rpcClient.java" tofile="${rpc.dir}/TSP_rpcClientStub.java"/>
+ 	 </target> 	  	 
+ 	 
+ 	 <target name="project-build" depends="project-rpc">
+ 	    <mkdir dir="${project.build}"/>
+ 	    <mkdir dir="${project.class}"/>
+ 	 	<javac srcdir="${project.src}" destdir="${project.class}">
+ 	 	    <classpath refid="project.classpath"/>
+ 	 		<include name="**/*.java"/>
+ 	 	</javac>
+ 	 </target> 	  	 
+ 	  	 	
+ 	 <target name="clean-project-rpc">
+ 	 	<delete>
+ 	 		<fileset dir="${rpc.dir}" includes="${rpc.pref}*.java,TSP_*_t.java"/>
+ 	 	</delete>
+ 	 </target> 	  	 
+ 	  
+ 	<target name="project-jar" depends="project-build">
+ 	    <mkdir dir="${project.jar}"/>
+ 	 	<jar destfile="${jar.service}" basedir="${project.class}" excludes="**/consumer/*.class,**/provider/*.class"/>
+ 	 	<jar destfile="${jar.consumer}" basedir="${project.class}" includes="**/consumer/*.class"/>
+ 	 </target> 
+ 	 
+ 	 <!-- JSynoptic Plugin  -->
+	<property name="jsynoptic.src" value="${tsp.consumers}/jsynoptic" />	
+	<property name="jsynoptic.class" value="${project.build}/class-jsynoptic" />
+	<property name="jar.jsynoptic" value="${project.jar}/jsynoptic-tsp-plugin.jar" /> 	 
+ 	 <path id="jsynoptic.classpath">
+ 	    <path refid="ext.jsynoptic.classpath"/>
+ 	 	<path refid="project.client.classpath"/>
+ 	 </path>
+
+ 	 <target name="jsynoptic" depends="project-jar">
+ 	    <mkdir dir="${jsynoptic.class}"/>
+ 	 	<javac srcdir="${jsynoptic.src}" destdir="${jsynoptic.class}" >
+ 	 	    <classpath refid="jsynoptic.classpath"/>
+ 	 		<include name="**/*.java"/>
+ 	 	</javac>
+ 	 	<jar destfile="${jar.jsynoptic}" basedir="${jsynoptic.class}" />
+ 	 </target> 
+
+	<!-- JStdout  -->
+	<property name="jstdout.src" value="${tsp.consumers}/jstdout" />	
+	<property name="jstdout.class" value="${project.build}/class-jstdout" />
+	<property name="jar.jstdout" value="${project.jar}/jstdout.jar" /> 	 
+ 	 <path id="jstdout.classpath">
+ 	 	<path refid="project.client.classpath"/>
+ 	 </path>
+
+ 	 <target name="jstdout" depends="project-jar">
+ 	    <mkdir dir="${jstdout.class}"/>
+ 	 	<javac srcdir="${jstdout.src}" destdir="${jstdout.class}" >
+ 	 	    <classpath refid="jstdout.classpath"/>
+ 	 		<include name="**/*.java"/>
+ 	 	</javac>
+ 	 	<jar destfile="${jar.jstdout}" basedir="${jstdout.class}" />
+ 	 </target> 
+
+  
+</project> 
+
