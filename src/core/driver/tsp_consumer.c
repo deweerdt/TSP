@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.2 2002-08-28 09:15:24 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.3 2002-08-29 13:04:19 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -27,7 +27,7 @@ Purpose   : Main implementation for the TSP consumer library
  
 
 /**
- * Quick check for a session.
+ * Quick check for a session validity.
  */
 #define TSP_CHECK_SESSION(session, ret) \
 	{ \
@@ -46,38 +46,68 @@ Purpose   : Main implementation for the TSP consumer library
 
 /**
  * TSP object.
+ * A TSP_otsp_t is created for each consumer connection
  */
 struct TSP_otsp_t 
 {
   /* FIXME : avec un systeme de variables à enum indiquant chaque etat
      de la session (request fait, sample fait, sample_int fait, gerer les erreur
-     si le client ne respecte pas les ordres d'appel*/
+     si le client ne respecte pas les ordres d'appel, comme un automate
+   */
     
-  /** Handle sur serveur RPC (ou autre chose Sockets...)*/
+  /** Handle for the command canal connection.
+   * (i.e. : handle on RPC connection for the current implementation).
+   */
   TSP_server_t* server;
   
-  /** Informations sur le serveur*/
+  /** 
+   * Server information.
+   * Used by the client to provide information
+   * about the producer. May be used to choose the providers that will be
+   * kept opened.
+   */
   TSP_otsp_server_info_t server_info; 
   
-  /** Numero de channel */
+  /**
+   * Channel identificator. Attributed by the provider to distinguish
+   * several consumers
+   */
   channel_id_t channel_id;
 	
-  /** Liste des symboles disponibles */
+  /** 
+   * List of symbols avaible in the producer.
+   * The consumer must chose its symbols in this list
+   */
   TSP_sample_symbol_info_list_t symbols;
   
-  /** Groups table */
+  /**
+   * Groups table.
+   * This group table is calculated by the provider when the symbols
+   * are choosen by the consumer. The table is sent back from the provider
+   * to the consumer and stored in this object
+   */
   TSP_groups_t groups;
   
-  /** receiver */
+  /**
+   * Data receiver.
+   * This object is used to receive and decode the data stream from
+   * the provider
+   */
   TSP_data_receiver_t receiver;
   
-  /** Array of ringbuf for all symbols managed by server */
+  /**
+    * Array of ringbuf for all symbols managed by server
+    */
   TSP_sample_ringbuf_t** sample_ringbuf;
   
-  /** Thread receving data socket*/
+  /**
+   * Receiver thread.
+   * This thread calls the data_receiver functions to receive the symbols data
+   * from the provider.
+   */
   pthread_t thread_receiver;
 
-  /** If data_link_broken = TRUE, the server is unreachable */	
+  /** If data_link_broken = TRUE, the server is unreachable.*/	
   int data_link_broken; 
 
   
@@ -87,6 +117,12 @@ typedef struct TSP_otsp_t TSP_otsp_t;
 
 /*-------------------------------------------------------------------*/
 
+/**
+* Allocate a consumer object.
+* @param server handle for the command canal (RPC) for the consumer
+* @param server_info information sent by the provider about itself
+* @return the allocated consumer object
+*/ 
 static TSP_otsp_t* TSP_new_object_tsp(	TSP_server_t server,
 		  		TSP_server_info_string_t server_info)
 {
@@ -125,6 +161,7 @@ static TSP_otsp_t* TSP_new_object_tsp(	TSP_server_t server,
 	return obj;
 }
 
+
 static void TSP_delete_object_tsp(TSP_otsp_t* o)
 {
 
@@ -149,14 +186,9 @@ static  void TSP_print_object_tsp(TSP_otsp_t* o)
 
 	
 	STRACE_IO(("-->IN"));
-
 	STRACE_INFO(("----------------------------------------------"));
-
 	STRACE_INFO(("SERVER_INFO->INFO='%s'\n", o->server_info.info));
-
 	STRACE_INFO(("----------------------------------------------"));
-
-	
 	STRACE_IO(("-->OUT"));
 
 }
@@ -165,15 +197,21 @@ static  void TSP_print_object_tsp(TSP_otsp_t* o)
 
 /**
 * Open all providers.
-* @param target_name the host where the providers must be found
+* This function will try to find several providers on a host.
+* When this function was called, TSP_close_all_provider() must be called too
+* at the end of the process
+* @param target_name the host name where the providers must be found
 * @param providers pointer on an array of providers
-* @param nb_providers total number of providers found
+* @param nb_providers total number of providers found. Use this number to iterate
+* thrue the providers array. 
 */
 void TSP_open_all_provider(const char* target_name, TSP_provider_t** providers, int* nb_providers)
 {	
 	SFUNC_NAME(TSP_remote_open_all_provider);
 	
 	int i;
+
+	/* Get max number of provider allowed on any host */
 	int server_max_number = TSP_get_server_max_number();
 
 	STRACE_IO(("-->IN"));
@@ -183,20 +221,23 @@ void TSP_open_all_provider(const char* target_name, TSP_provider_t** providers, 
 	if( server_max_number > 0 )
 	{
 		*providers = (TSP_provider_t*)calloc(server_max_number,sizeof(TSP_provider_t));
-		TSP_CHECK_ALLOC(providers,)
+		TSP_CHECK_ALLOC(providers,);
 		
+		/* Iterate on all providers, and try to contact them */
 		for(i = 0 ; i < server_max_number ; i++)
 		{
 			TSP_server_t server;
 			TSP_server_info_string_t server_info;
 
 			STRACE_DEBUG(("Trying to open server No %d", i));
-			
+
+			/* Is server number 'i' alive ?*/ 
 			if(TSP_remote_open_server(  target_name,
 						    i, 
 						    &server,
 						    server_info))
-			{
+			  {
+			  
 				(*providers)[*nb_providers] = TSP_new_object_tsp(server, server_info);
 				if( 0 == (*providers)[*nb_providers])
 				{
@@ -234,7 +275,8 @@ void TSP_open_all_provider(const char* target_name, TSP_provider_t** providers, 
 
 /**
 * Close all providers.
-* @param provider the provider that must be close.
+* This function is used to clean up after a 
+* @param provider the providers that must be close.
 */
 void TSP_close_all_provider(TSP_provider_t providers[])
 {	

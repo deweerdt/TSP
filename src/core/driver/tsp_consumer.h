@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.h,v 1.1 2002-08-27 08:56:09 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.h,v 1.2 2002-08-29 13:04:19 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -23,10 +23,8 @@ Purpose   : Main interface for the TSP consumer library
 #include "tsp_datastruct.h"
 #include "tsp_sample_ringbuf.h"
 
-/* Handle sur provider */
+/** Opaque handle type for provider */
 typedef  void* TSP_provider_t;
-
-/* Fontions */
 
 void TSP_open_all_provider(const char* target_name,
 			   TSP_provider_t** providers,
