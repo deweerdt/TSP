@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/include/Attic/tsp_simple_trace.h,v 1.9 2004-09-06 11:51:31 dufy Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/Attic/tsp_simple_trace.h,v 1.10 2004-09-15 13:43:07 dufy Exp $
 
 -----------------------------------------------------------------------
 
@@ -43,15 +43,16 @@ Purpose   : Some trace macro
 #define SIMPLE_TRACE_FUNC(level,src,func,text) \
 { \
     static int _strace_debug_level = -1; \
-    if (_strace_debug_level<0) \
-        if (getenv ("STRACE_DEBUG") != (char *)0) \
+    if (_strace_debug_level<0) { \
+        if (getenv ("STRACE_DEBUG") != (char *)0) {\
             _strace_debug_level = atoi(getenv("STRACE_DEBUG")); \
-        else \
-            _strace_debug_level = 0; \
+        } else {\
+            _strace_debug_level = 0; }\
     if (_strace_debug_level >= level ) { \
            printf("%7s||%s##%s##%d: ", src, __FILE__, func, __LINE__); \
            printf text; printf("\n"); fflush(stdout);\
-        } \
+        }\
+    }\
 } 
 #ifdef __GNUC__       
 #  define SIMPLE_TRACE(level,src,text) SIMPLE_TRACE_FUNC(level,src,__FUNCTION__,text)
