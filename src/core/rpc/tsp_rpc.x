@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_rpc.x,v 1.10 2002-10-09 08:25:45 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_rpc.x,v 1.11 2002-11-19 13:26:56 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -20,7 +20,8 @@ enum TSP_status_t
 	TSP_STATUS_OK,
 	TSP_STATUS_ERROR_UNKNOWN,
 	TSP_STATUS_ERROR_SEE_STRING,	
-	TSP_STATUS_ERROR_VERSION	
+	TSP_STATUS_ERROR_VERSION,
+	TSP_STATUS_ERROR_SYMBOLS	
 	
 };
 
