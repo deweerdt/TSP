@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer_main.c,v 1.4 2004-10-20 12:37:35 tractobob Exp $
+$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer_main.c,v 1.5 2005-02-18 23:42:59 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -118,7 +118,7 @@ main (int argc, char* argv[]) {
     printf("   -x   the file specifying the list of symbols to be sampled\n");
     printf("   -o   the name of the output file\n");
     printf("   -l   (optional) the maximum number of sample to be stored in file\n");
-    printf("   -u   (optionel) the  TSP provider URL <PROTOCOL://HOST/SERVER:PORT> \n");  
+    printf("   -u   (optional) the  TSP provider URL <PROTOCOL://HOST/SERVER:PORT> \n");  
     exit(retcode);
   }
 
