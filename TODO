@@ -3,40 +3,43 @@ TODO list:
 ========
  COMMON
 ========
-- complete the TODO list ( !!! ;)  )
-- Write a real doc on it
-- use bash, not tcsh for scripts
-- use Autoconf/Automake
-- Enhance RPC commandibilty with CORBA & XML
-- Handle accurate bufferisation on provider & consumer sides
-  QoS on troughput  (be able to know the size of the requested datan and refuse it if too big)
-- Allow to write on one TSP symbol (TPS protocol V2)
-- Compile under VxWorks
-- Use TSP on UDP, secure sockets, SHM, ... instead of just TCP/IP
+- complete the TODO list ( !!! ;)  )					@All
+- Promote the product							@All
+- Write a programer's Guide, and/or architecture from  code		@Seb
+- Update specification versus code					@?
+- Enhance RPC commandibilty with CORBA & XML				@?
+- Handle accurate bufferisation on provider & consumer sides		@?
+  QoS on troughput  
+  (be able to know the size of the requested datan and refuse it if too big)
+- Allow to read/write on one TSP symbol (protocol V2 opaque cmd)	@?
+- Compile under VxWorks							@Jerome
+- Use TSP on UDP, secure sockets, SHM, ... instead of just TCP/IP	@?
+- Add an asynchronous Mode						@Bob
+- Add tsp_config.h for configuring/document FIFO sizes			@?
 
 ==========
  PROVIDER
 ==========
-- Replace all the 'typedef void*' object encapsulation trick by
+- Replace all the 'typedef void*' object encapsulation trick by		@Caribou
   a 'typedef struct TSP_mystruct_t TSP_mystruct_t' that hides
   the internal struct too, but does not hide it when we try
   to debug (the 'void*' stuff to hide the object was not a good
   idea at all)
-- The datapool should store the data in a RAW format. The conversion
-  to other formats (RAW, STRING, ARRAY, INT, DOUBLEi, ...) 
+- The datapool should store the data in a RAW format. The conversion	@?
+  to other formats (RAW, STRING, ARRAY, INT, DOUBLE, ...) 
   should be done when sending
   the data to a consumer (given that the conversion depends on what
   were the data formats asked by the consumer)
-- By default the endianity of the provider should be used to transmit
-  the data (for now it is always big endian); so as to be CPU
-  friendly for the provider
-- Allow Provider to add symbols on the fly or on request
-- Allow to select/tune thread priority
+- Allow Provider to add symbols on the fly or on request		@?
+- Allow to select/tune thread priorityi + thread state			@Erk
+- Implement PUSH philosphy for adding sample values in provider		@Duf
+- Add a naming service (something like "rpc://host.out.in:StubServer)	@?
+- Correct bug on FIFO Full => exit
 
 ==========
  CONSUMER
 ==========
-- The consumer API should be able to choose the endianity of
+- The consumer API should be able to choose the endianity of		@?
   the transmited data : its endianity, or the provider's endianity
   (the latest should be the default)
 - The consumer API shoud have a get_last_error function to get details
@@ -44,5 +47,11 @@ TODO list:
   that has plenty of reasons to fail )
 - Implement properly the callback function used to read the samples
   (the error code must be added)
+- Give XDR API for Client (to build lowlevel recording)
 - res recorder with indianity
-=======
+
+==========
+ GDISP+		@Euskady
+==========
+- look in src/gdisp+/TODO
+- Find a real sexy name for that STUF
