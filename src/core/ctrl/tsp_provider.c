@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_provider.c,v 1.9 2002-10-24 13:27:45 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_provider.c,v 1.10 2002-10-28 14:47:28 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -36,11 +36,10 @@ static  int X_glu_argc = 0;
 
 /** default server number is 0, that's what we want
 when there is one single server on a given host*/
-static X_server_number = 0;
+static int X_server_number = 0;
 
 
 static X_tsp_provider_init_ok = FALSE;
-
 
 
 static int TSP_cmd_line_parser(int* argc, char** argv[])
@@ -189,6 +188,16 @@ static int TSP_cmd_line_parser(int* argc, char** argv[])
 
 }
 
+int TSP_provider_is_initialized(void)
+{
+  return  X_tsp_provider_init_ok;
+}
+
+int TSP_provider_get_server_number(void)
+{
+  return  X_server_number;
+}
+
 
 void TSP_provider_request_open(const TSP_request_open_t* req_open,
 		      TSP_answer_open_t* ans_open)
@@ -335,9 +344,9 @@ void  TSP_provider_request_information(TSP_request_information_t* req_info,
  * @param s The char string that may be used by the sample server
  */
 
-int TSP_provider_init(int* argc, char** argv[])
+int TSP_provider_private_init(int* argc, char** argv[])
 {
-  SFUNC_NAME(TSP_provider_init);
+  SFUNC_NAME(TSP_provider_private_init);
 
   int ret = TRUE;
   assert(argc);
@@ -364,13 +373,6 @@ int TSP_provider_init(int* argc, char** argv[])
   return ret;
 }
 
-int TSP_provider_run(int blocking)
-{
-  assert(X_tsp_provider_init_ok);
-  /* TSP_command_init must be the latest called init func, coz we will be blocked here forever */
-  return TSP_command_init(X_server_number, blocking);
-  
-}
 
 void  TSP_provider_request_sample(TSP_request_sample_t* req_info, 
 			 TSP_answer_sample_t* ans_sample)
