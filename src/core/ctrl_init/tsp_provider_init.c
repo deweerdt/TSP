@@ -1,3 +1,21 @@
+/*!  \file 
+
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl_init/tsp_provider_init.c,v 1.3 2002-12-05 17:36:44 tntdev Exp $
+
+-----------------------------------------------------------------------
+
+Project   : TSP
+
+Component : Provider
+
+-----------------------------------------------------------------------
+
+Purpose   : Function calls to launch a TSP Provider program
+            in the 'main'
+
+-----------------------------------------------------------------------
+ */
+
 #include "tsp_sys_headers.h"
 
 #include "tsp_provider.h"
