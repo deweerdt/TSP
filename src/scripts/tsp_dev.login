@@ -3,8 +3,24 @@
 ##############################
 # La base = DEVBASE
 ##############################
+
+set SYSTEM_NAME=`uname -a | awk '{ print $1 }'`
+
+if ( "$SYSTEM_NAME" == "Linux" )  then
+      set SYSTEM_NAME="linux"
+
+else if ( "$SYSTEM_NAME" == "SunOS") then
+      set SYSTEM_NAME="sun"
+else if ( "$SYSTEM_NAME" == "OSF1") then
+      set SYSTEM_NAME="dec"
+else
+     echo "ERROR : Unknown system : $SYSTEM_NAME"
+     exit -1
+endif
+
+
 if ( ! $?DEVBASE ) then 
-	setenv DEVBASE /home2/breiz/tnt/sun/tsp
+	setenv DEVBASE /home2/breiz/tnt/$SYSTEM_NAME/tsp
 endif
 echo "Using DEVBASE         = $DEVBASE"
 
