@@ -1,0 +1,11 @@
+This directory intends to wrap a number of absent standard POSIX functions in typical WindRiver Tornado distribution.
+
+Makefile and posixWrap.c shall be placed in $WIND_BASE/target/src/posix.
+h/pthread.h is issued from Tornado 2.2.1 and shall be exported to $WIND_BASE/target/h
+sys/time.h is simply a prototype for gettimeofday and shall be exported to /target/h/sys
+no prototype is given to strdup since it should be in /target/string.h
+
+A make command on the destination directory (src/posix) will compile posixWrap.c into /target/lib/lib($CPU)($TOOL)vx.a
+
+Then, one must call at least "posixWrapInit()" function on standard usr initialisations so that final link of vxWorks core object keeps those functions.
+For instance this can be done on $WIND_BASE/target/all/usrConfig.c on the end of usrRoot call, and possibly inside a #ifdef INCLUDE_POSIX_ALL directive.
