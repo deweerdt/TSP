@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_provider.c,v 1.1 2002-08-27 08:56:09 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_provider.c,v 1.2 2002-09-05 09:03:52 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -21,6 +21,7 @@ Purpose   : Main implementation for the producer module
 
 #include "tsp_session.h"
 #include "tsp_server.h"
+#include "tsp_datapool.h"
 	
 
 void TSP_request_open(const TSP_request_open_t* req_open,
@@ -84,6 +85,7 @@ void  TSP_request_information(TSP_request_information_t* req_info,
 	
   ans_sample->version_id = TSP_VERSION;
   ans_sample->channel_id = req_info->channel_id;
+  ans_sample->data_address = "";
   GLU_get_sample_symbol_info_list(&(ans_sample->symbols));
 	
 		
@@ -131,7 +133,7 @@ void  TSP_request_sample(TSP_request_sample_t* req_info,
   /* FIXME : ce n'est pas le meilleur endroit pour faire ca,
      le faire plutot lors du sample_init avec les données
      conservée dans la session*/
-  ret = TSP_datapool_add_symbols(req_info->symbols);
+  ret = TSP_datapool_add_symbols(&(req_info->symbols));
   if(ret)
     {
         
