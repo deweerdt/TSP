@@ -23,7 +23,7 @@ export HOME_EXEC_CURRENT=$HOME_EXEC_BASE/current
 ##############################
 
 
-export PATH=${TSP_BASE}/src/scripts:${HOME_EXEC_CURRENT}/bin.consumer.debug:${HOME_EXEC_CURRENT}/bin.provider.debug:${TSP_BASE}/src/core/tests/stage1:${TSP_BASE}/src/core/tests/stage2:${TSP_BASE}/src/core/tests/stage3:${PATH}
+export PATH=${TSP_BASE}/src/scripts:${HOME_EXEC_CURRENT}/bin.consumer:${HOME_EXEC_CURRENT}/bin.provider:${PATH}
 
 
 ##############################
