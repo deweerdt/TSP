@@ -41,4 +41,4 @@ rpc.clean:
 	$(RM) $(RPC_SERVER_SRC:%.c=$(DIROBJ)/%.o) 
 	$(RM) $(RPC_CLIENT_SRC:%.c=$(DIROBJ)/%.o) 
 	@echo "@@@ removing RPC server objects and client objects [from lib]..."
-	$(AR) -d $(DIRLIB)/lib$(RPC_LIB_SUFFIX).a $(RPC_CLNT_SRC:%.c=%.o) $(RPC_CLIENT_SRC:%.c=%.o) $(RPC_SVC_SRC:%.c=%.o) $(RPC_SERVER_SRC:%.c=%.o) 
+	-$(AR) -d $(DIRLIB)/lib$(RPC_LIB_SUFFIX).a $(RPC_CLNT_SRC:%.c=%.o) $(RPC_CLIENT_SRC:%.c=%.o) $(RPC_SVC_SRC:%.c=%.o) $(RPC_SERVER_SRC:%.c=%.o) 
