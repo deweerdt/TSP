@@ -19,16 +19,17 @@
 
 2) At sampling level.
 
-  - graphical status of threads.
+  - the GTK step timer period is the minimum period of all plots.
+    it should be the PGCD of all plot periods.
 
 
 3) At 2D plot level.
 
   - plot titles must be in a dedicated GDK window in order to stop
     scrolling.
-  - implementation of "startStep" and "stopStep" methods.
   - tolerance band for each of Y symbols.
-  - finalize the link between sampling threads and graphic plots.
+  - finalize the link between sampling threads and graphic plots in
+    case of multi-providers.
 
 
 4) At page management level.
@@ -40,7 +41,14 @@
   - implement not square graphic pages (L x C with L != C )
 
 
-5) At symbol level.
+5) At databook level.
 
+  - graphical status of threads.
   - change the way a symbol is graphically affected to a provider.
       replace the color by a pixmap representing the provider.
+  - the databook can only be resized vertically.
+
+
+6) At TEXT plot level.
+
+  - 

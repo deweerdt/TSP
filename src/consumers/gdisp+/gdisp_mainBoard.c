@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_mainBoard.c,v 1.1 2004-02-04 20:32:09 esteban Exp $
+$Id: gdisp_mainBoard.c,v 1.2 2004-03-26 21:09:17 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -173,7 +173,7 @@ gdispOutputWrite(Kernel_T  *kernel,
   gtk_widget_show(listItem);
 
   gtk_list_scroll_vertical(GTK_LIST(kernel->widgets.mainBoardOutputList),
-			   GTK_SCROLL_JUMP,
+			   GTK_SCROLL_PAGE_FORWARD /* GTK_SCROLL_JUMP */,
 			   (gfloat)1 /* bottom of the list */);
 
   kernel->widgets.mainBoardOutputListSize++;
@@ -258,40 +258,6 @@ gdisp_outputListEvent (GtkWidget *widget,
 
 
 /*
- * This callback is called whenever play / stop buttons are pressed.
- * The argument "data" is the kernel itself.
- * The only way to determine which button has been pressed, is to
- * compare the argument "widget" (the target button) to both existent
- * button pointers stored into the kernel.
- */
-static void
-gdisp_togglePlayModeCallback (GtkWidget *buttonWidget,
-			      gpointer   data )
-{
-
-  Kernel_T     *kernel     =     (Kernel_T*)data;
-
-  if (buttonWidget == kernel->widgets.mainBoardOkButton) {
-
-    gtk_widget_hide(kernel->widgets.mainBoardOkButton  );
-    gtk_widget_show(kernel->widgets.mainBoardStopButton);
-
-    gdisp_startSamplingProcess(kernel);
-
-  }
-  else if (buttonWidget == kernel->widgets.mainBoardStopButton) {
-
-    gdisp_stopSamplingProcess(kernel);
-
-    gtk_widget_hide(kernel->widgets.mainBoardStopButton);
-    gtk_widget_show(kernel->widgets.mainBoardOkButton  );
-
-  }
-
-}
-
-
-/*
  * This is the 'GtkItemFactoryEntry' structure used to generate new menus.
  *
  * Item 1 : The menu path.
@@ -337,17 +303,15 @@ gdispMainBoardMenuDefinitions[] = {
                                 gdispQuitItemHandler,   0, NULL           },
  { "/_Data",                    NULL,
                                 NULL,                   0, "<Branch>"     },
- { "/_Data/_Providers",         "<control>P",
-                                gdisp_showProviderList, 0, NULL           },
- { "/_Data/S_ymbols",           "<control>Y",
-                                gdisp_showSymbolList,   0, NULL           },
+ { "/_Data/_All Data",          "<control>A",
+                                gdisp_showDataBook,     0, NULL           },
  { "/_Plots",                   NULL,
                                 NULL,                   0, "<Branch>"     },
  { "/_Plots/New page",          NULL,
                                 NULL,                   0, "<Branch>"     },
  { "/_Plots/New page/_Custom",  "<control>C",
                                 gdisp_createGraphicPage,0, NULL           },
- { "/_Plots/New page/Sep2",     NULL,
+ { "/_Plots/New page/Sep3",     NULL,
                                 NULL,                   0, "<Separator>"  },
  { "/_Plots/New page/_1 x 1",   "<control>1",
                                 gdisp_createGraphicPage,1, NULL           },
@@ -371,8 +335,6 @@ gdispMainBoardMenuDefinitions[] = {
  * Include for TSP Logo.
  */
 #include "pixmaps/gdisp_gdispLogo.xpm"
-#include "pixmaps/gdisp_stopButton.xpm"
-#include "pixmaps/gdisp_okButton.xpm"
 
 
 /*
@@ -391,6 +353,7 @@ gdisp_createMainBoard (Kernel_T *kernel)
 
   GtkWidget      *mainVBox        =      (GtkWidget*)NULL;
   GtkWidget      *mainHBox        =      (GtkWidget*)NULL;
+  GtkWidget      *pilotBox        =      (GtkWidget*)NULL;
   GtkWidget      *menuBar         =      (GtkWidget*)NULL;
   GtkWidget      *scrolledWindow  =      (GtkWidget*)NULL;
   GtkWidget      *hSeparator      =      (GtkWidget*)NULL;
@@ -428,14 +391,14 @@ gdisp_createMainBoard (Kernel_T *kernel)
 		     (gpointer)kernel);
 
   /*
-   * Set up window size, title and border width.
+   * Set up window title and border width.
    */
   gtk_widget_set_usize(GTK_WIDGET(kernel->widgets.mainBoardWindow),
-		       450 /* width  */,
+		       600 /* width  */,
 		       150 /* height */);
 
   gtk_window_set_title(GTK_WINDOW(kernel->widgets.mainBoardWindow),
-		       "GDISP+ Copyright (c) 2003.");
+		       "GDISP+ Copyright (c) 2004.");
 
   gtk_container_set_border_width(
 			   GTK_CONTAINER(kernel->widgets.mainBoardWindow),
@@ -614,75 +577,19 @@ gdisp_createMainBoard (Kernel_T *kernel)
   gtk_widget_show(vSeparator);
 
 
-  /* ----------------------- PLAY BUTTON ----------------------- */
+  /* ----------------------- PILOT BOARD ----------------------- */
 
   /*
-   * OK button.
+   * Create the pilot board (not shown after creation).
    */
-  style  = gtk_widget_get_style(kernel->widgets.mainBoardWindow);
-  pixmap = gdk_pixmap_create_from_xpm_d(
-                               kernel->widgets.mainBoardWindow->window,
-			       &mask,
-			       &style->bg[GTK_STATE_NORMAL],
-			       (gchar**)gdisp_okButton);
+  pilotBox = gdisp_createPilotBoard(kernel);
 
-  /*
-   * Create a pixmap widget to contain the pixmap.
-   */
-  pixmapWidget = gtk_pixmap_new(pixmap,mask);
-  gtk_widget_show(pixmapWidget);
-
-  /*
-   * Create the button that contains the pixmap.
-   */
-  kernel->widgets.mainBoardOkButton = gtk_button_new();
-  gtk_container_add(GTK_CONTAINER(kernel->widgets.mainBoardOkButton),
-		    pixmapWidget);
   gtk_box_pack_start(GTK_BOX(mainHBox),
-		     kernel->widgets.mainBoardOkButton,
+		     pilotBox,
 		     FALSE /* expand  */,
 		     TRUE  /* fill    */,
 		     0     /* padding */);
-  gtk_widget_show(kernel->widgets.mainBoardOkButton);
-
-  gtk_signal_connect(GTK_OBJECT(kernel->widgets.mainBoardOkButton),
-		     "clicked",
-		     GTK_SIGNAL_FUNC(gdisp_togglePlayModeCallback),
-		     (gpointer)kernel);
-
-  /*
-   * STOP button.
-   */
-  style  = gtk_widget_get_style(kernel->widgets.mainBoardWindow);
-  pixmap = gdk_pixmap_create_from_xpm_d(
-                               kernel->widgets.mainBoardWindow->window,
-			       &mask,
-			       &style->bg[GTK_STATE_NORMAL],
-			       (gchar**)gdisp_stopButton);
-
-  /*
-   * Create a pixmap widget to contain the pixmap.
-   */
-  pixmapWidget = gtk_pixmap_new(pixmap,mask);
-  gtk_widget_show(pixmapWidget);
-
-  /*
-   * Create the button that contains the pixmap.
-   */
-  kernel->widgets.mainBoardStopButton = gtk_button_new();
-  gtk_container_add(GTK_CONTAINER(kernel->widgets.mainBoardStopButton),
-		    pixmapWidget);
-  gtk_box_pack_start(GTK_BOX(mainHBox),
-		     kernel->widgets.mainBoardStopButton,
-		     FALSE /* expand  */,
-		     TRUE  /* fill    */,
-		     0     /* padding */);
-  /* gtk_widget_show(kernel->widgets.mainBoardStopButton); */
-
-  gtk_signal_connect(GTK_OBJECT(kernel->widgets.mainBoardStopButton),
-		     "clicked",
-		     GTK_SIGNAL_FUNC(gdisp_togglePlayModeCallback),
-		     (gpointer)kernel);
+  gtk_widget_show(pilotBox);
 
 
   /* ------------------------ SEPARATOR ------------------------ */

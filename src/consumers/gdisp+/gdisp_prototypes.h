@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_prototypes.h,v 1.1 2004-02-04 20:32:10 esteban Exp $
+$Id: gdisp_prototypes.h,v 1.2 2004-03-26 21:09:17 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -53,7 +53,7 @@ void       gdisp_destroyKernel   (Kernel_T *kernel);
 /*
  * From gdisp_sampling.c
  */
-void       gdisp_startSamplingProcess (Kernel_T *kernel);
+gboolean   gdisp_startSamplingProcess (Kernel_T *kernel);
 void       gdisp_stopSamplingProcess  (Kernel_T *kernel);
 
 
@@ -65,10 +65,40 @@ void       gdisp_writeInitialInformation (Kernel_T *kernel);
 
 
 /*
+ * From gdisp_pilotBoard.c
+ */
+GtkWidget* gdisp_createPilotBoard (Kernel_T *kernel);
+
+
+/*
+ * From gdisp_databook.c
+ */
+void       gdisp_showDataBook (gpointer factoryData,
+			       guint    itemData);
+
+/*
  * From gdisp_providers.c
  */
-void       gdisp_showProviderList (gpointer factoryData,
-				   guint    itemData);
+void       gdisp_createProviderList (Kernel_T  *kernel,
+				     GtkWidget *parent);
+void       gdisp_providerTimer      (Kernel_T  *kernel,
+				     gboolean   timerIsStarted);
+
+
+/*
+ * From gdisp_sampledSymbols.c
+ */
+void       gdisp_createSampledSymbolList (Kernel_T  *kernel,
+					  GtkWidget *parent);
+void       gdisp_sampledSymbolTimer      (Kernel_T  *kernel,
+					  gboolean   timerIsStarted);
+
+
+/*
+ * From gdisp_graphics.c
+ */
+void       gdisp_createGraphicList (Kernel_T  *kernel,
+				    GtkWidget *parent);
 
 
 /*
@@ -89,8 +119,10 @@ void       gdisp_consumingEnd      (Kernel_T *kernel);
 /*
  * From gdisp_symbols.c
  */
-void       gdisp_showSymbolList (gpointer factoryData,
-				 guint    itemData);
+void       gdisp_createSymbolList    (Kernel_T  *kernel,
+				      GtkWidget *parent);
+void       gdisp_symbolApplyCallback (GtkWidget *applyButtonWidget,
+				      gpointer   data);
 
 /*
  * From gdisp_pages.c
@@ -110,6 +142,12 @@ void       gdisp_initDefaultPlotSystem (Kernel_T     *kernel,
  */
 void       gdisp_initPlot2DSystem (Kernel_T     *kernel,
 				   PlotSystem_T *plotSystem);
+
+/*
+ * From gdisp_plotText.c
+ */
+void       gdisp_initPlotTextSystem (Kernel_T     *kernel,
+				     PlotSystem_T *plotSystem);
 
 /*
  * From gdisp_utils.c
@@ -139,6 +177,11 @@ gchar     *gdisp_strStr                       ( gchar   *name,
 				                gchar  **stringTable,
 				                guint    stringTableSize );
 
-
+void       gdisp_loopOnGraphicPlots ( Kernel_T  *kernel,
+				      void     (*callback)(Kernel_T*,
+							   Page_T*,
+							   PlotSystemData_T*,
+							   void*),
+				      void      *userData );
 				    
 #endif /* __PROTOTYPES_H__ */

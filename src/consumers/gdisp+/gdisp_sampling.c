@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_sampling.c,v 1.1 2004-02-04 20:32:10 esteban Exp $
+$Id: gdisp_sampling.c,v 1.2 2004-03-26 21:09:17 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -254,6 +254,143 @@ gdisp_affectRequestedSymbolsToProvider ( Kernel_T *kernel )
 
 
 /*
+ * Main callback routine to perform timer period computation.
+ */
+static void
+gdisp_computeTimerPeriod ( Kernel_T         *kernel,
+			   Page_T           *page,
+			   PlotSystemData_T *plotSystemData,
+			   void             *userData )
+{
+
+  guint *timerPeriod = (guint*)userData;
+  guint  plotPeriod  = 0;
+
+  /*
+   * Get back the current period of the plot.
+   */
+  plotPeriod = (*plotSystemData->plotSystem->psGetPeriod)
+                                      (kernel,plotSystemData->plotData);
+
+  *timerPeriod = MIN(*timerPeriod,plotPeriod);
+
+}
+
+
+/*
+ * Main callback routine to perform plot cycle computation.
+ */
+static void
+gdisp_computePlotCycles ( Kernel_T         *kernel,
+			  Page_T           *page,
+			  PlotSystemData_T *plotSystemData,
+			  void             *userData )
+{
+
+  guint *timerPeriod = (guint*)userData;
+  guint  plotPeriod  = 0;
+
+  /*
+   * Compute the plot cycle.
+   * If GTK step timer has a period equal to 100 milli-seconds, and
+   * our plot has a period of 1000 milli-seconds, so out plot cycle is 10.
+   * It will be "stepped" 1 time out of 10.
+   */
+  plotPeriod = (*plotSystemData->plotSystem->psGetPeriod)
+                                      (kernel,plotSystemData->plotData);
+
+  plotSystemData->plotCycle = plotPeriod / *timerPeriod;
+
+  if (plotSystemData->plotCycle == 0) {
+
+    plotSystemData->plotCycle = 1;
+
+  }
+
+}
+
+
+/*
+ * Main callback routine to perform symbol treatment on the graphic plot.
+ */
+static void
+gdisp_treatSymbolOnOneGraphicPlot ( Kernel_T         *kernel,
+				    Page_T           *page,
+				    PlotSystemData_T *plotSystemData,
+				    void             *userData )
+{
+
+  (*plotSystemData->plotSystem->psTreatSymbolValues)(kernel,
+						     plotSystemData->plotData);
+
+}
+
+
+/*
+ * Main callback routine to perform start-step on the graphic plot.
+ */
+static void
+gdisp_startStepOnOneGraphicPlot ( Kernel_T         *kernel,
+				  Page_T           *page,
+				  PlotSystemData_T *plotSystemData,
+				  void             *userData )
+{
+
+  gboolean ready = FALSE;
+
+  ready = (*plotSystemData->plotSystem->psStartStep)(kernel,
+						     plotSystemData->plotData);
+
+  if (ready == FALSE) {
+
+    *((gboolean*)userData) = FALSE;
+
+  }
+
+}
+
+
+/*
+ * Main callback routine to perform stop-step on the graphic plot.
+ */
+static void
+gdisp_stopStepOnOneGraphicPlot ( Kernel_T         *kernel,
+				 Page_T           *page,
+				 PlotSystemData_T *plotSystemData,
+				 void             *userData )
+{
+
+  (*plotSystemData->plotSystem->psStopStep)(kernel,
+					    plotSystemData->plotData);
+
+}
+
+
+/*
+ * Main callback routine to perform steps on the graphic plot.
+ */
+static void
+gdisp_stepOnOneGraphicPlot ( Kernel_T         *kernel,
+			     Page_T           *page,
+			     PlotSystemData_T *plotSystemData,
+			     void             *userData )
+{
+
+  /*
+   * Take into account the period of the step management, and the
+   * period of the graphic plot.
+   */
+  if (kernel->stepGlobalCycle % plotSystemData->plotCycle == 0) {
+
+    (*plotSystemData->plotSystem->psStep)(kernel,
+					  plotSystemData->plotData);
+
+  }
+
+}
+
+
+/*
  * Main routine to perform steps on the graphic pages.
  * The prototype of this routine ensures that it may be used
  * as a callback given to the 'gtk_timeout_add' action.
@@ -264,20 +401,14 @@ static gint
 gdisp_stepsOnGraphicPlots ( void *data )
 {
 
-  Kernel_T        *kernel        =      (Kernel_T*)data;
-
-  PlotSystem_T   **plotSystem    = (PlotSystem_T**)NULL;
-  PlotSystem_T   **plotSystemEnd = (PlotSystem_T**)NULL;
-  void           **plotData      =         (void**)NULL;
-  GList           *pageItem      =         (GList*)NULL;
-  Page_T          *page          =        (Page_T*)NULL;
+  Kernel_T        *kernel    = (Kernel_T*)data;
 
 #if defined(BENCHMARK)
 
-  HRTime_T         startMark     = (HRTime_T)0;
-  HRTime_T         stopMark      = (HRTime_T)0;
-  HRTime_T         deltaMark     = (HRTime_T)0;
-  static HRTime_T  lastMark      = (HRTime_T)0;
+  HRTime_T         startMark = (HRTime_T)0;
+  HRTime_T         stopMark  = (HRTime_T)0;
+  HRTime_T         deltaMark = (HRTime_T)0;
+  static HRTime_T  lastMark  = (HRTime_T)0;
 
 #endif
 
@@ -313,28 +444,11 @@ gdisp_stepsOnGraphicPlots ( void *data )
    *
    * ************************************************************/
 
-  pageItem = g_list_first(kernel->pageList);
-  while (pageItem != (GList*)NULL) {
+  kernel->stepGlobalCycle++;
 
-    page = (Page_T*)pageItem->data;
-
-    plotSystem    = page->pPlotSystems;
-    plotData      = page->pPlotData;
-    plotSystemEnd = page->pPlotSystems + (page->pRows * page->pColumns);
-
-    while (plotSystem < plotSystemEnd) {
-
-      (*(*plotSystem)->psStep)(kernel,
-			       *plotData);
-
-      plotSystem++;
-      plotData  ++;
-
-    }
-
-    pageItem = g_list_next(pageItem);
-
-  }
+  gdisp_loopOnGraphicPlots (kernel,
+			    gdisp_stepOnOneGraphicPlot,
+			    (void*)NULL);
 
   /* ************************************************************
    *
@@ -356,7 +470,7 @@ gdisp_stepsOnGraphicPlots ( void *data )
 
 #endif
 
-  return TRUE;
+  return TRUE; /* keep on running */
 
 }
 
@@ -531,6 +645,7 @@ gdisp_samplingThread (void *data )
   guchar        watchDog         =                10;
   gint          requestStatus    =                 0;
   gboolean      sampleHasArrived =             FALSE;
+  guint         sampleRefTimeTag =                 0;
   TSP_sample_t  sampleValue;
 
 #if defined(THREAD_DEBUG)
@@ -638,18 +753,45 @@ gdisp_samplingThread (void *data )
 
     if (sampleHasArrived == TRUE) {
 
+      /*
+       * Check out new incoming frame.
+       */
+      if (sampleRefTimeTag != (guint)sampleValue.time) {
+
 #if defined(SAMPLING_DEBUG)
+
+	printf("------------------------ FRAME ------------------------\n");
+
+#endif
+	gdisp_loopOnGraphicPlots (kernel,
+				  gdisp_treatSymbolOnOneGraphicPlot,
+				  (void*)NULL);
+
+	sampleRefTimeTag = (guint)sampleValue.time;
+
+      }
+
+      /*
+       * Treat symbol.
+       */
+#if defined(SAMPLING_DEBUG)
+
       printf("Time [%d] - Index [%d] - Name [%s] - Value [%f]\n",
 	 sampleValue.time,
 	 sampleValue.provider_global_index,
 	 provider->pSymbolList[sampleValue.provider_global_index].sInfo.name,
 	 (float)sampleValue.user_value);
+
 #endif
 
       symbol = &provider->pSymbolList[sampleValue.provider_global_index];
 
-      symbol->sTimeTag = (guint)sampleValue.time;
-      symbol->sValue   = sampleValue.user_value;
+      symbol->sTimeTag    = (guint)sampleValue.time;
+
+      symbol->sHasChanged =
+	sampleValue.user_value == symbol->sLastValue ? FALSE : TRUE;
+
+      symbol->sLastValue  = sampleValue.user_value;
 
     } /* sampleHasArrived == TRUE */
 
@@ -671,7 +813,13 @@ gdisp_samplingThread (void *data )
   /*
    * Tell TSP core to stop sampling process.
    */
-  requestStatus = TSP_consumer_request_sample_destroy(provider->pHandle);
+  if (requestStatus == FALSE) {
+    requestStatus = 0;
+  }
+  else {
+    requestStatus = TSP_consumer_request_sample_destroy(provider->pHandle);
+  }
+
   if (requestStatus == 0) {
 
     provider->pSamplingThreadStatus = GD_THREAD_SAMPLE_DESTROY_ERROR;
@@ -756,7 +904,7 @@ gdisp_preSamplingThread (void *data )
 					FALSE /* no verbose         */);
 
       provider->pSamplingThreadStatus =
-	threadStatus == GD_THREAD_ERROR ? threadStatus : GD_THREAD_WARNING;
+	threadStatus == GD_THREAD_ERROR ? threadStatus : GD_THREAD_STARTING;
 
     } /* something to be sampled... */
 
@@ -769,9 +917,9 @@ gdisp_preSamplingThread (void *data )
    * Launch a timer.
    * The period must be defined in milli-seconds.
    */
-  kernel->timerIdentity  = gtk_timeout_add(kernel->timerPeriod,
-					   gdisp_stepsOnGraphicPlots,
-					   (gpointer)kernel);
+  kernel->stepTimerIdentity  = gtk_timeout_add(kernel->stepTimerPeriod,
+					       gdisp_stepsOnGraphicPlots,
+					       (gpointer)kernel);
 
 
   /*
@@ -797,18 +945,89 @@ gdisp_preSamplingThread (void *data )
 /*
  * Start everything that deals with sampling process.
  */
-void
+gboolean
 gdisp_startSamplingProcess (Kernel_T *kernel)
 {
 
-  pthread_t      preSamplingThread = (pthread_t)NULL;
-  ThreadStatus_T threadStatus      = GD_THREAD_ERROR;
+  pthread_t       preSamplingThread = (pthread_t)NULL;
+  ThreadStatus_T  threadStatus      = GD_THREAD_ERROR;
+  gboolean        allPlotsReady     = TRUE;
+  GString        *messageString     = (GString*)NULL;
+
+
+  /*
+   * Before starting anything, ask all graphic plots if they
+   * are ready to perform real-time steps.
+   * If one answer is NO (ie FALSE), abort operation.
+   */
+  gdisp_loopOnGraphicPlots(kernel,
+			   gdisp_startStepOnOneGraphicPlot,
+			   (void*)&allPlotsReady);
+
+  if (allPlotsReady == FALSE) {
+
+    /*
+     * Cancel any start-step side effects.
+     */
+    gdisp_loopOnGraphicPlots(kernel,
+			     gdisp_stopStepOnOneGraphicPlot,
+			     (void*)NULL);
+
+
+    /*
+     * Error message.
+     */
+    messageString =
+      g_string_new("Cannot start dynamic plot process");
+    kernel->outputFunc(kernel,messageString,GD_ERROR);
+
+    messageString =
+      g_string_new("because one or more plots are unabled to proceed.");
+    kernel->outputFunc(kernel,messageString,GD_ERROR);
+
+    return FALSE;
+
+  }
 
 
   /*
    * All provider threads must keep on running...
    */
   kernel->samplingThreadMustExit = FALSE;
+
+
+  /*
+   * Compute now the period (expressed in milli-seconds that
+   * must be given to the GTK timer that performs steps on plots.
+   * Each graphic plot is asked its own period, then the minimum
+   * period is given to the GTK timer.
+   */
+  kernel->stepTimerPeriod = G_MAXINT; /* will be overwritten */
+  kernel->stepGlobalCycle = 0;
+
+  gdisp_loopOnGraphicPlots(kernel,
+			   gdisp_computeTimerPeriod,
+			   (void*)&kernel->stepTimerPeriod);
+
+  if (kernel->stepTimerPeriod < GD_TIMER_MIN_PERIOD) {
+
+    /*
+     * GTK is not precise enough... it is not real time...
+     * 100 milli-seconds is a minimum minimorum.
+     */
+    kernel->stepTimerPeriod = GD_TIMER_MIN_PERIOD;
+
+  }
+  
+  gdisp_loopOnGraphicPlots(kernel,
+			   gdisp_computePlotCycles,
+			   (void*)&kernel->stepTimerPeriod);
+
+  messageString = g_string_new((gchar*)NULL);
+  g_string_sprintf(messageString,
+		   "Step process period is %d milli-seconds.",
+		   kernel->stepTimerPeriod);
+  kernel->outputFunc(kernel,messageString,GD_MESSAGE);
 
 
   /*
@@ -830,7 +1049,7 @@ gdisp_startSamplingProcess (Kernel_T *kernel)
 
   if (threadStatus == GD_THREAD_ERROR) {
 
-    return;
+    return FALSE;
 
   }
 
@@ -854,6 +1073,8 @@ gdisp_startSamplingProcess (Kernel_T *kernel)
 
   } /* test whether garbage collector thread already exists */
 
+  return TRUE;
+
 }
 
 
@@ -867,10 +1088,10 @@ gdisp_stopSamplingProcess (Kernel_T *kernel)
   /*
    * Stop the timer that performs steps on graphic plots.
    */
-  if (kernel->timerIdentity > 0) {
+  if (kernel->stepTimerIdentity > 0) {
 
-    gtk_timeout_remove(kernel->timerIdentity);
-    kernel->timerIdentity = 0;
+    gtk_timeout_remove(kernel->stepTimerIdentity);
+    kernel->stepTimerIdentity = 0;
 
   }
 
@@ -881,5 +1102,14 @@ gdisp_stopSamplingProcess (Kernel_T *kernel)
    * because they are detached.
    */
   kernel->samplingThreadMustExit = TRUE;
+  gdisp_uSleep(_ONE_SECOND_IN_MICROSECONDS_ / 2);
+
+
+  /*
+   * Tell all plots that step-process has stopped.
+   */
+  gdisp_loopOnGraphicPlots(kernel,
+			   gdisp_stopStepOnOneGraphicPlot,
+			   (void*)NULL);
 
 }

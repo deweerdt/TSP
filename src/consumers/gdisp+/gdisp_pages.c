@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_pages.c,v 1.1 2004-02-04 20:32:10 esteban Exp $
+$Id: gdisp_pages.c,v 1.2 2004-03-26 21:09:17 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -110,13 +110,12 @@ gdispDestroySignalHandler (GtkWidget *pageWindow,
 			   gpointer   data)
 {
 
-  Kernel_T      *kernel        = (Kernel_T*)data;
+  Kernel_T         *kernel         = (Kernel_T*)data;
 
-  PlotSystem_T **plotSystem    = (PlotSystem_T**)NULL;
-  void         **plotData      =         (void**)NULL;
-  GString       *messageString =  (GString*)NULL;
-  GList         *pageItem      =    (GList*)NULL;
-  Page_T        *page          =   (Page_T*)NULL;
+  PlotSystemData_T *plotSystemData = (PlotSystemData_T*)NULL;
+  GString          *messageString  =  (GString*)NULL;
+  GList            *pageItem       =    (GList*)NULL;
+  Page_T           *page           =   (Page_T*)NULL;
 
 
   /*
@@ -154,16 +153,16 @@ gdispDestroySignalHandler (GtkWidget *pageWindow,
     /*
      * Destroy all plots.
      */
-    plotSystem = page->pPlotSystems;
-    plotData   = page->pPlotData;
-    while (plotSystem <
-	   page->pPlotSystems + (page->pRows * page->pColumns)) {
+    plotSystemData = page->pPlotSystemData;
+    while (plotSystemData <
+	   page->pPlotSystemData + (page->pRows * page->pColumns)) {
 
-      (*(*plotSystem)->psDestroy)(kernel,*plotData);
+      (*plotSystemData->plotSystem->psDestroy)(kernel,
+					       plotSystemData->plotData);
 
-      *plotData = (void*)NULL;
+      plotSystemData->plotData = (void*)NULL;
 
-      plotSystem++; plotData++;
+      plotSystemData++;
 
     }
 
@@ -173,8 +172,7 @@ gdispDestroySignalHandler (GtkWidget *pageWindow,
     gtk_widget_destroy(page->pWindow);
     g_string_free(page->pName,TRUE);
 
-    g_free(page->pPlotSystems);
-    g_free(page->pPlotData   );
+    g_free(page->pPlotSystemData);
 
     memset(page,0,sizeof(Page_T));
     g_free(page);
@@ -342,16 +340,15 @@ gdisp_dataRequestDNDCallback (GtkWidget        *pageWindow,
  * Finalize Drag & Drop operation according to Drag & Drop scope.
  */
 static void
-gdisp_finalizeDragAndDropOperation(Kernel_T      *kernel,
-				   Page_T        *page,
-				   PlotSystem_T **plotSystem,
-				   void         **plotData,
-				   guint          plotWidth,
-				   guint          plotHeight,
-				   guint          nColumn,
-				   guint          nRow,
-				   guint          xPositionInPlot,
-				   guint          yPositionInPlot)
+gdisp_finalizeDragAndDropOperation(Kernel_T         *kernel,
+				   Page_T           *page,
+				   PlotSystemData_T *plotSystemData,
+				   guint             plotWidth,
+				   guint             plotHeight,
+				   guint             nColumn,
+				   guint             nRow,
+				   guint             xPositionInPlot,
+				   guint             yPositionInPlot)
 {
 
   GtkWidget        *plotTopLevel        =    (GtkWidget*)NULL;
@@ -365,7 +362,8 @@ gdisp_finalizeDragAndDropOperation(Kernel_T      *kernel,
    * If the plot we are over, is a 'default plot', replace
    * it by the plot the type of which is currently selected.
    */
-  if ((*(*plotSystem)->psGetType)(kernel,*plotData) == GD_PLOT_DEFAULT) {
+  if ((*plotSystemData->plotSystem->psGetType)
+                     (kernel,plotSystemData->plotData) == GD_PLOT_DEFAULT) {
 
     /*
      * Destroy this default plot.
@@ -374,7 +372,7 @@ gdisp_finalizeDragAndDropOperation(Kernel_T      *kernel,
      */
 
     /* change plot system */
-    requestedPlotSystem = &kernel->plotSystems[GD_PLOT_2D];
+    requestedPlotSystem = &kernel->plotSystems[kernel->currentPlotType];
 
     /* check out if this kind of plot is fully supported... */
     if (requestedPlotSystem->psIsSupported == FALSE) {
@@ -411,27 +409,29 @@ gdisp_finalizeDragAndDropOperation(Kernel_T      *kernel,
     }
 
     /* destroy */
-    (*(*plotSystem)->psDestroy)(kernel,
-				*plotData);
+    (*plotSystemData->plotSystem->psDestroy)(kernel,
+					     plotSystemData->plotData);
 
     /* re-create */
-    *plotSystem = requestedPlotSystem;
-    *plotData   = (*(*plotSystem)->psCreate)(kernel);
+    plotSystemData->plotSystem = requestedPlotSystem;
+    plotSystemData->plotData   =
+                       (*plotSystemData->plotSystem->psCreate)(kernel);
 
     /* set parent widget */
-    (*(*plotSystem)->psSetParent)(kernel,
-				  *plotData,
-				  page->pWindow);
+    (*plotSystemData->plotSystem->psSetParent)(kernel,
+					       plotSystemData->plotData,
+					       page->pWindow);
 
     /* set initial dimensions */
-    (*(*plotSystem)->psSetDimensions)(kernel,
-				      *plotData,
-				      plotWidth,
-				      plotHeight);
+    (*plotSystemData->plotSystem->psSetDimensions)(kernel,
+						   plotSystemData->plotData,
+						   plotWidth,
+						   plotHeight);
 
     /* attach new plot */
-    plotTopLevel = (*(*plotSystem)->psGetTopLevelWidget)(kernel,
-							 *plotData);
+    plotTopLevel =
+      (*plotSystemData->plotSystem->psGetTopLevelWidget)
+                                      (kernel,plotSystemData->plotData);
 
     gtk_table_attach_defaults(GTK_TABLE(page->pTable),
 			      plotTopLevel,
@@ -441,18 +441,19 @@ gdisp_finalizeDragAndDropOperation(Kernel_T      *kernel,
 			      nRow    + 1);
 
     /* show it */
-    (*(*plotSystem)->psShow)(kernel,*plotData);
+    (*plotSystemData->plotSystem->psShow)(kernel,
+					  plotSystemData->plotData);
 
   } /* current plot is a 'default plot' */
 
   /*
    * Add symbols to the plot we are over.
    */
-  (*(*plotSystem)->psAddSymbols)(kernel,
-				 *plotData,
-				 kernel->dndSelection,
-				 xPositionInPlot,
-				 yPositionInPlot);
+  (*plotSystemData->plotSystem->psAddSymbols)(kernel,
+					      plotSystemData->plotData,
+					      kernel->dndSelection,
+					      xPositionInPlot,
+					      yPositionInPlot);
 
 }
 
@@ -477,21 +478,20 @@ gdisp_dataReceivedDNDCallback (GtkWidget        *pageWindow,
 			       gpointer          data)
 {
 
-  Kernel_T      *kernel          =      (Kernel_T*)data;
-  gchar         *action          =         (gchar*)NULL;
-  Page_T        *page            =        (Page_T*)NULL;
-  GList         *pageItem        =         (GList*)NULL;
+  Kernel_T         *kernel          =         (Kernel_T*)data;
+  gchar            *action          =            (gchar*)NULL;
+  Page_T           *page            =           (Page_T*)NULL;
+  GList            *pageItem        =            (GList*)NULL;
 
-  guint          plotWidth       =                    0;
-  guint          plotHeight      =                    0;
-  guint          nColumn         =                    0;
-  guint          nRow            =                    0;
-  guint          xPositionInPlot =                    0;
-  guint          yPositionInPlot =                    0;
+  guint             plotWidth       =                       0;
+  guint             plotHeight      =                       0;
+  guint             nColumn         =                       0;
+  guint             nRow            =                       0;
+  guint             xPositionInPlot =                       0;
+  guint             yPositionInPlot =                       0;
 
-  PlotSystem_T **plotSystem      = (PlotSystem_T**)NULL;
-  void         **plotData        =         (void**)NULL;
-  guint          plotIdentity    =                    0;
+  PlotSystemData_T *plotSystemData  = (PlotSystemData_T*)NULL;
+  guint             plotIdentity    =                       0;
 
 
   /*
@@ -608,18 +608,15 @@ gdisp_dataReceivedDNDCallback (GtkWidget        *pageWindow,
 	  /*
 	   * Retreive current plot handle.
 	   */
-	  plotIdentity = nRow * page->pColumns + nColumn;
-
-	  plotSystem   = &page->pPlotSystems[plotIdentity];
-	  plotData     = &page->pPlotData   [plotIdentity];
+	  plotIdentity   = nRow * page->pColumns + nColumn;
+	  plotSystemData = &page->pPlotSystemData[plotIdentity];
 
 	  /*
 	   * Finalize Drag & Drop operation according to Drag & Drop scope.
 	   */
 	  gdisp_finalizeDragAndDropOperation(kernel,
 					     page,
-					     plotSystem,
-					     plotData,
+					     plotSystemData,
 					     plotWidth,
 					     plotHeight,
 					     nColumn,
@@ -638,23 +635,18 @@ gdisp_dataReceivedDNDCallback (GtkWidget        *pageWindow,
 
 	    for (nColumn=0; nColumn<page->pColumns; nColumn++) {
 
-	      plotIdentity = nRow * page->pColumns + nColumn;
-
-	      plotSystem   = &page->pPlotSystems[plotIdentity];
-	      plotData     = &page->pPlotData   [plotIdentity];
+	      plotIdentity   = nRow * page->pColumns + nColumn;
+	      plotSystemData = &page->pPlotSystemData[plotIdentity];
 
 	      gdisp_finalizeDragAndDropOperation(kernel,
 						 page,
-						 plotSystem,
-						 plotData,
+						 plotSystemData,
 						 plotWidth,
 						 plotHeight,
 						 nColumn,
 						 nRow,
 						 xPositionInPlot,
 						 yPositionInPlot);
-
-	      plotSystem++; plotData++;
 
 	    } /* columns */
 
@@ -676,23 +668,18 @@ gdisp_dataReceivedDNDCallback (GtkWidget        *pageWindow,
 
 	      for (nColumn=0; nColumn<page->pColumns; nColumn++) {
 
-		plotIdentity = nRow * page->pColumns + nColumn;
-
-		plotSystem   = &page->pPlotSystems[plotIdentity];
-		plotData     = &page->pPlotData   [plotIdentity];
+		plotIdentity   = nRow * page->pColumns + nColumn;
+		plotSystemData = &page->pPlotSystemData[plotIdentity];
 
 		gdisp_finalizeDragAndDropOperation(kernel,
 						   page,
-						   plotSystem,
-						   plotData,
+						   plotSystemData,
 						   plotWidth,
 						   plotHeight,
 						   nColumn,
 						   nRow,
 						   xPositionInPlot,
 						   yPositionInPlot);
-
-		plotSystem++; plotData++;
 
 	      } /* columns */
 
@@ -761,6 +748,69 @@ gdisp_dataDestroyedDNDCallback (GtkWidget      *pageWindow,
 
 
 /*
+ * Routine that acts as a callback to retreive the symbols of a plot.
+ */
+static void
+gdisp_getSymbolsInOnePlot ( Kernel_T         *kernel,
+			    Page_T           *page,
+			    PlotSystemData_T *plotSystemData,
+			    void             *userData )
+{
+
+  GList **symbolList = (GList**)userData;
+  GList  *symbolItem =  (GList*)NULL;
+
+  /*
+   * Read the list of symbols on the X axis.
+   */
+  symbolItem =
+    (*plotSystemData->plotSystem->psGetSymbols)(kernel,
+						plotSystemData->plotData,
+						'X');
+
+  symbolItem = g_list_first(symbolItem);
+
+  while (symbolItem != (GList*)NULL) {
+
+    if (g_list_find(*symbolList,symbolItem->data) == (GList*)NULL) {
+
+      *symbolList = g_list_append(*symbolList,
+				  symbolItem->data);
+
+    }
+
+    symbolItem = g_list_next(symbolItem);
+
+  }
+
+
+  /*
+   * Read the list of symbols on the Y axis.
+   */
+  symbolItem =
+    (*plotSystemData->plotSystem->psGetSymbols)(kernel,
+						plotSystemData->plotData,
+						'Y');
+
+  symbolItem = g_list_first(symbolItem);
+
+  while (symbolItem != (GList*)NULL) {
+
+    if (g_list_find(*symbolList,symbolItem->data) == (GList*)NULL) {
+
+      *symbolList = g_list_append(*symbolList,
+				  symbolItem->data);
+
+    }
+
+    symbolItem = g_list_next(symbolItem);
+
+  }
+
+}
+
+
+/*
  --------------------------------------------------------------------
                              PUBLIC ROUTINES
  --------------------------------------------------------------------
@@ -775,22 +825,21 @@ gdisp_createGraphicPage (gpointer factoryData,
 			 guint    pageDimension)
 {
 
-  Kernel_T        *kernel        =      (Kernel_T*)factoryData;
-  Page_T          *newPage       =        (Page_T*)NULL;
-  GString         *messageString =       (GString*)NULL;
-  PlotSystem_T   **plotSystem    = (PlotSystem_T**)NULL;
-  PlotSystem_T    *defaultSystem =  (PlotSystem_T*)NULL;
-  void           **plotData      =         (void**)NULL;
-  GtkWidget       *plotTopLevel  =     (GtkWidget*)NULL;
-  GdkGeometry      pWindowHints;
+  Kernel_T         *kernel         =  (Kernel_T*)factoryData;
+  Page_T           *newPage        =           (Page_T*)NULL;
+  GString          *messageString  =          (GString*)NULL;
+  PlotSystemData_T *plotSystemData = (PlotSystemData_T*)NULL;
+  PlotSystem_T     *defaultSystem  =     (PlotSystem_T*)NULL;
+  GtkWidget        *plotTopLevel   =        (GtkWidget*)NULL;
+  GdkGeometry       pWindowHints;
 #if defined(GD_PAGE_HAS_DND)
-  GtkTargetEntry   targetEntry;
+  GtkTargetEntry    targetEntry;
 #endif
 
-  gint           screenWidth   =                 0;
-  gint           screenHeight  =                 0;
-  gint           row           =                 0;
-  gint           column        =                 0;
+  gint              screenWidth    =                 0;
+  gint              screenHeight   =                 0;
+  gint              row            =                 0;
+  gint              column         =                 0;
 
 
   /* --------------------- BEGIN --------------------- */
@@ -850,25 +899,21 @@ gdisp_createGraphicPage (gpointer factoryData,
    * Allocate memory for plot systems.
    * When the graphic page is created, all that it has is default plots.
    */
-  newPage->pPlotSystems =
-    (PlotSystem_T**)g_malloc0(newPage->pRows *
-			      newPage->pColumns * sizeof(PlotSystem_T*));
-  assert(newPage->pPlotSystems);
+  newPage->pPlotSystemData =
+    (PlotSystemData_T*)g_malloc0(newPage->pRows *
+				 newPage->pColumns * sizeof(PlotSystemData_T));
+  assert(newPage->pPlotSystemData);
 
-  newPage->pPlotData =
-    (void**)g_malloc0(newPage->pRows * newPage->pColumns * sizeof(void*));
-  assert(newPage->pPlotData);
+  plotSystemData = newPage->pPlotSystemData;
 
-  plotSystem = newPage->pPlotSystems;
-  plotData   = newPage->pPlotData;
+  while (plotSystemData <
+	 newPage->pPlotSystemData + (newPage->pRows * newPage->pColumns)) {
 
-  while (plotSystem <
-	 newPage->pPlotSystems + (newPage->pRows * newPage->pColumns)) {
+    plotSystemData->plotSystem = &kernel->plotSystems[GD_PLOT_DEFAULT];
+    plotSystemData->plotData   =
+                       (*plotSystemData->plotSystem->psCreate)(kernel);
 
-    *plotSystem = &kernel->plotSystems[GD_PLOT_DEFAULT];
-    *plotData   = (*(*plotSystem)->psCreate)(kernel);
-
-    plotSystem++; plotData++;
+    plotSystemData++;
 
   }
 
@@ -982,7 +1027,6 @@ gdisp_createGraphicPage (gpointer factoryData,
   gdk_window_set_geometry_hints(GTK_WIDGET(newPage->pWindow)->window,
 				&pWindowHints,
 				GDK_HINT_ASPECT);
-				
 
   /*
    * Create a table with the correct dimensions.
@@ -990,6 +1034,7 @@ gdisp_createGraphicPage (gpointer factoryData,
   newPage->pTable = gtk_table_new(newPage->pRows,
 				  newPage->pColumns,
 				  TRUE /* homogeneous */);
+
   gtk_table_set_row_spacings(GTK_TABLE(newPage->pTable),
 			     GD_PAGE_ROW_SPACINGS);
   gtk_table_set_col_spacings(GTK_TABLE(newPage->pTable),
@@ -1004,16 +1049,19 @@ gdisp_createGraphicPage (gpointer factoryData,
   /*
    * Attach each graphic plots to the correct place.
    */
-  plotSystem = newPage->pPlotSystems;
-  plotData   = newPage->pPlotData;
+  plotSystemData = newPage->pPlotSystemData;
 
   for (row=0; row<newPage->pRows; row++) {
 
     for (column=0; column<newPage->pColumns; column++) {
 
-      (*(*plotSystem)->psSetParent)(kernel,*plotData,newPage->pWindow);
+      (*plotSystemData->plotSystem->psSetParent)(kernel,
+						 plotSystemData->plotData,
+						 newPage->pWindow);
 
-      plotTopLevel = (*(*plotSystem)->psGetTopLevelWidget)(kernel,*plotData);
+      plotTopLevel =
+	(*plotSystemData->plotSystem->psGetTopLevelWidget)
+	                                 (kernel,plotSystemData->plotData);
 
       gtk_table_attach_defaults(GTK_TABLE(newPage->pTable),
 				plotTopLevel,
@@ -1022,7 +1070,7 @@ gdisp_createGraphicPage (gpointer factoryData,
 				row,
 				row    + 1);
 
-      plotSystem++; plotData++;
+      plotSystemData++;
 
     } /* columns */
 
@@ -1032,14 +1080,14 @@ gdisp_createGraphicPage (gpointer factoryData,
   /*
    * Show all plots.
    */
-  plotSystem = newPage->pPlotSystems;
-  plotData   = newPage->pPlotData;
-  while (plotSystem <
-	 newPage->pPlotSystems + (newPage->pRows * newPage->pColumns)) {
+  plotSystemData = newPage->pPlotSystemData;
+  while (plotSystemData <
+	 newPage->pPlotSystemData + (newPage->pRows * newPage->pColumns)) {
 
-    (*(*plotSystem)->psShow)(kernel,*plotData);
+    (*plotSystemData->plotSystem->psShow)(kernel,
+					  plotSystemData->plotData);
 
-    plotSystem++; plotData++;
+    plotSystemData++;
 
   }
 
@@ -1062,75 +1110,15 @@ GList*
 gdisp_getSymbolsInPages (Kernel_T *kernel)
 {
 
-  GList         *pageItem      =         (GList*)NULL,
-                *symbolItem    =         (GList*)NULL,
-                *symbolList    =         (GList*)NULL;
-  Page_T        *page          =        (Page_T*)NULL;
-  PlotSystem_T **plotSystem    = (PlotSystem_T**)NULL;
-  void         **plotData      =         (void**)NULL;
+  GList *symbolList = (GList*)NULL;
+
 
   /*
-   * Loop over all pages defined in the kernel.
+   * Loop over all plots defined in the kernel.
    */
-  pageItem = g_list_first(kernel->pageList);
-  while (pageItem != (GList*)NULL) {
-
-    page = (Page_T*)pageItem->data;
-
-    /*
-     * Loop over all plots of a given page.
-     */
-    plotSystem = page->pPlotSystems;
-    plotData   = page->pPlotData;
-    while (plotSystem <
-	   page->pPlotSystems + (page->pRows * page->pColumns)) {
-
-      /*
-       * Read the list of symbols on the X axis.
-       */
-      symbolItem = (*(*plotSystem)->psGetSymbols)(kernel,*plotData,'X');
-      symbolItem = g_list_first(symbolItem);
-
-      while (symbolItem != (GList*)NULL) {
-
-	if (g_list_find(symbolList,symbolItem->data) == (GList*)NULL) {
-
-	  symbolList = g_list_append(symbolList,
-				     symbolItem->data);
-
-	}
-
-	symbolItem = g_list_next(symbolItem);
-
-      }
-
-
-      /*
-       * Read the list of symbols on the Y axis.
-       */
-      symbolItem = (*(*plotSystem)->psGetSymbols)(kernel,*plotData,'Y');
-      symbolItem = g_list_first(symbolItem);
-
-      while (symbolItem != (GList*)NULL) {
-
-	if (g_list_find(symbolList,symbolItem->data) == (GList*)NULL) {
-
-	  symbolList = g_list_append(symbolList,
-				     symbolItem->data);
-
-	}
-
-	symbolItem = g_list_next(symbolItem);
-
-      }
-
-      plotSystem++; plotData++;
-
-    }
-
-    pageItem = g_list_next(pageItem);
-
-  }
+  gdisp_loopOnGraphicPlots (kernel,
+			    gdisp_getSymbolsInOnePlot,
+			    (void*)&symbolList);
 
   return symbolList;
 

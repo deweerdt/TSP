@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_providers.c,v 1.1 2004-02-04 20:32:10 esteban Exp $
+$Id: gdisp_providers.c,v 1.2 2004-03-26 21:09:17 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -63,172 +63,107 @@ File      : Information / Actions upon available providers.
 */
 
 
-/*
- * The "delete_event" occurs when the window manager sens this event
- * to the application, usually by the "close" option, or on the titlebar.
- * Returning TRUE means that we do not want to have the "destroy" event 
- * emitted, keeping GDISP+ running. Returning FALSE, we ask that "destroy"
- * be emitted, which in turn will call the "destroy" signal handler.
- */
-static gint
-gdispManageDeleteEventFromWM (GtkWidget *providerWindow,
-			      GdkEvent  *event,
-			      gpointer   data)
+static gchar*
+gdisp_providerStatusToString ( ThreadStatus_T status,
+			       guint          *colorId )
 {
 
-  return FALSE;
+  gchar *sStatus = (gchar*)NULL;
+
+  switch (status) {
+
+  case GD_THREAD_STOPPED :
+    sStatus  = "STOPPED";
+    *colorId = _WHITE_;
+    break;
+
+  case GD_THREAD_STARTING :
+    sStatus = "STARTING...";
+    *colorId = _ORANGE_;
+    break;
+
+  case GD_THREAD_WARNING :
+    sStatus = "WARNING";
+    *colorId = _ORANGE_;
+    break;
+
+  case GD_THREAD_REQUEST_SAMPLE_ERROR :
+    sStatus = "REQUEST SAMPLE";
+    *colorId = _RED_;
+    break;
+
+  case GD_THREAD_SAMPLE_INIT_ERROR :
+    sStatus = "SAMPLE INIT";
+    *colorId = _RED_;
+    break;
+
+  case GD_THREAD_SAMPLE_DESTROY_ERROR :
+    sStatus = "SAMPLE DESTROY";
+    *colorId = _RED_;
+    break;
+
+  case GD_THREAD_ERROR :
+    sStatus = "THREAD ERROR";
+    *colorId = _RED_;
+    break;
+
+  case GD_THREAD_RUNNING :
+    sStatus = "RUNNING";
+    *colorId = _GREEN_;
+    break;
+
+  default :
+    sStatus = "UNKNOWN";
+    *colorId = _GREY_;
+    break;
+
+  }
+
+  return sStatus;
 
 }
 
 
 /*
- * The "destroy" event occurs when we call "gtk_widget_destroy" on
- * the top-level window, of if we return FALSE in the "delete_event"
- * callback (see above).
+ *  Graphically show the status of all providers.
  */
 static void
-gdispDestroySignalHandler (GtkWidget *providerWindow,
-			   gpointer   data)
+gdisp_poolProviderThreadStatus ( Kernel_T *kernel )
 {
 
-  Kernel_T *kernel = (Kernel_T*)data;
-
-  /*
-   * Close and destroy provider list window.
-   */
-  gtk_widget_destroy(providerWindow);
-  kernel->widgets.providerWindow = (GtkWidget*)NULL;
-
-}
-
-
-/*
- * This callback is called whenever a provider button" is pressed.
- * The argument "data" is the kernel itself.
- * The only way to determine which button has been pressed (ie the
- * provider the information of which is requested), is to compare
- * the argument "widget" (the target button) to all button pointers
- * stored into the list of providers.
- */
-static void
-gdisp_providerInformationCallback (GtkWidget *buttonWidget,
-				   gpointer   data )
-{
-
-  Kernel_T   *kernel            =   (Kernel_T*)data;
   GList      *providerItem      =      (GList*)NULL;
   Provider_T *provider          = (Provider_T*)NULL;
-  GString    *informationString =    (GString*)NULL;
-
-#define _MAX_INFORMATION_   6
-  gint        informationCpt    = 0;
-  gchar      *information[_MAX_INFORMATION_][2] =
-                                   { { "Name"                 , "" },
-				     { "Base frequency"       , "" },
-				     { "Maximum period"       , "" },
-				     { "Maximum client number", "" },
-				     { "Current client number", "" },
-				     { "Available symbols"    , "" } };
-
-  /*
-   * If no button is specified (buttonWidget == NULL), just
-   * insert the name of the information.
-   */
-  if (buttonWidget == (GtkWidget*)NULL) {
-
-    for (informationCpt=0;
-	 informationCpt<_MAX_INFORMATION_; informationCpt++) {
-
-      gtk_clist_append(GTK_CLIST(kernel->widgets.providerCList),
-		       information[informationCpt]);
-
-    }
-
-  }
-  else {
-
-    /*
-     * Loop over all available providers into the list.
-     */
-    providerItem = g_list_first(kernel->providerList);
-    while (providerItem != (GList*)NULL) {
-
-      provider = (Provider_T*)providerItem->data;
-      if (provider->pButton == buttonWidget) {
-
-	/*
-	 * We have found here the target provider.
-	 * Put its information into the CList.
-	 *
-	 * There are two convenience functions that should be used
-	 * when a lot of changes have to be made to the list.
-	 * This is to prevent the list flickering while being repeatedly
-	 * updated, which may be highly annoying to the user. So instead
-	 * it is a good idea to freeze the list, do the updates to it,
-	 * and finally thaw it which causes the list to be updated on the
-	 * screen.
-	 */
-	gtk_clist_freeze(GTK_CLIST(kernel->widgets.providerCList));
-	gtk_clist_clear (GTK_CLIST(kernel->widgets.providerCList));
-
-	informationString = g_string_new((gchar*)NULL);
-
-	information[0][1] = provider->pName->str;
-	gtk_clist_append(GTK_CLIST(kernel->widgets.providerCList),
-			 information[0]);
-
-	g_string_sprintf(informationString,"%f",provider->pBaseFrequency);
-	information[1][1] = informationString->str;
-	gtk_clist_append(GTK_CLIST(kernel->widgets.providerCList),
-			 information[1]);
-
-	g_string_sprintf(informationString,"%d",provider->pMaxPeriod);
-	information[2][1] = informationString->str;
-	gtk_clist_append(GTK_CLIST(kernel->widgets.providerCList),
-			 information[2]);
-
-	g_string_sprintf(informationString,"%d",provider->pMaxClientNumber);
-	information[3][1] = informationString->str;
-	gtk_clist_append(GTK_CLIST(kernel->widgets.providerCList),
-			 information[3]);
-
-	g_string_sprintf(informationString,"%d",
-			                    provider->pCurrentClientNumber);
-	information[4][1] = informationString->str;
-	gtk_clist_append(GTK_CLIST(kernel->widgets.providerCList),
-			 information[4]);
-
-	g_string_sprintf(informationString,"%d",
-                                           provider->pSymbolNumber);
-	information[5][1] = informationString->str;
-	gtk_clist_append(GTK_CLIST(kernel->widgets.providerCList),
-			 information[5]);
-
-	g_string_free(informationString,TRUE);
-
-	gtk_clist_thaw  (GTK_CLIST(kernel->widgets.providerCList));
-
-
-      }
-
-      providerItem = g_list_next(providerItem);
-
-    } /* while (providerItem != (GList*)NULL) */
-
-  } /* else */
+  gchar       rowBuffer[128];
+  guint       bgColorId         = _WHITE_;
 
 
   /*
-   * This CList is not selectable.
+   * Loop over all available providers into the list.
    */
-  for (informationCpt=0;
-       informationCpt<_MAX_INFORMATION_; informationCpt++) {
+  providerItem = g_list_first(kernel->providerList);
+  while (providerItem != (GList*)NULL) {
 
-    gtk_clist_set_selectable(GTK_CLIST(kernel->widgets.providerCList),
-			     informationCpt, /* row */
-			     FALSE /* not selectable */);
+    provider = (Provider_T*)providerItem->data;
 
-  }
+    gtk_clist_set_text(GTK_CLIST(provider->pCList),
+		       1 /* status row */,
+		       1 /* information */,
+	       gdisp_providerStatusToString(provider->pSamplingThreadStatus,
+					    &bgColorId));
+
+    gtk_clist_set_background(GTK_CLIST(provider->pCList),
+			     1 /* status row */,
+			     &kernel->colors[bgColorId]);
+
+    sprintf(rowBuffer,"%d",provider->pSampleList.len);
+    gtk_clist_set_text(GTK_CLIST(provider->pCList),
+		       4 /* sample symbol row */,
+		       1 /* information       */,
+		       rowBuffer);
+
+    providerItem = g_list_next(providerItem);
+
+  } /* while (providerItem != (GList*)NULL) */
 
 }
 
@@ -248,27 +183,63 @@ gdisp_providerInformationCallback (GtkWidget *buttonWidget,
 
 
 /*
+ * These two procedures deal with provider thread management.
+ * In order to graphically show the status of all providers, a procedure
+ * is registered in order to pool provider thread status.
+ * The procedure is registered when the provider page is show in the databook.
+ * The procedure is unregistered when other pages are shown in the databook.
+ */
+void
+gdisp_providerTimer ( Kernel_T  *kernel,
+		      gboolean   timerIsStarted )
+{
+
+#if defined(PROVIDER_DEBUG)
+
+  fprintf(stdout,
+	  "Provider Timer : %s\n",
+	  timerIsStarted == TRUE ? "STARTED" : "STOPPED");
+  fflush (stdout);
+
+#endif
+
+  switch (timerIsStarted) {
+
+  case TRUE :
+
+    /* refresh immediately */
+    gdisp_poolProviderThreadStatus(kernel);
+
+    (*kernel->registerAction)(kernel,
+			      gdisp_poolProviderThreadStatus);
+
+    break;
+
+  case FALSE :
+
+    /* stop refreshing thread status */
+    (*kernel->unRegisterAction)(kernel,
+				gdisp_poolProviderThreadStatus);
+
+    break;
+
+  }
+
+}
+
+
+/*
  * Create GDISP+ provider list.
  */
 void
-gdisp_showProviderList (gpointer factoryData, guint itemData)
+gdisp_createProviderList ( Kernel_T  *kernel,
+			   GtkWidget *parent )
 {
 
-  Kernel_T         *kernel           =   (Kernel_T*)factoryData;
-
-  GtkWidget        *mainVBox         =  (GtkWidget*)NULL;
-  GtkWidget        *secondVBox       =  (GtkWidget*)NULL;
-  GtkWidget        *mainHBox         =  (GtkWidget*)NULL;
   GtkWidget        *frame            =  (GtkWidget*)NULL;
+  GtkWidget        *vBox             =  (GtkWidget*)NULL;
+  GtkWidget        *hBox             =  (GtkWidget*)NULL;
   GtkWidget        *scrolledWindow   =  (GtkWidget*)NULL;
-  GtkWidget        *logoHBox         =  (GtkWidget*)NULL;
-  GtkWidget        *closeButton      =  (GtkWidget*)NULL;
-
-#define _CLIST_COLUMNS_NB_ 2
-  GtkWidget        *cList            =  (GtkWidget*)NULL;
-  gchar            *cListTitles[_CLIST_COLUMNS_NB_] = { "Provider", "" };
-
-  GtkWidget        *vBoxWidget       =  (GtkWidget*)NULL;
   GtkWidget        *pixmapWidget     =  (GtkWidget*)NULL;
   GdkPixmap        *pixmap           =  (GdkPixmap*)NULL;
   GdkBitmap        *mask             =  (GdkBitmap*)NULL;
@@ -278,87 +249,15 @@ gdisp_showProviderList (gpointer factoryData, guint itemData)
   Provider_T       *provider         = (Provider_T*)NULL;
   gint              providerCount    = 0;
 
-
-  /*
-   * Few checking...
-   */
-  assert(kernel);
-  assert(kernel->colors);
-
-
-  /*
-   * If provider list is already on the screen, just raise its window.
-   */
-  if (kernel->widgets.providerWindow != (GtkWidget*)NULL) {
-
-    gdk_window_raise(GTK_WIDGET(kernel->widgets.providerWindow)->window);
-
-    return;
-
-  }
-
-
-  /* ------------------------ MAIN WINDOW ------------------------ */
-
-  /*
-   * The GTK_WINDOW_TOPLEVEL argument specifies that we want the window
-   * to undergo window manager decoration and placement.
-   */
-  kernel->widgets.providerWindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-  assert(kernel->widgets.providerWindow);
-
-  gtk_signal_connect(GTK_OBJECT(kernel->widgets.providerWindow),
-		     "delete_event",
-		     GTK_SIGNAL_FUNC(gdispManageDeleteEventFromWM),
-		     (gpointer)kernel);
-
-  gtk_signal_connect(GTK_OBJECT(kernel->widgets.providerWindow),
-		     "destroy",
-		     GTK_SIGNAL_FUNC(gdispDestroySignalHandler),
-		     (gpointer)kernel);
-
-  /*
-   * Set up window size, title and border width.
-   */
-#if defined(WINDOW_SIZE)
-  gtk_widget_set_usize(GTK_WIDGET(kernel->widgets.providerWindow),
-		       400 /* width  */,
-		       200 /* height */);
-#endif
-
-  gtk_window_set_title(GTK_WINDOW(kernel->widgets.providerWindow),
-		       "GDISP+ Providers.");
-
-  gtk_container_set_border_width(GTK_CONTAINER(kernel->widgets.providerWindow),
-				 1);
-
-
-  /* ------------------------ PACKING BOX ------------------------ */
-
-  /*
-   * We need a vertical packing box for managing all widgets.
-   */
-  mainVBox = gtk_vbox_new(FALSE, /* homogeneous */
-			  5      /* spacing     */ );
-  gtk_container_border_width(GTK_CONTAINER(mainVBox),3);
-  gtk_container_add(GTK_CONTAINER(kernel->widgets.providerWindow),mainVBox);
-  gtk_widget_show(mainVBox);
-
-
-  /* ------------------------ MAIN WINDOW ------------------------ */
-
-  /*
-   * Map top-level window.
-   */
-  gtk_widget_show(kernel->widgets.providerWindow);
-  gdk_window_set_colormap(GTK_WIDGET(kernel->widgets.providerWindow)->window,
-			  kernel->colormap);
+  gchar            *rowInfo  [  2];
+  gchar             rowBuffer[128];
+  guint             bgColorId        = _WHITE_;
 
 
   /* ------------------------ FRAME WITH LABEL ------------------------ */
 
   /*
-   * Create a Frame that will contain a scrolled window for provider logos.
+   * Create a Frame that will contain a scrolled window for providers.
    * Align the label at the left of the frame.
    * Set the style of the frame.
    */
@@ -366,20 +265,8 @@ gdisp_showProviderList (gpointer factoryData, guint itemData)
   gtk_frame_set_label_align(GTK_FRAME(frame),0.1,0.0);
   gtk_frame_set_shadow_type(GTK_FRAME(frame),GTK_SHADOW_ETCHED_IN);
 
-  gtk_container_add(GTK_CONTAINER(mainVBox),frame);
+  gtk_container_add(GTK_CONTAINER(parent),frame);
   gtk_widget_show(frame);
-
-
-  /* ------------ VERTICAL PACKING BOX INTO THE FRAME ------------ */
-
-  /*
-   * We need a vertical packing box for managing the two scrolled windows.
-   */
-  secondVBox = gtk_vbox_new(FALSE, /* homogeneous */
-			    5      /* spacing     */ );
-  gtk_container_border_width(GTK_CONTAINER(secondVBox),3);
-  gtk_container_add(GTK_CONTAINER(frame),secondVBox);
-  gtk_widget_show(secondVBox);
 
 
   /* ----------- SCROLLED WINDOW FOR THE LIST OF PROVIDERS  ----------- */
@@ -390,168 +277,155 @@ gdisp_showProviderList (gpointer factoryData, guint itemData)
   scrolledWindow = gtk_scrolled_window_new(NULL /* H Adjustment */,
 					   NULL /* V Adjustment */);
   gtk_container_border_width(GTK_CONTAINER(scrolledWindow),5);
-  gtk_widget_set_usize(scrolledWindow,350,100);
-  gtk_container_add(GTK_CONTAINER(secondVBox),scrolledWindow); 
+  gtk_container_add(GTK_CONTAINER(frame),scrolledWindow); 
   gtk_widget_show(scrolledWindow);
 
 
+  /* ----------- VERTICAL BOX FOR HANDLING ALL PROVIDERS  ----------- */
+
   /*
-   * We need a horizontal packing box for managing all logos.
+   * We need a vertical packing box for managing all providers.
    */
-  logoHBox = gtk_hbox_new(TRUE,  /* homogeneous */
-			  5      /* spacing     */ );
-  gtk_container_border_width(GTK_CONTAINER(logoHBox),2);
+  vBox = gtk_vbox_new(FALSE, /* homogeneous */
+		      5      /* spacing     */ );
+  gtk_container_border_width(GTK_CONTAINER(vBox),10);
   gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(scrolledWindow),
-					logoHBox);
-  gtk_widget_show(logoHBox);
+					vBox);
+  gtk_widget_show(vBox);
 
 
-  /*
-   * Use GDK services to create TSP Logo (XPM format).
-   */
-  style  = gtk_widget_get_style(kernel->widgets.providerWindow);
-  pixmap = gdk_pixmap_create_from_xpm_d(kernel->widgets.providerWindow->window,
-					&mask,
-					&style->bg[GTK_STATE_NORMAL],
-					(gchar**)gdisp_resLogo);
+  /* ---------------- PER PROVIDER ------------- PER PROVIDER --------- */
 
-
-  /* -------------- CLIST FOR PROVIDER INFORMATION --------------- */
-
-  /*
-   * This is the scrolled window to put the CList widget inside.
-   */
-  scrolledWindow = gtk_scrolled_window_new(NULL /* H Adjustment */,
-					   NULL /* V Adjustment */);
-  gtk_container_border_width(GTK_CONTAINER(scrolledWindow),5);
-  gtk_widget_set_usize(scrolledWindow,350,150);
-  gtk_box_pack_start(GTK_BOX(secondVBox),
-		     scrolledWindow,
-		     TRUE  /* expand  */,
-		     TRUE  /* fill    */,
-		     0     /* padding */);
-  gtk_widget_show(scrolledWindow);
-
-  /*
-   * Create the CList. For our needs, we use 2 columns.
-   */
-  cList = gtk_clist_new_with_titles(_CLIST_COLUMNS_NB_,cListTitles);
-  gtk_clist_column_titles_show(GTK_CLIST(cList));
-  kernel->widgets.providerCList = cList;
-
-  /*
-   * It isn't necessary to shadow the border, but it looks nice.
-   */
-  gtk_clist_set_shadow_type(GTK_CLIST(cList),GTK_SHADOW_OUT);
-
-  /*
-   * What however is important, is that we set the column widths as
-   * they will never be right otherwise.
-   * Note that the columns are numbered from 0 and up (to 1 in our case).
-   */
-  gtk_clist_set_column_width(GTK_CLIST(cList),0,150);
-
-  /*
-   * Add the CList widget to the vertical box and show it.
-   */
-  gtk_container_add(GTK_CONTAINER(scrolledWindow),cList);
-  gtk_widget_show(cList);
-
-  /*
-   * Insert information names into the CList.
-   */
-  gdisp_providerInformationCallback((GtkWidget*)NULL,(gpointer)kernel);
-
-
-  /* ------------------------ PACKING BOX ------------------------ */
-
-  mainHBox = gdisp_createButtonBar(kernel->widgets.providerWindow,
-				   (GtkWidget**)NULL /* no 'apply' button */,
-				   &closeButton);
-
-  gtk_box_pack_start(GTK_BOX(mainVBox),
-		     mainHBox,
-		     FALSE /* expand  */,
-		     TRUE  /* fill    */,
-		     0     /* padding */);
-
-  gtk_signal_connect_object(GTK_OBJECT(closeButton),
-			    "clicked",
-			    (GtkSignalFunc)gtk_widget_destroy,
-			    GTK_OBJECT(kernel->widgets.providerWindow));
-
-  /*
-   * This grabs this button to be the default button.
-   * Simply hitting the "Enter" key will cause this button to activate.
-   */
-  GTK_WIDGET_SET_FLAGS(closeButton,GTK_CAN_DEFAULT);
-  gtk_widget_grab_default(closeButton);
-
-
-  /* ------------------------ LIST OF PROVIDERS  ------------------------ */
-
-  /*
-   * Create a pixmap widget to contain the pixmap.
-   */
   providerItem = g_list_first(kernel->providerList);
   while (providerItem != (GList*)NULL) {
 
-    vBoxWidget = gtk_vbox_new(FALSE, /* homogeneous */
-			      2      /* spacing     */ );
-    gtk_container_border_width(GTK_CONTAINER(vBoxWidget),2);
-    gtk_box_pack_start(GTK_BOX(logoHBox),
-		       vBoxWidget,
-		       FALSE /* expand  */,
-		       TRUE  /* fill    */,
-		       0     /* padding */);
-    gtk_widget_show(vBoxWidget);
-
-    pixmapWidget = gtk_pixmap_new(pixmap,mask);
-    gtk_box_pack_start(GTK_BOX(vBoxWidget),
-		       pixmapWidget,
-		       FALSE /* expand  */,
-		       TRUE  /* fill    */,
-		       0     /* padding */);
-    gtk_widget_show(pixmapWidget);
-
     provider = (Provider_T*)providerItem->data;
-    if (provider->pStatus == GD_FROM_SCRATCH) {
 
-      provider->pButton = gtk_button_new_with_label("Unknown");
-
-    }
-    else {
-
-      provider->pButton = gtk_button_new_with_label(provider->pName->str);
-
-    }
-
-
-    /*
-     * Set up the color affected to that provider.
-     */
     provider->pColor = gdisp_getProviderColor(kernel,
 					      providerCount++);
 
 
+    /* ------------------------ FRAME WITH LABEL ------------------------ */
+
     /*
-     * Connect the "clicked" signal of the button to our callback.
+     * Create a Frame that will contain all provider information.
+     * Align the label at the left of the frame.
+     * Set the style of the frame.
      */
-    gtk_signal_connect(GTK_OBJECT(provider->pButton),
-		       "clicked",
-		       GTK_SIGNAL_FUNC(gdisp_providerInformationCallback),
-		       (gpointer)kernel);
+    sprintf(rowBuffer," %d ",providerCount);
+    frame = gtk_frame_new(rowBuffer);
 
-    gtk_box_pack_start(GTK_BOX(vBoxWidget),
-		       provider->pButton,
-		       FALSE /* expand  */,
-		       TRUE  /* fill    */,
-		       0     /* padding */);
-    gtk_widget_show(provider->pButton);
+    gtk_frame_set_label_align(GTK_FRAME(frame),0.1,0.0);
+    gtk_frame_set_shadow_type(GTK_FRAME(frame),GTK_SHADOW_ETCHED_IN);
+    gtk_box_pack_start(GTK_BOX(vBox),
+		       frame,
+		       FALSE, /* expand  */
+		       FALSE, /* fill    */
+		       0);    /* padding */
+    gtk_widget_show(frame);
 
+
+    /* ------------------------ HORIZONTAL BOX  ------------------------ */
+
+    /*
+     * Create a horizontal packing box.
+     */
+    hBox = gtk_hbox_new(FALSE, /* homogeneous */
+			5      /* spacing     */ );
+    gtk_container_border_width(GTK_CONTAINER(hBox),10);
+    gtk_container_add(GTK_CONTAINER(frame),hBox); 
+    gtk_widget_show(hBox);
+
+
+    /* ---------------------- PROVIDER LOGO ---------------------- */
+
+    /*
+     * Use GDK services to create TSP Logo (XPM format).
+     */
+    style  = gtk_widget_get_style(scrolledWindow);
+    pixmap = gdk_pixmap_create_from_xpm_d(scrolledWindow->window,
+					  &mask,
+					  &style->bg[GTK_STATE_NORMAL],
+					  (gchar**)gdisp_stubLogo);
+
+    pixmapWidget = gtk_pixmap_new(pixmap,mask);
+    gtk_box_pack_start(GTK_BOX(hBox),
+		       pixmapWidget,
+		       FALSE, /* expand  */
+		       FALSE, /* fill    */
+		       0);    /* padding */
+    gtk_widget_show(pixmapWidget);
+
+
+    /* -------------------------- CLIST --------------------------- */
+
+    /*
+     * A CList for containing all information.
+     */
+    provider->pCList = gtk_clist_new(2 /* columns */);
+
+    gtk_clist_set_shadow_type(GTK_CLIST(provider->pCList),
+			      GTK_SHADOW_ETCHED_IN);
+
+    gtk_clist_set_button_actions(GTK_CLIST(provider->pCList),
+				 0, /* left button */
+				 GTK_BUTTON_IGNORED);
+
+    gtk_clist_set_column_auto_resize(GTK_CLIST(provider->pCList),
+				     0, /* first column */
+				     TRUE);
+
+    /* ------------------ LABELS WITH INFORMATION ------------------- */
+
+    rowInfo[0] = "Name";
+    rowInfo[1] = provider->pName->str;
+
+    gtk_clist_append(GTK_CLIST(provider->pCList),
+		     rowInfo);
+
+    rowInfo[0] = "Status";
+    rowInfo[1] = gdisp_providerStatusToString(provider->pSamplingThreadStatus,
+					      &bgColorId);
+
+    gtk_clist_append(GTK_CLIST(provider->pCList),
+		     rowInfo);
+
+    rowInfo[1] = rowBuffer;
+
+    rowInfo[0] = "Base Frequency";
+    sprintf(rowInfo[1],"%3.0f",provider->pBaseFrequency);
+
+    gtk_clist_append(GTK_CLIST(provider->pCList),
+		     rowInfo);
+
+    rowInfo[0] = "Total Symbols";
+    sprintf(rowInfo[1],"%d",provider->pSymbolNumber);
+
+    gtk_clist_append(GTK_CLIST(provider->pCList),
+		     rowInfo);
+
+    rowInfo[0] = "Sampled Symbols";
+    sprintf(rowInfo[1],"%d",provider->pSampleList.len);
+
+    gtk_clist_append(GTK_CLIST(provider->pCList),
+		     rowInfo);
+
+    gtk_box_pack_start(GTK_BOX(hBox),
+		       provider->pCList,
+		       TRUE, /* expand  */
+		       TRUE, /* fill    */
+		       0);   /* padding */
+
+    gtk_widget_show(provider->pCList);
+
+
+    /*
+     * Next provider.
+     */
     providerItem = g_list_next(providerItem);
 
   }
 
 }
+
 

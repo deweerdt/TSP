@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_kernel.c,v 1.1 2004-02-04 20:32:09 esteban Exp $
+$Id: gdisp_kernel.c,v 1.2 2004-03-26 21:09:17 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -203,6 +203,55 @@ gdisp_mutexFree (Kernel_T *kernel,
 
 }
 
+/* --------------------------------------------------------------- */
+
+static void
+gdisp_registerAction ( Kernel_T  *kernel,
+		       void     (*action)(Kernel_T*) )
+{
+
+  g_ptr_array_add(kernel->kernelRegisteredActions,
+		  (gpointer)action);
+
+}
+
+
+static void
+gdisp_unRegisterAction ( Kernel_T  *kernel,
+			 void     (*action)(Kernel_T*) )
+{
+
+  g_ptr_array_remove_fast(kernel->kernelRegisteredActions,
+			  (gpointer)action);
+
+}
+
+
+static gint
+gdisp_activateRegisteredActions ( void *data )
+{
+
+  Kernel_T  *kernel             = (Kernel_T*)data;
+  void     (*action)(Kernel_T*) = (void(*)(Kernel_T*))NULL;
+  guint      cptAction          = 0;
+
+  /*
+   * Loop over all registered actions and activate them.
+   */
+  for (cptAction=0;
+       cptAction<kernel->kernelRegisteredActions->len; cptAction++) {
+
+    action = (void(*)(Kernel_T*))
+             g_ptr_array_index(kernel->kernelRegisteredActions,cptAction);
+
+    (*action)(kernel);
+
+  }
+
+  return TRUE; /* keep on running */
+
+}
+
 
 /*
  --------------------------------------------------------------------
@@ -236,12 +285,12 @@ gdisp_createKernel (gint    argc,
   /*
    * Defaults.
    */
-  kernel->isThreadSafe  = FALSE;
-  kernel->sortingMethod = GD_SORT_BY_PROVIDER;
-  kernel->dndScope      = GD_DND_UNICAST;
-  kernel->argCounter    = argc;
-  kernel->argTable      = argv;
-  kernel->timerPeriod   = 100; /* milli-seconds */
+  kernel->isThreadSafe    = FALSE;
+  kernel->sortingMethod   = GD_SORT_BY_PROVIDER;
+  kernel->dndScope        = GD_DND_UNICAST;
+  kernel->argCounter      = argc;
+  kernel->argTable        = argv;
+  kernel->stepTimerPeriod = GD_TIMER_MIN_PERIOD; /* milli-seconds */
 
   /*
    * Try to know whether a multi-threaded environment is available ?
@@ -271,6 +320,7 @@ gdisp_createKernel (gint    argc,
    * Initialise all plot systems.
    * Each plot system that is supported may provide several functions.
    */
+  kernel->currentPlotType = GD_PLOT_2D;
 
   /* Remove size of 'psIsSupported' */
   functionSetSize = sizeof(PlotSystem_T) - sizeof(gboolean);
@@ -287,6 +337,10 @@ gdisp_createKernel (gint    argc,
 
     case GD_PLOT_2D :
       gdisp_initPlot2DSystem(kernel,plotSystem);
+      break;
+
+    case GD_PLOT_TEXT :
+      gdisp_initPlotTextSystem(kernel,plotSystem);
       break;
 
     default :
@@ -314,6 +368,19 @@ gdisp_createKernel (gint    argc,
     } /* for 'functionCpt' */
 
   } /* for 'plotType' */
+
+  /*
+   * Remember how to register periodic actions.
+   */
+  kernel->kernelRegisteredActions = g_ptr_array_new();
+
+  kernel->registerAction          = gdisp_registerAction;
+  kernel->unRegisterAction        = gdisp_unRegisterAction;
+
+  kernel->kernelTimerIdentity =
+    gtk_timeout_add(1000, /* milli-seconds */
+		    gdisp_activateRegisteredActions,
+		    (void*)kernel);
 
   /*
    * Return the kernel itself.
@@ -345,6 +412,8 @@ gdisp_destroyKernel (Kernel_T *kernel)
   /*
    * Free Kernel.
    */
+  gtk_timeout_remove(kernel->kernelTimerIdentity);
+  g_ptr_array_free(kernel->kernelRegisteredActions,FALSE);
   memset(kernel,0,sizeof(Kernel_T));
   g_free(kernel);
 

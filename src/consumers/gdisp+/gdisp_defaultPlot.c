@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_defaultPlot.c,v 1.1 2004-02-04 20:32:09 esteban Exp $
+$Id: gdisp_defaultPlot.c,v 1.2 2004-03-26 21:09:17 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -784,11 +784,47 @@ gdisp_getSymbolsFromDefaultPlot (Kernel_T *kernel,
 
 
 /*
+ * Real time Starting Step Action.
+ */
+static gboolean
+gdisp_startStepOnDefaultPlot (Kernel_T *kernel,
+			      void     *data)
+{
+
+  /*
+   * Nothing to be done on default plot, except that we must
+   * return TRUE to the calling procedure in order to allow the general
+   * step management to proceed.
+   *
+   * Returning FALSE means that our plot is not enabled to perform its
+   * step operations, because of this or that...
+   */
+  return TRUE;
+
+}
+
+
+/*
  * Real time Step Action.
  */
 static void
 gdisp_stepOnDefaultPlot (Kernel_T *kernel,
 			 void     *data)
+{
+
+  /*
+   * Nothing to be done on default plot.
+   */
+
+}
+
+
+/*
+ * Real time Starting Step Action.
+ */
+static void
+gdisp_stopStepOnDefaultPlot (Kernel_T *kernel,
+			     void     *data)
 {
 
   /*
@@ -819,6 +855,45 @@ gdisp_getDefaultPlotInformation (Kernel_T         *kernel,
 
 
 /*
+ * Get back to the calling procedure my period, expressed in milliseconds.
+ * CAUTION : The period must be an exact multiple of 10.
+ *           Should not be lower than 100.
+ */
+static guint
+gdisp_getDefaultPlotPeriod (Kernel_T *kernel,
+			    void     *data)
+{
+
+  /*
+   * My period is 1000 milli-seconds.
+   */
+  return 10000000; /* in order to avoid disturbing other plots */
+
+}
+
+
+/*
+ * This procedure is called whenever all symbols have been time-tagged
+ * by the corresponding provider sampling thread.
+ * The last value of all symbols can now be retreived by the graphic plot.
+ *
+ * CAUTION : This procedure is called in another thread, compared to all
+ * other procedures of the graphic plot that are called by GTK main thread.
+ */
+static void
+gdisp_treatDefaultPlotSymbolValues (Kernel_T *kernel,
+				    void     *data)
+{
+
+  /*
+   * Nothing to be done here for text plot, because the last
+   * value of all symbols is retrieved in the "step" procedure.
+   */
+
+}
+
+
+/*
  --------------------------------------------------------------------
                              PUBLIC ROUTINES
  --------------------------------------------------------------------
@@ -844,8 +919,12 @@ gdisp_initDefaultPlotSystem (Kernel_T     *kernel,
   plotSystem->psAddSymbols        = gdisp_addSymbolsToDefaultPlot;
   plotSystem->psSetDimensions     = gdisp_setDefaultPlotInitialDimensions;
   plotSystem->psGetSymbols        = gdisp_getSymbolsFromDefaultPlot;
+  plotSystem->psStartStep         = gdisp_startStepOnDefaultPlot;
   plotSystem->psStep              = gdisp_stepOnDefaultPlot;
+  plotSystem->psStopStep          = gdisp_stopStepOnDefaultPlot;
   plotSystem->psGetInformation    = gdisp_getDefaultPlotInformation;
+  plotSystem->psTreatSymbolValues = gdisp_treatDefaultPlotSymbolValues;
+  plotSystem->psGetPeriod         = gdisp_getDefaultPlotPeriod;
 
 }
 

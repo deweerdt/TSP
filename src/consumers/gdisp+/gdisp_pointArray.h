@@ -60,21 +60,6 @@ typedef struct _DoublePointArray
 
 } DoublePointArray_T;
 
-/* FIXME : What is ths duplicate struct ?*/
-#if 0
-typedef struct _DoublePointArrayPtr
-{
-
-  DoublePoint_T *samples;     // pointer on samples,
-  guint          nbSamples;   // number of samples currently in array,
-  guint          current;     // index on current position,
-  guint          first;       // index on first position,
-  guint       	 marker;      // index on a position used by upper level,
-  guint          maxSamples;  // maximum samples possible to be added.
-
-} DoublePointArrayPtr_T;
-#endif
-
 /*
  * Return a DoublePoint sample element form an Array and an index.
  */

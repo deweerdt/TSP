@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_symbols.c,v 1.1 2004-02-04 20:32:10 esteban Exp $
+$Id: gdisp_symbols.c,v 1.2 2004-03-26 21:09:17 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -62,45 +62,6 @@ File      : Information / Actions upon available symbols.
                              STATIC ROUTINES
  --------------------------------------------------------------------
 */
-
-/*
- * The "delete_event" occurs when the window manager sens this event
- * to the application, usually by the "close" option, or on the titlebar.
- * Returning TRUE means that we do not want to have the "destroy" event 
- * emitted, keeping GDISP+ running. Returning FALSE, we ask that "destroy"
- * be emitted, which in turn will call the "destroy" signal handler.
- */
-static gint
-gdispManageDeleteEventFromWM (GtkWidget *symbolWindow,
-			      GdkEvent  *event,
-			      gpointer   data)
-{
-
-  return FALSE;
-
-}
-
-
-/*
- * The "destroy" event occurs when we call "gtk_widget_destroy" on
- * the top-level window, of if we return FALSE in the "delete_event"
- * callback (see above).
- */
-static void
-gdispDestroySignalHandler (GtkWidget *symbolWindow,
-			   gpointer   data)
-{
-
-  Kernel_T *kernel = (Kernel_T*)data;
-
-  /*
-   * Close and destroy symbol list window.
-   */
-  gtk_widget_destroy(symbolWindow);
-  kernel->widgets.symbolWindow = (GtkWidget*)NULL;
-
-}
-
 
 /*
  * Insert all available symbols into the Gtk CList.
@@ -227,61 +188,6 @@ gdispInsertAndSortSymbols (Kernel_T  *kernel,
   gtk_clist_thaw(GTK_CLIST(kernel->widgets.symbolCList));
 
   return symbolCount;
-
-}
-
-static void
-gdisp_applyChangesCallback (GtkWidget *applyButtonWidget,
-			    gpointer   data )
-{
-
-  Kernel_T  *kernel          = (Kernel_T*)data;
-  gint       symbolCount     =               0;
-  gchar     *filter          =    (gchar*)NULL;
-  GString   *messageString   =  (GString*)NULL;
-
-  gchar    **stringTable     =   (gchar**)NULL;
-  guint      stringTableSize =               0;
-
-
-  /*
-   * Get back filter.
-   * Turn the filter (a coma-separated string list) into a string table.
-   */
-  filter = gtk_entry_get_text(GTK_ENTRY(kernel->widgets.filterEntry));
-  if (strlen(filter) == 0)
-    filter = (gchar*)NULL;
-
-  gdisp_getStringTableFromStringList(filter,
-				     &stringTable,
-				     &stringTableSize);
-
-  /*
-   * Apply changes, with a possible filter.
-   */
-  symbolCount = gdispInsertAndSortSymbols(kernel,
-					  stringTable,
-					  stringTableSize);
-
-
-  /*
-   * Free allocated memory for string table.
-   */
-  gdisp_freeStringTable(&stringTable,
-			&stringTableSize);
-
-
-  /*
-   * Change symbol list frame label to reflect the exact number
-   * of listed symbols.
-   */
-  messageString = g_string_new((gchar*)NULL);
-  g_string_sprintf(messageString,
-		   " Available Symbols : %d ",
-		   symbolCount);
-  gtk_frame_set_label(GTK_FRAME(kernel->widgets.symbolFrame),
-		      messageString->str);
-  g_string_free(messageString,TRUE);
 
 }
 
@@ -600,23 +506,76 @@ gdisp_dataDestroyedDNDCallback (GtkWidget      *widget /* symbol cList */,
 
 
 /*
+ * Apply callback (activated from databook widget).
+ */
+void
+gdisp_symbolApplyCallback (GtkWidget *applyButtonWidget,
+			   gpointer   data )
+{
+
+  Kernel_T  *kernel          = (Kernel_T*)data;
+  gint       symbolCount     =               0;
+  gchar     *filter          =    (gchar*)NULL;
+  GString   *messageString   =  (GString*)NULL;
+
+  gchar    **stringTable     =   (gchar**)NULL;
+  guint      stringTableSize =               0;
+
+
+  /*
+   * Get back filter.
+   * Turn the filter (a coma-separated string list) into a string table.
+   */
+  filter = gtk_entry_get_text(GTK_ENTRY(kernel->widgets.filterEntry));
+  if (strlen(filter) == 0)
+    filter = (gchar*)NULL;
+
+  gdisp_getStringTableFromStringList(filter,
+				     &stringTable,
+				     &stringTableSize);
+
+  /*
+   * Apply changes, with a possible filter.
+   */
+  symbolCount = gdispInsertAndSortSymbols(kernel,
+					  stringTable,
+					  stringTableSize);
+
+
+  /*
+   * Free allocated memory for string table.
+   */
+  gdisp_freeStringTable(&stringTable,
+			&stringTableSize);
+
+
+  /*
+   * Change symbol list frame label to reflect the exact number
+   * of listed symbols.
+   */
+  messageString = g_string_new((gchar*)NULL);
+  g_string_sprintf(messageString,
+		   " Available Symbols : %d ",
+		   symbolCount);
+  gtk_frame_set_label(GTK_FRAME(kernel->widgets.symbolFrame),
+		      messageString->str);
+  g_string_free(messageString,TRUE);
+
+}
+
+
+/*
  * Create GDISP+ symbol list.
  */
 void
-gdisp_showSymbolList (gpointer factoryData,
-		      guint    itemData)
+gdisp_createSymbolList ( Kernel_T  *kernel,
+			 GtkWidget *parent )
 {
 
-  Kernel_T       *kernel            =    (Kernel_T*)factoryData;
-
-  GtkWidget      *mainVBox          =   (GtkWidget*)NULL;
   GtkWidget      *otherVBox         =   (GtkWidget*)NULL;
-  GtkWidget      *mainHBox          =   (GtkWidget*)NULL;
   GtkWidget      *otherHBox         =   (GtkWidget*)NULL;
   GtkWidget      *frame             =   (GtkWidget*)NULL;
   GtkWidget      *scrolledWindow    =   (GtkWidget*)NULL;
-  GtkWidget      *closeButton       =   (GtkWidget*)NULL;
-  GtkWidget      *applyButton       =   (GtkWidget*)NULL;
   GtkWidget      *hSeparator        =   (GtkWidget*)NULL;
   GtkWidget      *label             =   (GtkWidget*)NULL;
   GtkTooltips    *toolTipGroup      = (GtkTooltips*)NULL;
@@ -634,77 +593,6 @@ gdisp_showSymbolList (gpointer factoryData,
                                                       { "Name",
 							"Unit",
 							"Comment" };
-
-
-  assert(kernel);
-
-
-  /*
-   * If provider list is already on the screen, just raise its window.
-   */
-  if (kernel->widgets.symbolWindow != (GtkWidget*)NULL) {
-
-    gdk_window_raise(GTK_WIDGET(kernel->widgets.symbolWindow)->window);
-
-    return;
-
-  }
-
-
-  /* ------------------------ MAIN WINDOW ------------------------ */
-
-  /*
-   * The GTK_WINDOW_TOPLEVEL argument specifies that we want the window
-   * to undergo window manager decoration and placement.
-   */
-  kernel->widgets.symbolWindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-  assert(kernel->widgets.symbolWindow);
-
-  gtk_signal_connect(GTK_OBJECT(kernel->widgets.symbolWindow),
-		     "delete_event",
-		     GTK_SIGNAL_FUNC(gdispManageDeleteEventFromWM),
-		     (gpointer)kernel);
-
-  gtk_signal_connect(GTK_OBJECT(kernel->widgets.symbolWindow),
-		     "destroy",
-		     GTK_SIGNAL_FUNC(gdispDestroySignalHandler),
-		     (gpointer)kernel);
-
-  /*
-   * Set up window size, title and border width.
-   */
-#if defined(WINDOW_SIZE)
-  gtk_widget_set_usize(GTK_WIDGET(kernel->widgets.symbolWindow),
-		       400 /* width  */,
-		       200 /* height */);
-#endif
-
-  gtk_window_set_title(GTK_WINDOW(kernel->widgets.symbolWindow),
-		       "GDISP+ Symbols.");
-
-  gtk_container_set_border_width(GTK_CONTAINER(kernel->widgets.symbolWindow),
-				 1);
-
-
-  /* ------------------------ PACKING BOX ------------------------ */
-
-  /*
-   * We need a vertical packing box for managing all widgets.
-   */
-  mainVBox = gtk_vbox_new(FALSE, /* homogeneous */
-			  5      /* spacing     */ );
-  gtk_container_border_width(GTK_CONTAINER(mainVBox),3);
-  gtk_container_add(GTK_CONTAINER(kernel->widgets.symbolWindow),mainVBox);
-  gtk_widget_show(mainVBox);
-
-
-  /* ------------------------ MAIN WINDOW ------------------------ */
-
-  /*
-   * Map top-level window.
-   */
-  gtk_widget_show(kernel->widgets.symbolWindow);
-
 
   /* ------------------------ TOOLTIP GROUP ------------------------ */
 
@@ -726,7 +614,7 @@ gdisp_showSymbolList (gpointer factoryData,
   gtk_frame_set_label_align(GTK_FRAME(frame),0.1,0.0);
   gtk_frame_set_shadow_type(GTK_FRAME(frame),GTK_SHADOW_ETCHED_IN);
 
-  gtk_container_add(GTK_CONTAINER(mainVBox),frame);
+  gtk_container_add(GTK_CONTAINER(parent),frame);
   gtk_widget_show(frame);
 
   kernel->widgets.symbolFrame = frame; /* in order to change its text */
@@ -856,7 +744,7 @@ gdisp_showSymbolList (gpointer factoryData,
   frame = gtk_frame_new((gchar*)NULL);
   gtk_frame_set_shadow_type(GTK_FRAME(frame),GTK_SHADOW_ETCHED_IN);
 
-  gtk_box_pack_start(GTK_BOX(mainVBox),
+  gtk_box_pack_start(GTK_BOX(parent),
 		     frame,
 		     FALSE /* expand  */,
 		     TRUE  /* fill    */,
@@ -870,7 +758,7 @@ gdisp_showSymbolList (gpointer factoryData,
    * We need a vertical packing box.
    */
   otherVBox = gtk_vbox_new(FALSE, /* homogeneous */
-			    5      /* spacing     */ );
+			   5      /* spacing     */ );
   gtk_container_border_width(GTK_CONTAINER(otherVBox),3);
   gtk_container_add(GTK_CONTAINER(frame),otherVBox);
   gtk_widget_show(otherVBox);
@@ -1218,37 +1106,6 @@ gdisp_showSymbolList (gpointer factoryData,
 		       "");
 
 
-  /* ------------------------ PACKING BOX ------------------------ */
-
-  mainHBox = gdisp_createButtonBar(kernel->widgets.symbolWindow,
-				   &applyButton,
-				   &closeButton);
-
-  gtk_box_pack_start(GTK_BOX(mainVBox),
-		     mainHBox,
-		     FALSE /* expand  */,
-		     TRUE  /* fill    */,
-		     0     /* padding */);
-
-  gtk_signal_connect(GTK_OBJECT(applyButton),
-		     "clicked",
-		     GTK_SIGNAL_FUNC(gdisp_applyChangesCallback),
-		     (gpointer)kernel);
-
-  gtk_signal_connect_object(GTK_OBJECT(closeButton),
-			    "clicked",
-			    (GtkSignalFunc)gtk_widget_destroy,
-			    GTK_OBJECT(kernel->widgets.symbolWindow));
-
-  /*
-   * This grabs this button to be the default button.
-   * Simply hitting the "Enter" key will cause this button to activate.
-   */
-  GTK_WIDGET_SET_FLAGS(applyButton,GTK_CAN_DEFAULT);
-  GTK_WIDGET_SET_FLAGS(closeButton,GTK_CAN_DEFAULT);
-  gtk_widget_grab_default(closeButton);
-
-
   /* ------------------------ LIST OF SYMBOLS  ------------------------ */
 
   /*
@@ -1285,4 +1142,5 @@ gdisp_showSymbolList (gpointer factoryData,
   g_string_free(messageString,TRUE);
 
 }
+
 

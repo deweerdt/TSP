@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_plotCanevas.c,v 1.1 2004-02-04 20:32:10 esteban Exp $
+$Id: gdisp_plotCanevas.c,v 1.2 2004-03-26 21:09:17 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -241,6 +241,28 @@ gdisp_getSymbolsFrom<<<-canevas->>> (Kernel_T *kernel,
 
 
 /*
+ * Real time Starting Step Action.
+ */
+static gboolean
+gdisp_startStepOn<<<-canecas->>> (Kernel_T *kernel,
+				  void     *data)
+{
+
+  /*
+   * Do anything you want before starting steps.
+   *
+   * BUT we must return TRUE to the calling procedure in order to allow
+   * the general step management to proceed.
+   *
+   * Returning FALSE means that our plot is not enabled to perform its
+   * step operations, because of this or that...
+   */
+  return TRUE;
+
+}
+
+
+/*
  * Real time Step Action.
  */
 static void
@@ -253,6 +275,23 @@ gdisp_stepOn<<<-canevas->>> (Kernel_T *kernel,
   /*
    * Do anything you want to perform steps.
    */
+}
+
+
+/*
+ * Real time Starting Step Action.
+ */
+static void
+gdisp_stopStepOn<<<-canevas->>> (Kernel_T *kernel,
+				 void     *data)
+{
+
+  <<<-canevas->>>_T *plot = (<<<-canevas->>>_T*)data;
+
+  /*
+   * Do anything you want when steps are stopped.
+   */
+
 }
 
 
@@ -272,6 +311,44 @@ gdisp_get<<<-canevas->>>Information (Kernel_T         *kernel,
   information->psName        = "Give me a name";
   information->psFormula     = "Y = F ( X )";
   information->psDescription = "A typical skeleton for plots";
+
+}
+
+
+/*
+ * Get back to the calling procedure my period, expressed in milliseconds.
+ * CAUTION : The period must be an exact multiple of 10.
+ *           Should not be lower than 100.
+ */
+static guint
+gdisp_get<<<-canevas->>>Period (Kernel_T         *kernel,
+				void             *data)
+{
+
+  /*
+   * My period is 1000 milli-seconds.
+   */
+  return 1000;
+
+}
+
+
+/*
+ * This procedure is called whenever all symbols have been time-tagged
+ * by the corresponding provider sampling thread.
+ * The last value of all symbols can now be retreived by the graphic plot.
+ *
+ * CAUTION : This procedure is called in another thread, compared to all
+ * other procedures of the graphic plot that are called by GTK main thread.
+ */
+static void
+gdisp_treat<<<-canevas->>>SymbolValues (Kernel_T *kernel,
+					void     *data)
+{
+
+  /*
+   * Take into account all last values.
+   */
 
 }
 
@@ -301,8 +378,12 @@ gdisp_init<<<-canevas->>>System (Kernel_T     *kernel,
   plotSystem->psGetType           = gdisp_get<<<-canevas->>>Type;
   plotSystem->psAddSymbols        = gdisp_addSymbolsTo<<<-canevas->>>;
   plotSystem->psGetSymbols        = gdisp_getSymbolsFrom<<<-canevas->>>;
+  plotSystem->psStartStep         = gdisp_startStepOn<<<-canevas->>>;
   plotSystem->psStep              = gdisp_stepOn<<<-canevas->>>;
+  plotSystem->psStopStep          = gdisp_stopStepOn<<<-canevas->>>;
   plotSystem->psGetInformation    = gdisp_get<<<-canevas->>>Information;
+  plotSystem->psTreatSymbolValues = gdisp_treat<<<-canevas->>>SymbolValues;
+  plotSystem->psGetPeriod         = gdisp_get<<<-canevas->>>Period;
 
 }
 

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_kernel.h,v 1.2 2004-02-18 09:49:15 dufy Exp $
+$Id: gdisp_kernel.h,v 1.3 2004-03-26 21:09:17 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -66,6 +66,7 @@ File      : Graphic Tool Kernel Interface.
  */
 #define _RED_       3
 #define _GREEN_    10
+#define _ORANGE_   14
 #define _YELLOW_   17
 #define _BLUE_     24
 #define _MAGENTA_  31
@@ -157,7 +158,8 @@ typedef struct Symbol_T_ {
   guchar                           sReference;
   TSP_consumer_symbol_requested_t  sInfo;
   guint                            sTimeTag;
-  gdouble                          sValue;
+  gdouble                          sLastValue;
+  gboolean                         sHasChanged;
 
 } Symbol_T;
 
@@ -204,6 +206,7 @@ typedef TSP_consumer_symbol_requested_list_t SampleList_T;
 typedef enum {
 
   GD_THREAD_STOPPED = 0,
+  GD_THREAD_STARTING,
   GD_THREAD_WARNING,
   GD_THREAD_REQUEST_SAMPLE_ERROR,
   GD_THREAD_SAMPLE_INIT_ERROR,
@@ -242,7 +245,7 @@ typedef struct Provider_T_ {
   /*
    * Graphic information.
    */
-  GtkWidget        *pButton;
+  GtkWidget        *pCList;
   GdkColor         *pColor;
 
 } Provider_T;
@@ -258,6 +261,7 @@ typedef struct Provider_T_ {
 typedef enum {
 
   GD_PLOT_DEFAULT = 0,
+  GD_PLOT_TEXT,
   GD_PLOT_2D,
   GD_PLOT_2D5,
   GD_PLOT_3D,
@@ -302,9 +306,10 @@ typedef aFunction_T *FunctionTable_T;
 
 typedef struct PlotSystemInfo_T_ {
 
-  gchar *psName;
-  gchar *psFormula;
-  gchar *psDescription;
+  gchar  *psName;
+  gchar  *psFormula;
+  gchar  *psDescription;
+  gchar **psLogo;
 
 } PlotSystemInfo_T;
 
@@ -335,7 +340,11 @@ typedef struct PlotSystem_T_ {
   void       (*psSetDimensions)    (Kernel_T_Ptr,void*,guint,guint       );
   void       (*psAddSymbols)       (Kernel_T_Ptr,void*,GList*,guint,guint);
   GList     *(*psGetSymbols)       (Kernel_T_Ptr,void*,gchar             );
+  gboolean   (*psStartStep)        (Kernel_T_Ptr,void*                   );
   void       (*psStep)             (Kernel_T_Ptr,void*                   );
+  void       (*psStopStep)         (Kernel_T_Ptr,void*                   );
+  void       (*psTreatSymbolValues)(Kernel_T_Ptr,void*                   );
+  guint      (*psGetPeriod)        (Kernel_T_Ptr,void*                   );
 
   /*
    * Kernel verification.
@@ -346,6 +355,18 @@ typedef struct PlotSystem_T_ {
 
 
 /*
+ * Data associated to each graphic plot on a graphic page.
+ */
+typedef struct PlotSystemData_T_ {
+
+  PlotSystem_T *plotSystem;
+  void         *plotData;
+  guint         plotCycle;
+  
+} PlotSystemData_T;
+
+
+/*
  * A Graphic Page.
  */
 typedef struct Page_T_ {
@@ -353,21 +374,20 @@ typedef struct Page_T_ {
   /*
    * Dimensions and name.
    */
-  guchar         pRows;
-  guchar         pColumns;
-  GString       *pName;
+  guchar            pRows;
+  guchar            pColumns;
+  GString          *pName;
 
   /*
-   * Plot systems (size is 'pRows' x 'pColumns').
+   * Plot system data (size is 'pRows' x 'pColumns').
    */
-  PlotSystem_T **pPlotSystems;
-  void         **pPlotData;
+  PlotSystemData_T *pPlotSystemData;
 
   /*
-   * Graphic widgetss.
+   * Graphic widgets.
    */
-  GtkWidget     *pWindow;
-  GtkWidget     *pTable;
+  GtkWidget        *pWindow;
+  GtkWidget        *pTable;
 
 } Page_T;
 
@@ -389,9 +409,12 @@ typedef struct KernelWidget_T_ {
   GdkBitmap         *mainBoardErrorPixmapMask;
   GtkWidget         *mainBoardOutputList;
   guint              mainBoardOutputListSize;
-  GtkWidget         *providerWindow;
-  GtkWidget         *providerCList;
-  GtkWidget         *symbolWindow;
+  GdkPixmap         *pilotBoardDigitPixmap;
+  GtkWidget         *pilotBoardTimeArea;
+  GdkGC             *pilotBoardTimeContext;
+  GtkWidget         *dataBookWindow;
+  GtkWidget         *dataBookWidget;
+  GtkWidget         *dataBookApplyButton;
 #define _SYMBOL_CLIST_COLUMNS_NB_ 3
   GtkWidget         *symbolCList;
   GtkWidget         *symbolFrame;
@@ -424,10 +447,14 @@ typedef struct Kernel_T_ {
   DndScope_T         dndScope;
 
   /*
-   * GTK timer identity ans period in milli-seconds.
+   * GTK timer identity and period in milli-seconds.
    */
-  gint               timerIdentity;
-  guint              timerPeriod;
+  gint               stepTimerIdentity;
+#define GD_TIMER_MIN_PERIOD 100
+  guint              stepTimerPeriod;
+  guint              stepGlobalCycle;
+  gint               kernelTimerIdentity;
+  GPtrArray         *kernelRegisteredActions;
 
   /*
    * Definition of the multi-threaded environment.
@@ -448,7 +475,11 @@ typedef struct Kernel_T_ {
   /*
    * Useful functions available in the kernel.
    */
-  void             (*outputFunc)(Kernel_T_Ptr,GString*,Message_T);
+  void             (*outputFunc)      (Kernel_T_Ptr,GString*,Message_T);
+  void             (*registerAction)  (Kernel_T_Ptr,
+				       void(*action)(Kernel_T_Ptr));
+  void             (*unRegisterAction)(Kernel_T_Ptr,
+				       void(*action)(Kernel_T_Ptr));
 
   /*
    * Provider management.
@@ -474,6 +505,7 @@ typedef struct Kernel_T_ {
    * Definition of all available plot systems.
    */
   PlotSystem_T       plotSystems[GD_MAX_PLOT];
+  PlotType_T         currentPlotType;
 
   /*
    * Graphic pages.

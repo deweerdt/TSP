@@ -36,6 +36,7 @@ dparray_newSampleArray (guint maxSamples)
   pArray->nbSamples  = 0;
   pArray->current    = 0;
   pArray->first      = 0;
+  pArray->marker     = 0;
   pArray->maxSamples = maxSamples;
   pArray->samples    = (DoublePoint_T*)
                        g_malloc0(maxSamples * sizeof(DoublePoint_T));
@@ -169,8 +170,8 @@ dparray_printFields (DoublePointArray_T *pArray)
 
   printf ("Structure pArray : 0x%X \n", (guint)pArray         );
   printf ("\t ->samples	    : 0x%X \n", (guint)pArray->samples);
-  printf ("\t ->nbSampl	    : %d   \n", pArray->nbSamples     );
-  printf ("\t ->maxSample   : %d   \n", pArray->maxSamples    );
+  printf ("\t ->nbSamples   : %d   \n", pArray->nbSamples     );
+  printf ("\t ->maxSamples  : %d   \n", pArray->maxSamples    );
   printf ("\t ->current     : %d   \n", pArray->current       );
   printf ("\t ->first	    : %d   \n", pArray->first         );
   printf ("\t ->marker	    : %d   \n", pArray->marker        );

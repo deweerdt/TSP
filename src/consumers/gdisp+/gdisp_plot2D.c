@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_plot2D.c,v 1.2 2004-02-18 09:47:44 dufy Exp $
+$Id: gdisp_plot2D.c,v 1.3 2004-03-26 21:09:17 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -55,6 +55,7 @@ File      : 2D plot system.
  * For key manipulation.
  */
 #include <gdk/gdkkeysyms.h>
+#include <gdk/gdkx.h>
 
 
 /*
@@ -65,6 +66,7 @@ File      : 2D plot system.
 
 #include "gdisp_plot2D.h"
 
+#undef DEBUG_2D
 
 /*
  --------------------------------------------------------------------
@@ -74,6 +76,7 @@ File      : 2D plot system.
 #define GDISP_2D_MARGIN_RATIO   0.1 /* We anticipate the next 10% of futur */
 #define GDISP_2D_MAX_TITLE     50   /* Nb char in title  */
 
+#define GDISP_2D_BACK_COLOR _BLACK_
 
 /*
  --------------------------------------------------------------------
@@ -81,12 +84,22 @@ File      : 2D plot system.
  --------------------------------------------------------------------
 */
 
-static int gdisp_verbosity=1;
+static void
+gdisp_manageSymbolNameWindow ( Kernel_T *kernel,
+			       Plot2D_T *plot,
+			       GList    *symbolList);
+
+/*
+ * Verbosity management.
+ */
+static int gdispVerbosity = 1;
+
 #if defined(DEBUG_2D)	
-#  define GDISP_TRACE(level,txt)\
-	if (level<=gdisp_verbosity) fprintf(stderr,txt); 
+#  define GDISP_TRACE(level,txt) \
+	if (level <= gdispVerbosity) fprintf(stderr,txt); 
 #else
-#  define GDISP_TRACE(level,txt) 	/* nothing to do */
+#  define GDISP_TRACE(level,txt) \
+ 	/* nothing to be done */
 #endif
 
 #define EVENT_METHOD(widget,event) \
@@ -104,13 +117,50 @@ static int gdisp_verbosity=1;
 #define X_PLOT_TO_WIN(plot,x) (x)
 #define Y_PLOT_TO_WIN(plot,y) ((plot)->p2dAreaHeight - (y))
 
+#define X_SYMBOL_OFFSET  5
 #define Y_SYMBOL_OFFSET 15
 
-#define X_SAMPLE_TO_PLOT(plot,xxx) ((xxx-(plot)->p2dPtMin.x)*(plot)->p2dPtSlope.x) 
-#define Y_SAMPLE_TO_PLOT(plot,yyy) ((yyy-(plot)->p2dPtMin.y)*(plot)->p2dPtSlope.y) 
+#define X_SAMPLE_TO_PLOT(plot,xx) \
+        ( ((xx) - (plot)->p2dPtMin.x) * (plot)->p2dPtSlope.x)
+#define Y_SAMPLE_TO_PLOT(plot,yy) \
+        ( ((yy) - (plot)->p2dPtMin.y) * (plot)->p2dPtSlope.y)
 
 #define X_SAMPLE_TO_WIN(plot,x) (X_PLOT_TO_WIN(plot,X_SAMPLE_TO_PLOT(plot,x)))
 #define Y_SAMPLE_TO_WIN(plot,y) (Y_PLOT_TO_WIN(plot,Y_SAMPLE_TO_PLOT(plot,y)))
+
+
+/*
+ * Free memory of all sample point table.
+ */
+static void
+gdisp_freeSampledPointTables( Kernel_T *kernel,
+			      Plot2D_T *plot,
+			      gboolean  freeAll)
+{
+
+  guint    nbCurves  = 0;
+  guint    sArrayCpt = 0;
+  gpointer pdata     = (gpointer)NULL;
+
+  nbCurves = plot->p2dSampleArray->len;
+
+  for (sArrayCpt=0; sArrayCpt<nbCurves; sArrayCpt++) {
+
+    pdata = g_ptr_array_remove_index_fast(plot->p2dSampleArray,
+                                          0 /* always remove first one */);
+
+    dparray_freeSampleArray((DoublePointArray_T*)pdata);
+
+  }
+
+  if (freeAll == TRUE) {
+
+    g_ptr_array_free(plot->p2dSampleArray,FALSE);
+    plot->p2dSampleArray = (GPtrArray*)NULL;
+
+  }
+
+}
 
 
 /*
@@ -129,19 +179,23 @@ gdisp_dereferenceSymbolList ( GList *symbolList )
    * Loop over all elements of the list.
    * Do not forget to decrement the 'sReference' of each symbol.
    */
-  symbolItem = g_list_first(symbolList);
+  if (symbolList != (GList*)NULL) {
 
-  while (symbolItem != (GList*)NULL) {
+    symbolItem = g_list_first(symbolList);
 
-    symbol = (Symbol_T*)symbolItem->data;
+    while (symbolItem != (GList*)NULL) {
 
-    symbol->sReference--;
+      symbol = (Symbol_T*)symbolItem->data;
 
-    symbolItem = g_list_next(symbolItem);
+      symbol->sReference--;
+
+      symbolItem = g_list_next(symbolItem);
+
+    }
+
+    g_list_free(symbolList);
 
   }
-
-  g_list_free(symbolList);
 
 }
 
@@ -196,18 +250,616 @@ gdisp_isInsideXZone (Plot2D_T *plot,
 
 
 /*
- * Function in order to sort symbols alphabetically' when inserting
- * them into the double-linked list.
+ * Draw the symbol list.
  */
-static gint
-gdisp_sortSymbolByName(gconstpointer data1,
-		       gconstpointer data2)
+static void
+gdisp_drawSymbolName ( Kernel_T *kernel,
+		       Plot2D_T *plot,
+		       gboolean  xAxis)
 {
 
-  Symbol_T *symbol1 = (Symbol_T*)data1,
-           *symbol2 = (Symbol_T*)data2;
+  GList    *symbolItem   =    (GList*)NULL;
+  Symbol_T *symbol       = (Symbol_T*)NULL;
+  guint     xPosition    =               0;
+  guint     yPosition    =               0;
+  gint      lBearing     =               0;
+  gint      rBearing     =               0;
+  gint      width        =               0;
+  gint      ascent       =               0;
+  gint      descent      =               0;
+  gint      windowX      =               0;
+  gint      windowY      =               0;
+  gint      windowWidth  =               0;
+  gint      windowHeight =               0;
+  gint      windowDepth  =               0;
 
-  return (strcmp(symbol1->sInfo.name,symbol2->sInfo.name));
+
+  /*
+   * Clear window content.
+   */
+  gdk_gc_set_foreground(plot->p2dGContext,
+			&kernel->colors[_BLACK_]);
+
+  gdk_window_get_geometry(xAxis == TRUE ?
+			  plot->p2dXSymbolWindow : plot->p2dYSymbolWindow,
+			  &windowX,
+			  &windowY,
+			  &windowWidth,
+			  &windowHeight,
+			  &windowDepth);
+
+  gdk_draw_rectangle(xAxis == TRUE ?
+		     plot->p2dXSymbolWindow : plot->p2dYSymbolWindow,
+		     plot->p2dGContext,
+		     TRUE, /* rectangle is filled */
+		     0,
+		     0,
+		     windowWidth,
+		     windowHeight);
+
+  /*
+   * TSP Symbol list attached to the X and Y axis.
+   */
+  gdk_gc_set_foreground(plot->p2dGContext,
+			&kernel->colors[_WHITE_]);
+
+  if (xAxis == TRUE) {
+
+    xPosition = X_SYMBOL_OFFSET;
+    yPosition = Y_SYMBOL_OFFSET;
+
+    symbol = (Symbol_T*)plot->p2dXSymbolList->data;
+
+    gdk_draw_string(plot->p2dXSymbolWindow,
+		    plot->p2dFont,
+		    plot->p2dGContext,
+		    xPosition,
+		    yPosition,
+		    symbol->sInfo.name);
+
+    /*
+     * White rectangle around window.
+     */
+    gdk_window_get_geometry(plot->p2dXSymbolWindow,
+			    &windowX,
+			    &windowY,
+			    &windowWidth,
+			    &windowHeight,
+			    &windowDepth);
+
+    gdk_draw_rectangle(plot->p2dXSymbolWindow,
+		       plot->p2dGContext,
+		       FALSE, /* rectangle is not filled */
+		       0,
+		       0,
+		       windowWidth  - 1,
+		       windowHeight - 1);
+
+  }
+  else /* Y axis */ {
+
+    xPosition = X_SYMBOL_OFFSET;
+    yPosition = Y_SYMBOL_OFFSET;
+
+    symbolItem = g_list_first(plot->p2dYSymbolList);
+    while (symbolItem != (GList*)NULL) {
+
+      symbol = (Symbol_T*)symbolItem->data;
+
+      gdk_draw_string(plot->p2dYSymbolWindow,
+		      plot->p2dFont,
+		      plot->p2dGContext,
+		      xPosition,
+		      yPosition,
+		      symbol->sInfo.name);
+
+      /*
+       * Underline selected symbol.
+       */
+      if (symbolItem == plot->p2dSelectedSymbol) {
+
+	gdk_string_extents(plot->p2dFont,
+			   symbol->sInfo.name,
+			   &lBearing,
+			   &rBearing,
+			   &width,
+			   &ascent,
+			   &descent);
+
+	gdk_draw_line(plot->p2dYSymbolWindow,
+		      plot->p2dGContext,
+		      xPosition,                /* x1 */
+		      yPosition + descent,      /* y1 */
+		      xPosition + width,        /* x2 */
+		      yPosition + descent);     /* y2 */
+
+      }
+
+      yPosition += Y_SYMBOL_OFFSET;
+
+      symbolItem = g_list_next(symbolItem);
+
+    }
+
+    /*
+     * White rectangle around window.
+     */
+    gdk_draw_rectangle(plot->p2dYSymbolWindow,
+		       plot->p2dGContext,
+		       FALSE, /* rectangle is not filled */
+		       0,
+		       0,
+		       windowWidth  - 1,
+		       windowHeight - 1);
+
+  }
+
+}
+
+
+/*
+ * Try to delete one or several symbols on Y axis.
+ */
+static void
+gdisp_deleteSelectedSymbolName ( Kernel_T *kernel,
+				 Plot2D_T *plot,
+				 gint      xMouse,
+				 gint      yMouse,
+				 gboolean  isShifted)
+{
+
+  DoublePointArray_T *pArray   = (DoublePointArray_T*)NULL;
+  guint               position =                         0;
+
+  /*
+   * 'button3' removes the selected symbol from the list.
+   * 'shift' + 'button3' removes all symbols.
+   */
+  if (isShifted == TRUE) {
+
+    /*
+     * Do not forget to decrement the reference of the Y symbol.
+     */
+    gdisp_dereferenceSymbolList(plot->p2dXSymbolList);
+    gdisp_dereferenceSymbolList(plot->p2dYSymbolList);
+    plot->p2dXSymbolList    = (GList*)NULL;
+    plot->p2dYSymbolList    = (GList*)NULL;
+    plot->p2dSelectedSymbol = (GList*)NULL;
+
+    /*
+     * Free data for sampled points.
+     */
+    gdisp_freeSampledPointTables(kernel,plot,FALSE /* freeAll */);
+
+    /*
+     * Reset bounding box.
+     */
+    plot->p2dPtMin.x = 0;
+    plot->p2dPtMin.y = 0;
+    plot->p2dPtMax.x = 0;
+    plot->p2dPtMax.y = 0;
+
+    /*
+     * Destroy all Gdk windows.
+     */
+    if (plot->p2dXSymbolWindow != (GdkWindow*)NULL)
+      gdk_window_destroy(plot->p2dXSymbolWindow);
+    if (plot->p2dYSymbolWindow != (GdkWindow*)NULL)
+      gdk_window_destroy(plot->p2dYSymbolWindow);
+
+    plot->p2dXSymbolWindow = (GdkWindow*)NULL;
+    plot->p2dYSymbolWindow = (GdkWindow*)NULL;
+
+  }
+  else {
+
+    if (plot->p2dSelectedSymbol != (GList*)NULL) {
+
+      position = g_list_position(plot->p2dYSymbolList,
+				 plot->p2dSelectedSymbol);
+
+      plot->p2dYSymbolList = g_list_remove_link(plot->p2dYSymbolList,
+						plot->p2dSelectedSymbol);
+
+      /*
+       * Do not forget to decrement the reference of the Y symbol.
+       */
+      gdisp_dereferenceSymbolList(plot->p2dSelectedSymbol);
+      plot->p2dSelectedSymbol = (GList*)NULL;
+
+      /*
+       * Free corresponding memory.
+       */
+      pArray = g_ptr_array_remove_index(plot->p2dSampleArray,
+					position);
+      dparray_freeSampleArray(pArray);
+
+      /*
+       * Update Y symbol name window.
+       */
+      if (g_list_length(plot->p2dYSymbolList) == 0) {
+
+	if (plot->p2dYSymbolWindow != (GdkWindow*)NULL)
+	  gdk_window_destroy(plot->p2dYSymbolWindow);
+	plot->p2dYSymbolWindow = (GdkWindow*)NULL;
+
+      }
+      else {
+
+	gdisp_manageSymbolNameWindow(kernel,
+				     plot,
+				     plot->p2dYSymbolList);
+
+      }
+
+      /*
+       * FIXME : Duf.
+       * We have just removed one symbol.
+       * How do we recompute the bounding box (min, max) so that the
+       * remaining symbols use the whole graphic area ?
+       */
+
+    }
+
+  }
+
+}
+
+
+/*
+ * Draw selected symbol on Y axis.
+ */
+static void
+gdisp_underlineSelectedSymbolName ( Kernel_T *kernel,
+				    Plot2D_T *plot,
+				    gint      xMouse,
+				    gint      yMouse)
+{
+
+  GList    *symbolItem =    (GList*)NULL;
+  Symbol_T *symbol     = (Symbol_T*)NULL;
+  guint     xPosition  =               0;
+  guint     yPosition  =               0;
+  gint      lBearing   =               0;
+  gint      rBearing   =               0;
+  gint      width      =               0;
+  gint      ascent     =               0;
+  gint      descent    =               0;
+
+
+  /*
+   * Return if no symbol available.
+   */
+  if (plot->p2dYSymbolList == (GList*)NULL) {
+
+    return;
+
+  }
+
+
+  /*
+   * Try to get the symbol the mouse is over.
+   */
+  xPosition = X_SYMBOL_OFFSET;
+  yPosition = Y_SYMBOL_OFFSET;
+
+  symbolItem = g_list_first(plot->p2dYSymbolList);
+  while (symbolItem != (GList*)NULL) {
+
+    symbol = (Symbol_T*)symbolItem->data;
+
+    /*
+     * Compute surrounding rectangle dimensions.
+     */
+    gdk_string_extents(plot->p2dFont,
+		       symbol->sInfo.name,
+		       &lBearing,
+		       &rBearing,
+		       &width,
+		       &ascent,
+		       &descent);
+
+    if (xPosition          < xMouse && xMouse < xPosition + width &&
+	yPosition - ascent < yMouse && yMouse < yPosition + descent  ) {
+
+      if (symbolItem != plot->p2dSelectedSymbol) {
+
+	/*
+	 * This symbol becomes the new selected one, refresh graphic area.
+	 */
+	plot->p2dSelectedSymbol = symbolItem;
+
+	gdisp_drawSymbolName (kernel,
+			      plot,
+			      FALSE /* TRUE for xAxis, FALSE otherwise */);
+
+      }
+
+      /*
+       * Stop here investigations, because selected symbol is found.
+       */
+      return;
+
+    } /* Inside rectangle */
+
+    yPosition += Y_SYMBOL_OFFSET;
+
+    symbolItem = g_list_next(symbolItem);
+
+  }
+
+  /*
+   * No symbol is selected, because the mouse is not inside any rectangle.
+   * Refresh graphic area.
+   */
+  if (plot->p2dSelectedSymbol != (GList*)NULL) {
+
+    plot->p2dSelectedSymbol = (GList*)NULL;
+
+    gdisp_drawSymbolName (kernel,
+			  plot,
+			  FALSE /* TRUE for xAxis, FALSE otherwise */);
+
+  }
+
+}
+
+
+/*
+ * Manage symbol name window.
+ */
+static GdkFilterReturn
+gdisp_symbolNameWindowEvent ( GdkXEvent *xevent,
+			      GdkEvent  *event,
+			      gpointer   data )
+{
+
+  Kernel_T        *kernel       =   (Kernel_T*)data;
+  Plot2D_T        *plot         =   (Plot2D_T*)NULL;
+  GdkWindow       *nameWindow   =  (GdkWindow*)NULL;
+  GdkFilterReturn  returnFilter = GDK_FILTER_REMOVE;
+  XEvent          *xEvent       =     (XEvent*)NULL;
+  GdkRectangle     exposeArea;
+
+  GDISP_TRACE(3,"Symbol name window management.\n");
+
+  /*
+   * Manage all cases.
+   */
+  gdk_window_get_user_data(event->any.window,
+			   (gpointer)&plot);
+
+
+  /*
+   * CAUTION !!!! CAUTION !!!! CAUTION !!!! CAUTION !!!! CAUTION !!!!
+   *
+   * Due to a strange way of processing events within Gdk, the second
+   * parameter "event" (a GdkEvent pointer) must be used carefully.
+   * The only field that is correct is the "window" field. All other
+   * fields must not be used, because they are UNINITIALIZED !!!
+   * All other information must be taken from the first argument "xevent"
+   * that must be casted to a X11 native "XEvent" structure.
+   */
+  nameWindow = event->any.window; /* Symbol window */
+  xEvent     = (XEvent*)xevent;
+
+  switch (xEvent->type) {
+
+  case Expose :
+
+    GDISP_TRACE(3,"Expose on symbol name window.\n");
+
+    exposeArea.x      = xEvent->xexpose.x;
+    exposeArea.y      = xEvent->xexpose.y;
+    exposeArea.width  = xEvent->xexpose.width;
+    exposeArea.height = xEvent->xexpose.height;
+
+    gdk_gc_set_clip_rectangle(plot->p2dGContext,
+			      &exposeArea);
+
+    gdisp_drawSymbolName(kernel,
+			 plot,
+			 nameWindow == plot->p2dXSymbolWindow ? TRUE : FALSE);
+
+    gdk_gc_set_clip_rectangle(plot->p2dGContext,
+			      (GdkRectangle*)NULL);
+
+    break;
+
+  case MotionNotify :
+
+    GDISP_TRACE(3,"MotionNotify on symbol name window.\n");
+
+    if (plot->p2dYSymbolWindow     == nameWindow &&
+	plot->p2dSignalsAreBlocked == FALSE         ) {
+
+      gdisp_underlineSelectedSymbolName(kernel,
+					plot,
+					xEvent->xmotion.x,
+					xEvent->xmotion.y);
+
+    }
+
+    break;
+
+  case ButtonPress :
+
+    GDISP_TRACE(3,"ButtonPress on symbol name window.\n");
+
+    if (plot->p2dYSymbolWindow     == nameWindow &&
+	plot->p2dSignalsAreBlocked == FALSE         ) {
+
+      if (xEvent->xbutton.button == Button3) {
+
+	gdisp_deleteSelectedSymbolName(kernel,
+				       plot,
+				       xEvent->xbutton.x,
+				       xEvent->xbutton.y,
+				       (xEvent->xbutton.state & ShiftMask) ?
+				       TRUE : FALSE /* isShifted */);
+
+      }
+
+    }
+
+    break;
+
+  default :
+    break;
+
+  }
+
+  return returnFilter;
+
+}
+
+
+/*
+ * Create or resize the window associated to X and Y symbol names.
+ */
+static void
+gdisp_manageSymbolNameWindow ( Kernel_T *kernel,
+			       Plot2D_T *plot,
+			       GList    *symbolList)
+{
+
+  GdkWindow     **windowPointer  =  (GdkWindow**)NULL;
+  GdkVisual      *visual         =   (GdkVisual*)NULL;
+  GdkColormap    *colormap       = (GdkColormap*)NULL;
+  GList          *symbolItem     =       (GList*)NULL;
+  Symbol_T       *symbol         =    (Symbol_T*)NULL;
+  gint            windowAttrMask =                  0;
+  gint16          windowX        =                  0;
+  gint16          windowY        =                  0;
+  gint16          windowWidth    =                  0;
+  gint16          windowHeight   =                  0;
+  gint            lBearing       =                  0;
+  gint            rBearing       =                  0;
+  gint            width          =                  0;
+  gint            ascent         =                  0;
+  gint            descent        =                  0;
+  GdkWindowAttr   windowAttr;
+
+
+  GDISP_TRACE(3,"Creating or resizing symbol name window.\n");
+
+
+  /*
+   * Which axis ?
+   */
+  if (symbolList == plot->p2dYSymbolList) {
+
+    if (g_list_length(symbolList) == 0)
+      return;
+
+    windowPointer = &plot->p2dYSymbolWindow;
+
+    windowX       = X_SYMBOL_OFFSET * 3;
+    windowY       = Y_SYMBOL_OFFSET;
+
+    windowWidth   = 0; /* by default */
+    windowHeight  = g_list_length(symbolList) * Y_SYMBOL_OFFSET;
+    windowHeight += Y_SYMBOL_OFFSET / 2;
+
+    symbolItem = g_list_first(symbolList);
+    while (symbolItem != (GList*)NULL) {
+
+      symbol = (Symbol_T*)symbolItem->data;
+
+      gdk_string_extents(plot->p2dFont,
+			 symbol->sInfo.name,
+			 &lBearing,
+			 &rBearing,
+			 &width,
+			 &ascent,
+			 &descent);
+
+      windowWidth = MAX(windowWidth,width);
+
+      symbolItem = g_list_next(symbolItem);
+
+    }
+
+    windowWidth += 2 * X_SYMBOL_OFFSET;
+
+  }
+  else /* X */ {
+
+    if (g_list_length(symbolList) == 0)
+      return;
+
+    windowPointer = &plot->p2dXSymbolWindow;
+
+    windowX      = plot->p2dAreaWidth  - 3 * X_SYMBOL_OFFSET;
+    windowY      = plot->p2dAreaHeight - 2 * Y_SYMBOL_OFFSET;
+    windowWidth  = 0; /* by default */
+    windowHeight = Y_SYMBOL_OFFSET + Y_SYMBOL_OFFSET / 2;
+
+    symbolItem = g_list_first(symbolList);
+    symbol = (Symbol_T*)symbolItem->data;
+
+    gdk_string_extents(plot->p2dFont,
+		       symbol->sInfo.name,
+		       &lBearing,
+		       &rBearing,
+		       &width,
+		       &ascent,
+		       &descent);
+
+    windowWidth  = width + 2 * X_SYMBOL_OFFSET;
+    windowX     -= windowWidth;
+
+  }
+
+
+  /*
+   * Get back information from parent window.
+   */
+  if (*windowPointer == (GdkWindow*)NULL) {
+
+    visual   = gdk_window_get_visual  (plot->p2dArea->window);
+    colormap = gdk_window_get_colormap(plot->p2dArea->window);
+
+    memset(&windowAttr,0,sizeof(GdkWindowAttr));
+
+    windowAttr.event_mask  = GDK_EXPOSURE_MASK       |
+                             GDK_POINTER_MOTION_MASK | GDK_BUTTON_PRESS_MASK;
+    windowAttr.x           = windowX;
+    windowAttr.y           = windowY;
+    windowAttr.width       = windowWidth;
+    windowAttr.height      = windowHeight;
+    windowAttr.window_type = GDK_WINDOW_CHILD;
+    windowAttr.wclass      = GDK_INPUT_OUTPUT;
+    windowAttr.visual      = visual;
+    windowAttr.colormap    = colormap;
+    windowAttrMask         = GDK_WA_X        | GDK_WA_Y      |
+                             GDK_WA_COLORMAP | GDK_WA_VISUAL;
+
+    *windowPointer = gdk_window_new(plot->p2dArea->window,
+				    &windowAttr,
+				    windowAttrMask);
+
+    assert(*windowPointer);
+
+    gdk_window_set_user_data(*windowPointer,
+			     (gpointer)plot);
+
+    gdk_window_add_filter(*windowPointer,
+			  gdisp_symbolNameWindowEvent,
+			  (gpointer)kernel);
+
+    gdk_window_show(*windowPointer);
+
+  }
+  else /* resize */ {
+
+    gdk_window_move_resize(*windowPointer,
+			   windowX,
+			   windowY,
+			   windowWidth,
+			   windowHeight);
+
+  }
 
 }
 
@@ -220,6 +872,7 @@ gdisp_plot2DSwapBuffers (Kernel_T       *kernel,
 			 Plot2D_T       *plot,
 			 KindOfRedraw_T  drawType)
 {
+
   GDISP_TRACE(3,"Swaping front and back buffers\n");
 
   /*
@@ -281,16 +934,12 @@ gdisp_plot2DDrawBackBufferBackground (Kernel_T       *kernel,
 
 #undef WANT_TITLES
 
-  GList    *symbolItem =    (GList*)NULL;
-  Symbol_T *symbol     = (Symbol_T*)NULL;
-  guint     xPosition  =               0;
-  guint     yPosition  =               0;
+#if defined(WANT_TITLES)
   gint      lBearing   =               0;
   gint      rBearing   =               0;
   gint      width      =               0;
   gint      ascent     =               0;
   gint      descent    =               0;
-#if defined(WANT_TITLES)
   gchar     title   [GDISP_2D_MAX_TITLE];
   gchar     subTitle[GDISP_2D_MAX_TITLE];
 #endif
@@ -308,7 +957,7 @@ gdisp_plot2DDrawBackBufferBackground (Kernel_T       *kernel,
     GDISP_TRACE(2,"Drawing into back buffer -> background : FULL_REDRAW\n");
 
     gdk_gc_set_foreground(plot->p2dGContext,
-			  &kernel->colors[_BLACK_]);
+			  &kernel->colors[GDISP_2D_BACK_COLOR]);
 
     gdk_draw_rectangle(plot->p2dBackBuffer,
 		       plot->p2dGContext,
@@ -327,6 +976,7 @@ gdisp_plot2DDrawBackBufferBackground (Kernel_T       *kernel,
   else if (drawType == GD_2D_SCROLL_X_AXIS) {
 
     GDISP_TRACE(2,"Drawing into back buffer -> background : SCROLL_X\n");
+
     /*
      * Scroll the 90% of the backbuffer to the left.
      */
@@ -346,7 +996,7 @@ gdisp_plot2DDrawBackBufferBackground (Kernel_T       *kernel,
      * Erase the 10% left on the right.
      */
     gdk_gc_set_foreground(plot->p2dGContext,
-			  &kernel->colors[_BLACK_]);
+			  &kernel->colors[GDISP_2D_BACK_COLOR]);
 
     gdk_draw_rectangle(plot->p2dBackBuffer,
 		       plot->p2dGContext,
@@ -361,7 +1011,8 @@ gdisp_plot2DDrawBackBufferBackground (Kernel_T       *kernel,
   }
   else /* GD_2D_ADD_NEW_SAMPLES */ {
 
-    GDISP_TRACE(2,"Drawing into back buffer -> background : ADD_NEW_SAMPLES\n");
+    GDISP_TRACE(2,
+		"Drawing into back buffer -> background : ADD_NEW_SAMPLES\n");
 
     return;
 
@@ -422,82 +1073,6 @@ gdisp_plot2DDrawBackBufferBackground (Kernel_T       *kernel,
 
 #endif
       
-
-  /*
-   * TSP Symbol attached to the X axis.
-   */
-  gdk_gc_set_foreground(plot->p2dGContext,
-			&kernel->colors[_WHITE_]);
-
-  xPosition = plot->p2dAreaWidth  - Y_SYMBOL_OFFSET;
-  yPosition = plot->p2dAreaHeight - Y_SYMBOL_OFFSET;
-
-  if (plot->p2dXSymbolList != (GList*)NULL) {
-
-    symbol = (Symbol_T*)plot->p2dXSymbolList->data;
-
-    xPosition -= gdk_string_width(plot->p2dFont,
-				  symbol->sInfo.name);
-
-    gdk_draw_string(plot->p2dBackBuffer,
-		    plot->p2dFont,
-		    plot->p2dGContext,
-		    xPosition,
-		    yPosition,
-		    symbol->sInfo.name);
-
-  }
-
-
-  /*
-   * TSP Symbol list attached to the Y axis.
-   */
-  gdk_gc_set_foreground(plot->p2dGContext,
-			&kernel->colors[_WHITE_]);
-
-  xPosition = Y_SYMBOL_OFFSET;
-  yPosition = Y_SYMBOL_OFFSET;
-
-  symbolItem = g_list_first(plot->p2dYSymbolList);
-  while (symbolItem != (GList*)NULL) {
-
-    symbol = (Symbol_T*)symbolItem->data;
-
-    gdk_draw_string(plot->p2dBackBuffer,
-		    plot->p2dFont,
-		    plot->p2dGContext,
-		    xPosition,
-		    yPosition,
-		    symbol->sInfo.name);
-
-    /*
-     * Underline selected symbol.
-     */
-    if (symbolItem == plot->p2dSelectedSymbol) {
-
-      gdk_string_extents(plot->p2dFont,
-			 symbol->sInfo.name,
-			 &lBearing,
-			 &rBearing,
-			 &width,
-			 &ascent,
-			 &descent);
-
-      gdk_draw_line(plot->p2dBackBuffer,
-		    plot->p2dGContext,
-		    xPosition,                /* x1 */
-		    yPosition + descent,      /* y1 */
-		    xPosition + width,        /* x2 */
-		    yPosition + descent);     /* y2 */
-
-    }
-
-    yPosition += Y_SYMBOL_OFFSET;
-
-    symbolItem = g_list_next(symbolItem);
-
-  }
-
 
   /*
    * X & Y axis lines around the graphic area.
@@ -578,7 +1153,8 @@ gdisp_plot2DDrawBackBufferCurves (Kernel_T       *kernel,
 				  KindOfRedraw_T  drawType)
 {
 
-  guint               cptDraw    =                         0;
+  guint               nbCurves   =                         0;
+  guint               cptCurve   =                         0;
   guint               cptPoint   =                         0;
   DoublePointArray_T *pArray     = (DoublePointArray_T*)NULL;
   DoublePoint_T      *pSample    =      (DoublePoint_T*)NULL;
@@ -603,9 +1179,10 @@ gdisp_plot2DDrawBackBufferCurves (Kernel_T       *kernel,
   /*
    * Plot the sample lines
    */
-  for (cptDraw=0; cptDraw<plot->p2dNbDraws; cptDraw++) {
+  nbCurves = plot->p2dSampleArray->len;
+  for (cptCurve=0; cptCurve<nbCurves; cptCurve++) {
 
-    pArray = plot->p2dSampleArray[cptDraw]; 
+    pArray = plot->p2dSampleArray->pdata[cptCurve]; 
 
     if (drawType == GD_2D_FULL_REDRAW) {
 
@@ -633,7 +1210,7 @@ gdisp_plot2DDrawBackBufferCurves (Kernel_T       *kernel,
      * TODO : A color per draw ?
      */
     gdk_gc_set_foreground(plot->p2dGContext,
-			  &kernel->colors[_GREEN_ + cptDraw * 7]);
+			  &kernel->colors[_GREEN_ + cptCurve * 7]);
       
     for (cptPoint=startIndex; cptPoint<startIndex+nbPoints; cptPoint++) {
 
@@ -679,8 +1256,15 @@ gdisp_plot2DDrawBackBufferCurves (Kernel_T       *kernel,
     /*
      * Mark the last plotted position, for next drawBackBuffer optimisation.
      */
-    dparray_setMarkerIndex(pArray,
-			   lastIndex - 1);
+    if (nbPoints > 0) {
+
+      /*
+       * FIXME for Duf : Confirm "-1" ...
+       */
+      dparray_setMarkerIndex(pArray,
+			     lastIndex /* - 1 */);
+
+    }
 
   } /* end of loop on every curves */
 
@@ -695,14 +1279,19 @@ gdisp_plot2DDrawBackBuffer (Kernel_T       *kernel,
 			    Plot2D_T       *plot,
 			    KindOfRedraw_T  drawType)
 {
+
   GDISP_TRACE(3,"Drawing into back buffer\n");
 
   /*
    * Do not redraw background when simply adding new samples.
    */
   if (drawType != GD_2D_ADD_NEW_SAMPLES) {
-    plot->p2dPtSlope.x = 	    plot->p2dAreaWidth / (plot->p2dPtMax.x-plot->p2dPtMin.x);
-    plot->p2dPtSlope.y = 	    plot->p2dAreaHeight/ (plot->p2dPtMax.y-plot->p2dPtMin.y);
+
+    plot->p2dPtSlope.x =
+      plot->p2dAreaWidth  / (plot->p2dPtMax.x - plot->p2dPtMin.x);
+    plot->p2dPtSlope.y =
+      plot->p2dAreaHeight / (plot->p2dPtMax.y - plot->p2dPtMin.y);
+
     gdisp_plot2DDrawBackBufferBackground(kernel,
 					 plot,
 					 drawType);
@@ -830,6 +1419,15 @@ gdisp_plot2DConfigure (GtkWidget         *area,
 			     plot,
 			     GD_2D_FULL_REDRAW);
 
+
+  /*
+   * Take care of X symbol name window.
+   * No need to move/resize Y symbol list.
+   */
+  gdisp_manageSymbolNameWindow(kernel,
+			       plot,
+			       plot->p2dXSymbolList);
+
   return TRUE;
 
 }
@@ -890,92 +1488,6 @@ gdisp_plot2DLeaveNotify (GtkWidget        *area,
 
 
 /*
- * Treat 'key-press' X event.
- * What shall I do when the user press a key on the graphic area ?
- */
-#if defined(WAIT_FORT_GTK_BUG_CORRECTION)
-
-static gboolean
-gdisp_plot2DKeyPress (GtkWidget   *area,
-		      GdkEventKey *event,
-		      gpointer     data)
-{
-
-  Kernel_T *kernel = (Kernel_T*)data;
-  Plot2D_T *plot   = (Plot2D_T*)NULL;
-
-  GDISP_TRACE(3,"Key press event.\n");
-
-  /*
-   * 'key press' events on a graphic area are not well treated
-   * in version 1.2 of GTK.
-   * SORRY.
-   */
-
-  /*
-   * Graphic area has lost the focus.
-   */
-  plot = (Plot2D_T*)gtk_object_get_data(GTK_OBJECT(area),
-					"plotPointer");
-
-  /*
-   * Delete all symbols in case of 'c/C' key (clear all),
-   * or delete one symbol in case of 'd/D' key (delete one).
-   */
-  switch (event->keyval) {
-
-  case GDK_c :
-  case GDK_C :
-    /*
-     * Do not forget to decrement the reference of the Y symbol.
-     */
-    if (plot->p2dXSymbolList != (GList*)NULL) {
-      gdisp_dereferenceSymbolList(plot->p2dXSymbolList);
-    }
-    if (plot->p2dYSymbolList != (GList*)NULL) {
-      gdisp_dereferenceSymbolList(plot->p2dYSymbolList);
-    }
-    plot->p2dXSymbolList    = (GList*)NULL;
-    plot->p2dYSymbolList    = (GList*)NULL;
-    plot->p2dSelectedSymbol = (GList*)NULL;
-    break;
-
-  case GDK_d :
-  case GDK_D :
-    if (plot->p2dSelectedSymbol != (GList*)NULL) {
-      plot->p2dYSymbolList = g_list_remove_link(plot->p2dYSymbolList,
-						plot->p2dSelectedSymbol);
-      /*
-       * Do not forget to decrement the reference of the Y symbol.
-       */
-      gdisp_dereferenceSymbolList(plot->p2dSelectedSymbol);
-      plot->p2dSelectedSymbol = (GList*)NULL;
-    }
-    break;
-
-  default :
-    break;
-
-  }
-
-  /*
-   * Refresh graphic area.
-   */
-  gdisp_plot2DDrawBackBuffer(kernel,
-			     plot,
-			     GD_2DFULL_REDRAW);
-
-  gdisp_plot2DSwapBuffers   (kernel,
-			     plot,
-			     GD_2D_FULL_REDRAW);
-
-  return TRUE;
-
-}
-
-#endif
-
-/*
  * Treat 'button-press' X event.
  * What shall I do when the user press a button on the graphic area ?
  */
@@ -1011,34 +1523,8 @@ gdisp_plot2DButtonPress (GtkWidget      *area,
    */
   if (event->state & GDK_SHIFT_MASK) {
 
-    /*
-     * Do not forget to decrement the reference of the Y symbol.
-     */
-    if (plot->p2dXSymbolList != (GList*)NULL) {
-      gdisp_dereferenceSymbolList(plot->p2dXSymbolList);
-    }
-    if (plot->p2dYSymbolList != (GList*)NULL) {
-      gdisp_dereferenceSymbolList(plot->p2dYSymbolList);
-    }
-    plot->p2dXSymbolList    = (GList*)NULL;
-    plot->p2dYSymbolList    = (GList*)NULL;
-    plot->p2dSelectedSymbol = (GList*)NULL;
-
   }
   else {
-
-    if (plot->p2dSelectedSymbol != (GList*)NULL) {
-
-      plot->p2dYSymbolList = g_list_remove_link(plot->p2dYSymbolList,
-						plot->p2dSelectedSymbol);
-
-      /*
-       * Do not forget to decrement the reference of the Y symbol.
-       */
-      gdisp_dereferenceSymbolList(plot->p2dSelectedSymbol);
-      plot->p2dSelectedSymbol = (GList*)NULL;
-
-    }
 
   }
 
@@ -1071,17 +1557,11 @@ gdisp_plot2DMotionNotify (GtkWidget      *area,
   Kernel_T *kernel     = (Kernel_T*)data;
   Plot2D_T *plot       = (Plot2D_T*)NULL;
 
-  GList    *symbolItem =    (GList*)NULL;
-  Symbol_T *symbol     = (Symbol_T*)NULL;
   guint     xPosition  =               0;
   guint     yPosition  =               0;
-  gint      lBearing   =               0;
-  gint      rBearing   =               0;
-  gint      width      =               0;
-  gint      ascent     =               0;
-  gint      descent    =               0;
 
   GDISP_TRACE(3,"Motion notify event.\n");
+
 
   /*
    * Graphic area has lost the focus.
@@ -1089,15 +1569,6 @@ gdisp_plot2DMotionNotify (GtkWidget      *area,
   plot = (Plot2D_T*)gtk_object_get_data(GTK_OBJECT(area),
 					"plotPointer");
 
-
-  /*
-   * Return if no symbol available.
-   */
-  if (plot->p2dYSymbolList == (GList*)NULL) {
-
-    return TRUE;
-
-  }
 
   /*
    * Take care of hints from X Server.
@@ -1114,78 +1585,13 @@ gdisp_plot2DMotionNotify (GtkWidget      *area,
 
   }
 
-  /*
-   * Try to get the symbol the mouse is over.
-   */
-  xPosition = Y_SYMBOL_OFFSET;
-  yPosition = Y_SYMBOL_OFFSET;
+  gdisp_plot2DDrawBackBuffer(kernel,
+			     plot,
+			     GD_2D_FULL_REDRAW);
 
-  symbolItem = g_list_first(plot->p2dYSymbolList);
-  while (symbolItem != (GList*)NULL) {
-
-    symbol = (Symbol_T*)symbolItem->data;
-
-    /*
-     * Compute surrounding rectangle dimensions.
-     */
-    gdk_string_extents(plot->p2dFont,
-		       symbol->sInfo.name,
-		       &lBearing,
-		       &rBearing,
-		       &width,
-		       &ascent,
-		       &descent);
-
-    if (xPosition          < event->x && event->x < xPosition + width &&
-	yPosition - ascent < event->y && event->y < yPosition + descent  ) {
-
-      if (symbolItem != plot->p2dSelectedSymbol) {
-
-	/*
-	 * This symbol becomes the new selected one, refresh graphic area.
-	 */
-	plot->p2dSelectedSymbol = symbolItem;
-
-	gdisp_plot2DDrawBackBuffer(kernel,
-				   plot,
-				   GD_2D_FULL_REDRAW);
-
-	gdisp_plot2DSwapBuffers   (kernel,
-				   plot,
-				   GD_2D_FULL_REDRAW);
-
-      }
-
-      /*
-       * Stop here investigations, because selected symbol is found.
-       */
-      return TRUE;
-
-    } /* Inside rectangle */
-
-    yPosition += Y_SYMBOL_OFFSET;
-
-    symbolItem = g_list_next(symbolItem);
-
-  }
-
-  /*
-   * No symbol is selected, because the mouse is not inside any rectangle.
-   * Refresh graphic area.
-   */
-  if (plot->p2dSelectedSymbol != (GList*)NULL) {
-
-    plot->p2dSelectedSymbol = (GList*)NULL;
-
-    gdisp_plot2DDrawBackBuffer(kernel,
-			       plot,
-			       GD_2D_FULL_REDRAW);
-
-    gdisp_plot2DSwapBuffers   (kernel,
-			       plot,
-			       GD_2D_FULL_REDRAW);
-
-  }
+  gdisp_plot2DSwapBuffers   (kernel,
+			     plot,
+			     GD_2D_FULL_REDRAW);
 
   return TRUE;
 
@@ -1203,8 +1609,8 @@ gdisp_createPlot2D (Kernel_T *kernel)
 
 #define FROZEN_RULER
 
-  Plot2D_T *plot      = (Plot2D_T*)NULL;
-  guint     sArrayCpt = 0;
+  Plot2D_T *plot     = (Plot2D_T*)NULL;
+  guint     signalID = 0;
 
   /*
    * Dynamic allocation.
@@ -1229,6 +1635,11 @@ gdisp_createPlot2D (Kernel_T *kernel)
 
   plot->p2dArea = gtk_drawing_area_new();
 
+  plot->p2dSignalsAreBlocked = FALSE;
+  plot->p2dSignalIdentities  = g_array_new(FALSE /* zero terminated */,
+					   TRUE  /* clear           */,
+					   sizeof(guint));
+
   gtk_table_attach(GTK_TABLE(plot->p2dTable),
 		   plot->p2dArea,
 		   1,
@@ -1240,12 +1651,16 @@ gdisp_createPlot2D (Kernel_T *kernel)
 		   0,
 		   0 );
 
+#if defined(GD_AREA_WANT_EXTRA_EVENTS)
+
   gtk_widget_set_events(plot->p2dArea,
 			GDK_POINTER_MOTION_MASK      |
 			GDK_POINTER_MOTION_HINT_MASK |
 			GDK_ENTER_NOTIFY_MASK        |
 			GDK_LEAVE_NOTIFY_MASK        |
 			GDK_BUTTON_PRESS_MASK          );
+
+#endif
 
   gtk_signal_connect(GTK_OBJECT(plot->p2dArea),
 		     "expose_event",
@@ -1257,32 +1672,32 @@ gdisp_createPlot2D (Kernel_T *kernel)
 		      (GtkSignalFunc)gdisp_plot2DConfigure,
 		      (gpointer)kernel); 
 
-  gtk_signal_connect(GTK_OBJECT(plot->p2dArea),
-		     "enter_notify_event",
-		     (GtkSignalFunc)gdisp_plot2DEnterNotify,
-		     (gpointer)kernel);
+  /*
+   * Store few signals in order to block them afterwards.
+   */
+  signalID = gtk_signal_connect(GTK_OBJECT(plot->p2dArea),
+				"enter_notify_event",
+				(GtkSignalFunc)gdisp_plot2DEnterNotify,
+				(gpointer)kernel);
+  g_array_append_val(plot->p2dSignalIdentities,signalID);
 
-  gtk_signal_connect(GTK_OBJECT(plot->p2dArea),
-		     "leave_notify_event",
-		     (GtkSignalFunc)gdisp_plot2DLeaveNotify,
-		     (gpointer)kernel);
+  signalID = gtk_signal_connect(GTK_OBJECT(plot->p2dArea),
+				"leave_notify_event",
+				(GtkSignalFunc)gdisp_plot2DLeaveNotify,
+				(gpointer)kernel);
+  g_array_append_val(plot->p2dSignalIdentities,signalID);
 
-#if defined(WAIT_FORT_GTK_BUG_CORRECTION)
-  gtk_signal_connect(GTK_OBJECT(plot->p2dArea),
-		     "key_press_event",
-		     (GtkSignalFunc)gdisp_plot2DKeyPress,
-		     (gpointer)kernel);
-#endif
+  signalID = gtk_signal_connect(GTK_OBJECT(plot->p2dArea),
+				"button_press_event",
+				(GtkSignalFunc)gdisp_plot2DButtonPress,
+				(gpointer)kernel);
+  g_array_append_val(plot->p2dSignalIdentities,signalID);
 
-  gtk_signal_connect(GTK_OBJECT(plot->p2dArea),
-		     "button_press_event",
-		     (GtkSignalFunc)gdisp_plot2DButtonPress,
-		     (gpointer)kernel);
-
-  gtk_signal_connect(GTK_OBJECT(plot->p2dArea),
-		     "motion_notify_event",
-		     (GtkSignalFunc)gdisp_plot2DMotionNotify,
-		     (gpointer)kernel);
+  signalID = gtk_signal_connect(GTK_OBJECT(plot->p2dArea),
+				"motion_notify_event",
+				(GtkSignalFunc)gdisp_plot2DMotionNotify,
+				(gpointer)kernel);
+  g_array_append_val(plot->p2dSignalIdentities,signalID);
 
   gtk_object_set_data(GTK_OBJECT(plot->p2dArea),
 		      "plotPointer",
@@ -1377,19 +1792,10 @@ gdisp_createPlot2D (Kernel_T *kernel)
 
 
   /*
-   * Allocate data for sampled points.
+   * Initialize sampled points.
+   * Allocation is done when dropping symbols onto the plot.
    */
-  /* FIXME : Need to know how many draw curves you have got */
-  plot->p2dNbDraws     = 3; 
-  plot->p2dSampleArray = (DoublePointArray_T**)
-    g_malloc0(plot->p2dNbDraws * sizeof(DoublePointArray_T*));
-
-  for (sArrayCpt=0; sArrayCpt<plot->p2dNbDraws; sArrayCpt++) {
-
-    plot->p2dSampleArray[sArrayCpt] =
-      dparray_newSampleArray(TSP_PROVIDER_FREQ * GDISP_WIN_T_DURATION);
-
-  }
+  plot->p2dSampleArray = g_ptr_array_new();
 
 
   /*
@@ -1408,34 +1814,33 @@ gdisp_destroyPlot2D(Kernel_T *kernel,
 		    void     *data)
 {
 
-  Plot2D_T *plot      = (Plot2D_T*)data;
-  guint     sArrayCpt = 0;
+  Plot2D_T *plot = (Plot2D_T*)data;
 
   /*
    * Free symbol list.
    */
-  g_list_free(plot->p2dXSymbolList);
-  g_list_free(plot->p2dYSymbolList);
+  gdisp_dereferenceSymbolList(plot->p2dXSymbolList);
+  gdisp_dereferenceSymbolList(plot->p2dYSymbolList);
 
   /*
    * Now destroy everything.
    */
-  gdk_gc_destroy    (plot->p2dGContext  );
-  gdk_pixmap_unref  (plot->p2dBackBuffer);
-  gtk_widget_destroy(plot->p2dArea      );
-  gtk_widget_destroy(plot->p2dHRuler    );
-  gtk_widget_destroy(plot->p2dVRuler    );
-  gtk_widget_destroy(plot->p2dTable     );
+  if (plot->p2dXSymbolWindow != (GdkWindow*)NULL)
+    gdk_window_destroy(plot->p2dXSymbolWindow      );
+  if (plot->p2dYSymbolWindow != (GdkWindow*)NULL)
+    gdk_window_destroy(plot->p2dYSymbolWindow      );
+  gdk_gc_destroy    (plot->p2dGContext             );
+  gdk_pixmap_unref  (plot->p2dBackBuffer           );
+  gtk_widget_destroy(plot->p2dArea                 );
+  gtk_widget_destroy(plot->p2dHRuler               );
+  gtk_widget_destroy(plot->p2dVRuler               );
+  gtk_widget_destroy(plot->p2dTable                );
+  g_array_free      (plot->p2dSignalIdentities,TRUE);
 
   /*
    * Free data for sampled points.
    */
-  for (sArrayCpt=0; sArrayCpt<plot->p2dNbDraws; sArrayCpt++) {
-
-    dparray_freeSampleArray(plot->p2dSampleArray[sArrayCpt]);
-
-  }
-  g_free(plot->p2dSampleArray);
+  gdisp_freeSampledPointTables(kernel,plot,TRUE /* freeAll */);
 
   /*
    * Free opaque structure.
@@ -1546,7 +1951,7 @@ gdisp_getPlot2DType (Kernel_T *kernel,
   GDISP_TRACE(3,"Getting back plot type (2D).\n");
 
   /*
-   * Must be GD_PLOT_2D_T. See 'create' routine.
+   * Must be GD_PLOT_2D. See 'create' routine.
    */
   return plot->p2dType;
 
@@ -1568,6 +1973,7 @@ gdisp_addSymbolsToPlot2D (Kernel_T *kernel,
   Plot2D_T *plot       = (Plot2D_T*)data;
   GList    *symbolItem =    (GList*)NULL;
   Symbol_T *symbol     = (Symbol_T*)NULL;
+  guint     maxSamples =               0;
 
   GDISP_TRACE(3,"Adding symbols to plot 2D.\n");
 
@@ -1575,13 +1981,14 @@ gdisp_addSymbolsToPlot2D (Kernel_T *kernel,
    * If drop coordinates are in the X zone, the symbol has to be
    * attached to the X axis.
    * CAUTION : we bet the X will be monotonic increasing 
-   * try plot y=f(t). Realtime will warn us if not
+   * try plot y=f(t). Realtime will warn us if not.
    */
   if (gdisp_isInsideXZone(plot,
 			  xDrop,
 			  yDrop) == TRUE) {
 
     plot->p2dSubType = GD_2D_F2T;
+
     /*
      * Do not forget to decrement the reference of the X symbol.
      */
@@ -1602,6 +2009,10 @@ gdisp_addSymbolsToPlot2D (Kernel_T *kernel,
       symbol->sReference++;
 
     }
+
+    gdisp_manageSymbolNameWindow(kernel,
+				 plot,
+				 plot->p2dXSymbolList);
 
   }
   else {
@@ -1628,19 +2039,26 @@ gdisp_addSymbolsToPlot2D (Kernel_T *kernel,
 	symbol = (Symbol_T*)symbolItem->data;
 	symbol->sReference++;
 
+
+	/*
+	 * Allocate memory for receiving sampled values of the symbol.
+	 */
+	maxSamples = TSP_PROVIDER_FREQ * GDISP_WIN_T_DURATION;
+	g_ptr_array_add(plot->p2dSampleArray,
+			(gpointer)dparray_newSampleArray(maxSamples));
+
       }
 
       symbolItem = g_list_next(symbolItem);
 
     }
 
-    /*
-     * Sort symbols by name.
-     */
-    plot->p2dYSymbolList = g_list_sort(plot->p2dYSymbolList,
-				       gdisp_sortSymbolByName);
+    gdisp_manageSymbolNameWindow(kernel,
+				 plot,
+				 plot->p2dYSymbolList);
 
   }
+
 
   /*
    * Refresh graphic area only if back buffer exists.
@@ -1693,6 +2111,72 @@ gdisp_getSymbolsFromPlot2D (Kernel_T *kernel,
 
 
 /*
+ * Real time Starting Step Action.
+ */
+static gboolean
+gdisp_startStepOnPlot2D (Kernel_T *kernel,
+			 void     *data)
+{
+
+  Plot2D_T *plot     = (Plot2D_T*)data;
+  guint     nbEvents = 0;
+  guint     cptEvent = 0;
+  guint     eventID  = 0;
+
+  GDISP_TRACE(3,"Performing start-step on plot 2D.\n");
+
+  /*
+   * Performs actions before starting steps.
+   *
+   * BUT we must return TRUE to the calling procedure in order to allow
+   * the general step management to proceed.
+   *
+   * Returning FALSE means that our plot is not enabled to perform its
+   * step operations, because of this or that...
+   */
+
+  /*
+   * Checkout X and Y symbol lists.
+   * There must be at least one symbol affected to the Y axis.
+   * The X symbol list must not be empty.
+   */
+  if (g_list_length(plot->p2dYSymbolList) == 0 ||
+      g_list_length(plot->p2dXSymbolList) == 0    ) {
+
+    return FALSE;
+
+  }
+
+
+  /*
+   * Before starting steps, block few X signals.
+   * Those signals have been recorded into a table.
+   * These signals are : CrossingEvents, ButtonPressEvents, MotionEvents.
+   */
+  if (plot->p2dSignalsAreBlocked == FALSE) {
+
+    nbEvents = plot->p2dSignalIdentities->len;
+    for(cptEvent=0; cptEvent<nbEvents; cptEvent++) {
+
+      eventID = (guint)g_array_index(plot->p2dSignalIdentities,
+				     guint,
+				     cptEvent);
+
+      gtk_signal_handler_block(GTK_OBJECT(plot->p2dArea),
+			       eventID);
+
+    }
+
+    plot->p2dSignalsAreBlocked = TRUE;
+
+  }
+
+  return TRUE /* everything's ok */;
+
+}
+
+
+/*
  * Real time Step Action.
  */
 static void
@@ -1700,91 +2184,106 @@ gdisp_stepOnPlot2D (Kernel_T *kernel,
 		    void     *data)
 {
 
-  Plot2D_T *plot = (Plot2D_T*)data;
+  Plot2D_T           *plot           = (Plot2D_T*)data;
 
-  /*
-   * TODO :
-   * I'm not quite sure how I will get the new data, but will see later ...
-   */
-  static
-  gdouble        myTime    = 0.0;
-  guint          cptDraw   = 0;
-  guint          nbSamples = 0;
-  KindOfRedraw_T drawType  = GD_2D_ADD_NEW_SAMPLES;
-  DoublePoint_T  aPoint, *pLastPoint;
-  guint		 n;
+  guint               nbCurves       = 0;
+  guint               cptCurve       = 0;
+  guint               cptPoint       = 0;
+  guint               startIndex     = 0;
+  guint               nbPoints       = 0;
+  KindOfRedraw_T      drawType       = GD_2D_ADD_NEW_SAMPLES;
+  DoublePointArray_T *pArray         = (DoublePointArray_T*)NULL;
+  DoublePoint_T      *pSample        =      (DoublePoint_T*)NULL;
+  DoublePoint_T      *pLastPoint     = (DoublePoint_T*)NULL;
+  guint		      totalNbSamples = 0;
 
   /*
    * Guess we got new TSP values at each refresh cycles.
    */
-  for (nbSamples=0;
-       nbSamples<TSP_PROVIDER_FREQ/GDISP_REFRESH_FREQ; nbSamples++) {
-    Symbol_T *symbol = (Symbol_T*)plot->p2dXSymbolList->data;  
+  nbCurves = plot->p2dSampleArray->len;
+  for (cptCurve=0; cptCurve<nbCurves; cptCurve++) {
 
-    for (cptDraw=0; cptDraw<plot->p2dNbDraws; cptDraw++) {
+    pArray         = plot->p2dSampleArray->pdata[cptCurve]; 
 
-      gdouble t = myTime / TSP_PROVIDER_FREQ * (cptDraw + 1) * 5;
+    totalNbSamples = dparray_getNbSamples         (pArray);
+    startIndex     = dparray_getMarkerIndex       (pArray);
+    nbPoints       = dparray_getLeftSamplesFromPos(pArray,
+						   startIndex);
 
-      if (strcmp(symbol->sInfo.name,   "t") == 0 ||
-	  strcmp(symbol->sInfo.name,   "T") == 0 ||
-	  strcmp(symbol->sInfo.name,"time") == 0 ||
-	  strcmp(symbol->sInfo.name,"Time") == 0 ||
-	  strcmp(symbol->sInfo.name,"TIME") == 0    ) {
+    /*
+     * Try to know whether F2T becomes F2X...
+     */
+    if (plot->p2dSubType == GD_2D_F2T && totalNbSamples > 0) {
 
-	aPoint.x = myTime;
-	aPoint.y = 10.0 / (cptDraw + 1)    *
-	  (sin(t) + pow(cos(t),cptDraw+1)) *
-	  (1 + t / 500.0 * (1 + (gdouble)rand() / RAND_MAX));
+      /*
+       * If we are at the very beginning of the table...
+       */
+      if (startIndex == 0) {
+
+	if (totalNbSamples == pArray->maxSamples) {
+
+	  /*
+	   * Even if we are at the first place, the previous point
+	   * does exist because the ring is full.
+	   */
+	  pLastPoint = DP_ARRAY_GET_SAMPLE_PTR(pArray,totalNbSamples-1);
+
+	}
+	else {
+
+	  /*
+	   * No choice but taking the very first point.
+	   */
+	  pLastPoint = DP_ARRAY_GET_SAMPLE_PTR(pArray,0 /* first point */);
+
+	}
 
       }
       else {
 
-	aPoint.x = sin(myTime *(cptDraw +1) / 3.0) * myTime / (cptDraw + 1);
-	aPoint.y = cos(myTime /(cptDraw +1)      ) * myTime * (cptDraw + 1);
+	/*
+	 * Just take the previous point.
+	 */
+	pLastPoint = DP_ARRAY_GET_SAMPLE_PTR(pArray,startIndex-1);
 
       }
- 
-      dparray_addSample(plot->p2dSampleArray[cptDraw],
-			&aPoint);
 
-      /* Check if plot2D is still monotonic increasing on X */
-      n = dparray_getNbSamples (plot->p2dSampleArray[cptDraw]);
+    }
 
-      if ( (n > 1) && (plot->p2dSubType==GD_2D_F2T) ) {
-	// Take the last before the one we just add
-	pLastPoint = DP_ARRAY_GET_SAMPLE_PTR(plot->p2dSampleArray[cptDraw], n-2); 
-	if (aPoint.x < pLastPoint->x) {
-	  // FIXME : What to do if X increase like a exponentiel ?
+    for (cptPoint=startIndex; cptPoint<startIndex+nbPoints; cptPoint++) {
+
+      pSample = DP_ARRAY_GET_SAMPLE_PTR(pArray,cptPoint);
+
+      /*
+       * Check if plot2D is still monotonic increasing on X.
+       */
+      if (plot->p2dSubType == GD_2D_F2T && totalNbSamples > 0) {
+
+	if (pSample->x < pLastPoint->x) {
+
+	  /*
+	   * FIXME : What to do if X increase like a exponentiel ?
+	   */
 	  plot->p2dSubType = GD_2D_F2X;
 	  drawType         = GD_2D_FULL_REDRAW;
 	  GDISP_TRACE(1,"gdisp_stepOnPlot2D : changing type to F2X\n");
+
 	}
-      }
-
-      if (myTime == 0.0 && cptDraw == 0) {
-
-	/*
-	 * First time to initialize minimum and maximum.
-	 */
-	plot->p2dPtMin = aPoint;
-	plot->p2dPtMax = aPoint;
 
       }
-	  
-      plot->p2dPtLast = aPoint;
 
       /*
        * I Could do this check later, but might be speeder on the fly.
        */
-      if (aPoint.y < plot->p2dPtMin.y) {
+      if (pSample->y < plot->p2dPtMin.y) {
 
-	plot->p2dPtMin.y = aPoint.y * (1 + GDISP_2D_MARGIN_RATIO);
+	plot->p2dPtMin.y = pSample->y * (1 + GDISP_2D_MARGIN_RATIO);
 	drawType         = GD_2D_FULL_REDRAW;
 
       }
-      if (aPoint.y > plot->p2dPtMax.y) {
+      if (pSample->y > plot->p2dPtMax.y) {
 
-	plot->p2dPtMax.y = aPoint.y * (1 + GDISP_2D_MARGIN_RATIO);
+	plot->p2dPtMax.y = pSample->y * (1 + GDISP_2D_MARGIN_RATIO);
 	drawType         = GD_2D_FULL_REDRAW;
 
       }
@@ -1792,10 +2291,9 @@ gdisp_stepOnPlot2D (Kernel_T *kernel,
       switch (plot->p2dSubType) {
 
       case GD_2D_F2T :
+	if (pSample->x > plot->p2dPtMax.x) {
 
-	if (aPoint.x > plot->p2dPtMax.x) {
-
-	  plot->p2dPtMax.x = aPoint.x +
+	  plot->p2dPtMax.x = pSample->x +
 	                     GDISP_WIN_T_DURATION * GDISP_2D_MARGIN_RATIO; 
 	  drawType         = GD_2D_FULL_REDRAW;
 
@@ -1805,20 +2303,19 @@ gdisp_stepOnPlot2D (Kernel_T *kernel,
 	  plot->p2dPtMin.x = plot->p2dPtMax.x - GDISP_WIN_T_DURATION;
 	  drawType         = GD_2D_SCROLL_X_AXIS;
 
-	}	    
+	}
 	break;
  
       case GD_2D_F2X :
+	if (pSample->x < plot->p2dPtMin.x) {
 
-	if (aPoint.x < plot->p2dPtMin.x) {
-
-	  plot->p2dPtMin.x = aPoint.x * (1 + GDISP_2D_MARGIN_RATIO);
+	  plot->p2dPtMin.x = pSample->x * (1 + GDISP_2D_MARGIN_RATIO);
 	  drawType         = GD_2D_FULL_REDRAW;
 
 	}
-	if (aPoint.x > plot->p2dPtMax.x) {
+	if (pSample->x > plot->p2dPtMax.x) {
 
-	  plot->p2dPtMax.x = aPoint.x * (1 + GDISP_2D_MARGIN_RATIO);
+	  plot->p2dPtMax.x = pSample->x * (1 + GDISP_2D_MARGIN_RATIO);
 	  drawType         = GD_2D_FULL_REDRAW;
 
 	}
@@ -1829,12 +2326,14 @@ gdisp_stepOnPlot2D (Kernel_T *kernel,
 
       }
 
-    } /* end loop on nbDraws */
-	  
-    myTime += 1.0 / (gdouble)TSP_PROVIDER_FREQ; // 100Hz ?
+      plot->p2dPtLast = *pSample;
+      *pLastPoint     = *pSample;
 
-  } // end on loop for adding datas
+    } /* end loop upon new points */
+	  
+  } /* end loop upon curves */
   
+
   /*
    * Put here what must be done at each step.
    */
@@ -1850,12 +2349,79 @@ gdisp_stepOnPlot2D (Kernel_T *kernel,
 
 
 /*
+ * Real time Starting Step Action.
+ */
+static void
+gdisp_stopStepOnPlot2D (Kernel_T *kernel,
+			void     *data)
+{
+
+  Plot2D_T *plot     = (Plot2D_T*)data;
+  guint     nbEvents = 0;
+  guint     cptEvent = 0;
+  guint     eventID  = 0;
+
+  GDISP_TRACE(3,"Performing stop-step on plot 2D.\n");
+
+  /*
+   * Performs actions after stopping steps.
+   */
+
+  /*
+   * After stopping steps, unblock few X signals.
+   * Those signals have been recorded into a table.
+   * These signals are : CrossingEvents, ButtonPressEvents, MotionEvents.
+   */
+  if (plot->p2dSignalsAreBlocked == TRUE) {
+
+    nbEvents = plot->p2dSignalIdentities->len;
+    for(cptEvent=0; cptEvent<nbEvents; cptEvent++) {
+
+      eventID = (guint)g_array_index(plot->p2dSignalIdentities,
+				     guint,
+				     cptEvent);
+
+      gtk_signal_handler_unblock(GTK_OBJECT(plot->p2dArea),
+				 eventID);
+
+    }
+
+    plot->p2dSignalsAreBlocked = FALSE;
+
+  }
+
+}
+
+
+/*
+ * Get back to the calling procedure my period, expressed in milliseconds.
+ * CAUTION : The period must be an exact multiple of 10.
+ *           Should not be lower than 100.
+ */
+static guint
+gdisp_getPlot2DPeriod (Kernel_T *kernel,
+		       void     *data)
+{
+
+  /*
+   * My period is 100 milli-seconds.
+   * FIXME : This value is hardcoded. It should be easily modifiable.
+   * But how ?
+   */
+  return 100;
+
+}
+
+
+/*
  * Get back to the calling procedure my information.
  */
 static void
 gdisp_getPlot2DInformation (Kernel_T         *kernel,
 			    PlotSystemInfo_T *information)
 {
+
+#include "pixmaps/gdisp_2dLogo.xpm"
 
   /*
    *   - Name,
@@ -1864,8 +2430,60 @@ gdisp_getPlot2DInformation (Kernel_T         *kernel,
    */
   information->psName        = "2D Plot";
   information->psFormula     = "Y = F ( X or T )";
-  information->psDescription = "A typical 2D plot that shows the evolution"
+  information->psDescription = "A typical 2D plot that shows the evolution "
     "of several symbols (Y axis) relatively to a single one (X axis).";
+  information->psLogo        = gdisp_2dLogo;
+
+}
+
+
+/*
+ * This procedure is called whenever all symbols have been time-tagged
+ * by the corresponding provider sampling thread.
+ * The last value of all symbols can now be retreived by the graphic plot.
+ *
+ * CAUTION : This procedure is called in another thread, compared to all
+ * other procedures of the graphic plot that are called by GTK main thread.
+ */
+static void
+gdisp_treatPlot2DSymbolValues (Kernel_T *kernel,
+			       void     *data)
+{
+
+  Plot2D_T       *plot       = (Plot2D_T*)data;
+
+  Symbol_T       *symbol     = (Symbol_T*)NULL;
+  GList          *symbolItem = (GList*)NULL;
+  guint           cptCurve   = 0;
+  guint           nbCurves   = 0;
+  DoublePoint_T   aPoint;
+
+
+  /*
+   * Get X (or T) last value.
+   */
+  symbol   = (Symbol_T*)plot->p2dXSymbolList->data;
+  aPoint.x = symbol->sLastValue;
+
+
+  /*
+   * Get Y last values.
+   */
+  symbolItem = g_list_first(plot->p2dYSymbolList);
+  nbCurves   = plot->p2dSampleArray->len;
+
+  for (cptCurve=0; cptCurve<nbCurves; cptCurve++) {
+
+    symbol   = (Symbol_T*)symbolItem->data;
+    aPoint.y = symbol->sLastValue;
+
+    dparray_addSample((DoublePointArray_T*)
+		      plot->p2dSampleArray->pdata[cptCurve],
+		      &aPoint);
+
+    symbolItem = g_list_next(symbolItem);
+
+  }
 
 }
 
@@ -1882,6 +2500,8 @@ gdisp_initPlot2DSystem (Kernel_T     *kernel,
 			PlotSystem_T *plotSystem)
 {
 
+  gchar *trace = (gchar*)NULL;
+
   /*
    * We must here provide all 'Plot2D' private functions
    * that remain 'static' here, but accessible from everywhere
@@ -1896,14 +2516,19 @@ gdisp_initPlot2DSystem (Kernel_T     *kernel,
   plotSystem->psAddSymbols        = gdisp_addSymbolsToPlot2D;
   plotSystem->psGetSymbols        = gdisp_getSymbolsFromPlot2D;
   plotSystem->psSetDimensions     = gdisp_setPlot2DInitialDimensions;
+  plotSystem->psStartStep         = gdisp_startStepOnPlot2D;
   plotSystem->psStep              = gdisp_stepOnPlot2D;
+  plotSystem->psStopStep          = gdisp_stopStepOnPlot2D;
   plotSystem->psGetInformation    = gdisp_getPlot2DInformation;
+  plotSystem->psTreatSymbolValues = gdisp_treatPlot2DSymbolValues;
+  plotSystem->psGetPeriod         = gdisp_getPlot2DPeriod;
 
-  if (getenv("GDISP_STRACE")!=NULL)
-    gdisp_verbosity = atoi(getenv("GDISP_STRACE"));
-  else
-    gdisp_verbosity = 1;
-    
+  /*
+   * Manage debug traces.
+   */
+  trace = getenv("GDISP_STRACE");
+  gdispVerbosity = (trace != (gchar*)NULL) ? atoi(trace) : 1;
+
 }
 
 

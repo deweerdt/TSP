@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_plot2D.h,v 1.2 2004-02-18 09:47:44 dufy Exp $
+$Id: gdisp_plot2D.h,v 1.3 2004-03-26 21:09:17 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -83,11 +83,15 @@ typedef struct Plot2D_T_ {
   GList               *p2dXSymbolList;
   GList               *p2dYSymbolList;
   GList               *p2dSelectedSymbol;
+  GdkWindow           *p2dXSymbolWindow;
+  GdkWindow           *p2dYSymbolWindow;
 
   /*
    * Graphic widget.
    */
   GtkWidget           *p2dTable;
+  GArray              *p2dSignalIdentities;
+  gboolean             p2dSignalsAreBlocked;
   GtkWidget           *p2dArea;
   guint                p2dAreaWidth;
   guint                p2dAreaHeight;
@@ -107,13 +111,20 @@ typedef struct Plot2D_T_ {
    * Array for sample points.
    * - p2dPtMin       : The minium point in physical unit
    * - p2dPtMax       : The maximum point in physical unit
-   * - p2PtSlope      : The slope use to convert physical2pixel
+   * - p2PtSlope      : The slope used to convert physical2pixel
    * - p2dPtLast      : The last point in physical unit
    * - p2dPtRedrawMin : The minium in pixel unit, for redraw (plot back2front)
    * - p2dPtRedrawMax : The maximum in pixel unit, for redraw (plot back2front)
+   *
+   * GPtrArray : pointer array that grows automatically.
+   *  struct GPtrArray {
+   *            gpointer *pdata;
+   *            guint    len;
+   *  };
+   * So, 'len' is the number of curves,
+   *     'pdata' is the table of 'DoublePointArray_T*'.
    */
-  guint                p2dNbDraws;
-  DoublePointArray_T **p2dSampleArray; 
+  GPtrArray           *p2dSampleArray;
   DoublePoint_T        p2dPtMin;
   DoublePoint_T        p2dPtMax;
   DoublePoint_T	       p2dPtSlope;	

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_consumers.c,v 1.1 2004-02-04 20:32:09 esteban Exp $
+$Id: gdisp_consumers.c,v 1.2 2004-03-26 21:09:17 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -284,6 +284,7 @@ gdisp_consumingInit (Kernel_T *kernel)
 	  /* Default is : at maximum frequency without offset */
 	  newProvider->pSymbolList[symbolCpt].sInfo.period = 1;
 	  newProvider->pSymbolList[symbolCpt].sInfo.phase  = 0;
+	  newProvider->pSymbolList[symbolCpt].sHasChanged  = FALSE;
 
 	} /* symbolCpt */
 

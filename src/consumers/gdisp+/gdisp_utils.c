@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_utils.c,v 1.1 2004-02-04 20:32:10 esteban Exp $
+$Id: gdisp_utils.c,v 1.2 2004-03-26 21:09:17 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -160,6 +160,31 @@ gdisp_createLabelPixmapBox (GtkWidget  *parent,
  --------------------------------------------------------------------
 */
 
+
+/*
+ * PGCD computation.
+ */
+guint
+gdisp_computePgcd (void)
+{
+
+  guint a = 8136;
+  guint b =  492;
+  guint c =    1;
+
+  while (c != 0) {
+
+    c = a % b;
+
+    a = b;
+
+    b = c;
+
+  }
+
+  return a;
+
+}
 
 
 /*
@@ -626,4 +651,62 @@ gdisp_strStr ( gchar   *name,
   return (gchar*)NULL;
 
 }
+
+
+/*
+ * Loop over all graphic plots of graphic pages, and apply
+ * the given callback to each plots.
+ */
+void
+gdisp_loopOnGraphicPlots ( Kernel_T  *kernel,
+			   void     (*callback)(Kernel_T*,
+						Page_T*,
+						PlotSystemData_T*,
+						void*),
+			   void      *userData )
+{
+
+  PlotSystemData_T *plotSystemData    = (PlotSystemData_T*)NULL;
+  PlotSystemData_T *plotSystemDataEnd = (PlotSystemData_T*)NULL;
+  GList            *pageItem          =            (GList*)NULL;
+  Page_T           *page              =           (Page_T*)NULL;
+
+
+  /* ************************************************************
+   *
+   * BEGIN : Loop over all graphic plots of all pages, do actions...
+   *
+   * ************************************************************/
+
+  pageItem = g_list_first(kernel->pageList);
+  while (pageItem != (GList*)NULL) {
+
+    page = (Page_T*)pageItem->data;
+
+    plotSystemData    = page->pPlotSystemData;
+    plotSystemDataEnd = page->pPlotSystemData + (page->pRows * page->pColumns);
+
+    while (plotSystemData < plotSystemDataEnd) {
+
+      (*callback)(kernel,
+		  page,
+		  plotSystemData,
+		  userData),
+
+      plotSystemData++;
+
+    }
+
+    pageItem = g_list_next(pageItem);
+
+  }
+
+  /* ************************************************************
+   *
+   * END.
+   *
+   * ************************************************************/
+
+}
+
 

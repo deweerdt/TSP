@@ -1,13 +1,13 @@
 /*!  \file 
 
-$Id: gdisp_defaultPlot.h,v 1.2 2004-03-26 21:09:17 esteban Exp $
+$Id: gdisp_plotText.h,v 1.1 2004-03-26 21:09:17 esteban Exp $
 
 -----------------------------------------------------------------------
 
 GDISP+ - Graphic Tool based on GTK+,
          for being used upon the generic Transport Sampling Protocol.
 
-Copyright (c) 2003 - Euskadi.
+Copyright (c) 2003 - Euskadi
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -34,39 +34,52 @@ Component : Graphic Tool
 Purpose   : Graphic Tool based on GTK+ that provide several kinds of
             plot. This tool is to be used with the generic TSP protocol.
 
-File      : Definition of 'default plot' private structures.
+File      : Definition of 'text plot' private structures.
 
 -----------------------------------------------------------------------
 */
 
-#ifndef __DEFAULT_PLOT_H__
-#define __DEFAULT_PLOT_H__
+#ifndef __TEXT_PLOT_H__
+#define __TEXT_PLOT_H__
+
 
 /*
- * Private structure of a 'default plot'.
+ * Private structure of a 'text plot'.
  */
-typedef struct DefaultPlot_T_ {
+enum {
+
+  GD_SYMBOL_NAME_COLUMN  = 0,
+  GD_SYMBOL_VALUE_COLUMN = 1,
+  GD_SYMBOL_MAX_COLUMNS  = 2
+
+};
+
+typedef struct PlotText_T_ {
 
   /*
    * Attributes.
    */
-  gboolean   dpHasFocus;
-  PlotType_T dpType;
+  PlotType_T           pttType;
+
+  /*
+   * List of pointer on TSP_Symbol_T.
+   */
+  GList               *pttSymbolList;
 
   /*
    * Graphic widget.
    */
-  GtkWidget *dpArea;
-  guint      dpAreaWidth;
-  guint      dpAreaHeight;
-  GdkGC     *dpGContext;
+  GtkStyle            *pttStyle;
+  GtkWidget           *pttCList;
+  guint                pttCListWidth;
+  guint                pttCListHeight;
 
   /*
    * Parent widget.
    */
-  GtkWidget *dpParent;
+  GtkWidget           *pttParent;
 
-} DefaultPlot_T;
+} PlotText_T;
 
 
-#endif /* __DEFAULT_PLOT_H__ */
+#endif /* __TEXT_PLOT_H__ */
