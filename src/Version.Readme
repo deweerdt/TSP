@@ -122,12 +122,13 @@ V-0.6.3: Creation 25/11/04	tag TSP_0_6_3	Erk
 	- Correct autoscaling for gdisp+ 			- Duf/Euskadi
 	- Maintain portability (Solaris 2.5/2.8/2.19/OpenBSD)	- RP/FD
 
-V-0.6.4: Creation xx/03/05	tag TSP_0_6_4	Erk
+V-0.6.4: Creation 27/02/05	tag TSP_0_6_4	Erk
 	- Correct TSP jsynoptic plugin (serialize OK)		- Caribou
         - Unified bb_tools API and command line for TSP BB	- Erk
         - BB now compile & runs OK on Solaris                   - Erk/Duf
         - Ascii writer OK on Solaris & DEC                   	- Erk/Duf
-        - Serious bug fix in BB TSP Provider                 	- Erk/Duf
+        - Serious bug fix in BB TSP Provider (bug #12120)       - Erk/Duf
+        - Infancy of TSP scripting binding                   	- Erk
 
-V-0.7.x: Creation ??/??/04	tag TSP_0_7_X	??	
+V-0.7.x: Creation ??/??/05	tag TSP_0_7_X	??	
         - What was done						- ??
