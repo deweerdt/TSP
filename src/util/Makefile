@@ -1,4 +1,4 @@
-include $(DEVBASE)/make/Makeproject
+include $(DEVBASE)/make/Makeparams
 
 ifeq (${HOST_TARGET},java)
 #	SUBDIRS = 
