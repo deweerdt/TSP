@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/providers/bb_provider/bb_tsp_provider.c,v 1.5 2004-10-18 21:24:53 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/providers/bb_provider/bb_tsp_provider.c,v 1.6 2004-10-18 21:45:04 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -36,7 +36,9 @@ Purpose   : Blackboard TSP Provider
  */
 #include "bb_core.h"
 #include "bb_simple.h"
+#define BB_TSP_PROVIDER_C
 #include "bb_tsp_provider.h"
+
 #include "tsp_provider_init.h"
 #include "tsp_datapool.h"
 
@@ -62,11 +64,6 @@ int TSP_provider_rqh_manager_get_nb_running();
 /* RINGBUF_DECLARE_TYPE_DYNAMIC(glu_ringbuf,glu_item_t); */
 
 #define GLU_RING_BUFSIZE (1000 * 64 * 10)
-
-/*
- * Declaration externe
- */
-extern pthread_t glu_thread_id;
 
 /*
  * Quelques variables static
@@ -265,13 +262,10 @@ GLU_get_base_frequency(void) {
   return *bb_tsp_provider_frequency;
 }
 
-static int data_missed = FALSE;
-
 static void* GLU_thread(void* arg) {
   
   int i;
   glu_item_t item;
-  static int last_missed = 0;
   sigset_t s_mask;
   int nb_consumed_symbols;
   int* ptr_consumed_index;
