@@ -1,6 +1,6 @@
 /*!  \file
 
-$Header: /home/def/zae/tsp/tsp/src/util/libres/Attic/datarwcpp.h,v 1.1 2003-01-31 18:32:56 tsp_admin Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libres/Attic/datarwcpp.h,v 1.2 2003-02-03 20:22:18 sgalles Exp $
 
 -----------------------------------------------------------------------
 
@@ -65,66 +65,50 @@ namespace LibUtil
       const std::string& get_name() const { return _name; }
       const std::string& get_description() const { return _description; }   
 
-    };
+      void print() const {  std::cout << "var='"<<  get_name() << 
+		      "' desc='" << get_description() << "'" << std::endl; }
 
-  class ResInfo
-    {
-      
-      std::vector<VarInfo> _VarsInfo;
-      std::vector<std::string> _comments;
-      int _nb_rec;
-      bool _use_double;
-
-    public:
-      void add_comment(const std::string& comment) { _comments.push_back(comment); }
-      void add_var_info(const VarInfo& var) { _VarsInfo.push_back(var); }
-      void set_use_double(bool use_double) { _use_double = use_double; }
-      void set_nb_rec(int nb_rec) { _nb_rec = nb_rec; }
     };
 
   class Datarwcpp
     {
 	 
-    public:
-      enum usage_t
-	{
-	  READER,
-	  WRITER
-	};
-      
     private:
 	 /** wrapper class for C libUTIL handles.
 	  * Avoid C header in C++ header
 	  */
 	 class hwrapper;
- 
-	 
-	 const std::string _file;
-	 const usage_t _usage;	 
 	 hwrapper* _h;
 
 	 std::vector<VarInfo> _vars_info;
 	 std::vector<std::string> _comments;
+	 std::vector<float>* _vec_fbuf;
+	 std::vector<double>* _vec_dbuf;
+	 float* _fbuf;
+	 double* _dbuf;
+	 
+
 	 bool _use_double;
 	 int _nb_records;
-	 int _nb_vars;
-	 int _nb_comments;
 
        public:
 	 
 	 /* C'tor */
-	 Datarwcpp(const std::string& file, usage_t usage);
+	 Datarwcpp();
 	 
 	 /* D'tor */
 	 virtual ~Datarwcpp() ;
 
 	 /* Read */
-	 bool ropen();
-	 int rget_nb_records() const ;
-	 int rget_nb_vars() const ;
-	 int rget_nb_comments() const ;
+	 bool ropen(const std::string& file);
+	 bool ruse_double() const;
+	 bool rget_nb_records() const;
 	 const std::vector<VarInfo>& rget_vars_info() const;
 	 const std::vector<std::string>& rget_comments() const;
+
+	 bool rupdate_used_buf(int rec_number);
+	 const std::vector<float>& rget_float_buf() const;
+	 const std::vector<double>& rget_double_buf() const;
 	 
        private:
 	 int rget_intern_nb_records() const ;
