@@ -1,14 +1,18 @@
 # -*- Makefile -*- 
 # Makeparams.java
 
-include $(DEVBASE)/make/Makeparams
+# This redefinition could be avoid if every Makefile include Makeparams and not Makeparams.java
 
 # target directory
 # ----------------
-#DIREXEC= $(DIRBASE)/$(HOST_TARGET)/$(DEBUG_MODE)
-#DIRBIN = $(DIREXEC)/bin
-#DIRLIB = $(DIREXEC)/lib
+DIRBASE   = $(DEVBASE)/exec/DEV
+DIREXEC= $(DIRBASE)/$(HOST_TARGET)/$(DEBUG_MODE)
+DIRBIN = $(DIREXEC)/bin
+DIRLIB = $(DIREXEC)/lib
 
+# Java binaries location
+CLASSBASE = $(DIRBASE)/java/classes
+JARBASE = $(DIRBASE)/java/classes
 
 # Default tools
 # -------------
