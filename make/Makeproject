@@ -12,4 +12,7 @@ LIBBASE = $(DEVBASE)/exec/DEV/.lib
 
 RPCGEN=rpcgen
 
-CPPFLAGS += -I$(DIRINC)
+LIB_UTIL = $(DEVBASE)/../plot442/versions/dev/lib/libUTIL.a
+INCLUDE_UTIL = $(DEVBASE)/../plot442/util
+
+CPPFLAGS += -I$(DIRINC) -I$(INCLUDE_UTIL)
