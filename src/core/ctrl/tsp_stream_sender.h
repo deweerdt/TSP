@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_stream_sender.h,v 1.4 2002-11-29 17:33:23 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_stream_sender.h,v 1.5 2002-12-03 11:32:17 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -27,9 +27,14 @@ typedef  void* TSP_stream_sender_t;
 /* ringbuf struct */
 struct TSP_stream_sender_item_t
 {
+  /* buf must be the first element of this structure (alignment stuff )*/
+  char buf[TSP_STREAM_SENDER_RINBUF_ITEM_SIZE];
+
   int len;
 
-  char buf[TSP_STREAM_SENDER_RINBUF_ITEM_SIZE];
+  /* Do not remove that, else the next buf item will not 'double aligned'*/
+  int pad;
+
 };
 
 typedef struct TSP_stream_sender_item_t TSP_stream_sender_item_t;
