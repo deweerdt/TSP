@@ -2,13 +2,13 @@
 
 # default targets section
 # -----------------------
-all::
-	$(MAKE) export_include
-	$(MAKE) export_script
+#all::
+#	$(MAKE) export_include
+#	$(MAKE) export_script
 
-clean::
-	$(MAKE) remove_include
-	$(MAKE) remove_script
+#clean::
+#	$(MAKE) remove_include
+#	$(MAKE) remove_script
 
 # Building rules section
 # ----------------------

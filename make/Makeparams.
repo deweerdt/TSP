@@ -1,3 +1,0 @@
-# Makeparams.
-
-include $(DEVBASE)/make/Makeproject

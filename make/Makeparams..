@@ -1,0 +1,4 @@
+# Makeparams.. 
+# Please note that .. is very important because the default of TARGET=void, MODE=void
+
+include $(DEVBASE)/make/Makeproject

@@ -1,15 +1,20 @@
-# Makeparams.suncdt
+# Makeparams.sun.debug
 
+# target directory
+# ----------------
+DIREXEC= $(DIRBASE)/$(TSP_TARGET)/$(TSP_MODE)
+DIRBIN = $(DIREXEC)/bin
+DIRLIB = $(DIREXEC)/lib
 
 # Default tools
 # -------------
 # Using standard tools
-#CC=gcc
+CC = gcc
 
 # Default options
 # ---------------
 ARFLAGS = rvs
-CFLAGS = 
-CPPFLAGS +=  -D__EXTENSIONS__ -D_REENTRANT  -DUSE_STRACE -DTSP_NO_XDR_ENCODE
+CPPFLAGS += -D__EXTENSIONS__ -D_REENTRANT  -DUSE_STRACE -DTSP_NO_XDR_ENCODE
 LDLIBS = -lsocket -lnsl -lm -lposix4 -lgen -lpthread  
+
 

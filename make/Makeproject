@@ -5,15 +5,21 @@
 
 # Default options
 # ---------------
-DIRINC    = $(DEVBASE)/exec/DEV/.include
-DIRSCRIPT = $(DEVBASE)/exec/DEV/scripts
+DIRBASE   = $(DEVBASE)/exec/DEV
+DIRINC    = $(DIRBASE)/include
+DIRSCRIPT = $(DIRBASE)/scripts
 
-BINBASE = $(DEVBASE)/exec/DEV
-LIBBASE = $(DEVBASE)/exec/DEV/.lib
+#BINBASE = $(DIRBASE)
+#LIBBASE = $(DIRBASE)
+# target directory
+# ----------------
+#DIREXEC= $(DIRBASE)/$(HOST_TARGET)/$(DEBUG_MODE)
+#DIRBIN = $(DIREXEC)/bin
+#DIRLIB = $(DIREXEC)/lib
 
 # Java binaries location
-CLASSBASE = $(BINBASE)/java/classes
-JARBASE = $(LIBBASE)/java/classes
+CLASSBASE = $(DIRBASE)/java/classes
+JARBASE = $(DIRBASE)/java/classes
 
 
 RPCGEN=rpcgen

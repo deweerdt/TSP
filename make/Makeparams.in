@@ -1,0 +1,35 @@
+# ----------------
+# Do NOT edit
+# Makeparams was generated from Makeparam.in
+# ----------------
+
+# ----------------
+# common for all targets
+# ----------------
+include $(DEVBASE)/make/Makeproject
+
+# ----------------
+# customize
+# ----------------
+# TSP_TARGET= sun, sun64, linux, dec, vxworks
+# TSP_MODE  = debug ou opt
+include $(DEVBASE)/make/Makeparams.$(TSP_TARGET).$(TSP_MODE)
+
+# ----------------
+# TSP component list
+# can build java, provider or consumer part
+# ----------------
+BUILD_JAVA=@JTSP@
+BUILD_PROVIDER=@TSPPROVIDER@
+BUILD_CONSUMER=@TSPCONSUMER@
+
+# ----------------
+# Call all builds
+# ----------------
+include $(DEVBASE)/make/Makebuild.list
+
+# default rules
+build::
+
+destroy::
+

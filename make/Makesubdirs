@@ -4,12 +4,12 @@
 all debug clean print config::
 	@for dir in $(SUBDIRS); \
 	 do \
-		echo ">>>$(LEVEL) BEGIN (`pwd`/$$dir) [$@]"; \
 		(cd $$dir; $(MAKE) "LEVEL=$$LEVEL---" $@); \
 		if [ $$? -ne 0 ]; then \
 			break; \
 		fi; \
-		echo ">>>$(LEVEL) END (`pwd`/$$dir)"; \
 	 done
 
-
+# less verbosity
+#		echo ">>>$(LEVEL) BEGIN (`pwd`/$$dir) [$@]"; \
+#		echo ">>>$(LEVEL) END (`pwd`/$$dir)"; \

@@ -1,6 +1,11 @@
 # -*- Makefile -*- 
-
 # Makeparams.java
+
+# target directory
+# ----------------
+DIREXEC= $(DIRBASE)/$(HOST_TARGET)/$(DEBUG_MODE)
+DIRBIN = $(DIREXEC)/bin
+DIRLIB = $(DIREXEC)/lib
 
 include $(DEVBASE)/make/Makeproject
 
