@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/tests/stage3/Attic/glue_sserver3.c,v 1.1 2002-09-30 12:08:50 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/tests/stage3/Attic/glue_sserver3.c,v 1.2 2002-10-01 15:47:42 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -41,10 +41,11 @@ long count_add;
 
 struct GLU_state_t
 {
-  float* res_values;
+  void* res_values;
   int current_var;
   int time_stamp;
   int nbvar;
+  int use_dbl;
   d_rhandle h_res;
   TSP_sample_symbol_info_t* sample_symbol_info_list_val;
 };
@@ -99,7 +100,9 @@ int GLU_pasive_get_next_item(GLU_handle_t h_glu, glu_item_t* item)
   if ( obj->current_var != obj->nbvar )
     {
       item->provider_global_index = obj->current_var;
-      item->value = obj->res_values[obj->current_var];
+      item->value = obj->use_dbl ?
+	((double*)(obj->res_values)) [obj->current_var]
+	: ((float*) (obj->res_values)) [obj->current_var];
       obj->current_var++;
       item->time = obj->time_stamp;
       
@@ -116,11 +119,13 @@ int GLU_pasive_get_next_item(GLU_handle_t h_glu, glu_item_t* item)
       obj->time_stamp++;
       if ( EOF != d_read_r(obj->h_res, obj->res_values) )
 	{
-	  item->value = obj->res_values[obj->current_var];
-	  item->provider_global_index = obj->current_var;
-	  obj->current_var++;
-	  item->time = obj->time_stamp;
-	  return TRUE;
+      item->value = obj->use_dbl ?
+	((double*)(obj->res_values)) [obj->current_var]
+	: ((float*) (obj->res_values)) [obj->current_var];
+      item->provider_global_index = obj->current_var;
+      obj->current_var++;
+      item->time = obj->time_stamp;
+      return TRUE;
 
 	}   
       else
@@ -137,6 +142,7 @@ int GLU_init(char* fallback_stream_init)
   SFUNC_NAME(GLU_init);
 
   int ret = TRUE;
+  int use_dbl;
 
   STRACE_IO(("-->IN"));
 
@@ -144,7 +150,7 @@ int GLU_init(char* fallback_stream_init)
   if(fallback_stream_init)
     {
       /* Yes, we must test it */
-      d_rhandle h_res = d_ropen_r(fallback_stream_init);
+      d_rhandle h_res = d_ropen_r(fallback_stream_init, &use_dbl);
       if(h_res)
 	{
 	  int nbrec;
@@ -154,7 +160,8 @@ int GLU_init(char* fallback_stream_init)
 
 	  /* ok */
 	  STRACE_INFO(("Total number of records for default RES = %d", nbrec));
-	  STRACE_INFO(("Total number of variables for defaulr RES = %d", nbvar));	  
+	  STRACE_INFO(("Total number of variables for default RES = %d", nbvar));	  
+	  STRACE_INFO(("Data type for default RES = %s", use_dbl ? "DOUBLE" : "FLOAT" ));	  
 	   d_rclos_r(h_res);
 	}
       else
@@ -230,7 +237,7 @@ GLU_server_type_t GLU_get_server_type(void)
 GLU_handle_t GLU_get_instance(char *stream_init, char** error_info)
 {
 
-  SFUNC_NAME(GLU_pasive_get_handle);
+  SFUNC_NAME(GLU_get_instance);
 
   int i;
   int nbrec;  
@@ -253,7 +260,7 @@ GLU_handle_t GLU_get_instance(char *stream_init, char** error_info)
      obj->time_stamp = -1;
 
      /* FIXME : faire le close dans le GLU_end */
-     obj->h_res = d_ropen_r(stream_init);
+     obj->h_res = d_ropen_r(stream_init, &(obj->use_dbl));
      STRACE_INFO(("stream_init = '%s'", stream_init));
      if( obj->h_res )
        {
@@ -263,6 +270,7 @@ GLU_handle_t GLU_get_instance(char *stream_init, char** error_info)
 
 	 STRACE_INFO(("Total number of records = %d", nbrec));
 	 STRACE_INFO(("Total number of variables = %d", obj->nbvar));
+	 STRACE_INFO(("Data type = %s", obj->use_dbl ? "DOUBLE" : "FLOAT" ));
 
 	 obj->sample_symbol_info_list_val = calloc (obj->nbvar+1, sizeof (TSP_sample_symbol_info_t)) ;
 	 assert(obj->sample_symbol_info_list_val);
@@ -275,7 +283,9 @@ GLU_handle_t GLU_get_instance(char *stream_init, char** error_info)
 	     obj->sample_symbol_info_list_val[i].period = 1;
 	   }
   
-	 obj->res_values = (float *)calloc((obj->nbvar+1),sizeof(float));
+	 obj->res_values = obj->use_dbl ?
+	   calloc((obj->nbvar+1),sizeof(double))
+	   : calloc((obj->nbvar+1),sizeof(float));
 	 TSP_CHECK_ALLOC(obj->res_values, FALSE);
 
        }
