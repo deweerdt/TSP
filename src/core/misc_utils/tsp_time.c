@@ -25,8 +25,8 @@ int tsp_usleep(int useconds)
 
 #ifdef TSP_SYSTEM_HAVE_NANOSLEEP
   struct timespec ts;
-  ts.tv_sec = 0;
-  ts.tv_nsec = useconds * 1000;
+  ts.tv_sec = useconds / 1000000;
+  ts.tv_nsec = (useconds % 1000000) * 1000;
   return nanosleep(&ts, NULL);
 #else
 
