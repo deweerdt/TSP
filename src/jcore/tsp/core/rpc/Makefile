@@ -1,6 +1,6 @@
 # -*- Makefile -*-
 
-include $(DEVBASE)/make/Makeparams
+include $(DEVBASE)/make/Makeparams.java
 
 RPC = TSP_rpc
 
@@ -11,7 +11,7 @@ RPC_SERVER_SRC =
 JPACKAGE=tsp.core.rpc
 JPACKAGEDIR=$(subst .,/,$(JPACKAGE))
 
-all::
+build::
 	$(MAKE) common debug
 common:
 	$(MAKE) rpcgen

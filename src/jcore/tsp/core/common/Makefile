@@ -1,6 +1,6 @@
 # -*- Makefile -*-
 
-include $(DEVBASE)/make/Makeparams
+include $(DEVBASE)/make/Makeparams.java
 
 JPACKAGE=tsp.core.common
 JPACKAGEDIR=$(subst .,/,$(JPACKAGE))
@@ -30,7 +30,7 @@ SOURCES = \
 
 OBJECTS=$(SOURCES:%.java=$(CLASSBASE)/$(JPACKAGEDIR)/%.class)
 
-all::
+build::
 	$(MAKE) common debug
 
 common:: $(OBJECTS)

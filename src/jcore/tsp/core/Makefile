@@ -1,4 +1,4 @@
-include $(DEVBASE)/make/Makeparams
+include $(DEVBASE)/make/Makeparams.java
 
 SUBDIRS = config rpc common consumer provider
 
