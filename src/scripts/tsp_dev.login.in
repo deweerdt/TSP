@@ -16,13 +16,12 @@ endif
 setenv TSP_BASE @TSP_BASE@
 echo "Using TSP_BASE=$TSP_BASE"
 setenv HOME_EXEC_BASE $TSP_BASE/exec
-setenv HOME_EXEC_CURRENT $HOME_EXEC_BASE/current/${HOST_ARCH}/debug
+setenv HOME_EXEC_CURRENT $HOME_EXEC_BASE/current
 
 ##############################
 # Paths
 ##############################
-setenv PATH ${TSP_BASE}/src/scripts:${HOME_EXEC_CURRENT}/bin:${PATH}
-
+setenv PATH ${TSP_BASE}/src/scripts:${HOME_EXEC_CURRENT}/${HOST_ARCH}/debug/bin:${HOME_EXEC_CURRENT}/scripts:${PATH}
 
 ##############################
 # DEVBASE

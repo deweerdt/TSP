@@ -3,6 +3,7 @@ include $(DEVBASE)/make/Makeparams
 # ---------------------
 # Vars to build project
 # ---------------------
+XSCRIPT = bb_findlabel
 SOURCES = \
 	bb_checkid.c \
 	bb_dump.c \
@@ -35,6 +36,7 @@ CPPFLAGS += -I..
 # -----------------------------------------------------------
 
 build::	$(TARGETS) 
+	$(MAKE) export_script
 
 $(TARGET1): $(DIRLIB)/libbb.a
 
@@ -46,6 +48,7 @@ $(TARGET4): $(DIRLIB)/libbb.a
 
 destroy ::
 	$(RM) $(TARGETS)
+	$(MAKE) remove_script
 
 include $(DEVBASE)/make/Makerules
 
