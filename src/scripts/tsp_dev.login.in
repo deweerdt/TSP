@@ -18,7 +18,7 @@ setenv HOME_EXEC_CURRENT $HOME_EXEC_BASE/current
 ##############################
 # Paths
 ##############################
-setenv PATH ${PATH}:${TSP_BASE}/src/scripts:${HOME_EXEC_CURRENT}/bin.consumer.debug:${HOME_EXEC_CURRENT}/bin.provider.debug:${JAVA_HOME}/bin
+setenv PATH ${TSP_BASE}/src/scripts:${HOME_EXEC_CURRENT}/bin.consumer:${HOME_EXEC_CURRENT}/bin.provider:${JAVA_HOME}/bin:${PATH}
 
 
 ##############################
