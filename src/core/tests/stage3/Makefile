@@ -5,8 +5,10 @@ include $(DEVBASE)/make/Makeparams.$(T)
 
 
 LIB_CLIENT =  $(DIRLIB)/libtsp_consumer.a $(DIRLIB)/libtsp_rpc_client.a $(DIRLIB)/libtsp_services.a $(LIB_UTIL)
+LIB_SERVEUR =  $(DIRLIB)/libtsp_provider_init.a $(DIRLIB)/libtsp_rpc_server.a  $(DIRLIB)/libtsp_provider.a $(DIRLIB)/libtsp_services.a  $(LIB_UTIL)
 
-LIB_SERVEUR = $(DIRLIB)/libtsp_rpc_server.a $(DIRLIB)/libtsp_provider.a $(DIRLIB)/libtsp_services.a $(DIRLIB)/libtsp_rpc_server.a $(LIB_UTIL)
+
+
 
 all::
 	$(MAKE)  common debug
