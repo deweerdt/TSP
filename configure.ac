@@ -1,0 +1,231 @@
+#
+# Process this file with autoconf to produce a configure script.
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# THIS FILE NEED TO BE PROCESSED WITH AUTOCONF
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# 
+AC_INIT([the Transport Sampling Protocol], [0.5.2], [tsp@astrium-space.com], [tsp])
+
+echo "**********************************************************"
+echo "*  TSP: AC_PACKAGE_NAME, version AC_PACKAGE_VERSION       "
+echo "*  see http://savannah.nongnu.org/projects/tsp            "
+echo "*  or mail to AC_PACKAGE_BUGREPORT                        "
+echo "**********************************************************"
+
+# Check for a required file
+AC_CONFIG_SRCDIR([src/core/driver/tsp_consumer.c])
+AC_CONFIG_HEADER([src/core/include/tsp_prjcfg.h])
+
+# Checks for programs.
+AC_PROG_AWK
+AC_PROG_INSTALL
+AC_PROG_LN_S
+AC_PROG_MAKE_SET
+
+ENABLED_TSP_TARGET="host"
+
+##########################
+# Setup C part of TSP
+##########################
+AC_ARG_ENABLE(ctsp,   [  --enable-ctsp                enable C TSP library build],
+	      CTSP=$enableval,
+	      CTSP="yes")
+AC_MSG_CHECKING(C part of the TSP)
+if test "$CTSP" = "yes"; then
+AC_MSG_RESULT([Enabled, will be configured])
+AC_PROG_CC(gcc cc icc kcc)
+else
+AC_MSG_RESULT([Disabled, won't be configured])
+fi
+##########################
+### End of C Setup     ###
+##########################
+
+##########################
+# Setup Java part of TSP
+##########################
+AC_ARG_ENABLE(jtsp,   [  --enable-jtsp                enable Java TSP library build],
+	      JTSP=$enableval,
+	      JTSP="yes")
+AC_MSG_CHECKING([Java part of the TSP])
+if test "$JTSP" = "yes"; then
+AC_MSG_RESULT([Enabled, will be configured])
+AC_CHECK_PROG([JAVA],[java],[`which java`],[notfound],[$PATH],[rej])
+AC_CHECK_PROG([JAVAC],[javac],[`which javac`],[notfound],[$PATH],[rej])
+AC_CHECK_PROG([JAVADOC],[javadoc],[`which javadoc`],[notfound],[$PATH],[rej])
+ENABLED_TSP_TARGET=$ENABLED_TSP_TARGET:java
+else
+AC_MSG_RESULT([Disabled, won't be configured])
+fi
+##########################
+### End of Java Setup  ###
+##########################
+
+##########################
+# Setup C++ part of TSP
+##########################
+AC_ARG_ENABLE(cxxtsp, [  --enable-cxxtsp              enable TSP C++ binding],
+	      CXXTSP=$enableval,
+	      CXXTSP="no")
+AC_MSG_CHECKING([C++ binding the TSP])
+if test "$CXXTSP" = "yes"; then
+AC_MSG_RESULT([Enabled, will be configured])
+AC_PROG_CXX(g++ CC)
+else
+AC_MSG_RESULT([Disabled, won't be configured])
+fi
+##########################
+### End of C++ Setup   ###
+##########################
+
+####################################################################
+# C part has been enabled verify libraries, headers and functions 
+####################################################################
+if test "$CTSP" = "yes"; then
+# Checks for libraries.
+# Check for pthread (-lpthread)
+AC_HAVE_LIBRARY([pthread],,AC_MSG_WARN([Won't be able to build C version of TSP]))
+# Check for math (-lm) for src/util/libcalc
+AC_HAVE_LIBRARY([m],,AC_MSG_WARN([Won't be able to build src/util/libcalc]))
+
+# Checks for header files.
+AC_HEADER_STDC
+AC_CHECK_HEADERS([errno.h fcntl.h memory.h netdb.h netinet/in.h stdlib.h string.h strings.h sys/param.h sys/socket.h sys/time.h unistd.h])
+
+# Checks for typedefs, structures, and compiler characteristics.
+AC_C_CONST
+AC_HEADER_TIME
+
+# Checks for library functions.
+AC_FUNC_MALLOC
+AC_FUNC_MMAP
+AC_TYPE_SIGNAL
+AC_CHECK_FUNCS([bzero gethostbyname gethostname gethrtime gettimeofday memset munmap socket strdup strstr strtol])
+fi
+
+#####################|##|############################|############
+# Get the system type from AC
+#####################|##|############################|############
+AC_CANONICAL_HOST
+
+AC_MSG_CHECKING([for TSP host target])
+
+case "$host" in
+    *linux*)	
+	AC_MSG_RESULT([Linux is OK])
+	HOST_TARGET=linux
+        ;;
+    sparc-sun-solaris*)
+	AC_MSG_RESULT([Sparc Solaris is OK])	
+	HOST_TARGET=sun
+        ;;
+    sparc-sun-sunos*)
+	AC_MSG_RESULT([Sparc SunOS is OK])
+	HOST_TARGET=sun
+        ;;
+    *osf*)
+	AC_MSG_RESULT([OSF1 Host is OK])
+	HOST_TARGET=dec
+	;;
+	*)
+	AC_MSG_WARN([$host has NOT been tested, be warned!!])
+	HOST_TARGET=unknown
+	;;
+esac
+# enable the HOST_TARGET
+ENABLED_TSP_TARGET=`echo $ENABLED_TSP_TARGET | sed -e "s/host/$HOST_TARGET/g"`
+
+############################################################################
+# Verify enabled target
+# --enable-tsp-target-<targetname>
+# --enable-tsp-target-<targetname>-cc
+# vxworks
+# the host target (linux, sun, sun64, dec) is automagically enabled
+# the java target is enabled by the enable-jtsp
+############################################################################
+AC_ARG_ENABLE(tsp-target-vxworks,   [  --enable-tsp-target-vxworks  enable VxWorks TSP target],
+	      TSPTARGET_VXWORKS=$enableval,
+	      TSPTARGET_VXWORKS="no")
+
+if test "$TSPTARGET_VXWORKS" = "yes"; then
+AC_MSG_CHECKING([for VxWorks TSP target config])
+AC_MSG_WARN([Disabled, NOT AVAILABLE YET])
+# ENABLED_TSP_TARGET=$ENABLED_TSP_TARGET:vxworks
+fi
+
+############################################################################
+# Map enabled target onto consumer/provider part
+############################################################################
+
+AC_MSG_NOTICE([Enabled TSP target are <$ENABLED_TSP_TARGET>])
+
+AC_ARG_ENABLE(tsp-consumer,   [  --enable-tsp-consumer        map TSP target to the TSP consumer],
+	      TSPCONSUMER=$enableval,
+	      TSPCONSUMER=$HOST_TARGET)
+
+AC_ARG_ENABLE(tsp-providerr,   [  --enable-tsp-provider        map TSP target to the TSP provider],
+	      TSPCONSUMER=$enableval,
+	      TSPCONSUMER=$HOST_TARGET)
+
+# define TSPBASE
+TSP_BASE=`pwd`
+
+# 
+#  Substitute Shell VARIABLES to OUTPUT VARIABLES
+AC_SUBST(HOST_TARGET)
+AC_SUBST(TSP_BASE)
+AC_SUBST(ENABLED_TSP_TARGET)
+
+
+# Config for outputed files
+AC_CONFIG_FILES([src/scripts/tsp_dev.login
+		src/scripts/tsp_dev.login.sh
+		src/doxy/Makefile:src/doxy/doc.mk])
+
+dnl AC_CONFIG_FILES([doc/latex/Makefile
+dnl                 src/Makefile
+dnl                 src/consumers/Makefile
+dnl                 src/consumers/gdisp/Makefile
+dnl                 src/consumers/jstdout/Makefile
+dnl                 src/consumers/res_writer/Makefile
+dnl                 src/consumers/stdout/Makefile
+dnl                 src/consumers/test_group/Makefile
+dnl                 src/consumers/tutorial/Makefile
+dnl                 src/core/Makefile
+dnl                 src/core/ctrl/Makefile
+dnl                 src/core/ctrl_init/Makefile
+dnl                 src/core/driver/Makefile
+dnl                 src/core/include/Makefile
+dnl                 src/core/misc_utils/Makefile
+dnl                 src/core/rpc/Makefile
+dnl                 src/doxy/Makefile
+dnl                 src/jcore/Makefile
+dnl                 src/jcore/doc/Makefile
+dnl                 src/jcore/tsp/Makefile
+dnl                 src/jcore/tsp/core/Makefile
+dnl                 src/jcore/tsp/core/common/Makefile
+dnl                 src/jcore/tsp/core/config/Makefile
+dnl                 src/jcore/tsp/core/consumer/Makefile
+dnl                 src/jcore/tsp/core/provider/Makefile
+dnl                 src/jcore/tsp/core/rpc/Makefile
+dnl                 src/jcore/tsp/util/Makefile
+dnl                 src/providers/Makefile
+dnl                 src/providers/res_reader/Makefile
+dnl                 src/providers/stub/Makefile
+dnl                 src/util/Makefile
+dnl                 src/util/libcalc/Makefile
+dnl                 src/util/libres/Makefile])
+
+AC_OUTPUT
+
+echo "**********************************************************"
+echo "*  TSP has been successfully configured.                  "
+echo "*  you should now do either                               "
+echo "*     source src/scripts/tsp_dev.login  [[csh/tcsh]]       "
+echo "*     . src/scripts/tsp_dev.login.sh    [[sh/bash/zsh/...]]" 
+echo "*  And then you may build with a simple                   "
+echo "*     cd src; make                                        "
+echo "*                                                         "
+echo "*  Enjoy TSP !!!                                          "
+echo "*  The TSP Team -- AC_PACKAGE_BUGREPORT                   "
+echo "**********************************************************"
