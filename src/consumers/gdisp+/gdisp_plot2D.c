@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_plot2D.c,v 1.8 2004-11-15 23:14:49 dufy Exp $
+$Id: gdisp_plot2D.c,v 1.9 2004-11-16 09:32:00 dufy Exp $
 
 -----------------------------------------------------------------------
 
@@ -1297,9 +1297,10 @@ gdisp_plot2DDrawBackBufferCurves (Kernel_T       *kernel,
      * TODO: A color per draw ?
      */
     gdk_gc_set_foreground(plot->p2dGContext,
-			  &kernel->colors[_YELLOW_ + cptCurve * 7]);
+			  &kernel->colors[_YELLOW_ + cptCurve +drawType]);
 
     nbPixels = 0;      
+
     for (cptPoint=startIndex; cptPoint<startIndex+nbPoints; cptPoint++) {
 
       lastIndex	     = cptPoint;
@@ -1324,7 +1325,7 @@ gdisp_plot2DDrawBackBufferCurves (Kernel_T       *kernel,
 	plot->p2dPtRedrawMax.y = currentPixel.y;
       }
 
-      if ((cptPoint > startIndex ) && /* Need two points to draw a line :} */
+      if ((cptPoint == startIndex ) || /* Need two points to test the difference :} */
 	  (lastPixel.x != currentPixel.x || lastPixel.y != currentPixel.y)) {
 
 	assert (nbPixels<MAX_PIXEL_ON_CURVE);
@@ -1350,7 +1351,7 @@ gdisp_plot2DDrawBackBufferCurves (Kernel_T       *kernel,
        * Must Restart from the previous last point
        */
       dparray_setMarkerIndex(pArray,
-			     lastIndex-1);
+			     lastIndex);
 
     }
 
@@ -1706,6 +1707,7 @@ gdisp_createPlot2D (Kernel_T *kernel)
    */
   plot->p2dHasFocus  = FALSE;
   plot->p2dIsWorking = FALSE;
+  plot->p2dIsFirstTime = TRUE;
   plot->p2dType      = GD_PLOT_2D;
   plot->p2dSubType   = GD_2D_F2T;
 
@@ -2496,7 +2498,6 @@ gdisp_treatPlot2DSymbolValues (Kernel_T *kernel,
      The first point you add inside my widget is always {0,0} 
      I don't want it cause it blow up my autoscale.
      Maybe it's inside TSP Core ? */
-  static int firstTime = 1; 
 
   /*
    * Get X (or T) last value.
@@ -2516,8 +2517,8 @@ gdisp_treatPlot2DSymbolValues (Kernel_T *kernel,
     symbol   = (Symbol_T*)symbolItem->data;
     aPoint.y = symbol->sLastValue;
 
-    if (firstTime) {
-      firstTime = 0;
+    if (plot->p2dIsFirstTime) {
+      plot->p2dIsFirstTime = FALSE;
     } else {
       dparray_addSample((DoublePointArray_T*)
 			plot->p2dSampleArray->pdata[cptCurve],
