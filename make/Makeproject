@@ -1,3 +1,4 @@
+# -*- makefile -*-
 # Makeproject
 
 .KEEP_STATE:
@@ -9,6 +10,11 @@ DIRSCRIPT = $(DEVBASE)/exec/DEV/scripts
 
 BINBASE = $(DEVBASE)/exec/DEV
 LIBBASE = $(DEVBASE)/exec/DEV/.lib
+
+# Java binaries location
+CLASSBASE = $(BINBASE)/java/classes
+JARBASE = $(LIBBASE)/java/classes
+
 
 RPCGEN=rpcgen
 
