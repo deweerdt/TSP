@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer.c,v 1.3 2004-09-22 20:18:56 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer.c,v 1.4 2004-10-18 20:39:09 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -229,10 +229,9 @@ tsp_ascii_writer_load_config(const char* conffilename,
 int32_t 
 tsp_ascii_writer_validate_symbols(TSP_consumer_symbol_requested_t*  tsp_symbols,
 				  int32_t nb_symbols,
-				  const char* tsp_provider_hostname,
+				  const char* tsp_provider_url,
 				  TSP_consumer_symbol_requested_list_t* tsp_symbol_list) {
   int32_t retcode;
-  int32_t nb_providers;
   const TSP_consumer_information_t* tsp_info=NULL;
   int32_t symbol_dim;
   int32_t nb_scalar_symbol; 
@@ -246,9 +245,10 @@ tsp_ascii_writer_validate_symbols(TSP_consumer_symbol_requested_t*  tsp_symbols,
    * Connect to the provider.
    */
   if (NULL == myproviders) {
-    TSP_consumer_connect_all(tsp_provider_hostname,&myproviders, &nb_providers);
+    myproviders = calloc(1,sizeof(TSP_provider_t));
+    myproviders[0] = TSP_consumer_connect_url(tsp_provider_url);
     /* Verify if there is at least one provider */
-    if (nb_providers<1) {
+    if (0==myproviders[0]) {
       STRACE_ERROR(("No provider found?!?"));
       retcode = -1;
     } else if (!TSP_consumer_request_open(myproviders[0], 0, 0 )) {

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer_main.c,v 1.2 2004-09-22 20:18:56 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer_main.c,v 1.3 2004-10-18 20:39:09 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -64,43 +64,13 @@ main (int argc, char* argv[]) {
   char*   output_filename = NULL;
   FILE*   output_stream   = NULL;
   int32_t output_limit    = 0;
-  char*   provider_host   = "localhost";
+  char*   provider_url   = "rpc://localhost/";
 
   /* Main options handling */
-  static struct option main_opts[5];
-  int           main_opt_index;
   char*         errorString;
   int           opt_ok;
   char          c_opt;
 
- /* 
-   * Analyse des options du main
-   */
-  main_opts[0].name    = "f";
-  main_opts[0].has_arg = 1;
-  main_opts[0].flag    = 0;
-  main_opts[0].val     = 0;
-
-  main_opts[1].name    = "o";
-  main_opts[1].has_arg = 1;
-  main_opts[1].flag    = 0;
-  main_opts[1].val     = 0;
-
-  main_opts[2].name    = "output_limit";
-  main_opts[2].has_arg = 1;
-  main_opts[2].flag    = 0;
-  main_opts[2].val     = 0;
-
-  main_opts[3].name    = "provider_host";
-  main_opts[3].has_arg = 1;
-  main_opts[3].flag    = 0;
-  main_opts[3].val     = 0;  
-  
-  main_opts[4].name    = 0;
-  main_opts[4].has_arg = 0;
-  main_opts[4].flag    = 0;
-  main_opts[4].val     = 0;
-  
   opt_ok            = 1;
     
   if (argc < 2) {
@@ -110,57 +80,46 @@ main (int argc, char* argv[]) {
   }
 
   /* Analyse command line parameters */
-  while (opt_ok && (EOF != (c_opt = getopt_long_only(argc,argv,"fop",
-						     &main_opts[0],
-						     &main_opt_index)))) {    
+  while (opt_ok && (EOF != (c_opt = getopt(argc,argv,"x:u:o:l:h")))) {    
     switch (c_opt) {
-    case 0:
-      /* traitement des arguments des options */
-      switch (main_opt_index) {
-      case 0:
-	input_filename = strdup(optarg);
-	fprintf(stdout,"%s: sample config file is <%s>\n",argv[0],input_filename);
-	break;
-      case 1:
-	output_filename = strdup(optarg);
-	fprintf(stdout,"%s: output sample file is <%s>\n",argv[0],output_filename);
-	break;
-      case 2:
-	errorString = NULL;
-	output_limit = strtol(optarg,&errorString,10);
-	if ('\0' != *errorString) {
-	  fprintf(stderr,"%s: incorrect output limit format : <%s> (error begin at <%s>)\n",argv[0],optarg, errorString);
-	  opt_ok = 0;
-	} else {
-	  fprintf(stderr,"%s: TSP sample output file limited to <%d> sample(s).\n",argv[0],output_limit);
-	}
-	break;
-      case 3:
-	provider_host = strdup(optarg);
-	fprintf(stdout,"%s: TSP provider host is <%s>\n",argv[0],provider_host);
-	break;
-      default:
-	fprintf(stderr,
-		"This option <%s> should not have an associated value <%s> ??\n",
-		(char *)main_opts[main_opt_index].name,
-		optarg);
+    case 'x':
+      input_filename = strdup(optarg);
+      fprintf(stdout,"%s: sample config file is <%s>\n",argv[0],input_filename);
+      break;
+    case 'o':
+      output_filename = strdup(optarg);
+      fprintf(stdout,"%s: output sample file is <%s>\n",argv[0],output_filename);
+      break;
+    case 'l':
+      errorString = NULL;
+      output_limit = strtol(optarg,&errorString,10);
+      if ('\0' != *errorString) {
+	fprintf(stderr,"%s: incorrect output limit format : <%s> (error begin at <%s>)\n",argv[0],optarg, errorString);
 	opt_ok = 0;
-	break;
-      } /* fin du switch de traitement de options */
+      } else {
+	fprintf(stderr,"%s: TSP sample output file limited to <%d> sample(s).\n",argv[0],output_limit);
+      }
+      break;
+    case 'u':
+      provider_url = strdup(optarg);
+      fprintf(stdout,"%s: TSP provider URL is <%s>\n",argv[0],provider_url);
       break;
     case '?':
       fprintf(stderr,"Invalid command line option(s), correct it and rerun\n");
+      opt_ok = 0;
+      break;
+    default:
       opt_ok = 0;
       break;
     } /* end of switch */    
   }
 
   if (!opt_ok) {
-    printf("Usage: %s --f=<sample_config_file> [--o=<output_filename>] [--output_limit=<nb sample>] [--provider_host=<hostname>]\n", argv[0]);
-    printf("   --f              the file specifying the list of symbols to be sampled\n");
-    printf("   --o              the name of the output file\n");
-    printf("   --output_limit   (optional) the maximum number of sample to be stored in file\n");
-    printf("   --provider_host  (optionel) the name of the host running the TSP provider\n");  
+    printf("Usage: %s -x=<sample_config_file> [-o=<output_filename>] [-l=<nb sample>] [-u=<TSP provider URL>]\n", argv[0]);
+    printf("   -x   the file specifying the list of symbols to be sampled\n");
+    printf("   -o   the name of the output file\n");
+    printf("   -l   (optional) the maximum number of sample to be stored in file\n");
+    printf("   -u   (optionel) the  TSP provider URL <PROTOCOL://HOST/SERVER:PORT> \n");  
     exit(retcode);
   }
 
@@ -185,7 +144,7 @@ main (int argc, char* argv[]) {
     fprintf(stdout,"%s: Validate symbols against provider info...\n",argv[0]);
     fflush(stdout);
     retcode = tsp_ascii_writer_validate_symbols(mysymbols,nb_symbols,
-						provider_host,&symbol_list);
+						provider_url,&symbol_list);
   }
 
   if (0==retcode) {
