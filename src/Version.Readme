@@ -89,7 +89,7 @@ V-0.5.3: Creation 14/03/03  	tag TSP_0_5_3 YD
 	- Change Makefile philosophy
 	- Bug Fix : Tsp_gdisp corrected by commiting in binary type
 	- Bug Fix : res_reader don't forgot any more the two first lines
-V-0.6.x:
+V-0.6.0:
         - Gestion de plusieurs protocoles asynchrone (alpha)  - Erk
         - Corrections mineures scripts configure pour 
           une meilleure gestion automatique de Java           - Erk
