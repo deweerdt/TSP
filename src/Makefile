@@ -23,6 +23,6 @@ clean::
 	mv -i $(BINBASE) $(BINBASE).old
 
 SUBDIRS =  \
-	tsp  
+	core  
 
 include $(DEVBASE)/make/Makesubdirs
