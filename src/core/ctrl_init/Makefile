@@ -8,15 +8,13 @@ SOURCES = \
 OBJECTS=$(SOURCES:%.c=%.o) 
 
 
-TARGET=$(DIRLIB)/libtsp_provider.a
+TARGET=$(DIRLIB)/libtsp_provider_init.a
 
 .PRECIOUS: $(TARGET)
 
 all::
 	$(MAKE) common debug
 
-clean::
-	$(MAKE) destroy
 common:
 	$(MAKE) T=provider$(D) build
 debug::
@@ -24,12 +22,19 @@ debug::
 
 build : $(TARGET)($(OBJECTS))
 
+#------------------------------------
 
+clean::
+	$(MAKE) clean_common clean_debug
+
+clean_debug:
+	$(MAKE) D=.debug clean_common
+
+clean_common:
+	$(MAKE) T=provider$(D) destroy
 
 destroy :
-	$(RM) 	$(TARGET) 
-
-
+	$(RM) 	$(TARGET)
 
 
 include $(DEVBASE)/make/Makerules
