@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_kernel.h,v 1.11 2004-10-22 20:17:34 esteban Exp $
+$Id: gdisp_kernel.h,v 1.12 2004-11-15 23:14:49 dufy Exp $
 
 -----------------------------------------------------------------------
 
@@ -164,7 +164,7 @@ typedef enum {
 /* FIXME : the following three definitions must be dynamic */
 #define TSP_PROVIDER_FREQ     100   /* Hz                */
 #define GDISP_REFRESH_FREQ     10   /* Hz                */
-#define GDISP_WIN_T_DURATION  100   /* Seconds on X Axis */
+#define GDISP_WIN_T_DURATION   60   /* Seconds on X Axis */
 
 typedef struct Symbol_T_ {
 

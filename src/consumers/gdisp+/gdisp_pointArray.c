@@ -18,7 +18,7 @@
  */
 
 #include <stdio.h>
-#include <glib.h>
+#include <stdlib.h>
 #include "gdisp_pointArray.h"
 
 /*
@@ -26,20 +26,19 @@
  * And allocate a sample buffer .
  */
 DoublePointArray_T*
-dparray_newSampleArray (guint maxSamples)
+dparray_newSampleArray (unsigned int maxSamples)
 {
 
   DoublePointArray_T *pArray = (DoublePointArray_T*)NULL;
 
-  pArray = (DoublePointArray_T*)g_malloc0(sizeof(DoublePointArray_T));
+  pArray = (DoublePointArray_T*)malloc(sizeof(DoublePointArray_T));
 
   pArray->nbSamples  = 0;
   pArray->current    = 0;
-  pArray->first      = 0;
   pArray->marker     = 0;
   pArray->maxSamples = maxSamples;
   pArray->samples    = (DoublePoint_T*)
-                       g_malloc0(maxSamples * sizeof(DoublePoint_T));
+                       malloc(maxSamples * sizeof(DoublePoint_T));
 
   return pArray;
 
@@ -53,8 +52,8 @@ void
 dparray_freeSampleArray (DoublePointArray_T* pArray)
 {
 
-  g_free (pArray->samples);
-  g_free (pArray);
+  free (pArray->samples);
+  free (pArray);
 
 }
 
@@ -67,21 +66,14 @@ dparray_addSample (DoublePointArray_T *pArray,
 		   DoublePoint_T      *point)
 {
   pArray->samples[pArray->current] = *point;
-  pArray->current = (pArray->current + 1 ) % pArray->maxSamples;
+  pArray->current = (pArray->current + 1) % pArray->maxSamples;
 
   /*
    * Check end of ring buffer.
    */
-  if (pArray->nbSamples != pArray->maxSamples) {
+  if (pArray->nbSamples < pArray->maxSamples) {
 
     pArray->nbSamples++;      
-    pArray->first = 0;
-
-  }
-  else {
-
-    pArray->first = pArray->current;
-
   }
 
 }
@@ -90,15 +82,17 @@ dparray_addSample (DoublePointArray_T *pArray,
 /* 
  * Accessors on data.
  */
-guint
+unsigned int
 dparray_getFirstIndex (DoublePointArray_T *pArray)
 {
-
-  return pArray->first;
-
+  if (pArray->nbSamples != 0)
+    return (pArray->current)%pArray->nbSamples;      
+  else
+    return -1;
+ 
 }
 
-guint
+unsigned int
 dparray_getCurrentIndex (DoublePointArray_T *pArray)
 {
 
@@ -106,7 +100,7 @@ dparray_getCurrentIndex (DoublePointArray_T *pArray)
 
 }
 
-guint
+unsigned int
 dparray_getNbSamples (DoublePointArray_T *pArray)
 {
 
@@ -118,7 +112,7 @@ dparray_getNbSamples (DoublePointArray_T *pArray)
 /* 
  * Set/Get on marker, used by upper level to remember a specific position.
  */
-guint
+unsigned int
 dparray_getMarkerIndex (DoublePointArray_T *pArray)
 {
 
@@ -128,10 +122,10 @@ dparray_getMarkerIndex (DoublePointArray_T *pArray)
 
 void
 dparray_setMarkerIndex (DoublePointArray_T *pArray,
-			guint               index)
+			unsigned int               index)
 {
-
-  pArray->marker = index % pArray->maxSamples;
+  if (pArray->nbSamples != 0)
+    pArray->marker = index % pArray->maxSamples;
 
 }
 
@@ -139,8 +133,7 @@ DoublePoint_T
 dparray_getSample (DoublePointArray_T *pArray,
 		   int                 index)
 {
-
-  if (index >= 0) {
+  if ( (pArray->nbSamples != 0) && (index >= 0) ) {
 
     return pArray->samples[ index % pArray->nbSamples ]; 
 
@@ -158,7 +151,7 @@ dparray_getSamplePtr (DoublePointArray_T *pArray,
 		      int                 index)
 {
 
-  if (index >= 0) {
+  if ( (pArray->nbSamples != 0) && (index >= 0) ) {
 
     return &pArray->samples[ index % pArray->nbSamples ]; 
 
@@ -176,9 +169,9 @@ dparray_getSamplePtr (DoublePointArray_T *pArray,
  * Get the samples available from a specific position
  * in this tricky circular array.
  */
-guint 
+unsigned int 
 dparray_getLeftSamplesFromPos (DoublePointArray_T *pArray,
-			       guint               index)
+			       unsigned int               index)
 {
 
   if (index < pArray->current) {
@@ -204,12 +197,46 @@ void
 dparray_printFields (DoublePointArray_T *pArray)
 {
 
-  printf ("Structure pArray : 0x%X \n", (guint)pArray         );
-  printf ("\t ->samples	    : 0x%X \n", (guint)pArray->samples);
+  printf ("Structure pArray : 0x%X \n", (unsigned int)pArray         );
+  printf ("\t ->samples	    : 0x%X \n", (unsigned int)pArray->samples);
   printf ("\t ->nbSamples   : %d   \n", pArray->nbSamples     );
   printf ("\t ->maxSamples  : %d   \n", pArray->maxSamples    );
   printf ("\t ->current     : %d   \n", pArray->current       );
-  printf ("\t ->first	    : %d   \n", pArray->first         );
   printf ("\t ->marker	    : %d   \n", pArray->marker        );
 
 }
+
+
+#ifdef _TEST_POINT_ARRAY
+int main(int argc, char *argv[])
+{
+  int i,nb;
+  DoublePointArray_T *pa;
+  DoublePoint_T pt,*pp; 
+  nb = 10;
+
+  pa = dparray_newSampleArray (nb);
+  for (i=0; i<nb; i++) {
+    pt.x = i;
+    pt.y = 2*i;
+    dparray_addSample(pa,&pt);
+  }
+  
+  for (i=dparray_getFirstIndex(pa); i<dparray_getNbSamples(pa); i++) {
+    pp = dparray_getSamplePtr(pa,i);
+    printf ("pt [%d] => {%f,%f}\n", i, pp->x, pp->y);
+  }
+
+  pt.x = i;
+  pt.y = 2*i;
+  dparray_addSample(pa,&pt);
+
+  printf ("\n");
+  for (i=dparray_getFirstIndex(pa); i<dparray_getNbSamples(pa)+dparray_getFirstIndex(pa); i++) {
+    pp = dparray_getSamplePtr(pa,i);
+    printf ("pt [%d] => {%f,%f}\n", i, pp->x, pp->y);
+  }
+  return 0;
+}
+  
+#endif

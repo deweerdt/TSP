@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_plot2D.h,v 1.4 2004-05-11 19:47:41 esteban Exp $
+$Id: gdisp_plot2D.h,v 1.5 2004-11-15 23:14:49 dufy Exp $
 
 -----------------------------------------------------------------------
 
@@ -112,8 +112,9 @@ typedef struct Plot2D_T_ {
    * Array for sample points.
    * - p2dPtMin       : The minium point in physical unit
    * - p2dPtMax       : The maximum point in physical unit
-   * - p2PtSlope      : The slope used to convert physical2pixel
+   * - p2dPtSlope     : The slope used to convert physical2pixel
    * - p2dPtLast      : The last point in physical unit
+   * - p2dPtScroll    : The scroll in X or (on day Y) to do on next Redraw
    * - p2dPtRedrawMin : The minium in pixel unit, for redraw (plot back2front)
    * - p2dPtRedrawMax : The maximum in pixel unit, for redraw (plot back2front)
    *
@@ -130,6 +131,7 @@ typedef struct Plot2D_T_ {
   DoublePoint_T        p2dPtMax;
   DoublePoint_T	       p2dPtSlope;	
   DoublePoint_T        p2dPtLast;
+  DoublePoint_T        p2dPtScroll;
   ShortPoint_T         p2dPtRedrawMin;
   ShortPoint_T         p2dPtRedrawMax;
 

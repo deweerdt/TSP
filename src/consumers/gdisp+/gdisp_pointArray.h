@@ -37,14 +37,14 @@ extern "C" {
 typedef struct _DoublePoint
 {
 
-  gdouble x,y;    // Use for storage of physical values.
+  double x,y;    // Use for storage of physical values.
 
 } DoublePoint_T;
 
 typedef struct _ShortPoint
 {
 
-  gshort x,y;	// Use for storage of pixel values.
+  short x,y;	// Use for storage of pixel values.
 
 } ShortPoint_T;
   
@@ -52,20 +52,19 @@ typedef struct _DoublePointArray
 {
 
   DoublePoint_T *samples;     // pointer on samples,
-  guint          nbSamples;   // number of samples currently in array,
-  guint          current;     // index on current position,
-  guint          first;       // index on first position,
-  guint       	 marker;      // index on a position used by upper level,
-  guint          maxSamples;  // maximum samples possible to be added.
+  unsigned int          nbSamples;   // number of samples currently in array,
+  unsigned int          current;     // index on current position,
+  unsigned int       	 marker;      // index on a position used by upper level,
+  unsigned int          maxSamples;  // maximum samples possible to be added.
 
 } DoublePointArray_T;
 
 /*
  * Return a DoublePoint sample element form an Array and an index.
- */
+ 
 #define DP_ARRAY_GET_SAMPLE_FROM_FIRST(pArray,i) \
         ((pArray)->samples[ (i + (pArray)->first) % (pArray)->nbSamples ])
-
+*/
 DoublePoint_T  dparray_getSample    (DoublePointArray_T *pArray, int index);
 DoublePoint_T* dparray_getSamplePtr (DoublePointArray_T *pArray, int index);
 
@@ -73,7 +72,7 @@ DoublePoint_T* dparray_getSamplePtr (DoublePointArray_T *pArray, int index);
 /*
  * Sets the fields to default values and allocate a sample buffer.
  */
-DoublePointArray_T *dparray_newSampleArray (guint maxSamples);
+DoublePointArray_T *dparray_newSampleArray (unsigned int maxSamples);
 
 /*
  * Destroy all memory allocated for this array.
@@ -88,20 +87,20 @@ void dparray_addSample (DoublePointArray_T *pArray, DoublePoint_T *pt);
 /*
  * Accessors on data.
  */
-guint dparray_getFirstIndex   (DoublePointArray_T *pArray);
-guint dparray_getCurrentIndex (DoublePointArray_T *pArray);
-guint dparray_getNbSamples    (DoublePointArray_T *pArray);
+unsigned int dparray_getFirstIndex   (DoublePointArray_T *pArray);
+unsigned int dparray_getCurrentIndex (DoublePointArray_T *pArray);
+unsigned int dparray_getNbSamples    (DoublePointArray_T *pArray);
 
 /*
  * Set/Get on marker, used by upper level to remember a specific position.
  */
-guint dparray_getMarkerIndex (DoublePointArray_T *pArray);
-void  dparray_setMarkerIndex (DoublePointArray_T *pArray, guint index);
+unsigned int dparray_getMarkerIndex (DoublePointArray_T *pArray);
+void  dparray_setMarkerIndex (DoublePointArray_T *pArray, unsigned int index);
 
 /*
  * Get the samples available from specific position in circular array.
  */
-guint dparray_getLeftSamplesFromPos (DoublePointArray_T *pArray, guint index);
+unsigned int dparray_getLeftSamplesFromPos (DoublePointArray_T *pArray, unsigned int index);
 
 /*
  * Debug : Dump the values of the pointer.
