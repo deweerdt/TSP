@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_sampling.c,v 1.4 2004-05-11 19:47:43 esteban Exp $
+$Id: gdisp_sampling.c,v 1.5 2004-05-19 14:53:54 dufy Exp $
 
 -----------------------------------------------------------------------
 
@@ -48,7 +48,6 @@ File      : Graphic Tool Sampling Core Process.
 #include <assert.h>
 #include <string.h>
 #include <time.h>
-#include <pthread.h>
 #include <errno.h>
 #include <ctype.h>
 

@@ -157,7 +157,7 @@ plotwindow_size_allocate (GtkWidget *widget, GtkAllocation *allocation) {
   }
 }
   
-inline gint RGB (gint r, gint g, gint b) {
+/*inline */gint RGB (gint r, gint g, gint b) {
   return (r&0xff) << 16 | (g&0xff) << 8 | (b&0xff);
 }
 
@@ -298,8 +298,14 @@ static void calc_mapping(PlotWindow* pw)
 {
   pw->mapping.x_len = (pw->widget.allocation.width-MARGIN);
   pw->mapping.y_len = -(pw->widget.allocation.height-MARGIN);
-  pw->mapping.x_scale = pw->mapping.x_len / (pw->all_points_bbox.maxX-pw->all_points_bbox.minX);
-  pw->mapping.y_scale = pw->mapping.y_len / (pw->all_points_bbox.maxY-pw->all_points_bbox.minY);
+  if ( (pw->all_points_bbox.maxX-pw->all_points_bbox.minX) != 0 )
+    pw->mapping.x_scale = pw->mapping.x_len / (pw->all_points_bbox.maxX-pw->all_points_bbox.minX);
+  else
+    pw->mapping.x_scale = 1;
+  if ( (pw->all_points_bbox.maxY-pw->all_points_bbox.minY) != 0 )
+    pw->mapping.y_scale = pw->mapping.y_len / (pw->all_points_bbox.maxY-pw->all_points_bbox.minY);
+  else
+    pw->mapping.y_scale = 1;
   pw->mapping.x_bias = -(pw->all_points_bbox.minX*pw->mapping.x_scale)+(double)X_LEFT_IN(pw);
   pw->mapping.y_bias = -(pw->all_points_bbox.maxY*pw->mapping.y_scale)+(double)Y_TOP_IN(pw);
   pw->mapping.x_scroll_len = 
@@ -771,7 +777,10 @@ void draw_grids(PlotWindow *pw, GdkDrawable *where, int partial) {
     nb_grids = NB_GRIDS_MAX;
   step = (pw->all_points_bbox.maxY - pw->all_points_bbox.minY)/nb_grids; /* compute the average step */
   unit = pow(10, floor(log10(step)));  /* round it to the next 10 power */
-  step = ceil((step)/unit)*unit;
+  if (unit != 0)
+    step = ceil((step)/unit)*unit;
+  else 
+    step = 1;
   if (step==0) step=1;
 
   px = COORD_SAMP_TO_PIX_X(pw, pw->all_points_bbox.maxX-pw->scroll_duration);

@@ -17,7 +17,7 @@ typedef enum {WIDGET_VIEW, WIDGET_DRAW } widget_type_t;
 static char *variable_type_str[] = { "VAR_DOUBLE", "VAR_TITLE", "VAR_HEXA", "VAR_STRING", NULL};
 
 #define VAR_TYPE_NAME(i) variable_type_str[(i)]
-inline int VAR_TYPE_VAL (char *str);
+/*inline */int VAR_TYPE_VAL (char *str);
 
 
 

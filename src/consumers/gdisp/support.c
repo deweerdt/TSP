@@ -14,7 +14,7 @@
 
 #include "support.h"
 
-inline int VAR_TYPE_VAL (char *str) {
+/*inline */int VAR_TYPE_VAL (char *str) {
   int i;
   for (i=0; variable_type_str[i] != NULL; i++) {
     if (g_strcasecmp(str, variable_type_str[i]) == 0)

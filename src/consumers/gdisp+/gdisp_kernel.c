@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_kernel.c,v 1.4 2004-05-11 19:47:36 esteban Exp $
+$Id: gdisp_kernel.c,v 1.5 2004-05-19 14:53:52 dufy Exp $
 
 -----------------------------------------------------------------------
 
@@ -48,7 +48,6 @@ File      : Graphic Tool Kernel Implementation.
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
-#include <pthread.h>
 #include <errno.h>
 
 
