@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_data_receiver.c,v 1.4 2002-09-05 09:09:28 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_data_receiver.c,v 1.5 2002-10-01 15:31:06 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -57,6 +57,7 @@ static int TSP_data_receiver_double_decoder(void* out_double,  char* in_buf)
     {
       return TRUE;
     }
+
   /* FIXME ? on appel par xdr_free pour un double ? */
 
 #else
@@ -71,6 +72,42 @@ static int TSP_data_receiver_double_decoder(void* out_double,  char* in_buf)
   return TRUE;
 
 #endif
+
+}
+
+static int TSP_data_receiver_process_reserved_group_id(int group_index, TSP_sample_ringbuf_t* sample_fifo)
+{
+
+  SFUNC_NAME(TSP_data_receiver_process_reserved_group_id);
+  int ret = TRUE;
+  TSP_sample_t* sample;
+
+  STRACE_IO(("-->IN"));
+  
+  switch(group_index)
+    {
+      /* received EOF */
+    case TSP_RESERVED_GROUPE_EOF: 
+      {
+	/* Ok put and EOF in FIFO an EOF */
+	sample = RINGBUF_PTR_PUTBYADDR(sample_fifo);
+	assert(sample);
+	sample->time = -1;
+	sample->user_value = -1;
+	sample->provider_global_index = TSP_DUMMY_PROVIDER_GLOBAL_INDEX_EOF;
+	RINGBUF_PTR_PUTBYADDR_COMMIT(sample_fifo);
+	ret = TRUE;
+	break;
+      }
+    
+    default:	 
+      STRACE_ERROR(("Group id % in not a reserver group", group_index));
+      ret = FALSE;
+    }
+  
+  STRACE_IO(("-->OUT"));
+
+  return ret;
 
 }
 
@@ -111,113 +148,136 @@ TSP_data_receiver_t TSP_data_receiver_create(const char* data_address)
 
 }
 
+/**
+* Receive data from provider and decode them.
+* @param _receiver The receiver instance (network, incore ...)
+* @param _groups The group decoder instance
+* @param sample_fifo The ring buf instance where we are going to put the new data
+* @param fifo_full If == TRUE, means that no data can be added be as sample_fifo is full
+* @param if FALSE, function failed
+*/
 int TSP_data_receiver_receive(TSP_data_receiver_t _receiver,
                               TSP_groups_t _groups,
-                              TSP_sample_ringbuf_t* sample_ringbuf[]) 
+                              TSP_sample_ringbuf_t* sample_fifo,
+			      int* fifo_full) 
 {
     
-  SFUNC_NAME(TSP_data_receiver_receiver);
+  SFUNC_NAME(TSP_data_receiver_receive);
 
 	
   TSP_struct_data_receiver_t*  receiver = ( TSP_struct_data_receiver_t*) _receiver;
   TSP_group_t* groups =  ((TSP_group_table_t*)_groups)->groups;
   int nb_groups = ((TSP_group_table_t*)_groups)->table_len;
+  int max_group_len = ((TSP_group_table_t*)_groups)->max_group_len;
   int group_index = 0;
   time_stamp_t time_stamp = 0;
   int ret = FALSE;
   int* buf_int;  
-    
- 
+  TSP_sample_t* sample;
 
   STRACE_IO(("-->IN"));
 
-    
-  /* receive group size and time_stamp*/
-  buf_int = (int*)(receiver->buf);
-  ret = TSP_stream_receiver_receive(receiver->stream_receiver,
-				    (char*)buf_int,
-				    sizeof(int)*2);
-  
-                                       
-  if(ret)
+  *fifo_full = FALSE;
+
+  /* We read data if there enough room in ringbuf to store data, else, do nothing ; 
+     we want the biggest group to have enough room, so we use max_group_len
+     which the size of the biggest group and we compare with room left in ringbuf*/
+  if( RINGBUF_PTR_ITEMS_LEFT(sample_fifo) > max_group_len )
     {
-      int buf_len;
-      time_stamp = TSP_DECODE_INT(buf_int[0]);
-      group_index = TSP_DECODE_INT(buf_int[1]);
+      
+      /* OK, enough room. receive group size and time_stamp*/
+      buf_int = (int*)(receiver->buf);
+      ret = TSP_stream_receiver_receive(receiver->stream_receiver,
+					(char*)buf_int,
+					sizeof(int)*2);
+      if(ret)
+	{
+	  int buf_len;
+	  time_stamp = TSP_DECODE_INT(buf_int[0]);
+	  group_index = TSP_DECODE_INT(buf_int[1]);
 	
-    
-      /* Check if the group_index looks real */
-      if ((group_index < nb_groups) && (group_index >= 0) )
-        {
+	  /* Check if the group_index looks real */
+	  if ((group_index < nb_groups) && (group_index >= 0) )
+	    {
             
-	  /*receive all doubles*/
-	  ret = TSP_stream_receiver_receive(receiver->stream_receiver,
-					    receiver->buf,
-					    groups[group_index].sizeof_encoded_group);    
+	      /*receive all doubles*/
+	      ret = TSP_stream_receiver_receive(receiver->stream_receiver,
+						receiver->buf,
+						groups[group_index].sizeof_encoded_group);    
                                            
-	  if(ret)
-            {
-	      char* in_buf = receiver->buf;
-	      int rank;
-	      TSP_sample_ringbuf_t* symbol_ringbuf;
-	      TSP_sample_t* sample;
-	      /*printf("V=%f\n", *buf_double);*/
-	      for( rank = 0 ; rank < groups[group_index].group_len ; rank++)
-                {
-		  /*STRACE_DEBUG(("RECEIVED : T=%d Gr=%d V=%f",
-		    time_stamp,
-		    group_index,  
-		    buf_double[i]))*/
-                     
-		  
-		  /* Add symbols to their ringbuf */                   
-		  symbol_ringbuf = sample_ringbuf[groups[group_index].items[rank].provider_global_index];
-                  
-		  if( (sample = RINGBUF_PTR_PUTBYADDR(symbol_ringbuf))  )
+	      if(ret)
+		{
+		  char* in_buf = receiver->buf;
+		  int rank;	
+	      
+		  /*printf("V=%f\n", *buf_double);*/
+		  for( rank = 0 ; rank < groups[group_index].group_len ; rank++)
 		    {
-		      /* Call registered function to decode data */
-		      assert(groups[group_index].items[rank].data_decoder);		      
-		      ret = (groups[group_index].items[rank].data_decoder)(&(sample->user_value),in_buf);
-		      if(!ret)
+		      /*STRACE_DEBUG(("RECEIVED : T=%d Gr=%d V=%f",
+			time_stamp,
+			group_index,  
+			buf_double[i]))*/
+                     
+		      if( (sample = RINGBUF_PTR_PUTBYADDR(sample_fifo))  )
 			{
-			  STRACE_ERROR(("decoder function failed"));
-			  break;
-			}
+			  /* Call registered function to decode data */
+			  assert(groups[group_index].items[rank].data_decoder);		      
+			  ret = (groups[group_index].items[rank].data_decoder)(&(sample->user_value),in_buf);
+			  if(!ret)
+			    {
+			      STRACE_ERROR(("decoder function failed"));
+			      break;
+			    }
 		     
-		      /* add time stamp */
-		      sample->time = time_stamp;
-		     		      
-		      RINGBUF_PTR_PUTBYADDR_COMMIT(symbol_ringbuf);
-		    }
-		  else
-		    {
-		      STRACE_ERROR(("RingBuffer full for global index %d : %d missed data",
-				    groups[group_index].items[rank].provider_global_index,
-				    RINGBUF_PTR_MISSED(symbol_ringbuf)));
-		    }
+			  /* add time stamp */
+			  sample->time = time_stamp;
+			  sample->provider_global_index = groups[group_index].items[rank].provider_global_index;
 
-		  /* Goto next symbol */
-		  in_buf += groups[group_index].items[rank].sizeof_encoded_item;
+
+			  RINGBUF_PTR_PUTBYADDR_COMMIT(sample_fifo);
+			}
+		      else
+			{
+			  STRACE_ERROR(("Receive RingBuffer full : %d missed data",
+					RINGBUF_PTR_MISSED(sample_fifo)));
+			  /* FIXME : This else close must be suppressed. If we are here. It is a bug */
+			  assert(0);
+			  exit(-1);
+			}
+
+		      /* Goto next symbol */
+		      in_buf += groups[group_index].items[rank].sizeof_encoded_item;
                      
-                }
-                
-            }
-	  else    
-            {
-	      STRACE_ERROR(("Unable to receive samples"));
-
-            }
-                                           
-        }
+		    }
+		}
+	      else
+		{
+		  STRACE_ERROR(("Unable to receive samples"));
+		}
+	
+	    }
+	  else
+	    {
+	      /* Hum...Strange groupe index, may be it is a reserved on */
+	      ret = TSP_data_receiver_process_reserved_group_id(group_index, sample_fifo);
+	      if(!ret)
+		{
+		  STRACE_ERROR(("The received group id is corrupted"));
+		}
+	    }
+      
+	}
       else
-        {
-	  STRACE_ERROR(("The received group id is corrupted"));
-        }
+	{
+	  STRACE_ERROR(("Unable to receive group size and time stamp"));
+
+	}
     }
   else
     {
-      STRACE_ERROR(("Unable to receive group size and time stamp"));
 
+      *fifo_full = TRUE;
+      ret = TRUE;
     }
     
   STRACE_IO(("-->OUT"));
@@ -238,3 +298,10 @@ int TSP_data_receiver_get_double_encoded_size(void)
 {
   return TSP_SIZEOF_ENCODED_DOUBLE;
 }
+
+
+ 
+            
+	      
+			      
+            

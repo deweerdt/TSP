@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_data_receiver.h,v 1.1 2002-08-27 08:56:09 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_data_receiver.h,v 1.2 2002-10-01 15:31:06 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -30,7 +30,8 @@ typedef int(*TSP_data_decoder_t)(void* v, char* in_buf);
 
 int TSP_data_receiver_receive(TSP_data_receiver_t _receiver,
                               TSP_groups_t _groups,
-                              TSP_sample_ringbuf_t* sample_ringbuf[]) ;
+                              TSP_sample_ringbuf_t* sample_fifo,
+			      int* fifo_full) ;
 
 TSP_data_receiver_t TSP_data_receiver_create(const char* data_address);
 
