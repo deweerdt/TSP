@@ -1,6 +1,6 @@
 # -*- Makefile -*-
 
-include $(DEVBASE)/make/Makeparams.java
+include $(DEVBASE)/make/Makeparams
 
 JPACKAGE=tsp.core.consumer
 JPACKAGEDIR=$(subst .,/,$(JPACKAGE))
@@ -20,8 +20,5 @@ common:: $(OBJECTS)
 debug::
 	@echo "No debug for yet"
 #	$(MAKE) D=.debug common
-
-destroy::
-	$(MAKE) clean
 
 include $(DEVBASE)/make/Makerules.java

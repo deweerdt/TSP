@@ -1,6 +1,6 @@
 # -*- Makefile -*-
 
-include $(DEVBASE)/make/Makeparams.java
+include $(DEVBASE)/make/Makeparams
 
 RPC = TSP_rpc
 
