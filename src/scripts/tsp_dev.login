@@ -19,6 +19,8 @@ setenv WIND_BASE /home1/breiz/PowerPC_tornado2.0/tornado.login
 if ( -e /home1/breiz/68k_tornado2.0/tornado.login ) then
         source /home1/breiz/68k_tornado2.0/tornado.login
 endif
+
+
 if ( -e /home1/breiz/PowerPC_tornado2.0/tornado.login ) then
         source /home1/breiz/PowerPC_tornado2.0/tornado.login
 endif
@@ -33,12 +35,21 @@ setenv VX_68K_OPTION
 
 #endif
 
-
 ##############################
 # Rajout de PATH
 ##############################
 
-setenv PATH ${DEVBASE}/exec/DEV/bin.provider:${PATH}:${DEVBASE}/exec/DEV/scripts
+setenv PATH ${DEVBASE}/exec/DEV/bin.consumer:${DEVBASE}/exec/DEV/bin.provider:${PATH}:${DEVBASE}/exec/DEV/scripts
+
+##############################
+# Navigation
+##############################
+alias go_ec 'cd ${DEVBASE}/exec/DEV/bin.consumer'
+alias go_ecd 'cd ${DEVBASE}/exec/DEV/bin.consumer.debug'
+alias go_ep 'cd ${DEVBASE}/exec/DEV/bin.provider'
+alias go_epd 'cd ${DEVBASE}/exec/DEV/bin.provider.debug'
+alias go_tsp 'cd ${DEVBASE}/src/tsp'
+
 
 ##############################
 # CVS 
@@ -46,3 +57,8 @@ setenv PATH ${DEVBASE}/exec/DEV/bin.provider:${PATH}:${DEVBASE}/exec/DEV/scripts
 setenv CVSROOT /home2/breiz/tnt/CVSROOT
 alias lcvs 'cvs -d /home2/breiz/tnt/CVSROOT '
 alias gcvs 'cvs -d /home2/breiz/dev442/CVSROOT'
+
+
+
+
+
