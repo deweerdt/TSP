@@ -1,0 +1,34 @@
+#!/bin/csh
+
+echo "------------------------------------"
+echo "---------- Demo gdisp --------------"
+echo "------------------------------------"
+echo " - Tests a GTK client on stub server connections"
+
+tsp_stub_server --tsp-server-number 0  > /dev/null &
+tsp_gdisp sexy.xml localhost 
+
+set result=$status
+
+if ( "$result" != "0" ) then
+    echo "If script doesn't find tsp_xxx_server of client"
+    echo "please add $DEVBASE/exec/DEV/bin.xxx in your path\n"
+endif
+ 
+#kill our army of dummies
+custom_killall tsp_stub_server
+custom_killall tsp_gdisp
+
+echo "------------------------------------"
+echo "-------- END Demo gdisp  -----------"
+echo "------------------------------------"
+
+
+
+
+
+
+
+
+
+
