@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_stream_sender.c,v 1.3 2002-10-01 15:27:58 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_stream_sender.c,v 1.4 2002-10-09 07:45:21 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -29,6 +29,9 @@ stream  from the producer for the asked symbols. This layer is the network layer
 
 #define TSP_DATA_ADDRESS_STRING_SIZE 256
 
+/* (µs) */
+#define TSP_STREAM_SENDER_CONNECTION_POOL_TIME ((int)(1e5))
+#define TSP_STREAM_SENDER_FIFO_POOL_TIME       ((int)(1e5))
 
 struct TSP_socket_t
 {
@@ -43,6 +46,16 @@ struct TSP_socket_t
    * If TRUE, the client is connected to the socket
    */
   int client_is_connected;
+
+  /**
+   * Fifo for outgoing data
+   */
+  TSP_stream_sender_ringbuf_t* out_ringbuf;
+
+  /** 
+   * When fifo size is > 0, a thead is created to send data
+   */
+  int fifo_size;
 };
 
 typedef struct TSP_socket_t TSP_socket_t;
@@ -75,6 +88,83 @@ static Sigfunc* signal(int signo, Sigfunc* func)
   return (oact.sa_handler);
 } 
 
+
+static void* TSP_streamer_sender_thread_sender(void* arg)
+{
+  /* FIXME : creer le thread détaché */
+    
+  SFUNC_NAME(TSP_streamer_sender_sender);
+    
+  TSP_socket_t* sock = (TSP_socket_t*)arg;
+  TSP_stream_sender_item_t* item = 0;
+  int connection_ok = TRUE;
+     
+  STRACE_IO(("-->IN"));
+ 
+    /* Wait for consumer connection before we send data */  
+
+  STRACE_INFO(("Thread stream sender created : waiting for client to connect..."));
+  while(!sock->client_is_connected)
+    {
+      tsp_usleep(TSP_STREAM_SENDER_CONNECTION_POOL_TIME);
+     
+    }
+  STRACE_INFO(("Client connected ! Send loop starts !"));
+
+  item = RINGBUF_PTR_GETBYADDR(sock->out_ringbuf);
+  /* FIXME : gerer l'arret */
+  /* Gerer l'impossibilité d'envoyer */
+  while(connection_ok)
+    {
+      while (item && connection_ok)
+	{
+	 
+	  connection_ok =  TSP_stream_sender_send(sock, item->buf, item->len);
+	  RINGBUF_PTR_GETBYADDR_COMMIT(sock->out_ringbuf);
+	  item = RINGBUF_PTR_GETBYADDR(sock->out_ringbuf);      
+
+	}
+      	  tsp_usleep(TSP_STREAM_SENDER_FIFO_POOL_TIME);
+	  item = RINGBUF_PTR_GETBYADDR(sock->out_ringbuf);      
+    }
+
+  STRACE_WARNING(("Connection with consumer broken"));
+      
+  STRACE_IO(("-->OUT"));
+}
+
+
+/**
+* When a fifo is needed create a fifo and a thread to send the data from the fifo 
+* @param sock The data stream object instance
+* @return OK or KO. TRUE = OK
+*/
+static int TSP_stream_sender_init_bufferized(TSP_socket_t* sock)
+{
+
+
+  SFUNC_NAME(TSP_stream_sender_init_bufferized);
+  int status;
+  pthread_t thread_id;
+
+  STRACE_IO(("-->IN"));
+
+  RINGBUF_PTR_INIT(TSP_stream_sender_ringbuf_t,
+		   sock->out_ringbuf,
+		   TSP_stream_sender_item_t, 
+		   RINGBUF_SZ(sock->fifo_size) );
+
+  assert(sock->out_ringbuf);
+
+  status = pthread_create(&thread_id, NULL, TSP_streamer_sender_thread_sender,  sock);
+  TSP_CHECK_THREAD(status, FALSE);
+ 
+  STRACE_IO(("-->OUT"));
+
+  return TRUE;
+  
+}
+
 static TSP_stream_sender_save_address_string(TSP_socket_t* sock, 
 					     char* host, unsigned short port)
 {   
@@ -104,7 +194,7 @@ static void* TSP_streamer_sender_connector(void* arg)
   STRACE_IO(("-->IN"));
     
   /* Accept connection on socket */
-
+  STRACE_INFO(("Thread acceptor started waiting for client to connect", sock->hClient));
   sock->hClient = accept(sock->socketId, NULL, &Len);
 
   if(sock->hClient > 0)
@@ -136,7 +226,7 @@ const char* TSP_stream_sender_get_data_address_string(TSP_stream_sender_t sender
   return sock->data_address;
 }
 
-TSP_stream_sender_t TSP_stream_sender_create(void)
+TSP_stream_sender_t TSP_stream_sender_create(int fifo_size)
 {
   SFUNC_NAME(TSP_stream_sender_create);
   int status = 0;
@@ -171,6 +261,9 @@ TSP_stream_sender_t TSP_stream_sender_create(void)
 
   sock->hClient = 0;
   sock->socketId = 0;
+  sock->fifo_size = fifo_size;
+  sock->out_ringbuf = 0;
+  sock->client_is_connected = FALSE;
   
   /* Init socket */
   sock->socketId = socket(AF_INET, SOCK_STREAM, 0);
@@ -298,19 +391,30 @@ TSP_stream_sender_t TSP_stream_sender_create(void)
       /* FIXME : faire l'arret du thread */
       /* FIXME : detacher le thread */
 
+      /* If we want a bufferized connection, create a fifo, and launch the sender
+	 thread that will read the fifo */
+      if(sock->fifo_size > 0 )	
+	{
+	  /* FIXME : il faudra un jour que le ring buf puisse vérifier si l'allocation a fonctionné */
+	  if(!TSP_stream_sender_init_bufferized(sock))
+	    {
+	      STRACE_ERROR(("Function TSP_stream_sender_init_bufferized failed"));
+	      close(sock->socketId);	  
+	      return 0;
+	    }
+	  
+	}
+      
+
       /* When the client is be connected, the thread function TSP_streamer_sender_connector will set the client_is_connected 
 	 var to TRUE */
-      sock->client_is_connected = FALSE;
-      /* Do the accept thrue a thread */
+            
+      
       status = pthread_create(&thread_connect_id, NULL, TSP_streamer_sender_connector,  sock);
       TSP_CHECK_THREAD(status, FALSE);
 
-      /*Disable SIGPIPE signal */
-      if( SIG_ERR == signal(SIGPIPE, SIG_IGN))
-	{
-	  STRACE_ERROR(("Unable to disable SIGPIPE signal"));
-	  return 0;
-	}
+      
+
     }
 
   STRACE_IO(("-->OUT"));
@@ -373,4 +477,11 @@ int TSP_stream_sender_is_client_connected(TSP_stream_sender_t sender)
   TSP_socket_t* sock = (TSP_socket_t*)sender;
 
   return sock->client_is_connected;
+}
+
+TSP_stream_sender_ringbuf_t* TSP_stream_sender_get_ringbuf(TSP_stream_sender_t sender)
+{
+  TSP_socket_t* sock = (TSP_socket_t*)sender;
+
+  return sock->out_ringbuf;
 }
