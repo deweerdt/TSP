@@ -1,0 +1,289 @@
+/*!  \file 
+
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_client.c,v 1.1 2002-08-27 08:56:09 galles Exp $
+
+-----------------------------------------------------------------------
+
+Project   : TSP
+
+Component : Consumer
+
+-----------------------------------------------------------------------
+
+Purpose   : 
+
+-----------------------------------------------------------------------
+ */
+
+#include "tsp_sys_headers.h"
+
+#include "tsp_client.h"
+
+#include "tsp_rpc.h"
+#include "tsp_rpc_confprogid.h"
+
+/*static CLIENT          *globalClient;*/
+
+#define LOCAL_RPCCHECK_FALSE  	if( server == (TSP_server_t)0)  \
+				{ STRACE_ERROR(("RPCCHECK failed")) ; return FALSE ;} 
+				
+#define LOCAL_RPCCHECK_0  	if( server == (TSP_server_t)0) \
+				{ STRACE_ERROR(("RPCCHECK failed")) ; return 0 ;} 
+
+TSP_server_info_t * tsp_server_info(TSP_server_t server)
+{
+
+  SFUNC_NAME(tsp_server_info);
+
+  TSP_server_info_t* result;
+	
+  STRACE_IO(("-->IN"));
+
+	
+  LOCAL_RPCCHECK_0
+	
+    result = tsp_server_info_1(server);
+	
+  STRACE_IO(("-->OUT"));
+
+	
+  return result;
+}	
+
+CLIENT* tsp_remote_open_progid(const char *target_name, int progid)
+{
+
+  SFUNC_NAME(tsp_remote_open_progid);
+
+  CLIENT* cl = (CLIENT *)0;
+  struct timeval timeout = { 1, 0 };
+
+  STRACE_IO(("-->IN"));
+
+  cl = clnt_create_timed(target_name, progid, TSP_RPC_VERSION_INITIAL, "tcp",&timeout );
+  if(cl == (CLIENT *)0)
+    {
+      STRACE_DEBUG(("ERROR : GLOBAL clnt_create failed for host %s", target_name));
+    }
+  else
+    {
+      STRACE_INFO(("CONNECTED to server %s", target_name));
+      global_rpcSetTimeout(cl, 20);
+
+    }
+ 
+	
+
+  STRACE_IO(("-->OUT"));
+
+  return cl;
+	
+}
+
+int TSP_remote_open_server( const char *target_name,
+			    int server_id, 
+			    TSP_server_t* server,
+			    TSP_server_info_string_t server_info)
+{
+  SFUNC_NAME(TSP_remote_open_server);
+
+  int prodid_max_number, progid;
+  int ret = FALSE;
+  TSP_server_info_t* server_info_t;
+	
+  *server = (TSP_server_t)0;
+  server_info[0] = '\0';
+	
+  STRACE_IO(("-->IN"));
+
+	
+  prodid_max_number = TSP_get_progid_total_number();
+	
+  if((server_id < prodid_max_number) && (server_id >=0) )
+    {
+      progid = TSP_get_progid(server_id);
+      if(progid > 0) 
+	{
+	  *server = tsp_remote_open_progid(target_name, progid);
+	  if( (*server) != (TSP_server_t)0)
+	    {
+				/*  On recupere la chaine d'info du serveur) */
+	      server_info_t = tsp_server_info(*server);
+	      if( server_info_t != NULL)
+		{	
+		  if( STRING_SIZE_SERVER_INFO >= strlen(server_info_t->info) )
+		    {
+		      strcpy(server_info, server_info_t->info);
+		      STRACE_INFO(("Server opened : '%s'", server_info));
+		      ret = TRUE;		
+		    }
+		  else
+		    {
+		      STRACE_ERROR(("Returned info string too long"));
+		    }
+		}
+	      else
+		{
+		  STRACE_ERROR(("%s", clnt_sperror(*server, "sp_server_info_1\n") ));
+		}
+				
+			
+	    }
+	  else
+	    {
+	      STRACE_DEBUG(("tsp_remote_open_progid failed"));
+	    }
+			
+	}
+      else
+	{
+	  STRACE_ERROR(("No ProgId for Server Id=%d", server_id));
+	}
+		
+    }
+  else
+    {
+      STRACE_ERROR(("server_id %d too high", server_id));
+    }
+	
+  STRACE_IO(("-->OUT"));
+
+	
+  return ret;
+	
+}
+
+/**
+* Close a server.
+* @param server the server that must be close.
+*/
+void TSP_remote_close_server(TSP_server_t server)
+{
+  if(server)
+    {
+      clnt_destroy((CLIENT*)server);
+    }
+}
+
+/**
+ * Max server number.
+ * Get how many server can exists on a given host.
+ * @return Max server number
+ */
+int TSP_get_server_max_number()
+{
+  return TSP_get_progid_total_number();
+}
+
+TSP_answer_open_t * TSP_request_open(const TSP_request_open_t* req_open, TSP_server_t server)
+{
+
+  SFUNC_NAME(TSP_request_open);
+
+  TSP_answer_open_t* result;
+	
+  STRACE_IO(("-->IN"));
+
+	
+  LOCAL_RPCCHECK_0
+	
+    result = tsp_request_open_1(*req_open, server);
+	
+  STRACE_IO(("-->OUT"));
+
+	
+  return result;
+}	
+
+/**
+* Close the session for a remote_opened provider.
+* @param req_close the informations tout close the session
+* @return The action result (TRUE or FALSE)
+*/
+int TSP_request_close(const TSP_request_close_t* req_close, TSP_server_t server)
+{
+
+  SFUNC_NAME(TSP_request_close);
+
+  int result;
+	
+  STRACE_IO(("-->IN"));
+
+	
+  LOCAL_RPCCHECK_FALSE
+	
+    result = (int)tsp_request_close_1(*req_close, server);
+	
+  STRACE_IO(("-->OUT"));
+
+	
+  return result;
+}	
+
+/**
+* Close the session for a remote_opened provider.
+* @param req_close the informations tout close the session
+* @return The action result (TRUE or FALSE)
+*/
+TSP_answer_sample_t * TSP_request_information(const TSP_request_information_t* req_info, TSP_server_t server)
+{
+
+  SFUNC_NAME(TSP_request_information);
+
+  TSP_answer_sample_t* result;
+	
+  STRACE_IO(("-->IN"));
+
+	
+  LOCAL_RPCCHECK_0
+	
+    result = tsp_request_information_1(*req_info, server);
+	
+  STRACE_IO(("-->OUT"));
+
+	
+  return result;
+}	
+
+TSP_answer_sample_t * TSP_request_sample(
+					 const TSP_request_sample_t* req_sample,
+					 TSP_server_t server)
+{
+  SFUNC_NAME(TSP_request_sample);
+
+  TSP_answer_sample_t* result;
+	
+  STRACE_IO(("-->IN"));
+
+	
+  LOCAL_RPCCHECK_0
+	
+    result = tsp_request_sample_1(*req_sample, server);
+	
+  STRACE_IO(("-->OUT"));
+
+	
+  return result;
+}
+
+TSP_answer_sample_t * TSP_request_sample_init(
+					      const TSP_request_sample_t* req_sample,
+					      TSP_server_t server)
+{
+  SFUNC_NAME(TSP_request_sample_init);
+
+  TSP_answer_sample_t* result;
+	
+  STRACE_IO(("-->IN"));
+
+	
+  LOCAL_RPCCHECK_0
+	
+    result = tsp_request_sample_init_1(*req_sample, server);
+	
+  STRACE_IO(("-->OUT"));
+
+	
+  return result;
+}
+	

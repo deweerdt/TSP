@@ -1,0 +1,65 @@
+/*!  \file 
+
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_group_data.h,v 1.1 2002-08-27 08:56:09 galles Exp $
+
+-----------------------------------------------------------------------
+
+Project   : TSP
+
+Component : Consumer
+
+-----------------------------------------------------------------------
+
+Purpose   : Data structure for the TSP_group_t object.
+Any module that needs to access the internal structure of the TSP_group_t object
+for performance reason may include this header
+
+-----------------------------------------------------------------------
+ */
+
+#ifndef _TSP_GROUP_DATA_H
+#define _TSP_GROUP_DATA_H
+
+#include "tsp_prjcfg.h"
+
+#include "tsp_datastruct.h"
+#include "tsp_data_receiver.h"
+
+struct TSP_group_item_t
+{
+  int provider_global_index;
+
+  int sizeof_encoded_item;
+
+  TSP_data_decoder_t data_decoder;
+
+};
+
+typedef struct TSP_group_item_t TSP_group_item_t;
+
+struct TSP_group_t
+{
+  int group_len;
+
+  int sizeof_encoded_group;
+    
+  TSP_group_item_t* items;
+    
+};
+
+typedef struct TSP_group_t TSP_group_t;
+
+struct TSP_group_table_t
+{
+  int groups_summed_size;
+    
+  int table_len;
+    
+  TSP_group_t* groups;
+    
+};
+
+typedef struct TSP_group_table_t TSP_group_table_t;
+
+                                       
+#endif /* _TSP_GROUP__DATA_H */
