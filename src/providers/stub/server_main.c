@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: server_main.c,v 1.4 2004-10-04 08:59:09 tractobob Exp $
+$Id: server_main.c,v 1.5 2004-10-05 11:43:07 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -37,10 +37,17 @@ Purpose   : Implementation for the glue_server, for stub test
 -----------------------------------------------------------------------
 */
 
+#include <signal.h>
+
 #include "tsp_provider_init.h"
 
 int main(int argc, char *argv[])
 {
+  sigset_t allsigs;
+
+  sigfillset(&allsigs);
+  sigprocmask(SIG_BLOCK, &allsigs, NULL);
+
   printf ("#===================================================================#\n");
   printf ("# Launching <StubbedServer> for generation of 1000 Symbols at 100Hz #\n");
   printf ("#===================================================================#\n");
@@ -50,10 +57,11 @@ int main(int argc, char *argv[])
     {
       TSP_provider_run(TSP_ASYNC_REQUEST_SIMPLE | TSP_ASYNC_REQUEST_NON_BLOCKING);
       TSP_provider_urls(TSP_PUBLISH_URLS_PRINT | TSP_PUBLISH_URLS_FILE);
-      sigwait();
+      sigwait(&allsigs);
       TSP_provider_end();
     }
 
+  printf("#=== End ===#\n");
   return 0;
 }
   
