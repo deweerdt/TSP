@@ -1,4 +1,4 @@
-#!/bin/tcsh
+#!/bin/csh
 
 echo "**********************************************************"
 echo "           configuration for TSP compilation"
@@ -9,8 +9,9 @@ echo "(FIXME 2 : All scripts need a tcsh or csh shell )"
 echo "----------------------------------------------------------"
 
 set PWDPATH = `pwd`
-set GENSCRIPT = "${PWDPATH}/src/scripts/tsp_gen_dev.login"
-set TEMPLATE = "${GENSCRIPT}.templ"
+set WHERE = "${PWDPATH}/src/scripts"
+set GENSCRIPT = "${WHERE}/tsp_dev.login"
+set TEMPLATE = "${WHERE}/.templ_tsp_dev.login"
 set SEDEXP = "s:%%tsp_base%%:${PWDPATH}:"
 
 sed -e $SEDEXP < $TEMPLATE > $GENSCRIPT
