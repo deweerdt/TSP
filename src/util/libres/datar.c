@@ -1,6 +1,6 @@
 /*!  \file
 
-$Header: /home/def/zae/tsp/tsp/src/util/libres/datar.c,v 1.5 2004-09-07 09:27:45 tractobob Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libres/datar.c,v 1.6 2004-09-16 09:21:31 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -107,7 +107,7 @@ struct data_read
 				/* d_close en lecture		*/
   long	pdat,pend;		/* pointeur sur donnees et fin	*/
   long	pcom[RES_COM_NUM];	/* pointeurs sur commentaires	*/
-  long   pnom[RES_VAR_NUM];	/* pointeurs sur noms		*/
+  long   pnom[RES_VAR_NUM*2];	/* pointeurs sur noms		*/
   int	vnum,cnum,rnum;		/* nombre de variables,comment	*/
 				/*           enregistrements	*/
   int	recl;			/* Longueur d'un record		*/
