@@ -20,7 +20,7 @@ setenv HOME_EXEC_CURRENT $HOME_EXEC_BASE/current/${HOST_ARCH}/debug
 ##############################
 # Paths
 ##############################
-setenv PATH ${TSP_BASE}/src/scripts:${HOME_EXEC_CURRENT}/bin:${JAVA_HOME}/bin:${PATH}
+setenv PATH ${TSP_BASE}/src/scripts:${HOME_EXEC_CURRENT}/bin:${PATH}
 
 
 ##############################
