@@ -1,4 +1,4 @@
-# Makeparams.osf1
+# Makeparams.dec
 
 include $(DEVBASE)/make/Makeproject
 
@@ -12,7 +12,7 @@ include $(DEVBASE)/make/Makeproject
 # Default options
 # ---------------
 ARFLAGS = rvs
-CFLAGS = 
-CPPFLAGS += -DUSE_STRACE -DTSP_NO_XDR_ENCODE -D__OSF1__ -D__alpha__
-LDLIBS = -lsocket -lnsl -lm -lposix4 -lgen --lthread lpthread  
+CFLAGS =  
+CPPFLAGS += -D_REENTRANT   -DUSE_STRACE -DTSP_NO_XDR_ENCODE -D_OSF_SOURCE
+LDLIBS =   -lm -lpthread  
 
