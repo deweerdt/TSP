@@ -1,6 +1,6 @@
 /*!  \file 
  
-$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_const_def.h,v 1.5 2002-09-13 16:39:34 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_const_def.h,v 1.6 2002-09-17 09:43:16 fancelli Exp $
 
 -----------------------------------------------------------------------
 
@@ -36,7 +36,8 @@ Purpose   :
 /* Max server total number */
 #define TSP_MAX_SERVER_NUMBER 20
 
-#define TSP_DATAPOOL_POOL_PERIOD 5e6
+/* Data Pool period (µS) */
+#define TSP_DATAPOOL_POOL_PERIOD 5000
 
 typedef guint32 channel_id_t;
 typedef guint32 version_id_t;

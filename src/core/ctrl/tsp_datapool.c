@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_datapool.c,v 1.2 2002-09-04 17:58:50 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_datapool.c,v 1.3 2002-09-17 09:43:13 fancelli Exp $
 
 -----------------------------------------------------------------------
 
@@ -43,7 +43,7 @@ struct TSP_datapool_item_t
 
 typedef struct TSP_datapool_item_t TSP_datapool_item_t;
 
-static struct timespec X_sleep_time = {0, TSP_DATAPOOL_POOL_PERIOD};
+
 
 /*-----------------------------------------------------*/
 
@@ -121,7 +121,7 @@ static void* TSP_worker(void* arg)
   /* wait for data */
   while (RINGBUF_PTR_ISEMPTY(X_ring))
     {
-      nanosleep(&X_sleep_time, NULL);
+      usleep(TSP_DATAPOOL_POOL_PERIOD);
     }
   RINGBUF_PTR_NOCHECK_GET(X_ring,item);
 
@@ -138,7 +138,7 @@ static void* TSP_worker(void* arg)
 	}
       else
 	{
-	  nanosleep(&X_sleep_time, NULL);
+	  usleep(TSP_DATAPOOL_POOL_PERIOD);
 	}
         
     } while (item.time == time_stamp); 
@@ -159,6 +159,7 @@ static void* TSP_worker(void* arg)
 	{
 	  count_remove ++;
 
+
 	  /* time stamp change, need to send every things */
 	  /*FIXME : gerer tous les machins avec les types user, raw...*/
 	  /* Resfresh data pool with new value */
@@ -174,13 +175,13 @@ static void* TSP_worker(void* arg)
       total_fifo += (double)(apres_fifo - avant_fifo)/1e6;
       /*---*/
 
+      	  
       if (item_ptr && (time_stamp != item_ptr->time))
 	{
 	  avant_send = tsp_gethrtime();
 	  /* Send data to all clients  */	      
 	  TSP_session_all_session_send_data(time_stamp);
 	  apres_send = tsp_gethrtime();	 
-
 	  total_send += (double)(apres_send - avant_send)/1e6;
 	  nombre_send ++;
 	  time_stamp = item_ptr->time;
@@ -195,9 +196,8 @@ static void* TSP_worker(void* arg)
       /* wait for data */
       while (RINGBUF_PTR_ISEMPTY(X_ring))
 	{
-	  nanosleep(&X_sleep_time, NULL);
+	  usleep(TSP_DATAPOOL_POOL_PERIOD);
 	} 
-      
     }
     
   STRACE_IO(("-->OUT"));
