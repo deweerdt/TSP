@@ -1,0 +1,10 @@
+General Information
+===================
+
+TSP is L-GPL, but some consumers are not yet in Open Source :={
+
+This simple GTK client is just graphical demo.  
+For its usage, see tsp/tests/demo
+
+For more information, mail tsp@astrium-space.com
+
