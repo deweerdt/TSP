@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: client_stdout.c,v 1.8 2004-09-27 13:47:01 tractobob Exp $
+$Id: client_stdout.c,v 1.9 2004-10-05 12:19:28 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -87,6 +87,7 @@ int main(int argc, char *argv[]){
     break;
   default : 
       STRACE_ERROR(("USAGE %s : serverURL period <test mode nb_sample> \n", argv[0]));
+      printf(TSP_URL_FORMAT_USAGE);
       return -1;
   }
 
@@ -102,7 +103,7 @@ int main(int argc, char *argv[]){
       STRACE_INFO(("Server %s, info = '%s'", name, info));
 	  
       /* Check name */
-      if(strcmp(info, "StubbedServer"))
+      if(!strstr(info, "StubbedServer"))
 	{
 	  STRACE_ERROR(("Serveur name corrupted"));
 	  STRACE_TEST(("STAGE 001 | STEP 001 : FAILED"));
