@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_const_def.h,v 1.1 2002-08-27 08:56:09 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_const_def.h,v 1.2 2002-08-28 09:22:55 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -15,16 +15,17 @@ Purpose   :
  */
 
 #ifndef _TSP_CONST_DEF_H
+
 #define _TSP_CONST_DEF_H
 
 #define TSP_VERSION 1
 
 /* Size of ringbuf per symbol between client socket and consumer */
 /* FIXME : faire l'allocation en fonction de la frequence de base */
-#define TSP_CONSUMER_RINGBUF_SIZE 1000 * 10
+#define TSP_CONSUMER_RINGBUF_SIZE 100 * 10
 
 /* Glue server ringbuf size */
-#define GLU_RING_BUFSIZE (1000 * 100 * 40)
+#define GLU_RING_BUFSIZE (1000 * 100 * 20)
 
 
 
@@ -132,7 +133,8 @@ to calculate the PROG ID for each server*/
 
 /*-------- DATA STREAM ENDIAN CONVERSION --------*/
 
-#define TSP_ENCODE_DOUBLE_TO_GUINT64(val) (GUINT64_TO_BE (*(guint64*)val))
-#define TSP_DECODE_DOUBLE_TO_GUINT64(val) (GUINT64_FROM_BE (*(guint64*)val))
+#define TSP_ENCODE_DOUBLE_TO_GUINT64(val) (GUINT64_TO_LE (*(guint64*)val))
+#define TSP_DECODE_DOUBLE_TO_GUINT64(val) (GUINT64_FROM_LE (*(guint64*)val))
+
 
 #endif /*_TSP_CONST_DEF_H*/
