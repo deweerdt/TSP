@@ -55,7 +55,7 @@ typedef struct SHA1Context
     uint32_t Length_High;           /* Message length in bits      */
 
                                /* Index into message block array   */
-    int16_t Message_Block_Index;
+    int_least16_t Message_Block_Index;
     uint8_t Message_Block[64];      /* 512-bit message blocks      */
 
     int Computed;               /* Is the digest computed?         */

@@ -1,16 +1,20 @@
 
-Last update by $Author: erk $ on $Date: 2004-10-28 20:27:26 $
+Last update by $Author: erk $ on $Date: 2005-02-23 19:43:40 $
 **************************************************************************
 
                   This is the TSP version roadmap.
 
 **************************************************************************
-TSP 0.6.3 : 
+TSP 0.6.3 : [DONE]
    - push philosophy
-   - Blackboard OK on all supported platform   (excepted VxWorks)
+
+TSP 0.6.4 : [Coming soon]
+   - bug hunting 
+   - unified bb_tools for TSP blackboard
+   - BlackBoard OK on Linux and Solaris
    - Ascii writer OK on all supported platform (excepted VxWorks)
 
-TSP 0.6.4 :
+TSP 0.6.5 :
    - uniform [XML] config file for TSP consumer
 
 TSP 0.7   : 

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_abs_types.h,v 1.18 2005-02-06 16:55:13 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_abs_types.h,v 1.19 2005-02-23 19:43:40 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -119,6 +119,7 @@ Purpose   : Type abstraction : Stolen from GLIB public headers
 /* OSF1 / Alpha */
 #if defined (__osf__) && defined (__alpha)
 # include <inttypes.h>
+typedef int_least16_t int16_t;
 # define TSP_INT64_CONSTANT(val)  (val##L)
 # define TSP_BYTE_ORDER TSP_LITTLE_ENDIAN
 # define TSP_GUINT64_FORMAT "lu"
