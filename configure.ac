@@ -4,7 +4,7 @@
 # THIS FILE NEED TO BE PROCESSED WITH AUTOCONF
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # 
-AC_INIT([the Transport Sampling Protocol], [0.6.3], [tsp@astrium.eads.net], [tsp])
+AC_INIT([the Transport Sampling Protocol], [0.6.3a], [tsp@astrium.eads.net], [tsp])
 
 echo "**********************************************************"
 echo "*  TSP: AC_PACKAGE_NAME, version AC_PACKAGE_VERSION       "
@@ -82,6 +82,38 @@ else
   AC_MSG_RESULT([Ok])
   GTK_BASED_CONSUMER="yes"
 fi
+################################
+### End of GTK devel check   ###
+################################
+
+################################
+# Flex/Bison based config file
+# (tsp_ascii_writer)
+################################
+AC_PROG_LEX
+if test "x$LEX" = "x"; then
+  LEX="notfound"
+  AC_SUBST(LEX_OUTPUT_ROOT, lex.yy)
+  AC_SUBST(LEXLIB, '')
+fi
+
+AC_PROG_YACC
+
+if test "x$YACC" = "x"; then 
+   YACC="notfound"
+fi
+
+AC_MSG_CHECKING([Lex/Yacc setup verification...])
+if test "$LEX" = "notfound"; then
+  AC_MSG_RESULT([NOK: [f]lex not found, lex/yacc based parser disabled (so is tsp_ascii_writer consumer)])
+  LEX_YACC_PARSER="no"
+elif test "$YACC" = "notfound"; then
+  AC_MSG_RESULT([NOK: yacc/bison not found, lex/yacc based parser disabled (so is tsp_ascii_writer consumer)])
+else
+  AC_MSG_RESULT([Ok, lex=$LEX yacc=$YACC])
+  LEX_YACC_PARSER="yes"
+fi
+
 ################################
 ### End of GTK devel check   ###
 ################################
@@ -317,6 +349,9 @@ AC_SUBST(CXXFLAGS)
 AC_SUBST(AR)
 AC_SUBST(ARFLAGS)
 
+AC_SUBST(LEX)
+AC_SUBST(YACC)
+
 AC_SUBST(LDLIBS)
 
 AC_SUBST(TSP_BASE)
@@ -325,6 +360,7 @@ AC_SUBST(BB)
 AC_SUBST(TSPCONSUMER)
 AC_SUBST(XML2_CONFIG_USER)
 AC_SUBST(GTK_BASED_CONSUMER)
+AC_SUBST(LEX_YACC_PARSER)
 AC_SUBST(TSPPROVIDER)
 
 

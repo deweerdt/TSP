@@ -6,14 +6,14 @@ include $(DEVBASE)/make/Makeparams
 # ---------------------
 SOURCES = \
 	tsp_ascii_writer_config_yy.c  \
-	tsp_ascii_writer_config.tab.c \
+	y.tab.c \
 	tsp_ascii_writer.c \
 	tsp_ascii_writer_main.c
 
 OBJECTS = $(SOURCES:%.c=$(DIROBJ)/%.o)
 
 ADD_LIB =  $(DIRLIB)/libtsp_consumer.a  $(DIRLIB)/libtsp_services.a
-LDLIBS += -lfl
+LDLIBS += $(LEXLIB)
 
 ifeq (${BUILD_CONSUMER},yes)
     TARGET1=$(DIRBIN)/tsp_ascii_writer
@@ -32,10 +32,17 @@ CPPFLAGS += -I. -DYY_NO_UNPUT
 build:: $(TARGETS) 
 
 tsp_ascii_writer_config_yy.c :  tsp_ascii_writer_config.lex
-	flex -o$@ $<
+	$(LEX) -o$@ $<
 
-tsp_ascii_writer_config.tab.c : tsp_ascii_writer_config.y
-	bison --debug -v -d $<
+y.tab.h : tsp_ascii_writer_config.y
+	$(YACC) -d $<
+
+y.tab.c : tsp_ascii_writer_config.y
+	$(YACC) -d $<
+
+#bison --debug -v -d $<
+
+$(OBJECTS) : y.tab.h
 
 $(TARGET1): $(ADD_LIB) $(OBJECTS)
 	@echo "@@@ Specific Linking $< ..."

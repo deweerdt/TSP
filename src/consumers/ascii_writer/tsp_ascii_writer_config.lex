@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer_config.lex,v 1.2 2004-09-22 20:18:56 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer_config.lex,v 1.3 2005-02-18 19:24:00 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -34,12 +34,13 @@ Purpose   : TSP ascii writer config file analyzer
 
 -----------------------------------------------------------------------
  */
+%option noyywrap
 %{
   /* for atoi() see below */
 #include <math.h>
 #include <stdio.h>
 #include <tsp_ascii_writer.h>
-#include "tsp_ascii_writer_config.tab.h"
+#include "y.tab.h"
   extern char* yytext;
 int yyerror(char *msg) {
   printf("tsp_ascii_writer_config: line %d, col %d : %s at '%s'\n", 
