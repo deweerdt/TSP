@@ -15,4 +15,6 @@ RPCGEN=rpcgen
 LIB_UTIL = $(DEVBASE)/../plot442/versions/dev/lib/libUTIL.a
 INCLUDE_UTIL = $(DEVBASE)/../plot442/util
 
+INCLUDE_NTL1 = -I$(DEVBASE)/../tl1/generic/include -I$(DEVBASE)/../tl1/versions/dev/include
+
 CPPFLAGS += -I$(DIRINC) -I$(INCLUDE_UTIL)
