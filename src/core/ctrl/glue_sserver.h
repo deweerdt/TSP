@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/Attic/glue_sserver.h,v 1.13 2002-12-18 16:27:15 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/Attic/glue_sserver.h,v 1.14 2003-01-28 15:20:22 SyntDev1 Exp $
 
 -----------------------------------------------------------------------
 
@@ -43,6 +43,16 @@ Purpose   : Interface for the glue server : the data producer
 
 #include "tsp_datastruct.h"
 
+/**
+ * @defgroup GLUServer
+ * @ingroup Provider
+ * The GLU server is the part of the TSP provider that should be
+ * coded each time the underlying 'real' sampled system 
+ * (hardware card, simulator, ...) change.
+ * The GLU interface should be implemented in order to combine
+ * the TSP provider lib int a real TSP provider.
+ * @{
+ */
 
 /** GLU server type */
 enum GLU_server_type_t
@@ -239,6 +249,7 @@ GLU_get_state_t GLU_get_next_item(GLU_handle_t h_glu,glu_item_t* item);
 */
 void GLU_forget_data(GLU_handle_t h_glu);
 
+/** @} */
 
 #endif /*_TSP_GLUESERVER_H*/
 
