@@ -3,13 +3,19 @@ include $(DEVBASE)/make/Makeparams
 # ---------------------
 # Vars to build project
 # ---------------------
+
 SOURCES = \
 	glue_res.c \
 	server_main.c
 
+ifeq (${TSP_TARGET},vxworks)
+#TARGET = nothing to do 
+else
+TARGET=$(DIRBIN)/tsp_res_reader
+endif
+
 ADD_LIB =  $(DIRLIB)/libtsp_provider.a $(DIRLIB)/libtsp_services.a  $(DIRLIB)/libtsp_res.a
 
-TARGET=$(DIRBIN)/tsp_res_reader
 
 CPPFLAGS += -I../../util/libres
 

@@ -9,7 +9,12 @@ SOURCES = \
 
 ADD_LIB =  $(DIRLIB)/libtsp_provider.a $(DIRLIB)/libtsp_services.a  $(DIRLIB)/libtsp_calc.a
 
+ifeq (${TSP_TARGET},vxworks)
+#TARGET= nothing to do
+else
 TARGET=$(DIRBIN)/tsp_stub_server
+endif
+
 
 CPPFLAGS += -I../../util/libcalc
 
@@ -18,13 +23,14 @@ CPPFLAGS += -I../../util/libcalc
 # same thing for clean:: that calls destroy::
 # -----------------------------------------------------------
 
-build:: $(TARGET) 
+build::	$(TARGET) 
 
 $(TARGET): $(SOURCES)
 	$(LINK.c) -o $@ $(SOURCES) $(ADD_LIB) $(LDLIBS)
 
-destroy::
-	$(RM) 	 $(TARGET) *.o
 
+destroy::
+	$(RM) 	 $(TARGET) *.o 
+ 
 include $(DEVBASE)/make/Makerules
 
