@@ -41,3 +41,7 @@ int TSP_provider_run(int blocking)
 }
 
 
+void TSP_provider_print_usage(void)
+{
+   printf(TSP_ARG_PROVIDER_USAGE"\n");
+}
