@@ -234,7 +234,7 @@ int main(int argc, char *argv[]){
   /*-------------------------------------------------------------------------------------------------------*/ 
   /* TEST : STAGE 001 | STEP 005 */
   /*-------------------------------------------------------------------------------------------------------*/ 
-  if(!TSP_consumer_request_sample_init(providers[0]))
+  if(!TSP_consumer_request_sample_init(providers[0],0))
     {
       STRACE_ERROR(("TSP_request_provider_sample_init failed"));
       return -1;

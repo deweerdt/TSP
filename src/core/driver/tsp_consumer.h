@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.h,v 1.9 2002-12-02 15:14:50 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.h,v 1.10 2002-12-05 10:49:50 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -217,7 +217,8 @@ const TSP_consumer_symbol_requested_list_t* TSP_consumer_get_requested_sample(TS
  * @param provider The provider handle
  * @return TRUE or FALSE. TRUE = OK.
  */				      
-int TSP_consumer_request_sample_init(TSP_provider_t provider);    
+typedef void (*TSP_sample_callback_t) (TSP_sample_t* sample); 
+int TSP_consumer_request_sample_init(TSP_provider_t provider, TSP_sample_callback_t callback);    
 
 
 /** 

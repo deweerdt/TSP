@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.16 2002-12-03 16:14:17 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.17 2002-12-05 10:49:50 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -975,7 +975,7 @@ static void* TSP_request_provider_thread_receiver(void* arg)
   STRACE_IO(("-->OUT"));
 }
 
-int TSP_consumer_request_sample_init(TSP_provider_t provider)
+int TSP_consumer_request_sample_init(TSP_provider_t provider, TSP_sample_callback_t callback)
 {
   SFUNC_NAME(TSP_consumer_request_sample_init);
 
@@ -1007,7 +1007,7 @@ int TSP_consumer_request_sample_init(TSP_provider_t provider)
       STRACE_DEBUG(("data_address = '%s'", ans_sample->data_address));
       
       /* Create the data receiver */
-      otsp->receiver = TSP_data_receiver_create(ans_sample->data_address);
+      otsp->receiver = TSP_data_receiver_create(ans_sample->data_address, callback);
       
       if(otsp->receiver)
 	{
@@ -1180,3 +1180,4 @@ TSP_groups_t TSP_test_get_groups(TSP_provider_t provider)
   
   return otsp->groups;
 }
+
