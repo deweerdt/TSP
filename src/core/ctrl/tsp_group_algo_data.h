@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_group_algo_data.h,v 1.1 2002-08-27 08:56:09 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_group_algo_data.h,v 1.2 2002-10-09 07:35:58 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -48,6 +48,8 @@ struct TSP_algo_table_t
   int table_len;
     
   TSP_algo_group_t* groups;
+
+  int max_group_len;
     
 };
 
