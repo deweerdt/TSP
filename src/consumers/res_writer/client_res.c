@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: client_res.c,v 1.5 2003-12-27 13:30:59 uid67973 Exp $
+$Id: client_res.c,v 1.6 2004-09-01 07:15:31 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -90,6 +90,28 @@ void catch_ctrl_c(int i)
   STRACE_TEST(("Waiting eol and saving file..."));
 }
 
+void usage (char *txt)
+{
+  SFUNC_NAME(usage);
+
+  STRACE_ERROR(("USAGE : %s [s:f:p:t:m:dh]", txt));
+  printf("\t -s server    : TSP provider server name\n");
+  printf("\t -f filename  : output RES format filename\n");
+  printf("\t[-p prov_num] : TSP provider number (0-N), default 0\n");
+  printf("\t[-t period]   : expressed in provider's cycles (1-N), default 1\n");
+  printf("\t[-m mode]     : recording mode (1-3), default 1\n");
+  printf("\t                1 = All variables, retry connection forever\n");
+  printf("\t                2 = 3 variables (first, middle, last)\n");
+  printf("\t                3 = 10 first variables\n");
+  printf("\t[-d]          : use IEEE-754 double format for RES file\n");
+  printf("\t[-h]          : this help\n");
+  printf("\t[--tsp-stream-init-start file[.res] --tsp-stream-init-stop]\n");
+  printf("\t              : stream sent to TSP provider\n");
+  
+  printf("Note : CTRL+C cleanly save RES file and quit\n");
+  exit(-1);
+}
+
 int main(int argc, char *argv[]){
 
   SFUNC_NAME(main);
@@ -98,24 +120,30 @@ int main(int argc, char *argv[]){
 
   int i, j, count=0;
   int nb_providers;
-  int period=0;
-  char* name;
   int count_samples = 0;
   char symbol_buf[50];
   int test_ok = TRUE;
-  int test_mode;
   int count_no_new_sample = 0;
   void* res_values;
   int new_sample;
   TSP_sample_t sample;
-  char* out_file_res;
   int res_value_i;
   char* custom_argv[10];
   int all_data_ok = TRUE;
   TSP_provider_t* providers;
   int requested_nb;
   int group_nb;
- 
+  int buffersBeforeStop;
+
+  char myopt; /* Options */
+  char* name = NULL;
+  char* out_file_res = NULL;
+  int provider=0;
+  int period=1;
+  int test_mode = 1;
+
+  _use_dbl = 0;
+
 
   /* catch ctrl-c */
   signal(SIGINT, catch_ctrl_c);
@@ -130,40 +158,24 @@ int main(int argc, char *argv[]){
       return -1;
     }
     
-
-  if (argc == 6)
-    {   
-      name = argv[1];
-      period = atoi (argv[2]);
-     
-      out_file_res = argv[3];
-      if(!strcmp("f", argv[4]))
-	{
-	  _use_dbl = 0;
-	}
-      else if(!strcmp("d", argv[4]))
-	{
-	  _use_dbl = 1;
-	}
-      else
-	{
-	  STRACE_ERROR(("param 5 must f or d for float of double"));
-	  return -1;
-	}
-      test_mode = atoi(argv[5]);
-
-    }
-  else
+  
+  while ((myopt = getopt(argc, argv, "s:f:p:t:m:dh")) != -1)
     {
-      STRACE_ERROR(("USAGE : %s server period  out_file.res (f|d) (1|2|3) [ --tsp-stream-init-start file[.res] --tsp-stream-init-stop ]", argv[0]));
-      STRACE_ERROR(("Last arg is mode test number :"));
-      STRACE_ERROR(("- 1 : All variables"));
-      STRACE_ERROR(("- 2 : 3 variables (first, middle, last)"));
-      STRACE_ERROR(("- 3 : 10 first variables"));
-      STRACE_ERROR(("Note : CTRL+C cleanly save res file and quit"));
-
-      return -1;
+      switch(myopt)
+	{
+	case 's':   name = optarg;              break;
+	case 'f':   out_file_res = optarg;      break;
+	case 'p':   provider = atoi(optarg);    break;
+	case 't':   period = atoi(optarg);      break;
+	case 'm':   test_mode = atoi(optarg);   break;
+	case 'd':   _use_dbl = 1;               break;
+	case 'h':   /* no break please, do as default */
+	default :   usage(argv[0]);             break;
+	}
     }
+
+  if(!name || !out_file_res)
+    usage(argv[0]);
 
   
   /*-------------------------------------------------------------------------------------------------------*/ 
@@ -177,6 +189,9 @@ int main(int argc, char *argv[]){
 	  const char* info = TSP_consumer_get_connected_name(providers[i]) ;
 	  STRACE_INFO(("Server Nb %d, info = '%s'", i,info));
 	}
+
+      if(provider < 0 || provider >= nb_providers)
+	provider = 0;
     }
   else
     {
@@ -188,9 +203,9 @@ int main(int argc, char *argv[]){
 
 
   /*-------------------------------------------------------------------------------------------------------*/ 
-  /* Open first provider
+  /* Open requested provider
   /*-------------------------------------------------------------------------------------------------------*/ 
-  if(!TSP_consumer_request_open(providers[0], 0, 0 ))
+  if(!TSP_consumer_request_open(providers[provider], 0, 0 ))
     {
       STRACE_ERROR(("TSP_request_provider_open failed"));
       return -1;
@@ -200,18 +215,24 @@ int main(int argc, char *argv[]){
 
   /*-------------------------------------------------------------------------------------------------------*/ 
   /* TEST : STAGE 002 | STEP 003 */
-  /*-------------------------------------------------------------------------------------------------------*/ 
-  if(!TSP_consumer_request_information(providers[0]))
+  /*-------------------------------------------------------------------------------------------------------*/
+  do
     {
-      STRACE_ERROR(("TSP_request_provider_information failed"));
-      return -1;
+      if(!TSP_consumer_request_information(providers[provider]))
+	{
+	  STRACE_ERROR(("TSP_request_provider_information failed"));
+	  return -1;
+	}
+      
+      information = TSP_consumer_get_information(providers[provider]);
+      symbols.len = information->symbols.len;
+      if(!symbols.len)
+	tsp_usleep(TSP_NANOSLEEP_PERIOD_US);
     }
-
-  information = TSP_consumer_get_information(providers[0]);
+  while(!symbols.len);
 
   symbols.val = (TSP_consumer_symbol_requested_t*)calloc(information->symbols.len, sizeof(TSP_consumer_symbol_requested_t));
   TSP_CHECK_ALLOC(symbols.val, -1);
-  symbols.len = information->symbols.len;  
 
   for( i = 0 ; i< information->symbols.len ; i++)
     {
@@ -220,7 +241,9 @@ int main(int argc, char *argv[]){
       symbols.val[i].period = period;
       symbols.val[i].phase = 0;
     }
-  
+
+  /* in case of stop request, flush N buffers (if any) before stopping */
+  buffersBeforeStop = information->base_frequency * 1 /* seconds */;
 
   /* take only the first, midle and last variable in 'first_last' mode*/
   switch(test_mode)
@@ -246,7 +269,7 @@ int main(int argc, char *argv[]){
   /*-------------------------------------------------------------------------------------------------------*/ 
   /* Ask for sample list
   /*-------------------------------------------------------------------------------------------------------*/ 
-  if(!TSP_consumer_request_sample(providers[0],&symbols))
+  if(!TSP_consumer_request_sample(providers[provider],&symbols))
     {
       STRACE_ERROR(("TSP_request_provider_sample failed"));
       return -1;
@@ -256,7 +279,7 @@ int main(int argc, char *argv[]){
   /*-------------------------------------------------------------------------------------------------------*/ 
   /* Start sampling
   /*-------------------------------------------------------------------------------------------------------*/ 
-  if(!TSP_consumer_request_sample_init(providers[0],0,0))
+  if(!TSP_consumer_request_sample_init(providers[provider],0,0))
     {
       STRACE_ERROR(("TSP_request_provider_sample_init failed"));
       return -1;
@@ -281,7 +304,7 @@ int main(int argc, char *argv[]){
   assert(res_values);
   
   res_value_i = 0;
-  while(TSP_consumer_read_sample(providers[0],&sample, &new_sample) && !stop_end )
+  while(TSP_consumer_read_sample(providers[provider],&sample, &new_sample) && !stop_end )
     {
       if(new_sample)
 	{
@@ -304,15 +327,17 @@ int main(int argc, char *argv[]){
 	      count++;
 	      d_writ(res_values);
 	      res_value_i = 0;
-	      if(stop)
-		{
-		  stop_end = TRUE;
-		}
+
+	      /* wait a little before stopping to flush buffers */
+	      if(stop) stop++;
+	      if(stop > buffersBeforeStop) stop_end = TRUE;
 	    }
 	}
       else
 	{
-	  tsp_usleep(TSP_NANOSLEEP_PERIOD_US); 
+	  tsp_usleep(TSP_NANOSLEEP_PERIOD_US);
+	  /* no more buffers, stop immediately */
+	  if(stop) stop_end = TRUE;
 	}
     }
 
