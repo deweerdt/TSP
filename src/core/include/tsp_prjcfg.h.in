@@ -2,7 +2,7 @@
 
 @configure_input@
 
-$Id: tsp_prjcfg.h.in,v 1.4 2004-10-18 20:42:31 erk Exp $
+$Id: tsp_prjcfg.h.in,v 1.5 2004-11-09 20:11:25 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -54,11 +54,37 @@ Purpose   : some includes
  */
 
 /**
+ * @defgruop TSP_Lib
+ * The TSP programming library
+ * @ingroup TSP
+ */
+
+/**
  * @defgroup Core
  * The TSP Core module is the module 
  * includes core TSP framework utility.
- * @ingroup TSP
+ * @ingroup TSP_Lib
  */
+
+/**
+ * @defgroup TSP_Applications
+ * The final TSP applications, either TSP consumer
+ * (GUI or not) or TSP provider.
+ * @ingroup TSP
+ */	
+
+/**
+ * @defgroup TSP_Consumers
+ * The TSP consumer applications.
+ * @ingroup TSP_Applications
+ */
+
+/**
+ * @defgroup TSP_Providers
+ * The TSP providers applications.
+ * @ingroup TSP_Applications
+ */	
+
 
 /**
  * @defgroup TSP_Utils
@@ -66,6 +92,7 @@ Purpose   : some includes
  * This consists in several libraries which may save
  * a great amount of time when using TSP.
  * Some TSP provider and consumer us thos libs.
+ * @ingroup TSP
  */ 
 
 #endif /* _PRJCFG_H */
