@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_server.h,v 1.1 2002-08-27 08:56:09 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_server.h,v 1.2 2002-10-09 08:27:52 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -20,6 +20,14 @@ Purpose   :
 
 #include "tsp_prjcfg.h"
 
-int TSP_command_init(int server_number);
+
+/**
+* Initialise command canal communication.
+* @param server_number Every provider on a given host must have its own server number ;
+* All must be different
+* @param blocking if blocking = true, the program will be blocked in this fonction forever
+* @return TRUE = OK
+*/
+int TSP_command_init(int server_number, int blocking);
 
 #endif /* _TSP_SERVER_H */

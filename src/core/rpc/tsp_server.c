@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_server.c,v 1.4 2002-10-07 08:36:10 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_server.c,v 1.5 2002-10-09 08:27:51 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -17,6 +17,8 @@ Purpose   :
 
 #include "tsp_sys_headers.h"
 
+
+#include <pthread.h>
 #define PORTMAP
 #include <rpc/rpc.h>
 
@@ -119,7 +121,7 @@ TSP_answer_sample_t* tsp_request_sample_1_svc(TSP_request_sample_t req_sample, s
 
   SFUNC_NAME(tsp_request_sample_1_svc);
 
-  static TSP_answer_sample_t* ans_sample = 0;
+  static TSP_answer_sample_t ans_sample;
 
 
   STRACE_IO(("-->IN"));
@@ -140,7 +142,7 @@ TSP_answer_sample_t* tsp_request_sample_1_svc(TSP_request_sample_t req_sample, s
   STRACE_IO(("-->OUT"));
 
 	
-  return ans_sample;
+  return &ans_sample;
 
 }
  
@@ -149,7 +151,7 @@ TSP_answer_sample_init_t* tsp_request_sample_init_1_svc(TSP_request_sample_init_
 
   SFUNC_NAME(tsp_request_sample_init_1_svc);
 
-  static TSP_answer_sample_init_t* ans_sample = 0;
+  static TSP_answer_sample_init_t ans_sample;
 
   STRACE_IO(("-->IN"));
 
@@ -169,7 +171,7 @@ TSP_answer_sample_init_t* tsp_request_sample_init_1_svc(TSP_request_sample_init_
   STRACE_IO(("-->OUT"));
 
 	
-  return ans_sample;
+  return &ans_sample;
 
 }
 
@@ -204,7 +206,12 @@ void* tsp_exec_feature_1_svc(TSP_exec_feature_t exec_feature, struct svc_req * r
 void
 tsp_rpc_1(struct svc_req *rqstp, register SVCXPRT *transp);
 
-int TSP_command_init(int server_number)
+
+
+
+
+
+static TSP_rpc_init(int server_number)
 {
   SFUNC_NAME(TSP_command_init);
 		
@@ -216,14 +223,6 @@ int TSP_command_init(int server_number)
 
   STRACE_IO(("-->IN server number=%d",server_number ));
 
-/*#ifdef TSP_SYSTEM_HAVE_SVC_CREATE	
-  if (ret && !svc_create(tsp_rpc_1, rpc_progid, TSP_RPC_VERSION_INITIAL, "tcp"))
-    {
-      STRACE_ERROR(("unable to create (rpc_progid=%d,TSP_RPC_VERSION_INITIAL) for tcp.", rpc_progid ));
-      ret = FALSE;
-    }
-#else*/
-	
   /* svc_create does not exist for linux, we must use the deprecated function */
 
   pmap_unset (rpc_progid, TSP_RPC_VERSION_INITIAL);
@@ -251,5 +250,45 @@ int TSP_command_init(int server_number)
   STRACE_IO(("-->OUT "));
 
 	
+  return ret;
+}
+
+static void* TSP_thread_rpc_init(void* arg)
+{
+  /* FIXME : creer le thread détaché */
+    
+  SFUNC_NAME( TSP_streamer_sender_thread_sender);
+  int server_number = (int)arg;
+    
+  STRACE_IO(("-->IN"));
+ 
+   TSP_rpc_init(server_number);
+      
+  STRACE_IO(("-->OUT"));
+}
+
+
+int TSP_command_init(int server_number, int blocking)
+{
+  SFUNC_NAME(TSP_command_init);
+  int ret = FALSE;
+
+  STRACE_IO(("-->IN"));
+
+  if(!blocking)
+    {
+      pthread_t thread_id;
+      int status;
+      status = pthread_create(&thread_id, NULL, TSP_thread_rpc_init,  (void*)server_number);
+      TSP_CHECK_THREAD(status, FALSE);
+
+    }
+  else
+    {
+      ret = TSP_rpc_init(server_number);
+    }
+
+  STRACE_IO(("-->OUT"));
+
   return ret;
 }
