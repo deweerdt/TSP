@@ -1,6 +1,6 @@
 /*!  \file
 
-$Header: /home/def/zae/tsp/tsp/src/util/libres/Attic/alias.c,v 1.1 2003-01-31 18:32:56 tsp_admin Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libres/Attic/alias.c,v 1.2 2004-05-19 14:56:31 dufy Exp $
 
 -----------------------------------------------------------------------
 
@@ -43,9 +43,9 @@ Purpose   :
 #include <sys/time.h>
 #include "alias.h"
 
-#ifdef __linux__
-#define MAXNAMELEN NAME_MAX
-#endif /* __linux__ */
+#ifndef MAXNAMELEN
+# define MAXNAMELEN NAME_MAX
+#endif 
 
 #define	DBG	if (0)		/* Turn 0 to 1 to activate debug traces */
 

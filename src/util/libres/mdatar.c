@@ -1,6 +1,6 @@
 /*!  \file
 
-$Header: /home/def/zae/tsp/tsp/src/util/libres/Attic/mdatar.c,v 1.2 2003-02-03 17:40:13 tsp_admin Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libres/Attic/mdatar.c,v 1.3 2004-05-19 14:56:31 dufy Exp $
 
 -----------------------------------------------------------------------
 
@@ -101,7 +101,8 @@ RES_HANDLE *md_ropen(char *name)
 
 /* Mapping du fichier dans l'espace du process (RDONLY) */
 /*------------------------------------------------------*/
-	pa = (void *)mmap(NULL, len, PROT_READ, MAP_SHARED|MAP_NORESERVE, fd, 0L);
+	pa = (void *)mmap(NULL, len, PROT_READ, MAP_SHARED, fd, 0L); 
+	/* MAP_NORESERVED is useless if not private */
 	if(pa == MAP_FAILED) {
 		free(ha);
 		return (RES_HANDLE *)0;

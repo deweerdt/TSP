@@ -6,7 +6,5 @@ include $(DEVBASE)/make/Makeparams.dec
 
 # Default options
 # ---------------
-CFLAGS = -g 
-
-
+CFLAGS += -g
 

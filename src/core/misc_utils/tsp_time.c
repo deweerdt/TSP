@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/misc_utils/tsp_time.c,v 1.5 2002-12-18 16:27:33 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/misc_utils/tsp_time.c,v 1.6 2004-05-19 14:56:31 dufy Exp $
 
 -----------------------------------------------------------------------
 
@@ -36,7 +36,6 @@ Purpose   : Interface for tsp time functions
  */
 
 #include "tsp_sys_headers.h"
-
 #include <time.h>
 #include <sys/time.h>
 
