@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_simple.c,v 1.5 2004-10-23 13:25:16 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_simple.c,v 1.6 2005-03-17 22:33:42 dufy Exp $
 
 -----------------------------------------------------------------------
 
@@ -61,7 +61,12 @@ void* bb_simple_publish(S_BB_T* bb_simple,
   S_BB_DATADESC_T s_data_desc;
 
   memset(s_data_desc.name,0,VARNAME_MAX_SIZE);
-  if (-1!=module_instance) {
+  
+  if (strcmp(module_name,"")==0) {
+    snprintf(s_data_desc.name,VARNAME_MAX_SIZE,
+	     "%s",
+	     var_name);
+  } else if (-1!=module_instance) {
     snprintf(s_data_desc.name,VARNAME_MAX_SIZE,
 	     "%s_%d_%s",
 	     module_name,module_instance,var_name);
@@ -70,6 +75,7 @@ void* bb_simple_publish(S_BB_T* bb_simple,
 	     "%s_%s",
 	     module_name,var_name);
   }
+
   s_data_desc.type        = type;
   s_data_desc.type_size   = type_size;
   s_data_desc.dimension   = dimension;
