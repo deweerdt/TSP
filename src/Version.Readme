@@ -105,10 +105,13 @@ V-0.6.1: Creation 26/05/04	tag TSP_0_6_1	YD
 	- Add jSynoptic plugins for JAVA consumer		- CP 
 	- Add VxWorks support					- JL/RP
 
-V-0.6.x: Creation ??/??/04	tag TSP_0_6_X	??	
+V-0.6.2: Creation 20/10/04	tag TSP_0_6_2	RP	
 	- Change get_next_item to push method			- YD
 	- Add OpenBSD Support					- FD
 	- Defined an URL strategy for connection		- RP
 	- Use a 'port free' detection strategy for RPC init	- RP
 	- Make again the things work on DEC/Alpha stations	- RP
+	- HEXA display for GDISP				- EN
+
+V-0.6.x: Creation ??/??/04	tag TSP_0_6_X	??	
         - What was done						- ??
