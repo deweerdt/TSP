@@ -67,6 +67,10 @@ And then you may build with a simple
 3) Use TSP
 ========================
 A simple example of TSP could be
+% cd $DEVBASE/tests/auto
+% ./tsp_autotest001
+
+Or more fun
 % cd $DEVBASE/tests/demo
 % ./tsp_demo_gdisp
 
