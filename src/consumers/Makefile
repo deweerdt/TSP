@@ -10,7 +10,7 @@ SUBDIRS = \
 	ascii_writer
 
 ifeq (${BUILD_GTK_BASED_CONSUMER},yes)
-ifeq (${XML2_CONFIG_USER},yes)
+ifeq (${BUILD_XML2_CONFIG_USER},yes)
 	SUBDIRS += gdisp gdisp+ 
 endif
 endif

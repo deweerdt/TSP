@@ -4,7 +4,7 @@ ifeq (${HOST_TARGET},java)
 #	SUBDIRS = 
 else
 SUBDIRS = libcalc libres
-ifeq (${XML2_CONFIG_USER},yes)
+ifeq (${BUILD_XML2_CONFIG_USER},yes)
 	SUBDIRS += libpages
 endif
 ifeq (${BUILD_BB},yes)
