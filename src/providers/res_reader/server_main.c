@@ -1,6 +1,6 @@
 #/*!  \file 
 
-$Id: server_main.c,v 1.2 2003-02-28 14:34:27 tsp_admin Exp $
+$Id: server_main.c,v 1.3 2004-09-16 09:39:20 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -35,8 +35,12 @@ Purpose   : Allow the output of a datapool of symbols from res file
 -----------------------------------------------------------------------
 */
 
+#include <stdlib.h>
+#include <strings.h>
 
 #include "tsp_provider_init.h"
+
+extern void GLU_loop(void);
 
 int main(int argc, char *argv[])
 {
@@ -47,12 +51,6 @@ int main(int argc, char *argv[])
   printf ("# Launching <res reader server> for generation of Symbols from .res file #\n");
   printf ("#========================================================================#\n");
 
-  if (argc>1 && !strcmp(argv[1],"-help"))
-    {
-      printf("USAGE %s :  file.res [ -eof 0/1 0=always loop, 1=exit on end of file]\n", argv[0]);
-      exit(0);
-    }
-      
   my_argc= argc+2;
   my_argv= (char**)calloc(my_argc, sizeof(char*));
   my_argv[0] = argv[0];
@@ -66,8 +64,9 @@ int main(int argc, char *argv[])
 
   if (TSP_provider_init(&my_argc, &my_argv))
     {
-      TSP_provider_run(TRUE);
-    }
+      TSP_provider_run(FALSE);
+      GLU_loop();
+     }
 
   return 0;
 }
