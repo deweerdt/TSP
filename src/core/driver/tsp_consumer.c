@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.7 2002-10-04 15:28:30 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.8 2002-10-07 08:36:08 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -344,7 +344,7 @@ void TSP_consumer_end()
  * @param nb_providers total number of providers found. Use this number to iterate
  * thrue the providers array. 
  */
-void TSP_open_all_provider(const char*  host_name, TSP_provider_t** providers, int* nb_providers)
+void TSP_consumer_open_all(const char*  host_name, TSP_provider_t** providers, int* nb_providers)
 {	
   SFUNC_NAME(TSP_remote_open_all_provider);
 	
@@ -417,7 +417,7 @@ void TSP_open_all_provider(const char*  host_name, TSP_provider_t** providers, i
  * This function is used to clean up after a 
  * @param provider the providers that must be close.
  */
-void TSP_close_all_provider(TSP_provider_t providers[])
+void TSP_consumer_close_all(TSP_provider_t providers[])
 {	
   SFUNC_NAME(TSP_remote_close_all_provider);
 
@@ -432,7 +432,7 @@ void TSP_close_all_provider(TSP_provider_t providers[])
 		
       for(i = 0 ; i < server_max_number ; i++)
 	{
-	  TSP_close_provider(providers[i]);
+	  TSP_consumer_close(providers[i]);
 	  providers[i] = 0;
 				
 	}
@@ -452,7 +452,7 @@ void TSP_close_all_provider(TSP_provider_t providers[])
  * Close a provider.
  * @param provider the provider that must be close.
  */
-void TSP_close_provider(TSP_provider_t provider)
+void TSP_consumer_close(TSP_provider_t provider)
 {	
   SFUNC_NAME(TSP_close_provider);
 
@@ -477,28 +477,20 @@ void TSP_close_provider(TSP_provider_t provider)
  * @param provider the provider from which the string must be read
  * @return The information structure for the provider
  */
-const TSP_otsp_server_info_t* TSP_get_provider_simple_info(TSP_provider_t provider)			  
+const TSP_otsp_server_info_t* TSP_consumer_get_server_info(TSP_provider_t provider)			  
 {
   TSP_otsp_t* otsp = (TSP_otsp_t*)provider;
 	
   return(&(otsp->server_info));
 }
 
-void TSP_print_provider_info(TSP_provider_t provider)
-{
-  SFUNC_NAME(TSP_print_provider_info);
-
-	
-  if(provider) TSP_print_object_tsp((TSP_otsp_t*)provider);
-  else STRACE_ERROR(("provider empty"));
-}
 
 /**
  * Open the session for a remote_opened provider.
  * @param provider the provider on which apply the action
  * @return The action result (TRUE or FALSE)
  */
-int TSP_request_provider_open(TSP_provider_t provider, int custom_argc, char* custom_argv[])
+int TSP_consumer_request_open(TSP_provider_t provider, int custom_argc, char* custom_argv[])
 {
 	
   SFUNC_NAME(TSP_request_provider_open);
@@ -577,7 +569,7 @@ int TSP_request_provider_open(TSP_provider_t provider, int custom_argc, char* cu
  * @param provider the provider on which apply the action
  * @return The action result (TRUE or FALSE)
  */
-int TSP_request_provider_close(TSP_provider_t provider)
+int TSP_consumer_request_close(TSP_provider_t provider)
 {
 	
   SFUNC_NAME(TSP_request_provider_close);
@@ -622,7 +614,7 @@ int TSP_request_provider_close(TSP_provider_t provider)
  * @param provider the provider on which apply the action
  * @return The action result (TRUE or FALSE)
  */
-int TSP_request_provider_information(TSP_provider_t provider)
+int TSP_consumer_request_information(TSP_provider_t provider)
 {
 	
   SFUNC_NAME(TSP_request_provider_information);
@@ -697,7 +689,7 @@ int TSP_request_provider_information(TSP_provider_t provider)
  * @param provider the provider on which apply the action
  * @return The symbol list.
  */
-TSP_sample_symbol_info_list_t*  TSP_get_provider_information(TSP_provider_t provider)
+TSP_sample_symbol_info_list_t*  TSP_consumer_get_information(TSP_provider_t provider)
 {
   SFUNC_NAME(TSP_get_provider_information);
 
@@ -724,7 +716,7 @@ TSP_sample_symbol_info_list_t*  TSP_get_provider_information(TSP_provider_t prov
  * @param provider the provider on which apply the action
  * @return The action result (TRUE or FALSE)
  */
-int TSP_request_provider_sample(TSP_request_sample_t* req_sample, TSP_provider_t provider)
+int TSP_consumer_request_sample(TSP_request_sample_t* req_sample, TSP_provider_t provider)
 {
   SFUNC_NAME(TSP_request_provider_sample);
 
@@ -822,7 +814,7 @@ static void* TSP_request_provider_thread_receiver(void* arg)
   STRACE_IO(("-->OUT"));
 }
 
-int TSP_request_provider_sample_init(TSP_provider_t provider)
+int TSP_consumer_request_sample_init(TSP_provider_t provider)
 {
   SFUNC_NAME(TSP_request_provider_sample_init);
 
@@ -894,7 +886,7 @@ int TSP_request_provider_sample_init(TSP_provider_t provider)
   return ret;
 }
 
-int TSP_read_sample(TSP_provider_t provider, TSP_sample_t* sample, int* new_sample)
+int TSP_consumer_read_sample(TSP_provider_t provider, TSP_sample_t* sample, int* new_sample)
 {
   SFUNC_NAME(TSP_receive);
 

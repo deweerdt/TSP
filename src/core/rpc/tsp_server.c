@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_server.c,v 1.3 2002-09-19 08:37:05 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_server.c,v 1.4 2002-10-07 08:36:10 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -56,7 +56,7 @@ TSP_answer_open_t* tsp_request_open_1_svc(TSP_request_open_t req_open, struct sv
   STRACE_IO(("-->IN"));
 
 	
-  TSP_request_open(&req_open, &ans_open);
+  TSP_provider_request_open(&req_open, &ans_open);
 	
   STRACE_IO(("-->OUT"));
 
@@ -73,7 +73,7 @@ void *tsp_request_close_1_svc(TSP_request_close_t req_close, struct svc_req * rq
   STRACE_IO(("-->IN"));
 
 	
-  TSP_request_close(&req_close);
+  TSP_provider_request_close(&req_close);
 	
   STRACE_IO(("-->OUT"));
 
@@ -88,7 +88,7 @@ TSP_answer_sample_t* tsp_request_information_1_svc(TSP_request_information_t req
   STRACE_IO(("-->IN"));
 
 	
-  TSP_request_information(&req_info, &ans_sample);
+  TSP_provider_request_information(&req_info, &ans_sample);
 	
   STRACE_IO(("-->OUT"));
 
@@ -132,7 +132,7 @@ TSP_answer_sample_t* tsp_request_sample_1_svc(TSP_request_sample_t req_sample, s
     }*/
 
   
-  TSP_request_sample(&req_sample, &ans_sample);
+  TSP_provider_request_sample(&req_sample, &ans_sample);
 
 	
     
@@ -161,7 +161,7 @@ TSP_answer_sample_init_t* tsp_request_sample_init_1_svc(TSP_request_sample_init_
     }*/
 
     
-  TSP_request_sample_init(&req_sample, &ans_sample);
+  TSP_provider_request_sample_init(&req_sample, &ans_sample);
 
 	
     

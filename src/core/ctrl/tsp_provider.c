@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_provider.c,v 1.6 2002-10-04 15:28:26 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_provider.c,v 1.7 2002-10-07 08:36:04 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -190,7 +190,7 @@ static int TSP_cmd_line_parser(int* argc, char** argv[])
 }
 
 
-void TSP_request_open(const TSP_request_open_t* req_open,
+void TSP_provider_request_open(const TSP_request_open_t* req_open,
 		      TSP_answer_open_t* ans_open)
 {
   SFUNC_NAME(TSP_request_open);
@@ -266,7 +266,7 @@ void TSP_request_open(const TSP_request_open_t* req_open,
 	
 }
 
-void TSP_request_close(const TSP_request_close_t* req_close)
+void TSP_provider_request_close(const TSP_request_close_t* req_close)
 
 {
   SFUNC_NAME(TSP_request_close);
@@ -287,7 +287,7 @@ void TSP_request_close(const TSP_request_close_t* req_close)
 	
 }
 
-void  TSP_request_information(TSP_request_information_t* req_info, 
+void  TSP_provider_request_information(TSP_request_information_t* req_info, 
  			      TSP_answer_sample_t* ans_sample)
 {
 
@@ -369,7 +369,7 @@ int TSP_provider_run(void)
   
 }
 
-void  TSP_request_sample(TSP_request_sample_t* req_info, 
+void  TSP_provider_request_sample(TSP_request_sample_t* req_info, 
 			 TSP_answer_sample_t** ans_sample)
 {
   SFUNC_NAME(TSP_request_sample);
@@ -408,7 +408,7 @@ void  TSP_request_sample(TSP_request_sample_t* req_info,
   STRACE_IO(("-->OUT"));
 }
 
-void  TSP_request_sample_init(TSP_request_sample_init_t* req_info, 
+void  TSP_provider_request_sample_init(TSP_request_sample_init_t* req_info, 
  			      TSP_answer_sample_init_t** ans_sample)
 {
 
