@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.h,v 1.12 2002-12-18 16:27:26 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.h,v 1.13 2002-12-20 15:44:49 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -155,7 +155,7 @@ int TSP_consumer_init(int* argc, char** argv[]);
 * @param providers Array of found providers
 * @param nb_providers Total number of providers in 'providers' array
 */
-void TSP_consumer_open_all(const char* host_name,
+void TSP_consumer_connect_all(const char* host_name,
 			   TSP_provider_t** providers,
 			   int* nb_providers);
 
@@ -166,7 +166,7 @@ void TSP_consumer_open_all(const char* host_name,
  * @param provider The provider handle
  * @return TRUE or FALSE. TRUE = OK.
  */				  
-const char* TSP_consumer_get_server_info(TSP_provider_t provider);			  
+const char* TSP_consumer_get_connected_name(TSP_provider_t provider);			  
 
 /** 
  * Ask the provider for a new consumer session.
@@ -272,9 +272,9 @@ int TSP_consumer_read_sample(TSP_provider_t provider,
 int TSP_consumer_request_close(TSP_provider_t provider);
 
 
-void TSP_consumer_close_all(TSP_provider_t providers[]);				  
+void TSP_consumer_disconnect_all(TSP_provider_t providers[]);				  
 
-void TSP_consumer_close(TSP_provider_t provider);
+void TSP_consumer_disconnect_one(TSP_provider_t provider);
 
 /**
 * End of TSP librairie use

@@ -61,12 +61,12 @@ int main(int argc, char *argv[]){
   /*-------------------------------------------------------------------------------------------------------*/ 
   /* TEST : STAGE 001 | STEP 001 */
   /*-------------------------------------------------------------------------------------------------------*/ 
-  TSP_consumer_open_all(name,&providers, &nb_providers);
+  TSP_consumer_connect_all(name,&providers, &nb_providers);
   if(nb_providers > 0)
     {
       for( i = 0 ; i<nb_providers ; i++)
 	{
-	  const char* info = TSP_consumer_get_server_info(providers[i]) ;
+	  const char* info = TSP_consumer_get_connected_name(providers[i]) ;
 	  STRACE_INFO(("Server Nb %d, info = '%s'", i, info));
 	  
 	  /* Check name */
@@ -256,7 +256,7 @@ int main(int argc, char *argv[]){
 				STRACE_ERROR(("Function TSP_consumer_request_close failed" ));			    
 			      }
 			    
-			    TSP_consumer_close_all(providers);
+			    TSP_consumer_disconnect_all(providers);
 
 
 			    /* Fortify calls */

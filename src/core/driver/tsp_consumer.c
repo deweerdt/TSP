@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.19 2002-12-20 09:53:10 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.20 2002-12-20 15:44:49 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -422,9 +422,9 @@ void TSP_consumer_end()
  * @param nb_providers total number of providers found. Use this number to iterate
  * thrue the providers array. 
  */
-void TSP_consumer_open_all(const char*  host_name, TSP_provider_t** providers, int* nb_providers)
+void TSP_consumer_connect_all(const char*  host_name, TSP_provider_t** providers, int* nb_providers)
 {	
-  SFUNC_NAME(TSP_remote_open_all_provider);
+  SFUNC_NAME(TSP_consumer_connect_all);
 	
   int i;
 
@@ -488,9 +488,9 @@ void TSP_consumer_open_all(const char*  host_name, TSP_provider_t** providers, i
  * This function is used to clean up after a 
  * @param provider the providers that must be close.
  */
-void TSP_consumer_close_all(TSP_provider_t providers[])
+void TSP_consumer_disconnect_all(TSP_provider_t providers[])
 {	
-  SFUNC_NAME(TSP_consumer_close_all);
+  SFUNC_NAME(TSP_consumer_disconnect_all);
 
   int server_max_number;
   int i;
@@ -505,7 +505,7 @@ void TSP_consumer_close_all(TSP_provider_t providers[])
 	{
 	  if(providers[i])
 	    {
-	      TSP_consumer_close(providers[i]);
+	      TSP_consumer_disconnect_one(providers[i]);
 	      providers[i] = 0;
 	    }
 				
@@ -526,9 +526,9 @@ void TSP_consumer_close_all(TSP_provider_t providers[])
  * Close a provider.
  * @param provider the provider that must be close.
  */
-void TSP_consumer_close(TSP_provider_t provider)
+void TSP_consumer_disconnect_one(TSP_provider_t provider)
 {	
-  SFUNC_NAME(TSP_consumer_close);
+  SFUNC_NAME(TSP_consumer_disconnect_one);
 	
   TSP_otsp_t* otsp = (TSP_otsp_t*)provider;
 
@@ -546,7 +546,7 @@ void TSP_consumer_close(TSP_provider_t provider)
  * @param provider the provider from which the string must be read
  * @return The information structure for the provider
  */
-const char* TSP_consumer_get_server_info(TSP_provider_t provider)			  
+const char* TSP_consumer_get_connected_name(TSP_provider_t provider)			  
 {
   TSP_otsp_t* otsp = (TSP_otsp_t*)provider;
 	
