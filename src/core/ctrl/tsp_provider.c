@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_provider.c,v 1.11 2002-11-19 13:14:42 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_provider.c,v 1.12 2002-11-29 17:29:57 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -39,7 +39,10 @@ when there is one single server on a given host*/
 static int X_server_number = 0;
 
 
-static X_tsp_provider_init_ok = FALSE;
+static int X_tsp_provider_init_ok = FALSE;
+
+/** Tells is the GLU is active or pasive */
+static int X_glu_is_active;
 
 
 static int TSP_cmd_line_parser(int* argc, char** argv[])
@@ -181,6 +184,12 @@ static int TSP_cmd_line_parser(int* argc, char** argv[])
 	}
     }
 
+  /* Memorize GLU type */
+  if (  GLU_SERVER_TYPE_ACTIVE == GLU_get_server_type() )
+    X_glu_is_active = TRUE;
+  else
+    X_glu_is_active = FALSE;
+
   STRACE_IO(("-->OUT"));
   
   return ret;
@@ -199,6 +208,7 @@ int TSP_provider_get_server_number(void)
 }
 
 
+
 void TSP_provider_request_open(const TSP_request_open_t* req_open,
 		      TSP_answer_open_t* ans_open)
 {
@@ -208,6 +218,12 @@ void TSP_provider_request_open(const TSP_request_open_t* req_open,
   int i;
 	
   STRACE_IO(("-->IN"));
+
+
+    /* Fortify calls */
+  
+    /*Fortify_EnterScope();*/
+
 
 
    ans_open->version_id = UNDEFINED_VERSION_ID;
@@ -273,23 +289,23 @@ void TSP_provider_request_open(const TSP_request_open_t* req_open,
 	
 }
 
+
+
 void TSP_provider_request_close(const TSP_request_close_t* req_close)
 
 {
   SFUNC_NAME(TSP_request_close);
 		
   STRACE_IO(("-->IN"));
-		
-  /* On ferme la session */
-  if(TSP_close_session_by_channel(req_close->channel_id))
-    {	
-      STRACE_INFO(("Session for channel_id=%u is closed", req_close->channel_id));
-    }
-  else
-    {
-      STRACE_ERROR(("Unable to close session for channel_id=%u", req_close->channel_id));
-    }
-		
+
+  TSP_session_destroy_symbols_table_by_channel(req_close->channel_id);
+  TSP_close_session_by_channel(req_close->channel_id);
+
+
+  /*Fortify_LeaveScope();
+  Fortify_OutputStatistics();*/
+
+
   STRACE_IO(("-->OUT"));
 	
 }
@@ -373,6 +389,16 @@ int TSP_provider_private_init(int* argc, char** argv[])
   return ret;
 }
 
+void TSP_provider_request_sample_free_call(TSP_answer_sample_t* ans_sample)
+{
+  SFUNC_NAME(TSP_provider_request_sample_free_call);
+
+  STRACE_IO(("-->IN"));
+
+  TSP_session_create_symbols_table_by_channel_free_call(ans_sample);
+
+  STRACE_IO(("-->OUT"));
+}
 
 void  TSP_provider_request_sample(TSP_request_sample_t* req_info, 
 			 TSP_answer_sample_t* ans_sample)
@@ -401,11 +427,9 @@ void  TSP_provider_request_sample(TSP_request_sample_t* req_info,
       if(TSP_session_get_symbols_global_index_by_channel(req_info->channel_id, &(req_info->symbols) ))
 	{     
 	  /* Must we use a session or global data pool ? */
-	  if (  GLU_SERVER_TYPE_ACTIVE == GLU_get_server_type() )
-	    use_global_datapool = TRUE;
-	  else
-	    use_global_datapool = FALSE;
+	  use_global_datapool = ( X_glu_is_active ? TRUE : FALSE );
       
+	  /* The datapool will be created here (if it does not already exist) */
 	  if(TSP_session_create_symbols_table_by_channel(req_info, ans_sample, use_global_datapool)) 
 	    {
 	      ans_sample->status = TSP_STATUS_OK;
@@ -448,11 +472,7 @@ void  TSP_provider_request_sample_init(TSP_request_sample_init_t* req_info,
   if(req_info->version_id <= TSP_VERSION)
     {
       /* If the sample server is a lazy pasive server, we need a thread per session*/
-      if (  GLU_SERVER_TYPE_ACTIVE == GLU_get_server_type() )
-	start_local_thread = FALSE;
-      else
-	start_local_thread = TRUE;
-  
+      start_local_thread = ( X_glu_is_active ? FALSE : TRUE );
       
       if(TSP_session_create_data_sender_by_channel(req_info->channel_id, start_local_thread))
 	{
@@ -468,6 +488,40 @@ void  TSP_provider_request_sample_init(TSP_request_sample_init_t* req_info,
 	(char*)TSP_session_get_data_address_string_by_channel(req_info->channel_id);
   
       STRACE_INFO(("DATA_ADDRESS = '%s'", ans_sample->data_address));
+    }
+  else
+    {
+      STRACE_ERROR(("TSP version ERROR. Requested=%d Current=%d",req_info->version_id, TSP_VERSION ));
+      ans_sample->status = TSP_STATUS_ERROR_VERSION;
+    }
+
+  STRACE_IO(("-->OUT"));
+
+}
+
+void  TSP_provider_request_sample_destroy(TSP_request_sample_destroy_t* req_info, 
+					  TSP_answer_sample_destroy_t* ans_sample)
+{
+
+  SFUNC_NAME(TSP_provider_request_sample_destroy);
+  STRACE_IO(("-->IN"));
+    
+  ans_sample->version_id = UNDEFINED_VERSION_ID;
+  ans_sample->channel_id = req_info->channel_id;
+  ans_sample->status = TSP_STATUS_ERROR_UNKNOWN;
+ 
+  if(req_info->version_id <= TSP_VERSION)
+    {      
+      int stop_local_thread = ( X_glu_is_active ? FALSE : TRUE );
+      if(TSP_session_destroy_data_sender_by_channel(req_info->channel_id, stop_local_thread))
+	{
+	  ans_sample->status = TSP_STATUS_OK;
+	}
+      else     
+	{
+	  STRACE_ERROR(("TSP_session_destroy_data_sender_by_channel failed"));
+	}
+    
     }
   else
     {

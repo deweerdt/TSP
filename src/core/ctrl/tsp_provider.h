@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_provider.h,v 1.7 2002-10-28 14:47:29 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_provider.h,v 1.8 2002-11-29 17:29:57 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -37,9 +37,13 @@ void  TSP_provider_request_information(TSP_request_information_t* req_info,
 
 void  TSP_provider_request_sample(TSP_request_sample_t* req_info, 
 			 TSP_answer_sample_t* ans_sample);
+void TSP_provider_request_sample_free_call(TSP_answer_sample_t* ans_sample);
 
 void  TSP_provider_request_sample_init(TSP_request_sample_init_t* req_info, 
  			      TSP_answer_sample_init_t* ans_sample);
+
+void  TSP_provider_request_sample_destroy(TSP_request_sample_destroy_t* req_info, 
+					  TSP_answer_sample_destroy_t* ans_sample);
 
 int TSP_provider_is_initialized(void);
 
