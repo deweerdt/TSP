@@ -85,7 +85,7 @@ alias go_scripts 'cd ${TSP_BASE}/src/scripts'
 ##############################
 # CVS 
 ##############################
-setenv CVSROOT /home2/breiz/tnt/CVSROOT
+unsetenv CVSROOT 
 alias lcvs 'cvs -d /home2/breiz/tnt/CVSROOT '
 alias gcvs 'cvs -d /home2/breiz/dev442/CVSROOT'
 
