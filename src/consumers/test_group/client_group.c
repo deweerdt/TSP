@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: client_group.c,v 1.1 2003-01-31 18:22:07 tsp_admin Exp $
+$Id: client_group.c,v 1.2 2004-07-28 12:54:49 mia Exp $
 
 -----------------------------------------------------------------------
 
@@ -35,6 +35,7 @@ Purpose   : Simple consummer for testing groups configuration
 -----------------------------------------------------------------------
 */
 
+#include <stdio.h>
 #include "tsp_consumer.h"
 
 /* Allow us to cheat with groups internal and hidden structures*/
