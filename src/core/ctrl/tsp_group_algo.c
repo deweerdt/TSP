@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_group_algo.c,v 1.4 2002-10-09 07:35:20 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_group_algo.c,v 1.5 2002-11-26 14:03:07 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -402,4 +402,21 @@ int TSP_group_algo_get_group_number(TSP_groups_t* groups)
 
     
   return group_table->table_len;
+}
+
+int TSP_group_algo_get_biggest_group_size(TSP_groups_t* groups)
+{
+  SFUNC_NAME(TSP_group_algo_get_biggest_group_size);
+
+    
+  TSP_algo_table_t* group_table = (TSP_algo_table_t*)groups;
+    
+  STRACE_IO(("-->IN"));
+    
+  assert(groups);
+    
+  STRACE_IO(("-->OUT"));
+    
+  return group_table->max_group_len;
+
 }

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_group_algo.h,v 1.2 2002-10-01 15:21:23 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_group_algo.h,v 1.3 2002-11-26 14:03:07 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -26,11 +26,30 @@ and use groups
 
 typedef  void* TSP_groups_t;
 
+/**
+* Create the groups table for  a given symbol list 
+* @param symbols The required symbol list
+* @param out_symbols The required symbol list with information added (group id ...)
+* @param out_groups The computed group table
+* @param datapool The associated datapool used to link the datapool suymbols address
+* to the value in the group table
+* @return TRUE=OK
+*/
 int TSP_group_algo_create_symbols_table(const TSP_sample_symbol_info_list_t* symbols,
 					TSP_sample_symbol_info_list_t* out_symbols,
 					TSP_groups_t* out_groups,
 					TSP_datapool_t datapool);
-                                       
+
+/**
+* Get the total number of computed groups
+* @return Groups number
+*/                                       
 int TSP_group_algo_get_group_number(TSP_groups_t* groups);
+
+/**
+* Get the biggest group size for all computed groups
+* @return Biggest group size
+*/                                       
+int TSP_group_algo_get_biggest_group_size(TSP_groups_t* groups);
                                        
 #endif /* _TSP_GROUP_ALGO_H */
