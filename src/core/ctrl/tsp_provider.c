@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_provider.c,v 1.13 2002-12-05 10:53:41 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_provider.c,v 1.14 2002-12-06 16:35:02 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -390,9 +390,9 @@ void  TSP_provider_request_sample(TSP_request_sample_t* req_info,
   ans_sample->max_period = TSP_MAX_PERIOD;
   ans_sample->symbols.TSP_sample_symbol_info_list_t_len = 0;
   ans_sample->symbols.TSP_sample_symbol_info_list_t_val = 0;
-
-
-
+  
+  STRACE_INFO(("Consumer No %d asked for %d symbols",req_info->channel_id,req_info->symbols.TSP_sample_symbol_info_list_t_len  ));
+  
   if(req_info->version_id <= TSP_VERSION)
     {
       if(TSP_session_get_symbols_global_index_by_channel(req_info->channel_id, &(req_info->symbols) ))
