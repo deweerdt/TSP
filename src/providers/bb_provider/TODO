@@ -1,9 +1,6 @@
 - handle lost synchro (generates a BB provider overrun)
 - make the bb provider generates its own timestamp
   as provided symbol
-- make the bb_provider ignore (not provided to TSP consumer)
-  bb symbols whose type
-  is not easily handled by TSP through a bb_type -> double conversion.
 - add a standalone (not synchronized) mode where the shadow
   blackboard update is made by the provider itself without
   waiting for BB synchro 
