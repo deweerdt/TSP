@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/misc_utils/tsp_time.h,v 1.4 2002-12-24 14:14:30 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/misc_utils/tsp_time.h,v 1.5 2003-02-03 11:57:48 SyntDev1 Exp $
 
 -----------------------------------------------------------------------
 
@@ -46,4 +46,4 @@ tsp_hrtime_t tsp_gethrtime(void);
 int tsp_usleep(int useconds);
 
 
-#endif _TSP_TIME_H
+#endif /* _TSP_TIME_H */
