@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: glue_res.c,v 1.3 2003-02-27 18:10:12 tsp_admin Exp $
+$Id: glue_res.c,v 1.4 2003-02-28 14:34:27 tsp_admin Exp $
 
 -----------------------------------------------------------------------
 
@@ -90,25 +90,25 @@ GLU_get_state_t GLU_get_next_item(GLU_handle_t h_glu, glu_item_t* item)
     }
   else
     {
-      obj->current_var = 0;      
-      obj->time_stamp++;
       if ( EOF != d_read_r(obj->h_res, obj->res_values) )
 	{
+	  obj->current_var = 0;      
+	  obj->time_stamp++;
 	  item->value = obj->use_dbl ?
 	    ((double*)(obj->res_values)) [obj->current_var]
 	    : ((float*) (obj->res_values)) [obj->current_var];
 	  item->provider_global_index = obj->current_var;
 	  obj->current_var++;
 	  item->time = obj->time_stamp;
+	  STRACE_DEBUG (("New record : time=%d, val[0]=%g", obj->time_stamp, item->value));
 	  return GLU_GET_NEW_ITEM;
 	}   
       else
 	{
+	  STRACE_DEBUG (("EOF for time=%d, val[0]=%g", obj->time_stamp, item->value));
 	  return do_eof ? GLU_GET_EOF : GLU_GET_NO_ITEM;
 	}
     }
-
-  
 }
 
 int GLU_init(int fallback_argc, char* fallback_argv[])

@@ -1,6 +1,6 @@
 #/*!  \file 
 
-$Id: server_main.c,v 1.1 2003-01-31 18:22:25 tsp_admin Exp $
+$Id: server_main.c,v 1.2 2003-02-28 14:34:27 tsp_admin Exp $
 
 -----------------------------------------------------------------------
 
@@ -40,16 +40,31 @@ Purpose   : Allow the output of a datapool of symbols from res file
 
 int main(int argc, char *argv[])
 {
+  char **my_argv;
+  int i,my_argc;
+
   printf ("#========================================================================#\n");
   printf ("# Launching <res reader server> for generation of Symbols from .res file #\n");
   printf ("#========================================================================#\n");
 
-  if (argc == 1)
+  if (argc>1 && !strcmp(argv[1],"-help"))
     {
-      printf("USAGE %s : [ --tsp-stream-init-start file.res --tsp-stream-init-stop ]\n", argv[0]);
+      printf("USAGE %s :  file.res [ -eof 0/1 0=always loop, 1=exit on end of file]\n", argv[0]);
+      exit(0);
     }
+      
+  my_argc= argc+2;
+  my_argv= (char**)calloc(my_argc, sizeof(char*));
+  my_argv[0] = argv[0];
+  my_argv[1] = "--tsp-stream-init-start";
 
-  if (TSP_provider_init(&argc, &argv))
+  for (i=1; i<argc; i++)
+    {
+      my_argv[i+1]=argv[i];
+    }
+  my_argv[my_argc-1] = "--tsp-stream-init-stop";
+
+  if (TSP_provider_init(&my_argc, &my_argv))
     {
       TSP_provider_run(TRUE);
     }
