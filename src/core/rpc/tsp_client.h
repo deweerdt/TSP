@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: tsp_client.h,v 1.6 2004-09-23 16:11:57 tractobob Exp $
+$Id: tsp_client.h,v 1.7 2004-09-27 12:18:00 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -24,9 +24,9 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 -----------------------------------------------------------------------
 
-Project   : TSP
-Maintainer : tsp@astrium-space.com
-Component : Consumer
+Project    : TSP
+Maintainer : tsp@astrium.eads.net
+Component  : Consumer
 
 -----------------------------------------------------------------------
 
@@ -55,7 +55,8 @@ typedef  void* TSP_server_t;
 
 int TSP_remote_open_server( const char *protocol,
 			    const char *target_name,
-			    int server_id, 
+			    const char *server_name,
+			    const int server_id, 
 			    TSP_server_t* server,
 			    TSP_server_info_string_t server_info);
 

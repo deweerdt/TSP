@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_server.c,v 1.15 2004-09-24 15:46:56 tractobob Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_server.c,v 1.16 2004-09-27 12:18:00 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -219,58 +219,68 @@ tsp_rpc_1(struct svc_req *rqstp, register SVCXPRT *transp) ;
 
 static int TSP_rpc_init(int servernumber)
 {
-  register SVCXPRT *transp = NULL;
+  int rpcport = -1;
 
-  /* Create prog id */
-  int32_t rpc_progid = TSP_get_progid(servernumber);
-
-  STRACE_IO(("-->IN server number=%d",servernumber ));
+  STRACE_IO(("-->IN"));
 
 #ifdef VXWORKS
   if(rpcTaskInit() == ERROR)
     return NULL;
 #endif
 
-
-  /* svc_create does not exist for linux, we must use the deprecated function */
-
-  pmap_unset (rpc_progid, TSP_RPC_VERSION_INITIAL);
-	
-  transp = svctcp_create(RPC_ANYSOCK, 0, 0);
-  if (transp == NULL) 
+  /* look for a free port */
+  while(rpcport && servernumber<TSP_MAX_SERVER_NUMBER)
     {
-      STRACE_ERROR(("Cannot create TCP service"));
-      return FALSE;
+      rpcport = getrpcport("localhost", TSP_get_progid(servernumber), TSP_RPC_VERSION_INITIAL, IPPROTO_TCP);
+      if(rpcport)
+	servernumber++;
     }
 
-  if (!svc_register(transp, rpc_progid, TSP_RPC_VERSION_INITIAL, tsp_rpc_1, IPPROTO_TCP))
-    {
-      STRACE_ERROR(("RPC server unable to register ProgId=%X",  rpc_progid));
-
-      /* Recurse RPC init calls to find a free PROG ID,
-	 limited to TSP_MAX_SERVER_NUMBER */
-      if(servernumber<TSP_MAX_SERVER_NUMBER)
-	return TSP_rpc_init(servernumber+1);
-      else
-	return -1;
-    }
-
-  STRACE_DEBUG(("RPC server is ready to be started with ProgId=%X", rpc_progid));
+  if(rpcport && servernumber >= TSP_MAX_SERVER_NUMBER)
+    return -1;
 
   STRACE_IO(("-->OUT "));
 
   return servernumber;
 }
 
-void TSP_rpc_run(void)
+void TSP_rpc_run(int servernumber)
 {
+  register SVCXPRT *transp = NULL;
+  int32_t rpc_progid = rpc_progid = TSP_get_progid(servernumber);
+
+   /* svc_create does not exist for linux, we must use the deprecated function */
+  pmap_unset (rpc_progid, TSP_RPC_VERSION_INITIAL);
+	
+  transp = svctcp_create(RPC_ANYSOCK, 0, 0);
+  if (transp == NULL) 
+    {
+      STRACE_ERROR(("Cannot create TCP service"));
+      return;
+    }
+
+  if (!svc_register(transp, rpc_progid, TSP_RPC_VERSION_INITIAL, tsp_rpc_1, IPPROTO_TCP))
+    {
+      STRACE_ERROR(("RPC server unable to register ProgId=%X",  rpc_progid));
+      return;
+    }
+
+  STRACE_DEBUG(("RPC server is being be started with ProgId=%X", rpc_progid));
+  
   STRACE_DEBUG(("launching svc_run..."));
   svc_run();
   STRACE_INFO(("svc_run returned"));
+
 }
 
-void TSP_rpc_stop(void)
+void TSP_rpc_stop(int servernumber)
 {
+  /* Clean-up Port map so that next provider could use this ProgId */
+  if(servernumber >= 0)
+    {
+      pmap_unset (TSP_get_progid(servernumber), TSP_RPC_VERSION_INITIAL);
+    }
+
   STRACE_DEBUG(("calling svc_exit..."));
   svc_exit();
 }
@@ -333,7 +343,7 @@ void TSP_rpc_request_run(TSP_provider_request_handler_t* this)
       sprintf(config->url, TSP_URL_FORMAT, TSP_RPC_PROTOCOL, hostname, servername, config->server_number);
 
       this->status = TSP_RQH_STATUS_RUNNING;
-      TSP_rpc_run();
+      TSP_rpc_run(config->server_number);
     }
 
 
@@ -352,10 +362,10 @@ char *TSP_rpc_request_url(TSP_provider_request_handler_t* this)
 
 int TSP_rpc_request_stop(TSP_provider_request_handler_t* this)
 {
-
+  TSP_rpc_request_config_t *config = (TSP_rpc_request_config_t*)this->config_param;
   int retval = TRUE;
   
-  TSP_rpc_stop();
+  TSP_rpc_stop(config->server_number);
   this->status = TSP_RQH_STATUS_STOPPED;
 
   return retval;

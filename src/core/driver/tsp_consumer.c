@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.26 2004-09-24 15:46:56 tractobob Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.27 2004-09-27 12:18:00 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -428,10 +428,10 @@ TSP_provider_t* TSP_consumer_connect_url(const char*  url)
   p = strstr(url_tok, "://");
   if(!p)
     {
-      /* set p to hostname field */
+      /* set p to hostname field, if any */
       p = strstr(url_tok, "//");
       if(p) p += 2;
-      else p = url_tok;
+      else p = url_tok + strlen(url_tok); /* end of string ! */
 
       /* no protocol specified, use default */
       protocol = strdup(TSP_RPC_PROTOCOL);
@@ -481,7 +481,7 @@ TSP_provider_t* TSP_consumer_connect_url(const char*  url)
   if(*p)
     servernumber = atoi(p);
 
-  printf("\nLooking for URL <");
+  printf("Looking for URL <");
   printf(TSP_URL_FORMAT, protocol, hostname, servername, servernumber);
   printf(">\n");
 
@@ -493,16 +493,13 @@ TSP_provider_t* TSP_consumer_connect_url(const char*  url)
       /* FIXME : should we try server_name here ? */
       if(TSP_remote_open_server(  protocol,
 				  hostname,
+				  servername,
 				  servernumber, 
 				  &server,
 				  server_info))
 	{
-	  /* yes, check whether server name is OK and allocate */
-	  if(strncmp(servername, server_info, strlen(servername)) == 0)
-	    {
-	      /* yes, got it !!! */
-	      return (TSP_provider_t*)TSP_new_object_tsp(server, server_info);
-	    }
+	  /* yes, got it !!! */
+	  return (TSP_provider_t*)TSP_new_object_tsp(server, server_info);
 	}
       
       STRACE_ERROR(("No such TSP provider on URL %s", url));
@@ -558,6 +555,7 @@ void TSP_consumer_connect_all(const char*  host_name, TSP_provider_t** providers
 	  /* Is server number 'i' alive ?*/ 
 	  if(TSP_remote_open_server(  TSP_RPC_PROTOCOL,
 				      host_name,
+				      "",
 				      i, 
 				      &server,
 				      server_info))

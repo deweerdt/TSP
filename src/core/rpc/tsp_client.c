@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_client.c,v 1.9 2004-09-23 16:11:57 tractobob Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_client.c,v 1.10 2004-09-27 12:18:00 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -24,9 +24,9 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 -----------------------------------------------------------------------
 
-Project   : TSP
-Maintainer : tsp@astrium-space.com
-Component : Consumer
+Project    : TSP
+Maintainer : tsp@astrium.eads.net
+Component  : Consumer
 
 -----------------------------------------------------------------------
 
@@ -104,7 +104,8 @@ CLIENT* tsp_remote_open_progid(const char *target_name, int progid)
 
 int TSP_remote_open_server( const char *protocol,
 			    const char *target_name,
-			    int server_id, 
+			    const char *server_name,
+			    const int server_id, 
 			    TSP_server_t* server,
 			    TSP_server_info_string_t server_info)
 {
@@ -132,15 +133,27 @@ int TSP_remote_open_server( const char *protocol,
 	  *server = tsp_remote_open_progid(target_name, progid);
 	  if( (*server) != (TSP_server_t)0)
 	    {
-				/*  On recupere la chaine d'info du serveur) */
+	      /*  On recupere la chaine d'info du serveur) */
 	      server_info_t = tsp_provider_information(*server);
 	      if( server_info_t != NULL)
 		{	
 		  if( STRING_SIZE_SERVER_INFO >= strlen(server_info_t->info) )
 		    {
-		      strcpy(server_info, server_info_t->info);
-		      STRACE_INFO(("Server opened : '%s'", server_info));
-		      ret = TRUE;		
+		      /* check whether server name is the one requested */
+		      if(strncmp(server_name,
+				 server_info_t->info,
+				 strlen(server_name)) == 0)
+			{
+			  strcpy(server_info, server_info_t->info);
+			  STRACE_INFO(("Server opened : '%s'", server_info));
+			  ret = TRUE;
+			}
+		      else
+			{
+			  STRACE_INFO(("Not the requested server : '%s'", server_info_t->info));
+			  TSP_remote_close_server(*server);
+			  ret = FALSE;
+			}
 		    }
 		  else
 		    {
@@ -151,8 +164,7 @@ int TSP_remote_open_server( const char *protocol,
 		{
 		  STRACE_ERROR(("%s", clnt_sperror(*server, "sp_server_info_1\n") ));
 		}
-				
-			
+	      
 	    }
 	  else
 	    {
