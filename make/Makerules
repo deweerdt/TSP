@@ -51,8 +51,8 @@ $(DIRBIN)/% : $(DIRBIN)/%.o
 .make.state: Makefile
 	@$(SHELL) -c ' \
 	echo "*** $@ : modified files : $? "; \
-	echo "*** $@ : generating dependencies for files :" *.c; \
-	$(COMPILE.c) -M  *.c  2> /dev/null \
+	echo "*** $@ : generating dependencies for files :" *.{c,cc}; \
+	$(COMPILE.c) -M  *.{c,cc}  2> /dev/null \
 	| sed '\''s/\($*\)\.o[ :]*/\1.o $@ : /g'\'' > $@ ; \
 	cp -f $@ $@.tmp ; \
 	sed -e '\''s/.*://'\'' -e '\''s/\\$$//'\'' < $@.tmp | fmt -1 | \
