@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_server.c,v 1.6 2002-10-24 13:33:22 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_server.c,v 1.7 2002-11-29 17:41:18 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -55,6 +55,8 @@ TSP_answer_open_t* tsp_request_open_1_svc(TSP_request_open_t req_open, struct sv
 
   static TSP_answer_open_t ans_open;
 	
+
+
   STRACE_IO(("-->IN"));
 
 	
@@ -71,14 +73,15 @@ void *tsp_request_close_1_svc(TSP_request_close_t req_close, struct svc_req * rq
 {
   SFUNC_NAME(tsp_request_close_1_svc);
 
+  static char* dummy;
 	
   STRACE_IO(("-->IN"));
 
-	
   TSP_provider_request_close(&req_close);
 	
   STRACE_IO(("-->OUT"));
-
+ 
+  return ((void*) &dummy);
 }
 
 TSP_answer_sample_t* tsp_request_information_1_svc(TSP_request_information_t req_info, struct svc_req * rqstp)
@@ -121,26 +124,22 @@ TSP_answer_sample_t* tsp_request_sample_1_svc(TSP_request_sample_t req_sample, s
 
   SFUNC_NAME(tsp_request_sample_1_svc);
 
+  static int first_call = TRUE;
   static TSP_answer_sample_t ans_sample;
-
 
   STRACE_IO(("-->IN"));
 
-    
-  /*TBD Desallouer l'appel precedent*/
-  /*if( 0 != ans_sample)
+  /* For each call memory was allocate by TSP_provider_request_sample */
+  if(!first_call)
     {
-    TSP_session_free_create_symbols_table_call(&ans_sample);
-    }*/
+      TSP_provider_request_sample_free_call(&ans_sample);    
+    }
+  first_call = FALSE;
 
-  
   TSP_provider_request_sample(&req_sample, &ans_sample);
 
-	
-    
 
   STRACE_IO(("-->OUT"));
-
 	
   return &ans_sample;
 
@@ -183,6 +182,8 @@ TSP_answer_sample_destroy_t* tsp_request_sample_destroy_1_svc(TSP_request_sample
   static TSP_answer_sample_destroy_t ans_sample;
 	
   STRACE_IO(("-->IN"));
+
+  TSP_provider_request_sample_destroy(&req_sample, &ans_sample);
 
   STRACE_IO(("-->OUT"));
 
@@ -260,6 +261,8 @@ static void* TSP_thread_rpc_init(void* arg)
     
   SFUNC_NAME( TSP_streamer_sender_thread_sender);
   int server_number = (int)arg;
+
+  pthread_detach(pthread_self());
     
   STRACE_IO(("-->IN"));
  
@@ -274,6 +277,8 @@ int TSP_command_init(int server_number, int blocking)
   SFUNC_NAME(TSP_command_init);
   int ret = FALSE;
 
+
+
   STRACE_IO(("-->IN"));
 
   if(!blocking)
@@ -282,6 +287,7 @@ int TSP_command_init(int server_number, int blocking)
       int status;
       status = pthread_create(&thread_id, NULL, TSP_thread_rpc_init,  (void*)server_number);
       TSP_CHECK_THREAD(status, FALSE);
+
 
     }
   else
