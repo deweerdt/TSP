@@ -39,7 +39,7 @@ main (int argc, char ** argv) {
    * Use low-level subscribe in order to discover the 
    * type of the variable
    */
-  strncpy(sym_data_desc.name,argv[1],VARNAME_MAX_SIZE);
+  strncpy(sym_data_desc.name,argv[2],VARNAME_MAX_SIZE);
   sym_value = bb_subscribe(mybb,&sym_data_desc);
 
   if (NULL==sym_value) {
