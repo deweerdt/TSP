@@ -58,7 +58,8 @@ vi +$ $DEVBASE/src/Version.Readme
 #----------------------------------------------------------
 cd $DEVBASE/src; cvs status > $DDEST/cvs_config
 cd $DEVBASE/make; cvs status >> $DDEST/cvs_config
-cvs tag TSP_$vnumtag $DEVBASE/src  $DEVBASE/make
+cd $DEVBASE
+cvs tag TSP_$vnumtag 
 echo "Version "`basename $DDEST`" is now ready for use (CVSTag is: TSP_$vnumtag)"
 
 
