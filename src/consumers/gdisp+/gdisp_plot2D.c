@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_plot2D.c,v 1.3 2004-03-26 21:09:17 esteban Exp $
+$Id: gdisp_plot2D.c,v 1.4 2004-05-10 06:57:11 dufy Exp $
 
 -----------------------------------------------------------------------
 
@@ -2213,42 +2213,7 @@ gdisp_stepOnPlot2D (Kernel_T *kernel,
     /*
      * Try to know whether F2T becomes F2X...
      */
-    if (plot->p2dSubType == GD_2D_F2T && totalNbSamples > 0) {
-
-      /*
-       * If we are at the very beginning of the table...
-       */
-      if (startIndex == 0) {
-
-	if (totalNbSamples == pArray->maxSamples) {
-
-	  /*
-	   * Even if we are at the first place, the previous point
-	   * does exist because the ring is full.
-	   */
-	  pLastPoint = DP_ARRAY_GET_SAMPLE_PTR(pArray,totalNbSamples-1);
-
-	}
-	else {
-
-	  /*
-	   * No choice but taking the very first point.
-	   */
-	  pLastPoint = DP_ARRAY_GET_SAMPLE_PTR(pArray,0 /* first point */);
-
-	}
-
-      }
-      else {
-
-	/*
-	 * Just take the previous point.
-	 */
-	pLastPoint = DP_ARRAY_GET_SAMPLE_PTR(pArray,startIndex-1);
-
-      }
-
-    }
+    pLastPoint = DP_ARRAY_GET_SAMPLE_PTR(pArray,startIndex-1);
 
     for (cptPoint=startIndex; cptPoint<startIndex+nbPoints; cptPoint++) {
 

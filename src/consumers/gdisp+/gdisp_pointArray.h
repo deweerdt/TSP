@@ -66,11 +66,21 @@ typedef struct _DoublePointArray
 #define DP_ARRAY_GET_SAMPLE_FROM_FIRST(pArray,i) \
         ((pArray)->samples[ (i + (pArray)->first) % (pArray)->nbSamples ])
 
+/*
 #define DP_ARRAY_GET_SAMPLE(pArray,i) \
-        ((pArray)->samples[ (i) % (pArray)->nbSamples ])
-
+	(i>=0  ? \
+		((pArray)->samples[ (i) % (pArray)->nbSamples ])\ 
+	 : \
+		(pArray)->samples[0]	)
 #define DP_ARRAY_GET_SAMPLE_PTR(pArray,i) \
         (&DP_ARRAY_GET_SAMPLE(pArray,i))
+
+
+*/
+
+     DoublePoint_T  DP_ARRAY_GET_SAMPLE(DoublePointArray_T *pArray, int i);
+     DoublePoint_T*  DP_ARRAY_GET_SAMPLE_PTR(DoublePointArray_T *pArray, int i);
+
 
 /*
  * Sets the fields to default values and allocate a sample buffer.
