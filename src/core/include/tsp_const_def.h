@@ -1,6 +1,6 @@
 /*!  \file 
  
-$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_const_def.h,v 1.16 2002-12-20 09:53:14 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_const_def.h,v 1.17 2002-12-24 14:14:27 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -30,7 +30,7 @@ Component : Consumer / Provider
 
 -----------------------------------------------------------------------
 
-Purpose   : 
+Purpose   : definitions and const that must have a program wide scope
 -----------------------------------------------------------------------
  */
 
@@ -38,18 +38,18 @@ Purpose   :
 #define _TSP_CONST_DEF_H
 
 
-/* TSP Version */
+/** TSP Version */
 #define TSP_VERSION 1
 
 
 
-/* Size of ringbuf  receiver */
-/* FIXME : faire l'allocation en fonction de la frequence de base */
-/* 1000*100*10 = 10 sec of buf for 1000 symbols 100Hz */
-#define TSP_CONSUMER_RINGBUF_SIZE (1000 * 100) * 3
+/**
+ * Size of ringbuf  receiver 
+ * ex : 1000*100*10 = 10 sec depth for 1000 symbols 100Hz 
+ * FIXME : calculate the ringbuf depth using the base frequency
+ */
+#define TSP_CONSUMER_RINGBUF_SIZE (1000 * 100) * 10
 
-/* Glue server ringbuf size */
-#define GLU_RING_BUFSIZE (1000 * 100 * 3)
 
 
 /* Max client total number */
@@ -63,10 +63,6 @@ Purpose   :
 
 
 /*-------- SOCKET --------*/
-
-/* Size of socket buffer used to create the bite stream
-that will be sent thrue the socket */
-/*#define TSP_DATA_STREAM_CREATE_BUFFER_SIZE 1024*48*/
 
 /**
  * Socket in and out fifo depth for Write and Read
@@ -87,20 +83,20 @@ that will be sent thrue the socket */
                               + TSP_DATA_STREAM_MAX_HEADER_SIZE)
 
 
-/* FIXME : autocalculate this with max group size and TSP_DATA_STREAM_MAX_BUFFER_SIZE,
-for now, we use a huge value :( */
-#define TSP_DATA_RECEIVER_BUFFER_SIZE (1024*512)
-
-
-/** Size of stream sender fifo item.
- * must be the size of the socket buffer, because this buffer
- * must be copied into this fifo.
+/** 
+ * Size of buffer used to receive the data
+ * FIXME : autocalculate this with max group size and TSP_DATA_STREAM_MAX_BUFFER_SIZE,
+ * for now, we use a huge value :(
  */
-/*#define TSP_STREAM_SENDER_RINBUF_ITEM_SIZE  TSP_DATA_STREAM_CREATE_BUFFER_SIZE*/
+#define TSP_DATA_RECEIVER_BUFFER_SIZE (1024*512)
 
 
 /*-------- STREAM CONTROL -------*/
 
+/** 
+ * Control messages that can come from a provider, included in
+ * the data stream. Program level.
+ */
 enum TSP_msg_ctrl_t
   {
 
@@ -122,8 +118,15 @@ typedef enum TSP_msg_ctrl_t TSP_msg_ctrl_t;
 
 /*-------- TSP PROTOCOL --------*/
 
+/** 
+ * Control messages that can come from a provider, included in
+ * the data stream. TSP protocol level. See TSP_msg_ctrl_t
+ */
+
+
 #define TSP_RESERVED_GROUP_EOF        0xFFFFFFFF
 
+/** FIXME : reserved for futur implementation of async symbols */
 #define TSP_RESERVED_GROUP_ASYNCHRONE 0xFFFFFFFE
 
 #define TSP_RESERVED_GROUP_RECONF     0xFFFFFFFD
@@ -138,10 +141,9 @@ typedef guint32 channel_id_t;
 typedef guint32 version_id_t;
 typedef guint32 xdr_and_sync_type_t;
 
-/* We do not want to use g types outside,
-and time stamp are used in the public consumer api */
 typedef int time_stamp_t;
 
+/** Init values */
 #define UNDEFINED_CHANNEL_ID (-1)
 #define UNDEFINED_VERSION_ID (-1)
 
@@ -172,13 +174,21 @@ typedef int time_stamp_t;
 
 /*-------- XDR --------*/
 
-/* Types XDR pouvant etre transferes */
-
+/**
+ * FIXME : XDR types. Will be used when the consumer will be able to
+ * chose several symbol types : double, string, raw ...For now
+ * only doubles (USER) implemented
+ */
 #define XDR_DATA_TYPE_RAW  	(1 << (16 + 0))
 #define XDR_DATA_TYPE_USER 	(1 << (16 + 1))
 #define XDR_DATA_TYPE_STRING 	(1 << (16 + 2))
 #define XDR_DATA_TYPE_MASK 	(0xFFFF0000)
 
+/**
+ * FIXME : Symbol types. Will be used when the consumer will be able to
+ * chose sync symbols and async symbols (not implemented). For now
+ * only sync implemented
+ */
 #define TSP_DATA_TYPE_SYNC  	(1 << 0)
 #define TSP_DATA_TYPE_ASYNC 	(1 << 1)
 #define TSP_DATA_TYPE_MASK 	(0xFFFF)
@@ -192,7 +202,7 @@ typedef char TSP_server_info_string_t[STRING_SIZE_SERVER_INFO+1];
 /**
  * Server information struct.
  * The informations in this struct are used by a client
- * to choose which server will be left open.
+ * to get server information
  */
 struct TSP_otsp_server_info_t
 {
@@ -203,18 +213,22 @@ typedef struct  TSP_otsp_server_info_t TSP_otsp_server_info_t;
 
 /*-------- RPC --------*/
 
-/* First RPC PROG_ID that will be used 
-to calculate the PROG ID for each server*/
+/**
+ * base RPC PROG_ID that will be used 
+ * to calculate the PROG ID for each server
+ */
 #define TSP_RPC_PROGID_BASE_COUNT 0x31230010
 
-/* Time out for client connection to server (secondes) )*/
+/** Time out for client connection to server (secondes) )
+ * FIXME : not used yet 
+ */ 
 #define TSP_RPC_CONNECT_TIMEOUT 20
 
 /*------- SYSTEM -------*/
 
-/* SUSv2 guarantees that `Host names are limited to 255 bytes,
-but linux define MAXHOSTNAMELEN to be 64. We'd better be cautious :
-we use 255 and we define our own MAXHOSTNAMELEN*/
+/** SUSv2 guarantees that `Host names are limited to 255 bytes,
+ * but linux define MAXHOSTNAMELEN to be 64.
+ */
 #define TSP_MAXHOSTNAMELEN 255
 
 /*-------- MACROS --------*/
@@ -257,6 +271,13 @@ we use 255 and we define our own MAXHOSTNAMELEN*/
 
 /*-------- DATA STREAM ENDIAN CONVERSION --------*/
 
+/**
+ * some macro used to respect indianity between consumer and producer.
+ * FIXME : the default endianity used by the producer should be its
+ * endianity so as to be CPU friendly for the producer. At least this
+ * should be the default behaviour. Then, a lazy consumer should be able
+ * to tell a producer that it wants to receive the data in the its endianity
+ */
 #define TSP_ENCODE_DOUBLE_TO_GUINT64(val) (GUINT64_TO_BE (*(guint64*)val))
 #define TSP_DECODE_DOUBLE_TO_GUINT64(val) (GUINT64_FROM_BE (*(guint64*)val))
 

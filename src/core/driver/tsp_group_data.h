@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_group_data.h,v 1.4 2002-12-18 16:27:27 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_group_data.h,v 1.5 2002-12-24 14:14:24 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -69,6 +69,7 @@ struct TSP_group_t
 
 typedef struct TSP_group_t TSP_group_t;
 
+
 struct TSP_group_table_t
 {
 
@@ -98,4 +99,4 @@ struct TSP_group_table_t
 typedef struct TSP_group_table_t TSP_group_table_t;
 
                                        
-#endif /* _TSP_GROUP__DATA_H */
+#endif /* _TSP_GROUP_DATA_H */

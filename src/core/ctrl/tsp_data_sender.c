@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_data_sender.c,v 1.12 2002-12-20 09:53:05 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_data_sender.c,v 1.13 2002-12-24 14:14:17 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -151,10 +151,6 @@ TSP_data_sender_t TSP_data_sender_create(int fifo_size, int max_group_size)
 	  sender->out_fifo = 0;
 	  sender->out_item = TSP_stream_sender_get_buffer(sender->stream_sender);
 	  assert(sender->out_item);
-
-	  /*sender->out_item = (TSP_stream_sender_item_t*)calloc(1, sizeof(TSP_stream_sender_item_t) );
-	  TSP_CHECK_ALLOC(sender->out_item, 0);*/
-
 	 
 	}
     }
@@ -330,6 +326,8 @@ int TSP_data_sender_send_msg_ctrl(TSP_data_sender_t sender, TSP_msg_ctrl_t msg_c
   tosend = TSP_data_sender_get_out_item(data_sender);
     
   /* If it is not available, try net time */
+
+  /* FIXME : uses packet format as described in the protocol spec */
   if(tosend)
     {
       buf_int = (int*)(TSP_STREAM_SENDER_ITEM_BUF(tosend));
@@ -381,6 +379,8 @@ int TSP_data_sender_send(TSP_data_sender_t _sender, TSP_groups_t _groups, time_s
   tosend = TSP_data_sender_get_out_item(data_sender);
     
   /* If it is not available, try net time */
+
+  /* FIXME : uses packet format as described in the protocol spec */
   if(tosend)
     {
       buf_main = TSP_STREAM_SENDER_ITEM_BUF(tosend);
@@ -411,8 +411,6 @@ int TSP_data_sender_send(TSP_data_sender_t _sender, TSP_groups_t _groups, time_s
 		}
 	  
 	      buf_char += size;
-	      /**(double*)buf_char = *(double*)(group->items[i].data);
-		 buf_char += sizeof(double);*/
 
 	    } /*for*/
 

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_group.c,v 1.4 2002-12-18 16:27:27 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_group.c,v 1.5 2002-12-24 14:14:24 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -30,7 +30,7 @@ Component : Consumer
 
 -----------------------------------------------------------------------
 
-Purpose   : Implemenation the groups management
+Purpose   : Implementation for the groups management
 
 -----------------------------------------------------------------------
  */
@@ -41,15 +41,6 @@ Purpose   : Implemenation the groups management
 #include "tsp_group.h"
 
 #include "tsp_data_receiver.h"
-
-/*---------------------------------------------------------*/
-/*                  FONCTIONS INTERNES  			       */
-/*---------------------------------------------------------*/
-
-/*---------------------------------------------------------*/
-/*                  FONCTIONS EXTERNE  			            */
-/*---------------------------------------------------------*/
-
 
 
 void TSP_group_delete_group_table(TSP_groups_t groups)
@@ -71,19 +62,11 @@ void TSP_group_delete_group_table(TSP_groups_t groups)
 }
 
 
-/**
-* Allocate the group table.
-* This function initialize several size informations located in the structures
-* @symbols list of symbols on which the group table must be calculated
-* @return The allocated table of groups
-*/
 TSP_groups_t
 TSP_group_create_group_table(const TSP_sample_symbol_info_list_t* symbols, int group_number)
 {
-  /*FIXME : Faire la desallocation correspondante */
 
   SFUNC_NAME(TSP_group_create_group_table);
-
     
   int group_id, old_group_id;
   int i;
@@ -99,7 +82,7 @@ TSP_group_create_group_table(const TSP_sample_symbol_info_list_t* symbols, int g
   table = (TSP_group_table_t*)calloc(1, sizeof(TSP_group_table_t));
   TSP_CHECK_ALLOC(table, 0);
     
-    /* Get total number of groups */
+  /* Get total number of groups */
   table->table_len = group_number;
     
   /*Allocate room for all groups */
@@ -114,8 +97,6 @@ TSP_group_create_group_table(const TSP_sample_symbol_info_list_t* symbols, int g
         
   /*Initialize groups items*/
   /* And make them point at the right place in the item list */
-    
-
   i = 0;
   table->max_group_len = 0;
   for(group_id = 0; group_id < group_number; group_id++) 
@@ -172,7 +153,6 @@ TSP_group_create_group_table(const TSP_sample_symbol_info_list_t* symbols, int g
      
   STRACE_IO(("-->OUT"));
 
-    
   return table;
 }
                                                              

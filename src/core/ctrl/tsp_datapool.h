@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_datapool.h,v 1.6 2002-12-18 16:27:16 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_datapool.h,v 1.7 2002-12-24 14:14:18 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -30,9 +30,7 @@ Component : Provider
 
 -----------------------------------------------------------------------
 
-Purpose   : Interface for the functions that read data from the sample
-server, and for each opened session, ask the session to send its data to its
-consumer
+Purpose   : Datapool implementation
 
 -----------------------------------------------------------------------
  */
@@ -47,20 +45,60 @@ consumer
 
 typedef  void* TSP_datapool_t;
 
-/*int TSP_global_datapool_init(void);*/
-
+/**
+ * Allocation of a local datapool.
+ * Only used when the sample server is a passive one.
+ * @param session_channel_id Id of the session that must be linked to this datapool
+ * @param symbols_number Total number of symbols for this datapool
+ * @param h_glu Handle for the GLU that mus be linked to this datapool
+ * @return The datapool handle
+ */ 
 TSP_datapool_t TSP_local_datapool_allocate(channel_id_t session_channel_id, int symbols_number, GLU_handle_t h_glu );
+
+/**
+ * Destroy a local datapool.
+ * Only used when the sample server is a passive one.
+ * @param datapool The datapool handle
+ */ 
 void TSP_local_datapool_destroy(TSP_datapool_t datapool);
 
+/**
+ * Get the global datapool instance.
+ * Only used when the sample server is an active one.
+ * This function work as a singleton. If the global datapool
+ * does not exist or was destroyed, a new datapool is created.
+ * @return The datapool handle
+ */ 
 TSP_datapool_t TSP_global_datapool_get_instance(void);
 
-void*
-TSP_datapool_get_symbol_value(TSP_datapool_t datapool, 
+/**
+ * Get the address of a value in the datapool
+ * @param datapool The datapool handle
+ * @param provider_global_index The index of the symbol that is searched
+ * @param type FIXME : this parameter was used to ask for a given type of
+ * symbol. As the datapool items should be RAW (and converted when needed),
+ * this parameter will be useless.
+ * @return The data address
+ */ 
+void* TSP_datapool_get_symbol_value(TSP_datapool_t datapool, 
 			      int provider_global_index,
 			      xdr_and_sync_type_t type);
 
 
+/**
+ * For a local datapool, starts the associated thread.
+ * Only used when the GLU is pasive
+ * @param datapool The datapool handle
+ * @return TRUE or FALSE. TRUE = OK
+ */ 
 int TSP_local_datapool_start_thread(TSP_datapool_t datapool);
+
+/**
+ * For a local datapool, stops the associated thread.
+ * Only used when the GLU is pasive
+ * @param datapool The datapool handle
+ * @return TRUE or FALSE. TRUE = OK
+ */ 
 int TSP_local_datapool_wait_for_end_thread(TSP_datapool_t datapool);
 
 

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_abs_types.h,v 1.7 2002-12-18 16:27:30 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_abs_types.h,v 1.8 2002-12-24 14:14:27 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -30,7 +30,8 @@ Component : Consumer / Provider
 
 -----------------------------------------------------------------------
 
-Purpose   : Type abstraction : stolen from GLIB headers
+Purpose   : Type abstraction : Stolen from GLIB public headers
+
 -----------------------------------------------------------------------
  */
 
@@ -263,39 +264,8 @@ typedef unsigned long guint64;
 
 #endif /* OSF1 / Alpha */
 
-/************************* end specific **************************************/
 
-#ifdef NATIVE_WIN32
-
-/* On native Win32, directory separator is the backslash, and search path
- * separator is the semicolon.
- */
-#define G_DIR_SEPARATOR '\\'
-#define G_DIR_SEPARATOR_S "\\"
-#define G_SEARCHPATH_SEPARATOR ';'
-#define G_SEARCHPATH_SEPARATOR_S ";"
-
-#else  /* !NATIVE_WIN32 */
-
-#ifndef __EMX__
-/* Unix */
-
-#define G_DIR_SEPARATOR '/'
-#define G_DIR_SEPARATOR_S "/"
-#define G_SEARCHPATH_SEPARATOR ':'
-#define G_SEARCHPATH_SEPARATOR_S ":"
-
-#else
-/* EMX/OS2 */
-
-#define G_DIR_SEPARATOR '/'
-#define G_DIR_SEPARATOR_S "/"
-#define G_SEARCHPATH_SEPARATOR ';'
-#define G_SEARCHPATH_SEPARATOR_S ";"
-
-#endif
-
-#endif /* !NATIVE_WIN32 */
+/*-----------------------------------------------------*/
 
 #ifndef	NULL
 #define	NULL	((void*) 0)

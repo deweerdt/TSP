@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_group_algo.c,v 1.8 2002-12-18 16:27:16 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_group_algo.c,v 1.9 2002-12-24 14:14:18 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -44,6 +44,7 @@ and use groups
 #include "tsp_datapool.h"
 #include "tsp_data_sender.h"
 
+/** pgcd will be equal to the GCD od n1 and n2 */
 #define PGCD(n1, n2, pgcd) \
 { \
     int ln2 = n2; \
@@ -52,6 +53,7 @@ and use groups
         {for(;pgcd != ln2; (pgcd > ln2) ? (pgcd -= ln2) : (ln2 -= pgcd )); }\
 }
 
+/** ppcm will be equal to the LCM of n1 and n2 */
 #define PPCM(n1, n2, ppcm) \
 { \
     int pgcd; \
@@ -92,8 +94,7 @@ int TSP_group_algo_get_nb_groups(const TSP_sample_symbol_info_list_t* symbols)
   if( nb_symbols > 0 )
     {
         
-      /*Calcul du PPCM des rapports de frequences des symboles */
-
+      /* We calculate the LCM for the period of all symbols */
       int ppcm = (symbols->TSP_sample_symbol_info_list_t_val[0].period);
       STRACE_DEBUG(("frequency_ratio No0= %d", ppcm));
 
@@ -106,7 +107,7 @@ int TSP_group_algo_get_nb_groups(const TSP_sample_symbol_info_list_t* symbols)
                   
 	  STRACE_DEBUG(("frequency_ratio No%u= %d", i, frequency_ratio));
 
-                  
+         /* LCM */         
 	  PPCM(ppcm,frequency_ratio, ppcm); 
 	}
         
@@ -282,11 +283,6 @@ TSP_group_algo_allocate_group_table(const TSP_sample_symbol_info_list_t* symbols
   return table;
 }
                                                              
-
-/*---------------------------------------------------------*/
-/*                  FONCTIONS EXTERNE  			            */
-/*---------------------------------------------------------*/
-
 void TSP_group_algo_destroy_symbols_table(TSP_groups_t* groups)
 {
    SFUNC_NAME(TSP_group_algo_destroy_symbols_table);
@@ -323,16 +319,6 @@ void TSP_group_algo_create_symbols_table_free_call(TSP_sample_symbol_info_list_t
    STRACE_IO(("-->OUT"));
 }
 
-/**
-* Create the group table for the session, and the list of symbols that must
-* be sent back to the client.
-* This function initialize memory for the array in out_symbols, the caller must free it
-* @in_symbols list of symbols on which the groups must be calculated
-* @out_symbols the allocated list of symbols that must be sent back to the client
-* @out_groups the table group object
-* @return succesful = TRUE;
-*/
-
 int TSP_group_algo_create_symbols_table(const TSP_sample_symbol_info_list_t* in_symbols,
 					TSP_sample_symbol_info_list_t* out_symbols,
 					TSP_groups_t* out_groups,
@@ -364,7 +350,6 @@ int TSP_group_algo_create_symbols_table(const TSP_sample_symbol_info_list_t* in_
     {
       int frequency_ratio;
       int phase;
-
     
       /* Allocate memory for the out_symbols */
       out_symbols->TSP_sample_symbol_info_list_t_len = table->groups_summed_size;
@@ -387,23 +372,24 @@ int TSP_group_algo_create_symbols_table(const TSP_sample_symbol_info_list_t* in_
 	      /* Does - it belong to the group */
 	      if(BELONGS_TO_GROUP(in_info->period, in_info->phase , group_id) )
                 {
-                
+		  
 		  /*Yes, we add it*/
 		  STRACE_DEBUG(("Adding provider_global_index %d at group %d and rank %d",
                                 in_info->provider_global_index,
                                 group_id,
                                 rank))
                     /* 1 - In the out group table */
-                                        
-                    /* FIXME : vérifier le type et mettre la bonne fonction d'encodage */
+		    
+                    /* FIXME : When more types (RAW, STRING...) will be managed, there will be
+		       other functions like TSP_data_sender_get_string_encoder or TSP_data_sender_get_raw_encoder */
                     table->groups[group_id].items[rank].data_encoder = TSP_data_sender_get_double_encoder();
-
-                                        
+		  
+		  
 		  table->groups[group_id].items[rank].data = 
 		    TSP_datapool_get_symbol_value(datapool, in_info->provider_global_index, 0);
-                    
+		  
 		  /* 2 - In the out symbol table */
-                    
+		  
 		  (*out_info) = (*in_info);
                     
 		  out_info->name = strdup(in_info->name);
@@ -434,16 +420,6 @@ int TSP_group_algo_create_symbols_table(const TSP_sample_symbol_info_list_t* in_
     
   return TRUE;
 }
-
-/**
-* Create the group table for the session, and the list of symbols that must
-* be sent back to the client.
-* This function initialize memory for the array in out_symbols, the caller must free it
-* @in_symbols list of symbols on which the groups must be calculated
-* @out_symbols the allocated list of symbols that must be sent back to the client
-* @out_groups the table group object
-* @return succesful = TRUE;
-*/
 
 int TSP_group_algo_get_group_number(TSP_groups_t* groups)
 {

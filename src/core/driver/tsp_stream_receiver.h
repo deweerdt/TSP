@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_stream_receiver.h,v 1.3 2002-12-18 16:27:28 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_stream_receiver.h,v 1.4 2002-12-24 14:14:25 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -31,7 +31,7 @@ Component : Consumer
 -----------------------------------------------------------------------
 
 Purpose   : Interface for the functions that receive the data
-stream  from the procuder for the asked symbols. This layer is the network layer and uses sockets
+stream  from the producer for the asked symbols. This layer is the network layer and uses sockets
 -----------------------------------------------------------------------
  */
 
@@ -40,15 +40,52 @@ stream  from the procuder for the asked symbols. This layer is the network layer
 
 #include "tsp_prjcfg.h"
 
+/** The receiver handle */
 typedef  void* TSP_stream_receiver_t;
 
+/**
+ * Creation of a stream receiver object.
+ * @param data_address The data adresse encoder by the stream_sender on the
+ * provider side (actually this string is 'hostname:port', but could be anything
+ * else whith an other protocol)
+ * @return The receiver handle. O when an error occured.
+ */
 TSP_stream_receiver_t TSP_stream_receiver_create(const char* data_address);
+
+/**
+ * Destroy a stream receiver object.
+ * @param receiver handle that must be destroyed
+ */
 void TSP_stream_receiver_destroy(TSP_stream_receiver_t receiver);
 
+/**
+ * Prepare the receiver to stop.
+ * This function set the receiver in a state, where the it does not
+ * complain if the socket is broken by the provider stream sender.
+ * @param receiver handle
+ */
 void TSP_stream_receiver_prepare_stop(TSP_stream_receiver_t receiver);
+
+/**
+ * Stop receiving data.
+ * @param receiver handle
+ */
 void TSP_stream_receiver_stop(TSP_stream_receiver_t receiver);
+
+/**
+ * Tell if a receiver was stopped.
+ * @param receiver handle
+ * @return TRUE of FALSE. TRUE = receiver stopped
+ */
 int TSP_stream_receiver_is_stopped(TSP_stream_receiver_t receiver);
 
+/**
+ * Receiver a data packet.
+ * @param receiver handle
+ * @param buffer The data reception buffer
+ * @param bufferLen The length of data (in bytes) in the buffer
+ * @return TRUE of FALSE. TRUE = OK.
+ */
 int TSP_stream_receiver_receive(TSP_stream_receiver_t receiver, char *buffer, int bufferLen);
 
 #endif /*TSP_STREAM_RECEIVER_H*/

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_provider.c,v 1.15 2002-12-18 16:27:17 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_provider.c,v 1.16 2002-12-24 14:14:19 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -276,8 +276,6 @@ void TSP_provider_request_open(const TSP_request_open_t* req_open,
      }
 
    
-   /* FIXME : condition  de sortie */
-	
    if(glu_h)
      {
        if(TSP_add_session(&(ans_open->channel_id), glu_h))
@@ -528,9 +526,6 @@ void  TSP_provider_request_sample_destroy(TSP_request_sample_destroy_t* req_info
 }
 
 
-/** Provider initialisation function.
- * @param s The char string that may be used by the sample server
- */
 static void* TSP_provider_garbage_collector_thread(void* dummy)
 {
    SFUNC_NAME(TSP_provider_garbage_collector_thread);
@@ -556,10 +551,6 @@ static void* TSP_provider_garbage_collector_thread(void* dummy)
    STRACE_IO(("-->OUT"));
 }
 
-
-/** Provider initialisation function.
- * @param s The char string that may be used by the sample server
- */
 
 int TSP_provider_private_init(int* argc, char** argv[])
 {

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/misc_utils/tsp_ringbuf.h,v 1.3 2002-12-20 09:53:17 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/misc_utils/tsp_ringbuf.h,v 1.4 2002-12-24 14:14:29 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -257,7 +257,7 @@ extern "C" {
 		\
 		if (put != (name)->get) \
 		{ \
-			(name)->buf[(name)->put] = (item); \
+			(name)->buf[(name)->put * (name)->mul_offset] = (item); \
 			(name)->put = put; \
 		} \
 		else \
@@ -277,28 +277,15 @@ extern "C" {
 			) \
 	)
 
-#define RINGBUF_PTR_PUTBYADDR_WITH_SIZE(name,indexPut,sizePlusOne)\
-	( \
-		( ( (((indexPut)=(name)->put)+1) % (sizePlusOne) ) != (name)->get) ? \
-			&(name)->buf[(indexPut)] \
-		: \
-			( \
-			++(name)->missed, \
-			(void*)NULL \
-			) \
-	)
 
 #define RINGBUF_PTR_PUTBYADDR_COMMIT(name) \
 		(name)->put = ((name)->put + 1) % (name)->size 
-
-#define RINGBUF_PTR_PUTBYADDR_COMMIT_WITH_SIZE(name, indexPut, sizePlusOne) \
-		(name)->put = ((indexPut) + 1) % (sizePlusOne)
 
 #define RINGBUF_PTR_GET(name,item) \
 	( \
 		((name)->get != (name)->put) ? \
 			( \
-			(item) = (name)->buf[(name)->get], \
+			(item) = (name)->buf[(name)->get * (name)->mul_offset], \
 			(name)->get = ((name)->get + 1) % (name)->size, \
 			TRUE \
 			) \
@@ -328,25 +315,6 @@ extern "C" {
 		(name)->get = ((name)->get + 1) % (name)->size); \
 	}
 
-/* It is safe because we get until the put or until the end of buffer 
-   then make a loop (i=firstItem; i<firstItem+nbItems; i++)
-   and call RINGBUF_GETBYADDR_BURST_NEXT */
-#define RINGBUF_PTR_GETBYADDR_BURST(name, firstItem, nbItems, sizePlusOne) \
-	{ \
-		int lastItem =   (name)->put;\
-		firstItem = (name)->get; \
-		sizePlusOne = (name)->size; \
-		if (firstItem<=lastItem)\
-			nbItems = lastItem-firstItem; \
-		else\
-			nbItems = (sizePlusOne-firstItem)+lastItem;\
-        }
-
-#define RINGBUF_PTR_GETBYADDR_BURST_NEXT(name, indexItem, sizePlusOne) \
-	     &(name)->buf[ (indexItem) % (sizePlusOne)] 
-	  
-#define RINGBUF_PTR_GETBYADDR_COMMIT_BURST(name, firstItem, nbItems, sizePlusOne)\
-	  (name)->get = ( (firstItem) + (nbItems) )  % (sizePlusOne)
 
 /* This reset is not safe for the producer */
 #define RINGBUF_PTR_RESET_CONSUMER(name) \

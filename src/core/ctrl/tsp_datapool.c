@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_datapool.c,v 1.14 2002-12-18 16:27:16 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_datapool.c,v 1.15 2002-12-24 14:14:18 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -30,15 +30,12 @@ Component : Provider
 
 -----------------------------------------------------------------------
 
-Purpose   : Implementation for the function that read data from the sample
-server, and for each opened session, ask the session to send its data to its
-consumer
+Purpose   : Datapool implementation
+FIXME : the global/local datapool cases could have been avoided. Somehow plenty of code
+may be unified in this source .
 
 -----------------------------------------------------------------------
  */
-
-/* FIXME : the global/local datapool cases could have been avoided. Somehow plenty of code
-may be unified in this file*/
 
 #include "tsp_sys_headers.h"
 #include <pthread.h>
@@ -51,22 +48,24 @@ may be unified in this file*/
 #include "tsp_session.h"
 #include "tsp_time.h"
 
-/* Pool time waiting for  consumer connection (µs) */
-#define TSP_LOCAL_WORKER_CONNECTION_POOL_TIME ((int)(1e5))
+/* Poll time waiting for  consumer connection (µs) */
+#define TSP_LOCAL_WORKER_CONNECTION_POLL_TIME ((int)(1e5))
 
-/* Data Pool period (µs) */
-#define TSP_DATAPOOL_POOL_PERIOD ((int)(1e4))
+/* Data Poll period (µs) */
+#define TSP_DATAPOOL_POLL_PERIOD ((int)(1e4))
 
 
 /*-----------------------------------------------------*/
 
 struct TSP_datapool_item_t 
 {
-	
-  int user_counter_sync;
-	
-  int user_counter_async;
-	
+  /** One Item in the datapool.
+   * FIXME : The values should be saved in raw format in the datapool,
+   * and must be calculated for their final value when they are sent, depending
+   * on the data format that each consumer requested (double, raw, string).
+   * Somehow the GLU should provide its own functions to transform a RAW in double or
+   * string.
+   */
   double user_value;
 	
 };
@@ -85,7 +84,7 @@ struct TSP_datapool_table_t
   /** handle on GLU */
   GLU_handle_t h_glu;
 
-  /* List of items */
+  /** List of items in the datapool */
   TSP_datapool_item_t* items;
 
   int size;
@@ -122,45 +121,6 @@ TSP_datapool_table_t X_global_datapool = {FALSE,FALSE,0,0,0,0};
 	} \
 }
 
-/*---------------------------------------------------------*/
-/*                  FONCTIONS INTERNES  			   */
-/*---------------------------------------------------------*/
-
-int* TSP_datapool_get_symbol_usage_counter(int provider_global_index, xdr_and_sync_type_t type)
-{
-  SFUNC_NAME(TSP_datapool_get_symbol_counter);
-
-	
-  int* p = 0;
-	
-  STRACE_IO(("-->IN"));
-
-	
-  TSP_CHECK_PROVIDER_GLOBAL_INDEX(X_global_datapool, provider_global_index, FALSE);
-	
-  /*FIXME : Remettre ca comme il faut */
-  p = &(X_global_datapool.items[provider_global_index].user_counter_sync);
-    
-  /*
-    
-    switch(type)
-    {
-    case XDR_DATA_TYPE_USER | TSP_DATA_TYPE_SYNC :
-    p = &(X_global_datapool.items[provider_global_index].user_counter_sync);
-    break;
-    case XDR_DATA_TYPE_USER | TSP_DATA_TYPE_ASYNC :
-    p = &(X_global_datapool.items[provider_global_index].user_counter_async);
-    break;
-    default :
-    STRACE_ERROR(("Unknown xdr_and_sync_type_t : %X", type));
-    }
-  */
-  STRACE_IO(("-->OUT"));
-
-	
-  return p;
-}
-
 
 /**
  * Thread created per session when the sample server is a pasive one.
@@ -169,10 +129,8 @@ int* TSP_datapool_get_symbol_usage_counter(int provider_global_index, xdr_and_sy
 static void* TSP_datapool_thread(void* datapool)
 {
 
-  /* FIXME : WARNING : la datapool a un pointeur sur le GLU, donc, ne pas détruire le
-     GLU avant d'avoir arreté ce Thread */
-
   SFUNC_NAME(TSP_local_worker);
+
   time_stamp_t time_stamp;
   glu_item_t item;
   int more_items;
@@ -188,7 +146,8 @@ static void* TSP_datapool_thread(void* datapool)
 
   if( obj_datapool->is_global )
     {
-      /* FIXME : The datapool might not be coherent when a client is already connected and this thread starts after the connection
+      /* FIXME : The datapool might not be coherent when a client is already
+	 connected and this thread starts after the connection
 	 for the client */
     }
   else
@@ -196,12 +155,11 @@ static void* TSP_datapool_thread(void* datapool)
       /* Wait for consumer connection before we send data */    
       while(!TSP_session_is_consumer_connected_by_channel(obj_datapool->session_channel_id))
 	{
-	  tsp_usleep(TSP_LOCAL_WORKER_CONNECTION_POOL_TIME);
+	  tsp_usleep(TSP_LOCAL_WORKER_CONNECTION_POLL_TIME);
 	}
       STRACE_INFO(("Consumer connected for session id %d",obj_datapool->session_channel_id)); 
 
     }
-  /* FIXME : s'occuper des divers types raw, string... */
 
   /* Flush old data, we do not want to get a GLU_GET_DATA_LOST now */
   GLU_forget_data(obj_datapool->h_glu);
@@ -209,7 +167,7 @@ static void* TSP_datapool_thread(void* datapool)
   /* get first item */
   while( ( GLU_GET_NEW_ITEM != (state=GLU_get_next_item(obj_datapool->h_glu, &item)))  )
     {
-      tsp_usleep(TSP_DATAPOOL_POOL_PERIOD);
+      tsp_usleep(TSP_DATAPOOL_POLL_PERIOD);
     }
 
   time_stamp = item.time;
@@ -243,7 +201,7 @@ static void* TSP_datapool_thread(void* datapool)
 	  obj_datapool->items[item.provider_global_index].user_value = item.value;     
 	}
 
-       tsp_usleep(TSP_DATAPOOL_POOL_PERIOD);
+       tsp_usleep(TSP_DATAPOOL_POLL_PERIOD);
     }      
 
    /* Send end status message */
@@ -291,11 +249,6 @@ static void* TSP_datapool_thread(void* datapool)
 
 }
 
-
-
-/*---------------------------------------------------------*/
-/*                  FONCTIONS EXTERNE  			   */
-/*---------------------------------------------------------*/
 
 /**
  * Wait for the local datapool thread end per session.
@@ -379,10 +332,6 @@ static int TSP_global_datapool_init(void)
   X_global_datapool.session_channel_id = -1;
   X_global_datapool.is_global = TRUE;
 
-    
-  /* Demarrage du thread */
-  /* FIXME : faire l'arret du thread */
-  /* FIXME : detacher le thread */
   status = pthread_create(&(X_global_datapool.worker_id), NULL, TSP_datapool_thread,  &X_global_datapool);
   TSP_CHECK_THREAD(status, FALSE);
 
@@ -457,7 +406,10 @@ void* TSP_datapool_get_symbol_value(TSP_datapool_t datapool, int provider_global
 
 
   p = &(obj_datapool->items[provider_global_index].user_value);
-	
+
+
+  /* FIXME : manages different types RAW, DOUBLE, STRING...,
+     see how to implement this when the data will be RAW in the datapool */
   /*switch(type & XDR_DATA_TYPE_MASK)
     {
     case XDR_DATA_TYPE_USER | TSP_DATA_TYPE_SYNC :

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.h,v 1.13 2002-12-20 15:44:49 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.h,v 1.14 2002-12-24 14:14:24 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -40,6 +40,11 @@ Purpose   : Main interface for the TSP consumer library
 
 /*------------------------------ ENUM ---------------------------------*/
  
+/**
+ * Status for a futur get_last_error function.
+ * FIXME : not used for now. Anyway, this enum
+ * must be completed
+ */
 enum TSP_consumer_status_t {
 	TSP_CONSUMER_STATUS_OK,
 	TSP_CONSUMER_STATUS_ERROR_UNKNOWN,
@@ -47,6 +52,8 @@ enum TSP_consumer_status_t {
 };
 
 /*-------------------------- STRUCTURES -------------------------------*/
+
+
 
 /** Structure to get each sample */
 struct TSP_sample_t
@@ -60,6 +67,11 @@ struct TSP_sample_t
 
 typedef struct TSP_sample_t TSP_sample_t;
 
+/** Callback function type used to receive a sample item.
+FIXME : The callback function should transmit the error code
+too ( ex :  typedef void (*TSP_sample_callback_t) (TSP_sample_t* sample, TSP_consumer_status_t status);  */
+typedef void (*TSP_sample_callback_t) (TSP_sample_t* sample); 
+
 
 /** Structure used to request symbols */
 struct TSP_consumer_symbol_requested_t
@@ -68,7 +80,9 @@ struct TSP_consumer_symbol_requested_t
   int index;
   int period;
   int phase;
-  /* FIXME : char xdr_tsp_t[4]; */
+  /* FIXME : we need a way to tell when
+     we want a RAW, STRING or DOUBLE
+     char xdr_tsp_t[4]; */
 
 };
 
@@ -88,8 +102,8 @@ struct TSP_consumer_symbol_info_t
 {
   char* name;
   int index;
-  /* FIXME : char xdr_tsp_t[4]; */
-  /* FIXME :  u_int dimension */
+  /* FIXME : char xdr_tsp_t[4]; Symbol type*/
+  /* FIXME :  u_int dimension ; Symbol dimension, for vectors*/
 };
 
 typedef struct TSP_consumer_symbol_info_t TSP_consumer_symbol_info_t;
@@ -136,21 +150,25 @@ typedef  void* TSP_provider_t;
 * removes the arguments it knows from the argument list, leaving anything
 * it does not recognize for your application to parse or ignore. 
 * This creates a set of standard arguments accepted by all TSP applications.
-* This function must be called once per program
+* This function must be called once.
 * @param argc Use the argc main arg before using it
-* @param argc Use the argv main arg before using it
+* @param argv Use the argv main arg before using it
 * @return TRUE = OK
 */
 int TSP_consumer_init(int* argc, char** argv[]);
 
 /**
-* Open all found providers on the given host.
-* This function allocate teh provider array, that's why TSP_consumer_close_all
-* must be symetrically called at the end of the program to free the allocated resources.
-* The consumer may use the TSP_consumer_get_server_info to retreive information about
+* End of TSP librairie use
+* call this function when you are done with the librairie.
+* This function must be called once.
+*/
+void TSP_consumer_end();
+
+
+/**
+* Connects to all found providers on the given host.
+* The consumer may use the TSP_consumer_get_connected_name to retreive information about
 * each provider, so as to choose what provider(s) will be left opened.
-* The consumer may then close providers with the TSP_consumer_close function.
-* Do not mix the open_all functions and the open_one functions.
 * @param host_name Name of host on which the providers must be opened
 * @param providers Array of found providers
 * @param nb_providers Total number of providers in 'providers' array
@@ -159,12 +177,25 @@ void TSP_consumer_connect_all(const char* host_name,
 			   TSP_provider_t** providers,
 			   int* nb_providers);
 
+/**
+* Disconnected all found providers.
+* @param providers Array of providers from which we want to be disconnected
+*/
+void TSP_consumer_disconnect_all(TSP_provider_t providers[]);				  
+
+/**
+ * Disconnect one given provider.
+ * FIXME : not implemented at all  :(
+ */ 
+void TSP_consumer_disconnect_one(TSP_provider_t provider);
+
+
 /** 
- * Request provider information.
- * Ask the provider information including the list of symbols
- * that can be asked.
+ * Request provider name.
+ * This string should provide some information for a given  provider.
+ * See it as a naming service.
  * @param provider The provider handle
- * @return TRUE or FALSE. TRUE = OK.
+ * @return The provider name
  */				  
 const char* TSP_consumer_get_connected_name(TSP_provider_t provider);			  
 
@@ -195,11 +226,20 @@ const char* TSP_consumer_get_connected_name(TSP_provider_t provider);
  */
 int TSP_consumer_request_open(TSP_provider_t provider, int custom_argc, char* custom_argv[]);
 
+/**
+ * Close the session.
+ * @param provider The provider handle
+ * @return TRUE or FALSE. TRUE = OK.
+ */
+int TSP_consumer_request_close(TSP_provider_t provider);
+
+
 /** 
  * Request provider information.
  * Ask the provider informations about several parameters, including
  * the available symbol list that can be asked.
- * This function should be called once per session
+ * This function should be called multiple times only to refresh
+ * the structure returned by the TSP_consumer_get_information function.
  * @param provider The provider handle
  * @return TRUE or FALSE. TRUE = OK.
  */				  
@@ -221,8 +261,10 @@ const TSP_consumer_information_t* TSP_consumer_get_information(TSP_provider_t pr
  * and TSP_consumer_get_information, the consumer may choose some symbols, set their phase
  * and period and call this function to prepare the provider to sample these symbols.
  * The symbol is retrieved by name. The 'index' member of the symbols->val structure is not used
- * to look fo rthe symbol (to get the provider global index of a symbol uses the TSP_consumer_get_requested_sample
- * function)
+ * (to retreive the provider global index of a symbol uses the TSP_consumer_get_requested_sample
+ * function after this function call).
+ * This function should be called multiple times only to refresh
+ * the structure returned by the TSP_consumer_get_requested_sample function.
  * @param provider The provider handle
  * @param symbols The request symbols list
  * @return TRUE or FALSE. TRUE = OK.
@@ -242,11 +284,15 @@ const TSP_consumer_symbol_requested_list_t* TSP_consumer_get_requested_sample(TS
 /** 
  * Prepare and start the sampling sequence.
  * @param provider The provider handle
+ * @param callback Address of a callback function that must be called
+ * when a sample is received. Set callback = 0 if you
+ * do not want to use any callback function, and use the TSP_consumer_read_sample
+ * function instead. DO NOT USE BOTH. Using the TSP_consumer_read_sample function
+ * is easier as you do not have to deal with multi-thread problems, but the callback
+ * function is CPU friendlier (theoricaly at least...)
  * @return TRUE or FALSE. TRUE = OK.
  */				      
-typedef void (*TSP_sample_callback_t) (TSP_sample_t* sample); 
 int TSP_consumer_request_sample_init(TSP_provider_t provider, TSP_sample_callback_t callback);    
-
 
 /** 
  * Stop and destroy the sampling sequence
@@ -256,32 +302,23 @@ int TSP_consumer_request_sample_init(TSP_provider_t provider, TSP_sample_callbac
 int TSP_consumer_request_sample_destroy(TSP_provider_t provider);    
 
 
-/*FIXME : ajouter des codes d'erreur (eof, symbol manqué, symbol ne sera plus recu ),
-virer le new_sample quand il y aura un code de retour !!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
 /** 
- * Read a symbol.
+ * Read a sample symbol.
+ * FIXME :
+ * 1 - Some kind of get_last_error func must be implemented to read
+ * the error codes (EOF, RECONF ... ).
+ * 2 - When the other types will be implemented (RAW, STRING) the TSP_sample_t
+ * type will not work anymore as it is double specific for now.
  * @param provider The provider handle
- * @param sample The retreived symbol
- * @return TRUE or FALSE. TRUE = OK. !!!!!!!!!!!!! A MODIFIER
+ * @param sample The returned symbol if there is one
+ * @param new_sample. When TRUE, there is a new sample, else the sample value is
+ * meaningless
+ * @return TRUE or FALSE. FALSE = There is an error (but we can not know it for now).
  */				          
 int TSP_consumer_read_sample(TSP_provider_t provider,
                     TSP_sample_t* sample,
                     int* new_sample);
 
-
-int TSP_consumer_request_close(TSP_provider_t provider);
-
-
-void TSP_consumer_disconnect_all(TSP_provider_t providers[]);				  
-
-void TSP_consumer_disconnect_one(TSP_provider_t provider);
-
-/**
-* End of TSP librairie use
-* call this function when you are done with the librairie.
-* This function must be called once per program.
-*/
-void TSP_consumer_end();
 
     
 #endif /* _TSP_CONSUMER_H */

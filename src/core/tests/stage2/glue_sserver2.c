@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/tests/stage2/Attic/glue_sserver2.c,v 1.8 2002-12-20 09:53:22 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/tests/stage2/Attic/glue_sserver2.c,v 1.9 2002-12-24 14:14:35 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -43,6 +43,9 @@ Purpose   : Implementation for the glue_server
 #include "tsp_time.h"
 
 RINGBUF_DECLARE_TYPE_DYNAMIC(glu_ringbuf,glu_item_t);
+
+/* Glue server ringbuf size */
+#define GLU_RING_BUFSIZE (1000 * 100 * 3)
 
 /*µS*/
 #define TSP_USLEEP_PERIOD_US 10*1000

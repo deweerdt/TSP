@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_stream_receiver.c,v 1.6 2002-12-20 09:53:10 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_stream_receiver.c,v 1.7 2002-12-24 14:14:25 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -70,14 +70,14 @@ TSP_stream_receiver_t TSP_stream_receiver_create(const  char* data_address)
   char* host;
   char* str_port;
   unsigned short port;
-  char* last; /*For strtok_r*/
+  char* last; /**<For strtok_r*/
   
   TSP_socket_t* sock = (TSP_socket_t*)calloc(1, sizeof(TSP_socket_t));
   sock->is_stopped = FALSE;
   TSP_CHECK_ALLOC(sock, 0);
 
   
-  /* On recupere l'adresse */
+  /* Decode the data adresse (get the host name and the port) */
   host = strtok_r((char* )data_address, ":", &last);
   str_port = strtok_r(NULL, ":", &last);
   port = (unsigned short)atoi(str_port);

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_sys_headers.h,v 1.7 2002-12-18 16:27:31 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_sys_headers.h,v 1.8 2002-12-24 14:14:28 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -49,6 +49,9 @@ Purpose   :
 #include <errno.h>
 /*#include "fortify.h"*/
 
+
+/* Used for gprof to work for linux multi-thread programs.
+Do not use this with others targets */
 #ifdef MT_GPROF
 #include "tsp_mtgprof.h"
 #define pthread_create gprof_pthread_create

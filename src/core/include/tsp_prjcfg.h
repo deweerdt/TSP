@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/include/Attic/tsp_prjcfg.h,v 1.3 2002-12-18 16:27:30 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/Attic/tsp_prjcfg.h,v 1.4 2002-12-24 14:14:27 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -30,7 +30,7 @@ Component : Consumer / Provider
 
 -----------------------------------------------------------------------
 
-Purpose   : 
+Purpose   : some includes
 -----------------------------------------------------------------------
  */
 

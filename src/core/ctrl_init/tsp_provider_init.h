@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl_init/tsp_provider_init.h,v 1.4 2002-12-18 16:27:23 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl_init/tsp_provider_init.h,v 1.5 2002-12-24 14:14:21 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -41,8 +41,22 @@ Purpose   : Function calls to launch a TSP Provider program
 
 #include "tsp_prjcfg.h"
 
+/**
+ * Main initialisation function for a TSP provider.
+ * Call this function at the start of your main function
+ * with the received argc/argv. Then use the modified argc/argv.
+ * @param argc You must provide the real argc before using it
+ * @param argv You must provider the real argv before using it
+ * @return TRUE or FALSE. OK = TRUE.
+ */
 int TSP_provider_init(int* argc, char** argv[]);
 
+/**
+ * Main run function for a TSP provider.
+ * Call this function to launch the provider after the initialisation
+ * @param blocking If blocking = TRUE. This function will block forever.
+ * @return TRUE or FALSE. OK = TRUE.
+ */
 int TSP_provider_run(int blocking);
 
 void TSP_provider_print_usage(void);

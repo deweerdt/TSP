@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_group_algo.h,v 1.5 2002-12-18 16:27:16 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_group_algo.h,v 1.6 2002-12-24 14:14:18 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -31,7 +31,7 @@ Component : Provider
 -----------------------------------------------------------------------
 
 Purpose   : Interface for the function used to calculate
-and use groups
+and use symbols groups
 
 -----------------------------------------------------------------------
  */
@@ -59,7 +59,17 @@ int TSP_group_algo_create_symbols_table(const TSP_sample_symbol_info_list_t* sym
 					TSP_sample_symbol_info_list_t* out_symbols,
 					TSP_groups_t* out_groups,
 					TSP_datapool_t datapool);
-void TSP_group_algo_create_symbols_table_free_call(TSP_sample_symbol_info_list_t* symbols);
+
+/**
+ * Free the memory allocated by TSP_group_algo_create_symbols_table for out_symbols
+ * @param old_out_symbols List allocated by TSP_group_algo_create_symbols_table
+ */
+void TSP_group_algo_create_symbols_table_free_call(TSP_sample_symbol_info_list_t* old_out_symbols);
+
+/**
+ * Destroy the group table
+ * @param old_out_symbols List allocated by TSP_group_algo_create_symbols_table
+ */
 void TSP_group_algo_destroy_symbols_table(TSP_groups_t* groups);
 
 /**
@@ -69,7 +79,7 @@ void TSP_group_algo_destroy_symbols_table(TSP_groups_t* groups);
 int TSP_group_algo_get_group_number(TSP_groups_t* groups);
 
 /**
-* Get the biggest group size for all computed groups
+* Get the biggest group size of all computed groups
 * @return Biggest group size
 */                                       
 int TSP_group_algo_get_biggest_group_size(TSP_groups_t* groups);

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_stream_sender.c,v 1.11 2002-12-20 09:53:06 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_stream_sender.c,v 1.12 2002-12-24 14:14:19 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -30,8 +30,8 @@ Component : Provider
 
 -----------------------------------------------------------------------
 
-Purpose   : Implementation for the functions that send the data
-stream  from the producer for the asked symbols. This layer is the network layer and uses sockets
+Purpose   : Implementation for the low level functions that send the data
+stream  to the consumers. 
 -----------------------------------------------------------------------
  */
  
@@ -64,7 +64,7 @@ struct TSP_socket_t
   int socketId;
   int hClient;
     
-  /** String for the data address ex: Myhost:27015 */
+  /** String for the data address ex: Myhost:Port */
   char data_address[TSP_DATA_ADDRESS_STRING_SIZE + 1];
 
   /**
@@ -89,7 +89,7 @@ struct TSP_socket_t
   int fifo_size;
 
   /** 
-   * When fifo size is > 0, a thread is created to send data
+   * Buffer size to prepare data for the socket
    */
   int buffer_size;
 
@@ -105,7 +105,7 @@ struct TSP_socket_t
   int is_stopped;
 
   /** 
-   * When the send fails, broken = TRUE;
+   * When the send fails, connection_ok = FALSE;
    */
   int connection_ok;
 
@@ -243,8 +243,8 @@ static void* TSP_streamer_sender_connector(void* arg)
 {
 
 
-  /* FIXME : When the client can't find us (somehow, ex : routing error)
-     here is a nice 'everything' leak (socket...) */
+  /* FIXME : When the client can't find us (somehow, ex : routing error on the network)
+     this function badly leaks */
 
   SFUNC_NAME(TSP_streamer_sender_connector);
     
@@ -315,8 +315,6 @@ TSP_stream_sender_t TSP_stream_sender_create(int fifo_size, int buffer_size)
       return 0;
     }
   
-  /* FIXME : faire la desallocation */
-  /* FIXME : si la socket ne peut pas etre connecte il y a une fuite de memoire*/
   sock = (TSP_socket_t*)calloc(1, sizeof(TSP_socket_t));
   TSP_CHECK_ALLOC(sock, 0);
 
@@ -382,11 +380,6 @@ TSP_stream_sender_t TSP_stream_sender_create(int fifo_size, int buffer_size)
 
       /* Bind to socket : */
       {
-	/*#ifndef __OSF1__
-	  long InAddr;
-	  #else
-	  in_addr_t InAddr;
-	  #endif /* __OSF1__ */
 
 	struct sockaddr_in ListenAddr;
 
@@ -459,15 +452,11 @@ TSP_stream_sender_t TSP_stream_sender_create(int fifo_size, int buffer_size)
 	  TSP_CHECK_ALLOC(sock->out_item, 0);
 	}
       
-
-      /* When the client is be connected, the thread function TSP_streamer_sender_connector will set the client_is_connected 
-	 var to TRUE */
-            
+      /* When the client is be connected, the thread function
+	 TSP_streamer_sender_connector will set the client_is_connected  var to TRUE */            
       
       status = pthread_create(&thread_connect_id, NULL, TSP_streamer_sender_connector,  sock);
-      TSP_CHECK_THREAD(status, FALSE);
-
-      
+      TSP_CHECK_THREAD(status, FALSE);      
 
     }
 
@@ -514,7 +503,7 @@ void TSP_stream_sender_stop(TSP_stream_sender_t sender)
    close(sock->socketId);
    close(sock->hClient);
 
-   /* Is there was a thread for the fifo, we must wait for him to end */
+   /* Is there was a thread for the fifo, we must wait for it to end */
    if(sock->fifo_size > 0)
      {
        pthread_join(sock->thread_id, NULL);
@@ -538,9 +527,7 @@ int TSP_stream_sender_send(TSP_stream_sender_t sender, const char *buffer, int b
 
   Total = 0;
   if(identSocket > 0)
-    {
-      
-      /* Emission du block */
+    {      
       while (bufferLen > 0)
 	{
 	  if( (nread = write(identSocket,  &buffer[Total], bufferLen)) <= 0 )
@@ -572,8 +559,8 @@ int TSP_stream_sender_send(TSP_stream_sender_t sender, const char *buffer, int b
 
 /**
  * Tells is a client is connected to the socket.
- * Note : Is a client crashes this still returns TRUE
- * @return TRUE is the client is connected
+ * If a client crashes this still returns TRUE
+ * @return TRUE if the client was connected
  */
 int TSP_stream_sender_is_client_connected(TSP_stream_sender_t sender)
 {

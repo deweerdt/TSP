@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_data_receiver.c,v 1.13 2002-12-20 09:53:10 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_data_receiver.c,v 1.14 2002-12-24 14:14:24 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -31,7 +31,7 @@ Component : Consumer
 -----------------------------------------------------------------------
 
 Purpose   : Implementation for the functions used to receive and decode the data
-stream  for the asked symbols
+stream  for the requested symbols
 -----------------------------------------------------------------------
  */
 
@@ -71,7 +71,6 @@ static int TSP_data_receiver_double_decoder(void* out_double,  char* in_buf)
 
   XDR xhandle;
   xdrmem_create(&xhandle, in_buf, TSP_SIZEOF_ENCODED_DOUBLE, XDR_DECODE);
-  /*FIXME ? Pas besoin de faire le memset ? */
   if( xdr_double(&xhandle, (double*)out_double) != TRUE)
     {
       STRACE_ERROR(("Function xdr_double failed"));
@@ -82,16 +81,11 @@ static int TSP_data_receiver_double_decoder(void* out_double,  char* in_buf)
       return TRUE;
     }
 
-  /* FIXME ? on appel par xdr_free pour un double ? */
-
 #else
   
   SFUNC_NAME(TSP_encode_double withOUT XDR);
 
-  /* FIXME : dans ce cas la fonction reussit toujours pas besoin du return */ 
-
-  *(gint64*)out_double = TSP_DECODE_DOUBLE_TO_GUINT64(in_buf);
-   
+  *(gint64*)out_double = TSP_DECODE_DOUBLE_TO_GUINT64(in_buf);   
   
   return TRUE;
 
@@ -205,14 +199,6 @@ TSP_data_receiver_t TSP_data_receiver_create(const char* data_address, TSP_sampl
 
 }
 
-/**
-* Receive data from provider and decode them.
-* @param _receiver The receiver instance (network, incore ...)
-* @param _groups The group decoder instance
-* @param sample_fifo The ring buf instance where we are going to put the new data
-* @param fifo_full If == TRUE, means that no data can be added be as sample_fifo is full
-* @param if FALSE, function failed
-*/
 int TSP_data_receiver_receive(TSP_data_receiver_t _receiver,
                               TSP_groups_t _groups,
                               TSP_sample_ringbuf_t* sample_fifo,
@@ -299,6 +285,9 @@ int TSP_data_receiver_receive(TSP_data_receiver_t _receiver,
 		      /* add time stamp */
 		      sample->time = time_stamp;
 		      sample->provider_global_index = groups[group_index].items[rank].provider_global_index;
+
+		      /* FIXME : enable callback function when the error code will be implemented
+			 for the callback */
 
 		      /*if(! (receiver->read_callback) )
 			{*/

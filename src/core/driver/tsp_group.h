@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_group.h,v 1.2 2002-12-18 16:27:27 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_group.h,v 1.3 2002-12-24 14:14:24 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -30,7 +30,7 @@ Component : Consumer
 
 -----------------------------------------------------------------------
 
-Purpose   : Interface the groups management
+Purpose   : Interface for the groups management
 
 -----------------------------------------------------------------------
  */
@@ -42,9 +42,16 @@ Purpose   : Interface the groups management
 
 #include "tsp_datastruct.h"
 
+/** The group object handle */
 typedef  void* TSP_groups_t;
 
-TSP_groups_t TSP_group_create_group_table
-(const TSP_sample_symbol_info_list_t* symbols, int group_number);
+/**
+ * Creation of the group object.
+ * @param The symbol list that will be used to create the groups.
+ * @param group_number The total number of groups
+ * @return The group object handle
+ */
+TSP_groups_t TSP_group_create_group_table (const TSP_sample_symbol_info_list_t* symbols,
+					   int group_number);
                                        
 #endif /* _TSP_GROUP_H */

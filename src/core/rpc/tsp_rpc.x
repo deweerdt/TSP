@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_rpc.x,v 1.12 2002-11-29 17:40:29 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_rpc.x,v 1.13 2002-12-24 14:14:31 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -15,12 +15,29 @@ Purpose   :
 -----------------------------------------------------------------------
  */
 
+/** Status for all functions */
 enum TSP_status_t 
 {
+	/** OK */
 	TSP_STATUS_OK,
+
+	/** Fatal error */
 	TSP_STATUS_ERROR_UNKNOWN,
+
+	/** 
+	 * Means that a detailed error string is provided by the function,
+	 * and the details of the error are in this string
+         */
 	TSP_STATUS_ERROR_SEE_STRING,	
+
+	/** 
+         * The requested version for the protocol does not match
+         */
 	TSP_STATUS_ERROR_VERSION,
+
+	/**
+         * Error with the symbols (asked or returned )
+         */
 	TSP_STATUS_ERROR_SYMBOLS	
 	
 };
@@ -110,7 +127,8 @@ struct TSP_sample_symbol_info_t
 typedef TSP_sample_symbol_info_t TSP_sample_symbol_info_list_t<>;
 
 /*
-FIXME : utiliser...
+FIXME : Use it when the consumer will be able
+to ask for a given endianity
 enum TSP_endianity_t 
 {
 	TSP_PSEUDO_XDR_LITTLE_ENDIAN,

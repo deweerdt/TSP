@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.20 2002-12-20 15:44:49 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.21 2002-12-24 14:14:23 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -85,10 +85,6 @@ static int X_tsp_init_ok = FALSE;
  */
 struct TSP_otsp_t 
 {
-  /* FIXME : avec un systeme de variables à enum indiquant chaque etat
-     de la session (request fait, sample fait, sample_int fait, gerer les erreur
-     si le client ne respecte pas les ordres d'appel, comme un automate
-  */
     
   /** Handle for the command canal connection.
    * (i.e. : handle on RPC connection for the current implementation).
@@ -412,16 +408,6 @@ void TSP_consumer_end()
   STRACE_IO(("-->OUT"));
 }
 
-/**
- * Open all providers.
- * This function will try to find several providers on a host.
- * When this function was called, TSP_close_all_provider() must be called too
- * at the end of the process
- * @param target_name the host name where the providers must be found
- * @param providers pointer on an array of providers
- * @param nb_providers total number of providers found. Use this number to iterate
- * thrue the providers array. 
- */
 void TSP_consumer_connect_all(const char*  host_name, TSP_provider_t** providers, int* nb_providers)
 {	
   SFUNC_NAME(TSP_consumer_connect_all);
@@ -483,11 +469,6 @@ void TSP_consumer_connect_all(const char*  host_name, TSP_provider_t** providers
 
 }
 
-/**
- * Close all providers.
- * This function is used to clean up after a 
- * @param provider the providers that must be close.
- */
 void TSP_consumer_disconnect_all(TSP_provider_t providers[])
 {	
   SFUNC_NAME(TSP_consumer_disconnect_all);
@@ -522,10 +503,7 @@ void TSP_consumer_disconnect_all(TSP_provider_t providers[])
 
 }
 
-/**
- * Close a provider.
- * @param provider the provider that must be close.
- */
+
 void TSP_consumer_disconnect_one(TSP_provider_t provider)
 {	
   SFUNC_NAME(TSP_consumer_disconnect_one);
@@ -541,11 +519,6 @@ void TSP_consumer_disconnect_one(TSP_provider_t provider)
 
 }
 
-/**
- * Get the provider information string
- * @param provider the provider from which the string must be read
- * @return The information structure for the provider
- */
 const char* TSP_consumer_get_connected_name(TSP_provider_t provider)			  
 {
   TSP_otsp_t* otsp = (TSP_otsp_t*)provider;
@@ -554,11 +527,6 @@ const char* TSP_consumer_get_connected_name(TSP_provider_t provider)
 }
 
 
-/**
- * Open the session for a remote_opened provider.
- * @param provider the provider on which apply the action
- * @return The action result (TRUE or FALSE)
- */
 int TSP_consumer_request_open(TSP_provider_t provider, int custom_argc, char* custom_argv[])
 {
 	
@@ -637,11 +605,6 @@ int TSP_consumer_request_open(TSP_provider_t provider, int custom_argc, char* cu
 	
 }
 
-/**
- * Close the session for a provider after a TSP_request_provider_open.
- * @param provider the provider on which apply the action
- * @return The action result (TRUE or FALSE)
- */
 int TSP_consumer_request_close(TSP_provider_t provider)
 {
 	
@@ -683,11 +646,7 @@ int TSP_consumer_request_close(TSP_provider_t provider)
 }
 
 
-/**
- * Request sample symbol information list.
- * @param provider the provider on which apply the action
- * @return The action result (TRUE or FALSE)
- */
+
 int TSP_consumer_request_information(TSP_provider_t provider)
 {
 	
@@ -758,7 +717,6 @@ int TSP_consumer_request_information(TSP_provider_t provider)
 		
       for(i = 0 ; i< symbols_number ; i++)
 	{		
-	  /* FIXME : ajouter les autres valeurs */
 	  otsp->information.symbols.val[i].index =
 	    ans_sample->symbols.TSP_sample_symbol_info_list_t_val[i].provider_global_index;
 	  otsp->information.symbols.val[i].name =
@@ -781,12 +739,7 @@ int TSP_consumer_request_information(TSP_provider_t provider)
 	
 }
 
-/**
- * Get sample symbol information list.
- * The list must habe been requested first with TSP_request_provider_information
- * @param provider the provider on which apply the action
- * @return The symbol list.
- */
+
 const TSP_consumer_information_t*  TSP_consumer_get_information(TSP_provider_t provider)
 {
   SFUNC_NAME(TSP_get_provider_information);
@@ -813,9 +766,6 @@ static int TSP_consumer_store_requested_symbols(TSP_consumer_symbol_requested_li
   SFUNC_NAME(TSP_consumer_store_requested_symbols);
 
   int i;
-  /* store requested symbols */
-  /* FIXME : faire la desallocation */
-  /* Free memory if it was already allocated */
   if(stored_sym->val)
     {
       for (i = 0 ;  i < stored_sym->len ; i++)
@@ -845,7 +795,6 @@ static int TSP_consumer_store_requested_symbols(TSP_consumer_symbol_requested_li
 }
 
 
-/* FIXME : peut etre appelé plusieurs fois */
 int TSP_consumer_request_sample(TSP_provider_t provider, TSP_consumer_symbol_requested_list_t* symbols)
 {
   SFUNC_NAME(TSP_consumer_request_sample);
@@ -871,13 +820,14 @@ int TSP_consumer_request_sample(TSP_provider_t provider, TSP_consumer_symbol_req
 
   for(i = 0 ; i <  symbols->len ; i++)
     {
-      /* FIXME ; ajouter les membres maquants */
+
       req_sample.symbols.TSP_sample_symbol_info_list_t_val[i].provider_global_index = -1;
       req_sample.symbols.TSP_sample_symbol_info_list_t_val[i].period = symbols->val[i].period;
       req_sample.symbols.TSP_sample_symbol_info_list_t_val[i].phase = symbols->val[i].phase;
       req_sample.symbols.TSP_sample_symbol_info_list_t_val[i].name = symbols->val[i].name;
     }
 	
+  /* Get the computed ans_sample from the provider */
   ans_sample = TSP_request_sample(&req_sample, otsp->server);
 
   /*free allocated request sample symbol list */
@@ -971,9 +921,6 @@ static void* TSP_request_provider_thread_receiver(void* arg)
   STRACE_IO(("-->IN"));
   STRACE_INFO(("Receiver thread started. Id=%u", pthread_self())); 
 
-    
-  /* FIXME : faire l'arret */
-  /* FIXME : faire le detach */
   while(TRUE)
     {
       if(TSP_data_receiver_receive(otsp->receiver, otsp->groups, otsp->sample_fifo, &is_fifo_full))
@@ -1011,19 +958,13 @@ int TSP_consumer_request_sample_init(TSP_provider_t provider, TSP_sample_callbac
   
   TSP_CHECK_SESSION(otsp, FALSE);
   
-  /* FIXME : la fonction rpc correspondante doit etre simplifiee 
-     en ne gardarnt que la data_adress en retour*/
-  
   req_sample.version_id = TSP_VERSION;
   req_sample.channel_id = otsp->channel_id;
-  
   
   ans_sample = TSP_request_sample_init(&req_sample, otsp->server);
   
   if( ans_sample)
     {
-      
-
       STRACE_DEBUG(("data_address = '%s'", ans_sample->data_address));
       
       /* Create the data receiver */
@@ -1146,14 +1087,14 @@ int TSP_consumer_read_sample(TSP_provider_t provider, TSP_sample_t* sample, int*
   if (*new_sample)
     {
       RINGBUF_PTR_NOCHECK_GET(otsp->sample_fifo ,(*sample));
-      /* FIXME : si on ne peut plus recevoir et que le fifo est vide --> erreur 
-	 (mémoriser un etat dans le thread), faire également un EOF ?*/
 
       /* end of stream ? */
       if ( sample->provider_global_index < 0 )
 	{
 	  ret = FALSE;
-
+	  
+	  /* GIGAFIXME : We need some kind of get_last_error to read
+	     these values thrue the consumer API */
 	  STRACE_INFO(("Received status message %X",  sample->provider_global_index));
 	  switch(sample->provider_global_index)
 	    {
@@ -1190,11 +1131,6 @@ int TSP_consumer_read_sample(TSP_provider_t provider, TSP_sample_t* sample, int*
   return ret;
 }
 
-/**
- * Get groups table (hidden debug function).
- * @param provider the provider on which apply the action 
- * @return Group table
- */ 
 TSP_groups_t TSP_test_get_groups(TSP_provider_t provider)
 {
   TSP_otsp_t* otsp = (TSP_otsp_t*)provider;

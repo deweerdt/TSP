@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.c,v 1.11 2002-12-20 09:53:06 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.c,v 1.12 2002-12-24 14:14:19 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -266,7 +266,6 @@ int TSP_add_session(channel_id_t* new_channel_id, GLU_handle_t glu_h)
 
   TSP_LOCK_MUTEX(&X_session_list_mutex,FALSE);
 
-  /* FIXME : Faire un realloc */
   /* Is there room left for the new session ? */
   if( X_session_nb == TSP_MAX_CLIENT_NUMBER)
     {
@@ -444,7 +443,7 @@ int TSP_session_send_msg_ctrl_by_channel(channel_id_t channel_id, TSP_msg_ctrl_t
   int ret;
 
   /* The mutex can not be kept 'coz' we are going to block other sessions */
-  /*So, be carefull : the session must not be suppressed when the send is active */
+  /* So, be carefull : the session must not be suppressed when the send is active */
   TSP_LOCK_MUTEX(&X_session_list_mutex,);
   TSP_GET_SESSION(session, channel_id,);
   TSP_UNLOCK_MUTEX(&X_session_list_mutex,);
@@ -499,13 +498,6 @@ int TSP_session_send_data_by_channel(channel_id_t channel_id, time_stamp_t t)
 
 }
 
-/**
- * Send data to all clients.
- * This function is called by the datapool thread,
- * and for all opened session it send available data
- * to the clients.
- * @param t current time stamp sent with the data
- */
 void TSP_session_all_session_send_data(time_stamp_t t)
 {
 
@@ -537,13 +529,6 @@ void TSP_session_all_session_send_data(time_stamp_t t)
 }
 
 
-/**
- * Send msg ctrl to all clients
- * This function is called by the datapool thread,
- * and for all opened session it send available data
- * to the clients.
- * @param msg_ctrl The message that must be sent
- */
 void TSP_session_all_session_send_msg_ctrl(TSP_msg_ctrl_t msg_ctrl)
 {
 
@@ -614,8 +599,6 @@ int TSP_session_create_data_sender_by_channel(channel_id_t channel_id, int no_fi
 	  ret = FALSE;
 	}
     }
-
-  /*FIXME : il ne faudrait pas lancer le worker avant le start feature : mettre le thread en etat d'attente*/
 
   /*--------------------*/
   /* Create data sender */
@@ -789,11 +772,6 @@ int TSP_session_get_symbols_global_index_by_channel(channel_id_t channel_id,
 
 }
 
-/**
- * Returns a session that must be destroyed.
- * @param channel_id The session that must be destroyed
- * @return FALSE = there isn't any garbage session
- */
 int TSP_session_get_garbage_session(channel_id_t* channel_id)
 {
 

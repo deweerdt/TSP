@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/include/Attic/tsp_simple_trace.h,v 1.5 2002-12-18 16:27:30 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/Attic/tsp_simple_trace.h,v 1.6 2002-12-24 14:14:27 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -30,7 +30,8 @@ Component : Consumer / Provider
 
 -----------------------------------------------------------------------
 
-Purpose   : 
+Purpose   : Some trace macro
+
 -----------------------------------------------------------------------
  */
 
