@@ -4,6 +4,7 @@ include $(DEVBASE)/make/Makeparams
 # Vars to build project
 # ---------------------
 SOURCES = \
+	bb_checkid.c \
 	bb_dump.c \
 	bb_destroy.c \
 	bb_read.c \
@@ -17,12 +18,13 @@ ADD_LIB =  $(DIRLIB)/libbb.a
 ifeq (${TSP_TARGET},vxworks)
 #TARGET= nothing to do
 else
+TARGET0=$(DIRBIN)/bb_checkid
 TARGET1=$(DIRBIN)/bb_dump
 TARGET2=$(DIRBIN)/bb_destroy
 TARGET3=$(DIRBIN)/bb_read
 TARGET4=$(DIRBIN)/bb_write
 TARGET5=$(DIRBIN)/bb_test
-TARGETS=$(TARGET1) $(TARGET2) $(TARGET3) $(TARGET4) $(TARGET5)
+TARGETS=$(TARGET0) $(TARGET1) $(TARGET2) $(TARGET3) $(TARGET4) $(TARGET5)
 endif
 
 CPPFLAGS += -I..

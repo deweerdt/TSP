@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_utils.h,v 1.1 2004-09-13 23:19:23 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_utils.h,v 1.2 2004-11-07 18:23:55 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -98,6 +98,9 @@ bb_utils_build_sem_name(const char* sem_name);
 char*
 bb_utils_build_msg_name(const char* sem_name);
 
+key_t
+bb_utils_ntok_user(const char* name, int32_t user_specific_value);
+
 /**
  * Construit une clef IPC SysV à partir d'un nom.
  * L'objectif de cette fonction est de générer des
@@ -113,6 +116,7 @@ bb_utils_build_msg_name(const char* sem_name);
  */
 key_t
 bb_utils_ntok(const char* name);
+
 
 int32_t 
 bb_logMsg(const BB_LOG_LEVEL_T e_level, const char* pc_who, char* pc_fmt, ...);

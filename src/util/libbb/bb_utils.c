@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_utils.c,v 1.4 2004-10-18 20:36:56 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_utils.c,v 1.5 2004-11-07 18:23:55 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -80,7 +80,7 @@ bb_utils_build_sem_name(const char* sem_name) {
   if (retval!=NULL) {
     strncpy(retval,prefix,strlen(prefix));
     strncpy(retval+strlen(prefix),sem_name,strlen(sem_name));
-    strncpy(retval+strlen(prefix)+strlen(sem_name),sem_name,strlen(postfix));    
+    strncpy(retval+strlen(prefix)+strlen(sem_name),postfix,strlen(postfix));    
     retval[i_size_name-1] = '\0';
   }
   
@@ -101,7 +101,7 @@ bb_utils_build_msg_name(const char* msg_name) {
   if (retval!=NULL) {
     strncpy(retval,prefix,strlen(prefix));
     strncpy(retval+strlen(prefix),msg_name,strlen(msg_name));
-    strncpy(retval+strlen(prefix)+strlen(msg_name),msg_name,strlen(postfix));    
+    strncpy(retval+strlen(prefix)+strlen(msg_name),postfix,strlen(postfix));    
     retval[i_size_name-1] = '\0';
   }
   
@@ -109,20 +109,18 @@ bb_utils_build_msg_name(const char* msg_name) {
 } /* end of bb_utils_build_msg_name */
 
 key_t
-bb_utils_ntok(const char* name) {
+bb_utils_ntok_user(const char* name, int32_t user_specific) {
   key_t s_key;
-  uid_t uid;
   int32_t retcode;
   
   SHA1Context sha;
   uint8_t Message_Digest[20];
 
-  uid = getuid();
   /* We use the first byte of a SHA1 hash of the BBname
    * unless the algorithm fail.
    * If SHA1 fail we go back to poor key generation method
    * using the name length.
-   * In both case we must Xored the key with uid in order
+   * In both case we must Xored the key with user_specific in order
    * to isolate different user from using the same key
    */
   retcode  = SHA1Reset(&sha);
@@ -131,17 +129,22 @@ bb_utils_ntok(const char* name) {
 
   /* SHA 1 NOK back to old poor method */
   if (0 != retcode) {
-    s_key = ((strlen(name) << 16) & 0xFFFF0000) | (uid & 0x0000FFFF);
+    s_key = ((strlen(name) << 16) & 0xFFFF0000) ^ (user_specific & 0x0000FFFF);
   } else {
     s_key = (Message_Digest[0]        |
 	     (Message_Digest[1] << 8) |
 	     (Message_Digest[2] << 16)|
-	     (Message_Digest[3] << 24)) &
-      (~uid);
-	     
-      
+	     (Message_Digest[3] << 24)) ^
+      user_specific;	           
   }
   return s_key;
+} /* end of bb_utils_ntok_user */
+
+key_t
+bb_utils_ntok(const char* name) {
+
+  return bb_utils_ntok_user(name,getuid());
+
 } /* end of bb_utils_ntok */
 
 int32_t 
