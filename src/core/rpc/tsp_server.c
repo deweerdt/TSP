@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_server.c,v 1.1 2002-08-27 08:56:09 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_server.c,v 1.2 2002-09-05 09:25:40 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -13,13 +13,15 @@ Component : Provider
 Purpose   : 
 
 -----------------------------------------------------------------------
- */
+*/
 
 #include "tsp_sys_headers.h"
 
 #include "tsp_server.h"
 
 #include "tsp_rpc.h"
+/*#include "glue_sserver.h"*/
+
 /*#include "tsp_provider.h" */
 
 TSP_server_info_t* tsp_server_info_1_svc(struct svc_req *rqstp)
@@ -201,28 +203,39 @@ tsp_rpc_1(struct svc_req *rqstp, register SVCXPRT *transp);
 int TSP_command_init(int server_number)
 {
   SFUNC_NAME(TSP_command_init);
-
 		
-  pid_t pid;
-  int i;
-  int mode = RPC_SVC_MT_AUTO;
   int ret = TRUE;
+  register SVCXPRT *transp;
 
   /* Create prog id */
   gint32 rpc_progid = TSP_get_progid(server_number);
 
   STRACE_IO(("-->IN server number=%d",server_number ));
 
-  if (!rpc_control(RPC_SVC_MTMODE_SET, &mode)) {
-    STRACE_ERROR(("unable to set automatic MT mode."));
-    ret = FALSE;
-  }
+/*#ifdef TSP_SYSTEM_HAVE_SVC_CREATE	
+  if (ret && !svc_create(tsp_rpc_1, rpc_progid, TSP_RPC_VERSION_INITIAL, "tcp"))
+    {
+      STRACE_ERROR(("unable to create (rpc_progid=%d,TSP_RPC_VERSION_INITIAL) for tcp.", rpc_progid ));
+      ret = FALSE;
+    }
+#else*/
 	
-  if (ret && !svc_create(tsp_rpc_1, rpc_progid, TSP_RPC_VERSION_INITIAL, "tcp")) {
-    STRACE_ERROR(("unable to create (rpc_progid,TSP_RPC_VERSION_INITIAL) for tcp."));
+  /* svc_create does not exist for linux, we must use the deprecated function */
+
+  pmap_unset (rpc_progid, TSP_RPC_VERSION_INITIAL);
+	
+  transp = svctcp_create(RPC_ANYSOCK, 0, 0);
+  if (transp == NULL) 
+    {
+    STRACE_ERROR(("Cannot create TCP service"));
     ret = FALSE;
   }
-
+  if (ret && !svc_register(transp,rpc_progid,TSP_RPC_VERSION_INITIAL , tsp_rpc_1, IPPROTO_TCP)) {
+    STRACE_ERROR(("unable to register (rpc_progid=%d, TSP_RPC_VERSION_INITIAL, tcp).",  rpc_progid))
+    fprintf (stderr, "%s", "unable to register (TSP_RPC, TSP_RPC_VERSION_INITIAL, tcp).");
+    ret = FALSE;
+  }
+/*#endif*/
 	
   if (ret)
     {
