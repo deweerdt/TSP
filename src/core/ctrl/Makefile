@@ -22,8 +22,6 @@ TARGET=$(DIRLIB)/libtsp_provider.a
 all::
 	$(MAKE) common debug
 
-clean::
-	$(MAKE) destroy
 common:
 	$(MAKE) T=provider$(D) build
 debug::
@@ -33,8 +31,18 @@ build : $(TARGET)($(OBJECTS))
 
 
 
+
+clean::
+	$(MAKE) clean_common clean_debug
+
+clean_debug:
+	$(MAKE) D=.debug clean_common
+
+clean_common:
+	$(MAKE) T=provider$(D) destroy
+
 destroy :
-	$(RM) 	$(TARGET) 
+	$(RM) 	$(TARGET)
 
 
 
