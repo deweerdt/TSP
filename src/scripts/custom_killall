@@ -1,0 +1,10 @@
+#!/bin/tcsh
+
+# Waiting for time out
+set pids = `ps -edf | egrep -v "grep|killall" | grep $1  | awk '{ print $2 }'`
+if ($#pids > 0) then
+      kill  $pids
+      sleep 1
+endif
+
+
