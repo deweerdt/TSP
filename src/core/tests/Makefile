@@ -6,7 +6,8 @@ clean::
 
 SUBDIRS =  \
 	etape1 \
-	stage2
+	stage2 \
+	stage3
 
 
 
