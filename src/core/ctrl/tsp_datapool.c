@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_datapool.c,v 1.19 2004-09-16 07:53:18 dufy Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_datapool.c,v 1.20 2004-09-16 09:38:42 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -144,40 +144,44 @@ int TSP_datapool_push_commit(time_stamp_t time_stamp, GLU_get_state_t state)
   STRACE_DEBUG(("Datapool push new item time %d",time_stamp)); 
 
    /* Send end status message */
-  if (state == GLU_GET_NEW_ITEM) 
+  switch(state)
     {
-      /* Yep ! throw data to client */
-      /* Send data to all clients  */	      		  
+    case GLU_GET_NO_ITEM :
+      /* nothing to do */
+      break;
+
+    case GLU_GET_NEW_ITEM :
+      /* Yep ! throw data to all clients */
       /* For a global datapool, the thread must not end, even if a client is disconnected, so
 	 we do not check any returned value from TSP_session_all_session_send_data */
       TSP_session_all_session_send_data(time_stamp);		  
-    } else {
-      TSP_msg_ctrl_t msg_ctrl;  
-      switch(state)
-	{
-	case   GLU_GET_EOF :
-	  msg_ctrl = TSP_MSG_CTRL_EOF;
-	  STRACE_INFO(("GLU sent EOF"));
-	  break;
-	case   GLU_GET_RECONF :
-	  msg_ctrl = TSP_MSG_CTRL_RECONF;
-	  STRACE_INFO(("GLU sent RECONF"));
-	  break;
-	case   GLU_GET_DATA_LOST :
-	  msg_ctrl = TSP_MSG_CTRL_GLU_DATA_LOST;
-	  STRACE_INFO(("GLU sent DATA_LOST"));
-	  break;
-	default:
-	  STRACE_ERROR(("?"));
-	  assert(0);
-	}
+      break;
 
-      /* Send msgctrl to all clients  */	      
-      TSP_session_all_session_send_msg_ctrl(msg_ctrl);		  
-
-      /* End of thread. Our datapool is dead */
+    case GLU_GET_EOF :
+      TSP_session_all_session_send_msg_ctrl(TSP_MSG_CTRL_EOF);
+      STRACE_INFO(("GLU sent EOF"));
+      /* End of flow. Our datapool is dead */
       X_global_datapool.terminated = TRUE;
+      break;
+
+    case GLU_GET_RECONF :
+      TSP_session_all_session_send_msg_ctrl(TSP_MSG_CTRL_RECONF);
+      STRACE_INFO(("GLU sent RECONF"));
+      /* End of flow. Our datapool is dead */
+      X_global_datapool.terminated = TRUE;
+      break;
+
+    case GLU_GET_DATA_LOST :
+      TSP_session_all_session_send_msg_ctrl(TSP_MSG_CTRL_GLU_DATA_LOST);
+      STRACE_INFO(("GLU sent DATA_LOST"));
+      break;
+
+    default:
+      STRACE_ERROR(("?"));
+      assert(0);
     }
+
+
   return 0;  
 }
 

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.c,v 1.16 2004-09-16 07:53:18 dufy Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.c,v 1.17 2004-09-16 09:38:42 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -503,7 +503,7 @@ int TSP_session_create_data_sender_by_channel(channel_id_t channel_id, int no_fi
 	     datapool per client */
 	  if (no_fifo)
 	    {
-	      ret = 0; /*TSP_local_datapool_start_thread(session->session_data->datapool);*/
+	      ret = TRUE; /*No more ... TSP_local_datapool_start_thread(session->session_data->datapool);*/
 	      if(!ret)
 		{
 		  STRACE_ERROR(("Unable to launch local datapool worker thread"));
