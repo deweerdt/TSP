@@ -1,0 +1,26 @@
+#/usr/bin/csh
+
+if ($#argv <> 1) then
+	echo "usage : $0 'dir_target'"
+	exit (1)
+endif
+
+alias lcvs 'cvs -d /home2/breiz/tnt/CVSROOT '
+alias gcvs 'cvs -d /home2/breiz/dev442/CVSROOT'
+
+set dirtarget = $1
+cd $dirtarget
+
+echo "INFO : $0 will checkout sources files in $dirtarget"
+
+
+#------ make ------
+lcvs checkout -P make
+
+#------ src ------
+lcvs checkout -P src/Makefile  src/scripts  src/doxy
+
+#------ services generiques ------
+cd src
+gcvs checkout -P tsp
+

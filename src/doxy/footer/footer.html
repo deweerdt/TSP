@@ -1,0 +1,108 @@
+<HTML>
+<HEAD>
+   <TITLE>Framework Home Page.</TITLE>
+   <META NAME="Author" CONTENT="Stephane GARAY">
+   <SCRIPT LANGUAGE="javascript">
+      <!-- Debut du script
+
+      c1 = new Image(); c1.src = "c1.gif"
+      c2 = new Image(); c2.src = "c2.gif"
+      c3 = new Image(); c3.src = "c3.gif"
+      c4 = new Image(); c4.src = "c4.gif"
+      c5 = new Image(); c5.src = "c5.gif"
+      c6 = new Image(); c6.src = "c6.gif"
+      c7 = new Image(); c7.src = "c7.gif"
+      c8 = new Image(); c8.src = "c8.gif"
+      c9 = new Image(); c9.src = "c9.gif"
+      c0 = new Image(); c0.src = "c0.gif"
+      cb = new Image(); cb.src = "cb.gif"
+      am = new Image(); am.src = "am.gif"
+      pm = new Image(); pm.src = "pm.gif"
+
+      function VersionNavigateur(Netscape,Explorer) {
+         if ((navigator.appVersion.substring(0,3) >= Netscape && navigator.appName == 'Netscape') ||
+             (navigator.appVersion.substring(0,3) >= Explorer && navigator.appName.substring(0,9) == 'Microsoft'))
+            return true
+         else
+            return false
+      }
+
+      function Extract(h,m,s,type) {
+         if (!document.images)
+            return
+         if (h <= 9) {
+            document.images.a.src = cb.src
+            document.images.b.src = eval("c" + h + ".src")
+         }
+         else {
+            document.images.a.src = eval("c" + Math.floor(h / 10) + ".src")
+            document.images.b.src = eval("c" +           (h % 10) + ".src")
+         }
+         if (m <= 9) {
+            document.images.d.src = c0.src
+            document.images.e.src = eval("c" + m + ".src")
+         }
+         else {
+            document.images.d.src = eval("c" + Math.floor(m / 10) + ".src")
+            document.images.e.src = eval("c" +           (m % 10) + ".src")
+         }
+         if (s <= 9) {
+            document.images.g.src = c0.src
+            document.images.h.src = eval("c" + s + ".src")
+         }
+         else {
+            document.images.g.src = eval("c" + Math.floor(s / 10) + ".src")
+            document.images.h.src = eval("c" +           (s % 10) + ".src")
+         }
+         if (type == "AM")
+            document.images.j.src = am.src
+         else
+            document.images.j.src = pm.src
+      }
+
+      function updateTime() {
+         if (!document.images)
+            return
+         var digital = new Date()
+         var hours   = digital.getHours()
+         var minutes = digital.getMinutes()
+         var seconds = digital.getSeconds()
+         var dn      = "AM"
+         if ((hours >= 12) && (minutes >= 1) || (hours >= 13)) {
+            dn    = "PM"
+            hours = hours - 12
+         }
+         if (hours == 0)
+            hours = 12
+         Extract(hours,minutes,seconds,dn)
+         setTimeout("updateTime()",1000)
+      }
+
+   // Fin du script -->
+   </SCRIPT>
+</HEAD>
+
+<BODY onLoad="updateTime()">
+
+<CENTER><TABLE WIDTH="90%" >
+<TR>
+<TD ALIGN=LEFT><IMG SRC="crazy_computer.gif" NOSAVE HEIGHT=150 WIDTH=150></TD>
+<TD>
+<DIV ALIGN=right><TABLE>
+<TR>
+<TD>
+<CENTER><B>ATTENTION : RTT en cours...</B></CENTER>
+</TD>
+</TR>
+
+<TR>
+<TD ALIGN=RIGHT>
+<IMG SRC="cb.gif" NAME="a" ALIGN=TOP><IMG SRC="cb.gif" NAME="b" ALIGN=TOP><IMG SRC="pt.gif" NAME="c" ALIGN=TOP><IMG SRC="cb.gif" NAME="d" ALIGN=TOP><IMG SRC="cb.gif" NAME="e" ALIGN=TOP><IMG SRC="pt.gif" NAME="f" ALIGN=TOP><IMG SRC="cb.gif" NAME="g" ALIGN=TOP><IMG SRC="cb.gif" NAME="h" ALIGN=TOP><IMG SRC="am.gif" NAME="j" ALIGN=TOP>
+</TD>
+</TR>
+</TABLE></DIV></TD>
+</TR>
+</TABLE></CENTER>
+</UL>
+</BODY>
+</HTML>

@@ -1,0 +1,12 @@
+#Makeparams.producer.debug
+
+include $(DEVBASE)/make/Makeproject
+
+# target directory
+# ----------------
+DIRBIN = $(BINBASE)/bin.provider.debug
+DIRLIB = $(LIBBASE)/lib.provider.debug
+
+# customize
+# ----------------
+include $(DEVBASE)/make/Makeparams.suncdt.debug

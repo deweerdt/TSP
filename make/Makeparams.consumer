@@ -1,0 +1,14 @@
+#Makeparams.consumer
+
+include $(DEVBASE)/make/Makeproject
+
+# target directory
+# ----------------
+
+DIRBIN = $(BINBASE)/bin.consumer
+DIRLIB = $(LIBBASE)/lib.consumer
+
+
+# customize
+# ----------------
+include $(DEVBASE)/make/Makeparams.suncdt

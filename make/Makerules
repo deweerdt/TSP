@@ -1,0 +1,111 @@
+# Makerules
+
+# default targets section
+# -----------------------
+all::
+	$(MAKE) export_include
+	$(MAKE) export_script
+
+clean::
+	$(MAKE) remove_include
+	$(MAKE) remove_script
+
+# Building rules section
+# ----------------------
+%.o : %.c
+	@echo "@@@ Compiling $< ..."
+	$(COMPILE.c) $< -o $@
+
+$(DIRLIB)/%.o : %.c
+	@echo "@@@ Compiling $< ..."
+	$(COMPILE.c) $< -o $@
+
+$(DIRBIN)/%.o : %.c
+	@echo "@@@ Compiling $< ..."
+	$(COMPILE.c) $< -o $@
+
+% : %.c
+	@echo "@@@ Linking $< ..."
+	$(LINK.c) $< -o $@ $(LDLIBS)
+
+$(DIRBIN)/% : %.c
+	@echo "@@@ Linking $< ..."
+	$(LINK.c) $< -o $@ $(LDLIBS)
+
+.o.a:
+	$(AR) $(ARFLAGS) $@ $%
+
+
+# export VXLOAD objects load script section
+# -----------------------------------------
+%.ld : $(DIRBIN)/%.ld
+
+$(DIRBIN)/%.ld :
+	@$(RM) $@
+	@for obj in $(VXLOAD); \
+	 do \
+		echo "ld < $$obj" >> $@; \
+	 done
+
+%.unld : $(DIRBIN)/%.unld
+
+$(DIRBIN)/%.unld :
+	@$(RM) $@
+	@for obj in $(VXLOAD); \
+	 do \
+		echo "unld \"$$obj\"" >> $@; \
+	 done
+
+# Make shared lib
+# ---------------
+$(DIRSHLIB)/$(SHLIB_TARGET).so.1.0 : $(DIRLIB)/$(LIB_TARGET).a
+	@echo "making shared library ..."
+	( \
+ 	  objs=`$(AR) -t $(DIRLIB)/$(LIB_TARGET).a`; \
+ 	  $(AR) -x $(DIRLIB)/$(LIB_TARGET).a $${objs} ; \
+ 	  $(LD) -o $(DIRSHLIB)/$(SHLIB_TARGET).so.1.0 -G -z text -h $(SHLIB_TARGET).so.1.0 $${objs} -R$(DIRSHLIB); \
+ 	  $(RM) $${objs}; \
+	  cd $(DIRSHLIB); \
+ 	  $(RM) $(SHLIB_TARGET).so; \
+ 	  ln -s $(SHLIB_TARGET).so.1.0 $(SHLIB_TARGET).so; \
+	)
+
+make_shlib : $(DIRSHLIB)/$(SHLIB_TARGET).so.1.0
+
+remove_shlib:
+	@echo "removing shared library..."
+	$(RM) $(DIRSHLIB)/$(SHLIB_TARGET).*
+
+# shared includes section
+# -----------------------
+$(DIRINC)/%.h : %.h
+	@echo "@@@ installing exported include ($<) ..."
+	$(RM) $@
+	cp -f $< $@
+
+$(DIRINC)/%.def : %.def
+	@echo "@@@ installing exported include ($<) ..."
+	$(RM) $@
+	cp -f $< $@
+
+export_include: $(XINC:%.h=$(DIRINC)/%.h) $(XINC:%.def=$(DIRINC)/%.def)
+
+remove_include:
+	@echo "@@@ removing installed includes ..."
+	$(RM) $(XINC:%=$(DIRINC)/%)
+
+# shared scripts section
+# ----------------------
+$(DIRSCRIPT)/% : %
+	@echo "@@@ installing exported script ($<) ..."
+	$(RM) $@
+	cp -f $< $@
+	chmod a+x $@
+
+export_script: $(XSCRIPT:%=$(DIRSCRIPT)/%)
+
+remove_script:
+	@echo "@@@ removing installed scripts ..."
+	$(RM) $(XSCRIPT:%=$(DIRSCRIPT)/%)
+
+include $(DEVBASE)/make/Makerules.rpc

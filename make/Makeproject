@@ -1,0 +1,15 @@
+# Makeproject
+
+.KEEP_STATE:
+
+# Default options
+# ---------------
+DIRINC    = $(DEVBASE)/exec/DEV/.include
+DIRSCRIPT = $(DEVBASE)/exec/DEV/scripts
+
+BINBASE = $(DEVBASE)/exec/DEV
+LIBBASE = $(DEVBASE)/exec/DEV/.lib
+
+NTL1BASE = /home2/breiz/dev442/tl1/versions/v117
+
+CPPFLAGS += -I$(DIRINC)

@@ -1,0 +1,61 @@
+# Makerules.rpc
+
+RPCGEN = rpcgen
+#RPCGEN.VX = $(DEVBASE)/tools/rpcgen/vxrpcgen
+RPCGEN.UNIX = /usr/bin/rpcgen
+RPCGEN.VX = $(RPCGEN.UNIX)
+
+#---------------------------------------------------------------#
+#       Files
+#---------------------------------------------------------------#
+RPC_FILES_SRC = $(RPC)_svc.c $(RPC)_clnt.c $(RPC)_xdr.c
+ 
+RPC_CLNT_SRC =  $(RPC)_clnt.c $(RPC)_xdr.c
+RPC_SVC_SRC  =  $(RPC)_svc.c  $(RPC)_xdr.c
+ 
+# Building rules section
+# ----------------------
+
+rpcgen: $(RPC).h
+
+$(RPC).h : $(RPC).x 
+	@echo "@@@ Generating RPC stubs ..."
+	echo "#ifdef VXWORKS" > $(RPC).h
+	$(RPCGEN.VX) $(RPCGENFLAGS) -h $(RPC).x >> $(RPC).h
+	echo "#else /* !VXWORKS */" >> $(RPC).h
+	$(RPCGEN.UNIX) $(RPCGENFLAGS) -h $(RPC).x >> $(RPC).h
+	echo "#endif /* !VXWORKS */" >> $(RPC).h
+	#
+	echo "#ifdef VXWORKS" > $(RPC)_xdr.c
+	$(RPCGEN.VX) $(RPCGENFLAGS) -c $(RPC).x >> $(RPC)_xdr.c
+	echo "#else /* !VXWORKS */" >> $(RPC)_xdr.c
+	$(RPCGEN.UNIX) $(RPCGENFLAGS) -c $(RPC).x >> $(RPC)_xdr.c 
+	echo "#endif /* !VXWORKS */" >> $(RPC)_xdr.c
+	#
+	echo "#ifdef VXWORKS" > $(RPC)_clnt.c
+	$(RPCGEN.VX) $(RPCGENFLAGS) -l $(RPC).x >> $(RPC)_clnt.c
+	echo "#else /* !VXWORKS */" >> $(RPC)_clnt.c
+	$(RPCGEN.UNIX) $(RPCGENFLAGS) -l $(RPC).x >> $(RPC)_clnt.c 
+	echo "#endif /* !VXWORKS */" >> $(RPC)_clnt.c
+	#
+	echo "#ifdef VXWORKS" > $(RPC)_svc.c
+	$(RPCGEN.VX) $(RPCGENFLAGS) -s tcp $(RPC).x >> $(RPC)_svc.c
+	echo "#else /* !VXWORKS */" >> $(RPC)_svc.c
+	$(RPCGEN.UNIX) $(RPCGENFLAGS) -m $(RPC).x >> $(RPC)_svc.c 
+	echo "#endif /* !VXWORKS */" >> $(RPC)_svc.c
+
+rpc.server.bin : $(RPC_SVC_SRC:%.c=$(DIRBIN)/%.o) $(RPC_SERVER_SRC:%.c=$(DIRBIN)/%.o)
+ 
+rpc.server.lib : $(DIRLIB)/lib$(RPC)$(RPC_LIB_SUFFIX).a($(RPC_SVC_SRC:%.c=%.o) $(RPC_SERVER_SRC:%.c=%.o))
+ 
+rpc.client.bin : $(RPC_CLNT_SRC:%.c=$(DIRBIN)/%.o) $(RPC_CLIENT_SRC:%.c=$(DIRBIN)/%.o)
+ 
+rpc.client.lib : $(DIRLIB)/lib$(RPC)$(RPC_LIB_SUFFIX).a($(RPC_CLNT_SRC:%.c=%.o) $(RPC_CLIENT_SRC:%.c=%.o))
+
+rpc.clean:
+	@echo "@@@ removing RPC server objects and client objects ..."
+	$(RM) $(RPC).h $(RPC_FILES_SRC)
+	$(RM) $(RPC_FILES_SRC:%.c=$(DIRBIN)/%.o)
+	$(RM) $(RPC_SERVER_SRC:%.c=$(DIRBIN)/%.o) 
+	$(RM) $(RPC_CLIENT_SRC:%.c=$(DIRBIN)/%.o) 
+	$(RM) $(DIRLIB)/lib$(RPC)$(RPC_LIB_SUFFIX).a

@@ -1,0 +1,12 @@
+#Makeparams.producer
+
+include $(DEVBASE)/make/Makeproject
+
+# target directory
+# ----------------
+DIRBIN = $(BINBASE)/bin.provider
+DIRLIB = $(LIBBASE)/lib.provider
+
+# customize
+# ----------------
+include $(DEVBASE)/make/Makeparams.suncdt
