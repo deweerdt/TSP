@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_data_receiver.c,v 1.10 2002-12-05 10:55:22 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_data_receiver.c,v 1.11 2002-12-17 15:28:19 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -215,6 +215,7 @@ int TSP_data_receiver_receive(TSP_data_receiver_t _receiver,
   *fifo_full = FALSE;
   sample = &sample_buf;
 
+
   /* We read data if there enough room in ringbuf to store data, else, do nothing ; 
      we want the biggest group to have enough room, so we use max_group_len
      which the size of the biggest group and we compare with room left in ringbuf*/
@@ -234,7 +235,7 @@ int TSP_data_receiver_receive(TSP_data_receiver_t _receiver,
 	  int buf_len;
 	  time_stamp = TSP_DECODE_INT(buf_int[0]);
 	  group_index = TSP_DECODE_INT(buf_int[1]);
-	
+
 	  /* Check if the group_index looks real */
 	  if ((group_index < nb_groups) && (group_index >= 0) )
 	    {
@@ -256,47 +257,36 @@ int TSP_data_receiver_receive(TSP_data_receiver_t _receiver,
 		  for( rank = 0 ; rank < groups[group_index].group_len ; rank++)
 		    {
 
+
 		      /*--------------*/
-		      if(! (receiver->read_callback) )
-			{
+		     /* if(! (receiver->read_callback) )
+			{*/
 			  sample = RINGBUF_PTR_PUTBYADDR(sample_fifo);
-			}
+			  assert(sample); /* can not be full, be design */
+			/*}*/
 		      /*--------------*/
 
-                     
-		      if(sample)
+		      /* Call registered function to decode data */
+		      ret = (groups[group_index].items[rank].data_decoder)(&(sample->user_value),in_buf);
+		      if(!ret)
 			{
-			  /* Call registered function to decode data */
-			  assert(groups[group_index].items[rank].data_decoder);		      
-			  ret = (groups[group_index].items[rank].data_decoder)(&(sample->user_value),in_buf);
-			  if(!ret)
-			    {
-			      STRACE_ERROR(("decoder function failed"));
-			      break;
-			    }
-		     
-			  /* add time stamp */
-			  sample->time = time_stamp;
-			  sample->provider_global_index = groups[group_index].items[rank].provider_global_index;
-
-			  if(! (receiver->read_callback) )
-			    {
-			      RINGBUF_PTR_PUTBYADDR_COMMIT(sample_fifo);
-			    }
-			  else
-			    {
-			      (receiver->read_callback)(sample);
-			    }
+			  STRACE_ERROR(("decoder function failed"));
+			  break;
 			}
+		     
+		      /* add time stamp */
+		      sample->time = time_stamp;
+		      sample->provider_global_index = groups[group_index].items[rank].provider_global_index;
+
+		      /*if(! (receiver->read_callback) )
+			{*/
+		      /*(sample_fifo)->put = ((sample_fifo)->put + 1) % (sample_fifo)->size ;*/
+			  RINGBUF_PTR_PUTBYADDR_COMMIT(sample_fifo);
+			/*}
 		      else
 			{
-			  STRACE_ERROR(("Receive RingBuffer full : %d missed data. Looks like a bug",
-					RINGBUF_PTR_MISSED(sample_fifo)));
-			  /* FIXME : This else  must be suppressed. If we are here. It is a bug 'coz' the
-			   fifo can not be full, by design */
-			  assert(0);
-			  exit(-1);
-			}
+			  (receiver->read_callback)(sample);
+			}*/
 
 		      /* Goto next symbol */
 		      in_buf += groups[group_index].items[rank].sizeof_encoded_item;
