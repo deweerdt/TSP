@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_rpc_confprogid.h,v 1.2 2002-12-18 16:27:36 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_rpc_confprogid.h,v 1.3 2004-08-31 09:58:53 dufy Exp $
 
 -----------------------------------------------------------------------
 
@@ -42,6 +42,6 @@ Purpose   :
 
 int TSP_get_progid_total_number(void);
 
-gint32 TSP_get_progid(gint n);
+uint32_t TSP_get_progid(int n);
 
 #endif /* _TSP_RPC_CONFPROGID */

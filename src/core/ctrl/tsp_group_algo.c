@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_group_algo.c,v 1.9 2002-12-24 14:14:18 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_group_algo.c,v 1.10 2004-08-31 09:58:52 dufy Exp $
 
 -----------------------------------------------------------------------
 
@@ -81,8 +81,8 @@ int TSP_group_algo_get_nb_groups(const TSP_sample_symbol_info_list_t* symbols)
   SFUNC_NAME(TSP_group_algo_get_nb_groups);
 
 	
-  guint32 nb_symbols = symbols->TSP_sample_symbol_info_list_t_len;
-  guint32 i;
+  uint32_t nb_symbols = symbols->TSP_sample_symbol_info_list_t_len;
+  uint32_t i;
   int nb_groups = 0;
    
     
@@ -145,8 +145,8 @@ static int TSP_group_algo_get_group_size(const TSP_sample_symbol_info_list_t* sy
 
     
   int group_size = 0;
-  guint32 nb_symbols = symbols->TSP_sample_symbol_info_list_t_len;
-  guint32 i;
+  uint32_t nb_symbols = symbols->TSP_sample_symbol_info_list_t_len;
+  uint32_t i;
 
   STRACE_IO(("-->IN"));
 
@@ -334,9 +334,9 @@ int TSP_group_algo_create_symbols_table(const TSP_sample_symbol_info_list_t* in_
   int group_id; /**< id for a group */
     
   /* total number of in symbols*/
-  guint32 nb_symbols = in_symbols->TSP_sample_symbol_info_list_t_len;
+  uint32_t nb_symbols = in_symbols->TSP_sample_symbol_info_list_t_len;
     
-  guint32 out_current_info, in_current_info;
+  uint32_t out_current_info, in_current_info;
   TSP_sample_symbol_info_t* in_info;
   TSP_sample_symbol_info_t* out_info;
     

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_data_sender.c,v 1.13 2002-12-24 14:14:17 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_data_sender.c,v 1.14 2004-08-31 09:58:52 dufy Exp $
 
 -----------------------------------------------------------------------
 
@@ -49,6 +49,7 @@ stream  for the asked symbols
 #include "tsp_group_algo_data.h"
 
 #include "tsp_stream_sender.h"
+#include "tsp_const_def.h"
 
 #define TSP_XDR_BUF_SIZE 8192
 
@@ -110,7 +111,7 @@ static u_int TSP_data_sender_double_encoder(void* v_double,  char* out_buf, u_in
     }
   else
     {
-      *(guint64*)out_buf = TSP_ENCODE_DOUBLE_TO_GUINT64(v_double);
+      *(uint64_t*)out_buf = TSP_ENCODE_DOUBLE_TO_UINT64(v_double);
       return (u_int)sizeof(double);
     }
 

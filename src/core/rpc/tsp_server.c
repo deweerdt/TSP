@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_server.c,v 1.11 2004-07-28 13:05:38 mia Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_server.c,v 1.12 2004-08-31 09:58:53 dufy Exp $
 
 -----------------------------------------------------------------------
 
@@ -235,7 +235,7 @@ static TSP_rpc_init(int server_number)
   register SVCXPRT *transp;
 
   /* Create prog id */
-  gint32 rpc_progid = TSP_get_progid(server_number);
+  int32_t rpc_progid = TSP_get_progid(server_number);
 
   STRACE_IO(("-->IN server number=%d",server_number ));
 

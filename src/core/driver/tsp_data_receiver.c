@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_data_receiver.c,v 1.15 2003-12-27 13:30:59 uid67973 Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_data_receiver.c,v 1.16 2004-08-31 09:58:52 dufy Exp $
 
 -----------------------------------------------------------------------
 
@@ -87,7 +87,7 @@ static int TSP_data_receiver_double_decoder(void* out_double,  char* in_buf)
   
   SFUNC_NAME(TSP_encode_double withOUT XDR);
 
-  *(gint64*)out_double = TSP_DECODE_DOUBLE_TO_GUINT64(in_buf);   
+  *(uint64_t*)out_double = TSP_DECODE_DOUBLE_TO_UINT64(in_buf);   
   
   return TRUE;
 

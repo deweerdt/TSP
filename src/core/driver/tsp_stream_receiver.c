@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_stream_receiver.c,v 1.7 2002-12-24 14:14:25 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_stream_receiver.c,v 1.8 2004-08-31 09:58:52 dufy Exp $
 
 -----------------------------------------------------------------------
 
@@ -156,7 +156,7 @@ TSP_stream_receiver_t TSP_stream_receiver_create(const  char* data_address)
       {
 	/* we do not use in_addr_t, since it does not work with Solaris,
 	 and anyway, any system typedef this as an int or uint*/
-        guint32 InAddr;
+        uint32_t InAddr;
 
 	struct sockaddr_in readAddr;
 

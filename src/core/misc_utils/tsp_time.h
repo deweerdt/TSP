@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/misc_utils/tsp_time.h,v 1.5 2003-02-03 11:57:48 SyntDev1 Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/misc_utils/tsp_time.h,v 1.6 2004-08-31 09:58:52 dufy Exp $
 
 -----------------------------------------------------------------------
 
@@ -39,7 +39,7 @@ Purpose   : Interface for tsp time functions
 
 #include "tsp_prjcfg.h"
 
-typedef gint64  tsp_hrtime_t;
+typedef uint64_t  tsp_hrtime_t;
 
 tsp_hrtime_t tsp_gethrtime(void);
 

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_sys_headers.h,v 1.11 2004-07-28 13:05:38 mia Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_sys_headers.h,v 1.12 2004-08-31 09:58:52 dufy Exp $
 
 -----------------------------------------------------------------------
 
@@ -36,6 +36,12 @@ Purpose   :
 
 #ifndef __TSP_SYS_HEADERS_H
 #define __TSP_SYS_HEADERS_H 1
+
+#ifdef __OpenBSD__
+#include <rpc/rpc.h>
+/* OpenBSD's rpcgen has timeout support and declares _rpcsvcdirty as extern */
+int _rpcsvcdirty;
+#endif /* __OpenBSD__ */
 
 #define _POSIX_SOURCE
 #define _POSIX_C_SOURCE 199506L

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_abs_types.h,v 1.10 2004-07-28 13:05:38 mia Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_abs_types.h,v 1.11 2004-08-31 09:58:52 dufy Exp $
 
 -----------------------------------------------------------------------
 
@@ -38,287 +38,56 @@ Purpose   : Type abstraction : Stolen from GLIB public headers
 #ifndef  __TSP_ABS_TYPES_H
 #define  __TSP_ABS_TYPES_H 1
 
+#define TSP_LITTLE_ENDIAN 1234
+#define TSP_BIG_ENDIAN    4321
+#define TSP_PDP_ENDIAN    3412		/* unused, need specific PDP check */	
+
+/* This include should offers all the types like uint16_t and others */
+/* Choose to base TSP on the STANDARD POSIX types */
+#include <sys/types.h>
+
 /*** Platform specific ***/
 
 /* SUN / sparc (32 bits) */
 #if  defined(__sun) && defined(__sparc) && !defined(__sparcv9)
-
-typedef signed char gint8;
-typedef unsigned char guint8;
-typedef signed short gint16;
-typedef unsigned short guint16;
-typedef signed int gint32;
-typedef unsigned int guint32;
-
-#define G_HAVE_GINT64 1
-
-typedef signed long long gint64;
-typedef unsigned long long guint64;
-
-#define G_GINT64_CONSTANT(val)  (val##LL)
-
-#define GPOINTER_TO_INT(p)	((gint)   (p))
-#define GPOINTER_TO_UINT(p)	((guint)  (p))
-
-#define GINT_TO_POINTER(i)	((gpointer)  (i))
-#define GUINT_TO_POINTER(u)	((gpointer)  (u))
-
-#define GINT16_TO_BE(val)	((gint16) (val))
-#define GUINT16_TO_BE(val)	((guint16) (val))
-#define GINT16_TO_LE(val)	((gint16) GUINT16_SWAP_LE_BE (val))
-#define GUINT16_TO_LE(val)	(GUINT16_SWAP_LE_BE (val))
-#define GINT32_TO_BE(val)	((gint32) (val))
-#define GUINT32_TO_BE(val)	((guint32) (val))
-#define GINT32_TO_LE(val)	((gint32) GUINT32_SWAP_LE_BE (val))
-#define GUINT32_TO_LE(val)	(GUINT32_SWAP_LE_BE (val))
-#define GINT64_TO_BE(val)	((gint64) (val))
-#define GUINT64_TO_BE(val)	((guint64) (val))
-#define GINT64_TO_LE(val)	((gint64) GUINT64_SWAP_LE_BE (val))
-#define GUINT64_TO_LE(val)	(GUINT64_SWAP_LE_BE (val))
-
-#define GLONG_TO_LE(val)	((glong) GINT32_TO_LE (val))
-#define GULONG_TO_LE(val)	((gulong) GUINT32_TO_LE (val))
-#define GLONG_TO_BE(val)	((glong) GINT32_TO_BE (val))
-#define GULONG_TO_BE(val)	((gulong) GUINT32_TO_BE (val))
-
-#define GINT_TO_LE(val)		((gint) GINT32_TO_LE (val))
-#define GUINT_TO_LE(val)	((guint) GUINT32_TO_LE (val))
-#define GINT_TO_BE(val)		((gint) GINT32_TO_BE (val))
-#define GUINT_TO_BE(val)	((guint) GUINT32_TO_BE (val))
-
-#define G_BYTE_ORDER G_BIG_ENDIAN
-
-#define G_GUINT64_FORMAT "llu"
-
-#define TSP_SYSTEM_HAVE_GETHRTIME
-
-#define TSP_SYSTEM_HAVE_NANOSLEEP
-
+# define TSP_INT64_CONSTANT(val)  (val##LL)
+# define TSP_BYTE_ORDER TSP_BIG_ENDIAN
+# define TSP_GUINT64_FORMAT "llu"
+# define TSP_SYSTEM_HAVE_GETHRTIME
+# define TSP_SYSTEM_HAVE_NANOSLEEP
+# define TSP_HAVE_INT64 1
 #endif /* SUN / sparc */
-
-
-
-/* SUN / sparcv9 (64 bits) */
-#if  defined(__sun) && defined(__sparcv9)
-
-typedef signed char gint8;
-typedef unsigned char guint8;
-typedef signed short gint16;
-typedef unsigned short guint16;
-typedef signed int gint32;
-typedef unsigned int guint32;
-#define G_HAVE_GINT64 1
-
-typedef signed long gint64;
-typedef unsigned long guint64;
-
-#define G_GINT64_CONSTANT(val)	(val##L)
-
-#define GPOINTER_TO_INT(p)	((gint)  (glong) (p))
-#define GPOINTER_TO_UINT(p)	((guint) (gulong) (p))
-
-#define GINT_TO_POINTER(i)	((gpointer) (glong) (i))
-#define GUINT_TO_POINTER(u)	((gpointer) (gulong) (u))
-
-#define GINT16_TO_BE(val)	((gint16) (val))
-#define GUINT16_TO_BE(val)	((guint16) (val))
-#define GINT16_TO_LE(val)	((gint16) GUINT16_SWAP_LE_BE (val))
-#define GUINT16_TO_LE(val)	(GUINT16_SWAP_LE_BE (val))
-#define GINT32_TO_BE(val)	((gint32) (val))
-#define GUINT32_TO_BE(val)	((guint32) (val))
-#define GINT32_TO_LE(val)	((gint32) GUINT32_SWAP_LE_BE (val))
-#define GUINT32_TO_LE(val)	(GUINT32_SWAP_LE_BE (val))
-#define GINT64_TO_BE(val)	((gint64) (val))
-#define GUINT64_TO_BE(val)	((guint64) (val))
-#define GINT64_TO_LE(val)	((gint64) GUINT64_SWAP_LE_BE (val))
-#define GUINT64_TO_LE(val)	(GUINT64_SWAP_LE_BE (val))
-#define GLONG_TO_LE(val)	((glong) GINT64_TO_LE (val))
-#define GULONG_TO_LE(val)	((gulong) GUINT64_TO_LE (val))
-#define GLONG_TO_BE(val)	((glong) GINT64_TO_BE (val))
-#define GULONG_TO_BE(val)	((gulong) GUINT64_TO_BE (val))
-#define GINT_TO_LE(val)		((gint) GINT32_TO_LE (val))
-#define GUINT_TO_LE(val)	((guint) GUINT32_TO_LE (val))
-#define GINT_TO_BE(val)		((gint) GINT32_TO_BE (val))
-#define GUINT_TO_BE(val)	((guint) GUINT32_TO_BE (val))
-
-#define G_BYTE_ORDER G_BIG_ENDIAN
-
-#define G_GUINT64_FORMAT "lu"
-
-#define TSP_SYSTEM_HAVE_GETHRTIME
-
-#define TSP_SYSTEM_HAVE_NANOSLEEP
-
-#endif /* SUN / sparcv9 (64 bits) */
 
 
 /* Linux / Intel */
 #if defined (__linux__) &&  defined (__i386__) 
-
-typedef signed char gint8;
-typedef unsigned char guint8;
-typedef signed short gint16;
-typedef unsigned short guint16;
-typedef signed int gint32;
-typedef unsigned int guint32;
-
-#define G_HAVE_GINT64 1
-
-typedef signed long long gint64;
-typedef unsigned long long guint64;
-
-#define G_GINT64_CONSTANT(val)  (val##LL)
-
-#define GPOINTER_TO_INT(p)	((gint)   (p))
-#define GPOINTER_TO_UINT(p)	((guint)  (p))
-
-#define GINT_TO_POINTER(i)	((gpointer)  (i))
-#define GUINT_TO_POINTER(u)	((gpointer)  (u))
-
-#define GINT16_TO_LE(val)	((gint16) (val))
-#define GUINT16_TO_LE(val)	((guint16) (val))
-#define GINT16_TO_BE(val)	((gint16) GUINT16_SWAP_LE_BE (val))
-#define GUINT16_TO_BE(val)	(GUINT16_SWAP_LE_BE (val))
-#define GINT32_TO_LE(val)	((gint32) (val))
-#define GUINT32_TO_LE(val)	((guint32) (val))
-#define GINT32_TO_BE(val)	((gint32) GUINT32_SWAP_LE_BE (val))
-#define GUINT32_TO_BE(val)	(GUINT32_SWAP_LE_BE (val))
-#define GINT64_TO_LE(val)	((gint64) (val))
-#define GUINT64_TO_LE(val)	((guint64) (val))
-#define GINT64_TO_BE(val)	((gint64) GUINT64_SWAP_LE_BE (val))
-#define GUINT64_TO_BE(val)	(GUINT64_SWAP_LE_BE (val))
-
-#define GLONG_TO_LE(val)	((glong) GINT32_TO_LE (val))
-#define GULONG_TO_LE(val)	((gulong) GUINT32_TO_LE (val))
-#define GLONG_TO_BE(val)	((glong) GINT32_TO_BE (val))
-#define GULONG_TO_BE(val)	((gulong) GUINT32_TO_BE (val))
-
-#define GINT_TO_LE(val)		((gint) GINT32_TO_LE (val))
-#define GUINT_TO_LE(val)	((guint) GUINT32_TO_LE (val))
-#define GINT_TO_BE(val)		((gint) GINT32_TO_BE (val))
-#define GUINT_TO_BE(val)	((guint) GUINT32_TO_BE (val))
-
-#define G_BYTE_ORDER G_LITTLE_ENDIAN
-
-#define G_GUINT64_FORMAT "llu"
-
-#define TSP_SYSTEM_HAVE_NANOSLEEP 1
-
+# include <stdint.h>
+# define TSP_BYTE_ORDER TSP_LITTLE_ENDIAN
+# define TSP_INT64_CONSTANT(val)  (val##LL)
+# define TSP_GUINT64_FORMAT "llu"
+# define TSP_SYSTEM_HAVE_NANOSLEEP 1
+# define TSP_HAVE_INT64 1
 #endif /* Linux / Intel */
 
 
 /* OSF1 / Alpha */
 #if defined (__osf__) && defined (__alpha)
-
-typedef signed char gint8;
-typedef unsigned char guint8;
-typedef signed short gint16;
-typedef unsigned short guint16;
-typedef signed int gint32;
-typedef unsigned int guint32;
-
-#define G_HAVE_GINT64 1
-
-typedef signed long gint64;
-typedef unsigned long guint64;
-
-#define G_GINT64_CONSTANT(val)  (val##L)
-
-#define GPOINTER_TO_INT(p)	((gint)  (glong) (p))
-#define GPOINTER_TO_UINT(p)	((guint) (gulong) (p))
-
-#define GINT_TO_POINTER(i)	((gpointer) (glong) (i))
-#define GUINT_TO_POINTER(u)	((gpointer) (gulong) (u))
-
-#define GINT16_TO_LE(val)	((gint16) (val))
-#define GUINT16_TO_LE(val)	((guint16) (val))
-#define GINT16_TO_BE(val)	((gint16) GUINT16_SWAP_LE_BE (val))
-#define GUINT16_TO_BE(val)	(GUINT16_SWAP_LE_BE (val))
-#define GINT32_TO_LE(val)	((gint32) (val))
-#define GUINT32_TO_LE(val)	((guint32) (val))
-#define GINT32_TO_BE(val)	((gint32) GUINT32_SWAP_LE_BE (val))
-#define GUINT32_TO_BE(val)	(GUINT32_SWAP_LE_BE (val))
-#define GINT64_TO_LE(val)	((gint64) (val))
-#define GUINT64_TO_LE(val)	((guint64) (val))
-#define GINT64_TO_BE(val)	((gint64) GUINT64_SWAP_LE_BE (val))
-#define GUINT64_TO_BE(val)	(GUINT64_SWAP_LE_BE (val))
-
-#define GLONG_TO_LE(val)	((glong) GINT64_TO_LE (val))
-#define GULONG_TO_LE(val)	((gulong) GUINT64_TO_LE (val))
-#define GLONG_TO_BE(val)	((glong) GINT64_TO_BE (val))
-#define GULONG_TO_BE(val)	((gulong) GUINT64_TO_BE (val))
-
-#define GINT_TO_LE(val)		((gint) GINT32_TO_LE (val))
-#define GUINT_TO_LE(val)	((guint) GUINT32_TO_LE (val))
-#define GINT_TO_BE(val)		((gint) GINT32_TO_BE (val))
-#define GUINT_TO_BE(val)	((guint) GUINT32_TO_BE (val))
-
-#define G_BYTE_ORDER G_LITTLE_ENDIAN
-
-#define G_GUINT64_FORMAT "lu"
-
-#define TSP_SYSTEM_HAVE_NANOSLEEP 1
-/*#define TSP_SYSTEM_HAVE_THREADSAFE_USLEEP 1*/
-
+# include <inttypes.h>
+# define TSP_INT64_CONSTANT(val)  (val##L)
+# define TSP_BYTE_ORDER TSP_LITTLE_ENDIAN
+# define TSP_GUINT64_FORMAT "lu"
+# define TSP_SYSTEM_HAVE_NANOSLEEP 1
+# define TSP_HAVE_INT64 1
 #endif /* OSF1 / Alpha */
-
-
-/*** Platform specific ***/
 
 /* VXWORKS */
 #if  defined (VXWORKS)
-
-typedef signed char gint8;
-typedef unsigned char guint8;
-typedef signed short gint16;
-typedef unsigned short guint16;
-typedef signed int gint32;
-typedef unsigned int guint32;
-
-#define G_HAVE_GINT64 1
-
-typedef signed long long gint64;
-typedef unsigned long long guint64;
-
-#define G_GINT64_CONSTANT(val)  (val##LL)
-
-#define GPOINTER_TO_INT(p)	((gint)   (p))
-#define GPOINTER_TO_UINT(p)	((guint)  (p))
-
-#define GINT_TO_POINTER(i)	((gpointer)  (i))
-#define GUINT_TO_POINTER(u)	((gpointer)  (u))
-
-#define GINT16_TO_BE(val)	((gint16) (val))
-#define GUINT16_TO_BE(val)	((guint16) (val))
-#define GINT16_TO_LE(val)	((gint16) GUINT16_SWAP_LE_BE (val))
-#define GUINT16_TO_LE(val)	(GUINT16_SWAP_LE_BE (val))
-#define GINT32_TO_BE(val)	((gint32) (val))
-#define GUINT32_TO_BE(val)	((guint32) (val))
-#define GINT32_TO_LE(val)	((gint32) GUINT32_SWAP_LE_BE (val))
-#define GUINT32_TO_LE(val)	(GUINT32_SWAP_LE_BE (val))
-#define GINT64_TO_BE(val)	((gint64) (val))
-#define GUINT64_TO_BE(val)	((guint64) (val))
-#define GINT64_TO_LE(val)	((gint64) GUINT64_SWAP_LE_BE (val))
-#define GUINT64_TO_LE(val)	(GUINT64_SWAP_LE_BE (val))
-
-#define GLONG_TO_LE(val)	((glong) GINT32_TO_LE (val))
-#define GULONG_TO_LE(val)	((gulong) GUINT32_TO_LE (val))
-#define GLONG_TO_BE(val)	((glong) GINT32_TO_BE (val))
-#define GULONG_TO_BE(val)	((gulong) GUINT32_TO_BE (val))
-
-#define GINT_TO_LE(val)		((gint) GINT32_TO_LE (val))
-#define GUINT_TO_LE(val)	((guint) GUINT32_TO_LE (val))
-#define GINT_TO_BE(val)		((gint) GINT32_TO_BE (val))
-#define GUINT_TO_BE(val)	((guint) GUINT32_TO_BE (val))
-
-#define G_BYTE_ORDER G_BIG_ENDIAN
-
-#define G_GUINT64_FORMAT "llu"
-
-#undef TSP_SYSTEM_HAVE_GETHRTIME 
-
-#define TSP_SYSTEM_HAVE_NANOSLEEP
-
+# define TSP_BYTE_ORDER TSP_BIG_ENDIAN
+# define TSP_GUINT64_FORMAT "llu"
+# undef TSP_SYSTEM_HAVE_GETHRTIME 
+# define TSP_SYSTEM_HAVE_NANOSLEEP
+# define TSP_HAVE_INT64 1
+# define TSP_INT64_CONSTANT(val)  (val##LL)
 #endif /* VXWORKS */
 
 /*-----------------------------------------------------*/
@@ -335,124 +104,135 @@ typedef unsigned long long guint64;
 #define	TRUE	(!FALSE)
 #endif
 
-
 #undef	ABS
 #define ABS(a)	   (((a) < 0) ? -(a) : (a))
 
-#undef	CLAMP
-#define CLAMP(x, low, high)  (((x) > (high)) ? (high) : (((x) < (low)) ? (low) : (x)))
 
-/* Provide type definitions for commonly used types.
- *  These are useful because a "gint8" can be adjusted
- *  to be 1 byte (8 bits) on all platforms. Similarly and
- *  more importantly, "gint32" can be adjusted to be
- *  4 bytes (32 bits) on all platforms.
- */
-
-typedef char   gchar;
-typedef short  gshort;
-typedef long   glong;
-typedef int    gint;
-typedef gint   gboolean;
-
-typedef unsigned char	guchar;
-typedef unsigned short	gushort;
-typedef unsigned long	gulong;
-typedef unsigned int	guint;
-
-typedef float	gfloat;
-typedef double	gdouble;
-
-typedef void* gpointer;
-typedef const void *gconstpointer;
-
-/* Portable endian checks and conversions
- *
- * glibconfig.h defines G_BYTE_ORDER which expands to one of
+/* =================================================
+ * Warning : All this macro were stolen from GLIB
+ * Thanks to those people who makes so beautiful things
+ * But we didn't want to oblige people to link TSP with glib
+ * So our choice is POSIX types + renammed macro
+ * this header defines TSP_BYTE_ORDER which expands to one of
  * the below macros.
  */
-#define G_LITTLE_ENDIAN 1234
-#define G_BIG_ENDIAN    4321
-#define G_PDP_ENDIAN    3412		/* unused, need specific PDP check */	
+
+#if TSP_BYTE_ORDER == TSP_BIG_ENDIAN
+
+#define TSP_INT16_TO_BE(val)	((int16_t) (val))
+#define TSP_UINT16_TO_BE(val)	((uint16_t) (val))
+#define TSP_INT16_TO_LE(val)	((int16_t) TSP_UINT16_SWAP_LE_BE (val))
+#define TSP_UINT16_TO_LE(val)	(TSP_UINT16_SWAP_LE_BE (val))
+#define TSP_INT32_TO_BE(val)	((int32_t) (val))
+#define TSP_UINT32_TO_BE(val)	((uint32_t) (val))
+#define TSP_INT32_TO_LE(val)	((int32_t) TSP_UINT32_SWAP_LE_BE (val))
+#define TSP_UINT32_TO_LE(val)	(TSP_UINT32_SWAP_LE_BE (val))
+#define TSP_INT64_TO_BE(val)	((int64_t) (val))
+#define TSP_UINT64_TO_BE(val)	((uint64_t) (val))
+#define TSP_INT64_TO_LE(val)	((int64_t) TSP_UINT64_SWAP_LE_BE (val))
+#define TSP_UINT64_TO_LE(val)	(TSP_UINT64_SWAP_LE_BE (val))
+
+#define TSP_LONG_TO_LE(val)	((long_t) TSP_INT32_TO_LE (val))
+#define TSP_ULONG_T_TO_LE(val)	((ulong_t) TSP_UINT32_TO_LE (val))
+#define TSP_LONG_TO_BE(val)	((long_t) TSP_INT32_TO_BE (val))
+#define TSP_ULONG_T_TO_BE(val)	((ulong_t) TSP_UINT32_TO_BE (val))
+
+#define TSP_INT_TO_LE(val)	((int) TSP_INT32_TO_LE (val))
+#define TSP_UINT_TO_LE(val)	((uint_t) TSP_UINT32_TO_LE (val))
+#define TSP_INT_TO_BE(val)	((int) TSP_INT32_TO_BE (val))
+#define TSP_UINT_TO_BE(val)	((uint_t) TSP_UINT32_TO_BE (val))
+
+#endif
+
+#if TSP_BYTE_ORDER == TSP_LITTLE_ENDIAN
+
+#define TSP_INT16_TO_LE(val)	((int16_t) (val))
+#define TSP_UINT16_TO_LE(val)	((uint16_t) (val))
+#define TSP_INT16_TO_BE(val)	((int16_t) TSP_INT16_SWAP_LE_BE (val))
+#define TSP_UINT16_TO_BE(val)	(TSP_UINT16_SWAP_LE_BE (val))
+#define TSP_INT32_TO_LE(val)	((int32_t) (val))
+#define TSP_UINT32_TO_LE(val)	((uint32_t) (val))
+#define TSP_INT32_TO_BE(val)	((int32_t) TSP_UINT32_SWAP_LE_BE (val))
+#define TSP_UINT32_TO_BE(val)	(TSP_UINT32_SWAP_LE_BE (val))
+#define TSP_INT64_TO_LE(val)	((int64_t) (val))
+#define TSP_UINT64_TO_LE(val)	((uint64_t) (val))
+#define TSP_INT64_TO_BE(val)	((int64_t) TSP_UINT64_SWAP_LE_BE (val))
+#define TSP_UINT64_TO_BE(val)	(TSP_UINT64_SWAP_LE_BE (val))
+
+#define TSP_LONG_TO_LE(val)	((long_t) TSP_INT32_TO_LE (val))
+#define TSP_ULONG_TO_LE(val)	((ulong_t) TSP_INT32_TO_LE (val))
+#define TSP_LONG_TO_BE(val)	((long_t) TSP_INT32_TO_BE (val))
+#define TSP_ULONG_TO_BE(val)	((ulong_t) TSP_INT32_TO_BE (val))
+
+#define TSP_INT_TO_LE(val)	((int) TSP_INT32_TO_LE (val))
+#define TSP_UINT_TO_LE(val)	((uint_t) TSP_UINT32_TO_LE (val))
+#define TSP_INT_TO_BE(val)	((int) TSP_INT32_TO_BE (val))
+#define TSP_UINT_TO_BE(val)	((uint_t) TSP_UINT32_TO_BE (val))
+
+#endif
 
 /* Basic bit swapping functions
  */
-#define GUINT16_SWAP_LE_BE_CONSTANT(val)	((guint16) ( \
-    (((guint16) (val) & (guint16) 0x00ffU) << 8) | \
-    (((guint16) (val) & (guint16) 0xff00U) >> 8)))
-#define GUINT32_SWAP_LE_BE_CONSTANT(val)	((guint32) ( \
-    (((guint32) (val) & (guint32) 0x000000ffU) << 24) | \
-    (((guint32) (val) & (guint32) 0x0000ff00U) <<  8) | \
-    (((guint32) (val) & (guint32) 0x00ff0000U) >>  8) | \
-    (((guint32) (val) & (guint32) 0xff000000U) >> 24)))
+#define TSP_UINT16_SWAP_LE_BE_CONSTANT(val)	((uint16_t) ( \
+    (((uint16_t) (val) & (uint16_t) 0x00ffU) << 8) | \
+    (((uint16_t) (val) & (uint16_t) 0xff00U) >> 8)))
+#define TSP_UINT32_SWAP_LE_BE_CONSTANT(val)	((uint32_t) ( \
+    (((uint32_t) (val) & (uint32_t) 0x000000ffU) << 24) | \
+    (((uint32_t) (val) & (uint32_t) 0x0000ff00U) <<  8) | \
+    (((uint32_t) (val) & (uint32_t) 0x00ff0000U) >>  8) | \
+    (((uint32_t) (val) & (uint32_t) 0xff000000U) >> 24)))
 
-#  define GUINT16_SWAP_LE_BE(val) (GUINT16_SWAP_LE_BE_CONSTANT (val))
-#  define GUINT32_SWAP_LE_BE(val) (GUINT32_SWAP_LE_BE_CONSTANT (val))
+#  define TSP_UINT16_SWAP_LE_BE(val) (TSP_UINT16_SWAP_LE_BE_CONSTANT (val))
+#  define TSP_UINT32_SWAP_LE_BE(val) (TSP_UINT32_SWAP_LE_BE_CONSTANT (val))
 
-#ifdef G_HAVE_GINT64
-#  define GUINT64_SWAP_LE_BE_CONSTANT(val)	((guint64) ( \
-      (((guint64) (val) &						\
-	(guint64) G_GINT64_CONSTANT(0x00000000000000ffU)) << 56) |	\
-      (((guint64) (val) &						\
-	(guint64) G_GINT64_CONSTANT(0x000000000000ff00U)) << 40) |	\
-      (((guint64) (val) &						\
-	(guint64) G_GINT64_CONSTANT(0x0000000000ff0000U)) << 24) |	\
-      (((guint64) (val) &						\
-	(guint64) G_GINT64_CONSTANT(0x00000000ff000000U)) <<  8) |	\
-      (((guint64) (val) &						\
-	(guint64) G_GINT64_CONSTANT(0x000000ff00000000U)) >>  8) |	\
-      (((guint64) (val) &						\
-	(guint64) G_GINT64_CONSTANT(0x0000ff0000000000U)) >> 24) |	\
-      (((guint64) (val) &						\
-	(guint64) G_GINT64_CONSTANT(0x00ff000000000000U)) >> 40) |	\
-      (((guint64) (val) &						\
-	(guint64) G_GINT64_CONSTANT(0xff00000000000000U)) >> 56)))
-#    define GUINT64_SWAP_LE_BE(val) (GUINT64_SWAP_LE_BE_CONSTANT(val))
+#ifdef TSP_HAVE_INT64
+#  define TSP_UINT64_SWAP_LE_BE_CONSTANT(val)	((uint64_t) ( \
+      (((uint64_t) (val) &						\
+	(uint64_t) TSP_INT64_CONSTANT(0x00000000000000ffU)) << 56) |	\
+      (((uint64_t) (val) &						\
+	(uint64_t) TSP_INT64_CONSTANT(0x000000000000ff00U)) << 40) |	\
+      (((uint64_t) (val) &						\
+	(uint64_t) TSP_INT64_CONSTANT(0x0000000000ff0000U)) << 24) |	\
+      (((uint64_t) (val) &						\
+	(uint64_t) TSP_INT64_CONSTANT(0x00000000ff000000U)) <<  8) |	\
+      (((uint64_t) (val) &						\
+	(uint64_t) TSP_INT64_CONSTANT(0x000000ff00000000U)) >>  8) |	\
+      (((uint64_t) (val) &						\
+	(uint64_t) TSP_INT64_CONSTANT(0x0000ff0000000000U)) >> 24) |	\
+      (((uint64_t) (val) &						\
+	(uint64_t) TSP_INT64_CONSTANT(0x00ff000000000000U)) >> 40) |	\
+      (((uint64_t) (val) &						\
+	(uint64_t) TSP_INT64_CONSTANT(0xff00000000000000U)) >> 56)))
+#    define TSP_UINT64_SWAP_LE_BE(val) (TSP_UINT64_SWAP_LE_BE_CONSTANT(val))
 #endif
-
-#define GUINT16_SWAP_LE_PDP(val)	((guint16) (val))
-#define GUINT16_SWAP_BE_PDP(val)	(GUINT16_SWAP_LE_BE (val))
-#define GUINT32_SWAP_LE_PDP(val)	((guint32) ( \
-    (((guint32) (val) & (guint32) 0x0000ffffU) << 16) | \
-    (((guint32) (val) & (guint32) 0xffff0000U) >> 16)))
-#define GUINT32_SWAP_BE_PDP(val)	((guint32) ( \
-    (((guint32) (val) & (guint32) 0x00ff00ffU) << 8) | \
-    (((guint32) (val) & (guint32) 0xff00ff00U) >> 8)))
 
 /* The G*_TO_?E() macros are defined in glibconfig.h.
  * The transformation is symmetric, so the FROM just maps to the TO.
  */
-#define GINT16_FROM_LE(val)	(GINT16_TO_LE (val))
-#define GUINT16_FROM_LE(val)	(GUINT16_TO_LE (val))
-#define GINT16_FROM_BE(val)	(GINT16_TO_BE (val))
-#define GUINT16_FROM_BE(val)	(GUINT16_TO_BE (val))
-#define GINT32_FROM_LE(val)	(GINT32_TO_LE (val))
-#define GUINT32_FROM_LE(val)	(GUINT32_TO_LE (val))
-#define GINT32_FROM_BE(val)	(GINT32_TO_BE (val))
-#define GUINT32_FROM_BE(val)	(GUINT32_TO_BE (val))
+#define TSP_INT16_FROM_LE(val)	(TSP_INT16_TO_LE (val))
+#define TSP_UINT16_FROM_LE(val)	(TSP_UINT16_TO_LE (val))
+#define TSP_INT16_FROM_BE(val)	(TSP_INT16_TO_BE (val))
+#define TSP_UINT16_FROM_BE(val)	(TSP_UINT16_TO_BE (val))
+#define TSP_INT32_FROM_LE(val)	(TSP_INT32_TO_LE (val))
+#define TSP_UINT32_FROM_LE(val)	(TSP_UINT32_TO_LE (val))
+#define TSP_INT32_FROM_BE(val)	(TSP_INT32_TO_BE (val))
+#define TSP_UINT32_FROM_BE(val)	(TSP_UINT32_TO_BE (val))
 
-#ifdef G_HAVE_GINT64
-#define GINT64_FROM_LE(val)	(GINT64_TO_LE (val))
-#define GUINT64_FROM_LE(val)	(GUINT64_TO_LE (val))
-#define GINT64_FROM_BE(val)	(GINT64_TO_BE (val))
-#define GUINT64_FROM_BE(val)	(GUINT64_TO_BE (val))
+#ifdef TSP_HAVE_INT64
+#  define TSP_INT64_FROM_LE(val)	(TSP_INT64_TO_LE (val))
+#  define TSP_UINT64_FROM_LE(val)	(TSP_UINT64_TO_LE (val))
+#  define TSP_INT64_FROM_BE(val)	(TSP_INT64_TO_BE (val))
+#  define TSP_UINT64_FROM_BE(val)	(TSP_UINT64_TO_BE (val))
 #endif
 
-#define GLONG_FROM_LE(val)	(GLONG_TO_LE (val))
-#define GULONG_FROM_LE(val)	(GULONG_TO_LE (val))
-#define GLONG_FROM_BE(val)	(GLONG_TO_BE (val))
-#define GULONG_FROM_BE(val)	(GULONG_TO_BE (val))
+#define TSP_LONG_FROM_LE(val)	(TSP_LONG_TO_LE (val))
+#define TSP_ULONG_FROM_LE(val)	(TSP_ULONG_TO_LE (val))
+#define TSP_LONG_FROM_BE(val)	(TSP_LONG_TO_BE (val))
+#define TSP_ULONG_FROM_BE(val)	(TSP_ULONG_TO_BE (val))
 
-#define GINT_FROM_LE(val)	(GINT_TO_LE (val))
-#define GUINT_FROM_LE(val)	(GUINT_TO_LE (val))
-#define GINT_FROM_BE(val)	(GINT_TO_BE (val))
-#define GUINT_FROM_BE(val)	(GUINT_TO_BE (val))
-
-/* Portable versions of host-network order stuff
- */
-#define g_ntohl(val) (GUINT32_FROM_BE (val))
-#define g_ntohs(val) (GUINT16_FROM_BE (val))
-#define g_htonl(val) (GUINT32_TO_BE (val))
-#define g_htons(val) (GUINT16_TO_BE (val))
+#define TSP_INT_FROM_LE(val)	(TSP_INT_TO_LE (val))
+#define TSP_UINT_FROM_LE(val)	(TSP_UINT_TO_LE (val))
+#define TSP_INT_FROM_BE(val)	(TSP_INT_TO_BE (val))
+#define TSP_UINT_FROM_BE(val)	(TSP_UINT_TO_BE (val))
 
 #endif /*ABS_TYPES_H*/

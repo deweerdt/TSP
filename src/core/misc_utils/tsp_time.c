@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/misc_utils/tsp_time.c,v 1.7 2004-07-28 13:05:38 mia Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/misc_utils/tsp_time.c,v 1.8 2004-08-31 09:58:52 dufy Exp $
 
 -----------------------------------------------------------------------
 
@@ -50,8 +50,8 @@ tsp_hrtime_t tsp_gethrtime(void)
 #else
   struct timeval tp;
   gettimeofday(&tp, (void*)NULL);
-   return ((tsp_hrtime_t)tp.tv_sec *  G_GINT64_CONSTANT(1000000000)
-	   + (tsp_hrtime_t)tp.tv_usec*G_GINT64_CONSTANT(1000));
+   return ((tsp_hrtime_t)tp.tv_sec *  TSP_INT64_CONSTANT(1000000000)
+	   + (tsp_hrtime_t)tp.tv_usec*TSP_INT64_CONSTANT(1000));
 #endif
 }
 

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.c,v 1.13 2004-07-28 13:05:38 mia Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.c,v 1.14 2004-08-31 09:58:52 dufy Exp $
 
 -----------------------------------------------------------------------
 
@@ -35,6 +35,11 @@ opened session from a client
 
 -----------------------------------------------------------------------
  */
+
+#ifdef __OpenBSD__
+#include <machine/types.h>
+#include <machine/endian.h>
+#endif /* __OpenBSD__ */
 
 #include "tsp_sys_headers.h"
 

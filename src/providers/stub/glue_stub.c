@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: glue_stub.c,v 1.5 2004-02-10 03:42:19 sgalles Exp $
+$Id: glue_stub.c,v 1.6 2004-08-31 10:01:37 dufy Exp $
 
 -----------------------------------------------------------------------
 
@@ -171,7 +171,7 @@ int  GLU_get_sample_symbol_info_list(GLU_handle_t h_glu,TSP_sample_symbol_info_l
 {
   SFUNC_NAME(GLU_get_sample_symbol_info_list);
 
-  gint32 i = 0;
+  int i = 0;
   TSP_sample_symbol_info_t* p; 
 	
   for (p=X_sample_symbol_info_list_val; p->name!=0 ; p++)

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_rpc_confprogid.c,v 1.2 2002-12-18 16:27:36 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_rpc_confprogid.c,v 1.3 2004-08-31 09:58:53 dufy Exp $
 
 -----------------------------------------------------------------------
 
@@ -44,7 +44,7 @@ int TSP_get_progid_total_number()
   return TSP_MAX_SERVER_NUMBER;	
 }
 
-gint32 TSP_get_progid(gint n)
+uint32_t TSP_get_progid(int n)
 {
-  return((gint32)(TSP_RPC_PROGID_BASE_COUNT)+n);
+  return((uint32_t)(TSP_RPC_PROGID_BASE_COUNT)+n);
 }

@@ -1,6 +1,6 @@
 /*!  \file 
  
-$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_const_def.h,v 1.19 2004-07-30 09:19:03 mia Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_const_def.h,v 1.20 2004-08-31 09:58:52 dufy Exp $
 
 -----------------------------------------------------------------------
 
@@ -41,7 +41,7 @@ Purpose   : definitions and const that must have a program wide scope
 /** TSP Version */
 #define TSP_VERSION 1
 
-
+#include "tsp_abs_types.h"
 
 /**
  * Size of ringbuf  receiver 
@@ -143,9 +143,9 @@ typedef enum TSP_msg_ctrl_t TSP_msg_ctrl_t;
 
 /*-------- MISC --------*/
 
-typedef guint32 channel_id_t;
-typedef guint32 version_id_t;
-typedef guint32 xdr_and_sync_type_t;
+typedef uint32_t channel_id_t;
+typedef uint32_t version_id_t;
+typedef uint32_t xdr_and_sync_type_t;
 
 typedef int time_stamp_t;
 
@@ -286,10 +286,10 @@ typedef struct  TSP_otsp_server_info_t TSP_otsp_server_info_t;
  * FIXME: Erk: look at Corba CDR-encoding fashion to handle endianity.
  * FIXEM which may be instructive.
  */
-#define TSP_ENCODE_DOUBLE_TO_GUINT64(val) (GUINT64_TO_BE (*(guint64*)val))
-#define TSP_DECODE_DOUBLE_TO_GUINT64(val) (GUINT64_FROM_BE (*(guint64*)val))
+#define TSP_ENCODE_DOUBLE_TO_UINT64(val) (TSP_UINT64_TO_BE (*(uint64_t*)val))
+#define TSP_DECODE_DOUBLE_TO_UINT64(val) (TSP_UINT64_FROM_BE (*(uint64_t*)val))
 
-#define TSP_ENCODE_INT(val) (GINT_TO_BE (val))
-#define TSP_DECODE_INT(val) (GINT_FROM_BE (val)) 
+#define TSP_ENCODE_INT(val) (TSP_INT_TO_BE (val))
+#define TSP_DECODE_INT(val) (TSP_INT_FROM_BE (val)) 
 
 #endif /*_TSP_CONST_DEF_H*/
