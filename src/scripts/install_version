@@ -18,10 +18,15 @@ if ($1 == "") then
 	set current=`ls -l current | cut -d\> -f2-`
 	echo "Current installed version is: $current"
 	echo "Use 'install_version <num_version>' to install available version <num_version>" 
+	echo "<num_version> could be DEV"
 	exit(1)
 endif
 
-setenv DDEST V-$1
+if ( $1 != "DEV" ) then
+    setenv DDEST V-$1
+else
+    setenv DDEST DEV
+endif
 
 if ( -l $DDEST ) then
 	set target=`ls -l $DDEST | cut -d\> -f2-`
@@ -38,30 +43,8 @@ endif
 
 unlink current
 \ln -s $DDEST current
-echo "Post-installing Version V-$1..."
+echo "Post-installing Version $DDEST..."
 
-echo "Setting up <mia.db> link..."    
-if ( -e $ADA_SYMBPATH ) then
-    if ( -f $ADA_SYMBPATH/mia.db ) then
-	echo "<mia.db> found in <$ADA_SYMBPATH>, taking this one"
-	pushd $BENCH_DATA > /dev/null
-	# is there any mia.db in the $BENCH_DATA/ directory
-	if ( -e mia.db ) then
-	    # unlink if its alink
-	    if ( -l mia.db ) then
-		unlink mia.db
-	    # rename if its a file
-	    else 
-	    mv mia.db mia.db.orig
-	    endif
-	endif
-	ln -s $ADA_SYMBPATH/mia.db
-	popd > /dev/null
-    else
-	echo "\!\!\! NO <mia.db> found in <$ADA_SYMBPATH> keeping original one \!\!\!"
-    endif	
-endif
-
-echo "$HOME_EXEC_BASE is ready for use in V-$1"
+echo "$HOME_EXEC_BASE is ready for use in $DDEST"
 
 
