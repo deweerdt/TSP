@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_group.c,v 1.1 2002-08-27 08:56:09 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_group.c,v 1.2 2002-10-01 15:32:16 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -73,9 +73,9 @@ TSP_group_create_group_table(const TSP_sample_symbol_info_list_t* symbols, int g
   /*Initialize groups items*/
   /* And make them point at the right place in the item list */
     
-  /*FIXME : indiquer dans la spec que le tableau de symboles doit arriver classé
-     par rang et par groupe */  
+
   i = 0;
+  table->max_group_len = 0;
   for(group_id = 0; group_id < group_number; group_id++) 
     {
      
@@ -112,13 +112,22 @@ TSP_group_create_group_table(const TSP_sample_symbol_info_list_t* symbols, int g
         
             
 	}
+      /* set group size */
       table->groups[group_id].group_len = rank;
+
+      /* step thrue table */
       items_table += rank;
+      
+      /* calculate max group size*/
+      if( table->groups[group_id].group_len > table->max_group_len)
+	{
+	  table->max_group_len = table->groups[group_id].group_len;
+	
+	}
 
     }
             
      
-
   STRACE_IO(("-->OUT"));
 
     
