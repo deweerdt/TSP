@@ -9,7 +9,7 @@ HOST_UNAME=`uname -a | awk '{ print $1 }'`
 if [ "$HOST_UNAME" = "Linux" ]; then
     export HOST_TARGET="linux"
 #Sun & Sun64
-elif [ "$HOST_UNAME" = "SunOS"]; then
+elif [ "$HOST_UNAME" = "SunOS" ]; then
     #try to find isalist util
     SPARC_TYPE=` isalist | awk '{ print $1 }' | grep sparcv9`
     if [ $? = 0 ]; then
