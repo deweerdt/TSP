@@ -1,0 +1,35 @@
+General Information
+===================
+
+TSP : library for a generic Transfer Sampling Protocol
+
+This project is in early development but should be functional.
+
+Is provided : 
+- the TSP consumer library (i.e. : for clients)
+- the TSP provider library (i.e. : for servers)
+- Some test programs
+
+Whenever you need to read from a server a bunch of evolving variables,
+at high rate thrue a network, TSP is for you.
+
+Using the TSP producer and consumer API, you may write :
+
+* A TSP consumer, ex :
+- GUI that plots the data
+- a data analyser
+- a data recoder
+- ...
+
+that connects to a
+
+* A TSP provider, ex :
+- Any program that have a source of named variables.
+
+Using the API, the TSP consumer may ask the provider the list
+of available variables, choose some variables, and begin
+receiving the evolving values.
+
+TSP is designed to be CPU and bandwith friendly (both for the producer
+and the consumer)
+
