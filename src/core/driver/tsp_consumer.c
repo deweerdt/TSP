@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.8 2002-10-07 08:36:08 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.9 2002-10-09 08:23:27 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -636,8 +636,25 @@ int TSP_consumer_request_information(TSP_provider_t provider)
 	
   ans_sample = TSP_request_information(&req_info, otsp->server);
     
-  /* Save all thoses sample data in memory */
   if( NULL != ans_sample)
+    {
+      
+      switch (ans_sample->status)
+	{
+	case TSP_STATUS_OK :
+	  ret = TRUE;
+	  break;
+	case TSP_STATUS_ERROR_UNKNOWN :
+	  STRACE_ERROR(("Provider unknown error"));
+	  break;
+	default:
+	  STRACE_ERROR(("Provider unknown error"));
+	  break;
+	}
+    }
+
+  /* Save all thoses sample data in memory */
+  if( TRUE == ret )
     {
       unsigned int symbols_number =
 	ans_sample->symbols.TSP_sample_symbol_info_list_t_len;
@@ -662,12 +679,9 @@ int TSP_consumer_request_information(TSP_provider_t provider)
 	    strdup(ans_sample->symbols.TSP_sample_symbol_info_list_t_val[i].name);
 				
 	  TSP_CHECK_ALLOC(otsp->symbols.TSP_sample_symbol_info_list_t_val[i].name, FALSE);
-
 			
 	}
         
-			
-      ret = TRUE;
     }
   else
     {
@@ -738,32 +752,48 @@ int TSP_consumer_request_sample(TSP_request_sample_t* req_sample, TSP_provider_t
     
        
   if( 0 != ans_sample)
-    {
+    {      
       
-      for( i = 0 ; i< ans_sample->symbols.TSP_sample_symbol_info_list_t_len ; i++)
+      switch (ans_sample->status)
 	{
-	  STRACE_DEBUG(("N=%s Id=%d Gr=%d Rank=%d", 
-			ans_sample->symbols.TSP_sample_symbol_info_list_t_val[i].name,
-			ans_sample->symbols.TSP_sample_symbol_info_list_t_val[i].provider_global_index,
-			ans_sample->symbols.TSP_sample_symbol_info_list_t_val[i].provider_group_index,
-			ans_sample->symbols.TSP_sample_symbol_info_list_t_val[i].provider_group_rank));    
+	case TSP_STATUS_OK :
+	  ret = TRUE;
+	  break;
+	case TSP_STATUS_ERROR_UNKNOWN :
+	  STRACE_ERROR(("Provider unknown error"));
+	  break;
+	default:
+	  STRACE_ERROR(("Provider unknown error"));
+	  break;
 	}
-      STRACE_INFO(("Total groupe number = %d", ans_sample->provider_group_number));
+
+      if(ret)
+	{
+	  for( i = 0 ; i< ans_sample->symbols.TSP_sample_symbol_info_list_t_len ; i++)
+	    {
+	      STRACE_DEBUG(("N=%s Id=%d Gr=%d Rank=%d", 
+			    ans_sample->symbols.TSP_sample_symbol_info_list_t_val[i].name,
+			    ans_sample->symbols.TSP_sample_symbol_info_list_t_val[i].provider_global_index,
+			    ans_sample->symbols.TSP_sample_symbol_info_list_t_val[i].provider_group_index,
+			    ans_sample->symbols.TSP_sample_symbol_info_list_t_val[i].provider_group_rank));    
+	    }
+	  STRACE_INFO(("Total groupe number = %d", ans_sample->provider_group_number));
       
 
     
-      /* Create group table */
-      /* FIXME : faire la desallocation */
-      otsp->groups = TSP_group_create_group_table(&(ans_sample->symbols), ans_sample->provider_group_number);
-      if( 0 != otsp->groups)
-        {
-	  ret = TRUE;
-        }
-      else
-        {
-	  STRACE_ERROR(("Function TSP_group_create_group_table failed"));
+	  /* Create group table */
+	  /* FIXME : faire la desallocation */
+	  otsp->groups = TSP_group_create_group_table(&(ans_sample->symbols), ans_sample->provider_group_number);
+	  if( 0 != otsp->groups)
+	    {
+	      ret = TRUE;
+	    }
+	  else
+	    {
+	      STRACE_ERROR(("Function TSP_group_create_group_table failed"));
 
-        }
+	    }
+	}
     }
   else
     {
