@@ -28,6 +28,7 @@ int main(int argc, char *argv[]){
   char symbol_buf[50];
   int test_ok = TRUE;
   int test_mode;
+  int all_data_ok = TRUE;
   TSP_provider_t* providers;
 
 
@@ -196,7 +197,6 @@ int main(int argc, char *argv[]){
       int new_sample;
       TSP_sample_t sample;
       int i;int j;
-      int all_data_ok = TRUE;
       int t = -1000;
       
       new_sample = FALSE;
