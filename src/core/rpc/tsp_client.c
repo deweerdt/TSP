@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_client.c,v 1.1 2002-08-27 08:56:09 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_client.c,v 1.2 2002-09-05 09:23:14 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -40,9 +40,10 @@ TSP_server_info_t * tsp_server_info(TSP_server_t server)
   STRACE_IO(("-->IN"));
 
 	
-  LOCAL_RPCCHECK_0
+  LOCAL_RPCCHECK_0;
 	
-    result = tsp_server_info_1(server);
+  result = tsp_server_info_1(server);
+  TSP_STRACE_RPC_ERROR(server, result);
 	
   STRACE_IO(("-->OUT"));
 
@@ -60,7 +61,9 @@ CLIENT* tsp_remote_open_progid(const char *target_name, int progid)
 
   STRACE_IO(("-->IN"));
 
-  cl = clnt_create_timed(target_name, progid, TSP_RPC_VERSION_INITIAL, "tcp",&timeout );
+  /*cl = clnt_create_timed(target_name, progid, TSP_RPC_VERSION_INITIAL, "tcp",&timeout );*/
+  cl = clnt_create(target_name, progid, TSP_RPC_VERSION_INITIAL, "tcp");
+
   if(cl == (CLIENT *)0)
     {
       STRACE_DEBUG(("ERROR : GLOBAL clnt_create failed for host %s", target_name));
@@ -185,9 +188,10 @@ TSP_answer_open_t * TSP_request_open(const TSP_request_open_t* req_open, TSP_ser
   STRACE_IO(("-->IN"));
 
 	
-  LOCAL_RPCCHECK_0
+  LOCAL_RPCCHECK_0;
 	
-    result = tsp_request_open_1(*req_open, server);
+  result = tsp_request_open_1(*req_open, server);
+  TSP_STRACE_RPC_ERROR(server, result);
 	
   STRACE_IO(("-->OUT"));
 
@@ -210,10 +214,11 @@ int TSP_request_close(const TSP_request_close_t* req_close, TSP_server_t server)
   STRACE_IO(("-->IN"));
 
 	
-  LOCAL_RPCCHECK_FALSE
-	
-    result = (int)tsp_request_close_1(*req_close, server);
-	
+  LOCAL_RPCCHECK_FALSE;
+    
+  result = (int)tsp_request_close_1(*req_close, server);
+  TSP_STRACE_RPC_ERROR(server, result);
+  
   STRACE_IO(("-->OUT"));
 
 	
@@ -235,12 +240,12 @@ TSP_answer_sample_t * TSP_request_information(const TSP_request_information_t* r
   STRACE_IO(("-->IN"));
 
 	
-  LOCAL_RPCCHECK_0
+  LOCAL_RPCCHECK_0;
 	
-    result = tsp_request_information_1(*req_info, server);
-	
+  result = tsp_request_information_1(*req_info, server);
+  TSP_STRACE_RPC_ERROR(server, result);
+  
   STRACE_IO(("-->OUT"));
-
 	
   return result;
 }	
@@ -256,9 +261,10 @@ TSP_answer_sample_t * TSP_request_sample(
   STRACE_IO(("-->IN"));
 
 	
-  LOCAL_RPCCHECK_0
+  LOCAL_RPCCHECK_0;
 	
-    result = tsp_request_sample_1(*req_sample, server);
+  result = tsp_request_sample_1(*req_sample, server);
+  TSP_STRACE_RPC_ERROR(server, result);
 	
   STRACE_IO(("-->OUT"));
 
@@ -277,9 +283,10 @@ TSP_answer_sample_t * TSP_request_sample_init(
   STRACE_IO(("-->IN"));
 
 	
-  LOCAL_RPCCHECK_0
+  LOCAL_RPCCHECK_0;
 	
-    result = tsp_request_sample_init_1(*req_sample, server);
+  result = tsp_request_sample_init_1(*req_sample, server);
+  TSP_STRACE_RPC_ERROR(server, result);
 	
   STRACE_IO(("-->OUT"));
 
