@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_rpc.x,v 1.13 2002-12-24 14:14:31 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_rpc.x,v 1.14 2003-01-22 16:57:57 SyntDev1 Exp $
 
 -----------------------------------------------------------------------
 
@@ -13,6 +13,14 @@ Component : Consumer / Provider
 Purpose   : 
 
 -----------------------------------------------------------------------
+ */
+
+/**
+ * @defgroup RPC
+ * The TSP RPC module is the one which concentrate the
+ * RPC interface of TSP for both the Client and Server part.
+ * @ingroup Core
+ * @{
  */
 
 /** Status for all functions */
@@ -248,7 +256,7 @@ program TSP_RPC {
 } = 0 ;
 
 
-
+/** @} */
 
 #ifdef RPC_CLNT
 %
