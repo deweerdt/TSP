@@ -88,6 +88,23 @@ fi
 ##########################
 
 ################################
+# GTK based consumer.
+# is gtk-config present ?
+################################
+AC_CHECK_PROG([GTK_CONFIG],[gtk-config],[`which gtk-config`],[notfound],[$PATH],[rej])
+AC_MSG_CHECKING([GTK setup verification...])
+if test "$GTK_CONFIG" = "notfound"; then
+  AC_MSG_RESULT([NOK: gtk-config script (gtk-devel package) not found GTK based TSP consumer are DISABLED])
+  GTK_BASED_CONSUMER="no"
+else
+  AC_MSG_RESULT([Ok])
+  GTK_BASED_CONSUMER="yes"
+fi
+################################
+### End of GTK devel check   ###
+################################
+
+################################
 # BlackBoard part of TSP
 ################################
 AC_ARG_ENABLE(blackboard,   [  --enable-blackboard                enable BlackBoard library and TSP BlackBoard Provider],
@@ -315,6 +332,7 @@ AC_SUBST(ENABLED_TSP_TARGET)
 AC_SUBST(JTSP)
 AC_SUBST(BB)
 AC_SUBST(TSPCONSUMER)
+AC_SUBST(GTK_BASED_CONSUMER)
 AC_SUBST(TSPPROVIDER)
 
 

@@ -311,7 +311,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS AWK INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA LN_S SET_MAKE RANLIB ac_ct_RANLIB AR CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT JAVA JAVAC JAVADOC CXX CXXFLAGS ac_ct_CXX CPP EGREP LIBOBJS build build_cpu build_vendor build_os host host_cpu host_vendor host_os HOST_TARGET ARFLAGS LDLIBS TSP_BASE ENABLED_TSP_TARGET JTSP BB TSPCONSUMER TSPPROVIDER LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS AWK INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA LN_S SET_MAKE RANLIB ac_ct_RANLIB AR CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT JAVA JAVAC JAVADOC GTK_CONFIG CXX CXXFLAGS ac_ct_CXX CPP EGREP LIBOBJS build build_cpu build_vendor build_os host host_cpu host_vendor host_os HOST_TARGET ARFLAGS LDLIBS TSP_BASE ENABLED_TSP_TARGET JTSP BB TSPCONSUMER GTK_BASED_CONSUMER TSPPROVIDER LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -2601,6 +2601,78 @@ fi
 ##########################
 ### End of Java Setup  ###
 ##########################
+
+################################
+# GTK based consumer.
+# is gtk-config present ?
+################################
+# Extract the first word of "gtk-config", so it can be a program name with args.
+set dummy gtk-config; ac_word=$2
+echo "$as_me:$LINENO: checking for $ac_word" >&5
+echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6
+if test "${ac_cv_prog_GTK_CONFIG+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  if test -n "$GTK_CONFIG"; then
+  ac_cv_prog_GTK_CONFIG="$GTK_CONFIG" # Let the user override the test.
+else
+  ac_prog_rejected=no
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+  for ac_exec_ext in '' $ac_executable_extensions; do
+  if $as_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    if test "$as_dir/$ac_word$ac_exec_ext" = "rej"; then
+       ac_prog_rejected=yes
+       continue
+     fi
+    ac_cv_prog_GTK_CONFIG="`which gtk-config`"
+    echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+done
+
+if test $ac_prog_rejected = yes; then
+  # We found a bogon in the path, so make sure we never use it.
+  set dummy $ac_cv_prog_GTK_CONFIG
+  shift
+  if test $# != 0; then
+    # We chose a different compiler from the bogus one.
+    # However, it has the same basename, so the bogon will be chosen
+    # first if we set GTK_CONFIG to just the basename; use the full file name.
+    shift
+    ac_cv_prog_GTK_CONFIG="$as_dir/$ac_word${1+' '}$@"
+  fi
+fi
+  test -z "$ac_cv_prog_GTK_CONFIG" && ac_cv_prog_GTK_CONFIG="notfound"
+fi
+fi
+GTK_CONFIG=$ac_cv_prog_GTK_CONFIG
+if test -n "$GTK_CONFIG"; then
+  echo "$as_me:$LINENO: result: $GTK_CONFIG" >&5
+echo "${ECHO_T}$GTK_CONFIG" >&6
+else
+  echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+fi
+
+echo "$as_me:$LINENO: checking GTK setup verification..." >&5
+echo $ECHO_N "checking GTK setup verification...... $ECHO_C" >&6
+if test "$GTK_CONFIG" = "notfound"; then
+  echo "$as_me:$LINENO: result: NOK: gtk-config script (gtk-devel package) not found GTK based TSP consumer are DISABLED" >&5
+echo "${ECHO_T}NOK: gtk-config script (gtk-devel package) not found GTK based TSP consumer are DISABLED" >&6
+  GTK_BASED_CONSUMER="no"
+else
+  echo "$as_me:$LINENO: result: Ok" >&5
+echo "${ECHO_T}Ok" >&6
+  GTK_BASED_CONSUMER="yes"
+fi
+################################
+### End of GTK devel check   ###
+################################
 
 ################################
 # BlackBoard part of TSP
@@ -5092,6 +5164,7 @@ done
 
 
 
+
 # Config for outputed files
                                         ac_config_files="$ac_config_files src/scripts/tsp_dev.login src/scripts/tsp_dev.login.sh make/Makeparams src/doxy/Makefile:src/doxy/doc.mk"
 
@@ -5729,6 +5802,7 @@ s,@OBJEXT@,$OBJEXT,;t t
 s,@JAVA@,$JAVA,;t t
 s,@JAVAC@,$JAVAC,;t t
 s,@JAVADOC@,$JAVADOC,;t t
+s,@GTK_CONFIG@,$GTK_CONFIG,;t t
 s,@CXX@,$CXX,;t t
 s,@CXXFLAGS@,$CXXFLAGS,;t t
 s,@ac_ct_CXX@,$ac_ct_CXX,;t t
@@ -5751,6 +5825,7 @@ s,@ENABLED_TSP_TARGET@,$ENABLED_TSP_TARGET,;t t
 s,@JTSP@,$JTSP,;t t
 s,@BB@,$BB,;t t
 s,@TSPCONSUMER@,$TSPCONSUMER,;t t
+s,@GTK_BASED_CONSUMER@,$GTK_BASED_CONSUMER,;t t
 s,@TSPPROVIDER@,$TSPPROVIDER,;t t
 s,@LTLIBOBJS@,$LTLIBOBJS,;t t
 CEOF
