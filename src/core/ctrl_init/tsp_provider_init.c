@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl_init/tsp_provider_init.c,v 1.5 2003-07-15 14:42:24 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl_init/tsp_provider_init.c,v 1.6 2004-07-28 13:05:38 mia Exp $
 
 -----------------------------------------------------------------------
 
@@ -41,6 +41,7 @@ Purpose   : Function calls to launch a TSP Provider program
 #include "tsp_provider.h"
 #include "tsp_server.h"
 #include "tsp_request.h"
+#include "tsp_provider_init.h"
 
 int TSP_provider_init(int* argc, char** argv[])
 {

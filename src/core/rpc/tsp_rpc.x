@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_rpc.x,v 1.15 2003-02-07 16:02:55 SyntDev1 Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_rpc.x,v 1.16 2004-07-28 13:05:38 mia Exp $
 
 -----------------------------------------------------------------------
 
@@ -269,7 +269,7 @@ program TSP_RPC {
 	
 
 	} = 1;
-} = 0 ;
+} = 0x31230010 ;
 
 
 /** @} */

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_server.c,v 1.10 2003-07-15 14:42:24 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_server.c,v 1.11 2004-07-28 13:05:38 mia Exp $
 
 -----------------------------------------------------------------------
 
@@ -37,8 +37,6 @@ Purpose   :
 
 #include "tsp_sys_headers.h"
 
-
-#include <pthread.h>
 #define PORTMAP
 #include <rpc/rpc.h>
 
@@ -114,7 +112,7 @@ TSP_answer_sample_t* tsp_request_information_1_svc(TSP_request_information_t req
 
 	
   TSP_provider_request_information(&req_info, &ans_sample);
-	
+
   STRACE_IO(("-->OUT"));
 
 	
@@ -224,17 +222,14 @@ void* tsp_exec_feature_1_svc(TSP_exec_feature_t exec_feature, struct svc_req * r
 
 }
 
+
+
 void
-tsp_rpc_1(struct svc_req *rqstp, register SVCXPRT *transp);
-
-
-
-
-
+tsp_rpc_1(struct svc_req *rqstp, register SVCXPRT *transp) ;
 
 static TSP_rpc_init(int server_number)
 {
-  SFUNC_NAME(TSP_command_init);
+  SFUNC_NAME(TSP_rpc_init);
 		
   int ret = TRUE;
   register SVCXPRT *transp;
@@ -243,6 +238,12 @@ static TSP_rpc_init(int server_number)
   gint32 rpc_progid = TSP_get_progid(server_number);
 
   STRACE_IO(("-->IN server number=%d",server_number ));
+
+#ifdef VXWORKS
+  if(rpcTaskInit() == ERROR)
+    ret = FALSE;
+#endif
+
 
   /* svc_create does not exist for linux, we must use the deprecated function */
 
@@ -259,7 +260,6 @@ static TSP_rpc_init(int server_number)
     fprintf (stderr, "%s", "unable to register (TSP_RPC, TSP_RPC_VERSION_INITIAL, tcp).");
     ret = FALSE;
   }
-/*#endif*/
 	
   if (ret)
     {
@@ -275,7 +275,7 @@ static TSP_rpc_init(int server_number)
   return ret;
 }
 
-static void* TSP_thread_rpc_init(void* arg)
+void* TSP_thread_rpc_init(void* arg)
 {
   /* FIXME : creer le thread détaché */
     
@@ -338,7 +338,7 @@ void *TSP_rpc_request_run(void* config_param) {
   /* FIXME implements cond var notification */
 } /* end of TSP_rpc_request_run */
 
-int TSP_rpc_request_stop() {
+int TSP_rpc_request_stop(void) {
   SFUNC_NAME(TSP_rpc_request_stop);
   int retval = TRUE;
   /* FIXME NOP */

@@ -8,7 +8,7 @@
 
 
 #include "tsp_mtgprof.h"
-
+#ifndef VXWORKS
 /* Same prototype as pthread_create; use some #define magic to
  * transparently replace it in other files */
 int gprof_pthread_create(pthread_t * thread, pthread_attr_t * attr,
@@ -61,3 +61,4 @@ static void * wrapper_routine(void * data)
     /* Call the real function */
     return start_routine(arg);
 }
+#endif /* VXWORKS */

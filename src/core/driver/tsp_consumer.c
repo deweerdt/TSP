@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.22 2003-12-27 13:30:59 uid67973 Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.23 2004-07-28 13:05:38 mia Exp $
 
 -----------------------------------------------------------------------
 
@@ -36,7 +36,6 @@ Purpose   : Main implementation for the TSP consumer library
 */
 
 #include "tsp_sys_headers.h"
-#include <pthread.h>
 
 #include "tsp_consumer.h"
 #include "tsp_client.h"

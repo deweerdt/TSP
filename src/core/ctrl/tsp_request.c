@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: tsp_request.c,v 1.1 2003-07-15 14:42:24 erk Exp $
+$Id: tsp_request.c,v 1.2 2004-07-28 13:05:38 mia Exp $
 
 -----------------------------------------------------------------------
 
@@ -39,12 +39,12 @@ Purpose   : TSP request handling API
 #include "tsp_request.h"
 
 int 
-TSP_provider_rqh_manager_get_max_nb() {
+TSP_provider_rqh_manager_get_max_nb(void) {
   return TSP_MAX_REQUEST_HANDLERS;
 }
 
 int
-TSP_provider_rqh_manager_get_nb() {
+TSP_provider_rqh_manager_get_nb(void) {
 
   SFUNC_NAME(TSP_provider_request_handlers_get_nb);
 
@@ -63,7 +63,7 @@ TSP_provider_rqh_manager_get_nb() {
 
 
 int 
-TSP_provider_rqh_manager_get_nb_running() {
+TSP_provider_rqh_manager_get_nb_running(void) {
 
   SFUNC_NAME(TSP_provider_rqh_manager_get_nb_running);
 
@@ -137,7 +137,7 @@ TSP_provider_rqh_manager_install(int rank, TSP_provider_request_handler_t rqh) {
 } /* End of TSP_provider_rqh_manager_install */
 
 int 
-TSP_provider_rqh_manager_init() {
+TSP_provider_rqh_manager_init(void) {
   SFUNC_NAME(TSP_provider_rqh_manager_init);
 
   int retval = TRUE;
@@ -173,7 +173,7 @@ TSP_provider_rqh_manager_init() {
 
 
 int 
-TSP_provider_rqh_manager_refresh() {
+TSP_provider_rqh_manager_refresh(void) {
   SFUNC_NAME(TSP_provider_rqh_manager_refresh);
 
   int retval = TRUE;
@@ -214,7 +214,7 @@ TSP_provider_rqh_manager_refresh() {
   return retval;
 }  /* End of TSP_provider_rqh_manager_refresh */
 
-void TSP_provider_rqh_manager_waitend() {
+void TSP_provider_rqh_manager_waitend(void) {
   SFUNC_NAME(TSP_provider_rqh_manager_waitend);
   STRACE_IO(("-->INT"));
 

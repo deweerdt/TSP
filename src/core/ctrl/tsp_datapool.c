@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_datapool.c,v 1.16 2003-02-07 16:02:08 SyntDev1 Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_datapool.c,v 1.17 2004-07-28 13:05:37 mia Exp $
 
 -----------------------------------------------------------------------
 
@@ -38,8 +38,6 @@ may be unified in this source .
  */
 
 #include "tsp_sys_headers.h"
-#include <pthread.h>
-#include <time.h>
 
 #include "tsp_datapool.h"
 
@@ -126,7 +124,7 @@ TSP_datapool_table_t X_global_datapool = {FALSE,FALSE,0,0,0,0};
  * Thread created per session when the sample server is a pasive one.
  * @param datapool The datapool object instance that will be linked to the thread
  */ 
-static void* TSP_datapool_thread(void* datapool)
+void* TSP_datapool_thread(void* datapool)
 {
 
   SFUNC_NAME(TSP_local_worker);

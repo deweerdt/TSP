@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: tsp_request.h,v 1.1 2003-07-15 14:42:24 erk Exp $
+$Id: tsp_request.h,v 1.2 2004-07-28 13:05:38 mia Exp $
 
 -----------------------------------------------------------------------
 
@@ -39,7 +39,7 @@ Purpose   : TSP request handling API
 #define _TSP_REQUEST_H
 
 #include "tsp_prjcfg.h"
-#include <pthread.h>
+#include "tsp_sys_headers.h"
 
 /**
  * @defgroup Request
@@ -65,7 +65,7 @@ Purpose   : TSP request handling API
  */
 typedef int (* tsp_request_handler_config_ft)(void *);
 typedef void * (* tsp_request_handler_run_ft)(void *);
-typedef int (* tsp_request_handler_stop_ft)();
+typedef int (* tsp_request_handler_stop_ft)(void);
 /*@}*/ 
 
 /** Request handler status */
@@ -135,19 +135,19 @@ static rqh_manager_data_t rqh_manager_if;
  * Get the maximum number
  * of TSP_provider_request_handler.
  */
-int TSP_provider_rqh_manager_get_max_nb();
+int TSP_provider_rqh_manager_get_max_nb(void);
 
 /**
  * Get the current number
  * of TSP_provider_request_handler installed.
  */
-int TSP_provider_rqh_manager_get_nb();
+int TSP_provider_rqh_manager_get_nb(void);
 
 /**
  * Get the current number
  * of TSP_provider_request_handler running.
  */
-int TSP_provider_rqh_manager_get_nb_running();
+int TSP_provider_rqh_manager_get_nb_running(void);
 
 /**
  * Get a request_handler
@@ -166,7 +166,7 @@ int TSP_provider_rqh_manager_install(int rank, TSP_provider_request_handler_t rq
  * Set-up TSP initial request handlers.
  * @return TRUE on success, FALSE on failure
  */
-int TSP_provider_rqh_manager_init();
+int TSP_provider_rqh_manager_init(void);
 
 /**
  * Refresh TSP request handlers activities
@@ -174,14 +174,14 @@ int TSP_provider_rqh_manager_init();
  * running ones.
  * @return TRUE on success, FALSE on failure
  */
-int TSP_provider_rqh_manager_refresh();
+int TSP_provider_rqh_manager_refresh(void);
 
 /**
  * This is a blocking function calls which triggers
  * a wait on a condition variable which is signalled
  * iff no more request handlers thread are running.
  */
-void TSP_provider_rqh_manager_waitend();
+void TSP_provider_rqh_manager_waitend(void);
 
 /** @} end group Request */ 
 

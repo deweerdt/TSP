@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: tsp_server.h,v 1.5 2003-07-15 14:42:24 erk Exp $
+$Id: tsp_server.h,v 1.6 2004-07-28 13:05:38 mia Exp $
 
 -----------------------------------------------------------------------
 
@@ -51,7 +51,7 @@ Purpose   :
 int TSP_rpc_request_config(void* config_param);
 int TSP_rpc_request_config2(void* config_param);
 void* TSP_rpc_request_run(void* config_param);
-int TSP_rpc_request_stop();
+int TSP_rpc_request_stop(void);
 
 /**
 * Initialise command communication canal.

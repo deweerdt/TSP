@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.c,v 1.12 2002-12-24 14:14:19 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.c,v 1.13 2004-07-28 13:05:38 mia Exp $
 
 -----------------------------------------------------------------------
 
@@ -37,7 +37,6 @@ opened session from a client
  */
 
 #include "tsp_sys_headers.h"
-#include <pthread.h>
 
 #include "tsp_session.h"
 #include "tsp_group_algo.h"

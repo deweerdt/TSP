@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: tsp_provider.c,v 1.19 2003-07-15 14:42:24 erk Exp $
+$Id: tsp_provider.c,v 1.20 2004-07-28 13:05:38 mia Exp $
 
 -----------------------------------------------------------------------
 
@@ -552,7 +552,7 @@ void  TSP_provider_request_sample_destroy(TSP_request_sample_destroy_t* req_info
 } /* End of  TSP_provider_request_sample_destroy */
 
 
-static void* TSP_provider_garbage_collector_thread(void* dummy)
+void* TSP_provider_garbage_collector_thread(void* dummy)
 {
    SFUNC_NAME(TSP_provider_garbage_collector_thread);
    channel_id_t channel_id;

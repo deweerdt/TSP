@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_sys_headers.h,v 1.10 2004-05-19 15:07:31 dufy Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_sys_headers.h,v 1.11 2004-07-28 13:05:38 mia Exp $
 
 -----------------------------------------------------------------------
 
@@ -60,6 +60,7 @@ Do not use this with others targets */
 /* CHECKME: after Dec OSF1  V5.1, the system  pthread.h is POSIX enough to avoid localinclude */
 /*#include "dec_pthread.h"*/
 #include <pthread.h>
+#include <sys/time.h>
 
 
 #endif

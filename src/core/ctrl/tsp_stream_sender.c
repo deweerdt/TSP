@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_stream_sender.c,v 1.12 2002-12-24 14:14:19 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_stream_sender.c,v 1.13 2004-07-28 13:05:38 mia Exp $
 
 -----------------------------------------------------------------------
 
@@ -41,9 +41,7 @@ stream  to the consumers.
 #include <netinet/in.h>
 #include <netinet/tcp.h>
 #include <sys/socket.h>
-#include <pthread.h>
 #include <signal.h>
-#include <time.h>
 
 #ifndef SHUT_RDWR
 #define SHUT_RDWR 2
@@ -143,7 +141,7 @@ static Sigfunc* signal(int signo, Sigfunc* func)
 } 
 
 
-static void* TSP_streamer_sender_thread_sender(void* arg)
+void* TSP_streamer_sender_thread_sender(void* arg)
 {
   SFUNC_NAME(TSP_streamer_sender_thread_sender);
     
