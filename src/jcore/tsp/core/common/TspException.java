@@ -1,5 +1,5 @@
 /* 
- * $Id: TspException.java,v 1.1 2003-02-07 16:09:48 SyntDev1 Exp $
+ * $Id: TspException.java,v 1.2 2004-11-02 05:11:41 sgalles Exp $
  * -----------------------------------------------------------------------
  * 
  * TSP Library - core components for a generic Transport Sampling Protocol.
@@ -47,7 +47,7 @@ public class TspException extends Exception {
      */
     public TspException() {
 	super();
-        //this(TspException.RPC_FAILED);
+        
     }
 
     /**
@@ -110,16 +110,7 @@ public class TspException extends Exception {
         }
     }
 
-    /**
-     * Returns the error message string of this ONC/RPC object.
-     *
-     * @return  The error message string of this <code>TspException</code>
-     *   object if it was created either with an error message string or an
-     *   ONC/RPC error code.
-     */
-    public String getMessage() {
-	return message;
-    }
+   
 
     /**
      * Returns the error reason of this ONC/RPC exception object.

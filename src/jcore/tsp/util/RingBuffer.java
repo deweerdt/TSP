@@ -1,4 +1,4 @@
-/* $Id: RingBuffer.java,v 1.1 2003-02-07 16:09:48 SyntDev1 Exp $
+/* $Id: RingBuffer.java,v 1.2 2004-11-02 05:11:41 sgalles Exp $
  * -----------------------------------------------------------------------
  * 
  * TSP Library - core components for a generic Transport Sampling Protocol.
