@@ -16,8 +16,6 @@ build::
 	- mkdir -p $(DIRLIB)
 	- mkdir -p $(DIROBJ)
 	- mkdir -p $(DIRSCRIPT)
-	- mkdir -p $(CLASSBASE)
-	- mkdir -p $(JARBASE)
 	- cd $(DEVBASE)/exec; rm -f current; ln -s DEV current; cd $(DEVBASE)/src;
 
 destroy::
