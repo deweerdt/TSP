@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_datapool.c,v 1.12 2002-12-03 16:14:15 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_datapool.c,v 1.13 2002-12-05 10:52:33 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -163,7 +163,7 @@ static void* TSP_datapool_thread(void* datapool)
 
   STRACE_IO(("-->IN"));
   
-  STRACE_INFO(("Local datapool thread started for session %d",obj_datapool->session_channel_id)); 
+  STRACE_DEBUG(("Local datapool thread started for session %d",obj_datapool->session_channel_id)); 
   
 
   if( obj_datapool->is_global )
@@ -182,6 +182,9 @@ static void* TSP_datapool_thread(void* datapool)
 
     }
   /* FIXME : s'occuper des divers types raw, string... */
+
+  /* Flush old data, we do not want to get a GLU_GET_DATA_LOST now */
+  GLU_forget_data(obj_datapool->h_glu);
 
   /* get first item */
   while( ( GLU_GET_NEW_ITEM != (state=GLU_get_next_item(obj_datapool->h_glu, &item)))  )
@@ -230,12 +233,15 @@ static void* TSP_datapool_thread(void* datapool)
 	{
 	case   GLU_GET_EOF :
 	  msg_ctrl = TSP_MSG_CTRL_EOF;
+	  STRACE_INFO(("GLU sent EOF"));
 	  break;
 	case   GLU_GET_RECONF :
 	  msg_ctrl = TSP_MSG_CTRL_RECONF;
+	  STRACE_INFO(("GLU sent RECONF"));
 	  break;
 	case   GLU_GET_DATA_LOST :
 	  msg_ctrl = TSP_MSG_CTRL_GLU_DATA_LOST;
+	  STRACE_INFO(("GLU sent DATA_LOST"));
 	  break;
 	default:
 	  STRACE_ERROR(("?"));
