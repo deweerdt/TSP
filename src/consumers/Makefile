@@ -15,6 +15,12 @@ ifeq (${BUILD_XML2_CONFIG_USER},yes)
 endif
 endif
 
+ifeq (${USABLE_OPENGL},yes) 
+ifeq (${USABLE_OPENGLUT},yes) 
+	SUBDIRS += Visu3D
+endif
+endif
+
 include $(DEVBASE)/make/Makesubdirs
 
 

@@ -1,0 +1,19 @@
+7
+DYN_0_d_qsat 10
+ORBT_0_d_possat_m 10
+ECLA_0_d_ecl_sol 10
+ECLA_0_d_ecl_lune 10
+POSA_0_d_DirSol 10
+POSA_0_d_DirLun 10
+Sequenceur_0_d_t_s 10
+END
+
+#commentaires
+6                             =nb éléments à lire
+DYN_0_d_qsat                  =quaternion sat (4float)
+ORBT_0_d_possat_m             =position sat (3float)
+ECLA_0_d_ecl_sol              =eclipse de soleil sur le sat (0 ou 1) (1float)
+ECLA_0_d_ecl_lune             =eclipse de lune sur le sat (0 ou 1) (1float)
+POSA_0_d_DirSol               =vecteur directeur soleil(3float)
+POSA_0_d_DirLun               =vecteur directeur lune(3float)
+Sequenceur_0_d_t_s            =temps (sec) (float 1)

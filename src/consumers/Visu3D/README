@@ -1,0 +1,10 @@
+Pour lancer le test
+bb_simu -s 
+bb_tsp_provider bb_simu
+Visu3D config_visu3d_test.dat localhost
+
+!!! Attention il faut pour l'instant lancer
+    Visu3D depuis le répertoire de ses sources
+    [tsp/src/consumer/Visu3D] car il cherche
+    son fichier de conf et les fichiers de données
+    localement. !!! 
