@@ -9,7 +9,7 @@ SOURCES = \
 	bb_utils.c \
 	bb_core.c \
 	bb_simple.c \
-	sha1.c
+	bb_sha1.c
 
 OBJECTS=$(SOURCES:%.c=$(DIROBJ)/%.o) 
 

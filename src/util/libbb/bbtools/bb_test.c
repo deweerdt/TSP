@@ -15,6 +15,7 @@ main (int argc, char ** argv) {
   int retcode=0;
   int data_size;
   int n_data;
+  u_int32_t* display_level;
   int32_t* Toto;
   double* Titi;
   double* Tata;
@@ -37,14 +38,18 @@ main (int argc, char ** argv) {
   /***************/
   n_data = 10000;
   data_size = n_data*8 + 5000*30*4 + 200000*8;
-  if (E_NOK==bb_create(&mybb,argv[0],n_data,data_size)) {
-    bb_attach(&mybb,argv[0]);
+  if (E_NOK==bb_create(&mybb,basename(argv[0]),n_data,data_size)) {
+    bb_attach(&mybb,basename(argv[0]));
 /*     bb_destroy(&mybb); */
 /*     bb_create(&mybb,argv[0],n_data,data_size); */
   }
 
   /* Publish data in the BB */
   /**************************/
+
+  display_level = (u_int32_t*) bb_simple_publish(mybb,"display_level",basename(argv[0]),-1, E_BB_UINT32, sizeof(u_int32_t),1);
+  *display_level = 0;
+
   Toto = (int32_t*) bb_simple_publish(mybb,"Toto",basename(argv[0]),1, E_BB_INT32, sizeof(int32_t),3);  
   for (i=0;i<3;++i) {
     Toto[i] = i;
@@ -63,7 +68,7 @@ main (int argc, char ** argv) {
     Tata[i] = cos(*Titi/(i+1));
   }
 
-#define HUGE_ARRAY
+#undef HUGE_ARRAY
 #ifdef HUGE_ARRAY
 #define BIG_SIZE 200000
 #else
@@ -94,18 +99,30 @@ main (int argc, char ** argv) {
     if ((i % 2) == 0) {
       bb_lock(mybb);
       *Titi += 1;
-      printf("Titi = %f\n",*Titi);
-      printf("BB locked <i=%d>\n",i);
+      if (*display_level & 0x1) {
+	printf("Titi = %f\n",*Titi);
+      }
+      if (*display_level & 0x2) {
+	printf("BB locked <i=%d>\n",i);
+      }
     } else {
       *Titi += 1;
-      printf("Titi = %f\n",*Titi);
+      if (*display_level & 0x1) {
+	printf("Titi = %f\n",*Titi);
+      }
       bb_unlock(mybb);      
-      printf("BB unlocked\n");
+      if (*display_level & 0x2) {
+	printf("BB unlocked\n");
+      }
       if (synchro) {
-	printf("Synchro GO...");
-	fflush(stdout);
+	if (*display_level & 0x4) {
+	  printf("Synchro GO...");
+	  fflush(stdout);
+	}
 	bb_simple_synchro_go(mybb,BB_SIMPLE_MSGID_SYNCHRO_COPY);
-	printf("OK.\n");
+	if (*display_level & 0x4) {
+	  printf("OK.\n");
+	}
 /* 	printf("Synchro Wait..."); */
 /* 	fflush(stdout); */
 /* 	bbntb_synchro_wait(BBNTB_MSGID_SYNCHRO_COPY_ACK); */

@@ -1,6 +1,10 @@
 include $(DEVBASE)/make/Makeparams
 
-SUBDIRS = vxstub stub res_reader
+ifeq (${BUILD_BB},yes)
+	SUBDIRS = vxstub stub bb_provider
+else
+	SUBDIRS = vxstub stub
+endif
 
 include $(DEVBASE)/make/Makesubdirs
 

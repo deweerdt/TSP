@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.1 2004-09-13 23:19:23 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.2 2004-09-20 20:55:59 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -231,7 +231,16 @@ bb_value_write(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc,const char* value,
 
   char* data;
   int retval;
+  int hexval;
   assert(bb);
+  
+  if ((NULL != strstr(value,"0x")) | 
+      (NULL != strstr(value,"0X"))
+      ) {
+    hexval = 1;
+  } else {
+    hexval = 0;
+  }
 
   /* on recupere l'adresse de la donnee dans le BB */
   data = (char*)bb_data(bb) + data_desc.data_offset;
@@ -243,22 +252,22 @@ bb_value_write(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc,const char* value,
       ((float *)data)[idx] = atof(value);
       break;
     case E_BB_INT16:
-      ((int16_t*)data)[idx] = atoi(value);
+      ((int16_t*)data)[idx] = strtol(value,(char **)NULL,hexval ? 16 : 10);
       break; 
     case E_BB_INT32:
-      ((int32_t*)data)[idx] = atoi(value);
+      ((int32_t*)data)[idx] = strtol(value,(char **)NULL,hexval ? 16 : 10);
       break; 
     case E_BB_INT64:
-      ((int64_t*)data)[idx] = atoll(value);
+      ((int64_t*)data)[idx] = strtoll(value,(char **)NULL,hexval ? 16 : 10);
       break; 
     case E_BB_UINT16:
-      ((u_int16_t*)data)[idx] = atoi(value);
+      ((u_int16_t*)data)[idx] = strtol(value,(char **)NULL,hexval ? 16 : 10);
       break;
     case E_BB_UINT32:
-      ((u_int32_t*)data)[idx] = atoi(value);
+      ((u_int32_t*)data)[idx] = strtol(value,(char **)NULL,hexval ? 16 : 10);
       break;	
     case E_BB_UINT64:
-      ((u_int64_t*)data)[idx] = atoll(value);
+      ((u_int64_t*)data)[idx] = strtoll(value,(char **)NULL,hexval ? 16 : 10);
       break;	
     case E_BB_CHAR:
       retval = E_NOK;
@@ -348,7 +357,7 @@ bb_create(S_BB_T** bb,
   char* name_sem;
   char* name_msg;
   int32_t  fd_shm;
-  int32_t  i_mmap_size;
+  int32_t  mmap_size;
   char syserr[MAX_SYSMSG_SIZE];
   union semun u_sem_ctrl;
   struct sembuf s_semop;
@@ -361,7 +370,7 @@ bb_create(S_BB_T** bb,
   bb_logMsg(BB_LOG_INFO,"BlackBoard::bb_create", 
 	      "Create BB <%s>.",pc_bb_name);
   fd_shm      = 0;
-  i_mmap_size = 0;
+  mmap_size = 0;
 
   /* open+create du segment SHM SysV */
   if (name_shm!=NULL) {
@@ -370,8 +379,8 @@ bb_create(S_BB_T** bb,
      * la taille du tableau descripteur de donnee +
      * la taille de la zone de donnee
      */
-    i_mmap_size = bb_size(n_data,data_size);    
-    fd_shm = shmget(bb_utils_ntok(name_shm), i_mmap_size, IPC_CREAT|IPC_EXCL|BB_SHM_ACCESS_RIGHT);        
+    mmap_size = bb_size(n_data,data_size);    
+    fd_shm = shmget(bb_utils_ntok(name_shm), mmap_size, IPC_CREAT|IPC_EXCL|BB_SHM_ACCESS_RIGHT);        
   } else {
     retcode = E_NOK;
   }
@@ -396,7 +405,7 @@ bb_create(S_BB_T** bb,
   /* On initialise la structure comme il se doit */
   if (E_OK == retcode) {
     /* RAZ de la mémoire allouee */
-    memset(*bb,0,i_mmap_size);        
+    memset(*bb,0,mmap_size);        
     strncpy((*bb)->name,pc_bb_name,BB_NAME_MAX_SIZE+1);
     (*bb)->max_data_desc_size = n_data;
     (*bb)->data_desc_offset = sizeof(S_BB_T);
@@ -473,8 +482,8 @@ bb_destroy(S_BB_T** bb) {
   char syserr[MAX_SYSMSG_SIZE];
   char* name_shm;
   int32_t fd_shm;
-  int32_t i_local_semid;
-  int32_t i_local_msgid;
+  int32_t local_semid;
+  int32_t local_msgid;
   
   retcode = E_OK;
   assert(bb);
@@ -492,8 +501,8 @@ bb_destroy(S_BB_T** bb) {
    * des semaphore et autres queue de message
    * pour les détruire après la destruction de la SHM
    */
-  i_local_semid = (*bb)->semid;
-  i_local_msgid = (*bb)->msgid;
+  local_semid = (*bb)->semid;
+  local_msgid = (*bb)->msgid;
   
   /* On programme la destruction du segment SHM */
   fd_shm = shmget(bb_utils_ntok(name_shm),0,BB_SHM_ACCESS_RIGHT);
@@ -516,9 +525,9 @@ bb_destroy(S_BB_T** bb) {
   }
   /* FIXME doit-on prendre le semaphore avant de le détruire ?? */
   /* On programme la destruction du SEMAPHORE */
-  semctl(i_local_semid,0,IPC_RMID);
+  semctl(local_semid,0,IPC_RMID);
   /* On programme la destruction de la QUEUE DE MESSAGE */
-  msgctl(i_local_msgid,IPC_RMID,NULL);
+  msgctl(local_msgid,IPC_RMID,NULL);
   *bb = NULL;
     
   return retcode;
@@ -652,52 +661,52 @@ void*
 bb_publish(volatile S_BB_T *bb, S_BB_DATADESC_T* data_desc) {
   
   void* retval;
-  int32_t i_taille_requise;
+  int32_t nedeed_size;
 
   retval = NULL;
   assert(bb);
   assert(data_desc);
   
-  /* on verifie que la donnee publiee ne l'est pas deja 
-   * (unicite de la clef)
+  /* Verify that the published data is not already published
+   * (key unicity)
    */
   bb_lock(bb);
   if (bb_find(bb,data_desc->name) != -1) {
-    bb_logMsg(BB_LOG_WARNING,"BlackBoard::bb_publish", 
-	      "Key <%s> already exists in blackboard (automatic subscribe)!!",data_desc->name);
+/*     bb_logMsg(BB_LOG_WARNING,"BlackBoard::bb_publish",  */
+/* 	      "Key <%s> already exists in blackboard (automatic subscribe)!!",data_desc->name); */
     bb_unlock(bb);
     retval = bb_subscribe(bb,data_desc);
     bb_lock(bb);
   } else {
     /* calcul de la taille demandee */
-    i_taille_requise = data_desc->type_size*data_desc->dimension;    
+    nedeed_size = data_desc->type_size*data_desc->dimension;    
     /* verification espace disponible dans BB */
     if (bb->n_data >= bb->max_data_desc_size) {
       bb_logMsg(BB_LOG_SEVERE,"BlackBoard::bb_publish", 
 		"No more room in BB data descriptor!! [current n_data=%d]",
 		bb->n_data);
       /* verification taille donnee allouable */
-    } else if ((bb->max_data_size-bb->data_free_offset) < i_taille_requise) {
+    } else if ((bb->max_data_size-bb->data_free_offset) < nedeed_size) {
       bb_logMsg(BB_LOG_SEVERE,"BlackBoard::bb_publish", 
 		"No more room in BB data zone!! [left <%d> byte(s) out of <%d> required]",
-		bb->max_data_size-bb->data_free_offset,i_taille_requise);
+		bb->max_data_size-bb->data_free_offset,nedeed_size);
     } else {     
       /* Calcule de l'adresse libre */
       retval = (char*) bb_data(bb) + bb->data_free_offset;
       /* Mise a jour descripteur en retour */
       data_desc->data_offset = bb->data_free_offset;
       /* Mise a jour prochaine @ libre */
-      bb->data_free_offset  = bb->data_free_offset + i_taille_requise;
+      bb->data_free_offset  = bb->data_free_offset + nedeed_size;
       /* Mise a jour descripteur de donnee */
       bb_data_desc(bb)[bb->n_data] = *data_desc;
       /* On augmente le nombre de donnees */
       bb->n_data++;
     }
+    /* initialisation à des valeurs par defaut */
+    bb_data_initialise(bb,data_desc,NULL);
   }    
-  /* initialisation à des valeurs par defaut */
-  bb_data_initialise(bb,data_desc,NULL);
-  bb_unlock(bb);
-  
+  /* no init in case of automatic subscribe */  
+  bb_unlock(bb);  
   return retval;
 } /* end of bb_publish */
 

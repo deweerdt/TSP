@@ -57,6 +57,7 @@ include $(DEVBASE)/make/Makeparams.$(TSP_TARGET).$(TSP_MODE)
 BUILD_JAVA	= @JTSP@
 BUILD_PROVIDER	= @TSPPROVIDER@
 BUILD_CONSUMER	= @TSPCONSUMER@
+BUILD_BB	= @BB@
 
 # ----------------
 # Call all builds

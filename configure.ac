@@ -4,7 +4,7 @@
 # THIS FILE NEED TO BE PROCESSED WITH AUTOCONF
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # 
-AC_INIT([the Transport Sampling Protocol], [0.6.0], [tsp@astrium.eads.net], [tsp])
+AC_INIT([the Transport Sampling Protocol], [0.6.1], [tsp@astrium.eads.net], [tsp])
 
 echo "**********************************************************"
 echo "*  TSP: AC_PACKAGE_NAME, version AC_PACKAGE_VERSION       "
@@ -86,6 +86,22 @@ fi
 ##########################
 ### End of Java Setup  ###
 ##########################
+
+################################
+# BlackBoard part of TSP
+################################
+AC_ARG_ENABLE(blackboard,   [  --enable-blackboard                enable BlackBoard library and TSP BlackBoard Provider],
+	      BB=$enableval,
+	      BB="yes")
+AC_MSG_CHECKING([BlackBoard part of the TSP])
+if test "$BB" = "yes"; then
+AC_MSG_RESULT([Enabled, will be configured])
+else
+AC_MSG_RESULT([Disabled, won't be configured])
+fi
+################################
+### End of BlackBoard Setup  ###
+################################
 
 ##########################
 # Setup C++ part of TSP
@@ -297,6 +313,7 @@ AC_SUBST(LDLIBS)
 AC_SUBST(TSP_BASE)
 AC_SUBST(ENABLED_TSP_TARGET)
 AC_SUBST(JTSP)
+AC_SUBST(BB)
 AC_SUBST(TSPCONSUMER)
 AC_SUBST(TSPPROVIDER)
 

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_utils.c,v 1.1 2004-09-13 23:19:23 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_utils.c,v 1.2 2004-09-20 20:55:59 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -44,6 +44,7 @@ Purpose   : Blackboard Idiom utilities
 #include <sys/ipc.h>
 
 #include <bb_utils.h>
+#include <bb_sha1.h>
 
 char* 
 bb_utils_build_shm_name(const char* shm_name) {
@@ -109,17 +110,36 @@ bb_utils_build_msg_name(const char* msg_name) {
 key_t
 bb_utils_ntok(const char* name) {
   key_t s_key;
-  uid_t i_id;
+  uid_t uid;
+  int32_t retcode;
+  
+  SHA1Context sha;
+  uint8_t Message_Digest[20];
 
-  i_id = getuid();
-  /* C'est une methode de generation de clef du pauvre
-   * FIXME : a ameliorer avec une fonction de hachage prenant
-   *         name en entree
-   * A noter qu'en utilisant l'UID on peut lancer +ieurs 
-   * simulateurs qui ne se marchent pas dessus et on
-   * sait a qui appartient le SHM 
+  uid = getuid();
+  /* We use the first byte of a SHA1 hash of the BBname
+   * unless the algorithm fail.
+   * If SHA1 fail we go back to poor key generation method
+   * using the name length.
+   * In both case we must Xored the key with uid in order
+   * to isolate different user from using the same key
    */
-  s_key = ((strlen(name) << 16) & 0xFFFF0000) | (i_id & 0x0000FFFF);
+  retcode  = SHA1Reset(&sha);
+  retcode &= SHA1Input(&sha, (const unsigned char *) name,strlen(name));
+  retcode &= SHA1Result(&sha, Message_Digest);
+
+  /* SHA 1 NOK back to old poor method */
+  if (0 != retcode) {
+    s_key = ((strlen(name) << 16) & 0xFFFF0000) | (uid & 0x0000FFFF);
+  } else {
+    s_key = (Message_Digest[0]        |
+	     (Message_Digest[1] << 8) |
+	     (Message_Digest[2] << 16)|
+	     (Message_Digest[3] << 24)) &
+      (~uid);
+	     
+      
+  }
   return s_key;
 } /* end of bb_utils_ntok */
 

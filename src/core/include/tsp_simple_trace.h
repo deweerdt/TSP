@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/include/Attic/tsp_simple_trace.h,v 1.11 2004-09-19 23:00:41 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/Attic/tsp_simple_trace.h,v 1.12 2004-09-20 20:55:59 erk Exp $
 
 -----------------------------------------------------------------------
 

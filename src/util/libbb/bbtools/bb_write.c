@@ -38,7 +38,8 @@ main (int argc, char ** argv) {
   }
 
   /* do we want to write to an array var */
-  if (array_name = strstr(argv[2],"[")) {
+  array_name = strstr(argv[2],"[");
+  if (array_name) {
     char* temp = "%d";
     char* temp2;
     temp2  = strdup(argv[2]);
@@ -58,13 +59,16 @@ main (int argc, char ** argv) {
   sym_value = bb_subscribe(mybb,&sym_data_desc);
 
   if (NULL==sym_value) {
-    fprintf(stdout,"%s: symbol <%s> not found in BlackBoard\n",argv[0],sym_data_desc.name,argv[1]);
+    fprintf(stdout,"%s: symbol <%s> not found in BlackBoard <%s>\n",
+	    argv[0],
+	    sym_data_desc.name,
+	    argv[1]);
   } else {
     if (array_index>=sym_data_desc.dimension) {
       fprintf(stdout,"%s: symbol array index <%d> out of bound (max index of <%s> is <%d>)\n",
 	      argv[0],array_index,sym_data_desc.name,sym_data_desc.dimension-1);
     } else {
-      bb_value_write(mybb,sym_data_desc,argv[2],array_index);
+      bb_value_write(mybb,sym_data_desc,argv[3],array_index);
     }
   }        
   /* Detach from BB */
