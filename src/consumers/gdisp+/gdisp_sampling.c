@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_sampling.c,v 1.8 2004-10-22 20:17:34 esteban Exp $
+$Id: gdisp_sampling.c,v 1.9 2004-11-16 21:38:36 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -665,7 +665,8 @@ gdisp_samplingThread (void *data )
       /*
        * Check out new incoming frame.
        */
-      if (sampleRefTimeTag != (guint)sampleValue.time) {
+      if (sampleRefTimeTag != 0 &&
+	  sampleRefTimeTag != (guint)sampleValue.time) {
 
 #if defined(SAMPLING_DEBUG)
 
