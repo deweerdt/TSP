@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/Attic/glue_sserver.h,v 1.2 2002-09-04 17:58:49 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/Attic/glue_sserver.h,v 1.3 2002-09-12 12:53:53 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -47,7 +47,7 @@ int GLU_commit_add_block(void);
 
 char* GLU_get_server_name(void);
 
-int TSP_glue_sserver_init(void);
+int GLU_glue_sserver_init(void);
 
 glu_ringbuf* GLU_get_ringbuf(void);
 

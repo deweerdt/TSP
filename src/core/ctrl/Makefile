@@ -7,7 +7,6 @@ XINC    = tsp_provider.h tsp_session.h   glue_sserver.h tsp_datapool.h \
 SOURCES = \
 	tsp_provider.c \
 	tsp_session.c \
-	glue_sserver.c \
 	tsp_datapool.c \
     tsp_group_algo.c \
     tsp_data_sender.c \

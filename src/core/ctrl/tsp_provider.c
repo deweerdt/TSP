@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_provider.c,v 1.2 2002-09-05 09:03:52 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_provider.c,v 1.3 2002-09-12 12:53:53 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -107,7 +107,7 @@ int TSP_init(int server_number)
 
   TSP_session_init();
 	
-  if(ret) ret = TSP_glue_sserver_init();
+  if(ret) ret = GLU_glue_sserver_init();
   if(ret) ret = TSP_datapool_init();
     
   /* Laisser en dernier, on reste bloqué ici si tout va bien*/
