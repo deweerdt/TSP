@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_sys_headers.h,v 1.12 2004-08-31 09:58:52 dufy Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_sys_headers.h,v 1.13 2004-09-13 23:18:23 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -43,9 +43,10 @@ Purpose   :
 int _rpcsvcdirty;
 #endif /* __OpenBSD__ */
 
+#ifndef _POSIX_SOURCE
 #define _POSIX_SOURCE
 #define _POSIX_C_SOURCE 199506L
-
+#endif
 
 #include <unistd.h>
 #include <assert.h>
