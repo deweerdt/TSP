@@ -1,12 +1,28 @@
-# ----------------
-# Do NOT edit
-# Makeparams was generated from Makeparam.in
-# ----------------
+# ---------------------------------
+# Do not EDIT: @configure_input@
+# ---------------------------------
 
 # ----------------
 # common for all targets
 # ----------------
 include $(DEVBASE)/make/Makeproject
+
+# ---------------
+# Compilers parameters (configure-)detected for the TSP host
+# Cross-target (like VxWorks) will overides those
+# variables with customized values in Makeparams.<target>.<mode>
+# ---------------
+CC		= @CC@
+CFLAGS		= @CFLAGS@
+CPPFLAGS	+= @CPPFLAGS@
+
+CXX		= @CXX@
+CXXFLAGS	= @CXXFLAGS@
+
+AR		= @AR@
+ARFLAGS		= @ARFLAGS@
+
+LDLIBS		= @LDLIBS@
 
 # ----------------
 # customize
@@ -19,9 +35,9 @@ include $(DEVBASE)/make/Makeparams.$(TSP_TARGET).$(TSP_MODE)
 # TSP component list
 # can build java, provider or consumer part
 # ----------------
-BUILD_JAVA=@JTSP@
-BUILD_PROVIDER=@TSPPROVIDER@
-BUILD_CONSUMER=@TSPCONSUMER@
+BUILD_JAVA	= @JTSP@
+BUILD_PROVIDER	= @TSPPROVIDER@
+BUILD_CONSUMER	= @TSPCONSUMER@
 
 # ----------------
 # Call all builds

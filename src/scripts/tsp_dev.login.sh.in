@@ -1,4 +1,5 @@
 #!/bin/sh
+# Do not EDIT: @configure_input@
 ##############################
 # Find host type
 ##############################

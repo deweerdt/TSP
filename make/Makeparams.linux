@@ -9,14 +9,14 @@ DIRLIB = $(DIREXEC)/lib
 # Default tools
 # -------------
 # Using standard tools
-CC=gcc
+#CC=gcc
 
 
 # Default options
 # ---------------
-ARFLAGS = rvs
-CPPFLAGS +=  -D_REENTRANT  -DUSE_STRACE -DTSP_NO_XDR_ENCODE
-LDLIBS =   -lm  -lpthread  
+#ARFLAGS = rvs
+#CPPFLAGS +=  -D_REENTRANT  -DUSE_STRACE -DTSP_NO_XDR_ENCODE
+#LDLIBS =   -lm  -lpthread  
 
 
 #include .make.state

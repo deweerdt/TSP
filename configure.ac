@@ -4,7 +4,7 @@
 # THIS FILE NEED TO BE PROCESSED WITH AUTOCONF
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # 
-AC_INIT([the Transport Sampling Protocol], [0.6.0], [tsp@astrium-space.com], [tsp])
+AC_INIT([the Transport Sampling Protocol], [0.6.0], [tsp@astrium.eads.net], [tsp])
 
 echo "**********************************************************"
 echo "*  TSP: AC_PACKAGE_NAME, version AC_PACKAGE_VERSION       "
@@ -22,11 +22,22 @@ AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
 
+# setup AR for the TSP host
+AC_PROG_RANLIB
+AC_CHECK_PROG(AR, ar, ar, ;)
+AR="$AR"
+
+
 ENABLED_TSP_TARGET="host"
 
 ##########################
 # Setup C part of TSP
 ##########################
+
+### You may force the C compiler to be used by configure ###
+AC_ARG_WITH(host-cc,         [  --with-host-cc=C_COMPILER         chose the TSP host C compiler],
+            CC=$withval,)
+
 AC_ARG_ENABLE(ctsp,   [  --enable-ctsp                enable C TSP library build],
 	      CTSP=$enableval,
 	      CTSP="yes")
@@ -79,6 +90,10 @@ fi
 ##########################
 # Setup C++ part of TSP
 ##########################
+### You may force the C compiler to be used by configure ###
+AC_ARG_WITH(host-cxx,        [  --with-host-cxx=CXX_COMPILER      chose the TSP host C++ compiler],
+            CXX=$withval,)
+
 AC_ARG_ENABLE(cxxtsp, [  --enable-cxxtsp              enable TSP C++ binding],
 	      CXXTSP=$enableval,
 	      CXXTSP="no")
@@ -129,6 +144,9 @@ case "$host" in
     *linux*)	
 	AC_MSG_RESULT([Linux is OK])
 	HOST_TARGET=linux
+	ARFLAGS="rvs"
+	LDLIBS="-lm  -lpthread"
+	CPPFLAGS="-D_REENTRANT  -DUSE_STRACE -DTSP_NO_XDR_ENCODE"
         ;;
     sparc-sun-solaris*)
 	AC_MSG_RESULT([Sparc Solaris is OK])	
@@ -153,7 +171,7 @@ ENABLED_TSP_TARGET=`echo $ENABLED_TSP_TARGET | sed -e "s/host/$HOST_TARGET/g"`
 ############################################################################
 # Verify enabled target
 # --enable-tsp-target-<targetname>
-# --enable-tsp-target-<targetname>-cc
+# --with-tsp-target-<targetname>-cc
 # vxworks
 # the host target (linux, sun, sun64, dec) is automagically enabled
 # the java target is enabled by the enable-jtsp
@@ -161,6 +179,10 @@ ENABLED_TSP_TARGET=`echo $ENABLED_TSP_TARGET | sed -e "s/host/$HOST_TARGET/g"`
 AC_ARG_ENABLE(tsp-target-vxworks,   [  --enable-tsp-target-vxworks  enable VxWorks TSP target],
 	      TSPTARGET_VXWORKS=$enableval,
 	      TSPTARGET_VXWORKS="no")
+
+AC_ARG_WITH(tsp-target-vxworks-cc,  [  --with-tsp-target-vxworks-cc=C_CROSS_COMPILER     chose the TSP target vxworks C cross compiler],
+	TSPTARGET_VXWORKS_CC=$withval,
+	TSPTARGET_VXWORKS_CC="no")
 
 if test "$TSPTARGET_VXWORKS" = "yes"; then
 AC_MSG_CHECKING([for VxWorks TSP target config])
@@ -248,11 +270,25 @@ done
 # 
 #  Substitute Shell VARIABLES to OUTPUT VARIABLES
 AC_SUBST(HOST_TARGET)
+
+AC_SUBST(CC)
+AC_SUBST(CFLAGS)
+AC_SUBST(CPPFLAGS)
+
+AC_SUBST(CXX)
+AC_SUBST(CXXFLAGS)
+
+AC_SUBST(AR)
+AC_SUBST(ARFLAGS)
+
+AC_SUBST(LDLIBS)
+
 AC_SUBST(TSP_BASE)
 AC_SUBST(ENABLED_TSP_TARGET)
 AC_SUBST(JTSP)
 AC_SUBST(TSPCONSUMER)
 AC_SUBST(TSPPROVIDER)
+
 
 
 # Config for outputed files
@@ -261,50 +297,16 @@ AC_CONFIG_FILES([src/scripts/tsp_dev.login
 		make/Makeparams
 		src/doxy/Makefile:src/doxy/doc.mk])
 
-dnl AC_CONFIG_FILES([doc/latex/Makefile
-dnl                 src/Makefile
-dnl                 src/consumers/Makefile
-dnl                 src/consumers/gdisp/Makefile
-dnl                 src/consumers/jstdout/Makefile
-dnl                 src/consumers/res_writer/Makefile
-dnl                 src/consumers/stdout/Makefile
-dnl                 src/consumers/test_group/Makefile
-dnl                 src/consumers/tutorial/Makefile
-dnl                 src/core/Makefile
-dnl                 src/core/ctrl/Makefile
-dnl                 src/core/ctrl_init/Makefile
-dnl                 src/core/driver/Makefile
-dnl                 src/core/include/Makefile
-dnl                 src/core/misc_utils/Makefile
-dnl                 src/core/rpc/Makefile
-dnl                 src/doxy/Makefile
-dnl                 src/jcore/Makefile
-dnl                 src/jcore/doc/Makefile
-dnl                 src/jcore/tsp/Makefile
-dnl                 src/jcore/tsp/core/Makefile
-dnl                 src/jcore/tsp/core/common/Makefile
-dnl                 src/jcore/tsp/core/config/Makefile
-dnl                 src/jcore/tsp/core/consumer/Makefile
-dnl                 src/jcore/tsp/core/provider/Makefile
-dnl                 src/jcore/tsp/core/rpc/Makefile
-dnl                 src/jcore/tsp/util/Makefile
-dnl                 src/providers/Makefile
-dnl                 src/providers/res_reader/Makefile
-dnl                 src/providers/stub/Makefile
-dnl                 src/util/Makefile
-dnl                 src/util/libcalc/Makefile
-dnl                 src/util/libres/Makefile])
-
 AC_OUTPUT
 
-echo "**********************************************************"
-echo "*  TSP has been successfully configured.                  "
-echo "*  you should now do either                               "
+echo "***********************************************************"
+echo "*  TSP has been successfully configured.                   "
+echo "*  you should now do either                                "
 echo "*     source src/scripts/tsp_dev.login  [[csh/tcsh]]       "
 echo "*     . src/scripts/tsp_dev.login.sh    [[sh/bash/zsh/...]]" 
-echo "*  And then you may build with a simple                   "
-echo "*     cd src; make                                        "
-echo "*                                                         "
-echo "*  Enjoy TSP !!!                                          "
-echo "*  The TSP Team -- AC_PACKAGE_BUGREPORT                   "
-echo "**********************************************************"
+echo "*  And then you may build with a simple                    "
+echo "*     cd src; make                                         "
+echo "*                                                          "
+echo "*  Enjoy TSP !!!                                           "
+echo "*  The TSP Team -- AC_PACKAGE_BUGREPORT                    "
+echo "***********************************************************"

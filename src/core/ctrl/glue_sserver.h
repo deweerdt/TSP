@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: glue_sserver.h,v 1.15 2003-03-13 18:04:04 yduf Exp $
+$Id: glue_sserver.h,v 1.16 2004-02-01 23:04:53 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -57,11 +57,11 @@ Purpose   : Interface for the glue server : the data producer
 enum GLU_server_type_t
 {
   /** GLU is active. Means that the data are continuously produced
-      and must be read at the same pace (or faster)  by the provider */
+      and must be read at the same pace (or faster) by the provider */
   GLU_SERVER_TYPE_ACTIVE,
 
-  /** GLU is active. Means that the data are produced only when the
-      provider ask for them */
+  /** GLU is passive. Means that the data are produced only when the
+      provider ask for them (typically File Based Glu/Provider)*/
   GLU_SERVER_TYPE_PASSIVE
 };
 typedef enum GLU_get_state_t GLU_get_state_t;
