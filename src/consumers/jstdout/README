@@ -1,0 +1,45 @@
+=============================================
+ jtspStdOut: A Simple TSP consumer 100% Java
+=============================================
+
+jtspStdOut is a simple TSP consumer using
+the alpha release of the jTSP library i.e.
+a library for TSP 100% Java.
+
+Running the client is as simple as typing;
+
+javarun.sh tsp.consumer.jtspStdOut 0 <tsp_consumerhost> 1 10
+
+The consumer will connect to the tsp_consumer running on
+the <tsp_consumerhost> with progId 0 and display the first 10
+values from symbols 0 and 1 offered by the provider.
+
+Here is the result of a run using the tsp_stub_server on localhost
+
+>>>>>>>>>>>>>
+[eric@bagherra jstdout]$ javarun.sh tsp.consumer.jtspStdOut 0 localhost 1 10
+TSP CONFIG[Mon Feb 10 15:51:23 CET 2003]Initializing TSP consumer
+TSP FINE[Mon Feb 10 15:51:23 CET 2003]Open Session on <localhost> prog id =0
+TSP FINE[Mon Feb 10 15:51:23 CET 2003]Sending request infos, Session id = 5
+TSP FINE[Mon Feb 10 15:51:24 CET 2003]answerSample
+TSP FINE[Mon Feb 10 15:51:24 CET 2003]TspSession::buildSampleGroups:Building sample groups for <2> symbols in <1> groups.
+TSP FINE[Mon Feb 10 15:51:24 CET 2003]Sample FIFO created
+TSP INFO[Mon Feb 10 15:51:24 CET 2003]Socket connected.
+Waiting first element in FIFO...
+.Got it go!!
+Sample <0> = { time_stamp =5743,  provider_global_index =1, value=0.0
+Sample <1> = { time_stamp =5743,  provider_global_index =0, value=0.7779095826582932
+Sample <2> = { time_stamp =5744,  provider_global_index =1, value=0.0
+Sample <3> = { time_stamp =5744,  provider_global_index =0, value=0.7841543450329036
+Sample <4> = { time_stamp =5745,  provider_global_index =1, value=0.0
+Sample <5> = { time_stamp =5745,  provider_global_index =0, value=0.790320692626466
+Sample <6> = { time_stamp =5746,  provider_global_index =1, value=0.0
+Sample <7> = { time_stamp =5746,  provider_global_index =0, value=0.7964080088093642
+Sample <8> = { time_stamp =5747,  provider_global_index =1, value=0.0
+Sample <9> = { time_stamp =5747,  provider_global_index =0, value=0.8024156848550525
+TSP INFO[Mon Feb 10 15:51:25 CET 2003]End of TSP stream
+TSP INFO[Mon Feb 10 15:51:25 CET 2003]Thread is finishing...
+TSP FINE[Mon Feb 10 15:51:25 CET 2003]Closing Session id = 5
+[eric@bagherra jstdout]$
+>>>>>>>>>>>>>>
+
