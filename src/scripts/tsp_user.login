@@ -36,7 +36,7 @@ endif
 if ( "$HOST_TARGET" != "dec" ) then
 	set LOCAL_MOUNT="/home2/breiz"
 else
-	set LOCAL_MOUNT="/net/breiz/home2/breiz"
+	set LOCAL_MOUNT="/tmp_mnt/net/breiz/home2/breiz"
 endif
 
 setenv HOST_BASE "$LOCAL_MOUNT/tnt/$HOST_TARGET"
