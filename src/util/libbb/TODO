@@ -2,3 +2,4 @@
 - write a tutorial
 - make bbtools use a common bbtools
   may be like busybox style
+- use hcreate to improve symbol search and lookup
