@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer.h,v 1.2 2004-09-22 20:18:56 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer.h,v 1.3 2004-11-09 21:09:30 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -45,6 +45,7 @@ Purpose   : TSP ascii writer consumer
 /**
  * @defgroup Ascii_Writer
  * A TSP ascii writer consumer.
+ * @ingroup TSP_Consumers
  */
 
 extern pthread_cond_t  tsp_ascii_writer_condvar;
