@@ -1,4 +1,4 @@
-/* $Id: TspCommonException.java,v 1.2 2004-11-09 05:49:46 sgalles Exp $
+/* $Id: TspURL.java,v 1.1 2004-11-09 05:49:46 sgalles Exp $
  * -----------------------------------------------------------------------
  * 
  * TSP Library - core components for a generic Transport Sampling Protocol.
@@ -26,50 +26,58 @@
  * 
  * -----------------------------------------------------------------------
  * 
- * Purpose   : 
+ * Purpose   :
  * 
  * -----------------------------------------------------------------------
  */
 
-package tsp.core.common;
-
+package tsp.core.common.url;
 
 /**
  * 
  */
-public class TspCommonException extends Exception {
-
-	
-	/**
-	 * 
-	 */
-	public TspCommonException() {
-		super();
-		// TODO Auto-generated constructor stub
-	}
+public interface TspURL {
+	public abstract String getURL();
 
 	/**
-	 * 
+	 * @return
 	 */
-	public TspCommonException(String message) {
-		super(message);
-		// TODO Auto-generated constructor stub
-	}
+	public abstract String getHost();
 
 	/**
-	 * 
+	 * @return
 	 */
-	public TspCommonException(String message, Throwable cause) {
-		super(message, cause);
-		// TODO Auto-generated constructor stub
-	}
+	public abstract String getProtocol();
 
 	/**
-	 * 
+	 * @return
 	 */
-	public TspCommonException(Throwable cause) {
-		super(cause);
-		// TODO Auto-generated constructor stub
-	}
+	public abstract String getServerName();
 
+	/**
+	 * @return
+	 */
+	public abstract Integer getServerNumber();
+
+	/**
+	 * @param string
+	 */
+	public abstract void setHost(String host);
+
+	/**
+	 * @param string
+	 */
+	public abstract void setProtocol(String protocol);
+
+	/**
+	 * @param string
+	 */
+	public abstract void setServerName(String serverName);
+
+	/**
+	 * @param integer
+	 */
+	public abstract void setServerNumber(Integer serverNumber);
+
+	public abstract void setServerNumber(int serverNumber);
 }

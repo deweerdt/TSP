@@ -1,5 +1,5 @@
 /*
- * $Id: TspConfig.java,v 1.1 2003-02-07 16:09:48 SyntDev1 Exp $
+ * $Id: TspConfig.java,v 1.2 2004-11-09 05:49:46 sgalles Exp $
  * -----------------------------------------------------------------------
  * 
  * TSP Library - core components for a generic Transport Sampling Protocol.
@@ -78,6 +78,11 @@ public class TspConfig {
      * TSP Size
      */
     public static int SIZE_OF_ENCODED_DOUBLE             = 8;
+    
+    /**
+     * Default TSP URL
+     */
+    public final static String TSP_DEFAULT_URL   = "rpc://localhost/:";
 
     /**
      * TSP Loggers

@@ -1,4 +1,4 @@
-/* $Id: TspConsumer.java,v 1.2 2004-11-06 11:45:58 sgalles Exp $
+/* $Id: TspConsumer.java,v 1.3 2004-11-09 05:49:46 sgalles Exp $
  * -----------------------------------------------------------------------
  * 
  * TSP Library - core components for a generic Transport Sampling Protocol.
@@ -33,11 +33,11 @@
 
 package tsp.core.consumer;
 
-import java.net.UnknownHostException;
 import java.util.HashMap;
 
 import tsp.core.common.*;
-import tsp.core.rpc.*;
+import tsp.core.common.url.TspURL;
+import tsp.core.common.url.TspURLException;
 import tsp.core.config.*;
 
 /**
@@ -70,27 +70,20 @@ public class TspConsumer {
 
 /**
  * Open a new Tsp Session with a TSP provider.
- * @param hostname the name of the host where the TSP provider resides.
- * @param tspProgramId the program Id of the TSP provider in case
- *                     there is multiple TSP provider on the specified host.
+ * @param url the name of the host where the TSP provider resides.
  * @return the TSP session id.
  */
-public int openSession(String hostname, int tspProgramId) throws UnknownHostException, TspConsumerException {
+public int openSession(TspURL  url) throws TspURLException, TspConsumerException {
 
-	try {
-		TspConfig.log(TspConfig.LOG_FINE, "Open Session on <" + hostname + "> prog id =" + tspProgramId);
+		TspConfig.log(TspConfig.LOG_FINE, "Open Session on " + url);
 
 		TspSession mySession = new TspSession();
 
-		int sessionId = mySession.open(hostname, tspProgramId);
+		int sessionId = mySession.open(url);
 
 		sessionMap.put(new Integer(sessionId), mySession);
 
 		return sessionId;
-	}
-	catch (TspRpcException e) {
-		throw new TspConsumerException(e);
-	}
 
 }
 

@@ -1,4 +1,4 @@
-/* $Id: TspCommonException.java,v 1.2 2004-11-09 05:49:46 sgalles Exp $
+/* $Id: TspURLDefaultDecorator.java,v 1.1 2004-11-09 05:49:46 sgalles Exp $
  * -----------------------------------------------------------------------
  * 
  * TSP Library - core components for a generic Transport Sampling Protocol.
@@ -26,50 +26,56 @@
  * 
  * -----------------------------------------------------------------------
  * 
- * Purpose   : 
+ * Purpose   :
  * 
  * -----------------------------------------------------------------------
  */
 
-package tsp.core.common;
-
+package tsp.core.common.url;
 
 /**
  * 
  */
-public class TspCommonException extends Exception {
-
+ class TspURLDefaultDecorator  extends TspSimpleURL{
 	
-	/**
-	 * 
-	 */
-	public TspCommonException() {
-		super();
-		// TODO Auto-generated constructor stub
-	}
 
+	private final TspURL defaultUrl;
 	/**
+	 * @throws TspMalformedURLException
 	 * 
 	 */
-	public TspCommonException(String message) {
-		super(message);
-		// TODO Auto-generated constructor stub
+	public TspURLDefaultDecorator(String url, String defaultUrl) throws TspMalformedURLException {
+		super(url);		
+		this.defaultUrl = new TspSimpleURL(defaultUrl);
 	}
-
-	/**
-	 * 
+	
+	/* (non-Javadoc)
+	 * @see tsp.core.common.url.TspURL#getHost()
 	 */
-	public TspCommonException(String message, Throwable cause) {
-		super(message, cause);
-		// TODO Auto-generated constructor stub
+	public String getHost() {
+		String host =  super.getHost();
+		return host !=null ? host : defaultUrl.getHost();
 	}
-
-	/**
-	 * 
+	/* (non-Javadoc)
+	 * @see tsp.core.common.url.TspURL#getProtocol()
 	 */
-	public TspCommonException(Throwable cause) {
-		super(cause);
-		// TODO Auto-generated constructor stub
+	public String getProtocol() {
+		String protocol =  super.getProtocol();
+		return protocol !=null ? protocol : defaultUrl.getProtocol();
 	}
+	/* (non-Javadoc)
+	 * @see tsp.core.common.url.TspURL#getServerName()
+	 */
+	public String getServerName() {
+		String serverName =  super.getServerName();
+		return serverName !=null ? serverName : defaultUrl.getServerName();
+	}
+	/* (non-Javadoc)
+	 * @see tsp.core.common.url.TspURL#getServerNumber()
+	 */
+	public Integer getServerNumber() {
+		Integer serverNumber =  super.getServerNumber();
+		return serverNumber !=null ? serverNumber : defaultUrl.getServerNumber();
+	}	
 
 }

@@ -1,4 +1,4 @@
-/* $Id: TspCommonException.java,v 1.2 2004-11-09 05:49:46 sgalles Exp $
+/* $Id: TspUnknownServerNameException.java,v 1.1 2004-11-09 05:49:46 sgalles Exp $
  * -----------------------------------------------------------------------
  * 
  * TSP Library - core components for a generic Transport Sampling Protocol.
@@ -31,19 +31,19 @@
  * -----------------------------------------------------------------------
  */
 
-package tsp.core.common;
+package tsp.core.common.url;
 
 
 /**
  * 
  */
-public class TspCommonException extends Exception {
+public class TspUnknownServerNameException extends TspURLException {
 
 	
 	/**
 	 * 
 	 */
-	public TspCommonException() {
+	public TspUnknownServerNameException() {
 		super();
 		// TODO Auto-generated constructor stub
 	}
@@ -51,7 +51,7 @@ public class TspCommonException extends Exception {
 	/**
 	 * 
 	 */
-	public TspCommonException(String message) {
+	public TspUnknownServerNameException(String message) {
 		super(message);
 		// TODO Auto-generated constructor stub
 	}
@@ -59,7 +59,7 @@ public class TspCommonException extends Exception {
 	/**
 	 * 
 	 */
-	public TspCommonException(String message, Throwable cause) {
+	public TspUnknownServerNameException(String message, Throwable cause) {
 		super(message, cause);
 		// TODO Auto-generated constructor stub
 	}
@@ -67,7 +67,7 @@ public class TspCommonException extends Exception {
 	/**
 	 * 
 	 */
-	public TspCommonException(Throwable cause) {
+	public TspUnknownServerNameException(Throwable cause) {
 		super(cause);
 		// TODO Auto-generated constructor stub
 	}

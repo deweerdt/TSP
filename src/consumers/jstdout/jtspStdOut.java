@@ -1,4 +1,4 @@
-/* $Id: jtspStdOut.java,v 1.2 2004-11-06 11:45:58 sgalles Exp $
+/* $Id: jtspStdOut.java,v 1.3 2004-11-09 05:49:46 sgalles Exp $
  * -----------------------------------------------------------------------
  * 
  * TSP Library - core components for a generic Transport Sampling Protocol.
@@ -37,6 +37,9 @@ import java.net.UnknownHostException;
 
 import tsp.core.consumer.*;
 import tsp.core.common.*;
+import tsp.core.common.url.TspURL;
+import tsp.core.common.url.TspURLException;
+import tsp.core.common.url.TspURLFactory;
 import tsp.core.rpc.*;
 import tsp.core.config.*;
 
@@ -54,22 +57,17 @@ class jtspStdOut {
 			/* Initialize consumer*/
 			maisPasTrop.initialize(args);
 
-			int tspProgramId = Integer.decode(args[0]).intValue();
-			String hostname = "localhost";
+			TspURL url = TspURLFactory.createWithDefaultSupport(args[0]);
 			int symbol_rank = 0;
-			int nb_print = 100;
+			int nb_print = 100;			
 			if (args.length > 1) {
-				hostname = args[1];
+				symbol_rank = Integer.decode(args[1]).intValue();
 			}
 			if (args.length > 2) {
-				symbol_rank = Integer.decode(args[2]).intValue();
+				nb_print = Integer.decode(args[2]).intValue();
 			}
-			if (args.length > 3) {
-				nb_print = Integer.decode(args[3]).intValue();
-			}
-
-			/* open Session */
-			int sessionId = maisPasTrop.openSession(hostname, tspProgramId);
+						
+			int sessionId = maisPasTrop.openSession(url);
 			TspSession mySession = maisPasTrop.getSession(sessionId);
 
 			/* request Infos */
@@ -145,14 +143,12 @@ class jtspStdOut {
 		}
 		catch (TspConsumerException e) {
 			e.printStackTrace();
-		}
-		catch (UnknownHostException e) {
-			System.out.println("Provided host in unknown. Try with an other name");
+		} catch (TspURLException e) {
 			e.printStackTrace();
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
-		}
+		}		
+		
 
 	} /* end of main */
 

@@ -9,14 +9,13 @@
   consumer developper.
 
 @sgalles
+- Refactor TspURL using regexp. Some URL pattern are missing
 - Create a TspUserException with an enum for GUI traitement of
 recoverable exceptions
 - Add a Ant task to create API Javadoc
 - Add a Ant task to create the tar.gz distribution files (both for bundled)
 and non bundled jar)
 - Update Javadoc for exceptions
-- Integrate TspURL class
-- Refactor TspURL using regexp 
 - Use Doug Lea util.concurrent package as RingBuf for JTSP
 (if it matches what we want to do)
 - Try to improve RPC error messages in TspRpcException
@@ -25,4 +24,7 @@ and non bundled jar)
 - Remove package cycles
 - Why do we return a SessionId as an Integer ? shouldn't it be an object ?
 - Removed remaining JAVA makefiles
+- Reorganize packages of consumers : the directory tree does not match the
+package structure ('tsp' should the root)
+
 

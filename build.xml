@@ -240,8 +240,7 @@ You do not need ${jar.consumer} to run these consumers.
 		<java classname="tsp.consumer.jtspStdOut" fork="true">
 			<classpath refid="jstdout.classpath"/>
 			<classpath location="${jar.jstdout}" />
-			<arg value="0"/>
-			<arg value="localhost"/>
+			<arg value=":///"/>
 			<arg value="1"/>
 			<arg value="10"/>
 		</java>

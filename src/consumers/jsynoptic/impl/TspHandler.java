@@ -26,7 +26,7 @@
  * Individual:
  * 				Christophe Pecquerie
  * 
- * $Id: TspHandler.java,v 1.3 2004-11-06 11:45:58 sgalles Exp $
+ * $Id: TspHandler.java,v 1.4 2004-11-09 05:49:46 sgalles Exp $
  * 
  * Changes ------- 11-Dec-2003 : Creation Date (NB);
  *  
@@ -35,13 +35,16 @@ package tsp.consumer.jsynoptic.impl;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 import tsp.core.common.TspAnswerSample;
 import tsp.core.common.TspRequestSample;
 import tsp.core.common.TspSample;
 import tsp.core.common.TspSampleSymbols;
+import tsp.core.common.url.TspURL;
+import tsp.core.common.url.TspURLException;
+import tsp.core.common.url.TspURLFactory;
+import tsp.core.common.url.TspUnknownHostException;
 import tsp.core.consumer.TspConsumer;
 import tsp.core.consumer.TspConsumerException;
 import tsp.core.consumer.TspSession;
@@ -113,7 +116,11 @@ public class TspHandler extends TspConsumer implements Serializable {
 		phase_ = 0;
 
 		try {
-			sessionId_ = openSession(hostName_, provider_);
+			/* open Session */
+			TspURL url = TspURLFactory.createEmpty();
+			url.setHost(hostName_);
+			url.setServerNumber(provider_);
+			sessionId_ = openSession(url);
 
 			if (sessionId_ >= 0) {
 
@@ -137,15 +144,18 @@ public class TspHandler extends TspConsumer implements Serializable {
 				throw new TspProviderNotFoundException();
 			}
 
-		}
-		catch (TspConsumerException e) {
+		} catch (TspConsumerException e) {
+			throw new TspProviderNotFoundException();
+		} catch (TspUnknownHostException e) {
+			throw new UnknownHostException(e.getMessage());
+		} catch (TspURLException e) {
 			throw new TspProviderNotFoundException();
 		}
 
 	}
 	/**
 	 * Close session
-	 *
+	 *  
 	 */
 	public void close() {
 		try {
@@ -361,7 +371,11 @@ public class TspHandler extends TspConsumer implements Serializable {
 		
 		
 		try {
-			sessionId_ = openSession(hostName_, provider_);
+			/* open Session */
+			TspURL url = TspURLFactory.createEmpty();
+			url.setHost(hostName_);
+			url.setServerNumber(provider_);
+			sessionId_ = openSession(url);
 			if (sessionId_ >= 0) {
 
 				tspSession_ = getSession(sessionId_);
@@ -385,6 +399,9 @@ public class TspHandler extends TspConsumer implements Serializable {
 		}		
 		catch (TspConsumerException e1) {			
 			e1.printStackTrace();
+			throw new TspProviderNotFoundException();
+		} catch (TspURLException e) {
+			e.printStackTrace();
 			throw new TspProviderNotFoundException();
 		}
  

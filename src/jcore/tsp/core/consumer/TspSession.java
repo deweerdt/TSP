@@ -1,4 +1,4 @@
-/* $Id: TspSession.java,v 1.3 2004-11-06 11:45:58 sgalles Exp $
+/* $Id: TspSession.java,v 1.4 2004-11-09 05:49:46 sgalles Exp $
  * -----------------------------------------------------------------------
  * 
  * TSP Library - core components for a generic Transport Sampling Protocol.
@@ -34,14 +34,15 @@
 package tsp.core.consumer;
 
 import tsp.core.common.*;
+import tsp.core.common.url.TspURL;
+import tsp.core.common.url.TspURLException;
+import tsp.core.common.url.TspUnknownHostException;
 import tsp.core.rpc.*;
 
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.io.DataInput;
-import java.io.DataInputStream;
 import java.io.IOException;
 
 import tsp.core.config.*;
@@ -131,29 +132,41 @@ public class TspSession {
 	 * @param hostname the FQN host name where the TSP provider is up and running.
 	 * @param tspProgramId the TSP provider Id. A TSP provider has an associated
 	 *        Id in order to be able to run several provider on the same host.
+	 * @throws TspURLException
+	 * @throws TspConsumerException
 	 */
-	public int open(String hostname, int tspProgramId) throws TspRpcException, UnknownHostException {
+	public int open(TspURL url) throws TspURLException, TspConsumerException {
 
-		/* try to open RPC link to TSP provider RPC server */
+		try {
+			/* TODO : create a decorator for the URL */
+			if(url.getHost() == null) url.setHost("localhost");
+			if(url.getServerNumber() == null) url.setServerNumber(new Integer(0));
+			
+			/* try to open RPC link to TSP provider RPC server */
+					
+			requestSender = new TspRequestSender(InetAddress.getByName(url.getHost()), url.getServerNumber().intValue());
 
-		requestSender = new TspRequestSender(InetAddress.getByName(hostname), tspProgramId);
+			state = TspSessionStatus.SENDER_READY;
+			/* Build the TSP request open */
+			TSP_request_open_t reqO = new TSP_request_open_t();
+			reqO.version_id = TspConfig.VERSION;
+			reqO.argv = new TSP_argv_t();
+			reqO.argv.value = null;
+			reqO.argv.value = new TSP_argv_item_t[0];
+			/* Send the request open to RPC server to open the session */
+			TSP_answer_open_t ansO = new TSP_answer_open_t();
 
-		state = TspSessionStatus.SENDER_READY;
-		/* Build the TSP request open */
-		TSP_request_open_t reqO = new TSP_request_open_t();
-		reqO.version_id = TspConfig.VERSION;
-		reqO.argv = new TSP_argv_t();
-		reqO.argv.value = null;
-		reqO.argv.value = new TSP_argv_item_t[0];
-		/* Send the request open to RPC server to open the session */
-		TSP_answer_open_t ansO = new TSP_answer_open_t();
+			ansO = requestSender.open(reqO);
 
-		ansO = requestSender.open(reqO);
+			answerOpen = new TspAnswerOpen(ansO);
 
-		answerOpen = new TspAnswerOpen(ansO);
-
-		state = TspSessionStatus.OPENED;
-		return answerOpen.theAnswer.channel_id;
+			state = TspSessionStatus.OPENED;
+			return answerOpen.theAnswer.channel_id;
+		} catch (UnknownHostException e) {
+			throw new TspUnknownHostException(e);
+		} catch (TspRpcException e) {
+			throw new TspConsumerException(e);
+		}
 	}
 
 	/**
