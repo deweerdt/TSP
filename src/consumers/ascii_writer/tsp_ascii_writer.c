@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer.c,v 1.2 2004-09-21 22:12:12 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer.c,v 1.3 2004-09-22 20:18:56 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -61,7 +61,9 @@ static int stop_it = 0;
 pthread_cond_t  tsp_ascii_writer_condvar = PTHREAD_COND_INITIALIZER;
 pthread_mutex_t tsp_ascii_writer_mutex   = PTHREAD_MUTEX_INITIALIZER;
 
-int tsp_ascii_writer_nb_line        =  0;
+int tsp_ascii_writer_parse_error    =  0;
+int tsp_ascii_writer_lineno         =  0;
+int tsp_ascii_writer_colno          =  0;
 int tsp_ascii_writer_nb_var         =  0;
 int tsp_ascii_writer_current_var    = -1;
 int tsp_ascii_writer_header_style   =  0;
@@ -131,13 +133,32 @@ tsp_ascii_writer_add_comment(char* comment) {
 int32_t
 tsp_ascii_writer_validate_symbol_info(char* symbol_name, 
 				      const TSP_consumer_symbol_info_list_t* tsp_symbols) {
-  int i;
+  int     i;
   int32_t retval;
+  char*   searched_array_symbol;
 
   assert(tsp_symbols);
   retval = 0;
+  i = strlen(symbol_name);
+  searched_array_symbol = malloc(i+2);
+  strncpy(searched_array_symbol,symbol_name,i);
+  searched_array_symbol[i] = '[';
+  searched_array_symbol[i+1] = '\0';
+
   for (i=0; i< tsp_symbols->len; ++i) {
-    if (NULL != strstr(tsp_symbols->val[i].name,symbol_name)) {
+    /* scalar symbol match */
+    if (0==strcmp(tsp_symbols->val[i].name,symbol_name)) {
+      STRACE_DEBUG(("Scalar symbol match <%s>",symbol_name));
+      retval =1;
+      break;
+    }
+    /* 
+     * consider arrays 
+     * symbols whose name is found in several symbol 
+     * and found symbol == searched symbol + '['
+     * "toto" is an array iff we found "toto["
+     */
+    if (NULL != strstr(tsp_symbols->val[i].name,searched_array_symbol)) {
       ++retval;
     }
   }
@@ -180,26 +201,28 @@ tsp_ascii_writer_load_config(const char* conffilename,
   if (0 == retcode) {    
     STRACE_INFO(("Parsing config file..."));
     /* First read Count */
-    yyparse();    
+    yyparse();
+    retcode = tsp_ascii_writer_parse_error;
     STRACE_INFO(("<%d> variables requested...",tsp_ascii_writer_nb_var));
     /*
      * Allocate the global tsp symbol array then
      * rewind the file for second parsing.
      */
-    g_tsp_symbols = (TSP_consumer_symbol_requested_t*) calloc(tsp_ascii_writer_nb_var,sizeof(TSP_consumer_symbol_requested_t));
-
-    /* restart parsing */
-    rewind(yyin);
-    tsp_ascii_writer_current_var = -1;
-    
-    yyrestart(yyin);
-    /* parse again */
-    yyparse(); 
-    fclose(yyin);
-    *nb_symbols  = tsp_ascii_writer_nb_var;
-    *tsp_symbols = g_tsp_symbols;
-  }
-  
+    if (0==retcode) {
+      g_tsp_symbols = (TSP_consumer_symbol_requested_t*) calloc(tsp_ascii_writer_nb_var,sizeof(TSP_consumer_symbol_requested_t));
+      
+      /* restart parsing */
+      rewind(yyin);
+      tsp_ascii_writer_current_var = -1;
+      
+      yyrestart(yyin);
+      /* parse again */
+      yyparse(); 
+      fclose(yyin);
+      *nb_symbols  = tsp_ascii_writer_nb_var;
+      *tsp_symbols = g_tsp_symbols;
+    } /* proceed second parse if first parse was OK */
+  }  
   return retcode;
 } /* tsp_ascii_writer_load_config */
 

@@ -6,5 +6,6 @@ bb_test_1_Titi		1
 #unknown_var1            15
 # tiot
 #bb_test_1_Toto		1
-bb_test_1_Tata    	2
+bb_test_1_Tata[0]    	2
+bb_test_1_Tata[1]    	2
 unknown_var2            1

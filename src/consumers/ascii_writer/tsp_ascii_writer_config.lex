@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer_config.lex,v 1.1 2004-09-21 21:59:58 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer_config.lex,v 1.2 2004-09-22 20:18:56 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -40,22 +40,24 @@ Purpose   : TSP ascii writer config file analyzer
 #include <stdio.h>
 #include <tsp_ascii_writer.h>
 #include "tsp_ascii_writer_config.tab.h"
+  extern char* yytext;
 int yyerror(char *msg) {
-  printf("%d : %s at '%s'\n", 
-	 tsp_ascii_writer_nb_line, msg, yytext);
+  printf("tsp_ascii_writer_config: line %d, col %d : %s at '%s'\n", 
+	 tsp_ascii_writer_lineno, tsp_ascii_writer_colno, msg, yytext);
+  ++tsp_ascii_writer_parse_error;
   return 0;
 }
 %}
-T_SAMPLE_SYMBOL   [[:alpha:]][[:alnum:]_]*
+T_SAMPLE_SYMBOL   [[:alpha:]][[:alnum:]_\[\]]*
 T_PERIOD          [[:digit:]]*
 T_SPACE           [[:blank:]]*
 T_NEWLINE         \t*\n
 T_COMMENT         [#].*
 %% 
-{T_SAMPLE_SYMBOL}  {tsp_ascii_writer_add_var(yytext); return T_SAMPLE_SYMBOL;}
-{T_PERIOD}         {tsp_ascii_writer_add_var_period(atoi(yytext)); return T_PERIOD;}
-{T_NEWLINE}        {++tsp_ascii_writer_nb_line; return T_NEWLINE;}
-{T_COMMENT}        {tsp_ascii_writer_add_comment(yytext); return T_COMMENT;}
-{T_SPACE}          {return T_SPACE;}
+{T_SAMPLE_SYMBOL}  {tsp_ascii_writer_add_var(yytext); tsp_ascii_writer_colno+=yyleng; return T_SAMPLE_SYMBOL;}
+{T_PERIOD}         {tsp_ascii_writer_add_var_period(atoi(yytext)); tsp_ascii_writer_colno+=yyleng; return T_PERIOD;}
+{T_NEWLINE}        {++tsp_ascii_writer_lineno;tsp_ascii_writer_colno = 0;  return T_NEWLINE;}
+{T_COMMENT}        {tsp_ascii_writer_add_comment(yytext); tsp_ascii_writer_colno+=yyleng; return T_COMMENT;}
+{T_SPACE}          {tsp_ascii_writer_colno+=yyleng; return T_SPACE;}
 %%
  

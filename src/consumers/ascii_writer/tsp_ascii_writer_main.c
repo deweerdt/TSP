@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer_main.c,v 1.1 2004-09-21 21:59:58 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer_main.c,v 1.2 2004-09-22 20:18:56 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -175,16 +175,18 @@ main (int argc, char* argv[]) {
   fprintf(stdout,"%s: Load config file...\n",argv[0]);
   retcode = tsp_ascii_writer_load_config(input_filename,&mysymbols,&nb_symbols);
 
-  if (-1==retcode) {
-    fprintf(stderr,"<%s>: Invalid configuration file.",input_filename);
+  if (0!=retcode) {
+    fprintf(stderr,"<%s>: Invalid configuration file (%d parse error(s)).",
+	    input_filename, tsp_ascii_writer_parse_error);
     tsp_ascii_writer_stop();
   }
-  fflush(stdout);
 
-  fprintf(stdout,"%s: Validate symbols against provider info...\n",argv[0]);
-  fflush(stdout);
-  retcode = tsp_ascii_writer_validate_symbols(mysymbols,nb_symbols,
-					      provider_host,&symbol_list);
+  if (0==retcode) {
+    fprintf(stdout,"%s: Validate symbols against provider info...\n",argv[0]);
+    fflush(stdout);
+    retcode = tsp_ascii_writer_validate_symbols(mysymbols,nb_symbols,
+						provider_host,&symbol_list);
+  }
 
   if (0==retcode) {
     fprintf(stdout,"%s: Ascii writer running...\n",argv[0]);

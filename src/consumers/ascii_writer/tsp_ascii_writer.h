@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer.h,v 1.1 2004-09-21 21:59:58 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer.h,v 1.2 2004-09-22 20:18:56 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -49,7 +49,9 @@ Purpose   : TSP ascii writer consumer
 
 extern pthread_cond_t  tsp_ascii_writer_condvar;
 extern pthread_mutex_t tsp_ascii_writer_mutex;
-extern int tsp_ascii_writer_nb_line;
+extern int tsp_ascii_writer_parse_error;
+extern int tsp_ascii_writer_lineno;
+extern int tsp_ascii_writer_colno;
 extern int tsp_ascii_writer_nb_var;
 extern int tsp_ascii_writer_current_var;
 
