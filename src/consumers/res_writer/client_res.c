@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: client_res.c,v 1.12 2004-10-05 12:18:41 tractobob Exp $
+$Id: client_res.c,v 1.13 2004-10-21 15:39:23 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -127,6 +127,8 @@ int main(int argc, char *argv[]){
   char* out_file_res = NULL;
   int period=1;
   int test_mode = 1;
+
+  extern char* optarg;
 
   _use_dbl = 0;
 
