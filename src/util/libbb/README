@@ -1,0 +1,16 @@
+Current directory implement a 
+BlackBoard idiom implemenation.
+
+The idea of the blackboard is a publish/subscribe paradigm.
+The blackboard idiom makes it very easy to implement
+a TSP enabled simulator using the tsp_bb_provider.
+
+If you want to try you may run
+
+bb_test -s (the faked simulator using a BlackBoard)
+
+then run
+
+bb_tsp_provider
+
+then launch any tsp consumer
