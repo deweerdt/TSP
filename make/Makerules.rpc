@@ -1,9 +1,9 @@
 # Makerules.rpc
 
-#default RPCGEN is defined in Makeparams
+#default RPCGEN and RPCGENVX are defined in Makeparams
 
 RPCGEN.UNIX = $(RPCGEN)
-RPCGEN.VX = $(RPCGEN.UNIX)
+RPCGEN.VX = $(RPCGENVX)
 
 #---------------------------------------------------------------#
 #       Files
@@ -39,6 +39,7 @@ $(RPC).h : $(RPC).x
 	echo "#endif /* !VXWORKS */" >> $(RPC)_clnt.c
 	#
 	echo "#ifdef VXWORKS" > $(RPC)_svc.c
+	echo "#define static extern" >> $(RPC)_svc.c
 	$(RPCGEN.VX) $(RPCGENFLAGS) -s tcp $(RPC).x >> $(RPC)_svc.c
 	echo "#else /* !VXWORKS */" >> $(RPC)_svc.c
 	$(RPCGEN.UNIX) $(RPCGENFLAGS) -m $(RPC).x >> $(RPC)_svc.c 

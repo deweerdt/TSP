@@ -1,0 +1,11 @@
+# Makeparams.vxworks.opt
+
+# Common tools
+# -------------
+include $(DEVBASE)/make/Makeparams.vxworks
+
+# Default options
+# ---------------
+CFLAGS += -g -O2
+
+

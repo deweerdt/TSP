@@ -1,0 +1,11 @@
+# Makeparams.vxworks.debug
+
+# Common tools
+# -------------
+include $(DEVBASE)/make/Makeparams.vxworks
+
+# Default options
+# ---------------
+CPPFLAGS += -DUSE_STRACE
+CFLAGS += -g 
+

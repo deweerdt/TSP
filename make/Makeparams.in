@@ -15,6 +15,9 @@ CLASSBASE = $(DIRBASE)/java/classes
 JARBASE = $(DIRBASE)/java/classes
 
 RPCGEN=rpcgen
+# FIXME : find a reason to a different VXWORKS rpcgen ...
+RPCGENVX=$(DEVBASE)/../tools/rpcgen/vxrpcgen.suncdt.vxworks
+
 CPPFLAGS += -I. -I$(DIRINC) 
 
 # target directory
