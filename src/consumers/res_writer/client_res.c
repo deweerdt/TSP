@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: client_res.c,v 1.7 2004-09-22 14:25:58 tractobob Exp $
+$Id: client_res.c,v 1.8 2004-09-23 06:57:43 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -37,7 +37,9 @@ Purpose   : Simple consummer for testing groups configuration
 
 #include "tsp_sys_headers.h"
 #include <signal.h>
+#include <unistd.h>
 #include "tsp_prjcfg.h" 
+#include "tsp_time.h" 
 #include "tsp_consumer.h"
 #include "libUTIL.h"
 
@@ -47,18 +49,14 @@ Purpose   : Simple consummer for testing groups configuration
 
 
 /* libUTIL */
-extern _use_dbl;
+extern int _use_dbl;
 
 typedef void Sigfunc(int);
 
-static old_sigfunc;
+static int stop = FALSE;
+static int stop_end = FALSE;
 
-static stop = FALSE;
-static stop_end = FALSE;
-
-static int count = 0;
-
-static Sigfunc* signal(int signo, Sigfunc* func)
+static Sigfunc* _signal(int signo, Sigfunc* func)
 {
   struct sigaction act, oact;
   
@@ -114,21 +112,13 @@ int main(int argc, char *argv[]){
   const TSP_consumer_information_t*  information;
   TSP_consumer_symbol_requested_list_t symbols;
 
-  int i, j, count=0;
+  int i, count=0;
   int nb_providers;
-  int count_samples = 0;
-  char symbol_buf[50];
-  int test_ok = TRUE;
-  int count_no_new_sample = 0;
   void* res_values;
   int new_sample;
   TSP_sample_t sample;
   int res_value_i;
-  char* custom_argv[10];
-  int all_data_ok = TRUE;
   TSP_provider_t* providers;
-  int requested_nb;
-  int group_nb;
   int buffersBeforeStop;
 
   char myopt; /* Options */
@@ -142,7 +132,7 @@ int main(int argc, char *argv[]){
 
 
   /* catch ctrl-c */
-  signal(SIGINT, catch_ctrl_c);
+  _signal(SIGINT, catch_ctrl_c);
 
 
   STRACE_INFO(("Autodetect CPU : %d bits", sizeof(long)*8));
@@ -175,7 +165,7 @@ int main(int argc, char *argv[]){
 
   
   /*-------------------------------------------------------------------------------------------------------*/ 
-  /* Connection to providers
+  /* Connection to providers */
   /*-------------------------------------------------------------------------------------------------------*/ 
   TSP_consumer_connect_all(name,&providers, &nb_providers);
   if(nb_providers > 0)
@@ -199,7 +189,7 @@ int main(int argc, char *argv[]){
 
 
   /*-------------------------------------------------------------------------------------------------------*/ 
-  /* Open requested provider
+  /* Open requested provider */
   /*-------------------------------------------------------------------------------------------------------*/ 
   if(!TSP_consumer_request_open(providers[provider], 0, 0 ))
     {
@@ -263,7 +253,7 @@ int main(int argc, char *argv[]){
  
   
   /*-------------------------------------------------------------------------------------------------------*/ 
-  /* Ask for sample list
+  /* Ask for sample list */
   /*-------------------------------------------------------------------------------------------------------*/ 
   if(!TSP_consumer_request_sample(providers[provider],&symbols))
     {
@@ -273,7 +263,7 @@ int main(int argc, char *argv[]){
 
 
   /*-------------------------------------------------------------------------------------------------------*/ 
-  /* Start sampling
+  /* Start sampling */
   /*-------------------------------------------------------------------------------------------------------*/ 
   if(!TSP_consumer_request_sample_init(providers[provider],0,0))
     {
@@ -304,8 +294,6 @@ int main(int argc, char *argv[]){
     {
       if(new_sample)
 	{
-	  double calc;
-
 	  if(_use_dbl)
 	    {
 	      double* d_res_values = (double*)res_values;
