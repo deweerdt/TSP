@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_datapool.c,v 1.7 2002-10-10 15:58:05 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_datapool.c,v 1.8 2002-10-24 13:27:45 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -52,7 +52,15 @@ typedef struct TSP_datapool_item_t TSP_datapool_item_t;
 
 struct TSP_datapool_table_t
 {
+
+  /** Is the datapool initialized ? */
+  int initialized;
+
+  /** handle on GLU */
+  GLU_handle_t h_glu;
+
   TSP_datapool_item_t* items;
+
   int size;
   
   pthread_t worker_id;
@@ -62,9 +70,7 @@ struct TSP_datapool_table_t
    */
   channel_id_t session_channel_id;
 
-  /** handle on GLU */
-  GLU_handle_t h_glu;
-
+  
   /** is the datapool local or global ? */
   int is_global;
 
@@ -76,7 +82,7 @@ typedef struct TSP_datapool_table_t TSP_datapool_table_t;
 
 /*-----------------------------------------------------*/
 
-TSP_datapool_table_t X_global_datapool = {0,0,0};
+TSP_datapool_table_t X_global_datapool = {FALSE,0,0,0,0,0};
 
 /*-----------------------------------------------------*/
 
@@ -254,7 +260,7 @@ int TSP_local_datapool_start_thread(TSP_datapool_t datapool)
  * Only used when the sample server is an active one
  * @return TRUE = OK
  */ 
-int TSP_global_datapool_init(void)
+static int TSP_global_datapool_init(void)
 {
 	 
   SFUNC_NAME(TSP_global_datapool_init);
@@ -268,6 +274,7 @@ int TSP_global_datapool_init(void)
   STRACE_IO(("-->IN"));
 	
   /* Here the datapool is global */
+  assert(0 == X_global_datapool.h_glu);
   X_global_datapool.h_glu = GLU_GLOBAL_HANDLE;   
 
   GLU_get_sample_symbol_info_list(X_global_datapool.h_glu, &symbols);
@@ -290,6 +297,7 @@ int TSP_global_datapool_init(void)
   status = pthread_create(&(X_global_datapool.worker_id), NULL, TSP_datapool_thread,  &X_global_datapool);
   TSP_CHECK_THREAD(status, FALSE);
 
+  X_global_datapool.initialized = TRUE;
     
   STRACE_IO(("-->OUT"));
   return TRUE;
@@ -323,7 +331,7 @@ TSP_datapool_t TSP_local_datapool_allocate(channel_id_t session_channel_id, int 
   X_global_datapool.is_global = FALSE;
 
   datapool->h_glu = h_glu;
-
+  datapool->initialized = TRUE;
     
   STRACE_IO(("-->OUT"));
   return datapool;
@@ -436,5 +444,14 @@ void* TSP_datapool_get_symbol_value(TSP_datapool_t datapool, int provider_global
 
 TSP_datapool_t TSP_global_datapool_get_instance(void)
 {
+  /* Act like a singleton. The first consumer that
+ calls us, init us */
+
+  if(FALSE == X_global_datapool.initialized)
+    {
+      TSP_global_datapool_init();
+    }
+
+  assert( GLU_GLOBAL_HANDLE == X_global_datapool.h_glu);
   return &X_global_datapool;
 }

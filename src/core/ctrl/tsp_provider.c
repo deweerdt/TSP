@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_provider.c,v 1.8 2002-10-09 08:01:40 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_provider.c,v 1.9 2002-10-24 13:27:45 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -220,8 +220,6 @@ void TSP_provider_request_open(const TSP_request_open_t* req_open,
 
 
    /*  get GLU instance. If a stream init is provided, use it, else, use default */   
-   /* Note : for an active server, the function GLU_get_instance wall called ins TSP_provider_init
-      so it is useless here */
    if( 0 != req_open->argv.TSP_argv_t_len )
      {
        glu_h = GLU_get_instance(req_open->argv.TSP_argv_t_len, req_open->argv.TSP_argv_t_val, &error_info);
@@ -347,36 +345,13 @@ int TSP_provider_init(int* argc, char** argv[])
   
   ret = TSP_cmd_line_parser(argc, argv);
   if(ret)
-  {
+    {
+      /* Faire le traitement du nom du serveur */
+      TSP_session_init();
 
-    /* Faire le traitement du nom du serveur */
-    TSP_session_init();
-
-    /* We must start a global datapool when the sample server is active */
-    if ( GLU_SERVER_TYPE_ACTIVE == GLU_get_server_type() )
-      {
-	/* We initialize the active server (0 is there coz a fall back stream does not make sense)*/
-      
-	if(ret) ret = GLU_init(0,0);
-
-      /* We get the datapool instance. It MUST be GLOBAL because the server is active */      	 
-	if(ret)
-	  {	  
-	    if ( GLU_GLOBAL_HANDLE != GLU_get_instance(X_glu_argc, X_glu_argv,0) )
-	      {
-		ret = FALSE;
-		STRACE_ERROR(("function GLU_get_instance(stream_init) failed. I was expecting a GLU_GLOBAL_HANDLE"));
-	      }
-	  }
-	if(ret) ret = TSP_global_datapool_init();	
-      }
-    else
-      {
-	if(ret) ret = GLU_init(X_glu_argc, X_glu_argv);
-      }
-    
-    
-      }
+      /* Initialise GLU server */
+      ret = GLU_init(X_glu_argc, X_glu_argv);
+    }
 
   if(!ret)
     {
