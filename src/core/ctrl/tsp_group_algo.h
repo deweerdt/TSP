@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_group_algo.h,v 1.3 2002-11-26 14:03:07 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_group_algo.h,v 1.4 2002-11-29 17:27:24 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -39,6 +39,8 @@ int TSP_group_algo_create_symbols_table(const TSP_sample_symbol_info_list_t* sym
 					TSP_sample_symbol_info_list_t* out_symbols,
 					TSP_groups_t* out_groups,
 					TSP_datapool_t datapool);
+void TSP_group_algo_create_symbols_table_free_call(TSP_sample_symbol_info_list_t* symbols);
+void TSP_group_algo_destroy_symbols_table(TSP_groups_t* groups);
 
 /**
 * Get the total number of computed groups

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_group_algo.c,v 1.5 2002-11-26 14:03:07 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_group_algo.c,v 1.6 2002-11-29 17:27:23 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -188,6 +188,9 @@ static int TSP_group_algo_get_groups_summed_size(const TSP_sample_symbol_info_li
   return groups_summed_size;
 }
 
+
+
+
 /**
 * Allocate the group table.
 * This function initialize several size informations located in the structures
@@ -222,6 +225,7 @@ TSP_group_algo_allocate_group_table(const TSP_sample_symbol_info_list_t* symbols
   /*Allocate room for all group items*/
   table->groups_summed_size = TSP_group_algo_get_groups_summed_size(symbols, table->table_len);
   items_table = (TSP_algo_group_item_t*)calloc(table->groups_summed_size, sizeof(TSP_algo_group_item_t));
+  table->all_items = items_table;
   TSP_CHECK_ALLOC(items_table, 0);
         
   /*Initialize groups items*/
@@ -262,6 +266,42 @@ TSP_group_algo_allocate_group_table(const TSP_sample_symbol_info_list_t* symbols
 /*---------------------------------------------------------*/
 /*                  FONCTIONS EXTERNE  			            */
 /*---------------------------------------------------------*/
+
+void TSP_group_algo_destroy_symbols_table(TSP_groups_t* groups)
+{
+   SFUNC_NAME(TSP_group_algo_destroy_symbols_table);
+
+   TSP_algo_table_t* table = (TSP_algo_table_t*)groups;
+
+   STRACE_IO(("-->IN"));
+   if(table)
+     {
+       free(table->all_items);
+       free(table->groups);
+       free(table);
+     }
+
+   STRACE_IO(("-->OUT"));
+
+}
+
+void TSP_group_algo_create_symbols_table_free_call(TSP_sample_symbol_info_list_t* symbols)
+{
+  SFUNC_NAME(TSP_group_algo_create_symbols_table_free_call);
+  int i;
+
+   STRACE_IO(("-->IN"));
+   
+   for( i=0 ; i < symbols->TSP_sample_symbol_info_list_t_len ; i++)
+     {
+       free(symbols->TSP_sample_symbol_info_list_t_val[i].name);
+       symbols->TSP_sample_symbol_info_list_t_val[i].name = 0;
+     }
+
+   free(symbols->TSP_sample_symbol_info_list_t_val);
+
+   STRACE_IO(("-->OUT"));
+}
 
 /**
 * Create the group table for the session, and the list of symbols that must
