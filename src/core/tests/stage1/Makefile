@@ -16,19 +16,21 @@ debug:
 
 
 #client building 
-build_client : $(DIRBIN)/tsp_client1_printer
+build_client : $(DIRBIN)/tsp_client_printer
 
-$(DIRBIN)/tsp_client1_printer :  $(LIB_CLIENT) client1.c
+$(DIRBIN)/tsp_client_printer :  $(LIB_CLIENT) client1.c
+	$(COMPILE.c) calc_func.c  -o $(DIRBIN)/calc_func.o
 	$(COMPILE.c) client1.c -o $(DIRBIN)/client1.o
-	$(LINK.c)   $(DIRBIN)/client1.o $(LIB_CLIENT) $(LDLIBS) -o $@
+	$(LINK.c)   $(DIRBIN)/client1.o $(DIRBIN)/calc_func.o $(LIB_CLIENT) $(LDLIBS) -o $@
 
 #server building 
-build_server : $(DIRBIN)/tsp_server1_sinus
+build_server : $(DIRBIN)/tsp_server_stub
 
-$(DIRBIN)/tsp_server1_sinus:  $(LIB_SERVER) server1.c glue_sserver.c
+$(DIRBIN)/tsp_server_stub:  $(LIB_SERVER) server1.c glue_sserver.c calc_func.c
+	$(COMPILE.c) calc_func.c  -o $(DIRBIN)/calc_func.o
 	$(COMPILE.c) server1.c  -o $(DIRBIN)/server1.o
 	$(COMPILE.c) glue_sserver.c  -o $(DIRBIN)/glue_sserver.o
-	$(LINK.c)   $(DIRBIN)/server1.o $(DIRBIN)/glue_sserver.o $(LIB_SERVER) $(LDLIBS) -o $@
+	$(LINK.c)   $(DIRBIN)/server1.o $(DIRBIN)/glue_sserver.o $(DIRBIN)/calc_func.o $(LIB_SERVER) $(LDLIBS) -o $@
 
 
 include $(DEVBASE)/make/Makerules
