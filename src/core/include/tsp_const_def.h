@@ -1,6 +1,6 @@
 /*!  \file 
  
-$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_const_def.h,v 1.9 2002-10-09 08:24:12 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_const_def.h,v 1.10 2002-10-24 13:29:03 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -41,8 +41,6 @@ Purpose   :
 /** Max period that can be asked by a consumer, for a symbol */
 #define TSP_MAX_PERIOD 100000
 
-/* Data Pool period (µS) */
-#define TSP_DATAPOOL_POOL_PERIOD 5000
 
 /*-------- SOCKET --------*/
 
