@@ -1,6 +1,6 @@
 /*!  \file
 
-$Header: /home/def/zae/tsp/tsp/src/core/tests/util/Attic/datarwcpp.h,v 1.2 2003-01-28 22:54:13 sgalles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/tests/util/Attic/datarwcpp.h,v 1.3 2003-01-29 23:12:39 sgalles Exp $
 
 -----------------------------------------------------------------------
 
@@ -85,21 +85,30 @@ namespace LibUtil
   class Datarwcpp
     {
 	 
+    public:
+      enum usage_t
+	{
+	  READER,
+	  WRITER
+	};
+      
+    private:
 	 /** wrapper class for C libUTIL handles.
 	  * Avoid C header in C++ header
 	  */
 	 class hwrapper;
  
-	 enum usage_t
-	   {
-	     READER,
-	     WRITER
-	   };
 	 
 	 const std::string _file;
 	 const usage_t _usage;	 
-
 	 hwrapper* _h;
+
+	 std::vector<VarInfo> _vars_info;
+	 std::vector<std::string> _comments;
+	 bool _use_double;
+	 int _nb_records;
+	 int _nb_vars;
+	 int _nb_comments;
 
        public:
 	 
@@ -110,12 +119,17 @@ namespace LibUtil
 	 virtual ~Datarwcpp() ;
 
 	 /* Read */
-	 bool ropen(ResInfo& info);
+	 bool ropen();
+	 int rget_nb_records() const ;
+	 int rget_nb_vars() const ;
+	 int rget_nb_comments() const ;
+	 const std::vector<VarInfo>& rget_vars_info() const;
+	 const std::vector<std::string>& rget_comments() const;
 	 
        private:
-	 int rget_nb_rec() const ;
-	 int rget_nb_var() const ;
-	 int rget_nb_com() const ;
+	 int rget_intern_nb_records() const ;
+	 int rget_intern_nb_vars() const ;
+	 int rget_intern_nb_comments() const ;
 
 
        };
