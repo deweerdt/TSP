@@ -21,9 +21,11 @@ DIREXEC= $(DIRBASE)/$(TSP_TARGET)/$(TSP_MODE)
 DIRBIN = $(DIREXEC)/bin
 DIRLIB = $(DIREXEC)/lib
 DIROBJ = $(DIREXEC)/obj
+
 DIRSHOBJ = $(DIREXEC)/shobj
 DIRSHLIB = $(DIRLIB)
-
+SHLIB_TARGET = noshlib
+SCRIPT_SHLIB_TARGET = noscriptshlib
 # ---------------
 # Compilers parameters (configure-)detected for the TSP host
 # Cross-target (like VxWorks) will overides those
