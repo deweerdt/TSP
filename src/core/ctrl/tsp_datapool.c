@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_datapool.c,v 1.1 2002-08-27 08:56:09 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_datapool.c,v 1.2 2002-09-04 17:58:50 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -26,6 +26,7 @@ consumer
 #include "tsp_datastruct.h"
 #include "glue_sserver.h"
 #include "tsp_session.h"
+#include "tsp_time.h"
 
 /*-----------------------------------------------------*/
 
@@ -105,7 +106,7 @@ static void* TSP_worker(void* arg)
 {
   SFUNC_NAME(TSP_worker);
 
-  hrtime_t apres_fifo=0, avant_fifo=0, apres_send=0,avant_send=0;
+  tsp_hrtime_t apres_fifo=0, avant_fifo=0, apres_send=0,avant_send=0;
   double total_send, total_fifo = 0;
   double very_total_send = 0;
   int nombre_send = 0;
@@ -150,7 +151,7 @@ static void* TSP_worker(void* arg)
   /* infinite loop on buff to update datapool */
   while(1)
     {
-      avant_fifo = gethrtime();
+      avant_fifo = tsp_gethrtime();
       item_ptr = RINGBUF_PTR_GETBYADDR(X_ring);   
 
       /* while data with same time in buff, fill datapool */
@@ -169,16 +170,16 @@ static void* TSP_worker(void* arg)
 	}
       
       /*---*/
-      apres_fifo = gethrtime();
+      apres_fifo = tsp_gethrtime();
       total_fifo += (double)(apres_fifo - avant_fifo)/1e6;
       /*---*/
 
       if (item_ptr && (time_stamp != item_ptr->time))
 	{
-	  avant_send = gethrtime();
+	  avant_send = tsp_gethrtime();
 	  /* Send data to all clients  */	      
 	  TSP_session_all_session_send_data(time_stamp);
-	  apres_send = gethrtime();	 
+	  apres_send = tsp_gethrtime();	 
 
 	  total_send += (double)(apres_send - avant_send)/1e6;
 	  nombre_send ++;

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/Attic/glue_sserver.c,v 1.1 2002-08-27 08:56:09 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/Attic/glue_sserver.c,v 1.2 2002-09-04 17:58:49 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -17,23 +17,28 @@ Purpose   : Implementation for the glue_server
 
 #include "tsp_sys_headers.h"
 #include <pthread.h>
-#include <time.h>
-#include <sys/time.h>
+#include <math.h>
 #include "glue_sserver.h"
 #include "tsp_ringbuf.h"
-#include "math.h"
+#include "tsp_time.h"
 
-#define TSP_NANOSLEEP_PERIOD_NS (10*1e6)
+
+
+#define TSP_NANOSLEEP_PERIOD_NS 10*1e6
+
+
 
 #define GLU_MAX_SYMBOLS 1000
 
-RINGBUF_DEFINE(glu_ringbuf, glu_ring,  RINGBUF_SZ(GLU_RING_BUFSIZE));
+/*RINGBUF_DEFINE_DYNAMIC(glu_ringbuf, glu_ring,  RINGBUF_SZ(GLU_RING_BUFSIZE));*/
 
 static struct timespec X_sleep_time = {0, TSP_NANOSLEEP_PERIOD_NS};
 
 static TSP_sample_symbol_info_t *X_sample_symbol_info_list_val;
 
-static hrtime_t X_lasttime;
+static tsp_hrtime_t X_lasttime;
+
+static glu_ringbuf* glu_ring = 0;
 
 /* =
 {
@@ -51,7 +56,7 @@ static time_stamp_t my_time = 0;
 
 glu_ringbuf* GLU_get_ringbuf(void)
 {
-  return &glu_ring;
+  return glu_ring;
 }
 
 char* GLU_get_server_name(void)
@@ -92,7 +97,7 @@ static void* GLU_thread(void* arg)
   static int last_missed = 0;
   int symbols_nb;
   int i;
-  hrtime_t current_time;
+  tsp_hrtime_t current_time;
   
   glu_item_t item;
 
@@ -100,7 +105,7 @@ static void* GLU_thread(void* arg)
     
   STRACE_IO(("-->IN"));
     
-  current_time = X_lasttime = gethrtime();  
+  current_time = X_lasttime = tsp_gethrtime();  
   while(1)
     {
       for(i = 0 ; i <  symbols_nb ; i++)
@@ -117,7 +122,7 @@ static void* GLU_thread(void* arg)
 		 item.provider_global_index,
 		 item.value))*/
                 
-	      RINGBUF_PUT(glu_ring, item);
+	      RINGBUF_PTR_PUT(glu_ring, item);
 	      count_add ++;
                      
 	    }
@@ -128,18 +133,18 @@ static void* GLU_thread(void* arg)
 	  nanosleep(&X_sleep_time,NULL);
 	}
       X_lasttime += TSP_NANOSLEEP_PERIOD_NS;
-      current_time = gethrtime();
+      current_time = tsp_gethrtime();
       
-      if(last_missed!=RINGBUF_MISSED(glu_ring))
+      if(last_missed!=RINGBUF_PTR_MISSED(glu_ring))
 	{
-	  STRACE_ERROR(("RingBuffer full : %d missed data", RINGBUF_MISSED(glu_ring)));
-	  last_missed = RINGBUF_MISSED(glu_ring);
+	  STRACE_ERROR(("RingBuffer full : %d missed data", RINGBUF_PTR_MISSED(glu_ring)));
+	  last_missed = RINGBUF_PTR_MISSED(glu_ring);
 	  sleep(0);
 	}
       
       my_time++;    
       
-      if(! (my_time%100))  STRACE_INFO(("TOP !"))
+      if(! (my_time%100))  STRACE_INFO(("TOP !"));
       
 			     }
   
@@ -169,7 +174,8 @@ int TSP_glue_sserver_init(void)
       X_sample_symbol_info_list_val[i].frequency_ratio = 1;
     }
   
-  RINGBUF_RESET (glu_ring);
+  RINGBUF_PTR_INIT(glu_ringbuf, glu_ring, glu_item_t,  RINGBUF_SZ(GLU_RING_BUFSIZE));
+  RINGBUF_PTR_RESET (glu_ring);
   TSP_CHECK_THREAD( (pthread_create(&thread_id, NULL, GLU_thread, NULL)), FALSE);
   
   STRACE_IO(("-->OUT"));

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/Attic/glue_sserver.h,v 1.1 2002-08-27 08:56:09 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/Attic/glue_sserver.h,v 1.2 2002-09-04 17:58:49 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -18,9 +18,9 @@ Purpose   : Interface for the glue server
 #ifndef _TSP_GLUESERVER_H
 #define _TSP_GLUESERVER_H
 
-#include "tsp_ringbuf.h"
-
 #include "tsp_prjcfg.h"
+
+#include "tsp_ringbuf.h"
 
 #include "tsp_datastruct.h"
 
@@ -36,7 +36,7 @@ struct glu_item_t
 
 typedef struct glu_item_t glu_item_t;
 
-RINGBUF_DECLARE_TYPE(glu_ringbuf,glu_item_t, RINGBUF_SZ(GLU_RING_BUFSIZE));
+RINGBUF_DECLARE_TYPE_DYNAMIC(glu_ringbuf,glu_item_t);
 
 void  GLU_get_sample_symbol_info_list
 	(TSP_sample_symbol_info_list_t* symbol_list);
