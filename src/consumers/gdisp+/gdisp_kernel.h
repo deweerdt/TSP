@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_kernel.h,v 1.5 2004-05-11 19:47:37 esteban Exp $
+$Id: gdisp_kernel.h,v 1.6 2004-06-17 20:03:02 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -138,14 +138,15 @@ typedef enum {
 /*
  * Ha Ha...
  * Here is now the description of what a symbol looks like within GDisp+.
- *  - sReference : must be incremented each time the symbol is dropped on
- *                 a graphic plot. It is up to graphic plots to increment
- *                 the 'sReference' variable, and to decrement it each time
- *                 the symbol is no longer requested by the plot.
- *  - sInfo      : structure coming from TSP core.
- *                 contains : name, index, period and phase.
- *  - sValue     : the double precision value of the symbol.
- *  - sTimeTag   : the time tag of the symbol value.
+ *  - sReference  : must be incremented each time the symbol is dropped on
+ *                  a graphic plot. It is up to graphic plots to increment
+ *                  the 'sReference' variable, and to decrement it each time
+ *                  the symbol is no longer requested by the plot.
+ *  - sInfo       : structure coming from TSP core.
+ *                  contains : name, index, period and phase.
+ *  - sLastValue  : the double precision value of the symbol.
+ *  - sTimeTag    : the time tag of the symbol value.
+ *  - sHasChanged : has this symbol evolved since last frame ?
  */
 
 /* FIXME : the following three definitions must be dynamic */
@@ -160,6 +161,11 @@ typedef struct Symbol_T_ {
   guint                            sTimeTag;
   gdouble                          sLastValue;
   gboolean                         sHasChanged;
+
+  /*
+   * Graphic.
+   */
+  GtkCTreeNode                    *sNode;
 
 } Symbol_T;
 
@@ -257,6 +263,7 @@ typedef struct Provider_T_ {
    */
   GtkWidget        *pCList;
   GdkColor         *pColor;
+  GtkCTreeNode     *pNode;
 
 } Provider_T;
 
@@ -437,6 +444,13 @@ typedef struct KernelWidget_T_ {
   GtkWidget         *spRadioButton;
   GtkWidget         *apRadioButton;
   GtkWidget         *filterEntry;
+  GtkStyle          *selectedNodeStyle;
+  GtkStyle          *unselectedNodeStyle;
+  GdkPixmap         *expandedNodePixmap;
+  GdkBitmap         *expandedNodePixmapMask;
+  GdkPixmap         *collapsedNodePixmap;
+  GdkBitmap         *collapsedNodePixmapMask;
+  GtkWidget         *sampledSymbolHTree;
 
 } KernelWidget_T;
 

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_providers.c,v 1.4 2004-05-11 19:47:42 esteban Exp $
+$Id: gdisp_providers.c,v 1.5 2004-06-17 20:03:02 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -487,3 +487,15 @@ gdisp_createProviderList ( Kernel_T  *kernel,
 }
 
 
+/*
+ * Destroy GDISP+ provider list.
+ */
+void
+gdisp_destroyProviderList ( Kernel_T *kernel )
+{
+
+  /*
+   * Nothing by now.
+   */
+
+}

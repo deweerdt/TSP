@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_pages.c,v 1.4 2004-05-11 19:47:38 esteban Exp $
+$Id: gdisp_pages.c,v 1.5 2004-06-17 20:03:02 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -197,6 +197,38 @@ gdispDestroySignalHandler (GtkWidget *pageWindow,
 
 }
 
+
+/*
+ * Treat 'expose' X event.
+ * What shall I do when the page has to be re-drawn ?
+ */
+#if defined(GD_PAGE_TREAT_EXPOSE_EVENT)
+
+static gboolean
+gdispHandlePageExpose (GtkWidget      *pWindow,
+		       GdkEventExpose *event,
+		       gpointer        data)
+{
+
+  Kernel_T *kernel = (Kernel_T*)data;
+
+  /*
+   * The only way I have found to keep the main board and the databook
+   * on the top of all other windows, is to trace page window expose
+   * events.
+   */
+  if (kernel->widgets.dataBookWindow != (GtkWidget*)NULL) {
+    gdk_window_raise(GTK_WIDGET(kernel->widgets.dataBookWindow)->window);
+  }
+  if (kernel->widgets.mainBoardWindow != (GtkWidget*)NULL) {
+    gdk_window_raise(GTK_WIDGET(kernel->widgets.mainBoardWindow)->window);
+  }
+
+  return TRUE;
+
+}
+
+#endif
 
 #if defined(GD_PAGE_HAS_DND)
 
@@ -979,6 +1011,12 @@ gdisp_createGraphicPage (gpointer factoryData,
 		     GTK_SIGNAL_FUNC(gdispDestroySignalHandler),
 		     (gpointer)kernel);
 
+#if defined(GD_PAGE_TREAT_EXPOSE_EVENT)
+  gtk_signal_connect (GTK_OBJECT(newPage->pWindow),
+		      "expose_event",
+		      (GtkSignalFunc)gdispHandlePageExpose,
+		      (gpointer)kernel); 
+#endif
 
 #if defined(GD_PAGE_HAS_DND)
 
@@ -1037,12 +1075,11 @@ gdisp_createGraphicPage (gpointer factoryData,
 		     GTK_SIGNAL_FUNC(gdisp_dataDestroyedDNDCallback),
 		     kernel);
 
+#endif /* GD_PAGE_HAS_DND */
+
   gtk_object_set_data(GTK_OBJECT(newPage->pWindow),
 		      "pageInformation",
 		      (gpointer)newPage);
-
-
-#endif /* GD_PAGE_HAS_DND */
 
 
   /*

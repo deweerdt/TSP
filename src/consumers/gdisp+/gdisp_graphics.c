@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_graphics.c,v 1.1 2004-03-26 21:09:17 esteban Exp $
+$Id: gdisp_graphics.c,v 1.2 2004-06-17 20:03:02 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -220,7 +220,6 @@ gdisp_createGraphicList ( Kernel_T  *kernel,
 		     FALSE /* expand  */,
 		     FALSE /* fill    */,
 		     0     /* padding */);
-  /* gtk_container_add(GTK_CONTAINER(box),table); */
 
   gtk_widget_show(table);
 
@@ -342,3 +341,15 @@ gdisp_createGraphicList ( Kernel_T  *kernel,
 }
 
 
+/*
+ * Destroy GDISP+ graphic plot list.
+ */
+void
+gdisp_destroyGraphicList ( Kernel_T *kernel )
+{
+
+  /*
+   * Nothing by now.
+   */
+
+}

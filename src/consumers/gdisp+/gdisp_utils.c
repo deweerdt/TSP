@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_utils.c,v 1.3 2004-05-11 19:47:52 esteban Exp $
+$Id: gdisp_utils.c,v 1.4 2004-06-17 20:03:02 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -467,6 +467,9 @@ gdisp_getMessagePixmaps (Kernel_T  *kernel,
 				     (gchar**)gdisp_infoLogo);
       kernel->widgets.mainBoardInfoPixmapMask = mask;
 
+      gdk_pixmap_ref(kernel->widgets.mainBoardInfoPixmap);
+      gdk_bitmap_ref(kernel->widgets.mainBoardInfoPixmapMask);
+
     }
 
     pixmapWidget = gtk_pixmap_new(kernel->widgets.mainBoardInfoPixmap,
@@ -485,6 +488,9 @@ gdisp_getMessagePixmaps (Kernel_T  *kernel,
 				     (gchar**)gdisp_warningLogo);
       kernel->widgets.mainBoardWarningPixmapMask = mask;
 
+      gdk_pixmap_ref(kernel->widgets.mainBoardWarningPixmap);
+      gdk_bitmap_ref(kernel->widgets.mainBoardWarningPixmapMask);
+
     }
 
     pixmapWidget = gtk_pixmap_new(kernel->widgets.mainBoardWarningPixmap,
@@ -502,6 +508,9 @@ gdisp_getMessagePixmaps (Kernel_T  *kernel,
 				     &style->bg[GTK_STATE_NORMAL],
 				     (gchar**)gdisp_errorLogo);
       kernel->widgets.mainBoardErrorPixmapMask = mask;
+
+      gdk_pixmap_ref(kernel->widgets.mainBoardErrorPixmap);
+      gdk_bitmap_ref(kernel->widgets.mainBoardErrorPixmapMask);
 
     }
 
@@ -568,21 +577,21 @@ gdisp_getProviderIdPixmap ( Kernel_T   *kernel,
 						      gdisp_redBall };
 
   /*
-   * Get back parent widget style.
-   */
-  style = gtk_widget_get_style(parent);
-
-  /*
    * Get back the correct pixmap according to provider identity.
    * Create the pixmap if it does not already exist.
    */
   pixmap = kernel->widgets.providerPixmaps[providerIdentity];
   if (pixmap == (GdkPixmap*)NULL) {
 
+    style = gtk_widget_get_style(parent);
+
     pixmap = gdk_pixmap_create_from_xpm_d(parent->window,
 					  &mask,
 					  &kernel->colors[_WHITE_],
 					  pixmapTable[providerIdentity]);
+
+    gdk_pixmap_ref(pixmap);
+    gdk_bitmap_ref(mask);
 
     kernel->widgets.providerPixmaps    [providerIdentity] = pixmap;
     kernel->widgets.providerPixmapMasks[providerIdentity] = mask;
@@ -765,3 +774,42 @@ gdisp_loopOnGraphicPlots ( Kernel_T  *kernel,
 }
 
 
+/*
+ * Determine whether a point is inside a closed polygon.
+ */
+gboolean
+gdisp_pointIsInsidePolygon ( )
+{
+
+#if defined(FIXME_LATER)
+
+  guint    i        = 0;
+  guint    j        = 0;
+  gboolean isInside = FALSE;
+
+  for (i=0; i<polySides; i++) {
+
+    j++;
+
+    if (j == polySides) {
+      j=0;
+    }
+
+    if (polyY[i] < y && polyY[j] >= y || polyY[j] < y && polyY[i] >= y) {
+
+      if (polyX[i] + (y - polyY[i]) /
+	  (polyY[j] - polyY[i]) * (polyX[j] -polyX[i]) < x) {
+
+        isInside = (isInside == FALSE);
+
+      }
+
+    }
+
+  }
+
+  return isInside;
+
+#endif
+
+}

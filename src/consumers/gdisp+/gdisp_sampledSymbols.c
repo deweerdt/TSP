@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_sampledSymbols.c,v 1.2 2004-05-11 19:47:43 esteban Exp $
+$Id: gdisp_sampledSymbols.c,v 1.3 2004-06-17 20:03:02 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -62,6 +62,590 @@ File      : Information / Actions upon available sampled symbols.
  --------------------------------------------------------------------
 */
 
+#include "pixmaps/gdisp_collapsedNode.xpm"
+#include "pixmaps/gdisp_expandedNode.xpm"
+
+#define GD_TREE_NB_COLUMNS 2
+#define GD_TREE_SPACING    3
+#define GD_TREE_COLUMN     0 /* the tree is at the first column */
+
+/*
+ * The the style of of node.
+ * This routine is set up as a recursive callback.
+ */
+static void
+gdisp_changeNodeStyle(GtkCTree     *cTree,
+		      GtkCTreeNode *cNode,
+		      gpointer      data)
+{
+
+  if (data != (gpointer)NULL)
+    gtk_ctree_node_set_row_style(cTree,
+				 cNode,
+				 (GtkStyle*)data);
+
+}
+
+
+/*
+ * Row selection callback.
+ * Recursively change the style of all nodes.
+ */
+static void
+gdisp_treeSelectRowCallback(GtkCTree     *cTree,
+			    GtkCTreeNode *cNode,
+			    gint          column,
+			    gpointer      data)
+{
+
+  Kernel_T *kernel = (Kernel_T*)data;
+
+  /*
+   * Recursively change the style of all sub-nodes.
+   */
+  gtk_ctree_pre_recursive(cTree,
+			  cNode,
+			  gdisp_changeNodeStyle,
+			  (gpointer)kernel->widgets.selectedNodeStyle);
+
+}
+ 
+
+/*
+ * Row unselection callback.
+ * Recursively change the style of all nodes.
+ */
+static void
+gdisp_treeUnselectRowCallback(GtkCTree     *cTree,
+			      GtkCTreeNode *cNode,
+			      gint          column,
+			      gpointer      data)
+{
+
+  Kernel_T *kernel = (Kernel_T*)data;
+
+  /*
+   * Recursively change the style of all sub-nodes.
+   */
+  gtk_ctree_pre_recursive(cTree,
+			  cNode,
+			  gdisp_changeNodeStyle,
+			  (gpointer)kernel->widgets.unselectedNodeStyle);
+
+}
+ 
+
+/*
+ * Expand the node that has been selected.
+ */
+static void
+gdisp_expandNodeCallback(GtkCTree     *cTree,
+			 GtkCTreeNode *cNode,
+			 gpointer      data)
+{
+
+  /*
+   * Nothing by now.
+   */
+
+}
+
+
+/*
+ * Collapse the node that has been selected.
+ */
+static void
+gdisp_collapseNodeCallback(GtkCTree     *cTree,
+			   GtkCTreeNode *cNode,
+			   gpointer      data)
+{
+
+  /*
+   * Nothing by now.
+   */
+
+}
+
+
+/*
+ * Get a child node according to its name.
+ */
+static GtkCTreeNode*
+gdisp_getChildAccordingToItsName ( Kernel_T     *kernel,
+				   GtkCTreeNode *parentNode,
+				   gchar        *requestedChildName )
+{
+
+  GtkWidget    *cTree          =    (GtkWidget*)NULL;
+  GtkCTreeRow  *parentNodeRow  =  (GtkCTreeRow*)NULL;
+  GtkCTreeNode *parentChild    = (GtkCTreeNode*)NULL;
+  GtkCTreeNode *requestedChild = (GtkCTreeNode*)NULL;
+  gchar        *childName      =        (gchar*)NULL;
+
+  /*
+   * Deduce node row from node.
+   */
+  cTree = kernel->widgets.sampledSymbolHTree;
+  parentNodeRow = GTK_CTREE_ROW(parentNode);
+
+  /*
+   * Loop over all children.
+   */
+  parentChild = parentNodeRow->children;
+
+  while (requestedChild == (GtkCTreeNode*)NULL &&
+	 parentChild    != (GtkCTreeNode*)NULL    ) {
+
+    childName = (gchar*)gtk_ctree_node_get_row_data(GTK_CTREE(cTree),
+						    parentChild);
+
+    if (childName != (gchar*)NULL &&
+	strcmp(childName,requestedChildName) == 0) {
+
+      requestedChild = parentChild;
+
+    }
+    else {
+
+      parentChild = GTK_CTREE_NODE_NEXT(parentChild);
+
+    }
+
+  }
+
+  return requestedChild;
+
+}
+
+
+/*
+ * Create a provider node.
+ */
+static GtkWidget*
+gdisp_createHierarchicalTree ( Kernel_T *kernel )
+{
+
+  GtkWidget *cTree;
+  gchar     *cTitles[GD_TREE_NB_COLUMNS] = { "Properties", "Information" };
+
+
+  /*
+   * Create the hierarchical tree.
+   */
+  cTree = gtk_ctree_new_with_titles(GD_TREE_NB_COLUMNS,
+				    GD_TREE_COLUMN,
+				    cTitles);
+
+  /*
+   * The style of the lines that link all nodes.
+   * GTK_CTREE_LINES_NONE,
+   * GTK_CTREE_LINES_SOLID,
+   * GTK_CTREE_LINES_DOTTED,
+   * GTK_CTREE_LINES_TABBED.
+   */
+  gtk_ctree_set_line_style(GTK_CTREE(cTree),
+			   GTK_CTREE_LINES_DOTTED);
+
+  /*
+   * The style of all expanders.
+   * The expander is the place where the user must clic in order to
+   * expand or collapse nodes.
+   * GTK_CTREE_EXPANDER_NONE,
+   * GTK_CTREE_EXPANDER_SQUARE,
+   * GTK_CTREE_EXPANDER_TRIANGLE,
+   * GTK_CTREE_EXPANDER_CIRCULAR.
+   */
+  gtk_ctree_set_expander_style(GTK_CTREE(cTree),
+			       GTK_CTREE_EXPANDER_SQUARE);
+
+  /*
+   * Set up button actions.
+   * Left button selects, expands or collapses nodes.
+   * All other do nothing.
+   * GTK_BUTTON_IGNORED = 0,
+   * GTK_BUTTON_SELECTS = 1 << 0,
+   * GTK_BUTTON_DRAGS   = 1 << 1,
+   * GTK_BUTTON_EXPANDS = 1 << 2.
+   */
+  gtk_clist_set_button_actions(GTK_CLIST(cTree),
+			       0, /* left button   */
+			       GTK_BUTTON_EXPANDS | GTK_BUTTON_SELECTS);
+
+  gtk_clist_set_button_actions(GTK_CLIST(cTree),
+			       1, /* middle button */
+			       GTK_BUTTON_IGNORED);
+
+  gtk_clist_set_button_actions(GTK_CLIST(cTree),
+			       2, /* right button  */
+			       GTK_BUTTON_IGNORED);
+
+
+  /*
+   * Connect all mandatory signals.
+   */
+  gtk_signal_connect (GTK_OBJECT(cTree),
+		      "tree-expand",
+		      gdisp_expandNodeCallback,
+		      (gpointer)kernel); 
+
+  gtk_signal_connect (GTK_OBJECT(cTree),
+		      "tree-collapse",
+		      gdisp_collapseNodeCallback,
+		      (gpointer)kernel); 
+
+  gtk_signal_connect (GTK_OBJECT(cTree),
+		      "tree-select-row",
+		      gdisp_treeSelectRowCallback,
+		      (gpointer)kernel); 
+
+  gtk_signal_connect (GTK_OBJECT(cTree),
+		      "tree-unselect-row",
+		      gdisp_treeUnselectRowCallback,
+		      (gpointer)kernel); 
+
+  /*
+   * Show the tree.
+   */
+  gtk_widget_show(cTree);
+
+  return cTree;
+
+}
+
+
+/*
+ * Create a node that will contain all provider information.
+ */
+static void
+gdisp_createProviderNode(Kernel_T      *kernel,
+			 GtkWidget     *parent,
+			 GtkWidget     *tree,
+			 Provider_T    *provider,
+			 GtkCTreeNode **providerNode,
+			 GtkCTreeNode **sampledSymbolNode)
+{
+
+  gchar        *pNames [GD_TREE_NB_COLUMNS] = { (gchar*)NULL,  (gchar*)NULL };
+  GtkCTreeNode *iNode                       = (GtkCTreeNode*)NULL;
+  GtkCTreeNode *sNode                       = (GtkCTreeNode*)NULL;
+  GdkPixmap    *idPixmap                    = (GdkPixmap*)NULL;
+  GdkBitmap    *idPixmapMask                = (GdkBitmap*)NULL;
+
+  /*
+   * The name of the node is the name of the provider.
+   * Get back provider pixmap according to its identity.
+   */
+  pNames[0] = provider->pName->str;
+
+  gdisp_getProviderIdPixmap(kernel,
+			    parent,
+			    provider->pIdentity,
+			    &idPixmap,
+			    &idPixmapMask);
+
+  provider->pNode = gtk_ctree_insert_node(GTK_CTREE(tree),
+					  (GtkCTreeNode*)NULL, /* parent  */
+					  (GtkCTreeNode*)NULL, /* sibling */
+					  pNames,
+					  GD_TREE_SPACING,
+					  idPixmap,
+					  idPixmapMask,
+					  idPixmap,
+					  idPixmapMask,
+					  FALSE, /* is a leave  */
+					  TRUE); /* is expanded */
+
+  gtk_ctree_node_set_row_data(GTK_CTREE(tree),
+			      provider->pNode,
+			      (gpointer)provider);
+
+  gtk_ctree_node_set_selectable(GTK_CTREE(tree),
+				provider->pNode,
+				FALSE); /* not selectable */
+
+  /*
+   * Insert information node.
+   */
+  pNames[0] = "Information";
+  iNode = gtk_ctree_insert_node(GTK_CTREE(tree),
+				provider->pNode, /* provider is the parent */
+				(GtkCTreeNode*)NULL, /* no sibling node */
+				pNames,
+				GD_TREE_SPACING,
+				kernel->widgets.mainBoardInfoPixmap,
+				kernel->widgets.mainBoardInfoPixmapMask,
+				kernel->widgets.mainBoardInfoPixmap,
+				kernel->widgets.mainBoardInfoPixmapMask,
+				FALSE, /* is a leave  */
+				FALSE); /* is expanded */
+
+  gtk_ctree_node_set_selectable(GTK_CTREE(tree),
+				iNode,
+				FALSE); /* not selectable */
+
+  /*
+   * Insert sampled symbol node.
+   */
+  pNames[0] = "Sampled Symbols";
+  sNode = gtk_ctree_insert_node(GTK_CTREE(tree),
+				provider->pNode, /* provider is the parent */
+				(GtkCTreeNode*)NULL, /* no sibling node */
+				pNames,
+				GD_TREE_SPACING,
+				kernel->widgets.collapsedNodePixmap,
+				kernel->widgets.collapsedNodePixmapMask,
+				kernel->widgets.expandedNodePixmap,
+				kernel->widgets.expandedNodePixmapMask,
+				FALSE, /* is a leave  */
+				FALSE); /* is expanded */
+
+  gtk_ctree_node_set_row_data(GTK_CTREE(tree),
+			      sNode,
+			      (gpointer)"sAnchor");
+
+  gtk_ctree_node_set_text(GTK_CTREE(tree),
+			  sNode,
+			  0, /* column */
+			  pNames[0]);
+
+  gtk_ctree_node_set_selectable(GTK_CTREE(tree),
+				sNode,
+				FALSE); /* not selectable */
+
+  if (gdisp_getProviderNumber(kernel) == 1) {
+
+    /*
+     * Expand that node if there is only one provider.
+     */
+    gtk_ctree_expand(GTK_CTREE(tree),sNode);
+
+  }
+
+  /*
+   * Return.
+   */
+  *providerNode      = provider->pNode;
+  *sampledSymbolNode = sNode;
+
+}
+
+
+/*
+ * Create a node that will contain all sampled symbol information.
+ */
+static void
+gdisp_createSymbolNode(Kernel_T     *kernel,
+		       GtkWidget    *tree,
+		       GtkCTreeNode *sampledSymbolNode,
+		       Symbol_T     *symbol)
+{
+
+  GtkCTreeNode *iNode                       = (GtkCTreeNode*)NULL;
+  gchar         iInfo  [128];
+  gchar        *iNames [GD_TREE_NB_COLUMNS] = { (gchar*)NULL,  (gchar*)NULL };
+
+  /*
+   * The name of the node is the name of the symbol.
+   */
+  iNames[0] = symbol->sInfo.name;
+  symbol->sNode = gtk_ctree_insert_node(GTK_CTREE(tree),
+					sampledSymbolNode,
+					(GtkCTreeNode*)NULL, /* no sibling */
+					iNames,
+					GD_TREE_SPACING,
+					(GdkPixmap*)NULL,
+					(GdkBitmap*)NULL,
+					(GdkPixmap*)NULL,
+					(GdkBitmap*)NULL,
+					FALSE, /* is a leave  */
+					FALSE); /* is expanded */
+
+  gtk_ctree_node_set_row_data(GTK_CTREE(tree),
+			      symbol->sNode,
+			      (gpointer)symbol);
+
+  /*
+   * Insert information node : PERIOD.
+   */
+  iNames[0] = "Period";
+  iNames[1] = iInfo;
+  sprintf(iNames[1],"%d",symbol->sInfo.period);
+
+  iNode = gtk_ctree_insert_node(GTK_CTREE(tree),
+				symbol->sNode, /* symbol node is the parent */
+				(GtkCTreeNode*)NULL, /* no sibling node */
+				iNames,
+				GD_TREE_SPACING,
+				(GdkPixmap*)NULL,
+				(GdkBitmap*)NULL,
+				(GdkPixmap*)NULL,
+				(GdkBitmap*)NULL,
+				TRUE,   /* is a leave  */
+				FALSE); /* is expanded */
+
+  gtk_ctree_node_set_selectable(GTK_CTREE(tree),
+				iNode,
+				FALSE); /* not selectable */
+
+
+  /*
+   * Insert information node : PHASE.
+   */
+  iNames[0] = "Phase";
+  iNames[1] = iInfo;
+  sprintf(iNames[1],"%d",symbol->sInfo.phase);
+
+  iNode = gtk_ctree_insert_node(GTK_CTREE(tree),
+				symbol->sNode, /* symbol node is the parent */
+				(GtkCTreeNode*)NULL, /* no sibling node */
+				iNames,
+				GD_TREE_SPACING,
+				(GdkPixmap*)NULL,
+				(GdkBitmap*)NULL,
+				(GdkPixmap*)NULL,
+				(GdkBitmap*)NULL,
+				TRUE,   /* is a leave  */
+				FALSE); /* is expanded */
+
+  gtk_ctree_node_set_selectable(GTK_CTREE(tree),
+				iNode,
+				FALSE); /* not selectable */
+
+
+  /*
+   * Insert information node : RANGE.
+   */
+  iNames[0] = "Range";
+  iNames[1] = iInfo;
+  sprintf(iNames[1],"[ n/a .. n/a ]");
+
+  iNode = gtk_ctree_insert_node(GTK_CTREE(tree),
+				symbol->sNode, /* symbol node is the parent */
+				(GtkCTreeNode*)NULL, /* no sibling node */
+				iNames,
+				GD_TREE_SPACING,
+				(GdkPixmap*)NULL,
+				(GdkBitmap*)NULL,
+				(GdkPixmap*)NULL,
+				(GdkBitmap*)NULL,
+				TRUE,   /* is a leave  */
+				FALSE); /* is expanded */
+
+  gtk_ctree_node_set_selectable(GTK_CTREE(tree),
+				iNode,
+				FALSE); /* not selectable */
+
+
+  /*
+   * Insert information node : REFERENCE.
+   */
+  iNames[0] = "Reference";
+  iNames[1] = iInfo;
+  sprintf(iNames[1],"%d",symbol->sReference);
+
+  iNode = gtk_ctree_insert_node(GTK_CTREE(tree),
+				symbol->sNode, /* symbol node is the parent */
+				(GtkCTreeNode*)NULL, /* no sibling node */
+				iNames,
+				GD_TREE_SPACING,
+				(GdkPixmap*)NULL,
+				(GdkBitmap*)NULL,
+				(GdkPixmap*)NULL,
+				(GdkBitmap*)NULL,
+				TRUE,   /* is a leave  */
+				FALSE); /* is expanded */
+
+  gtk_ctree_node_set_selectable(GTK_CTREE(tree),
+				iNode,
+				FALSE); /* not selectable */
+
+  gtk_ctree_node_set_row_data(GTK_CTREE(tree),
+			      iNode,
+			      (gpointer)"sReference");
+
+}
+
+
+/*
+ * Update an existing symbol node.
+ */
+static void
+gdisp_updateSymbolNode ( Kernel_T  *kernel,
+			 GtkWidget *cTree,
+			 Symbol_T  *symbol )
+{
+
+  GtkCTreeNode *referenceNode = (GtkCTreeNode*)NULL;
+  GString      *messageString =      (GString*)NULL;
+  gchar         buffer[128];
+
+  /*
+   * The reference information is the only one to be refreshed.
+   * Get back the reference node.
+   */
+  referenceNode = gdisp_getChildAccordingToItsName(kernel,
+						   symbol->sNode,
+						   "sReference");
+
+  if (referenceNode == (GtkCTreeNode*)NULL) {
+
+    /* should never happen, because I did create this node !! */
+    messageString = g_string_new((gchar*)NULL);
+    g_string_sprintf(messageString,
+		     "%s symbol has no reference node.",
+		     symbol->sInfo.name);
+    kernel->outputFunc(kernel,messageString,GD_ERROR);
+
+  }
+  else {
+
+    sprintf(buffer,"%d",symbol->sReference);
+    gtk_ctree_node_set_text(GTK_CTREE(cTree),
+			    referenceNode,
+			    1, /* column */
+			    buffer);
+
+  }
+
+}
+
+
+/*
+ * Finalise hierarchical tree.
+ */
+static void
+gdisp_finaliseHierarchicalTree ( Kernel_T  *kernel,
+				 GtkWidget *cTree )
+{
+
+  guint optimalWidth = 0;
+
+  /*
+   * Do not known what this 'stub' is...
+   */
+  gtk_ctree_set_show_stub(GTK_CTREE(cTree),
+			  TRUE);
+
+  /*
+   * Change tree global aspect.
+   */
+  gtk_clist_set_row_height(GTK_CLIST(cTree), /* CLIST, and not CTREE !! */
+			   15);
+
+  gtk_ctree_set_indent(GTK_CTREE(cTree),
+		       16);
+
+  /*
+   * Compute first column optimal length.
+   */
+  optimalWidth = gtk_clist_optimal_column_width(GTK_CLIST(cTree),
+						0 /* first column */);
+  gtk_clist_set_column_width(GTK_CLIST(cTree),
+			     0, /* first column */
+			     optimalWidth);
+
+}
+
 
 /*
  * Graphically show the status of all sampled symbols.
@@ -70,7 +654,133 @@ static void
 gdisp_poolSampledSymbolList ( Kernel_T *kernel )
 {
 
+  GtkWidget        *cTree            =    (GtkWidget*)NULL;
+  GString          *messageString    =      (GString*)NULL;
+  GList            *providerItem     =        (GList*)NULL;
+  Provider_T       *provider         =   (Provider_T*)NULL;
+  Symbol_T         *symbol           =     (Symbol_T*)NULL;
+  GtkCTreeNode     *pSymbolAnchor    = (GtkCTreeNode*)NULL;
+
+  gint              pSampleCpt       =                   0;
+  SampleList_T     *pSampleList      = (SampleList_T*)NULL;
+  guint             pSampleMax       =                   0;
+
+
+  /* ------------------------ PER PROVIDER ---------------------- */
+
+  cTree = kernel->widgets.sampledSymbolHTree;
+
+  /*
+   * When removing a node, GTK main loop activate the "unselect"
+   * callback, that performs a post recursive action on a node
+   * that has been destroyed.
+   * Avoid that shame by temporarily blocking the signal emission.
+   */
+  gtk_signal_handler_block_by_func(GTK_OBJECT(cTree),
+				   gdisp_treeUnselectRowCallback,
+				   (gpointer)kernel); 
+
+  /*
+   * Loop over all providers.
+   */
+  providerItem = g_list_first(kernel->providerList);
+  while (providerItem != (GList*)NULL) {
+
+    provider  = (Provider_T*)providerItem->data;
+
+    /*
+     * Look for symbol anchor.
+     */
+    pSymbolAnchor = gdisp_getChildAccordingToItsName(kernel,
+						     provider->pNode,
+						     "sAnchor");
+
+    if (pSymbolAnchor == (GtkCTreeNode*)NULL) {
+
+      /* should never happen, because I did create this node !! */
+      messageString = g_string_new((gchar*)NULL);
+      g_string_sprintf(messageString,
+		       "%s provider has no anchor for symbols.",
+		       provider->pName->str);
+      kernel->outputFunc(kernel,messageString,GD_ERROR);
+
+    }
+    else {
+
+      /* --------------------- PER SAMPLED SYMBOLS ---------------- */
+
+      /*
+       * Loop over all sampled symbol of the current provider.
+       */
+      pSampleList = &provider->pSampleList;
+      pSampleMax  = pSampleList->len;
+
+      for (pSampleCpt=0; pSampleCpt<pSampleMax; pSampleCpt++) {
+
+	/*
+	 * Get in touch with the symbol through the global index.
+	 */
+	symbol = &provider->pSymbolList[pSampleList->val[pSampleCpt].index];
+
+	/*
+	 * If referenced... ie, used by graphic plots...
+	 */
+	if (symbol->sReference > 0) {
+
+	  /*
+	   * Create the hierarchy for that symbol, if not already done.
+	   */
+	  if (symbol->sNode == (GtkCTreeNode*)NULL) {
+
+	    gdisp_createSymbolNode(kernel,
+				   cTree,
+				   pSymbolAnchor,
+				   symbol);
+
+	  }
+	  else {
+
+	    gdisp_updateSymbolNode(kernel,
+				   cTree,
+				   symbol);
+
+	  }
+
+	} /* sReference > 0 */
+
+	else {
+
+	  if (symbol->sNode != (GtkCTreeNode*)NULL) {
+
+	    gtk_ctree_remove_node(GTK_CTREE(cTree),
+				  symbol->sNode);
+
+	    symbol->sNode = (GtkCTreeNode*)NULL;
+
+	  }
+
+	} /* sReference == 0 */
+
+      } /* loop over sampled symbols */
+
+    } /* found sAnchor */
+
+    /*
+     * Next provider.
+     */
+    providerItem = g_list_next(providerItem);
+
+  } /* loop over all providers */
+
+  /*
+   * Activate again the unselect handler.
+   */
+  gtk_signal_handler_unblock_by_func(GTK_OBJECT(cTree),
+				     gdisp_treeUnselectRowCallback,
+				     (gpointer)kernel);
+
 }
+
 
 
 /*
@@ -93,7 +803,7 @@ gdisp_sampledSymbolTimer ( Kernel_T  *kernel,
 			   gboolean   timerIsStarted )
 {
 
-#if defined(PROVIDER_DEBUG)
+#if defined(SAMPLED_SYMBOL_DEBUG)
 
   fprintf(stdout,
 	  "Sampled Symbol Timer : %s\n",
@@ -135,22 +845,16 @@ gdisp_createSampledSymbolList ( Kernel_T  *kernel,
 				GtkWidget *parent )
 {
 
-  GtkWidget        *pFrame           =    (GtkWidget*)NULL;
   GtkWidget        *sFrame           =    (GtkWidget*)NULL;
-  GtkWidget        *pVBox            =    (GtkWidget*)NULL;
-  GtkWidget        *sVBox            =    (GtkWidget*)NULL;
-  GtkWidget        *sHBox            =    (GtkWidget*)NULL;
   GtkWidget        *scrolledWindow   =    (GtkWidget*)NULL;
-  GtkWidget        *sLabel           =    (GtkWidget*)NULL;
-  GtkWidget        *sEntry           =    (GtkWidget*)NULL;
+  GtkWidget        *cTree            =    (GtkWidget*)NULL;
+  GtkCTreeNode     *pNode            = (GtkCTreeNode*)NULL;
+  GtkCTreeNode     *sNode            = (GtkCTreeNode*)NULL;
+  GdkFont          *selectedFont     =      (GdkFont*)NULL;
+  GdkFont          *unselectedFont   =      (GdkFont*)NULL;
 
   GList            *providerItem     =        (GList*)NULL;
   Provider_T       *provider         =   (Provider_T*)NULL;
-  Symbol_T         *symbol           =     (Symbol_T*)NULL;
-  gint              pSampleCpt       =                   0;
-  SampleList_T     *pSampleList      = (SampleList_T*)NULL;
-  guint             pSampleMax       =                   0;
-  gchar             rowBuffer[128];
 
 
   /* ------------------------ FRAME WITH LABEL ------------------------ */
@@ -160,7 +864,7 @@ gdisp_createSampledSymbolList ( Kernel_T  *kernel,
    * Align the label at the left of the frame.
    * Set the style of the frame.
    */
-  sFrame = gtk_frame_new(" Sampled Symbols ");
+  sFrame = gtk_frame_new(" Sampled Symbols (for information only)");
   gtk_frame_set_label_align(GTK_FRAME(sFrame),0.1,0.0);
   gtk_frame_set_shadow_type(GTK_FRAME(sFrame),GTK_SHADOW_ETCHED_IN);
 
@@ -180,18 +884,36 @@ gdisp_createSampledSymbolList ( Kernel_T  *kernel,
   gtk_widget_show(scrolledWindow);
 
 
-  /* --------- VERTICAL BOX FOR HANDLING ALL PROVIDERS --------- */
+  /* --------- HIERARCHICAL TREE FOR HANDLING ALL PROVIDERS --------- */
+
+  cTree = gdisp_createHierarchicalTree(kernel);
+  gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(scrolledWindow),
+					cTree);
+  kernel->widgets.sampledSymbolHTree = cTree;
+
+
+  /* ------------------------ NODE PIXMAPS --------------------- */
 
   /*
-   * We need a vertical packing box for managing all providers.
+   * Create expanded/collapsed node pixmap & mask.
    */
-  pVBox = gtk_vbox_new(FALSE, /* homogeneous */
-		       5      /* spacing     */ );
-  gtk_container_border_width(GTK_CONTAINER(pVBox),10);
-  gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(scrolledWindow),
-					pVBox);
-  gtk_widget_show(pVBox);
+  kernel->widgets.expandedNodePixmap =
+    gdk_pixmap_create_from_xpm_d(GTK_WIDGET(scrolledWindow)->window,
+				 &kernel->widgets.expandedNodePixmapMask,
+				 (GdkColor*)NULL,
+				 gdisp_expandedNode);
 
+  gdk_pixmap_ref(kernel->widgets.expandedNodePixmap);
+  gdk_bitmap_ref(kernel->widgets.expandedNodePixmapMask);
+
+  kernel->widgets.collapsedNodePixmap =
+    gdk_pixmap_create_from_xpm_d(GTK_WIDGET(scrolledWindow)->window,
+				 &kernel->widgets.collapsedNodePixmapMask,
+				 (GdkColor*)NULL,
+				 gdisp_collapsedNode);
+
+  gdk_pixmap_ref(kernel->widgets.collapsedNodePixmap);
+  gdk_bitmap_ref(kernel->widgets.collapsedNodePixmapMask);
 
   /* ------------------------ PER PROVIDER ---------------------- */
 
@@ -200,148 +922,17 @@ gdisp_createSampledSymbolList ( Kernel_T  *kernel,
 
     provider = (Provider_T*)providerItem->data;
 
-    /* ------------------------ FRAME WITH LABEL ------------------------ */
+    /* ----------------- PROVIDER NODE CREATION ------------------ */
 
     /*
-     * Create a Frame that will contain all provider information.
-     * Align the label at the left of the frame.
-     * Set the style of the frame.
+     * Create a node that will contain all provider information.
      */
-    sprintf(rowBuffer,
-	    " %d : %s ",
-	    provider->pIdentity + 1,
-	    provider->pName->str);
-
-    pFrame = gtk_frame_new(rowBuffer);
-
-    gtk_frame_set_label_align(GTK_FRAME(pFrame),0.1,0.0);
-    gtk_frame_set_shadow_type(GTK_FRAME(pFrame),GTK_SHADOW_ETCHED_IN);
-    gtk_box_pack_start(GTK_BOX(pVBox),
-		       pFrame,
-		       FALSE, /* expand  */
-		       FALSE, /* fill    */
-		       0);    /* padding */
-    gtk_widget_show(pFrame);
-
-
-    /* ------------------------ VERTICAL BOX ------------------------ */
-
-    /*
-     * Create a vertical packing box for packing symbols.
-     */
-    sVBox = gtk_vbox_new(FALSE, /* homogeneous */
-			 5      /* spacing     */ );
-    gtk_container_border_width(GTK_CONTAINER(sVBox),10);
-    gtk_container_add(GTK_CONTAINER(pFrame),sVBox); 
-    gtk_widget_show(sVBox);
-
-
-    /* --------------------- PER SAMPLED SYMBOLS ---------------- */
-
-    /*
-     * A frame per sampled symbol of the current provider.
-     */
-    pSampleList = &provider->pSampleList;
-    pSampleMax  = pSampleList->len;
-
-    for (pSampleCpt=0; pSampleCpt<pSampleMax; pSampleCpt++) {
-
-      sprintf(rowBuffer," %s ",pSampleList->val[pSampleCpt].name);
-      sFrame = gtk_frame_new(rowBuffer);
-
-      gtk_frame_set_label_align(GTK_FRAME(sFrame),0.1,0.0);
-      gtk_frame_set_shadow_type(GTK_FRAME(sFrame),GTK_SHADOW_ETCHED_IN);
-      gtk_box_pack_start(GTK_BOX(sVBox),
-			 sFrame,
-			 FALSE, /* expand  */
-			 FALSE, /* fill    */
-			 0);    /* padding */
-      gtk_widget_show(sFrame);
-
-
-      /* --------------------- HORIZONTAL BOX --------------------- */
-
-      /*
-       * Create a horizontal packing box for packing symbol information.
-       */
-      sHBox = gtk_hbox_new(FALSE, /* homogeneous */
-			   5      /* spacing     */ );
-      gtk_container_border_width(GTK_CONTAINER(sHBox),5);
-      gtk_container_add(GTK_CONTAINER(sFrame),sHBox); 
-      gtk_widget_show(sHBox);
-
-
-      /* ------------------ LABEL FOR INFORMATION ------------------- */
-
-      /*
-       * Get in touch with the symbol through the global index.
-       */
-      symbol = &provider->pSymbolList[pSampleList->val[pSampleCpt].index];
-
-      sLabel = gtk_label_new("Reference");
-      gtk_box_pack_start(GTK_BOX(sHBox),
-			 sLabel,
-			 FALSE, /* expand  */
-			 FALSE, /* fill    */
-			 0);    /* padding */
-      gtk_widget_show(sLabel);
-
-      sEntry = gtk_entry_new();
-      gtk_widget_set_usize(sEntry,25,20);
-      gtk_box_pack_start(GTK_BOX(sHBox),
-			 sEntry,
-			 FALSE, /* expand  */
-			 FALSE, /* fill    */
-			 0);    /* padding */
-      sprintf(rowBuffer,"%d",symbol->sReference);
-      gtk_entry_set_max_length (GTK_ENTRY   (sEntry),        2);
-      gtk_entry_set_text       (GTK_ENTRY   (sEntry),rowBuffer);
-      gtk_editable_set_editable(GTK_EDITABLE(sEntry),    FALSE);
-      gtk_widget_show(sEntry);
-
-      sLabel = gtk_label_new("Period");
-      gtk_box_pack_start(GTK_BOX(sHBox),
-			 sLabel,
-			 FALSE, /* expand  */
-			 FALSE, /* fill    */
-			 0);    /* padding */
-      gtk_widget_show(sLabel);
-
-      sEntry = gtk_entry_new();
-      gtk_widget_set_usize(sEntry,25,20);
-      gtk_box_pack_start(GTK_BOX(sHBox),
-			 sEntry,
-			 FALSE, /* expand  */
-			 FALSE, /* fill    */
-			 0);    /* padding */
-      sprintf(rowBuffer,"%d",symbol->sInfo.period);
-      gtk_entry_set_max_length (GTK_ENTRY   (sEntry),        2);
-      gtk_entry_set_text       (GTK_ENTRY   (sEntry),rowBuffer);
-      gtk_editable_set_editable(GTK_EDITABLE(sEntry),    FALSE);
-      gtk_widget_show(sEntry);
-
-      sLabel = gtk_label_new("Phase");
-      gtk_box_pack_start(GTK_BOX(sHBox),
-			 sLabel,
-			 FALSE, /* expand  */
-			 FALSE, /* fill    */
-			 0);    /* padding */
-      gtk_widget_show(sLabel);
-
-      sEntry = gtk_entry_new();
-      gtk_widget_set_usize(sEntry,25,20);
-      gtk_box_pack_start(GTK_BOX(sHBox),
-			 sEntry,
-			 FALSE, /* expand  */
-			 FALSE, /* fill    */
-			 0);    /* padding */
-      sprintf(rowBuffer,"%d",symbol->sInfo.phase);
-      gtk_entry_set_max_length (GTK_ENTRY   (sEntry),        2);
-      gtk_entry_set_text       (GTK_ENTRY   (sEntry),rowBuffer);
-      gtk_editable_set_editable(GTK_EDITABLE(sEntry),    FALSE);
-      gtk_widget_show(sEntry);
-
-    }
+    gdisp_createProviderNode(kernel,
+			     scrolledWindow,
+			     cTree,
+			     provider,
+			     &pNode,
+			     &sNode);
 
     /*
      * Next provider.
@@ -350,6 +941,97 @@ gdisp_createSampledSymbolList ( Kernel_T  *kernel,
 
   }
 
+
+  /*
+   * Create the styles that contain the correct font
+   * for node selection / unselection.
+   */
+#define GD_SELECTED_FONT   "-adobe-helvetica-bold-r-normal--12-*-*-*-*-*-*-*"
+#define GD_UNSELECTED_FONT "-adobe-helvetica-medium-r-normal--12-*-*-*-*-*-*-*"
+
+  selectedFont   = gdk_font_load(GD_SELECTED_FONT);
+  unselectedFont = gdk_font_load(GD_UNSELECTED_FONT);
+
+  if (selectedFont == (GdkFont*)NULL || unselectedFont == (GdkFont*)NULL) {
+
+    if (selectedFont != (GdkFont*)NULL) {
+      gdk_font_unref(selectedFont);
+      selectedFont = (GdkFont*)NULL;
+    }
+
+    if (unselectedFont != (GdkFont*)NULL) {
+      gdk_font_unref(unselectedFont);
+      unselectedFont = (GdkFont*)NULL;
+    }
+
+  }
+  else {
+
+    kernel->widgets.selectedNodeStyle =
+      gtk_style_copy(gtk_widget_get_default_style());
+
+    kernel->widgets.selectedNodeStyle->font = selectedFont;
+#if defined(GD_TREE_WITH_COLOR)
+    kernel->widgets.selectedNodeStyle->fg[GTK_STATE_NORMAL] =
+      kernel->colors[_CYAN_];
+#endif
+
+    kernel->widgets.unselectedNodeStyle =
+      gtk_style_copy(gtk_widget_get_default_style());
+
+    kernel->widgets.unselectedNodeStyle->font = unselectedFont;
+#if defined(GD_TREE_WITH_COLOR)
+    kernel->widgets.unselectedNodeStyle->fg[GTK_STATE_NORMAL] =
+      kernel->colors[_BLACK_];
+#endif
+
+  }
+
+  /*
+   * Finalise.
+   */
+  gdisp_finaliseHierarchicalTree(kernel,
+				 cTree);
+
 }
 
 
+/*
+ * Destroy GDISP+ sampled symbol list.
+ */
+void
+gdisp_destroySampledSymbolList ( Kernel_T *kernel )
+{
+
+  /*
+   * No need to destroy tree specific fonts, because they
+   * are destroyed during style destruction.
+   */
+
+  /*
+   * Destroy tree specific styles.
+   */
+  gtk_style_unref(kernel->widgets.selectedNodeStyle);
+  kernel->widgets.selectedNodeStyle = (GtkStyle*)NULL;
+
+  gtk_style_unref(kernel->widgets.unselectedNodeStyle);
+  kernel->widgets.unselectedNodeStyle = (GtkStyle*)NULL;
+
+  /*
+   * Destroy pixmaps & masks.
+   */
+  gdk_pixmap_unref(kernel->widgets.expandedNodePixmap);
+  gdk_pixmap_unref(kernel->widgets.collapsedNodePixmap);
+  gdk_bitmap_unref(kernel->widgets.expandedNodePixmapMask);
+  gdk_bitmap_unref(kernel->widgets.collapsedNodePixmapMask);
+
+  /*
+   * Destroy the tree.
+   */
+  kernel->widgets.expandedNodePixmap      = (GdkPixmap*)NULL;
+  kernel->widgets.expandedNodePixmapMask  = (GdkBitmap*)NULL;
+  kernel->widgets.collapsedNodePixmap     = (GdkPixmap*)NULL;
+  kernel->widgets.collapsedNodePixmapMask = (GdkBitmap*)NULL;
+  kernel->widgets.sampledSymbolHTree      = (GtkWidget*)NULL;
+  
+}

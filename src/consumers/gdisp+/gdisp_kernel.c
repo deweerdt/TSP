@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_kernel.c,v 1.5 2004-05-19 14:53:52 dufy Exp $
+$Id: gdisp_kernel.c,v 1.6 2004-06-17 20:03:02 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -239,7 +239,7 @@ gdisp_activateRegisteredActions ( void *data )
    * Loop over all registered actions and activate them.
    */
   nbActions = kernel->kernelRegisteredActions->len;
-  for (cptAction=0; cptAction<nbActions;  cptAction++) {
+  for (cptAction=0; cptAction<nbActions; cptAction++) {
 
     action = (void(*)(Kernel_T*))
              g_ptr_array_index(kernel->kernelRegisteredActions,cptAction);

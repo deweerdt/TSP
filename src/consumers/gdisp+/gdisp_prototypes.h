@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_prototypes.h,v 1.4 2004-05-11 19:47:42 esteban Exp $
+$Id: gdisp_prototypes.h,v 1.5 2004-06-17 20:03:02 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -84,15 +84,17 @@ void       gdisp_createProviderList (Kernel_T  *kernel,
 				     GtkWidget *parent);
 void       gdisp_providerTimer      (Kernel_T  *kernel,
 				     gboolean   timerIsStarted);
+void       gdisp_destroyProviderList(Kernel_T *kernel);
 
 
 /*
  * From gdisp_sampledSymbols.c
  */
-void       gdisp_createSampledSymbolList (Kernel_T  *kernel,
-					  GtkWidget *parent);
-void       gdisp_sampledSymbolTimer      (Kernel_T  *kernel,
-					  gboolean   timerIsStarted);
+void       gdisp_createSampledSymbolList  (Kernel_T  *kernel,
+					   GtkWidget *parent);
+void       gdisp_sampledSymbolTimer       (Kernel_T  *kernel,
+					   gboolean   timerIsStarted);
+void       gdisp_destroySampledSymbolList (Kernel_T  *kernel);
 
 
 /*
@@ -100,6 +102,7 @@ void       gdisp_sampledSymbolTimer      (Kernel_T  *kernel,
  */
 void       gdisp_createGraphicList (Kernel_T  *kernel,
 				    GtkWidget *parent);
+void       gdisp_destroyGraphicList(Kernel_T *kernel);
 
 
 /*
@@ -124,6 +127,7 @@ void       gdisp_createSymbolList    (Kernel_T  *kernel,
 				      GtkWidget *parent);
 void       gdisp_symbolApplyCallback (GtkWidget *applyButtonWidget,
 				      gpointer   data);
+void       gdisp_destroySymbolList   (Kernel_T *kernel);
 
 /*
  * From gdisp_pages.c
@@ -190,5 +194,7 @@ void       gdisp_loopOnGraphicPlots ( Kernel_T  *kernel,
 							   PlotSystemData_T*,
 							   void*),
 				      void      *userData );
+
+gboolean   gdisp_pointIsInsidePolygon ( );
 				    
 #endif /* __PROTOTYPES_H__ */

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_symbols.c,v 1.3 2004-05-11 19:47:43 esteban Exp $
+$Id: gdisp_symbols.c,v 1.4 2004-06-17 20:03:02 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -1174,3 +1174,15 @@ gdisp_createSymbolList ( Kernel_T  *kernel,
 }
 
 
+/*
+ * Destroy GDISP+ symbol list.
+ */
+void
+gdisp_destroySymbolList ( Kernel_T *kernel )
+{
+
+  /*
+   * Nothing by now.
+   */
+
+}

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_dataBook.c,v 1.2 2004-05-11 19:47:36 esteban Exp $
+$Id: gdisp_dataBook.c,v 1.3 2004-06-17 20:03:02 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -62,6 +62,7 @@ File      : Notebook gathering symbols, providers, plots.
  --------------------------------------------------------------------
 */
 
+
 /*
  * The "delete_event" occurs when the window manager sens this event
  * to the application, usually by the "close" option, or on the titlebar.
@@ -99,6 +100,14 @@ gdispDestroySignalHandler (GtkWidget *dataBookWindow,
   gdisp_sampledSymbolTimer(kernel,FALSE /* timerIsStoped */);
 
   /*
+   * Destroy ressources within page.
+   */
+  gdisp_destroySymbolList       (kernel);
+  gdisp_destroySampledSymbolList(kernel);
+  gdisp_destroyProviderList     (kernel);
+  gdisp_destroyGraphicList      (kernel);
+
+  /*
    * Close and destroy data book.
    */
   gtk_widget_destroy(dataBookWindow);
@@ -118,12 +127,6 @@ gdispDestroySignalHandler (GtkWidget *dataBookWindow,
   kernel->widgets.spRadioButton       = (GtkWidget*)NULL;
   kernel->widgets.apRadioButton       = (GtkWidget*)NULL;
   kernel->widgets.filterEntry         = (GtkWidget*)NULL;
-
-  /*
-   * FIXME : give hand to "allSymbols", "sampledSymbols", "providers"
-   * and "graphicPlots" pages to destroy possible ressouces.
-   * example : provider pixmaps in "providers" page.
-   */
 
 }
 
@@ -261,7 +264,7 @@ gdisp_showDataBook (gpointer factoryData,
 
 
   /*
-   * If provider list is already on the screen, just raise its window.
+   * If databook is already on the screen, just raise its window.
    */
   if (kernel->widgets.dataBookWindow != (GtkWidget*)NULL) {
 
@@ -295,7 +298,7 @@ gdisp_showDataBook (gpointer factoryData,
    * Set up window title and border width.
    */
   gtk_window_set_title(GTK_WINDOW(kernel->widgets.dataBookWindow),
-		       "GDISP+ Symbols / Providers / Graphic Plots");
+		       "Symbols / Providers / Graphic Plots");
 
   gtk_container_set_border_width(GTK_CONTAINER(kernel->widgets.dataBookWindow),
 				 1);
@@ -318,6 +321,9 @@ gdisp_showDataBook (gpointer factoryData,
   /*
    * Map top-level window.
    */
+  gtk_widget_set_uposition(kernel->widgets.dataBookWindow,
+			   0,
+			   0); /* top left corner */
   gtk_widget_show(kernel->widgets.dataBookWindow);
 
 
@@ -464,15 +470,6 @@ gdisp_showDataBook (gpointer factoryData,
    * Remember apply button identity.
    */
   kernel->widgets.dataBookApplyButton = applyButton;
-
-  /*
-   * Temporary.
-   */
-#if defined(STEF)
-  gtk_widget_set_sensitive(gtk_notebook_get_nth_page(GTK_NOTEBOOK(notebook),
-						     1),
-			   FALSE);
-#endif
 
 }
 

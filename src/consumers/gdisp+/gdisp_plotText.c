@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_plotText.c,v 1.2 2004-05-11 19:47:41 esteban Exp $
+$Id: gdisp_plotText.c,v 1.3 2004-06-17 20:03:02 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -186,8 +186,15 @@ gdisp_createPlotText (Kernel_T *kernel)
    */
   plot->pttStyle = gtk_style_copy(gtk_widget_get_default_style());
 
-  plot->pttStyle->base[GTK_STATE_NORMAL] = kernel->colors[_WHITE_];
-  plot->pttStyle->fg  [GTK_STATE_NORMAL] = kernel->colors[_BLACK_];
+  plot->pttStyle->base[GTK_STATE_NORMAL]   = kernel->colors[_BLACK_ ];
+  plot->pttStyle->fg  [GTK_STATE_NORMAL]   = kernel->colors[_WHITE_];
+
+  plot->pttStyle->base[GTK_STATE_ACTIVE]   = kernel->colors[_BLACK_ ];
+  plot->pttStyle->fg  [GTK_STATE_ACTIVE]   = kernel->colors[_WHITE_];
+
+  plot->pttStyle->base[GTK_STATE_SELECTED] = kernel->colors[_WHITE_];
+  plot->pttStyle->fg  [GTK_STATE_SELECTED] = kernel->colors[_BLACK_ ];
+  plot->pttStyle->bg  [GTK_STATE_SELECTED] = kernel->colors[_WHITE_];
 
   gtk_widget_set_style(plot->pttCList,
 		       plot->pttStyle);
