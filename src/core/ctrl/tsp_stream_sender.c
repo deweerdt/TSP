@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_stream_sender.c,v 1.10 2002-12-18 16:27:17 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_stream_sender.c,v 1.11 2002-12-20 09:53:06 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -78,10 +78,21 @@ struct TSP_socket_t
    */
   TSP_stream_sender_ringbuf_t* out_ringbuf;
 
+  /**
+   * Buffer for outgoing data
+   */
+  TSP_stream_sender_item_t* out_item;
+
   /** 
-   * When fifo size is > 0, a thead is created to send data
+   * When fifo size is > 0, a thread is created to send data
    */
   int fifo_size;
+
+  /** 
+   * When fifo size is > 0, a thread is created to send data
+   */
+  int buffer_size;
+
 
   /** 
    * Thread used when fifo size > 0
@@ -160,7 +171,7 @@ static void* TSP_streamer_sender_thread_sender(void* arg)
       while (item && connection_ok)
 	{
 	 
-	  connection_ok =  TSP_stream_sender_send(sock, item->buf, item->len);
+	  connection_ok =  TSP_stream_sender_send(sock, TSP_STREAM_SENDER_ITEM_BUF(item), item->len);
 	  RINGBUF_PTR_GETBYADDR_COMMIT(sock->out_ringbuf);
 	  item = RINGBUF_PTR_GETBYADDR(sock->out_ringbuf);      
 
@@ -197,6 +208,7 @@ static int TSP_stream_sender_init_bufferized(TSP_socket_t* sock)
   RINGBUF_PTR_INIT(TSP_stream_sender_ringbuf_t,
 		   sock->out_ringbuf,
 		   TSP_stream_sender_item_t, 
+		   sock->buffer_size,
 		   RINGBUF_SZ(sock->fifo_size) );
 
   assert(sock->out_ringbuf);
@@ -276,7 +288,7 @@ const char* TSP_stream_sender_get_data_address_string(TSP_stream_sender_t sender
   return sock->data_address;
 }
 
-TSP_stream_sender_t TSP_stream_sender_create(int fifo_size)
+TSP_stream_sender_t TSP_stream_sender_create(int fifo_size, int buffer_size)
 {
   SFUNC_NAME(TSP_stream_sender_create);
   int status = 0;
@@ -311,6 +323,7 @@ TSP_stream_sender_t TSP_stream_sender_create(int fifo_size)
   sock->hClient = 0;
   sock->socketId = 0;
   sock->fifo_size = fifo_size;
+  sock->buffer_size = buffer_size;
   sock->out_ringbuf = 0;
   sock->client_is_connected = FALSE;
   sock->is_stopped = FALSE;
@@ -321,7 +334,7 @@ TSP_stream_sender_t TSP_stream_sender_create(int fifo_size)
 
   if (sock->socketId > 0)
     {
-      OptInt = TSP_DATA_STREAM_SOCKET_BUFFER_SIZE;
+      OptInt = TSP_DATA_STREAM_SOCKET_FIFO_SIZE;
       status = setsockopt(sock->socketId, SOL_SOCKET, SO_SNDBUF, (void * )&OptInt, sizeof(OptInt));
       if (status == -1)
 	{
@@ -431,7 +444,6 @@ TSP_stream_sender_t TSP_stream_sender_create(int fifo_size)
 	 thread that will read the fifo */
       if(sock->fifo_size > 0 )	
 	{
-	  /* FIXME : il faudra un jour que le ring buf puisse vérifier si l'allocation a fonctionné */
 	  if(!TSP_stream_sender_init_bufferized(sock))
 	    {
 	      STRACE_ERROR(("Function TSP_stream_sender_init_bufferized failed"));
@@ -439,6 +451,12 @@ TSP_stream_sender_t TSP_stream_sender_create(int fifo_size)
 	      return 0;
 	    }
 	  
+	}
+      else
+	{
+	  /* Only create a buffer, with no ringbuffer */
+	  sock->out_item = (TSP_stream_sender_item_t*)calloc(1, sizeof(TSP_stream_sender_item_t) + sock->buffer_size);
+	  TSP_CHECK_ALLOC(sock->out_item, 0);
 	}
       
 
@@ -469,6 +487,10 @@ void TSP_stream_sender_destroy(TSP_stream_sender_t sender)
    if( sock->fifo_size > 0)
      {
        RINGBUF_PTR_DESTROY(sock->out_ringbuf);
+     }
+   else
+     {
+         free(sock->out_item);sock->out_item = 0;
      }
    sock->out_ringbuf = 0;
    free(sock);     
@@ -573,4 +595,11 @@ TSP_stream_sender_ringbuf_t* TSP_stream_sender_get_ringbuf(TSP_stream_sender_t s
   TSP_socket_t* sock = (TSP_socket_t*)sender;
 
   return sock->out_ringbuf;
+}
+
+TSP_stream_sender_item_t* TSP_stream_sender_get_buffer(TSP_stream_sender_t sender)
+{
+  TSP_socket_t* sock = (TSP_socket_t*)sender;
+
+  return sock->out_item;
 }

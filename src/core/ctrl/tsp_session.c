@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.c,v 1.10 2002-12-18 16:27:17 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.c,v 1.11 2002-12-20 09:53:06 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -622,7 +622,8 @@ int TSP_session_create_data_sender_by_channel(channel_id_t channel_id, int no_fi
   /*--------------------*/
   if(ret)
     {
-      session->session_data->sender = TSP_data_sender_create(ringbuf_size);      
+      int max_group_size = TSP_group_algo_get_biggest_group_size(session->session_data->groups);
+      session->session_data->sender = TSP_data_sender_create(ringbuf_size, max_group_size);      
 
       if(0 != session->session_data->sender)
 	{

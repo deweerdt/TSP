@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_data_sender.h,v 1.6 2002-12-18 16:27:16 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_data_sender.h,v 1.7 2002-12-20 09:53:06 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -57,7 +57,7 @@ int TSP_data_sender_send(TSP_data_sender_t sender,
 			 TSP_groups_t groups,
 			 time_stamp_t time_stamp) ;
 
-TSP_data_sender_t TSP_data_sender_create(int fifo_size);
+TSP_data_sender_t TSP_data_sender_create(int fifo_size, int max_group_size);
 void TSP_data_sender_stop(TSP_data_sender_t sender);
 void TSP_data_sender_destroy(TSP_data_sender_t sender);
 

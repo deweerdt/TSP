@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.18 2002-12-18 16:27:26 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.19 2002-12-20 09:53:10 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -1036,7 +1036,8 @@ int TSP_consumer_request_sample_init(TSP_provider_t provider, TSP_sample_callbac
 	  /* Create receiver fifo */
 	  RINGBUF_PTR_INIT(TSP_sample_ringbuf_t,
 			   otsp->sample_fifo,
-			   TSP_sample_t, 
+			   TSP_sample_t,
+			   0,
 			   RINGBUF_SZ(TSP_CONSUMER_RINGBUF_SIZE) )
 	  	    
 	    

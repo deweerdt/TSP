@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_data_sender.c,v 1.11 2002-12-18 16:27:16 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_data_sender.c,v 1.12 2002-12-20 09:53:05 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -60,11 +60,14 @@ struct TSP_struct_data_sender_t
   /** do we use the fifo or a simple buffer ? */
   int use_fifo;
 
-  /** FIFO used to create the data stream when there is no buffer (threaded send)*/
+  /** FIFO used to send the data stream when there is no buffer (threaded send)*/
   TSP_stream_sender_ringbuf_t* out_fifo;
 
   /** Buffer used to create the data stream when there is no fifo*/
   TSP_stream_sender_item_t* out_item;
+
+  /** Max buffer size available to send data */
+  int buffer_size;
 
   /** flag that tells if data were lost for the consumer 'coz' the fifo was full */
   int fifo_full;
@@ -115,7 +118,7 @@ static u_int TSP_data_sender_double_encoder(void* v_double,  char* out_buf, u_in
 
 }
 
-TSP_data_sender_t TSP_data_sender_create(int fifo_size)
+TSP_data_sender_t TSP_data_sender_create(int fifo_size, int max_group_size)
 {
   SFUNC_NAME(TSP_data_sender_create);
 
@@ -129,9 +132,10 @@ TSP_data_sender_t TSP_data_sender_create(int fifo_size)
 
   /* init */
   sender->fifo_full = FALSE;
+  sender->buffer_size = TSP_DATA_STREAM_MAX_BUFFER_SIZE(max_group_size);
 
   /* Create the sender stream with its fifo size*/
-  sender->stream_sender = (TSP_data_sender_t)TSP_stream_sender_create(fifo_size);
+  sender->stream_sender = (TSP_data_sender_t)TSP_stream_sender_create(fifo_size, sender->buffer_size);
   if(sender->stream_sender)
     {      
       /* Check if the user wants any fifo */
@@ -144,9 +148,14 @@ TSP_data_sender_t TSP_data_sender_create(int fifo_size)
 	}
       else
 	{
-	  sender->out_item = (TSP_stream_sender_item_t*)calloc(1, sizeof(TSP_stream_sender_item_t) );
-	  TSP_CHECK_ALLOC(sender->out_item, 0);
 	  sender->out_fifo = 0;
+	  sender->out_item = TSP_stream_sender_get_buffer(sender->stream_sender);
+	  assert(sender->out_item);
+
+	  /*sender->out_item = (TSP_stream_sender_item_t*)calloc(1, sizeof(TSP_stream_sender_item_t) );
+	  TSP_CHECK_ALLOC(sender->out_item, 0);*/
+
+	 
 	}
     }
   else
@@ -174,7 +183,6 @@ void TSP_data_sender_destroy(TSP_data_sender_t sender)
   STRACE_IO(("-->IN"));
   
   TSP_stream_sender_destroy(data_sender->stream_sender);
-  free(data_sender->out_item);data_sender->out_item = 0;
   free(data_sender);
 
   STRACE_IO(("-->OUT"));
@@ -265,7 +273,7 @@ static int TSP_data_sender_to_stream_sender(TSP_struct_data_sender_t* data_sende
 	{            
 	  /* no fifo. send data now */
 	  if(!TSP_stream_sender_send(data_sender->stream_sender,
-				     tosend->buf,
+				     TSP_STREAM_SENDER_ITEM_BUF(tosend),
 				     tosend->len) )
 	    {
 	      STRACE_WARNING(("Function TSP_stream_sender_send failed "));
@@ -324,7 +332,7 @@ int TSP_data_sender_send_msg_ctrl(TSP_data_sender_t sender, TSP_msg_ctrl_t msg_c
   /* If it is not available, try net time */
   if(tosend)
     {
-      buf_int = (int*)(tosend->buf);
+      buf_int = (int*)(TSP_STREAM_SENDER_ITEM_BUF(tosend));
       buf_int[0] = TSP_ENCODE_INT(-1); /* Dummy time stamp */
       buf_int[1] = TSP_ENCODE_INT(tsp_reserved_group);
   
@@ -375,7 +383,7 @@ int TSP_data_sender_send(TSP_data_sender_t _sender, TSP_groups_t _groups, time_s
   /* If it is not available, try net time */
   if(tosend)
     {
-      buf_main = tosend->buf;
+      buf_main = TSP_STREAM_SENDER_ITEM_BUF(tosend);
       buf_int = (int*)(buf_main);
       *( buf_int++ ) = TSP_ENCODE_INT(time_stamp);
       *( buf_int++ ) = TSP_ENCODE_INT(group_index);
@@ -394,7 +402,7 @@ int TSP_data_sender_send(TSP_data_sender_t _sender, TSP_groups_t _groups, time_s
 	      assert(group->items[i].data_encoder);
 	      size = (group->items[i].data_encoder)(group->items[i].data,
 						    buf_char,
-						    TSP_DATA_STREAM_CREATE_BUFFER_SIZE - ( buf_char - buf_main) );
+						    data_sender->buffer_size - ( buf_char - buf_main) );
 	      if ( 0 == size )
 		{
 		  STRACE_ERROR(("data_encoder failed"));	    

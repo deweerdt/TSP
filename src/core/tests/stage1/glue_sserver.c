@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/tests/stage1/Attic/glue_sserver.c,v 1.4 2002-12-18 16:27:39 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/tests/stage1/Attic/glue_sserver.c,v 1.5 2002-12-20 09:53:20 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -159,8 +159,8 @@ int GLU_init(int fallback_argc, char* fallback_argv[])
   /*overide first name*/
   X_sample_symbol_info_list_val[0].name = strdup("t");
 
-  RINGBUF_PTR_INIT(glu_ringbuf, glu_ring, glu_item_t,  RINGBUF_SZ(GLU_RING_BUFSIZE));
-  RINGBUF_PTR_RESET (glu_ring);
+  RINGBUF_PTR_INIT(glu_ringbuf, glu_ring, glu_item_t,  0, RINGBUF_SZ(GLU_RING_BUFSIZE));
+  RINGBUF_PTR_RESET_CONSUMER (glu_ring);
   
   return TRUE;
 }
@@ -258,6 +258,6 @@ double GLU_get_base_frequency(void)
 
 void GLU_forget_data(GLU_handle_t h_glu)
 {
-  RINGBUF_PTR_RESET(glu_ring);
+  RINGBUF_PTR_RESET_CONSUMER(glu_ring);
 }
 

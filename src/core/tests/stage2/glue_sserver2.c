@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/tests/stage2/Attic/glue_sserver2.c,v 1.7 2002-12-18 16:27:41 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/tests/stage2/Attic/glue_sserver2.c,v 1.8 2002-12-20 09:53:22 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -195,8 +195,8 @@ int GLU_init(int fallback_argc, char* fallback_argv[])
       X_sample_symbol_info_list_val[i].period = 1;
     }
   
-  RINGBUF_PTR_INIT(glu_ringbuf, glu_ring, glu_item_t,  RINGBUF_SZ(GLU_RING_BUFSIZE));
-  RINGBUF_PTR_RESET (glu_ring);
+  RINGBUF_PTR_INIT(glu_ringbuf, glu_ring, glu_item_t, 0,  RINGBUF_SZ(GLU_RING_BUFSIZE));
+  RINGBUF_PTR_RESET_CONSUMER (glu_ring);
   TSP_CHECK_THREAD( (pthread_create(&thread_id, NULL, GLU_thread, NULL)), FALSE);
   
   STRACE_IO(("-->OUT"));

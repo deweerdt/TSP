@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_stream_sender.h,v 1.7 2002-12-18 16:27:18 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_stream_sender.h,v 1.8 2002-12-20 09:53:06 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -44,15 +44,15 @@ stream  from the producer for the asked symbols. This layer is the network layer
 
 typedef  void* TSP_stream_sender_t;
 
+
 /* ringbuf struct */
 struct TSP_stream_sender_item_t
 {
-  /* buf must be the first element of this structure (alignment stuff )*/
-  char buf[TSP_STREAM_SENDER_RINBUF_ITEM_SIZE];
-
   int len;
 
-  /* Do not remove that, else the next buf item will not 'double aligned'*/
+  /** Do not remove pad, else the memory following
+     the structure will not be 'double aligned'
+     (FIXME : use an union ? )*/
   int pad;
 
 };
@@ -62,8 +62,10 @@ typedef struct TSP_stream_sender_item_t TSP_stream_sender_item_t;
 /* samples ring buf */
 RINGBUF_DECLARE_TYPE_DYNAMIC(TSP_stream_sender_ringbuf_t,TSP_stream_sender_item_t);
 
+/* Get the memory following a TSP_stream_sender_item_t item */
+#define TSP_STREAM_SENDER_ITEM_BUF(stream_sender_item) ((char*)( (stream_sender_item) + 1 ))
 
-TSP_stream_sender_t TSP_stream_sender_create(int fifo_size);
+TSP_stream_sender_t TSP_stream_sender_create(int fifo_size, int buffer_size);
 void TSP_stream_sender_stop(TSP_stream_sender_t sender);
 void TSP_stream_sender_destroy(TSP_stream_sender_t sender);
 
@@ -75,5 +77,6 @@ int TSP_stream_sender_is_client_connected(TSP_stream_sender_t sender);
 int TSP_stream_sender_is_connection_ok(TSP_stream_sender_t sender);
 
 TSP_stream_sender_ringbuf_t* TSP_stream_sender_get_ringbuf(TSP_stream_sender_t sender);
+TSP_stream_sender_item_t* TSP_stream_sender_get_buffer(TSP_stream_sender_t sender);
 
 #endif /*TSP_STREAM_SENDER_H*/

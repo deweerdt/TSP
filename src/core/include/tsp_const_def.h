@@ -1,6 +1,6 @@
 /*!  \file 
  
-$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_const_def.h,v 1.15 2002-12-18 16:27:30 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_const_def.h,v 1.16 2002-12-20 09:53:14 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -66,22 +66,37 @@ Purpose   :
 
 /* Size of socket buffer used to create the bite stream
 that will be sent thrue the socket */
-#define TSP_DATA_STREAM_CREATE_BUFFER_SIZE 1024*48
+/*#define TSP_DATA_STREAM_CREATE_BUFFER_SIZE 1024*48*/
 
-/** Socket in and out buffer for Write and Read
-operations.i*/
-/* FIXME : verifier cette taille par rappor a la taille du groupe max */
-/* FIXME : Il faut un ringbuf dont la taille peut etre allouee a la volee*/
-#define TSP_DATA_STREAM_SOCKET_BUFFER_SIZE (8*2000)
+/**
+ * Socket in and out fifo depth for Write and Read
+ * operations.
+ */
+#define TSP_DATA_STREAM_SOCKET_FIFO_SIZE (1024*48)
 
 /** Duration of stream sender fifo in secondes */
 #define TSP_STREAM_SENDER_RINGBUF_SIZE 10
+
+
+/** used to calculate the socket buffer size */
+#define TSP_DATA_STREAM_MAX_HEADER_SIZE 1024
+/* till now, all elements are doubles, but there will be strings, raw, etc ... */
+#define TSP_DATA_STREAM_MAX_ITEM_SIZE sizeof(double)
+#define TSP_DATA_STREAM_MAX_BUFFER_SIZE(max_nb_items) \
+             ( (max_nb_items) * TSP_DATA_STREAM_MAX_ITEM_SIZE \
+                              + TSP_DATA_STREAM_MAX_HEADER_SIZE)
+
+
+/* FIXME : autocalculate this with max group size and TSP_DATA_STREAM_MAX_BUFFER_SIZE,
+for now, we use a huge value :( */
+#define TSP_DATA_RECEIVER_BUFFER_SIZE (1024*512)
+
 
 /** Size of stream sender fifo item.
  * must be the size of the socket buffer, because this buffer
  * must be copied into this fifo.
  */
-#define TSP_STREAM_SENDER_RINBUF_ITEM_SIZE  TSP_DATA_STREAM_SOCKET_BUFFER_SIZE
+/*#define TSP_STREAM_SENDER_RINBUF_ITEM_SIZE  TSP_DATA_STREAM_CREATE_BUFFER_SIZE*/
 
 
 /*-------- STREAM CONTROL -------*/

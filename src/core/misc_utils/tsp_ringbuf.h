@@ -1,3 +1,41 @@
+/*!  \file 
+
+$Header: /home/def/zae/tsp/tsp/src/core/misc_utils/tsp_ringbuf.h,v 1.3 2002-12-20 09:53:17 tntdev Exp $
+
+-----------------------------------------------------------------------
+
+TSP Library - core components for a generic Transport Sampling Protocol.
+
+Copyright (c) 2002 Yves DUFRENNE, Stephane GALLES, Eric NOULARD and Robert PAGNOT
+RINGBUF initial implementation by Ivano COLTELLACCI
+
+This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 2.1 of the License, or (at your option) any later version.
+
+This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public
+License along with this library; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+-----------------------------------------------------------------------
+
+Project   : TSP
+Maintainer : tsp@astrium-space.com
+Component : Provider
+
+-----------------------------------------------------------------------
+
+Purpose   : fast Ring Buffer
+
+-----------------------------------------------------------------------
+ */
+
 #ifndef __TSP_RINGBUF_H
 #define __TSP_RINGBUF_H
 
@@ -28,6 +66,10 @@ extern "C" {
  * sur des multiples de 4 octets (MVME 26xx)
  */
 #define RINGBUF_SZ(sz)		((sz) + 1 + (4-(((sz) + 1) % 4)))
+
+
+/* For number x, get the nearest superior or equal number, multiple of base */
+#define RINGBUF_MULTSUP(x, base)     (( (base) - ( (x) % (base) )) % (base) + (x) )
 
 #define RINGBUF_DECLARE_TYPE(TypeName, ItemType, sz) \
 	typedef struct \
@@ -141,10 +183,17 @@ extern "C" {
 #define RINGBUF_GETBYADDR_COMMIT_BURST(name, firstItem, nbItems, sizePlusOne)\
 	  (name).get = ( (firstItem) + (nbItems) )  % (sizePlusOne)
 
-#define RINGBUF_RESET(name) \
+/* This reset is not safe for the producer */
+#define RINGBUF_RESET_CONSUMER(name) \
 	{ \
-		(name).put   = 0; \
-		(name).get   = 0; \
+		(name).get   = (name).put \
+		(name).missed = 0; \
+	}
+
+/* This reset is not safe for the consumer */
+#define RINGBUF_RESET_PRODUCER(name) \
+	{ \
+		(name).put   = (name).get \
 		(name).missed = 0; \
 	}
 
@@ -166,6 +215,7 @@ extern "C" {
 --
 */
 
+
 /* 'pad' is there for alignement purpose */
 #define RINGBUF_DECLARE_TYPE_DYNAMIC(TypeName, ItemType) \
 	typedef struct \
@@ -174,18 +224,22 @@ extern "C" {
 		int		put; \
 		int		get; \
 		int		missed; \
-                int              pad; \
+                int             mul_offset; \
 		ItemType*	buf; \
 	} TypeName
 
-#define RINGBUF_PTR_INIT(TypeName, name, ItemType, sz) \
+
+
+#define RINGBUF_PTR_INIT(TypeName, name, ItemType, nbSpareBytes, sz) \
 	{ \
-		name         = (TypeName*)malloc(sizeof(TypeName) + (sizeof(ItemType) * sz)); \
-		(name)->size   = sz; \
-		(name)->put   = 0; \
-		(name)->get   = 0; \
-		(name)->missed = 0; \
-        (name)->buf = (ItemType*)((name)+1); \
+          int mul_offset =  RINGBUF_MULTSUP((sizeof(ItemType) + nbSpareBytes),sizeof(ItemType)) / sizeof(ItemType);\
+	  name = (TypeName*)malloc(sizeof(TypeName) + (sizeof(ItemType) * mul_offset  * sz)); \
+	  (name)->size   = sz; \
+	  (name)->put   = 0; \
+	  (name)->get   = 0; \
+	  (name)->missed = 0; \
+          (name)->mul_offset = mul_offset; \
+          (name)->buf = (ItemType*)((name)+1); \
 	}
 
 #define RINGBUF_PTR_DESTROY(name)  \
@@ -215,7 +269,7 @@ extern "C" {
 #define RINGBUF_PTR_PUTBYADDR(name) \
 	( \
 		((((name)->put + 1) % (name)->size) != (name)->get) ? \
-			&(name)->buf[(name)->put] \
+			&(name)->buf[(name)->put * (name)->mul_offset] \
 		: \
 			( \
 			++(name)->missed, \
@@ -254,14 +308,14 @@ extern "C" {
 
 #define RINGBUF_PTR_NOCHECK_GET(name,item) \
 	{ \
-		(item) = (name)->buf[(name)->get]; \
+		(item) = (name)->buf[(name)->get * (name)->mul_offset]; \
 		(name)->get = ((name)->get + 1) % (name)->size; \
 	}
 
 #define RINGBUF_PTR_GETBYADDR(name) \
 	( \
 		((name)->get != (name)->put) ? \
-			&(name)->buf[(name)->get] \
+			&(name)->buf[(name)->get * (name)->mul_offset] \
 		: \
 			(void*)NULL \
 	)
@@ -294,12 +348,20 @@ extern "C" {
 #define RINGBUF_PTR_GETBYADDR_COMMIT_BURST(name, firstItem, nbItems, sizePlusOne)\
 	  (name)->get = ( (firstItem) + (nbItems) )  % (sizePlusOne)
 
-#define RINGBUF_PTR_RESET(name) \
+/* This reset is not safe for the producer */
+#define RINGBUF_PTR_RESET_CONSUMER(name) \
 	{ \
-		(name)->put   = 0; \
-		(name)->get   = 0; \
+		(name)->get   = (name)->put; \
 		(name)->missed = 0; \
 	}
+
+/* This reset is not safe for the consumer */
+#define RINGBUF_PTR_RESET_PRODUCER(name) \
+	{ \
+		(name)->put   = (name)->get; \
+		(name)->missed = 0; \
+	}
+
 
 #define RINGBUF_PTR_SIZE(name)		((name)->size - 1)
 #define RINGBUF_PTR_MISSED(name)	((name)->missed)

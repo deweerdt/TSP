@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_data_receiver.c,v 1.12 2002-12-18 16:27:27 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_data_receiver.c,v 1.13 2002-12-20 09:53:10 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -49,6 +49,8 @@ stream  for the asked symbols
 #include "tsp_stream_receiver.h"
 
 #define TSP_SIZEOF_ENCODED_DOUBLE RNDUP(sizeof(double))
+
+
 
 struct TSP_struct_data_receiver_t
 {
@@ -180,7 +182,7 @@ TSP_data_receiver_t TSP_data_receiver_create(const char* data_address, TSP_sampl
   TSP_CHECK_ALLOC(receiver, 0);
 
   /* Allocate buffer for reception*/
-  receiver->buf = (char*)calloc(TSP_DATA_STREAM_CREATE_BUFFER_SIZE, sizeof(char));
+  receiver->buf = (char*)calloc(TSP_DATA_RECEIVER_BUFFER_SIZE, sizeof(char));
   TSP_CHECK_ALLOC(receiver->buf, 0);
     
   receiver->read_callback = callback;

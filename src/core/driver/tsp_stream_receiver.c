@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_stream_receiver.c,v 1.5 2002-12-18 16:27:28 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_stream_receiver.c,v 1.6 2002-12-20 09:53:10 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -89,7 +89,8 @@ TSP_stream_receiver_t TSP_stream_receiver_create(const  char* data_address)
 
   if (sock->socketId > 0)
     {
-      OptInt = TSP_DATA_STREAM_SOCKET_BUFFER_SIZE / 2;
+      /* size of receiver fifo should be half the size of sender fifo for perfomance reason */
+      OptInt = TSP_DATA_STREAM_SOCKET_FIFO_SIZE / 2;
       status = setsockopt(sock->socketId, SOL_SOCKET, SO_RCVBUF, (void * )&OptInt, sizeof(OptInt));
       if (status == -1)
 	{
