@@ -1,5 +1,8 @@
 # Makeparams.sun.debug
 
+
+BUILD_BB = no
+
 # Default tools
 # -------------
 # Using standard tools
