@@ -1,4 +1,4 @@
-/* $Id: TspDataInputStream.java,v 1.1 2003-02-07 16:09:48 SyntDev1 Exp $
+/* $Id: TspDataInputStream.java,v 1.2 2004-02-02 12:11:02 dufy Exp $
  * -----------------------------------------------------------------------
  * 
  * TSP Library - core components for a generic Transport Sampling Protocol.
@@ -95,8 +95,9 @@ public class TspDataInputStream implements TspDecodingStream {
 	    }
 	}
 	catch (IOException e) {
+	    /*TODO Dirty Fix
 	    TspConfig.log(TspConfig.LOG_SEVERE,
-			  "TspDataInputStream::getData IOException"); 
+			  "TspDataInputStream::getData IOException");*/
 	}
     }
 
