@@ -1,0 +1,17 @@
+#!/bin/sh
+
+ARCHIVEID=`uname -n`
+WHO=`whoami`
+DATE=`date +%c`
+#TARDATE=`date +%d%m_%Y_%Hh%M`
+TARDATE=`date +%d%m_%Y`
+TARDIR=$1
+TARNAME=$1-$TARDATE.tar
+TARGZ=$TARNAME.gz
+
+FILES=`find $TARDIR -type f -not -path "*/exec/*" -not -path "*CVS*" -iregex ".*[\.]?[^o]" -iregex "[^%#~]*"  -print`
+echo Making archive: $TARGZ
+echo "Archive made by $WHO on $ARCHIVEID, $DATE " > $TARDIR/archiveid;
+tar cvf $TARNAME $FILES $TARDIR/archiveid
+gzip -f $TARNAME
+echo Done: $TARGZ.
