@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/Attic/glue_sserver.h,v 1.11 2002-12-05 10:48:26 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/Attic/glue_sserver.h,v 1.12 2002-12-17 15:27:51 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -88,7 +88,7 @@ typedef void* GLU_handle_t;
 
 /** GLU server name.
     This string will be used by the consumers to get informations
-    about a provider. It must be meaningfull (ex : "Temperatures Sampler" )
+    about a provider. It must be meaningfull (ex : "Temperatures Sampler" ) */
 char* GLU_get_server_name(void);
 
 
