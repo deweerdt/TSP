@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/include/Attic/tsp_simple_trace.h,v 1.1 2002-08-27 08:56:09 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/Attic/tsp_simple_trace.h,v 1.2 2002-09-12 08:49:04 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -37,15 +37,17 @@ static int _strace_debug_level=-1;
 #define SFUNC_NAME(name)  static const char* strace_szfunc = #name 
 
 #ifdef  USE_STRACE
-# define STRACE_IO(text) SIMPLE_TRACE(4, "i/o", text)
-# define STRACE_DEBUG(text) SIMPLE_TRACE(3, "debug", text)
-# define STRACE_INFO(text) SIMPLE_TRACE(2, "Info", text)
-# define STRACE_WARNING(text) SIMPLE_TRACE(1, "WarninG", text)
+# define STRACE_IO(text) SIMPLE_TRACE(5, "i/o", text)
+# define STRACE_DEBUG(text) SIMPLE_TRACE(4, "debug", text)
+# define STRACE_INFO(text) SIMPLE_TRACE(3, "Info", text)
+# define STRACE_WARNING(text) SIMPLE_TRACE(2, "WarninG", text)
+# define STRACE_TEST(text) SIMPLE_TRACE(1, "TEST", text)
 #else
 # define STRACE_IO(text)
 # define STRACE_DEBUG(text)
 # define STRACE_INFO(text)
 # define STRACE_WARNING(text)
+# define STRACE_TEST(text)
 #endif
 
 #define STRACE_ERROR(text) SIMPLE_TRACE(0,"ERROR", text)
