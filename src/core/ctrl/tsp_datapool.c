@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_datapool.c,v 1.3 2002-09-17 09:43:13 fancelli Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_datapool.c,v 1.4 2002-09-18 08:14:52 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -121,7 +121,7 @@ static void* TSP_worker(void* arg)
   /* wait for data */
   while (RINGBUF_PTR_ISEMPTY(X_ring))
     {
-      usleep(TSP_DATAPOOL_POOL_PERIOD);
+      tsp_usleep(TSP_DATAPOOL_POOL_PERIOD);
     }
   RINGBUF_PTR_NOCHECK_GET(X_ring,item);
 
@@ -138,7 +138,7 @@ static void* TSP_worker(void* arg)
 	}
       else
 	{
-	  usleep(TSP_DATAPOOL_POOL_PERIOD);
+	  tsp_usleep(TSP_DATAPOOL_POOL_PERIOD);
 	}
         
     } while (item.time == time_stamp); 
@@ -196,7 +196,7 @@ static void* TSP_worker(void* arg)
       /* wait for data */
       while (RINGBUF_PTR_ISEMPTY(X_ring))
 	{
-	  usleep(TSP_DATAPOOL_POOL_PERIOD);
+	  tsp_usleep(TSP_DATAPOOL_POOL_PERIOD);
 	} 
     }
     
