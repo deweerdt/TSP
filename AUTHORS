@@ -8,6 +8,9 @@ Maintainer : tsp@astrium-space.com
 
 Other Authors
 ----------------
-Marc LE ROY for the 'RES file lib' (libUTIL) used for some tests
+Marc LE ROY, for the 'RES file lib' (libUTIL) used for some tests
+Ivano COLTELLACCI, for the initial RINGBUF implementation
+
+
 
 
