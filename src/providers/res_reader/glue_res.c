@@ -1,9 +1,9 @@
 /*!  \file 
 
-$Id: glue_res.c,v 1.4 2003-02-28 14:34:27 tsp_admin Exp $
+$Id: glue_res.c,v 1.5 2003-03-17 15:54:25 yduf Exp $
 
 -----------------------------------------------------------------------
-
+ 
 TSP Library - core components for a generic Transport Sampling Protocol.
 
 Copyright (c) 2002 Yves DUFRENNE, Stephane GALLES, Eric NOULARD and Robert PAGNOT 
@@ -49,7 +49,7 @@ Purpose   : Implementation for the glue_server
 #define GLU_RES_DO_EOF		3
 
 static double res_freq=0;
-static int do_eof=0;
+static int do_eof=1;
 
 struct GLU_state_t
 {
@@ -100,7 +100,7 @@ GLU_get_state_t GLU_get_next_item(GLU_handle_t h_glu, glu_item_t* item)
 	  item->provider_global_index = obj->current_var;
 	  obj->current_var++;
 	  item->time = obj->time_stamp;
-	  STRACE_DEBUG (("New record : time=%d, val[0]=%g", obj->time_stamp, item->value));
+	  STRACE_INFO (("New record : time=%d, val[0]=%g", obj->time_stamp, item->value));
 	  return GLU_GET_NEW_ITEM;
 	}   
       else
@@ -119,10 +119,10 @@ int GLU_init(int fallback_argc, char* fallback_argv[])
   int use_dbl;
 
   /* is there a fallback stream ? */
-  if(fallback_argc && fallback_argv)
+  if(fallback_argc>1 && fallback_argv)
     {
       /* Yes, we must test it. We are expectig one arg */
-      if(fallback_argc >= 1)
+      if(fallback_argc == 1)
 	{
 	  d_rhandle h_res = d_ropen_r(fallback_argv[GLU_RES_FILE_ARG_NUMBER], &use_dbl);
 
@@ -257,7 +257,7 @@ GLU_handle_t GLU_get_instance(int argc, char* argv[], char** error_info)
 		res_freq = 1/(t2-t1);
 	      else
 		res_freq = 0;
-	      d_restart_r(obj); /* ask to restart from begining */
+	      d_restart_r(obj->h_res); /* ask to restart from begining */
 
 	    }
 	  else
