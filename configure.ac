@@ -4,7 +4,7 @@
 # THIS FILE NEED TO BE PROCESSED WITH AUTOCONF
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # 
-AC_INIT([the Transport Sampling Protocol], [0.5.2], [tsp@astrium-space.com], [tsp])
+AC_INIT([the Transport Sampling Protocol], [0.5.3], [tsp@astrium-space.com], [tsp])
 
 echo "**********************************************************"
 echo "*  TSP: AC_PACKAGE_NAME, version AC_PACKAGE_VERSION       "
