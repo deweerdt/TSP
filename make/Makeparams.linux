@@ -2,11 +2,6 @@
 
 include $(DEVBASE)/make/Makeproject
 
-# target directory
-# ----------------
-DIRBIN = $(BINBASE)/bin.linux
-DIRLIB = $(LIBBASE)/lib.linux
-
 # Default tools
 # -------------
 # Using standard tools
@@ -18,5 +13,7 @@ CC=gcc
 ARFLAGS = rvs
 CFLAGS = 
 CPPFLAGS +=  -D_REENTRANT  -DUSE_STRACE -DTSP_NO_XDR_ENCODE
-LDLIBS = -lsocket -lnsl -lm -lposix4 -lgen -lpthread  
+LDLIBS =   -lm  -lpthread  
 
+
+include .make.state

@@ -12,5 +12,8 @@ CC=gcc
 ARFLAGS = rvs
 CFLAGS = -g
 CPPFLAGS +=  -D_REENTRANT  -DUSE_STRACE -DTSP_NO_XDR_ENCODE
-LDLIBS = -lsocket -lnsl -lm -lposix4 -lgen -lpthread  
+LDLIBS =   -lm  -lpthread  
+
+
+include .make.state
 
