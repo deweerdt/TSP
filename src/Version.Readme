@@ -77,3 +77,6 @@ V-0.5: Creation 18/12/02 	tag TSP_0_5 SG
 	  (provider side)
 	- garbage collector for the acidentally disconnected sessions
 	- 'request close' implementation works
+
+V-0.5.1: Creation 24/12/02 	tag TSP_0_5_1 SG
+	- Plenty of comments added in header files
