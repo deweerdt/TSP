@@ -4,8 +4,8 @@ Compilation procedure
 Note : 
 - Autoconf/Automake is not used yet...     :(
 - The shell that must be used is tcsh...   :(
-As soon as possible Autoconf/Automake and bash will
-be used.
+As soon as possible Autoconf/Automake and bash 
+will be used.
 
 Now to compil :
 

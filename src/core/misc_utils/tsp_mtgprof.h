@@ -1,5 +1,6 @@
 /* 
  * pthread_create wrapper for gprof compatibility
+ * Provided by Samuel Hocevar at http://sam.zoy.org/doc/programming/gprof.html
  *
  * needed headers: <pthread.h>
  *                 <sys/time.h>

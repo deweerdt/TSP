@@ -1,12 +1,12 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/tests/stage3/Attic/glue_sserver3.c,v 1.7 2002-12-18 12:59:27 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/tests/stage3/Attic/glue_sserver3.c,v 1.8 2002-12-18 16:27:44 tntdev Exp $
 
 -----------------------------------------------------------------------
 
 TSP Library - core components for a generic Transport Sampling Protocol.
 
-Copyright (c) 2002 Yves DUFRENNE, Stephane GALLES, Eric NOULARD and Robert PAGNOT for Astrium Inc.
+Copyright (c) 2002 Yves DUFRENNE, Stephane GALLES, Eric NOULARD and Robert PAGNOT 
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public

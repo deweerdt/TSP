@@ -1,7 +1,7 @@
 General Information
 ===================
 
-TSP : library for a generic Transfer Sampling Protocol
+TSP : library for a generic Transport Sampling Protocol
 
 This project is in early development but should be functional.
 
@@ -32,4 +32,71 @@ receiving the evolving values.
 
 TSP is designed to be CPU and bandwith friendly (both for the producer
 and the consumer)
+
+Exemple : a TSP Primer.
+===================
+As an exemple the library is provided with a simple producer
+and a simple consumer
+
+Follow the explanation from the INSTALL file to compil
+the library and the exemples.
+
+...
+
+The exemple must now be in your path !
+
+launch the provider on a host :
+
+% tsp_server_stub
+
+launch the consumer on an other host
+
+% tsp_client_printer ProviderHostName 1
+
+replace ProviderHostName with the name of the host
+where the provider was launched (or 'localhost'
+if you only have one host for your test!)
+
+You can launch as many consumers as you want.
+
+
+If you're still with us
+=======================
+
+The provider program 'tsp_server_stub' provides 1000 different
+variables each at a 100Hz rate (sin, cos, random and other shapes).
+
+The consumer program 'tsp_client_printer' ask a TSP provider
+for all its variables, and print the value of the first variable
+to stdout 
+
+The generic aspect of TSP should do that :
+- the TSP provider exemple 'tsp_server_stub' should work with
+any TSP consumer
+- the consumer exemple 'tsp_client_printer' should work with
+any TSP provider
+At least, it was designed to work that way.
+
+TSP allow any consumer to ask the provider to divide the sampling rate
+of each asked variable to save bandwith and CPU. It means that for each consumer,
+and for each asked variable by this consumer, the provider will not send the
+the values to this consumer at full rate. It is an 'undersampling ratio'.
+
+the second parameter for the 'tsp_client_printer' exemple
+control this aspect of the protocol. It is the 'undersampling ratio'
+for all asked variables (actually TSP allow this control for each variable,
+it is only a limitation of the exemple 'tsp_client_printer')
+
+--> '1' means "all variables at full rate (i.e. : the base frequency of
+    the provider, 100Hz for 'tsp_server_stub'")
+--> '2' means "for all variables divide the frequency by 2" 
+--> '3' you get it...
+
+You can launch plenty of clients, each with its own ratio.
+
+Remember that the variable are 'doubles' (8 bytes), and the
+'tsp_server_stub' provides 1000 variables at 100Hz...
+So, with more that one consumer on a provider, at full rate,
+it can be rather tough for a 10Mbits network...
+
 
