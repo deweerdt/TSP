@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_sample_ringbuf.h,v 1.3 2002-11-19 13:23:24 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_sample_ringbuf.h,v 1.4 2002-11-29 17:34:46 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -25,11 +25,15 @@ the consumer to retreive the n asked symbols
 #include "tsp_ringbuf.h"
 
 
-/* Used to add a dummy item in fifo for an eof notification */
+/* Used to add a dummy item in fifo for an eof notification (sent by the provider)*/
 #define TSP_DUMMY_PROVIDER_GLOBAL_INDEX_EOF   0xFFFFFFFF
 
-/* Used to add a dummy item in fifo for an reconf notification */
+/* Used to add a dummy item in fifo for an reconf notification (sent by the provider)*/
 #define TSP_DUMMY_PROVIDER_GLOBAL_INDEX_RECONF   0xFFFFFFFE
+
+/* Used to tell that a connection problem occured (added in the ringbuf by the data_receiver)*/
+#define TSP_DUMMY_PROVIDER_GLOBAL_INDEX_RECEIVER_ERROR   0xFFFFFFFD
+
 
 
  
