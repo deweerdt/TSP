@@ -1,0 +1,12 @@
+
+If you want to produce a JUnit test report for TSP, 
+you can run TSP JUnit test with the command :
+   ant test-report   
+but to do this, you need to
+- 1) copy junit.jar into this directory
+- 2) copy junit.jar into the lib directory of your ant installation (or add
+junit.jar to your global CLASSPATH)
+
+You can get junit.jar at : http://www.junit.org
+
+
