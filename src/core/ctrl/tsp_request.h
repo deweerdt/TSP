@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: tsp_request.h,v 1.4 2004-09-24 15:46:56 tractobob Exp $
+$Id: tsp_request.h,v 1.5 2004-10-07 08:58:05 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -67,7 +67,7 @@ Purpose   : TSP request handling API
 */
 struct TSP_provider_request_handler_t;
 typedef int   (* tsp_request_handler_config_ft)(struct TSP_provider_request_handler_t*);
-typedef void  (* tsp_request_handler_run_ft)   (struct TSP_provider_request_handler_t*);
+typedef void* (* tsp_request_handler_run_ft)   (struct TSP_provider_request_handler_t*);
 typedef int   (* tsp_request_handler_stop_ft)  (struct TSP_provider_request_handler_t*);
 typedef char* (* tsp_request_handler_url_ft)   (struct TSP_provider_request_handler_t*);
 /*@}*/ 
@@ -134,7 +134,7 @@ typedef struct rqh_manager_data_t rqh_manager_data_t;
 
 /* Don't forget to statically initialize the structure */
 static rqh_manager_data_t rqh_manager_if;
-					   ;
+					  
 
 /**
  * Get the maximum number

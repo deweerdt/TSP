@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: tsp_request.c,v 1.5 2004-09-24 15:46:56 tractobob Exp $
+$Id: tsp_request.c,v 1.6 2004-10-07 08:58:05 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -213,7 +213,7 @@ TSP_provider_rqh_manager_refresh(void) {
 		    }
 		  else
 		    {
-		      STRACE_ERROR(("Request handler # %d could not start properly"));
+		      STRACE_ERROR(("Request handler # %d could not start properly", rank));
 		    }
 		}
 	    }
