@@ -32,12 +32,15 @@ TARGET=$(DIRLIB)/libtsp_res.a
 # same thing for clean:: that calls destroy::
 # -----------------------------------------------------------
 
+ifneq (${TSP_TARGET},vxworks)
 build:: $(TARGET)($(OBJECTS))
 
 destroy::
 	$(RM) 	 $(TARGET) $(OBJECTS)
+endif
 
 include $(DEVBASE)/make/Makerules
+
 
 
 

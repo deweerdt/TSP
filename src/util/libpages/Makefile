@@ -17,10 +17,12 @@ CPPFLAGS +=   `xml2-config --cflags`
 # same thing for clean:: that calls destroy::
 # -----------------------------------------------------------
 
+ifneq (${TSP_TARGET},vxworks)
 build:: $(TARGET)($(OBJECTS))
 
 destroy::
-	$(RM) 	 $(TARGET) 
+	$(RM) 	 $(TARGET) $(OBJECTS)
+endif
 
 # -----------------------------------------------------------
 include $(DEVBASE)/make/Makerules
