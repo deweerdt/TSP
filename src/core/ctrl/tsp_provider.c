@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_provider.c,v 1.17 2003-01-31 08:29:13 SyntDev1 Exp $
+$Id: tsp_provider.c,v 1.18 2003-02-03 11:55:07 SyntDev1 Exp $
 
 -----------------------------------------------------------------------
 
@@ -507,7 +507,7 @@ void  TSP_provider_request_sample_destroy(TSP_request_sample_destroy_t* req_info
   SFUNC_NAME(TSP_provider_request_sample_destroy);
   STRACE_IO(("-->IN"));
     
-  ans_sample->version_id = UNDEFINED_VERSION_ID;
+  ans_sample->version_id = req_info->version_id;
   ans_sample->channel_id = req_info->channel_id;
   ans_sample->status = TSP_STATUS_OK;
  
