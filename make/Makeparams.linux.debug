@@ -10,10 +10,16 @@ CC=gcc
 # Default options
 # ---------------
 ARFLAGS = rvs
-CFLAGS = -g
+CFLAGS =  -g 
 CPPFLAGS +=  -D_REENTRANT  -DUSE_STRACE -DTSP_NO_XDR_ENCODE
+
 LDLIBS =   -lm  -lpthread  
 
 
 include .make.state
+
+#for GPROF :
+#CFLAGS =  -g -a -pg
+#CPPFLAGS +=  -D_REENTRANT  -DUSE_STRACE -DTSP_NO_XDR_ENCODE  -DMT_GPROF
+
 
