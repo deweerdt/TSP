@@ -1,6 +1,6 @@
 /*!  \file 
-
-$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_const_def.h,v 1.2 2002-08-28 09:22:55 galles Exp $
+ 
+$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_const_def.h,v 1.3 2002-09-05 09:16:03 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -93,6 +93,13 @@ typedef struct  TSP_otsp_server_info_t TSP_otsp_server_info_t;
 to calculate the PROG ID for each server*/
 #define TSP_RPC_PROGID_BASE_COUNT 0x31230010
 
+/*------- SYSTEM -------*/
+
+/* SUSv2 guarantees that `Host names are limited to 255 bytes,
+but linux define MAXHOSTNAMELEN to be 64. We'd better be cautious :
+we use 255 and we define our own MAXHOSTNAMELEN*/
+#define TSP_MAXHOSTNAMELEN 255
+
 /*-------- MACROS --------*/
 
 #define TSP_CHECK_ALLOC(p, ret) \
@@ -136,5 +143,7 @@ to calculate the PROG ID for each server*/
 #define TSP_ENCODE_DOUBLE_TO_GUINT64(val) (GUINT64_TO_LE (*(guint64*)val))
 #define TSP_DECODE_DOUBLE_TO_GUINT64(val) (GUINT64_FROM_LE (*(guint64*)val))
 
+#define TSP_ENCODE_INT(val) (GINT_TO_BE (val))
+#define TSP_DECODE_INT(val) (GINT_FROM_BE (val)) 
 
 #endif /*_TSP_CONST_DEF_H*/
