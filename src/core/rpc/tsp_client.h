@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: tsp_client.h,v 1.7 2004-09-27 12:18:00 tractobob Exp $
+$Id: tsp_client.h,v 1.8 2004-11-09 22:33:01 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -60,12 +60,28 @@ int TSP_remote_open_server( const char *protocol,
 			    TSP_server_t* server,
 			    TSP_server_info_string_t server_info);
 
+/**
+ * Close a server.
+ * @param server the server that must be close.
+ */
 void TSP_remote_close_server(TSP_server_t server);
 
+/**
+ * Max server number.
+ * Get how many server can exists on a given host.
+ * @return Max server number
+ */
 int TSP_get_server_max_number(void);
 
 TSP_answer_open_t* TSP_request_open(const TSP_request_open_t* req_open,
 				    TSP_server_t server);
+
+/**
+ * Close the session for a remote_opened provider.
+ * @param req_close the informations tout close the session
+ * @param server the server
+ * @return The action result (TRUE or FALSE)
+ */
 int TSP_request_close(const TSP_request_close_t* req_close,
 		      TSP_server_t server);	
 		      

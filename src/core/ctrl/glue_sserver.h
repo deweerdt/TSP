@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: glue_sserver.h,v 1.18 2004-10-07 08:59:04 tractobob Exp $
+$Id: glue_sserver.h,v 1.19 2004-11-09 22:33:01 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -210,7 +210,7 @@ GLU_server_type_t GLU_get_server_type(void);
  * fallback_argv[1], so as the getopt* functions may be used to
  * parse those parameters (when the consumer do not provide any parameters
  * this parameter is equal to fallback_argv of GLU_init)
- * @error_info When the function fail the GLU may use this parameter
+ * @param error_info When the function fail the GLU may use this parameter
  * to return an error string that will be transmited to the consumer
  * to get detailed information about the error. 
  * @return The created GLU handle. Returns 0 when the function fail

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_simple.h,v 1.2 2004-10-18 20:36:56 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_simple.h,v 1.3 2004-11-09 22:33:01 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -134,8 +134,8 @@ void* bb_simple_subscribe(S_BB_T* bb_simple,
 			  int* dimension);
 
 /**
- * Configure synchronization type (thread or process) 
- * @param synchro_type 
+ * Configure synchronization type (thread or process).
+ * @param synchro_type IN,
  *        - BB_SIMPLE_SYNCHRO_THREAD for POSIX thread synchro
  *        - BB_SIMPLE_SYNCHRO_PROCESS for Sys V synchro
  * @return E_OK on success, E_NOK on failure.
@@ -146,14 +146,14 @@ int32_t bb_simple_synchro_config(int synchro_type);
 /**
  * Send a simple synchro message through the BB message queue.
  * @param bb_simple INOUT, a pointer to a valid BB.
- * @param msg_type, le type de message à envoyer pour la synchro
+ * @param msg_type IN, le type de message à envoyer pour la synchro
  * @return E_OK si tout se passe bien
  * @ingroup SimpleBlackBoard
  */
 int32_t bb_simple_synchro_go(S_BB_T* bb_simple,int msg_type);
 
 /**
- * Attente d'un message de déblocage
+ * Attente d'un message de deblocage
  * de synchronisation SIMPLE.
  * @param bb_simple a pointer to a valid BB.
  * @param type_msg le type de message à recevoir pour la synchro
@@ -163,9 +163,9 @@ int32_t bb_simple_synchro_go(S_BB_T* bb_simple,int msg_type);
 int32_t bb_simple_synchro_wait(S_BB_T* bb_simple,int type_msg);
 
 /**
- * Vérification de la synchronisation SIMPLE.
- * @param bb_simple a pointer to a valid BB.
- * @return E_OK si tous les messages de synchro ont été consommés, E_NOK sinon.
+ * Verification de la synchronisation SIMPLE.
+ * @param bb_simple INOUT, a pointer to a valid BB.
+ * @return E_OK si tous les messages de synchro ont ete consommes, E_NOK sinon.
  * @ingroup SimpleBlackBoard
  */
 int32_t bb_simple_synchro_verify(S_BB_T* bb_simple);
@@ -173,7 +173,6 @@ int32_t bb_simple_synchro_verify(S_BB_T* bb_simple);
 /**
  * Envoi d'un message de déblocage
  * de synchronisation SIMPLE (version thread).
- * @param bb_simple a pointer to a valid BB.
  * @param type_msg le type de message à envoyer pour la synchro
  * @return E_OK si tout se passe bien
  * @ingroup SimpleBlackBoard
@@ -183,7 +182,6 @@ int32_t bb_simple_thread_synchro_go(int type_msg);
 /**
  * Attente d'un message de déblocage
  * de synchronisation SIMPLE (version thread).
- * @param bb_simple a pointer to a valid BB.
  * @param type_msg le type de message à recevoir pour la synchro
  * @return E_OK si tout se passe bien
  * @ingroup SimpleBlackBoard

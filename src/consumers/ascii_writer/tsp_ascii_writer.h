@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer.h,v 1.3 2004-11-09 21:09:30 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer.h,v 1.4 2004-11-09 22:33:01 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -130,7 +130,7 @@ tsp_ascii_writer_start(FILE* sfile, int32_t nb_sample_max_infile);
 
 /**
  * Function to be used with pthread_create(3).
- * @param files pointer to an opened stdio file stream (FILE*).
+ * @param sfile pointer to an opened stdio file stream (FILE*).
  * @return 0 if OK -1 otherwise.
  * @ingroup Ascii_Writer
  */

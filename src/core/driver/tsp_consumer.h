@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: tsp_consumer.h,v 1.18 2004-10-04 08:44:32 tractobob Exp $
+$Id: tsp_consumer.h,v 1.19 2004-11-09 22:33:01 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -339,23 +339,22 @@ int TSP_consumer_request_sample_init(TSP_provider_t provider, TSP_sample_callbac
  */				      
 int TSP_consumer_request_sample_destroy(TSP_provider_t provider);    
 
-
 /** 
  * Read a sample symbol.
- * FIXME :
- * 1 - Some kind of get_last_error func must be implemented to read
- * the error codes (EOF, RECONF ... ).
- * 2 - When the other types will be implemented (RAW, STRING) the TSP_sample_t
- * type will not work anymore as it is double specific for now.
  * @param provider The provider handle
  * @param sample The returned symbol if there is one
- * @param new_sample. When TRUE, there is a new sample, else the sample value is
- * meaningless
+ * @param new_sample When TRUE, there is a new sample, else the sample value is
+ *                    meaningless
  * @return TRUE or FALSE. FALSE = There is an error (but we can not know it for now).
+ * @todo
+ *  - Some kind of get_last_error func must be implemented to read
+ *    the error codes (EOF, RECONF ... ).
+ *  - When the other types will be implemented (RAW, STRING) the TSP_sample_t
+ *    type will not work anymore as it is double specific for now.
  */				          
 int TSP_consumer_read_sample(TSP_provider_t provider,
-                    TSP_sample_t* sample,
-                    int* new_sample);
+			     TSP_sample_t* sample,
+			     int* new_sample);
 
 /** @} end group Consumer */ 
     

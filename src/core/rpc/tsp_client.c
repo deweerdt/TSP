@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_client.c,v 1.10 2004-09-27 12:18:00 tractobob Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_client.c,v 1.11 2004-11-09 22:33:01 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -190,10 +190,6 @@ int TSP_remote_open_server( const char *protocol,
 	
 }
 
-/**
-* Close a server.
-* @param server the server that must be close.
-*/
 void TSP_remote_close_server(TSP_server_t server)
 {
   if(server)
@@ -202,11 +198,7 @@ void TSP_remote_close_server(TSP_server_t server)
     }
 }
 
-/**
- * Max server number.
- * Get how many server can exists on a given host.
- * @return Max server number
- */
+
 int TSP_get_server_max_number()
 {
   return TSP_get_progid_total_number();
@@ -231,11 +223,6 @@ TSP_answer_open_t * TSP_request_open(const TSP_request_open_t* req_open, TSP_ser
   return result;
 }	
 
-/**
-* Close the session for a remote_opened provider.
-* @param req_close the informations tout close the session
-* @return The action result (TRUE or FALSE)
-*/
 int TSP_request_close(const TSP_request_close_t* req_close, TSP_server_t server)
 {
 
@@ -253,11 +240,6 @@ int TSP_request_close(const TSP_request_close_t* req_close, TSP_server_t server)
   return result;
 }	
 
-/**
-* Close the session for a remote_opened provider.
-* @param req_close the informations tout close the session
-* @return The action result (TRUE or FALSE)
-*/
 TSP_answer_sample_t * TSP_request_information(const TSP_request_information_t* req_info, TSP_server_t server)
 {
 
