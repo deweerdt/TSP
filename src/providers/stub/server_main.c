@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: server_main.c,v 1.3 2004-09-24 15:46:56 tractobob Exp $
+$Id: server_main.c,v 1.4 2004-10-04 08:59:09 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -49,7 +49,7 @@ int main(int argc, char *argv[])
   if(TSP_provider_init(&argc, &argv))
     {
       TSP_provider_run(TSP_ASYNC_REQUEST_SIMPLE | TSP_ASYNC_REQUEST_NON_BLOCKING);
-      TSP_provider_urls(TSP_PUBLISH_URLS_PRINT);
+      TSP_provider_urls(TSP_PUBLISH_URLS_PRINT | TSP_PUBLISH_URLS_FILE);
       sigwait();
       TSP_provider_end();
     }
