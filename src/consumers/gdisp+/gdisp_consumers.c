@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_consumers.c,v 1.6 2004-10-04 08:57:26 tractobob Exp $
+$Id: gdisp_consumers.c,v 1.7 2004-10-05 12:32:20 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -208,9 +208,12 @@ gdisp_insertHostProviders ( Kernel_T *kernel,
 	                                providerInfo->current_client_number;
 	newProvider->pSymbolNumber        = providerInfo->symbols.len;
 
-	newProvider->pSymbolList          = (Symbol_T*)
-                   g_malloc0(newProvider->pSymbolNumber * sizeof(Symbol_T));
-	assert(newProvider->pSymbolList);
+	if(newProvider->pSymbolNumber > 0)
+	  {
+	    newProvider->pSymbolList          = (Symbol_T*)
+	      g_malloc0(newProvider->pSymbolNumber * sizeof(Symbol_T));
+	    assert(newProvider->pSymbolList);
+	  }
 
 	for (symbolCpt=0; symbolCpt<newProvider->pSymbolNumber; symbolCpt++) {
 
