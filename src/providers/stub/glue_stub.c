@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: glue_stub.c,v 1.9 2004-09-15 15:02:01 dufy Exp $
+$Id: glue_stub.c,v 1.10 2004-10-18 21:24:53 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -170,7 +170,12 @@ int GLU_init(int fallback_argc, char* fallback_argv[])
 
 int GLU_start(void)
 {
-  return pthread_create(&thread_id, NULL, GLU_thread, NULL);  
+  /* start GLU only if it was not already started. */
+  if (0==thread_id) {
+    return pthread_create(&thread_id, NULL, GLU_thread, NULL);  
+  } else {
+    return 1;
+  }
 }
 
 

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/providers/bb_provider/bb_tsp_provider.h,v 1.2 2004-09-20 20:55:59 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/providers/bb_provider/bb_tsp_provider.h,v 1.3 2004-10-18 21:24:53 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -40,7 +40,7 @@ Purpose   : Blackboard TSP Provider
 #include <stdint.h>
 #include <pthread.h>
 
-pthread_t glu_thread_id;
+pthread_t glu_thread_id =0;
 
 /**
  * Indique la frequence de base du provider TSP

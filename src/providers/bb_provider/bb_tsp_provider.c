@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/providers/bb_provider/bb_tsp_provider.c,v 1.4 2004-10-18 20:40:49 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/providers/bb_provider/bb_tsp_provider.c,v 1.5 2004-10-18 21:24:53 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -343,7 +343,11 @@ static void* GLU_thread(void* arg) {
 
 int GLU_start(void)
 {
-  return pthread_create(&glu_thread_id, NULL, GLU_thread, NULL);  
+  if (0==glu_thread_id) {
+    return pthread_create(&glu_thread_id, NULL, GLU_thread, NULL); 
+  } else {
+    return 1;
+  }
 }
 
 GLU_handle_t 
