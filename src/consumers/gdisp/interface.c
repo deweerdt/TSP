@@ -214,7 +214,7 @@ redraw_widgets (gpointer data)
 	break;
       case VAR_HEXA:
 	label = GTK_LABEL(var->widget);
-	sprintf(buffer, LABEL_HEXA_FORMAT, var->legend == NULL ? var->text : var->legend, (long) rint(var->double_value));
+	sprintf(buffer, LABEL_HEXA_FORMAT, var->legend == NULL ? var->text : var->legend, (unsigned long) rint(var->double_value));
 	gtk_label_set_text(label, buffer);
 	break;
       case VAR_BIN:

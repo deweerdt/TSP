@@ -147,26 +147,35 @@ load_config (gchar *filename, conf_data_t* data)
 	  new_var->duration = var.duration;
 	  g_ptr_array_add(pages[i].variables, new_var);
 	  
-	  /* FIXME : autres type */
-	  if( VAR_DOUBLE == var.type)
+	  switch(var.type)
 	    {
-	      /* We do not want to ask twice the same variable */
-	      int u; int found = FALSE;
-	      for ( u = 0; u < data->tsp_requested.len ; u++)
-		{
-		  if( !strcmp(data->tsp_requested.val[u].name,var.name))
-		    {
-		      found = TRUE; break;
-		    }
-		}
+	    case VAR_TITLE:
+	      /* no TSP variable */
+	      break;
+	    case VAR_DOUBLE:
+	    case VAR_HEXA:
+	    case VAR_BIN:
+	    case VAR_STRING:
+	      {
+		/* We do not want to ask twice the same variable */
+		int u; int found = FALSE;
+		for ( u = 0; u < data->tsp_requested.len ; u++)
+		  {
+		    if( !strcmp(data->tsp_requested.val[u].name,var.name))
+		      {
+			found = TRUE; break;
+		      }
+		  }
 		  
-	      if(!found)
-		{
-		  int current = data->tsp_requested.len++;
-		  data->tsp_requested.val[current].name = var.name;
-		  data->tsp_requested.val[current].period = var.period;
-		  data->tsp_requested.val[current].phase = 0;
-		}
+		if(!found)
+		  {
+		    int current = data->tsp_requested.len++;
+		    data->tsp_requested.val[current].name = var.name;
+		    data->tsp_requested.val[current].period = var.period;
+		    data->tsp_requested.val[current].phase = 0;
+		  }
+	      }
+	      break;
 	    }
 	}
 

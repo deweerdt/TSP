@@ -20,8 +20,7 @@
      <variable name="Symbol105" type="DOUBLE"   />
      <variable name="Symbol106" type="DOUBLE"   />
      <variable name="Title3" type="TITLE"   />
-     <variable name="Symbol107" type="DOUBLE"   />
-     <variable name="Symbol108" type="DOUBLE"   />
+     <variable name="Symbol107" type="HEXA"   />
      <variable name="Symbol108" type="DOUBLE"   />
      <variable name="Symbol109" type="DOUBLE"   />
      <variable name="Symbol110" type="DOUBLE"   />
