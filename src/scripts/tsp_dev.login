@@ -39,7 +39,7 @@ setenv VX_68K_OPTION
 # Rajout de PATH
 ##############################
 
-setenv PATH ${DEVBASE}/exec/DEV/bin.consumer:${DEVBASE}/exec/DEV/bin.provider:${PATH}:${DEVBASE}/exec/DEV/scripts
+setenv PATH ${DEVBASE}/exec/DEV/bin.consumer:${DEVBASE}/exec/DEV/bin.provider:${PATH}:${DEVBASE}/src/scripts
 
 ##############################
 # Navigation
