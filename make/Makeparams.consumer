@@ -11,4 +11,4 @@ DIRLIB = $(LIBBASE)/lib.consumer
 
 # customize
 # ----------------
-include $(DEVBASE)/make/Makeparams.suncdt
+include $(DEVBASE)/make/Makeparams.linux

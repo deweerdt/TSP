@@ -9,4 +9,4 @@ DIRLIB = $(LIBBASE)/lib.provider.debug
 
 # customize
 # ----------------
-include $(DEVBASE)/make/Makeparams.suncdt.debug
+include $(DEVBASE)/make/Makeparams.linux.debug
