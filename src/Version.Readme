@@ -89,6 +89,7 @@ V-0.5.3: Creation 14/03/03  	tag TSP_0_5_3 YD
 	- Change Makefile philosophy
 	- Bug Fix : Tsp_gdisp corrected by commiting in binary type
 	- Bug Fix : res_reader don't forgot any more the two first lines
+
 V-0.6.0: Creation 13/01/04	tag TSP_0_6_0	YD
         - Gestion de plusieurs protocoles asynchrone (alpha)  - Erk
         - Corrections mineures scripts configure pour 
@@ -97,5 +98,11 @@ V-0.6.0: Creation 13/01/04	tag TSP_0_6_0	YD
           contenu dans TSP                                    - Erk
         - Correction creation liens symboliques sous Linux  
           dans Makefile et install_version                    - Erk
+
+V-0.6.1: Creation 26/05/04	tag TSP_0_6_1	YD	
+        - Adding tsp_gdisp+ in source version		    	- Euskadi 
+	- Make again the things work on DEC/Alpha stations	- YD
+	- Add jSynoptic plugins for JAVA consumer		- CP 
+
 V-0.6.x: Creation ??/??/04	tag TSP_0_6_X	??	
-        - Adding tsp_gdisp in source version			- YD 
+        - What was done						-  ??
