@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_datapool.h,v 1.7 2002-12-24 14:14:18 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_datapool.h,v 1.8 2003-07-15 14:21:17 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -102,4 +102,4 @@ int TSP_local_datapool_start_thread(TSP_datapool_t datapool);
 int TSP_local_datapool_wait_for_end_thread(TSP_datapool_t datapool);
 
 
-#endif _TSP_DATAPOOL_H
+#endif /* _TSP_DATAPOOL_H */
