@@ -2,7 +2,7 @@
 
 @configure_input@
 
-$Id: tsp_prjcfg.h.in,v 1.3 2004-02-01 23:04:53 erk Exp $
+$Id: tsp_prjcfg.h.in,v 1.4 2004-10-18 20:42:31 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -43,11 +43,29 @@ Purpose   : some includes
 #include "tsp_const_def.h"
 #include "tsp_simple_trace.h"
 
+/* defines the global TSP modules */
+
+/**
+ * @defgroup TSP
+ * The Transport Sample Protocol.
+ * TSP is a networked enabled  multi-consumer multi-provider
+ * protocol for sampling data, TSP is designed for efficiency 
+ * and ease of use.
+ */
+
 /**
  * @defgroup Core
  * The TSP Core module is the module 
  * includes core TSP framework utility.
+ * @ingroup TSP
  */
 
+/**
+ * @defgroup TSP_Utils
+ * The TSP utilities.
+ * This consists in several libraries which may save
+ * a great amount of time when using TSP.
+ * Some TSP provider and consumer us thos libs.
+ */ 
 
 #endif /* _PRJCFG_H */
