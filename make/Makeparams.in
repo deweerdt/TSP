@@ -44,13 +44,6 @@ ARFLAGS		= @ARFLAGS@
 LDLIBS		= @LDLIBS@
 
 # ----------------
-# customize
-# ----------------
-# TSP_TARGET= sun, sun64, linux, dec, vxworks
-# TSP_MODE  = debug ou opt
-include $(DEVBASE)/make/Makeparams.$(TSP_TARGET).$(TSP_MODE)
-
-# ----------------
 # TSP component list
 # can build java, provider or consumer part
 # ----------------
@@ -59,6 +52,13 @@ BUILD_PROVIDER	= @TSPPROVIDER@
 BUILD_CONSUMER	= @TSPCONSUMER@
 BUILD_GTK_BASED_CONSUMER = @GTK_BASED_CONSUMER@
 BUILD_BB	= @BB@
+
+# ----------------
+# customize
+# ----------------
+# TSP_TARGET= sun, sun64, linux, dec, vxworks
+# TSP_MODE  = debug ou opt
+include $(DEVBASE)/make/Makeparams.$(TSP_TARGET).$(TSP_MODE)
 
 # ----------------
 # Call all builds
