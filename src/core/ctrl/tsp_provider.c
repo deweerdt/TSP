@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_provider.c,v 1.3 2002-09-12 12:53:53 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_provider.c,v 1.4 2002-09-19 08:36:52 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -64,11 +64,11 @@ void TSP_request_close(const TSP_request_close_t* req_close)
   /* On ferme la session */
   if(TSP_close_session_by_channel(req_close->channel_id))
     {	
-      STRACE_INFO(("Session for channel_id=%"G_GUINT64_FORMAT" is closed", req_close->channel_id));
+      STRACE_INFO(("Session for channel_id=%u is closed", req_close->channel_id));
     }
   else
     {
-      STRACE_ERROR(("Unable to close session for channel_id=%"G_GUINT64_FORMAT, req_close->channel_id));
+      STRACE_ERROR(("Unable to close session for channel_id=%u", req_close->channel_id));
     }
 		
   STRACE_IO(("-->OUT"));
@@ -85,7 +85,6 @@ void  TSP_request_information(TSP_request_information_t* req_info,
 	
   ans_sample->version_id = TSP_VERSION;
   ans_sample->channel_id = req_info->channel_id;
-  ans_sample->data_address = "";
   GLU_get_sample_symbol_info_list(&(ans_sample->symbols));
 	
 		
@@ -152,8 +151,8 @@ void  TSP_request_sample(TSP_request_sample_t* req_info,
   STRACE_IO(("-->OUT"));
 }
 
-void  TSP_request_sample_init(TSP_request_sample_t* req_info, 
- 			      TSP_answer_sample_t** ans_sample)
+void  TSP_request_sample_init(TSP_request_sample_init_t* req_info, 
+ 			      TSP_answer_sample_init_t** ans_sample)
 {
 
   SFUNC_NAME(TSP_request_sample_init);
@@ -163,7 +162,7 @@ void  TSP_request_sample_init(TSP_request_sample_t* req_info,
     
   /*FIXME : simplifier cette structure, on en utilise pas la moitie */
   /*FIXME : oups, fuite de memoire*/
-  *ans_sample = (TSP_answer_sample_t*)calloc(1, sizeof(TSP_answer_sample_t));
+  *ans_sample = (TSP_answer_sample_init_t*)calloc(1, sizeof(TSP_answer_sample_init_t));
   TSP_CHECK_ALLOC(*ans_sample,);
     
   ret = TSP_session_create_data_sender_by_channel(req_info->channel_id);

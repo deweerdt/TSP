@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_provider.h,v 1.1 2002-08-27 08:56:09 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_provider.h,v 1.2 2002-09-19 08:36:52 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -34,5 +34,8 @@ void  TSP_request_information(TSP_request_information_t* req_info,
 
 void  TSP_request_sample(TSP_request_sample_t* req_info, 
 			 TSP_answer_sample_t** ans_sample);
+
+void  TSP_request_sample_init(TSP_request_sample_init_t* req_info, 
+ 			      TSP_answer_sample_init_t** ans_sample);
 
 #endif /* _TSP_PROVIDER_H */

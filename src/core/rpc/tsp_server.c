@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_server.c,v 1.2 2002-09-05 09:25:40 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_server.c,v 1.3 2002-09-19 08:37:05 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -17,6 +17,9 @@ Purpose   :
 
 #include "tsp_sys_headers.h"
 
+#define PORTMAP
+#include <rpc/rpc.h>
+
 #include "tsp_server.h"
 
 #include "tsp_rpc.h"
@@ -24,13 +27,13 @@ Purpose   :
 
 /*#include "tsp_provider.h" */
 
-TSP_server_info_t* tsp_server_info_1_svc(struct svc_req *rqstp)
+TSP_provider_info_t* tsp_provider_information_1_svc(struct svc_req *rqstp)
 {
   
-  SFUNC_NAME(tsp_server_info_1_svc);
+  SFUNC_NAME(tsp_provider_information_1_svc);
 
 	
-  static TSP_server_info_t server_info;
+  static TSP_provider_info_t server_info;
 	
   STRACE_IO(("-->IN"));
 
@@ -118,6 +121,7 @@ TSP_answer_sample_t* tsp_request_sample_1_svc(TSP_request_sample_t req_sample, s
 
   static TSP_answer_sample_t* ans_sample = 0;
 
+
   STRACE_IO(("-->IN"));
 
     
@@ -127,7 +131,7 @@ TSP_answer_sample_t* tsp_request_sample_1_svc(TSP_request_sample_t req_sample, s
     TSP_session_free_create_symbols_table_call(&ans_sample);
     }*/
 
-    
+  
   TSP_request_sample(&req_sample, &ans_sample);
 
 	
@@ -140,12 +144,12 @@ TSP_answer_sample_t* tsp_request_sample_1_svc(TSP_request_sample_t req_sample, s
 
 }
  
-TSP_answer_sample_t* tsp_request_sample_init_1_svc(TSP_request_sample_t req_sample, struct svc_req * rqstp)
+TSP_answer_sample_init_t* tsp_request_sample_init_1_svc(TSP_request_sample_init_t req_sample, struct svc_req * rqstp)
 {
 
   SFUNC_NAME(tsp_request_sample_init_1_svc);
 
-  static TSP_answer_sample_t* ans_sample = 0;
+  static TSP_answer_sample_init_t* ans_sample = 0;
 
   STRACE_IO(("-->IN"));
 
@@ -169,12 +173,12 @@ TSP_answer_sample_t* tsp_request_sample_init_1_svc(TSP_request_sample_t req_samp
 
 }
 
-TSP_answer_sample_t* tsp_request_sample_destroy_1_svc(TSP_request_sample_t req_sample, struct svc_req * rqstp)
+TSP_answer_sample_destroy_t* tsp_request_sample_destroy_1_svc(TSP_request_sample_destroy_t req_sample, struct svc_req * rqstp)
 {
 
   SFUNC_NAME(tsp_request_sample_destroy_1_svc);
 
-  static TSP_answer_sample_t ans_sample;
+  static TSP_answer_sample_destroy_t ans_sample;
 	
   STRACE_IO(("-->IN"));
 

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.4 2002-09-05 09:08:37 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.5 2002-09-19 08:37:01 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -427,18 +427,18 @@ int TSP_request_provider_close(TSP_provider_t provider)
   req_close.version_id = TSP_VERSION;
   req_close.channel_id = otsp->channel_id;
 	
-  STRACE_DEBUG(("Trying to close channel_id=%"G_GUINT64_FORMAT, otsp->channel_id));
+  STRACE_DEBUG(("Trying to close channel_id=%u", otsp->channel_id));
 
 	
   ret = TSP_request_close(&req_close, otsp->server);
   if( FALSE == ret)
     {
-      STRACE_DEBUG(("Unable to close channel_id=%"G_GUINT64_FORMAT, otsp->channel_id));
+      STRACE_DEBUG(("Unable to close channel_id=%u", otsp->channel_id));
 
     }
   else
     {
-      STRACE_DEBUG(("channel_id=%"G_GUINT64_FORMAT" is closed", otsp->channel_id));
+      STRACE_DEBUG(("channel_id=%u is closed", otsp->channel_id));
 
     }
 	
@@ -665,8 +665,8 @@ int TSP_request_provider_sample_init(TSP_provider_t provider)
 	
   TSP_otsp_t* otsp = (TSP_otsp_t*)provider;
   int ret = FALSE;
-  TSP_answer_sample_t* ans_sample = 0;
-  TSP_request_sample_t req_sample;
+  TSP_answer_sample_init_t* ans_sample = 0;
+  TSP_request_sample_init_t req_sample;
   int i;
 	
   STRACE_IO(("-->IN"));
@@ -679,7 +679,7 @@ int TSP_request_provider_sample_init(TSP_provider_t provider)
 
   req_sample.version_id = TSP_VERSION;
   req_sample.channel_id = otsp->channel_id;
-  req_sample.symbols.TSP_sample_symbol_info_list_t_len = 0;
+
 	
   ans_sample = TSP_request_sample_init(&req_sample, otsp->server);
   STRACE_DEBUG(("data_address = '%s'", ans_sample->data_address));
@@ -744,4 +744,16 @@ int TSP_read_sample(TSP_provider_t provider, int provider_global_index, TSP_samp
   return ret;
     
 
+}
+
+/**
+ * Get groups table (hidden debug function).
+ * @param provider the provider on which apply the action 
+ * @return Group table
+ */ 
+TSP_groups_t TSP_test_get_groups(TSP_provider_t provider)
+{
+  TSP_otsp_t* otsp = (TSP_otsp_t*)provider;
+  
+  return otsp->groups;
 }

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.c,v 1.1 2002-08-27 08:56:09 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.c,v 1.2 2002-09-19 08:36:53 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -27,7 +27,7 @@ opened session from a client
 { \
 	if( 0 == (session = TSP_get_session(channel_id) ) ) \
 	{ \
-		STRACE_ERROR(("Unable to get session for channel_id=%"G_GUINT64_FORMAT,channel_id)) \
+		STRACE_ERROR(("Unable to get session for channel_id=%u",channel_id)) \
 		return ret; \
 	} \
 }
@@ -84,7 +84,7 @@ static TSP_session_t* TSP_get_session(channel_id_t channel_id)
   TSP_session_t* session = 0;
   int i = 0;
 	
-  STRACE_IO(("-->IN channel_id=%"G_GUINT64_FORMAT, channel_id));
+  STRACE_IO(("-->IN channel_id=%u", channel_id));
   
   /* FIXME : pour que cela fonctionne, car une session est supprimee, il
      faut "combler les trous" dans le tableau */
@@ -100,7 +100,7 @@ static TSP_session_t* TSP_get_session(channel_id_t channel_id)
 	
   if( 0 == session )
     { 
-      STRACE_ERROR(("No session found for channel_id=%"G_GUINT64_FORMAT, channel_id));
+      STRACE_ERROR(("No session found for channel_id=%u", channel_id));
 
     }
 	
@@ -227,7 +227,7 @@ int TSP_add_session(channel_id_t* new_channel_id)
   /* OK, there's a new session*/
   X_session_nb++;
   
-  STRACE_INFO(("New channel_id=%"G_GUINT64_FORMAT, *new_channel_id ));
+  STRACE_INFO(("New channel_id=%u", *new_channel_id ));
   	
   TSP_UNLOCK_MUTEX(&X_session_list_mutex,FALSE);
 
@@ -277,7 +277,6 @@ int TSP_session_create_symbols_table_by_channel(const TSP_request_sample_t* req_
 
     }
     
-  (*ans_sample)->data_address = "";
     
   TSP_UNLOCK_MUTEX(&X_session_list_mutex,FALSE);
 
@@ -322,7 +321,7 @@ void TSP_session_all_session_send_data(time_stamp_t t)
     
   int i;
     
-  STRACE_IO(("-->IN"));
+ /* STRACE_IO(("-->IN"));*/
 
   TSP_LOCK_MUTEX(&X_session_list_mutex,);
 
@@ -358,7 +357,7 @@ void TSP_session_all_session_send_data(time_stamp_t t)
 
   TSP_UNLOCK_MUTEX(&X_session_list_mutex,);
 
-  STRACE_IO(("-->OUT"));
+  /*STRACE_IO(("-->OUT"));*/
 
 }
 

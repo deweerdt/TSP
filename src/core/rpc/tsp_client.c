@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_client.c,v 1.4 2002-09-17 09:46:55 fancelli Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_client.c,v 1.5 2002-09-19 08:37:04 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -29,19 +29,19 @@ Purpose   :
 #define LOCAL_RPCCHECK_0  	if( server == (TSP_server_t)0) \
 				{ STRACE_ERROR(("RPCCHECK failed")) ; return 0 ;} 
 
-TSP_server_info_t * tsp_server_info(TSP_server_t server)
+TSP_provider_info_t * tsp_provider_information(TSP_server_t server)
 {
 
   SFUNC_NAME(tsp_server_info);
 
-  TSP_server_info_t* result;
+  TSP_provider_info_t* result;
 	
   STRACE_IO(("-->IN"));
 
 	
   LOCAL_RPCCHECK_0;
 	
-  result = tsp_server_info_1(server);
+  result = tsp_provider_information_1(server);
   TSP_STRACE_RPC_ERROR(server, result);
 	
   STRACE_IO(("-->OUT"));
@@ -97,7 +97,7 @@ int TSP_remote_open_server( const char *target_name,
 
   int prodid_max_number, progid;
   int ret = FALSE;
-  TSP_server_info_t* server_info_t;
+  TSP_provider_info_t* server_info_t;
 	
   *server = (TSP_server_t)0;
   server_info[0] = '\0';
@@ -116,7 +116,7 @@ int TSP_remote_open_server( const char *target_name,
 	  if( (*server) != (TSP_server_t)0)
 	    {
 				/*  On recupere la chaine d'info du serveur) */
-	      server_info_t = tsp_server_info(*server);
+	      server_info_t = tsp_provider_information(*server);
 	      if( server_info_t != NULL)
 		{	
 		  if( STRING_SIZE_SERVER_INFO >= strlen(server_info_t->info) )
@@ -277,13 +277,13 @@ TSP_answer_sample_t * TSP_request_sample(
   return result;
 }
 
-TSP_answer_sample_t * TSP_request_sample_init(
-					      const TSP_request_sample_t* req_sample,
+TSP_answer_sample_init_t * TSP_request_sample_init(
+					      const TSP_request_sample_init_t* req_sample,
 					      TSP_server_t server)
 {
   SFUNC_NAME(TSP_request_sample_init);
 
-  TSP_answer_sample_t* result;
+  TSP_answer_sample_init_t* result;
 	
   STRACE_IO(("-->IN"));
 

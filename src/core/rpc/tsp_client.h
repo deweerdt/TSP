@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_client.h,v 1.1 2002-08-27 08:56:09 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_client.h,v 1.2 2002-09-19 08:37:04 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -46,8 +46,8 @@ TSP_answer_sample_t * TSP_request_sample(
 					 const TSP_request_sample_t* req_sample,
 					 TSP_server_t server);
 
-TSP_answer_sample_t * TSP_request_sample_init(
-					      const TSP_request_sample_t* req_sample,
+TSP_answer_sample_init_t * TSP_request_sample_init(
+					      const TSP_request_sample_init_t* req_sample,
 					      TSP_server_t server);
 
 #endif /* _TSP_CLIENT */
