@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/include/Attic/tsp_simple_trace.h,v 1.13 2004-09-21 21:24:57 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/Attic/tsp_simple_trace.h,v 1.14 2004-09-22 14:25:58 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -61,9 +61,6 @@ Purpose   : Some trace macro
 #  define SIMPLE_TRACE(level,src,text) SIMPLE_TRACE_FUNC(level,src,"where?",text)
 #endif
 				  
-/* deprecated */				 
-#define SFUNC_NAME(name)
-
 #ifdef  USE_STRACE
 # define STRACE_IO(text) SIMPLE_TRACE(5, "i/o", text)
 # define STRACE_DEBUG(text) SIMPLE_TRACE(4, "debug", text)

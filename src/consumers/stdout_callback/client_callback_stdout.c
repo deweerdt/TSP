@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: client_callback_stdout.c,v 1.1 2003-12-27 13:30:59 uid67973 Exp $
+$Id: client_callback_stdout.c,v 1.2 2004-09-22 14:25:58 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -57,8 +57,6 @@ static int all_data_ok = TRUE;
 
 void test_callback(TSP_sample_t* sample, void* user_data){
 
-  SFUNC_NAME(test_callback);
-
   static int i;int j;
   static int t = -1000;  
   static int count_samples = 0;
@@ -101,8 +99,6 @@ void test_callback(TSP_sample_t* sample, void* user_data){
 
 
 int main(int argc, char *argv[]){
-
-  SFUNC_NAME(main);
 
   const TSP_consumer_information_t*  information;
   TSP_consumer_symbol_requested_list_t symbols;

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_abs_types.h,v 1.13 2004-08-31 16:00:19 dufy Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_abs_types.h,v 1.14 2004-09-22 14:25:58 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -120,6 +120,14 @@ Purpose   : Type abstraction : Stolen from GLIB public headers
 # define TSP_SYSTEM_HAVE_NANOSLEEP
 # define TSP_HAVE_INT64 1
 # define TSP_INT64_CONSTANT(val)  (val##LL)
+#       ifndef _UINT64_T
+                typedef unsigned long long    uint64_t;
+#               define _UINT64_T
+#       endif
+#       ifndef _INT64_T
+                typedef long long    int64_t;
+#               define _INT64_T
+#       endif
 #endif /* VXWORKS */
 
 /* OpenBSD / i386 (32 bits) (From Fred&Co) */

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/misc_utils/tsp_time.c,v 1.8 2004-08-31 09:58:52 dufy Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/misc_utils/tsp_time.c,v 1.9 2004-09-22 14:25:58 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -43,8 +43,6 @@ Purpose   : Interface for tsp time functions
 
 tsp_hrtime_t tsp_gethrtime(void)
 {
-  SFUNC_NAME(tsp_gethrtime);
-
 #ifdef TSP_SYSTEM_HAVE_GETHRTIME
   return gethrtime();
 #else
@@ -75,3 +73,4 @@ int tsp_usleep(int useconds)
 #endif /*TSP_SYSTEM_HAVE_NANOSLEEP*/
 
 }
+

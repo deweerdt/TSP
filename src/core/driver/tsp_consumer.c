@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.23 2004-07-28 13:05:38 mia Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.24 2004-09-22 14:25:58 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -156,7 +156,6 @@ typedef struct TSP_otsp_t TSP_otsp_t;
 
 static void TSP_consumer_delete_information(TSP_otsp_t* otsp)
 {
-  SFUNC_NAME(TSP_consumer_delete_information);
   int i;
 
   STRACE_IO(("-->IN"));
@@ -175,7 +174,6 @@ static void TSP_consumer_delete_information(TSP_otsp_t* otsp)
 
 static void TSP_consumer_delete_requested_symbol(TSP_otsp_t* otsp)
 {
-  SFUNC_NAME(TSP_consumer_delete_requested_symbol);
   int i;
 
   STRACE_IO(("-->IN"));
@@ -207,9 +205,6 @@ static void TSP_consumer_delete_requested_symbol(TSP_otsp_t* otsp)
 static TSP_otsp_t* TSP_new_object_tsp(	TSP_server_t server,
 					TSP_server_info_string_t server_info)
 {
-  SFUNC_NAME(TSP_new_object_tsp);
-
-	
   TSP_otsp_t* obj;
 	
   STRACE_IO(("-->IN"));
@@ -247,10 +242,6 @@ static TSP_otsp_t* TSP_new_object_tsp(	TSP_server_t server,
 
 static void TSP_delete_object_tsp(TSP_otsp_t* o)
 {
-
-  SFUNC_NAME(TSP_delete_object_tsp);
-
-	
   STRACE_IO(("-->IN"));
 
   TSP_consumer_delete_information(o);
@@ -264,8 +255,6 @@ static void TSP_delete_object_tsp(TSP_otsp_t* o)
 
 static  void TSP_print_object_tsp(TSP_otsp_t* o)
 {
-  SFUNC_NAME(TSP_print_object_tsp);
-
 	
   STRACE_IO(("-->IN"));
   STRACE_INFO(("----------------------------------------------"));
@@ -286,7 +275,6 @@ int TSP_consumer_init(int* argc, char** argv[])
   char* p;
   int ret = TRUE;
 
-  SFUNC_NAME((TSP_consumer_init));
   STRACE_IO(("-->IN"));
 
   X_argv = (char**)calloc(*argc, sizeof(char*));
@@ -392,7 +380,6 @@ int TSP_consumer_init(int* argc, char** argv[])
 
 void TSP_consumer_end()
 {
-  SFUNC_NAME((TSP_consumer_end));
   STRACE_IO(("-->IN"));
   
   /* This is the end my friend ... the end ...*/
@@ -409,7 +396,6 @@ void TSP_consumer_end()
 
 void TSP_consumer_connect_all(const char*  host_name, TSP_provider_t** providers, int* nb_providers)
 {	
-  SFUNC_NAME(TSP_consumer_connect_all);
 	
   int i;
 
@@ -470,8 +456,6 @@ void TSP_consumer_connect_all(const char*  host_name, TSP_provider_t** providers
 
 void TSP_consumer_disconnect_all(TSP_provider_t providers[])
 {	
-  SFUNC_NAME(TSP_consumer_disconnect_all);
-
   int server_max_number;
   int i;
 	
@@ -505,8 +489,6 @@ void TSP_consumer_disconnect_all(TSP_provider_t providers[])
 
 void TSP_consumer_disconnect_one(TSP_provider_t provider)
 {	
-  SFUNC_NAME(TSP_consumer_disconnect_one);
-	
   TSP_otsp_t* otsp = (TSP_otsp_t*)provider;
 
   STRACE_IO(("-->IN"));
@@ -528,9 +510,6 @@ const char* TSP_consumer_get_connected_name(TSP_provider_t provider)
 
 int TSP_consumer_request_open(TSP_provider_t provider, int custom_argc, char* custom_argv[])
 {
-	
-  SFUNC_NAME(TSP_request_provider_open);
-
 	
   TSP_otsp_t* otsp = (TSP_otsp_t*)provider;
   TSP_request_open_t req_open;
@@ -606,10 +585,6 @@ int TSP_consumer_request_open(TSP_provider_t provider, int custom_argc, char* cu
 
 int TSP_consumer_request_close(TSP_provider_t provider)
 {
-	
-  SFUNC_NAME(TSP_consumer_request_close);
-
-	
   TSP_otsp_t* otsp = (TSP_otsp_t*)provider;
   TSP_request_close_t req_close;
   int ret = FALSE;
@@ -648,9 +623,6 @@ int TSP_consumer_request_close(TSP_provider_t provider)
 
 int TSP_consumer_request_information(TSP_provider_t provider)
 {
-	
-  SFUNC_NAME(TSP_consumer_request_information);
-
 	
   TSP_otsp_t* otsp = (TSP_otsp_t*)provider;
   TSP_request_information_t req_info;
@@ -741,8 +713,6 @@ int TSP_consumer_request_information(TSP_provider_t provider)
 
 const TSP_consumer_information_t*  TSP_consumer_get_information(TSP_provider_t provider)
 {
-  SFUNC_NAME(TSP_get_provider_information);
-
 	
   TSP_otsp_t* otsp = (TSP_otsp_t*)provider;
 	
@@ -762,7 +732,6 @@ const TSP_consumer_information_t*  TSP_consumer_get_information(TSP_provider_t p
 static int TSP_consumer_store_requested_symbols(TSP_consumer_symbol_requested_list_t* stored_sym,
 						TSP_sample_symbol_info_list_t* new_sym)
 {
-  SFUNC_NAME(TSP_consumer_store_requested_symbols);
 
   int i;
   if(stored_sym->val)
@@ -796,8 +765,6 @@ static int TSP_consumer_store_requested_symbols(TSP_consumer_symbol_requested_li
 
 int TSP_consumer_request_sample(TSP_provider_t provider, TSP_consumer_symbol_requested_list_t* symbols)
 {
-  SFUNC_NAME(TSP_consumer_request_sample);
-
 	
   TSP_otsp_t* otsp = (TSP_otsp_t*)provider;
   int ret = FALSE;
@@ -890,7 +857,6 @@ int TSP_consumer_request_sample(TSP_provider_t provider, TSP_consumer_symbol_req
 
 const TSP_consumer_symbol_requested_list_t* TSP_consumer_get_requested_sample(TSP_provider_t provider)
 {
-  SFUNC_NAME(TSP_consumer_get_requested_sample);
 	
   TSP_otsp_t* otsp = (TSP_otsp_t*)provider;
 	
@@ -911,8 +877,6 @@ const TSP_consumer_symbol_requested_list_t* TSP_consumer_get_requested_sample(TS
 
 static void* TSP_request_provider_thread_receiver(void* arg)
 {
-    
-  SFUNC_NAME(TSP_request_provider_thread_receiver);
     
   TSP_otsp_t* otsp = (TSP_otsp_t*)arg;
   int is_fifo_full;  
@@ -943,8 +907,6 @@ static void* TSP_request_provider_thread_receiver(void* arg)
 
 int TSP_consumer_request_sample_init(TSP_provider_t provider, TSP_sample_callback_t callback, void* user_data)
 {
-  SFUNC_NAME(TSP_consumer_request_sample_init);
-
 	
   TSP_otsp_t* otsp = (TSP_otsp_t*)provider;
   int ret = FALSE;
@@ -1010,7 +972,6 @@ int TSP_consumer_request_sample_init(TSP_provider_t provider, TSP_sample_callbac
 
 int TSP_consumer_request_sample_destroy(TSP_provider_t provider)
 {
-  SFUNC_NAME(TSP_consumer_request_sample_destroy);
 	
   TSP_otsp_t* otsp = (TSP_otsp_t*)provider;
   int ret = FALSE;
@@ -1075,7 +1036,6 @@ int TSP_consumer_request_sample_destroy(TSP_provider_t provider)
 
 int TSP_consumer_read_sample(TSP_provider_t provider, TSP_sample_t* sample, int* new_sample)
 {
-  SFUNC_NAME(TSP_receive);
 
   TSP_otsp_t* otsp = (TSP_otsp_t*)provider;
   int ret = TRUE;

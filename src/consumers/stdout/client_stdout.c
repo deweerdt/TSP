@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: client_stdout.c,v 1.6 2004-09-14 16:48:26 dufy Exp $
+$Id: client_stdout.c,v 1.7 2004-09-22 14:25:58 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -47,8 +47,6 @@ Purpose   : Simple consummer test that print samples received to stdout
 #define TSP_NANOSLEEP_PERIOD_US (100*1000) /* 10Hz */
 
 int main(int argc, char *argv[]){
-
-  SFUNC_NAME(main);
 
   const TSP_consumer_information_t*  information;
   TSP_consumer_symbol_requested_list_t symbols;

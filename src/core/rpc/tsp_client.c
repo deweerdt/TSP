@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_client.c,v 1.7 2002-12-18 16:27:35 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_client.c,v 1.8 2004-09-22 14:25:58 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -52,8 +52,6 @@ Purpose   :
 TSP_provider_info_t * tsp_provider_information(TSP_server_t server)
 {
 
-  SFUNC_NAME(tsp_server_info);
-
   TSP_provider_info_t* result;
 	
   STRACE_IO(("-->IN"));
@@ -72,8 +70,6 @@ TSP_provider_info_t * tsp_provider_information(TSP_server_t server)
 
 CLIENT* tsp_remote_open_progid(const char *target_name, int progid)
 {
-
-  SFUNC_NAME(tsp_remote_open_progid);
 
   CLIENT* cl = (CLIENT *)0;
   struct timeval timeout = { 1, 0 };
@@ -111,9 +107,6 @@ int TSP_remote_open_server( const char *target_name,
 			    TSP_server_t* server,
 			    TSP_server_info_string_t server_info)
 {
-  SFUNC_NAME(TSP_remote_open_server);
-
-
 
   int prodid_max_number, progid;
   int ret = FALSE;
@@ -206,8 +199,6 @@ int TSP_get_server_max_number()
 TSP_answer_open_t * TSP_request_open(const TSP_request_open_t* req_open, TSP_server_t server)
 {
 
-  SFUNC_NAME(TSP_request_open);
-
   TSP_answer_open_t* result;
 	
   STRACE_IO(("-->IN"));
@@ -232,8 +223,6 @@ TSP_answer_open_t * TSP_request_open(const TSP_request_open_t* req_open, TSP_ser
 int TSP_request_close(const TSP_request_close_t* req_close, TSP_server_t server)
 {
 
-  SFUNC_NAME(TSP_request_close);
-
   int result;
 	
   STRACE_IO(("-->IN"));
@@ -256,8 +245,6 @@ int TSP_request_close(const TSP_request_close_t* req_close, TSP_server_t server)
 TSP_answer_sample_t * TSP_request_information(const TSP_request_information_t* req_info, TSP_server_t server)
 {
 
-  SFUNC_NAME(TSP_request_information);
-
   TSP_answer_sample_t* result;
 	
   STRACE_IO(("-->IN"));
@@ -277,7 +264,6 @@ TSP_answer_sample_t * TSP_request_sample(
 					 const TSP_request_sample_t* req_sample,
 					 TSP_server_t server)
 {
-  SFUNC_NAME(TSP_request_sample);
 
   TSP_answer_sample_t* result;
 	
@@ -299,7 +285,6 @@ TSP_answer_sample_init_t * TSP_request_sample_init(
 					      const TSP_request_sample_init_t* req_sample,
 					      TSP_server_t server)
 {
-  SFUNC_NAME(TSP_request_sample_init);
 
   TSP_answer_sample_init_t* result;
 	
@@ -321,7 +306,6 @@ TSP_answer_sample_destroy_t*
 TSP_request_sample_destroy(const TSP_request_sample_destroy_t* req_sample,
 			   TSP_server_t server)
 {
-  SFUNC_NAME(TSP_request_sample_destroy);
   
   TSP_answer_sample_destroy_t* result;
 	

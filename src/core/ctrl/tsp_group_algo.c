@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_group_algo.c,v 1.11 2004-09-16 07:53:18 dufy Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_group_algo.c,v 1.12 2004-09-22 14:25:58 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -78,8 +78,6 @@ number group_number */
 */
 int TSP_group_algo_get_nb_groups(const TSP_sample_symbol_info_list_t* symbols)
 {
-  SFUNC_NAME(TSP_group_algo_get_nb_groups);
-
 	
   uint32_t nb_symbols = symbols->TSP_sample_symbol_info_list_t_len;
   uint32_t i;
@@ -139,11 +137,6 @@ static int TSP_group_algo_get_group_size(const TSP_sample_symbol_info_list_t* sy
 
 {
     
-  SFUNC_NAME(TSP_group_algo_get_group_size);
-
-    
-
-    
   int group_size = 0;
   uint32_t nb_symbols = symbols->TSP_sample_symbol_info_list_t_len;
   uint32_t i;
@@ -183,11 +176,6 @@ static int TSP_group_algo_get_groups_summed_size(const TSP_sample_symbol_info_li
 						 int nb_groups)
 {
     
-  SFUNC_NAME(TSP_group_algo_get_groups_summed_size);
-
-    
-
-    
   int groups_summed_size = 0;
   int group_id;
 
@@ -221,8 +209,6 @@ static int TSP_group_algo_get_groups_summed_size(const TSP_sample_symbol_info_li
 static TSP_algo_table_t*
 TSP_group_algo_allocate_group_table(const TSP_sample_symbol_info_list_t* symbols)
 {
-  SFUNC_NAME(TSP_group_algo_allocate_group_table);
-
     
   int group_id;
     
@@ -285,7 +271,6 @@ TSP_group_algo_allocate_group_table(const TSP_sample_symbol_info_list_t* symbols
                                                              
 void TSP_group_algo_destroy_symbols_table(TSP_groups_t* groups)
 {
-   SFUNC_NAME(TSP_group_algo_destroy_symbols_table);
 
    TSP_algo_table_t* table = (TSP_algo_table_t*)groups;
 
@@ -303,7 +288,7 @@ void TSP_group_algo_destroy_symbols_table(TSP_groups_t* groups)
 
 void TSP_group_algo_create_symbols_table_free_call(TSP_sample_symbol_info_list_t* symbols)
 {
-  SFUNC_NAME(TSP_group_algo_create_symbols_table_free_call);
+
   int i;
 
    STRACE_IO(("-->IN"));
@@ -325,9 +310,6 @@ int TSP_group_algo_create_symbols_table(const TSP_sample_symbol_info_list_t* in_
 					TSP_datapool_t datapool)
 {
        
-  SFUNC_NAME(TSP_group_algo_create_symbols_table);
-
-    
   TSP_algo_table_t* table;
     
   int rank; /**< rank in a group */
@@ -421,9 +403,6 @@ int TSP_group_algo_create_symbols_table(const TSP_sample_symbol_info_list_t* in_
 int TSP_group_algo_get_group_number(TSP_groups_t* groups)
 {
        
-  SFUNC_NAME(TSP_group_algo_get_group_number);
-
-    
   TSP_algo_table_t* group_table = (TSP_algo_table_t*)groups;
     
   STRACE_IO(("-->IN"));
@@ -439,8 +418,6 @@ int TSP_group_algo_get_group_number(TSP_groups_t* groups)
 
 int TSP_group_algo_get_biggest_group_size(TSP_groups_t* groups)
 {
-  SFUNC_NAME(TSP_group_algo_get_biggest_group_size);
-
     
   TSP_algo_table_t* group_table = (TSP_algo_table_t*)groups;
     

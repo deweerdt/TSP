@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_data_sender.c,v 1.15 2004-09-16 07:53:18 dufy Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_data_sender.c,v 1.16 2004-09-22 14:25:58 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -84,8 +84,6 @@ static u_int TSP_data_sender_double_encoder(void* v_double,  char* out_buf, u_in
 
 #ifndef TSP_NO_XDR_ENCODE
 
-  SFUNC_NAME(TSP_data_sender_double_encoder with XDR);
-
   XDR xhandle;
    
   xdrmem_create(&xhandle, out_buf,  size, XDR_ENCODE);
@@ -101,9 +99,6 @@ static u_int TSP_data_sender_double_encoder(void* v_double,  char* out_buf, u_in
 
 #else
 
-  SFUNC_NAME(TSP_data_sender_double_encoder withOUT XDR);
-
-  
   if(size < sizeof(double) )
     {
       STRACE_ERROR(("buffer is too small"));
@@ -121,8 +116,6 @@ static u_int TSP_data_sender_double_encoder(void* v_double,  char* out_buf, u_in
 
 TSP_data_sender_t TSP_data_sender_create(int fifo_size, int max_group_size)
 {
-  SFUNC_NAME(TSP_data_sender_create);
-
     
   TSP_struct_data_sender_t* sender;
     
@@ -173,7 +166,6 @@ TSP_data_sender_t TSP_data_sender_create(int fifo_size, int max_group_size)
 
 void TSP_data_sender_destroy(TSP_data_sender_t sender)
 {
-  SFUNC_NAME(TSP_data_sender_send);
 
   TSP_struct_data_sender_t* data_sender = (TSP_struct_data_sender_t*)sender;
 
@@ -187,7 +179,6 @@ void TSP_data_sender_destroy(TSP_data_sender_t sender)
 
 void TSP_data_sender_stop(TSP_data_sender_t sender)
 {
-  SFUNC_NAME(TSP_data_sender_send);
 
   TSP_struct_data_sender_t* data_sender = (TSP_struct_data_sender_t*)sender;
 
@@ -202,8 +193,6 @@ void TSP_data_sender_stop(TSP_data_sender_t sender)
 
 static TSP_stream_sender_item_t* TSP_data_sender_get_out_item(TSP_struct_data_sender_t* data_sender)
 {
-
-  SFUNC_NAME(TSP_data_sender_get_out_item);
 
   TSP_stream_sender_item_t* ret_item = 0;
   if(data_sender->use_fifo)
@@ -255,7 +244,6 @@ static TSP_stream_sender_item_t* TSP_data_sender_get_out_item(TSP_struct_data_se
 static int TSP_data_sender_to_stream_sender(TSP_struct_data_sender_t* data_sender,
 						   TSP_stream_sender_item_t* tosend)
 {
-  SFUNC_NAME(TSP_data_sender_to_stream_sender);
 
   /* First check for a valid connection */
   int ret = TSP_stream_sender_is_connection_ok(data_sender->stream_sender);
@@ -352,7 +340,6 @@ int TSP_data_sender_send_msg_ctrl(TSP_data_sender_t sender, TSP_msg_ctrl_t msg_c
  */
 int TSP_data_sender_send(TSP_data_sender_t _sender, TSP_groups_t _groups, time_stamp_t time_stamp) 
 {    
-  SFUNC_NAME(TSP_data_sender_send);
 
   TSP_struct_data_sender_t* data_sender = (TSP_struct_data_sender_t*)_sender;
   TSP_algo_table_t* groups_table = (TSP_algo_table_t*) _groups;

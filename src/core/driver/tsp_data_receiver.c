@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_data_receiver.c,v 1.16 2004-08-31 09:58:52 dufy Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_data_receiver.c,v 1.17 2004-09-22 14:25:58 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -69,8 +69,6 @@ static int TSP_data_receiver_double_decoder(void* out_double,  char* in_buf)
 {
 #ifndef TSP_NO_XDR_ENCODE
 
-  SFUNC_NAME(TSP_encode_double with XDR);
-
   XDR xhandle;
   xdrmem_create(&xhandle, in_buf, TSP_SIZEOF_ENCODED_DOUBLE, XDR_DECODE);
   if( xdr_double(&xhandle, (double*)out_double) != TRUE)
@@ -85,8 +83,6 @@ static int TSP_data_receiver_double_decoder(void* out_double,  char* in_buf)
 
 #else
   
-  SFUNC_NAME(TSP_encode_double withOUT XDR);
-
   *(uint64_t*)out_double = TSP_DECODE_DOUBLE_TO_UINT64(in_buf);   
   
   return TRUE;
@@ -98,7 +94,6 @@ static int TSP_data_receiver_double_decoder(void* out_double,  char* in_buf)
 static void TSP_data_receiver_process_receiver_error(TSP_sample_ringbuf_t* sample_fifo)
 {
 
-  SFUNC_NAME(TSP_data_receiver_process_receiver_error);
   int ret = TRUE;
   TSP_sample_t* sample;
 
@@ -118,7 +113,6 @@ static void TSP_data_receiver_process_receiver_error(TSP_sample_ringbuf_t* sampl
 static int TSP_data_receiver_process_reserved_group_id(int group_index, TSP_sample_ringbuf_t* sample_fifo)
 {
 
-  SFUNC_NAME(TSP_data_receiver_process_reserved_group_id);
   int ret = TRUE;
   TSP_sample_t* sample;
 
@@ -166,8 +160,6 @@ static int TSP_data_receiver_process_reserved_group_id(int group_index, TSP_samp
 
 TSP_data_receiver_t TSP_data_receiver_create(const char* data_address, TSP_sample_callback_t callback, void* user_data)
 {
-  SFUNC_NAME(TSP_data_receiver_create);
-
     
   TSP_struct_data_receiver_t* receiver;
     
@@ -208,9 +200,6 @@ int TSP_data_receiver_receive(TSP_data_receiver_t _receiver,
 			      int* fifo_full) 
 {
     
-  SFUNC_NAME(TSP_data_receiver_receive);
-
-	
   TSP_struct_data_receiver_t*  receiver = ( TSP_struct_data_receiver_t*) _receiver;
   TSP_group_t* groups =  ((TSP_group_table_t*)_groups)->groups;
   int nb_groups = ((TSP_group_table_t*)_groups)->table_len;
@@ -356,8 +345,6 @@ int TSP_data_receiver_receive(TSP_data_receiver_t _receiver,
 void TSP_data_receiver_stop(TSP_data_receiver_t _receiver)
 {
 
-   SFUNC_NAME(TSP_data_receiver_receive);
-   
    TSP_struct_data_receiver_t*  receiver = ( TSP_struct_data_receiver_t*) _receiver;
 
    STRACE_IO(("-->IN"));
@@ -369,8 +356,6 @@ void TSP_data_receiver_stop(TSP_data_receiver_t _receiver)
 
 void TSP_data_receiver_prepare_stop(TSP_data_receiver_t _receiver)
 {
-
-   SFUNC_NAME(TSP_data_receiver_receive);
    
    TSP_struct_data_receiver_t*  receiver = ( TSP_struct_data_receiver_t*) _receiver;
 
@@ -384,8 +369,6 @@ void TSP_data_receiver_prepare_stop(TSP_data_receiver_t _receiver)
 
 void TSP_data_receiver_destroy(TSP_data_receiver_t _receiver)
 {
-
-   SFUNC_NAME(TSP_data_receiver_receive);
    
    TSP_struct_data_receiver_t*  receiver = ( TSP_struct_data_receiver_t*) _receiver;
 

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: client_group.c,v 1.2 2004-07-28 12:54:49 mia Exp $
+$Id: client_group.c,v 1.3 2004-09-22 14:25:58 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -116,9 +116,6 @@ static group_test_t group_test[] = {
 
 
 int main(int argc, char *argv[]){
-
-  SFUNC_NAME(main);
-
 
   TSP_consumer_symbol_requested_list_t symbols;
 

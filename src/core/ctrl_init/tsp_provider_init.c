@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl_init/tsp_provider_init.c,v 1.6 2004-07-28 13:05:38 mia Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl_init/tsp_provider_init.c,v 1.7 2004-09-22 14:25:58 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -45,7 +45,6 @@ Purpose   : Function calls to launch a TSP Provider program
 
 int TSP_provider_init(int* argc, char** argv[])
 {
-  SFUNC_NAME(TSP_provider_init);
 
   int ret;
   STRACE_IO(("-->IN"));
@@ -61,7 +60,6 @@ int TSP_provider_init(int* argc, char** argv[])
 
 int TSP_provider_run(int spawn_mode)
 {
-  SFUNC_NAME(TSP_provider_run);
 
   int ret = FALSE;
   STRACE_IO(("-->IN"));

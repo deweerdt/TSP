@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_stream_receiver.c,v 1.8 2004-08-31 09:58:52 dufy Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_stream_receiver.c,v 1.9 2004-09-22 14:25:58 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -60,7 +60,6 @@ typedef struct TSP_socket_t TSP_socket_t;
 
 TSP_stream_receiver_t TSP_stream_receiver_create(const  char* data_address)
 {
-  SFUNC_NAME(TSP_stream_receiver_create);
 
   int status = 0;
   struct hostent* Host_p = NULL;
@@ -195,7 +194,6 @@ TSP_stream_receiver_t TSP_stream_receiver_create(const  char* data_address)
 
 void TSP_stream_receiver_prepare_stop(TSP_stream_receiver_t receiver)
 {
-  SFUNC_NAME(TSP_stream_receiver_prepare_stop);
 
   TSP_socket_t* sock = (TSP_socket_t*)receiver;
 
@@ -211,7 +209,6 @@ void TSP_stream_receiver_prepare_stop(TSP_stream_receiver_t receiver)
 
 void TSP_stream_receiver_stop(TSP_stream_receiver_t receiver)
 {
-  SFUNC_NAME(TSP_stream_receiver_stop);
 
   TSP_socket_t* sock = (TSP_socket_t*)receiver;
 
@@ -228,7 +225,6 @@ void TSP_stream_receiver_stop(TSP_stream_receiver_t receiver)
 
 void TSP_stream_receiver_destroy(TSP_stream_receiver_t receiver)
 {
-  SFUNC_NAME(TSP_stream_receiver_destroy);
 
   TSP_socket_t* sock = (TSP_socket_t*)receiver;
 
@@ -243,7 +239,6 @@ void TSP_stream_receiver_destroy(TSP_stream_receiver_t receiver)
 
 int TSP_stream_receiver_is_stopped(TSP_stream_receiver_t receiver)
 {
-  SFUNC_NAME(TSP_stream_receiver_is_stopped);
 
   TSP_socket_t* sock = (TSP_socket_t*)receiver;
 
@@ -253,8 +248,6 @@ int TSP_stream_receiver_is_stopped(TSP_stream_receiver_t receiver)
 
 int TSP_stream_receiver_receive(TSP_stream_receiver_t receiver, char *buffer, int bufferLen)
 {
-
-  SFUNC_NAME(TSP_stream_receiver_receive);
 
   int nread;
   int Total;

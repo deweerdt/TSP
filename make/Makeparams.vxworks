@@ -1,8 +1,5 @@
 # Makeparams.vxworks
 
-BUILD_CONSUMER = no
-
-
 # target directory
 # ----------------
 DIREXEC= $(DIRBASE)/$(TSP_TARGET)/$(TSP_MODE)

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: glue_stub.c,v 1.2 2004-07-30 09:20:42 mia Exp $
+$Id: glue_stub.c,v 1.3 2004-09-22 14:25:58 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -45,22 +45,17 @@ Purpose   : Implementation for the glue_server, for stub test
 #include "glue_sserver.h"
 #include "tsp_ringbuf.h"
 #include "tsp_time.h"
+#include "tsp_datapool.h"
 #include "calc_func.h"
-
-RINGBUF_DECLARE_TYPE_DYNAMIC(glu_ringbuf,glu_item_t);
 
 /* TSP glue server defines */
 #define TSP_STUB_FREQ 100 /*Hz*/
 #define TSP_USLEEP_PERIOD_US /*(long long)*/(1000000/TSP_STUB_FREQ) /*given in µS, value 10ms*/
 #define GLU_MAX_SYMBOLS 1000
 
-/* Glue server ringbuf size */
-#define GLU_RING_BUFSIZE (TSP_STUB_FREQ * GLU_MAX_SYMBOLS)
-
 
 /* Nasty static variables */
 static TSP_sample_symbol_info_t *X_sample_symbol_info_list_val;
-static glu_ringbuf* glu_ring = 0;
 pthread_t thread_id = 0;
 static char* X_server_name = "StubbedServer";
 static time_stamp_t my_time = 0;
@@ -87,13 +82,10 @@ int  GLU_get_symbol_number(void)
   return i;
 }
 
-int data_missed = FALSE;
 void* GLU_thread(void* arg)
 {
   
-  SFUNC_NAME(GLU_thread);
-
-  int i, symbols_nb;
+  int i, symbols_nb, *ptr_index;
   tsp_hrtime_t current_time, next_time;
   unsigned long tickNow;
   glu_item_t item;
@@ -112,29 +104,28 @@ void* GLU_thread(void* arg)
 	  taskDelay(1);
 	}
  
+      /* Must be call at each step in case of new samples wanted */
+      TSP_datapool_get_reverse_list (&symbols_nb, &ptr_index); 
       for(i = 0 ; i < symbols_nb ; i++)
 	{
+          int index=ptr_index[i];
 	  if(my_time%X_sample_symbol_info_list_val[i].period == 0)
 	    {
 	      item.time = my_time;
-	      item.provider_global_index = i;
-	      if (i!=0)
-		item.value = calc_func(i, my_time);
+	      item.provider_global_index = index;
+	      if (index!=0)
+		item.value = calc_func(index, my_time);
 	      else
 		item.value = (double)(my_time) / (double)(TSP_STUB_FREQ);
-	      memo_val[i]=item.value;
+	      memo_val[index]=item.value;
 
-	      RINGBUF_PTR_PUT(glu_ring, item);
+              TSP_datapool_push_next_item(&item);
 	    }
 	}
+      /* Finalize the datapool state with new time : Ready to send */
+      TSP_datapool_push_commit(my_time, GLU_GET_NEW_ITEM);
       
 
-      if(RINGBUF_PTR_MISSED(glu_ring) && !data_missed)
-	{
-	  data_missed = TRUE;
-	  STRACE_ERROR(("TOP %d, data missed : %d ticks\n", my_time, tickGet() - tickNow));
-	}
-      
       if (!(my_time%1000))  STRACE_INFO(("TOP %d : %s=%g \t%s=%g \t%s=%g \t%s=%g", my_time,
 					 X_sample_symbol_info_list_val[0].name, memo_val[0],
 					 X_sample_symbol_info_list_val[1].name, memo_val[1],
@@ -165,18 +156,13 @@ int GLU_init(int fallback_argc, char* fallback_argv[])
   /*overide first name*/
   X_sample_symbol_info_list_val[0].name = strdup("t");
 	
-
-  RINGBUF_PTR_INIT(glu_ringbuf, glu_ring, glu_item_t,  0, RINGBUF_SZ(GLU_RING_BUFSIZE));
-  RINGBUF_PTR_RESET_CONSUMER (glu_ring);
-  
   return TRUE;
 }
 
 int  GLU_get_sample_symbol_info_list(GLU_handle_t h_glu,TSP_sample_symbol_info_list_t* symbol_list)
 {
-  SFUNC_NAME(GLU_get_sample_symbol_info_list);
 
-  gint32 i = 0;
+  int i = 0;
   TSP_sample_symbol_info_t* p; 
 	
   for (p=X_sample_symbol_info_list_val; p->name!=0 ; p++)
@@ -190,52 +176,22 @@ int  GLU_get_sample_symbol_info_list(GLU_handle_t h_glu,TSP_sample_symbol_info_l
   return TRUE;
 }
 
+int GLU_start(void)
+{  /* At first consumer connection : start thread */
+  if(!thread_id)
+    {
+      TSP_CHECK_THREAD( (pthread_create(&thread_id, NULL, GLU_thread, NULL)), FALSE);
+    }
+  return (thread_id != 0);
+}
 
 GLU_server_type_t GLU_get_server_type(void)
 {
   return GLU_SERVER_TYPE_ACTIVE;
 }
 
-/* not used */
-GLU_get_state_t GLU_get_next_item(GLU_handle_t h_glu,glu_item_t* item)
-{
-  SFUNC_NAME(GLU_get_next_item);
-
-  GLU_get_state_t res = GLU_GET_NEW_ITEM;
-  assert(h_glu == GLU_GLOBAL_HANDLE);
-  
-  if(!data_missed)
-    {
-      if (!RINGBUF_PTR_ISEMPTY(glu_ring))
-	{
-	  /* OK data found */
-	  RINGBUF_PTR_NOCHECK_GET(glu_ring ,(*item));                  
-	}
-      else
-	{
-	  res = GLU_GET_NO_ITEM;
-	}
-    }
-  else
-    {
-      /* There's a huge problem, we were unable to put data
-	 in the ringbuffer */
-      res = GLU_GET_DATA_LOST;
-      data_missed = FALSE;
-    }
-
-  return res;
-}
-
 GLU_handle_t GLU_get_instance(int argc, char* argv[], char** error_info)
 {
-  SFUNC_NAME(GLU_get_instance);
-
-  /* At first consumer connection : start thread */
-  if(!thread_id)
-    {
-      TSP_CHECK_THREAD( (pthread_create(&thread_id, NULL, GLU_thread, NULL)), FALSE);
-    }
 
   if(error_info)
     *error_info = "";
@@ -249,10 +205,6 @@ double GLU_get_base_frequency(void)
   return TSP_STUB_FREQ;
 }
 
-void GLU_forget_data(GLU_handle_t h_glu)
-{
-  RINGBUF_PTR_RESET_CONSUMER(glu_ring);
-}
 
 
 

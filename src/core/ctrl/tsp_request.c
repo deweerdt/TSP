@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: tsp_request.c,v 1.2 2004-07-28 13:05:38 mia Exp $
+$Id: tsp_request.c,v 1.3 2004-09-22 14:25:58 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -46,8 +46,6 @@ TSP_provider_rqh_manager_get_max_nb(void) {
 int
 TSP_provider_rqh_manager_get_nb(void) {
 
-  SFUNC_NAME(TSP_provider_request_handlers_get_nb);
-
   int retval = 0;
   int i;
   STRACE_IO(("-->IN"));
@@ -65,8 +63,6 @@ TSP_provider_rqh_manager_get_nb(void) {
 int 
 TSP_provider_rqh_manager_get_nb_running(void) {
 
-  SFUNC_NAME(TSP_provider_rqh_manager_get_nb_running);
-
   int retval = 0;
   STRACE_IO(("-->IN"));
 
@@ -80,7 +76,6 @@ TSP_provider_rqh_manager_get_nb_running(void) {
 
 TSP_provider_request_handler_t* 
 TSP_provider_rqh_manager_get(int rank) {
-  SFUNC_NAME(TSP_provider_rqh_manager_get);
 
   TSP_provider_request_handler_t*  retval = NULL;
   STRACE_IO(("-->IN"));
@@ -98,7 +93,6 @@ TSP_provider_rqh_manager_get(int rank) {
 
 int 
 TSP_provider_rqh_manager_install(int rank, TSP_provider_request_handler_t rqh) {
-  SFUNC_NAME(TSP_provider_rqh_manager_install);
 
   int retval = TRUE;
   TSP_provider_request_handler_t* rqh_p;
@@ -138,7 +132,6 @@ TSP_provider_rqh_manager_install(int rank, TSP_provider_request_handler_t rqh) {
 
 int 
 TSP_provider_rqh_manager_init(void) {
-  SFUNC_NAME(TSP_provider_rqh_manager_init);
 
   int retval = TRUE;
   int i;
@@ -174,7 +167,6 @@ TSP_provider_rqh_manager_init(void) {
 
 int 
 TSP_provider_rqh_manager_refresh(void) {
-  SFUNC_NAME(TSP_provider_rqh_manager_refresh);
 
   int retval = TRUE;
 
@@ -215,7 +207,7 @@ TSP_provider_rqh_manager_refresh(void) {
 }  /* End of TSP_provider_rqh_manager_refresh */
 
 void TSP_provider_rqh_manager_waitend(void) {
-  SFUNC_NAME(TSP_provider_rqh_manager_waitend);
+
   STRACE_IO(("-->INT"));
 
   TSP_LOCK_MUTEX(&rqh_manager_if.mutex,);

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.c,v 1.17 2004-09-16 09:38:42 tractobob Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.c,v 1.18 2004-09-22 14:25:58 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -321,8 +321,6 @@ void TSP_session_create_symbols_table_by_channel_free_call(TSP_answer_sample_t* 
 int  TSP_session_get_sample_symbol_info_list_by_channel(channel_id_t channel_id,
 							TSP_sample_symbol_info_list_t* symbol_list)
 {
-
-  SFUNC_NAME(TSP_session_get_sample_symbol_info_list_by_channel);
 
   TSP_session_t* session;
   int ret;

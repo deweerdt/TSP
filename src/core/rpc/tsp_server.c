@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_server.c,v 1.12 2004-08-31 09:58:53 dufy Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_server.c,v 1.13 2004-09-22 14:25:58 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -50,9 +50,6 @@ Purpose   :
 TSP_provider_info_t* tsp_provider_information_1_svc(struct svc_req *rqstp)
 {
   
-  SFUNC_NAME(tsp_provider_information_1_svc);
-
-	
   static TSP_provider_info_t server_info;
 	
   STRACE_IO(("-->IN"));
@@ -69,7 +66,6 @@ TSP_provider_info_t* tsp_provider_information_1_svc(struct svc_req *rqstp)
 
 TSP_answer_open_t* tsp_request_open_1_svc(TSP_request_open_t req_open, struct svc_req* rqstp)
 {
-  SFUNC_NAME(tsp_request_open_1_svc);
 
   static TSP_answer_open_t ans_open;
 	
@@ -89,7 +85,6 @@ TSP_answer_open_t* tsp_request_open_1_svc(TSP_request_open_t req_open, struct sv
 
 void *tsp_request_close_1_svc(TSP_request_close_t req_close, struct svc_req * rqstp)
 {
-  SFUNC_NAME(tsp_request_close_1_svc);
 
   static char* dummy;
 	
@@ -104,7 +99,6 @@ void *tsp_request_close_1_svc(TSP_request_close_t req_close, struct svc_req * rq
 
 TSP_answer_sample_t* tsp_request_information_1_svc(TSP_request_information_t req_info, struct svc_req * rqstp)
 {
-  SFUNC_NAME(tsp_request_information_1_svc);
 
   static TSP_answer_sample_t ans_sample;
 	
@@ -123,9 +117,6 @@ TSP_answer_sample_t* tsp_request_information_1_svc(TSP_request_information_t req
 TSP_answer_feature_t* tsp_request_feature_1_svc(TSP_request_feature_t req_feature, struct svc_req * rqstp)
 {
 
-  SFUNC_NAME(tsp_request_feature_1_svc);
-
-	
   static TSP_answer_feature_t ans_feature;
 	
   STRACE_IO(("-->IN"));
@@ -139,8 +130,6 @@ TSP_answer_feature_t* tsp_request_feature_1_svc(TSP_request_feature_t req_featur
 
 TSP_answer_sample_t* tsp_request_sample_1_svc(TSP_request_sample_t req_sample, struct svc_req * rqstp)
 {
-
-  SFUNC_NAME(tsp_request_sample_1_svc);
 
   static int first_call = TRUE;
   static TSP_answer_sample_t ans_sample;
@@ -165,8 +154,6 @@ TSP_answer_sample_t* tsp_request_sample_1_svc(TSP_request_sample_t req_sample, s
  
 TSP_answer_sample_init_t* tsp_request_sample_init_1_svc(TSP_request_sample_init_t req_sample, struct svc_req * rqstp)
 {
-
-  SFUNC_NAME(tsp_request_sample_init_1_svc);
 
   static TSP_answer_sample_init_t ans_sample;
 
@@ -195,8 +182,6 @@ TSP_answer_sample_init_t* tsp_request_sample_init_1_svc(TSP_request_sample_init_
 TSP_answer_sample_destroy_t* tsp_request_sample_destroy_1_svc(TSP_request_sample_destroy_t req_sample, struct svc_req * rqstp)
 {
 
-  SFUNC_NAME(tsp_request_sample_destroy_1_svc);
-
   static TSP_answer_sample_destroy_t ans_sample;
 	
   STRACE_IO(("-->IN"));
@@ -212,9 +197,6 @@ TSP_answer_sample_destroy_t* tsp_request_sample_destroy_1_svc(TSP_request_sample
 
 void* tsp_exec_feature_1_svc(TSP_exec_feature_t exec_feature, struct svc_req * rqstp)
 {
-
-  SFUNC_NAME(tsp_exec_feature_1_svc);
-
 	
   STRACE_IO(("-->IN"));
 
@@ -229,8 +211,7 @@ tsp_rpc_1(struct svc_req *rqstp, register SVCXPRT *transp) ;
 
 static TSP_rpc_init(int server_number)
 {
-  SFUNC_NAME(TSP_rpc_init);
-		
+
   int ret = TRUE;
   register SVCXPRT *transp;
 
@@ -278,8 +259,7 @@ static TSP_rpc_init(int server_number)
 void* TSP_thread_rpc_init(void* arg)
 {
   /* FIXME : creer le thread détaché */
-    
-  SFUNC_NAME(TSP_thread_rpc_init);
+
   int server_number = (int)arg;
 
   pthread_detach(pthread_self());
@@ -291,9 +271,8 @@ void* TSP_thread_rpc_init(void* arg)
   STRACE_IO(("-->OUT"));
 }
 
-int TSP_rpc_request_config(void* config_param) {
-
-  SFUNC_NAME(TSP_rpc_request_config);
+int TSP_rpc_request_config(void* config_param)
+{
 
   int retval = TRUE;
   int** i = (int **) config_param;
@@ -307,9 +286,9 @@ int TSP_rpc_request_config(void* config_param) {
 
 } /* end of TSP_rpc_request_config */
 
-int TSP_rpc_request_config2(void* config_param) {
+int TSP_rpc_request_config2(void* config_param)
+{
 
-  SFUNC_NAME(TSP_rpc_request_config);
   int retval = TRUE;
   int** i = (int **) config_param;
 
@@ -323,9 +302,9 @@ int TSP_rpc_request_config2(void* config_param) {
 } /* end of TSP_rpc_request_config2 */
 
 
-void *TSP_rpc_request_run(void* config_param) {
+void *TSP_rpc_request_run(void* config_param)
+{
 
-  SFUNC_NAME(TSP_rpc_request_run);
   int* server_number = (int *) config_param;
 
   pthread_detach(pthread_self()); /* FIXME shoudl we do this */
@@ -338,8 +317,9 @@ void *TSP_rpc_request_run(void* config_param) {
   /* FIXME implements cond var notification */
 } /* end of TSP_rpc_request_run */
 
-int TSP_rpc_request_stop(void) {
-  SFUNC_NAME(TSP_rpc_request_stop);
+int TSP_rpc_request_stop(void)
+{
+
   int retval = TRUE;
   /* FIXME NOP */
   return retval;
@@ -347,7 +327,7 @@ int TSP_rpc_request_stop(void) {
 
 int TSP_command_init(int server_number, int blocking)
 {
-  SFUNC_NAME(TSP_command_init);
+
   int ret = FALSE;
 
   STRACE_IO(("-->IN"));

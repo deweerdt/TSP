@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_stream_sender.c,v 1.14 2004-09-16 07:53:18 dufy Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_stream_sender.c,v 1.15 2004-09-22 14:25:58 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -42,7 +42,10 @@ stream  to the consumers.
 #include <netinet/tcp.h>
 #include <sys/socket.h>
 #include <signal.h>
+
+#ifndef VXWORKS
 #include <strings.h> /* for bzero */
+#endif
 #include <string.h>  /* for bzero too :=} */
 
 #ifndef SHUT_RDWR
@@ -196,8 +199,6 @@ void* TSP_streamer_sender_thread_sender(void* arg)
 static int TSP_stream_sender_init_bufferized(TSP_socket_t* sock)
 {
 
-
-  SFUNC_NAME(TSP_stream_sender_init_bufferized);
   int status;
 
   STRACE_IO(("-->IN"));
@@ -265,7 +266,6 @@ static void* TSP_streamer_sender_connector(void* arg)
 
 const char* TSP_stream_sender_get_data_address_string(TSP_stream_sender_t sender)
 {   
-  SFUNC_NAME(TSP_stream_sender_get_data_address_string);
     
   TSP_socket_t* sock = (TSP_socket_t*)sender;
     
@@ -277,7 +277,7 @@ const char* TSP_stream_sender_get_data_address_string(TSP_stream_sender_t sender
 
 TSP_stream_sender_t TSP_stream_sender_create(int fifo_size, int buffer_size)
 {
-  SFUNC_NAME(TSP_stream_sender_create);
+
   int status = 0;
   int OptInt = 0;
   char host[TSP_MAXHOSTNAMELEN+1];
@@ -452,7 +452,6 @@ TSP_stream_sender_t TSP_stream_sender_create(int fifo_size, int buffer_size)
 
 void TSP_stream_sender_destroy(TSP_stream_sender_t sender)
 {
-  SFUNC_NAME(TSP_stream_sender_destroy);
 
    TSP_socket_t* sock = (TSP_socket_t*)sender;
 
@@ -475,7 +474,6 @@ void TSP_stream_sender_destroy(TSP_stream_sender_t sender)
 
 void TSP_stream_sender_stop(TSP_stream_sender_t sender)
 {
-   SFUNC_NAME(TSP_stream_sender_stop);
 
    TSP_socket_t* sock = (TSP_socket_t*)sender;
 
@@ -499,9 +497,6 @@ void TSP_stream_sender_stop(TSP_stream_sender_t sender)
 
 int TSP_stream_sender_send(TSP_stream_sender_t sender, const char *buffer, int bufferLen)
 {
-
-  SFUNC_NAME(TSP_stream_sender_send);
-
   
   int Total;
   int nread;

@@ -219,6 +219,7 @@ ENABLED_TSP_TARGET=`echo $ENABLED_TSP_TARGET | sed -e "s/host/$HOST_TARGET/g"`
 # vxworks
 # the host target (linux, sun, sun64, dec) is automagically enabled
 # the java target is enabled by the enable-jtsp
+# the vxworks target is enabled by the enable-vxworks, and disable others
 ############################################################################
 AC_ARG_ENABLE(tsp-target-vxworks,   [  --enable-tsp-target-vxworks  enable VxWorks TSP target],
 	      TSPTARGET_VXWORKS=$enableval,
@@ -227,12 +228,6 @@ AC_ARG_ENABLE(tsp-target-vxworks,   [  --enable-tsp-target-vxworks  enable VxWor
 AC_ARG_WITH(tsp-target-vxworks-cc,  [  --with-tsp-target-vxworks-cc=C_CROSS_COMPILER     chose the TSP target vxworks C cross compiler],
 	TSPTARGET_VXWORKS_CC=$withval,
 	TSPTARGET_VXWORKS_CC="no")
-
-if test "$TSPTARGET_VXWORKS" = "yes"; then
-AC_MSG_CHECKING([for VxWorks TSP target config])
-AC_MSG_WARN([Disabled, NOT AVAILABLE YET])
-# ENABLED_TSP_TARGET=$ENABLED_TSP_TARGET:vxworks
-fi
 
 ############################################################################
 # Map enabled target onto consumer/provider part
@@ -277,6 +272,20 @@ else
 		echo "Need to compile etiher debug or opt mode. Debug is selected "
 		TSPBUILD="debug"
 	fi
+fi
+
+############################################################################
+# VxWorks target modifies configuration, only C-opt provider is allowed
+############################################################################
+if test "$TSPTARGET_VXWORKS" = "yes"; then
+AC_MSG_CHECKING([for VxWorks TSP target config])
+AC_MSG_WARN([Disabling TSP CONSUMERs, BB and JAVA parts])
+ENABLED_TSP_TARGET=vxworks
+TSPCONSUMER="no"
+GTK_BASED_CONSUMER="no"
+JTSP="no"
+BB="no"
+TSPBUILD="opt"
 fi
 
 

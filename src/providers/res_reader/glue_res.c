@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: glue_res.c,v 1.6 2004-09-16 09:39:20 tractobob Exp $
+$Id: glue_res.c,v 1.7 2004-09-22 14:25:58 tractobob Exp $
 
 -----------------------------------------------------------------------
  
@@ -69,7 +69,6 @@ GLU_state_t glu_handler;
 
 void GLU_loop()
 {
-  SFUNC_NAME(GLU_thread);
   GLU_state_t* obj = &glu_handler;
   glu_item_t  item;
   int i;
@@ -136,7 +135,6 @@ int GLU_start(void)
 
 int GLU_init(int fallback_argc, char* fallback_argv[])
 {
-  SFUNC_NAME(GLU_init);
 
   int ret = TRUE;
   GLU_state_t* obj = &glu_handler;
@@ -217,7 +215,6 @@ int GLU_init(int fallback_argc, char* fallback_argv[])
 
 int  GLU_get_sample_symbol_info_list(GLU_handle_t h_glu,TSP_sample_symbol_info_list_t* symbol_list)
 {
-  SFUNC_NAME(GLU_get_sample_symbol_info_list);
   GLU_state_t* obj = &glu_handler;
 
   symbol_list->TSP_sample_symbol_info_list_t_len = obj->nbvar;

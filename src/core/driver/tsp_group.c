@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_group.c,v 1.5 2002-12-24 14:14:24 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_group.c,v 1.6 2004-09-22 14:25:58 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -45,7 +45,6 @@ Purpose   : Implementation for the groups management
 
 void TSP_group_delete_group_table(TSP_groups_t groups)
 {
-   SFUNC_NAME(TSP_group_create_group_table);
 
    TSP_group_table_t* table = (TSP_group_table_t*)groups;
 
@@ -65,8 +64,6 @@ void TSP_group_delete_group_table(TSP_groups_t groups)
 TSP_groups_t
 TSP_group_create_group_table(const TSP_sample_symbol_info_list_t* symbols, int group_number)
 {
-
-  SFUNC_NAME(TSP_group_create_group_table);
     
   int group_id, old_group_id;
   int i;

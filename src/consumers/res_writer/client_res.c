@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: client_res.c,v 1.6 2004-09-01 07:15:31 tractobob Exp $
+$Id: client_res.c,v 1.7 2004-09-22 14:25:58 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -84,7 +84,6 @@ static Sigfunc* signal(int signo, Sigfunc* func)
 
 void catch_ctrl_c(int i)
 {
-  SFUNC_NAME(main);
   stop = TRUE;
 
   STRACE_TEST(("Waiting eol and saving file..."));
@@ -92,8 +91,6 @@ void catch_ctrl_c(int i)
 
 void usage (char *txt)
 {
-  SFUNC_NAME(usage);
-
   STRACE_ERROR(("USAGE : %s [s:f:p:t:m:dh]", txt));
   printf("\t -s server    : TSP provider server name\n");
   printf("\t -f filename  : output RES format filename\n");
@@ -114,7 +111,6 @@ void usage (char *txt)
 
 int main(int argc, char *argv[]){
 
-  SFUNC_NAME(main);
   const TSP_consumer_information_t*  information;
   TSP_consumer_symbol_requested_list_t symbols;
 
