@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: client_stdout.c,v 1.2 2003-12-27 13:30:59 uid67973 Exp $
+$Id: client_stdout.c,v 1.3 2004-07-27 14:20:45 mia Exp $
 
 -----------------------------------------------------------------------
 
@@ -172,6 +172,7 @@ int main(int argc, char *argv[]){
       sprintf(symbol_buf, "Symbol%d",i);
       if(strcmp(symbol_buf,  information->symbols.val[i].name))
 	{
+printf("%s != %s\n", symbol_buf,  information->symbols.val[i].name);
 	  STRACE_ERROR(("Symbol name corrupted"));
 	  STRACE_TEST(("STAGE 001 | STEP 003 : FAILED"));
 	  return -1;
