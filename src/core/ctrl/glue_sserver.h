@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/Attic/glue_sserver.h,v 1.6 2002-10-09 07:31:29 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/Attic/glue_sserver.h,v 1.7 2002-10-10 15:56:35 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -20,7 +20,6 @@ Purpose   : Interface for the glue server
 
 #include "tsp_prjcfg.h"
 
-#include "tsp_ringbuf.h"
 
 #include "tsp_datastruct.h"
 
@@ -29,6 +28,16 @@ enum GLU_server_type_t
   GLU_SERVER_TYPE_ACTIVE,
   GLU_SERVER_TYPE_PASIVE
 };
+
+enum GLU_get_state_t
+{
+  GLU_GET_NEW_ITEM,
+  GLU_GET_NO_ITEM,
+  GLU_GET_EOF,
+
+};
+
+typedef enum GLU_get_state_t GLU_get_state_t;
 
 typedef enum GLU_server_type_t GLU_server_type_t;
 
@@ -46,7 +55,7 @@ typedef void* GLU_handle_t;
 
 #define GLU_GLOBAL_HANDLE ((GLU_handle_t)0x1)
 
-RINGBUF_DECLARE_TYPE_DYNAMIC(glu_ringbuf,glu_item_t);
+
 
 /* Common functions*/
 
@@ -104,13 +113,8 @@ GLU_handle_t GLU_get_instance(int custom_argc, char* custom_argv[], char** error
 
 double GLU_get_base_frequency(void);
 
-/* active stream with handle */
 
-glu_ringbuf* GLU_active_get_ringbuf(GLU_handle_t h_glu);
-
-/* pasive stream with handle */
-
-int GLU_pasive_get_next_item(GLU_handle_t h_glu,glu_item_t* item);
+GLU_get_state_t GLU_get_next_item(GLU_handle_t h_glu,glu_item_t* item);
 
 
 
