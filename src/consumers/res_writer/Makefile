@@ -25,7 +25,7 @@ clean::
 	$(MAKE) T=consumer	destroy
 
 destroy :
-	$(RM) 	 $(TARGET) 
+	$(RM) 	 $(TARGET) *.o
 
 include $(DEVBASE)/make/Makerules
 

@@ -26,7 +26,7 @@ clean::
 	$(MAKE) T=provider destroy
 
 destroy :
-	$(RM) 	 $(TARGET) 
+	$(RM) 	 $(TARGET) *.o
 
 include $(DEVBASE)/make/Makerules
 
