@@ -1,4 +1,4 @@
-/* $Id: TspSession.java,v 1.1 2003-02-07 16:09:48 SyntDev1 Exp $
+/* $Id: TspSession.java,v 1.2 2003-02-13 16:18:54 SyntDev1 Exp $
  * -----------------------------------------------------------------------
  * 
  * TSP Library - core components for a generic Transport Sampling Protocol.
@@ -368,16 +368,22 @@ public class TspSession {
      */
     private Socket createTspSocket(TspAnswerSampleInit asi) {
 	
-	String [] ap  = asi.theAnswer.data_address.split(":");
-	Socket sock = new Socket();
+	//JDK 1.4 String [] ap = asi.theAnswer.data_address.split(":");
+	
+	String [] ap  = new String[2];
+	int iodp =  asi.theAnswer.data_address.indexOf(':');
+	ap[0]=asi.theAnswer.data_address.substring(0,iodp);
+	ap[1]=asi.theAnswer.data_address.substring(iodp+1);
+
+	Socket sock = null;
 
 	try {
 	    sock   = new Socket(InetAddress.getByName(ap[0]), 
 				(new Integer(ap[1])).intValue());
 	    /* Configure socket */
-	    sock.setReceiveBufferSize(tsp.core.config.TspConfig.DATA_STREAM_SOCKET_FIFO_SIZE /2);
-	    sock.setReuseAddress(true);
-	    sock.setKeepAlive(false);
+	    sock.setReceiveBufferSize(tsp.core.config.TspConfig.DATA_STREAM_SOCKET_FIFO_SIZE /2);  
+	    //sock.setReuseAddress(true); FIXME JDK.1.2.2
+	    //sock.setKeepAlive(false);  FIXME JDK.1.2.2
 	    sock.setTcpNoDelay(true);
 	    /* 50 ms timeout on read 
 	     * FIXME how to set that ???
