@@ -1,0 +1,17 @@
+# Makeparams.osf1.debug
+
+include $(DEVBASE)/make/Makeproject
+
+
+# Default tools
+# -------------
+# Using standard tools
+
+
+# Default options
+# ---------------
+ARFLAGS = rvs
+CFLAGS = -g
+CPPFLAGS +=  -D_REENTRANT  -DUSE_STRACE -DTSP_NO_XDR_ENCODE -D__OSF1__ -D__alpha__
+LDLIBS = -lsocket -lnsl -lm -lposix4 -lgen -lpthread  
+
