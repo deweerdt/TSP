@@ -22,7 +22,7 @@ $(DIRLIB)/%.o : %.c
 	@echo "@@@ Compiling $< ..."
 	$(COMPILE.c) $< -o $@
 
-$(DIRBIN)/%.o : %.c
+$(DIROBJ)/%.o : %.c
 	@echo "@@@ Compiling $< ..."
 	$(COMPILE.c) $< -o $@
 
@@ -34,7 +34,7 @@ $(DIRBIN)/% : %.c
 	@echo "@@@ Linking $< ..."
 	$(LINK.c) $< -o $@ $(LDLIBS)
 
-$(DIRBIN)/% : $(DIRBIN)/%.o
+$(DIRBIN)/% : $(DIROBJ)/%.o
 	@echo "@@@ Linking $< ..."
 	$(LINK.c) $< -o $@ $(LDLIBS)
 

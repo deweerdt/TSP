@@ -26,7 +26,7 @@ $(TARGET): $(SOURCES)
 	$(LINK.c) -o $@ $(SOURCES) $(ADD_LIB) $(LDLIBS)
 
 destroy::
-	$(RM) 	 $(TARGET) *.o
+	$(RM) $(TARGET)
 
 include $(DEVBASE)/make/Makerules
 

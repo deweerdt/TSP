@@ -1,3 +1,4 @@
+# -*- makefile -*-
 # ---------------------------------
 # Do not EDIT: @configure_input@
 # ---------------------------------
@@ -23,6 +24,7 @@ CPPFLAGS += -I. -I$(DIRINC)
 DIREXEC= $(DIRBASE)/$(TSP_TARGET)/$(TSP_MODE)
 DIRBIN = $(DIREXEC)/bin
 DIRLIB = $(DIREXEC)/lib
+DIROBJ = $(DIREXEC)/obj
 
 # ---------------
 # Compilers parameters (configure-)detected for the TSP host

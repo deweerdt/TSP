@@ -18,6 +18,7 @@ build::
 	- chmod a+ws $(DIRBIN)
 	- mkdir -p $(DIRINC)
 	- mkdir -p $(DIRLIB)
+	- mkdir -p $(DIROBJ)
 	- mkdir -p $(DIRSCRIPT)
 	- mkdir -p $(CLASSBASE)
 	- mkdir -p $(JARBASE)

@@ -8,6 +8,7 @@ SUBDIRS = \
 	res_writer \
 	tutorial \
 	gdisp \
+	gdisp+ \
 	jstdout 
 
 include $(DEVBASE)/make/Makesubdirs

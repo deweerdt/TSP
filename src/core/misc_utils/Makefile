@@ -11,7 +11,7 @@ SOURCES = \
 
 CPPFLAGS += -I.
 
-OBJECTS=$(SOURCES:%.c=%.o) 
+OBJECTS=$(SOURCES:%.c=$(DIROBJ)/%.o) 
 
 TARGET=$(DIRLIB)/libtsp_services.a
 
@@ -21,8 +21,7 @@ TARGET=$(DIRLIB)/libtsp_services.a
 # same thing for clean:: that calls destroy::
 # -----------------------------------------------------------
 
-build:: $(TARGET)($(OBJECTS))
-	$(MAKE) export_include
+build:: export_include $(TARGET)($(OBJECTS))
 
 destroy::
 	$(RM) 	$(TARGET) $(OBJECTS)

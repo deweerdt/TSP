@@ -5,7 +5,7 @@ XINC    = tsp_provider_init.h
 SOURCES = \
 	tsp_provider_init.c
 
-OBJECTS=$(SOURCES:%.c=%.o) 
+OBJECTS=$(SOURCES:%.c=$(DIROBJ)/%.o) 
 
 TARGET=$(DIRLIB)/libtsp_provider.a
 
@@ -16,8 +16,7 @@ CPPFLAGS += -I../rpc -I../ctrl
 # same thing for clean:: that calls destroy::
 # -----------------------------------------------------------
 
-build:: $(TARGET)($(OBJECTS))
-	$(MAKE) export_include
+build:: export_include $(TARGET)($(OBJECTS))
 
 destroy::
 	$(RM) 	$(TARGET)

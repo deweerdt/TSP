@@ -25,7 +25,7 @@ SOURCES = \
 	gdisp_pointArray.c     \
 	gdisp_utils.c
 
-OBJECTS = $(SOURCES:%.c=%.o) 
+OBJECTS = $(SOURCES:%.c=$(DIROBJ)/%.o) 
 
 ADD_LIB =  $(DIRLIB)/libtsp_consumer.a $(DIRLIB)/libtsp_services.a
 

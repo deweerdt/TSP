@@ -17,7 +17,7 @@ RPC_SERVER_SRC = tsp_server.c tsp_rpc_confprogid.c
 # same thing for clean:: that calls destroy::
 # -----------------------------------------------------------
 
-build::
+build:: export_include
 	$(MAKE) rpcgen
 	if [ "${BUILD_PROVIDER}" = "yes" ]; then \
 		$(MAKE) RPC_LIB_SUFFIX=tsp_provider rpc.server.lib ;  \
@@ -25,7 +25,6 @@ build::
 	if [ "${BUILD_CONSUMER}" = "yes" ]; then \
 		$(MAKE) RPC_LIB_SUFFIX=tsp_consumer rpc.client.lib;   \
 	fi
-	$(MAKE) export_include
 
 destroy::
 	$(MAKE) RPC_LIB_SUFFIX=tsp_consumer rpc.clean

@@ -13,7 +13,7 @@ SOURCES = \
     tsp_stream_receiver.c \
     tsp_data_receiver.c  
 
-OBJECTS=$(SOURCES:%.c=%.o) 
+OBJECTS=$(SOURCES:%.c=$(DIROBJ)/%.o) 
 
 TARGET=$(DIRLIB)/libtsp_consumer.a
 
@@ -24,16 +24,11 @@ CPPFLAGS += -I../rpc -I../misc_utils
 # same thing for clean:: that calls destroy::
 # -----------------------------------------------------------
 
-build:: $(TARGET)($(OBJECTS))
-	$(MAKE) export_include
+build:: export_include $(TARGET)($(OBJECTS))
 
 destroy::
 	$(RM) 	 $(TARGET) 
 	$(MAKE) remove_include
-
-
-
-
 
 include $(DEVBASE)/make/Makerules
 
