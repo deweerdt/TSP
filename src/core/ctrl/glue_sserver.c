@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/Attic/glue_sserver.c,v 1.2 2002-09-04 17:58:49 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/Attic/glue_sserver.c,v 1.3 2002-09-05 13:29:54 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -110,7 +110,7 @@ static void* GLU_thread(void* arg)
     {
       for(i = 0 ; i <  symbols_nb ; i++)
 	{
-	  if(my_time%X_sample_symbol_info_list_val[i].frequency_ratio == 0)
+	  if(my_time%X_sample_symbol_info_list_val[i].period == 0)
 	    {
 
 	      item.time = my_time;
@@ -171,7 +171,7 @@ int TSP_glue_sserver_init(void)
     {      
       X_sample_symbol_info_list_val[i].name = "symbol";
       X_sample_symbol_info_list_val[i].provider_global_index = i;
-      X_sample_symbol_info_list_val[i].frequency_ratio = 1;
+      X_sample_symbol_info_list_val[i].period = 1;
     }
   
   RINGBUF_PTR_INIT(glu_ringbuf, glu_ring, glu_item_t,  RINGBUF_SZ(GLU_RING_BUFSIZE));

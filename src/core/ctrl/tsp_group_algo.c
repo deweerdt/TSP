@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_group_algo.c,v 1.1 2002-08-27 08:56:09 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_group_algo.c,v 1.2 2002-09-05 13:29:54 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -74,7 +74,7 @@ int TSP_group_algo_get_nb_groups(const TSP_sample_symbol_info_list_t* symbols)
         
       /*Calcul du PPCM des rapports de frequences des symboles */
 
-      int ppcm = (symbols->TSP_sample_symbol_info_list_t_val[0].frequency_ratio);
+      int ppcm = (symbols->TSP_sample_symbol_info_list_t_val[0].period);
       STRACE_DEBUG(("frequency_ratio No0= %d", ppcm));
 
       for( i = 1 ; i < nb_symbols ; i++)
@@ -82,7 +82,7 @@ int TSP_group_algo_get_nb_groups(const TSP_sample_symbol_info_list_t* symbols)
                 
                  
 	  int frequency_ratio =
-	    (symbols->TSP_sample_symbol_info_list_t_val[i].frequency_ratio);
+	    (symbols->TSP_sample_symbol_info_list_t_val[i].period);
                   
 	  STRACE_DEBUG(("frequency_ratio No%u= %d", i, frequency_ratio));
 
@@ -135,7 +135,7 @@ static int TSP_group_algo_get_group_size(const TSP_sample_symbol_info_list_t* sy
   /* We search all symbols that belong to the group group_number*/
   for( i = 0 ; i < nb_symbols ; i++ )
     {
-      int frequency_ratio = symbols->TSP_sample_symbol_info_list_t_val[i].frequency_ratio;
+      int frequency_ratio = symbols->TSP_sample_symbol_info_list_t_val[i].period;
       int phase = symbols->TSP_sample_symbol_info_list_t_val[i].phase;
       /* Does - it belong to the group */
       if(BELONGS_TO_GROUP(frequency_ratio, phase , group_id) )
@@ -315,7 +315,7 @@ int TSP_group_algo_create_symbols_table(const TSP_sample_symbol_info_list_t* in_
 
             
 	      /* Does - it belong to the group */
-	      if(BELONGS_TO_GROUP(in_info->frequency_ratio, in_info->phase , group_id) )
+	      if(BELONGS_TO_GROUP(in_info->period, in_info->phase , group_id) )
                 {
                 
 		  /*Yes, we add it*/
