@@ -24,6 +24,13 @@ echo " - STEP 1 : check all symbols "
 echo " - STEP 2 : check first, middle, and last symbol "
 
 set TESTPATH=$DEVBASE/src/tsp/tests/stage3
+set BIN2ASC=$DEVBASE/../plot442/versions/CURRENT/bin/bin2asc
+
+#check bin2asc presence
+if ( ! -x $BIN2ASC ) then
+    echo "Error : unable to find executable bin2asc at : '$BIN2ASC'"
+    exit (1)
+endif
 
 set PROVIDER=tsp_server$TESTNB
 set CONSUMER=tsp_client$TESTNB
@@ -63,29 +70,29 @@ sleep 3
 #3 -> Add \n at the end
 #by the way, we use >& because it seems that the var list is redirected to the err stream by bin2asc..
 #dont't ask me why.
-echo "-v" |  bin2asc $IN_RESFILE1  >&  $IN_RESFILE_VARLIST1
+echo "-v" |  $BIN2ASC $IN_RESFILE1  >&  $IN_RESFILE_VARLIST1
 perl -i -p -e 's/\s+/ /g; s/VT >//g;' $IN_RESFILE_VARLIST1
 perl -i -n -e 'print "$_\n"' $IN_RESFILE_VARLIST1
 
-echo "-v" |  bin2asc $IN_RESFILE2  >&  $IN_RESFILE_VARLIST2
+echo "-v" |  $BIN2ASC $IN_RESFILE2  >&  $IN_RESFILE_VARLIST2
 perl -i -p -e 's/\s+/ /g; s/VT >//g;' $IN_RESFILE_VARLIST2
 perl -i -n -e 'print "$_\n"' $IN_RESFILE_VARLIST2
 
 
 #Create variable list from new .res
-echo "-v" |  bin2asc $OUT_RESFILE1  >&  $OUT_RESFILE_VARLIST1
+echo "-v" |  $BIN2ASC $OUT_RESFILE1  >&  $OUT_RESFILE_VARLIST1
 perl -i -p -e 's/\s+/ /g; s/VT >//g;' $OUT_RESFILE_VARLIST1
 perl -i -n -e 'print "$_\n"' $OUT_RESFILE_VARLIST1
 
-echo "-v" |  bin2asc $OUT_RESFILE2  >&  $OUT_RESFILE_VARLIST2
+echo "-v" |  $BIN2ASC $OUT_RESFILE2  >&  $OUT_RESFILE_VARLIST2
 perl -i -p -e 's/\s+/ /g; s/VT >//g;' $OUT_RESFILE_VARLIST2
 perl -i -n -e 'print "$_\n"' $OUT_RESFILE_VARLIST2
 
 # create ascii file from in .res file for all variables
-cat $IN_RESFILE_VARLIST1 | bin2asc $IN_RESFILE1 > $IN_ASCFILE1 
-cat $IN_RESFILE_VARLIST2 | bin2asc $IN_RESFILE2 > $IN_ASCFILE2
-cat $OUT_RESFILE_VARLIST1 | bin2asc $OUT_RESFILE1 > $OUT_ASCFILE1 
-cat $OUT_RESFILE_VARLIST2 | bin2asc $OUT_RESFILE2 > $OUT_ASCFILE2 
+cat $IN_RESFILE_VARLIST1 | $BIN2ASC $IN_RESFILE1 > $IN_ASCFILE1 
+cat $IN_RESFILE_VARLIST2 | $BIN2ASC $IN_RESFILE2 > $IN_ASCFILE2
+cat $OUT_RESFILE_VARLIST1 | $BIN2ASC $OUT_RESFILE1 > $OUT_ASCFILE1 
+cat $OUT_RESFILE_VARLIST2 | $BIN2ASC $OUT_RESFILE2 > $OUT_ASCFILE2 
 
 
 # calc file diff
@@ -127,21 +134,21 @@ set FIRST_MIDLE_LAST_VAR2=`perl -n -a -e 'print "$F[0] $F[int(($#F+1)/2)] $F[$#F
 #create a whole new file from variable names from the new res file
 #normally the new var file must have only FIRST_VAR, MIDDLE_VAR and LAST_VAR
 #Create variable list from new .res
-echo "-v" |  bin2asc $OUT_RESFILE1  >&  $OUT_RESFILE_VARLIST1
+echo "-v" |  $BIN2ASC $OUT_RESFILE1  >&  $OUT_RESFILE_VARLIST1
 perl -i -p -e 's/\s+/ /g; s/VT >//g;' $OUT_RESFILE_VARLIST1
 perl -i -n -e 'print "$_\n"' $OUT_RESFILE_VARLIST1
 
-echo "-v" |  bin2asc $OUT_RESFILE2  >&  $OUT_RESFILE_VARLIST2
+echo "-v" |  $BIN2ASC $OUT_RESFILE2  >&  $OUT_RESFILE_VARLIST2
 perl -i -p -e 's/\s+/ /g; s/VT >//g;' $OUT_RESFILE_VARLIST2
 perl -i -n -e 'print "$_\n"' $OUT_RESFILE_VARLIST2
 
 # create ascii file from in .res file for first, midle and last variables
-echo "$FIRST_MIDLE_LAST_VAR1" | bin2asc $IN_RESFILE1 > $IN_ASCFILE1 
-echo "$FIRST_MIDLE_LAST_VAR2" | bin2asc $IN_RESFILE2 > $IN_ASCFILE2 
+echo "$FIRST_MIDLE_LAST_VAR1" | $BIN2ASC $IN_RESFILE1 > $IN_ASCFILE1 
+echo "$FIRST_MIDLE_LAST_VAR2" | $BIN2ASC $IN_RESFILE2 > $IN_ASCFILE2 
 
 # create ascii file from in .res file for all variables for the new file
-cat $OUT_RESFILE_VARLIST1 | bin2asc $OUT_RESFILE1 > $OUT_ASCFILE1 
-cat $OUT_RESFILE_VARLIST2 | bin2asc $OUT_RESFILE2 > $OUT_ASCFILE2 
+cat $OUT_RESFILE_VARLIST1 | $BIN2ASC $OUT_RESFILE1 > $OUT_ASCFILE1 
+cat $OUT_RESFILE_VARLIST2 | $BIN2ASC $OUT_RESFILE2 > $OUT_ASCFILE2 
 
 # calc file diff
 # well, if there are too many diff, the RES_DIFF will be too long and the script will fail. That's what we want anyway.
