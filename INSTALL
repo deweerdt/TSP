@@ -28,8 +28,8 @@ Select & download the tar version you want to use
 
  * Create and register a SSH key for this account
 	In fact, you can simply do this by typing:
-	echo "Protocol 1,2" > ~/.ssh/config
-	ssh-keygen
+	echo "Protocol 2" > ~/.ssh/config
+	ssh-keygen -dsa
 	[ http://savannah.gnu.org/account/editsshkeys.php ] Change Authorized Keys page (logged in)
 	and paste you key generated in ~.ssh/identity.pub, then wait next cron tab update (6h)
 
