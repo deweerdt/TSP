@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: glue_res.c,v 1.2 2003-02-27 15:37:33 tsp_admin Exp $
+$Id: glue_res.c,v 1.3 2003-02-27 18:10:12 tsp_admin Exp $
 
 -----------------------------------------------------------------------
 
@@ -44,10 +44,12 @@ Purpose   : Implementation for the glue_server
 #define _LIBUTIL_REENTRANT 1
 #include "libUTIL.h"
 
-#define GLU_STREAM_INIT_USAGE "GLU stream init usage : filename[.res]"
+#define GLU_STREAM_INIT_USAGE "GLU stream init usage : filename[.res]  [-eof=0|1 0=never eof, 1=eof at end of res]"
 #define GLU_RES_FILE_ARG_NUMBER 1
+#define GLU_RES_DO_EOF		3
 
 static double res_freq=0;
+static int do_eof=0;
 
 struct GLU_state_t
 {
@@ -99,11 +101,10 @@ GLU_get_state_t GLU_get_next_item(GLU_handle_t h_glu, glu_item_t* item)
 	  obj->current_var++;
 	  item->time = obj->time_stamp;
 	  return GLU_GET_NEW_ITEM;
-
 	}   
       else
 	{
-	  return GLU_GET_EOF;
+	  return do_eof ? GLU_GET_EOF : GLU_GET_NO_ITEM;
 	}
     }
 
@@ -121,9 +122,10 @@ int GLU_init(int fallback_argc, char* fallback_argv[])
   if(fallback_argc && fallback_argv)
     {
       /* Yes, we must test it. We are expectig one arg */
-      if(fallback_argc > 1)
+      if(fallback_argc >= 1)
 	{
 	  d_rhandle h_res = d_ropen_r(fallback_argv[GLU_RES_FILE_ARG_NUMBER], &use_dbl);
+
 	  if(h_res)
 	    {
 	      int nbrec;
@@ -144,11 +146,16 @@ int GLU_init(int fallback_argc, char* fallback_argv[])
 	      STRACE_WARNING(("Provided fallback stream '%s' does not work...bye...bye...", fallback_argv[1]));
 	    }
 	}
+      else if(fallback_argc == 3)
+	{
+	  do_eof = atoi(fallback_argv[GLU_RES_DO_EOF]);
+	}
       else
 	{
 	  ret = FALSE;
 	  STRACE_WARNING((GLU_STREAM_INIT_USAGE));
 	}
+
     }
 
   return ret;
