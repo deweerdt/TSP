@@ -1,4 +1,4 @@
-/* $Id: TspSimpleURL.java,v 1.4 2004-11-22 07:05:04 sgalles Exp $
+/* $Id: TspSimpleURL.java,v 1.5 2005-01-04 04:28:11 sgalles Exp $
  * -----------------------------------------------------------------------
  * 
  * TSP Library - core components for a generic Transport Sampling Protocol.
@@ -39,7 +39,7 @@ import java.util.regex.Pattern;
 /**
  * This class allow to encode/decode a Tsp URL
  */
-class TspSimpleURL implements TspURL {
+class TspSimpleURL implements TspURL,java.io.Serializable {
 
 	private static final String SEP_PROTOCOL = "://";
 	private static final String SEP_HOST = "/";
