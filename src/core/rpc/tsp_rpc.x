@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_rpc.x,v 1.9 2002-10-04 15:28:41 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_rpc.x,v 1.10 2002-10-09 08:25:45 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -132,17 +132,19 @@ struct TSP_answer_sample_t
 {
 	int version_id;
 	unsigned int channel_id;
-	unsigned int feature_words[4];
+
 	int provider_timeout;
 	int provider_group_number;
 	TSP_sample_symbol_info_list_t symbols;
+	double base_frequency;
+	int max_period; 
+	int max_client_number; 
+	int current_client_number; 
+	TSP_status_t status;		
 
+	/*unsigned int feature_words[4]; FIXME*/
 	/* TSP_endianity_t data_endianity; FIXME : implementer */
-	/* double base_frequency; FIXME : implementer */
-	/* int max_period; FIXME : implementer */
-	/* int max_client_number; FIXME : implementer */
-	/* int current_client_number; FIXME : implementer */
-	/* int status; FIXME : implementer */
+
 
 };
 
@@ -156,9 +158,8 @@ struct TSP_answer_sample_init_t
 {
 	int version_id;
 	unsigned int channel_id;
-	string data_address<>;
-	
-	/* int status; FIXME : utiliser */
+	string data_address<>;		
+	TSP_status_t status;			
 };
 
 
