@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_datastruct.h,v 1.2 2002-12-18 16:27:36 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_datastruct.h,v 1.3 2003-12-26 18:13:01 uid67973 Exp $
 
 -----------------------------------------------------------------------
 
@@ -38,8 +38,8 @@ Purpose   :
 #ifndef _TSP_DATASTRUCT_H
 #define _TSP_DATASTRUCT_H
 
-/* Temporaire, on utilise les structures RPC pour le reste
-du programme */
+/* FIXME : For now, RPC structs are used as DTO for the
+whole program. Different structures should be created */
 
 #include "tsp_rpc.h"
 
