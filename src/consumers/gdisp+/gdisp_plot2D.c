@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_plot2D.c,v 1.1 2004-02-04 20:32:10 esteban Exp $
+$Id: gdisp_plot2D.c,v 1.2 2004-02-18 09:47:44 dufy Exp $
 
 -----------------------------------------------------------------------
 
@@ -81,7 +81,13 @@ File      : 2D plot system.
  --------------------------------------------------------------------
 */
 
-#undef DEBUG_2D
+static int gdisp_verbosity=1;
+#if defined(DEBUG_2D)	
+#  define GDISP_TRACE(level,txt)\
+	if (level<=gdisp_verbosity) fprintf(stderr,txt); 
+#else
+#  define GDISP_TRACE(level,txt) 	/* nothing to do */
+#endif
 
 #define EVENT_METHOD(widget,event) \
         GTK_WIDGET_CLASS(GTK_OBJECT(widget)->klass)->event
@@ -100,12 +106,8 @@ File      : 2D plot system.
 
 #define Y_SYMBOL_OFFSET 15
 
-#define X_SAMPLE_TO_PLOT(plot,xxx) \
-        ( (xxx - (plot)->p2dPtMin.x) * \
-          (plot)->p2dAreaWidth  / ((plot)->p2dPtMax.x - (plot)->p2dPtMin.x) )
-#define Y_SAMPLE_TO_PLOT(plot,yyy) \
-        ( (yyy - (plot)->p2dPtMin.y) * \
-          (plot)->p2dAreaHeight / ((plot)->p2dPtMax.y - (plot)->p2dPtMin.y) ) 
+#define X_SAMPLE_TO_PLOT(plot,xxx) ((xxx-(plot)->p2dPtMin.x)*(plot)->p2dPtSlope.x) 
+#define Y_SAMPLE_TO_PLOT(plot,yyy) ((yyy-(plot)->p2dPtMin.y)*(plot)->p2dPtSlope.y) 
 
 #define X_SAMPLE_TO_WIN(plot,x) (X_PLOT_TO_WIN(plot,X_SAMPLE_TO_PLOT(plot,x)))
 #define Y_SAMPLE_TO_WIN(plot,y) (Y_PLOT_TO_WIN(plot,Y_SAMPLE_TO_PLOT(plot,y)))
@@ -218,11 +220,7 @@ gdisp_plot2DSwapBuffers (Kernel_T       *kernel,
 			 Plot2D_T       *plot,
 			 KindOfRedraw_T  drawType)
 {
-
-#if defined(DEBUG_2D)
-  fprintf(stdout,"Swaping front and back buffers.\n");
-  fflush (stdout);
-#endif
+  GDISP_TRACE(3,"Swaping front and back buffers\n");
 
   /*
    * Take care of draw type.
@@ -297,10 +295,6 @@ gdisp_plot2DDrawBackBufferBackground (Kernel_T       *kernel,
   gchar     subTitle[GDISP_2D_MAX_TITLE];
 #endif
 
-#if defined(DEBUG_2D)
-  fprintf(stdout,"Drawing into back buffer -> background.\n");
-  fflush (stdout);
-#endif
 
   /*
    * We never enter this routine with 'drawType' GD_2D_ADD_NEW_SAMPLES.
@@ -310,6 +304,8 @@ gdisp_plot2DDrawBackBufferBackground (Kernel_T       *kernel,
    * Take care of the type of the drawing process.
    */
   if (drawType == GD_2D_FULL_REDRAW) {
+
+    GDISP_TRACE(2,"Drawing into back buffer -> background : FULL_REDRAW\n");
 
     gdk_gc_set_foreground(plot->p2dGContext,
 			  &kernel->colors[_BLACK_]);
@@ -330,6 +326,7 @@ gdisp_plot2DDrawBackBufferBackground (Kernel_T       *kernel,
    */
   else if (drawType == GD_2D_SCROLL_X_AXIS) {
 
+    GDISP_TRACE(2,"Drawing into back buffer -> background : SCROLL_X\n");
     /*
      * Scroll the 90% of the backbuffer to the left.
      */
@@ -363,6 +360,8 @@ gdisp_plot2DDrawBackBufferBackground (Kernel_T       *kernel,
 
   }
   else /* GD_2D_ADD_NEW_SAMPLES */ {
+
+    GDISP_TRACE(2,"Drawing into back buffer -> background : ADD_NEW_SAMPLES\n");
 
     return;
 
@@ -589,10 +588,7 @@ gdisp_plot2DDrawBackBufferCurves (Kernel_T       *kernel,
   ShortPoint_T        lastPixel;
   ShortPoint_T        currentPixel;
 
-#if defined(DEBUG_2D)
-  fprintf(stdout,"Drawing into back buffer -> curves.\n");
-  fflush (stdout);
-#endif
+  GDISP_TRACE(3,"Drawing into back buffer -> curves\n");
 
   /*
    * Compute bounding box to be redrawn.
@@ -699,17 +695,14 @@ gdisp_plot2DDrawBackBuffer (Kernel_T       *kernel,
 			    Plot2D_T       *plot,
 			    KindOfRedraw_T  drawType)
 {
-
-#if defined(DEBUG_2D)
-  fprintf(stdout,"Drawing into back buffer.\n");
-  fflush (stdout);
-#endif
+  GDISP_TRACE(3,"Drawing into back buffer\n");
 
   /*
    * Do not redraw background when simply adding new samples.
    */
   if (drawType != GD_2D_ADD_NEW_SAMPLES) {
-
+    plot->p2dPtSlope.x = 	    plot->p2dAreaWidth / (plot->p2dPtMax.x-plot->p2dPtMin.x);
+    plot->p2dPtSlope.y = 	    plot->p2dAreaHeight/ (plot->p2dPtMax.y-plot->p2dPtMin.y);
     gdisp_plot2DDrawBackBufferBackground(kernel,
 					 plot,
 					 drawType);
@@ -738,10 +731,7 @@ gdisp_plot2DExpose (GtkWidget       *area,
   Kernel_T *kernel = (Kernel_T*)data;
   Plot2D_T *plot   = (Plot2D_T*)NULL;
 
-#if defined(DEBUG_2D)
-  fprintf(stdout,"Expose event\n");
-  fflush (stdout);
-#endif
+  GDISP_TRACE(3,"Expose event\n");
 
   /*
    * Graphic area has now to be repainted.
@@ -777,10 +767,7 @@ gdisp_plot2DConfigure (GtkWidget         *area,
   Kernel_T *kernel = (Kernel_T*)data;
   Plot2D_T *plot   = (Plot2D_T*)NULL;
 
-#if defined(DEBUG_2D)
-  fprintf(stdout,"Configure event.\n");
-  fflush (stdout);
-#endif
+  GDISP_TRACE(1,"Configure event\n");
 
   /*
    * Get plot private data.
@@ -795,10 +782,7 @@ gdisp_plot2DConfigure (GtkWidget         *area,
    */
   if (event->width == 1 && event->height == 1) {
 
-#if defined(DEBUG_2D)
-    fprintf(stdout,"Configure event returns suddendly.\n");
-    fflush (stdout);
-#endif
+    GDISP_TRACE(3,"Configure event returns suddendly.\n");
 
     return TRUE;
 
@@ -828,10 +812,7 @@ gdisp_plot2DConfigure (GtkWidget         *area,
    * Create a pixmap for double buffering.
    * Deduce depth from graphic area window.
    */
-#if defined(DEBUG_2D)
-  fprintf(stdout,"Creating back buffer.\n");
-  fflush (stdout);
-#endif
+  GDISP_TRACE(3,"Creating back buffer.\n");
 
   plot->p2dBackBuffer = gdk_pixmap_new(plot->p2dArea->window,
 				       plot->p2dAreaWidth,
@@ -866,10 +847,7 @@ gdisp_plot2DEnterNotify (GtkWidget        *area,
 
   Plot2D_T *plot = (Plot2D_T*)NULL;
 
-#if defined(DEBUG_2D)
-  fprintf(stdout,"Enter notify event.\n");
-  fflush (stdout);
-#endif
+  GDISP_TRACE(2,"Enter Notify Event\n");
 
   /*
    * Graphic area has now the focus.
@@ -896,10 +874,7 @@ gdisp_plot2DLeaveNotify (GtkWidget        *area,
 
   Plot2D_T *plot = (Plot2D_T*)NULL;
 
-#if defined(DEBUG_2D)
-  fprintf(stdout,"Leave notify event.\n");
-  fflush (stdout);
-#endif
+  GDISP_TRACE(2,"Leave Notify Event.\n");
 
   /*
    * Graphic area has lost the focus.
@@ -929,11 +904,7 @@ gdisp_plot2DKeyPress (GtkWidget   *area,
   Kernel_T *kernel = (Kernel_T*)data;
   Plot2D_T *plot   = (Plot2D_T*)NULL;
 
-
-#if defined(DEBUG_2D)
-  fprintf(stdout,"Key press event.\n");
-  fflush (stdout);
-#endif
+  GDISP_TRACE(3,"Key press event.\n");
 
   /*
    * 'key press' events on a graphic area are not well treated
@@ -1017,11 +988,7 @@ gdisp_plot2DButtonPress (GtkWidget      *area,
   Kernel_T *kernel = (Kernel_T*)data;
   Plot2D_T *plot   = (Plot2D_T*)NULL;
 
-
-#if defined(DEBUG_2D)
-  fprintf(stdout,"Button press event.\n");
-  fflush (stdout);
-#endif
+  GDISP_TRACE(3,"Button press event.\n");
 
   /*
    * Graphic area has lost the focus.
@@ -1114,11 +1081,7 @@ gdisp_plot2DMotionNotify (GtkWidget      *area,
   gint      ascent     =               0;
   gint      descent    =               0;
 
-
-#if defined(DEBUG_2D)
-  fprintf(stdout,"Motion notify event.\n");
-  fflush (stdout);
-#endif
+  GDISP_TRACE(3,"Motion notify event.\n");
 
   /*
    * Graphic area has lost the focus.
@@ -1535,10 +1498,7 @@ gdisp_getPlot2DTopLevelWidget (Kernel_T  *kernel,
 
   Plot2D_T *plot = (Plot2D_T*)data;
 
-#if defined(DEBUG_2D)
-  fprintf(stdout,"Getting back plot 2D top level widget.\n");
-  fflush (stdout);
-#endif
+  GDISP_TRACE(3,"Getting back plot 2D top level widget.\n");
 
   return (GtkWidget*)plot->p2dTable;
 
@@ -1556,10 +1516,7 @@ gdisp_showPlot2D (Kernel_T  *kernel,
 
   Plot2D_T *plot = (Plot2D_T*)data;
 
-#if defined(DEBUG_2D)
-  fprintf(stdout,"Showing plot 2D.\n");
-  fflush (stdout);
-#endif
+  GDISP_TRACE(3,"Showing plot 2D.\n");
 
   /*
    * Now show everything.
@@ -1586,9 +1543,7 @@ gdisp_getPlot2DType (Kernel_T *kernel,
 
   Plot2D_T *plot = (Plot2D_T*)data;
 
-#if defined(DEBUG_2D)
-  fprintf(stdout,"Getting back plot type (2D).\n");
-#endif
+  GDISP_TRACE(3,"Getting back plot type (2D).\n");
 
   /*
    * Must be GD_PLOT_2D_T. See 'create' routine.
@@ -1614,21 +1569,19 @@ gdisp_addSymbolsToPlot2D (Kernel_T *kernel,
   GList    *symbolItem =    (GList*)NULL;
   Symbol_T *symbol     = (Symbol_T*)NULL;
 
-#if defined(DEBUG_2D)
-  fprintf(stdout,"Adding symbols to plot 2D.\n");
-  fflush (stdout);
-#endif
+  GDISP_TRACE(3,"Adding symbols to plot 2D.\n");
 
   /*
    * If drop coordinates are in the X zone, the symbol has to be
    * attached to the X axis.
-   * CAUTION : the name of the symbol tells us what king of X axis
-   * must be used : real X symbol or Time symbol.
+   * CAUTION : we bet the X will be monotonic increasing 
+   * try plot y=f(t). Realtime will warn us if not
    */
   if (gdisp_isInsideXZone(plot,
 			  xDrop,
 			  yDrop) == TRUE) {
 
+    plot->p2dSubType = GD_2D_F2T;
     /*
      * Do not forget to decrement the reference of the X symbol.
      */
@@ -1647,21 +1600,6 @@ gdisp_addSymbolsToPlot2D (Kernel_T *kernel,
 
       symbol = (Symbol_T*)symbolItem->data;
       symbol->sReference++;
-
-      if (strcmp(symbol->sInfo.name,   "t") == 0 ||
-	  strcmp(symbol->sInfo.name,   "T") == 0 ||
-	  strcmp(symbol->sInfo.name,"time") == 0 ||
-	  strcmp(symbol->sInfo.name,"Time") == 0 ||
-	  strcmp(symbol->sInfo.name,"TIME") == 0    ) {
-
-	plot->p2dSubType = GD_2D_F2T;
-
-      }
-      else {
-
-	plot->p2dSubType = GD_2D_F2X;
-
-      }
 
     }
 
@@ -1733,10 +1671,7 @@ gdisp_getSymbolsFromPlot2D (Kernel_T *kernel,
 
   Plot2D_T *plot = (Plot2D_T*)data;
 
-#if defined(DEBUG_2D)
-  fprintf(stdout,"Give back the list of symbols handled by the plot 2D.\n");
-  fflush (stdout);
-#endif
+  GDISP_TRACE(3,"Give back the list of symbols handled by the plot 2D.\n");
 
   switch (axis) {
 
@@ -1776,19 +1711,25 @@ gdisp_stepOnPlot2D (Kernel_T *kernel,
   guint          cptDraw   = 0;
   guint          nbSamples = 0;
   KindOfRedraw_T drawType  = GD_2D_ADD_NEW_SAMPLES;
-  DoublePoint_T  aPoint;
+  DoublePoint_T  aPoint, *pLastPoint;
+  guint		 n;
 
   /*
    * Guess we got new TSP values at each refresh cycles.
    */
   for (nbSamples=0;
        nbSamples<TSP_PROVIDER_FREQ/GDISP_REFRESH_FREQ; nbSamples++) {
+    Symbol_T *symbol = (Symbol_T*)plot->p2dXSymbolList->data;  
 
     for (cptDraw=0; cptDraw<plot->p2dNbDraws; cptDraw++) {
 
       gdouble t = myTime / TSP_PROVIDER_FREQ * (cptDraw + 1) * 5;
 
-      if (plot->p2dSubType == GD_2D_F2T) {
+      if (strcmp(symbol->sInfo.name,   "t") == 0 ||
+	  strcmp(symbol->sInfo.name,   "T") == 0 ||
+	  strcmp(symbol->sInfo.name,"time") == 0 ||
+	  strcmp(symbol->sInfo.name,"Time") == 0 ||
+	  strcmp(symbol->sInfo.name,"TIME") == 0    ) {
 
 	aPoint.x = myTime;
 	aPoint.y = 10.0 / (cptDraw + 1)    *
@@ -1802,9 +1743,23 @@ gdisp_stepOnPlot2D (Kernel_T *kernel,
 	aPoint.y = cos(myTime /(cptDraw +1)      ) * myTime * (cptDraw + 1);
 
       }
-
+ 
       dparray_addSample(plot->p2dSampleArray[cptDraw],
 			&aPoint);
+
+      /* Check if plot2D is still monotonic increasing on X */
+      n = dparray_getNbSamples (plot->p2dSampleArray[cptDraw]);
+
+      if ( (n > 1) && (plot->p2dSubType==GD_2D_F2T) ) {
+	// Take the last before the one we just add
+	pLastPoint = DP_ARRAY_GET_SAMPLE_PTR(plot->p2dSampleArray[cptDraw], n-2); 
+	if (aPoint.x < pLastPoint->x) {
+	  // FIXME : What to do if X increase like a exponentiel ?
+	  plot->p2dSubType = GD_2D_F2X;
+	  drawType         = GD_2D_FULL_REDRAW;
+	  GDISP_TRACE(1,"gdisp_stepOnPlot2D : changing type to F2X\n");
+	}
+      }
 
       if (myTime == 0.0 && cptDraw == 0) {
 
@@ -1845,14 +1800,14 @@ gdisp_stepOnPlot2D (Kernel_T *kernel,
 	  drawType         = GD_2D_FULL_REDRAW;
 
 	}
-	if (plot->p2dPtMax.x - plot->p2dPtMin.x > GDISP_WIN_T_DURATION ) {
+	if (plot->p2dPtMax.x - plot->p2dPtMin.x > GDISP_WIN_T_DURATION) {
 
 	  plot->p2dPtMin.x = plot->p2dPtMax.x - GDISP_WIN_T_DURATION;
 	  drawType         = GD_2D_SCROLL_X_AXIS;
 
 	}	    
 	break;
-
+ 
       case GD_2D_F2X :
 
 	if (aPoint.x < plot->p2dPtMin.x) {
@@ -1944,6 +1899,11 @@ gdisp_initPlot2DSystem (Kernel_T     *kernel,
   plotSystem->psStep              = gdisp_stepOnPlot2D;
   plotSystem->psGetInformation    = gdisp_getPlot2DInformation;
 
+  if (getenv("GDISP_STRACE")!=NULL)
+    gdisp_verbosity = atoi(getenv("GDISP_STRACE"));
+  else
+    gdisp_verbosity = 1;
+    
 }
 
 
