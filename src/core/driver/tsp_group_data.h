@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_group_data.h,v 1.1 2002-08-27 08:56:09 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_group_data.h,v 1.2 2002-10-01 15:33:20 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -51,10 +51,22 @@ typedef struct TSP_group_t TSP_group_t;
 
 struct TSP_group_table_t
 {
+
+  /**
+   * Total number of items for all groups
+   */
   int groups_summed_size;
     
+  /**
+   * Number of groups.
+   */
   int table_len;
     
+  /**
+   * size of biggest group
+   */
+  int max_group_len;
+
   TSP_group_t* groups;
     
 };
