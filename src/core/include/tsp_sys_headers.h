@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_sys_headers.h,v 1.1 2002-08-27 08:56:09 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_sys_headers.h,v 1.2 2002-09-05 09:17:17 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -20,13 +20,13 @@ Purpose   :
 #define _POSIX_SOURCE
 #define _POSIX_C_SOURCE 199309
 
-/*#define GHA  1*/
+
 #include <unistd.h>
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-/*#define THO 2*/
+
 
 #endif
