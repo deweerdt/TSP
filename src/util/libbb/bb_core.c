@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.6 2004-10-19 20:01:14 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.7 2004-11-02 19:31:30 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -43,6 +43,7 @@ Purpose   : Blackboard Idiom implementation
 #include <errno.h>
 #include <unistd.h>
 #include <assert.h>
+#include <ctype.h>
 
 #include <sys/ipc.h>
 #include <sys/shm.h>
@@ -372,7 +373,8 @@ bb_value_print(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc, FILE* pf, int32_t
       fprintf(pf,"0x%llx ",((uint64_t*) data)[i]);
       break;	
     case E_BB_CHAR:
-      fprintf(pf,"0x%02x<%c> ",((char*) data)[i],((char*) data)[i]);
+      fprintf(pf,"0x%02x<%c> ",((char*) data)[i],
+	      isprint(((char*) data)[i]) ? ((char*) data)[i] : '?');
       break;
     case E_BB_USER:
       for (j=0; j<data_desc.type_size; ++j) {
