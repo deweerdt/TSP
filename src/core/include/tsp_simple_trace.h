@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/include/Attic/tsp_simple_trace.h,v 1.12 2004-09-20 20:55:59 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/Attic/tsp_simple_trace.h,v 1.13 2004-09-21 21:24:57 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -49,10 +49,10 @@ Purpose   : Some trace macro
             _strace_debug_level = atoi(getenv("STRACE_DEBUG")); \
         } else {\
             _strace_debug_level = 0; }\
+    }\
     if (_strace_debug_level >= level ) { \
            printf("%7s||%s##%s##%d: ", src, __FILE__, func, __LINE__); \
            printf text; printf("\n"); fflush(stdout);\
-        }\
     }\
 } 
 #ifdef __GNUC__       
