@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: tsp_prjcfg.h.in,v 1.1 2003-02-17 20:51:41 erk Exp $
+$Id: tsp_prjcfg.h.in,v 1.2 2003-02-26 12:39:09 tsp_admin Exp $
 
 -----------------------------------------------------------------------
 
@@ -25,7 +25,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 -----------------------------------------------------------------------
 
 Project   : TSP
-Maintainer : tsp@astrium-space.com
+Maintainer: tsp@astrium-space.com
 Component : Consumer / Provider
 
 -----------------------------------------------------------------------
