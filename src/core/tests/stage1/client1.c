@@ -2,6 +2,7 @@
 #include "tsp_prjcfg.h"
 #include "tsp_consumer.h"
 #include "tsp_time.h"
+#include "calc_func.h"
 #include <math.h>
 /*#include "fortify.h"*/
 
@@ -184,6 +185,7 @@ int main(int argc, char *argv[]){
       return -1;
     }
   STRACE_TEST(("STAGE 001 | STEP 005 : PASSED"));
+  STRACE_TEST(("Now, please wait 1 min ... "));
   /*-------------------------------------------------------------------------------------------------------*/ 
   /* TEST : STAGE 001 | STEP 006 */
   /*-------------------------------------------------------------------------------------------------------*/ 
@@ -217,6 +219,7 @@ int main(int argc, char *argv[]){
 		  {
 		    STRACE_INFO(("T=%d Va=%f", sample.time, sample.user_value));
 		  }
+
 		calc = calc_func(i,sample.time);
 		
 		/* i = 0 is t */
@@ -228,6 +231,7 @@ int main(int argc, char *argv[]){
 			all_data_ok = FALSE;
 		      }
 		  }
+
 		t = sample.time;
 		/* Test */
 		if(count_samples == TSP_TEST_COUNT_SAMPLES)

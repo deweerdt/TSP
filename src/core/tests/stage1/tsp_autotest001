@@ -4,7 +4,7 @@ echo "------------------------------------"
 echo "---------- AUTOTEST 001 ------------"
 echo "------------------------------------"
 echo " - Tests Multiple clients / multiple server connections"
-echo " - Tests correctness of transmited data stream for 1000 symbols, 100Hz, same phase"
+echo " - Tests correctness of transmited data stream for 8000 symbols, 100Hz, same phase"
 echo " - Tests server information string value"
 echo " - Tests total list of symbol names managed by server"
 
