@@ -11,7 +11,7 @@ Is provided :
 - Some test programs
 
 Whenever you need to read from a server a bunch of evolving variables,
-at high rate thrue a network, TSP is for you.
+at high rate through a network, TSP is for you.
 
 Using the TSP producer and consumer API, you may write :
 
