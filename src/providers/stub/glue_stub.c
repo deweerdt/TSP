@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: glue_stub.c,v 1.8 2004-09-15 13:31:43 dufy Exp $
+$Id: glue_stub.c,v 1.9 2004-09-15 15:02:01 dufy Exp $
 
 -----------------------------------------------------------------------
 
@@ -36,7 +36,7 @@ Purpose   : Implementation for the glue_server, for stub test
 
 -----------------------------------------------------------------------
 */
-
+#include <string.h>
 
 #include "tsp_sys_headers.h"
 #include "glue_sserver.h"
@@ -87,8 +87,6 @@ int  GLU_get_symbol_number(void)
 
 static void* GLU_thread(void* arg)
 {
-  
-  static int last_missed = 0;
   int i, symbols_nb, *ptr_index;
   tsp_hrtime_t current_time;
   glu_item_t item;

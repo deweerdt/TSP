@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: server_main.c,v 1.1 2003-01-31 18:22:25 tsp_admin Exp $
+$Id: server_main.c,v 1.2 2004-09-15 15:02:01 dufy Exp $
 
 -----------------------------------------------------------------------
 
@@ -50,6 +50,7 @@ int main(int argc, char *argv[])
     {
       TSP_provider_run(TRUE);
     }
+  return 0;
 }
   
 

@@ -7,6 +7,8 @@ SOURCES = \
 	glue_stub.c \
 	server_main.c
 
+OBJECTS = $(SOURCES:%.c=$(DIROBJ)/%.o)
+
 ADD_LIB =  $(DIRLIB)/libtsp_provider.a $(DIRLIB)/libtsp_services.a  $(DIRLIB)/libtsp_calc.a
 
 ifeq (${TSP_TARGET},vxworks)
@@ -23,14 +25,14 @@ CPPFLAGS += -I../../util/libcalc
 # same thing for clean:: that calls destroy::
 # -----------------------------------------------------------
 
-build::	$(TARGET) 
+build::	$(TARGET)
 
-$(TARGET): $(SOURCES)
-	$(LINK.c) -o $@ $(SOURCES) $(ADD_LIB) $(LDLIBS)
-
+$(TARGET): $(OBJECTS)
+	@echo "@@@ Specific Linking $@ ..."
+	$(LINK.c) -o $@ $(OBJECTS) $(ADD_LIB) $(LDLIBS)
 
 destroy::
-	$(RM) 	 $(TARGET) *.o 
+	$(RM) 	 $(TARGET) $(OBJECTS)
  
 include $(DEVBASE)/make/Makerules
 
