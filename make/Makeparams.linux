@@ -1,6 +1,10 @@
 # Makeparams.linux
 
-include $(DEVBASE)/make/Makeproject
+# target directory
+# ----------------
+DIREXEC= $(DIRBASE)/$(TSP_TARGET)/$(TSP_MODE)
+DIRBIN = $(DIREXEC)/bin
+DIRLIB = $(DIREXEC)/lib
 
 # Default tools
 # -------------
@@ -11,9 +15,8 @@ CC=gcc
 # Default options
 # ---------------
 ARFLAGS = rvs
-CFLAGS = 
 CPPFLAGS +=  -D_REENTRANT  -DUSE_STRACE -DTSP_NO_XDR_ENCODE
 LDLIBS =   -lm  -lpthread  
 
 
-include .make.state
+#include .make.state
