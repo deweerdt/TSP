@@ -1,15 +1,11 @@
 # Makesubdirs
-
+#QUIET=-s
 
 build debug destroy print config::
 	@for dir in $(SUBDIRS); \
 	 do \
-		(cd $$dir; $(MAKE) -s "LEVEL=$$LEVEL---" $@); \
+		(cd $$dir; $(MAKE) $(QUIET) $@); \
 		if [ $$? -ne 0 ]; then \
 			exit 1; \
 		fi; \
 	 done
-
-# less verbosity
-
-#		echo ">>>$(LEVEL) END (`pwd`/$$dir)"; \
