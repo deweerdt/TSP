@@ -1,5 +1,6 @@
 #/usr/bin/csh
 
+
 if ($#argv <> 1) then
 	echo "usage : $0 'dir_target'"
 	exit (1)
