@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.10 2002-10-24 13:28:28 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.11 2002-10-28 14:19:09 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -764,6 +764,7 @@ int TSP_consumer_request_sample(TSP_provider_t provider, TSP_consumer_symbol_req
       req_sample.symbols.TSP_sample_symbol_info_list_t_val[i].provider_global_index = symbols->val[i].index;
       req_sample.symbols.TSP_sample_symbol_info_list_t_val[i].period = symbols->val[i].period;
       req_sample.symbols.TSP_sample_symbol_info_list_t_val[i].phase = symbols->val[i].phase;
+      req_sample.symbols.TSP_sample_symbol_info_list_t_val[i].name = "";
     }
 	
   ans_sample = TSP_request_sample(&req_sample, otsp->server);
