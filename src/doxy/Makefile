@@ -2,7 +2,7 @@ DEST=$(DEVBASE)/doc/html
 
 all::
 		echo "------TSP--Documentation Generation BEGIN----------\n"; \
-		doxygen rocsat; \
+		doxygen tsp; \
 		cp doxygen.css $(DEST); \
 		cp header/*.* $(DEST); \
 		cp footer/*.* $(DEST); \
