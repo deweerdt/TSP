@@ -1,6 +1,6 @@
 /*!  \file
 
-$Header: /home/def/zae/tsp/tsp/src/util/libres/libUTIL.h,v 1.1 2003-01-31 18:32:56 tsp_admin Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libres/libUTIL.h,v 1.2 2003-02-27 15:39:31 tsp_admin Exp $
 
 -----------------------------------------------------------------------
 
@@ -59,6 +59,7 @@ int	d_rval_r(d_rhandle h, int c);
 void	d_rnam_r(d_rhandle h,char *nam, char *desc, int i);
 void	d_rcom_r(d_rhandle h,char *com, int i);
 int	d_read_r(d_rhandle h,void *buf);
+int	d_restart_r(d_rhandle h);
 int	d_dread_r(d_rhandle h,void *buf, int i);
 void	d_rclos_r(d_rhandle h);
 
