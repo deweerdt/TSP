@@ -1,6 +1,6 @@
 # -*- Makefile -*-
 
-include $(DEVBASE)/make/Makeparams
+include $(DEVBASE)/make/Makeparams.java
 
 JPACKAGE=tsp.consumer
 JPACKAGEDIR=$(subst .,/,$(JPACKAGE))
