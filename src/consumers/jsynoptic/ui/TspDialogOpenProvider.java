@@ -23,7 +23,7 @@
  *     Individual: 
  * 		   Christophe Pecquerie
  *
- * $Id: TspDialogOpenProvider.java,v 1.2 2004-02-13 12:12:01 cpecquerie Exp $
+ * $Id: TspDialogOpenProvider.java,v 1.3 2004-11-22 07:05:04 sgalles Exp $
  * 
  * Changes ------- 14-Jan-2004 : Creation Date (NB);
  *  
@@ -54,11 +54,19 @@ import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 import javax.swing.border.TitledBorder;
 
 import jsynoptic.ui.JSynoptic;
 import tsp.consumer.jsynoptic.impl.TspHandler;
 import tsp.consumer.jsynoptic.impl.TspHandler.TspProviderNotFoundException;
+import tsp.core.common.url.TspMalformedURLException;
+import tsp.core.common.url.TspNoServerFoundException;
+import tsp.core.common.url.TspURL;
+import tsp.core.common.url.TspURLFactory;
+import tsp.core.common.url.TspUnknownHostException;
+import tsp.core.common.url.TspUnknownServerNameException;
+import tsp.core.common.url.TspUnknownServerNumberException;
 /**
  * @author pecquerie
  * 
@@ -76,11 +84,13 @@ public class TspDialogOpenProvider extends JDialog {
 	private JPanel buttonPanel_;
 	private JTextField frequencyInput_;
 	private JLabel frequencyLabel_;
-	private JTextField hostInput_;
-	private JLabel hostLabel_;
+	private JTextField urlInput_;
+	private JLabel urlLabel_;
 	private JLabel infoChannelLabel2_;
 	private JLabel infoChannelLabel_;
 	private JPanel infoConnectPanel_;
+	private JPanel inputConnectPanel_;
+	private JPanel urlConnectPanel_;
 	private JLabel infoMaxFreqLabel2_;
 	private JLabel infoMaxFreqLabel_;
 	private JLabel infoNbClientsLabel2_;
@@ -92,9 +102,7 @@ public class TspDialogOpenProvider extends JDialog {
 	private JLabel infoVersionLabel_;
 	private JPanel inputPanel_;
 	private JTextField phaseInput_;
-	private JLabel phaseLabel_;
-	private JTextField providerInput_;
-	private JLabel providerLabel_;
+	private JLabel phaseLabel_;	
 	private JLabel statusLabel_;
 	private JPanel statusPanel_;
 	private TspLogoPanel logoPanel_;
@@ -115,12 +123,12 @@ public class TspDialogOpenProvider extends JDialog {
 		super(JSynoptic.gui, "Open a TSP provider", true);
 		tspHandler_ = tspHandler;
 		initComponents();
-		hostInput_.setText(tspHandler_.getHostname());
-		providerInput_.setText(Integer.toString(tspHandler_.getProviderId()));
+		urlInput_.setText(tspHandler_.getUrl().toString());		
+		
 		frequencyInput_.setText(Double.toString(tspHandler_.getSamplingFrequency()));
 		phaseInput_.setText(Integer.toString(tspHandler_.getSamplingPhase()));
 		if(tspHandler_.getSessionId_() >= 0) {
-			printStatusOK("Connected to " + tspHandler_.getHostname() + ":" + tspHandler_.getProviderId());
+			printStatusOK("Connected to " + tspHandler_.getUrl().getHost() + ":" + tspHandler_.getUrl().getServerNumber());
 			buttonOK_.setEnabled(true);
 			infoChannelLabel2_.setText(
 					Integer.toString(tspHandler_.getProviderChannelId()));
@@ -150,6 +158,8 @@ public class TspDialogOpenProvider extends JDialog {
 		buttonCancel_ = new JButton();
 		logoPanel_ = new TspLogoPanel();
 		infoConnectPanel_ = new JPanel();
+		inputConnectPanel_ = new JPanel();
+		urlConnectPanel_ = new JPanel();
 		buttonConnect_ = new JButton();
 		infoPanel_ = new JPanel();
 		infoChannelLabel_ = new JLabel();
@@ -163,10 +173,8 @@ public class TspDialogOpenProvider extends JDialog {
 		infoNbSymbolsLabel_ = new JLabel();
 		infoNbSymbolsLabel2_ = new JLabel();
 		inputPanel_ = new JPanel();
-		hostLabel_ = new JLabel();
-		hostInput_ = new JTextField();
-		providerLabel_ = new JLabel();
-		providerInput_ = new JTextField();
+		urlLabel_ = new JLabel();
+		urlInput_ = new JTextField();		
 		frequencyLabel_ = new JLabel();
 		frequencyInput_ = new JTextField();
 		phaseLabel_ = new JLabel();
@@ -176,7 +184,7 @@ public class TspDialogOpenProvider extends JDialog {
 
 		setFont(new Font("Arial", 0, 12));
 		setName("WindowOpenProvider");
-		setResizable(false);
+		setResizable(true);
 		setModal(true);
 		addWindowListener(new WindowAdapter() {
 			public void windowClosing(WindowEvent evt) {
@@ -185,22 +193,49 @@ public class TspDialogOpenProvider extends JDialog {
 		});
 
 		statusPanel_.setBorder(new TitledBorder("Status"));
-		statusLabel_.setFont(new Font("Dialog", 1, 12));
+		statusLabel_.setFont(new Font("Dialog", 1, 10));
 		statusLabel_.setForeground(Color.red);
 		statusPanel_.add(statusLabel_);
 
 		gridBagConstraints = new GridBagConstraints();
 		gridBagConstraints.gridx = 0;
-		gridBagConstraints.gridy = 1;
+		gridBagConstraints.gridy = 2;
 		gridBagConstraints.gridwidth = 3;
-		gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+		gridBagConstraints.fill = GridBagConstraints.BOTH;
 		gridBagConstraints.insets = new Insets(2, 2, 2, 2);
 		gridBagConstraints.anchor = GridBagConstraints.WEST;
 		getContentPane().add(statusPanel_, gridBagConstraints);
-
+		
+		// Url Connect Panel
+		urlConnectPanel_.setLayout(new GridBagLayout());
+		
+		urlConnectPanel_.setBorder(new TitledBorder("TSP URL"));
+		urlLabel_.setFont(new Font("Dialog", 0, 10));
+		urlLabel_.setLabelFor(urlInput_);
+		urlInput_.setText("///");
+		urlLabel_.setText("   URL format : [protocol:]//[hostname]/[servername][:servernumber]   ");
+		gridBagConstraints = new GridBagConstraints();
+		gridBagConstraints.fill = GridBagConstraints.BOTH;
+		gridBagConstraints.gridwidth = GridBagConstraints.RELATIVE;
+		urlConnectPanel_.add(urlInput_, gridBagConstraints);
+		gridBagConstraints.gridwidth = GridBagConstraints.REMAINDER;
+		urlConnectPanel_.add(buttonConnect_, gridBagConstraints);
+		gridBagConstraints.gridwidth = GridBagConstraints.RELATIVE;
+		urlConnectPanel_.add(urlLabel_,gridBagConstraints);		
+		
+		gridBagConstraints = new GridBagConstraints();
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridy = 0;
+		gridBagConstraints.gridwidth = 3;
+		gridBagConstraints.fill = GridBagConstraints.BOTH;
+		gridBagConstraints.insets = new Insets(2, 2, 2, 2);
+		gridBagConstraints.anchor = GridBagConstraints.WEST;
+		getContentPane().add(urlConnectPanel_, gridBagConstraints);
+		
+		// Button Pannel
 		buttonPanel_.setLayout(new FlowLayout(FlowLayout.RIGHT));
 
-		buttonPanel_.add(logoPanel_);
+		//buttonPanel_.add(logoPanel_);
 		
 		buttonOK_.setMnemonic('O');
 		buttonOK_.setText("OK");
@@ -224,15 +259,26 @@ public class TspDialogOpenProvider extends JDialog {
 		buttonPanel_.add(buttonCancel_);
 
 		gridBagConstraints = new GridBagConstraints();
-		gridBagConstraints.gridx = 0;
-		gridBagConstraints.gridy = 2;
-		gridBagConstraints.gridwidth = 3;
-		gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+		gridBagConstraints.gridx = 1;
+		gridBagConstraints.gridy = 3;
+		gridBagConstraints.gridwidth = 2;
+		gridBagConstraints.fill = GridBagConstraints.BOTH;
 		gridBagConstraints.insets = new Insets(2, 2, 2, 2);
 		getContentPane().add(buttonPanel_, gridBagConstraints);
+		
+		gridBagConstraints = new GridBagConstraints();
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridy = 3;
+		gridBagConstraints.gridwidth = 1;
+		gridBagConstraints.fill = GridBagConstraints.BOTH;
+		gridBagConstraints.insets = new Insets(2, 2, 2, 2);
+		getContentPane().add(logoPanel_, gridBagConstraints);
 
 		infoConnectPanel_.setLayout(
 			new BoxLayout(infoConnectPanel_, BoxLayout.Y_AXIS));
+		
+		inputConnectPanel_.setLayout(
+				new BoxLayout(inputConnectPanel_, BoxLayout.Y_AXIS));
 
 		buttonConnect_.setMnemonic('n');
 		buttonConnect_.setText("Connect");
@@ -244,13 +290,13 @@ public class TspDialogOpenProvider extends JDialog {
 			}
 		});
 
-		infoConnectPanel_.add(buttonConnect_);
-
+		//infoPanel
 		infoPanel_.setLayout(new GridLayout(5, 2));
 
 		infoPanel_.setBorder(new TitledBorder("Infos"));
 		infoChannelLabel_.setFont(new Font("Dialog", 0, 12));
 		infoChannelLabel_.setText("Channel ID :");
+		infoChannelLabel_.setHorizontalAlignment(SwingConstants.RIGHT);
 		infoPanel_.add(infoChannelLabel_);
 
 		infoChannelLabel2_.setFont(new Font("Dialog", 1, 12));
@@ -258,6 +304,7 @@ public class TspDialogOpenProvider extends JDialog {
 
 		infoVersionLabel_.setFont(new Font("Dialog", 0, 12));
 		infoVersionLabel_.setText("Version :");
+		infoVersionLabel_.setHorizontalAlignment(SwingConstants.RIGHT);
 		infoPanel_.add(infoVersionLabel_);
 
 		infoVersionLabel2_.setFont(new Font("Dialog", 1, 12));
@@ -265,6 +312,7 @@ public class TspDialogOpenProvider extends JDialog {
 
 		infoMaxFreqLabel_.setFont(new Font("Dialog", 0, 12));
 		infoMaxFreqLabel_.setText("Max Freq :");
+		infoMaxFreqLabel_.setHorizontalAlignment(SwingConstants.RIGHT);
 		infoPanel_.add(infoMaxFreqLabel_);
 
 		infoMaxFreqLabel2_.setFont(new Font("Dialog", 1, 12));
@@ -272,6 +320,7 @@ public class TspDialogOpenProvider extends JDialog {
 
 		infoNbClientsLabel_.setFont(new Font("Dialog", 0, 12));
 		infoNbClientsLabel_.setText("Nb clients :");
+		infoNbClientsLabel_.setHorizontalAlignment(SwingConstants.RIGHT);
 		infoPanel_.add(infoNbClientsLabel_);
 
 		infoNbClientsLabel2_.setFont(new Font("Dialog", 1, 12));
@@ -279,6 +328,7 @@ public class TspDialogOpenProvider extends JDialog {
 
 		infoNbSymbolsLabel_.setFont(new Font("Dialog", 0, 12));
 		infoNbSymbolsLabel_.setText("Nb symbols : ");
+		infoNbSymbolsLabel_.setHorizontalAlignment(SwingConstants.RIGHT);
 		infoPanel_.add(infoNbSymbolsLabel_);
 
 		infoNbSymbolsLabel2_.setFont(new Font("Dialog", 1, 12));
@@ -288,29 +338,22 @@ public class TspDialogOpenProvider extends JDialog {
 
 		gridBagConstraints = new GridBagConstraints();
 		gridBagConstraints.gridx = 2;
-		gridBagConstraints.gridy = 0;
-		gridBagConstraints.fill = GridBagConstraints.VERTICAL;
+		gridBagConstraints.gridy = 1;
+		gridBagConstraints.fill = GridBagConstraints.BOTH;
 		gridBagConstraints.insets = new Insets(2, 2, 2, 2);
 		getContentPane().add(infoConnectPanel_, gridBagConstraints);
 
-		inputPanel_.setLayout(new GridLayout(4, 2, 0, 5));
-
+		// inputConnectPanel		
+		
+		inputPanel_.setLayout(new GridLayout(3, 2, 0, 5));
+				
 		inputPanel_.setBorder(new TitledBorder("TSP Config"));
-		hostLabel_.setFont(new Font("Dialog", 0, 12));
-		hostLabel_.setLabelFor(hostInput_);
-		hostLabel_.setText("Host : ");
-		inputPanel_.add(hostLabel_);
-
-		inputPanel_.add(hostInput_);
-
-		providerLabel_.setFont(new Font("Dialog", 0, 12));
-		providerLabel_.setLabelFor(providerInput_);
-		providerLabel_.setText("Provider : ");
-		inputPanel_.add(providerLabel_);
-
-		providerInput_.setText("0");
-		inputPanel_.add(providerInput_);
-
+		/*urlLabel_.setFont(new Font("Dialog", 0, 12));
+		urlLabel_.setLabelFor(urlInput_);
+		urlLabel_.setText("Url : ");		
+		inputPanel_.add(urlLabel_);		
+		inputPanel_.add(urlInput_);*/
+		
 		frequencyLabel_.setFont(new Font("Dialog", 0, 12));
 		frequencyLabel_.setLabelFor(frequencyInput_);
 		frequencyLabel_.setText("Freq (Hz) : ");
@@ -327,14 +370,17 @@ public class TspDialogOpenProvider extends JDialog {
 		phaseInput_.setText("0");
 		inputPanel_.add(phaseInput_);
 
+		inputConnectPanel_.add(inputPanel_);
+		
+		
 		gridBagConstraints = new GridBagConstraints();
 		gridBagConstraints.gridx = 0;
-		gridBagConstraints.gridy = 0;
+		gridBagConstraints.gridy = 1;
 		gridBagConstraints.gridwidth = 2;
 		gridBagConstraints.fill = GridBagConstraints.BOTH;
 		gridBagConstraints.ipady = 6;
 		gridBagConstraints.insets = new Insets(2, 2, 2, 2);
-		getContentPane().add(inputPanel_, gridBagConstraints);
+		getContentPane().add(inputConnectPanel_, gridBagConstraints);
 		
 		Dimension d=Toolkit.getDefaultToolkit().getScreenSize();				
 		pack();
@@ -351,13 +397,13 @@ public class TspDialogOpenProvider extends JDialog {
 	private void buttonConnect_ActionPerformed(ActionEvent evt) {
 		if (tspHandler_ != null)
 			tspHandler_.finalize();
-		String hostName = hostInput_.getText();
-		int provider = Integer.parseInt(providerInput_.getText());
-		if (hostName.equals(""))
+		
+	/*	if (hostName.equals(""))
 			printStatusError("Please enter a hostname");
-		else {
+		else {*/
 			try {
-				tspHandler_ = new TspHandler(hostName, provider);
+				TspURL url = TspURLFactory.createWithDefaultSupport(urlInput_.getText());				
+				tspHandler_ = new TspHandler(url);
 				infoChannelLabel2_.setText(
 					Integer.toString(tspHandler_.getProviderChannelId()));
 				infoNbClientsLabel2_.setText(
@@ -368,25 +414,44 @@ public class TspDialogOpenProvider extends JDialog {
 					Integer.toString(tspHandler_.getProviderNbSymbols()));
 				infoMaxFreqLabel2_.setText(
 					Double.toString(tspHandler_.getProviderBaseFrequency()));
-				printStatusOK("Connected to " + hostName + ":" + provider);
+				printStatusOK("Connected to " + url );
 				buttonOK_.setEnabled(true);
-			} catch (UnknownHostException e) {
+			} catch (TspMalformedURLException e) {
+				clearInfoLabels();
+				printStatusError("Malformed URL");
+				buttonOK_.setEnabled(false);
+				tspHandler_ = null;
+			} catch (TspUnknownHostException e) {				
 				clearInfoLabels();
 				printStatusError("Unknown Host");
 				buttonOK_.setEnabled(false);
 				tspHandler_ = null;
+			} catch (TspUnknownServerNameException e) {				
+				clearInfoLabels();
+				printStatusError("Unknown ServerName");
+				buttonOK_.setEnabled(false);
+				tspHandler_ = null;
+			} catch (TspUnknownServerNumberException e) {				
+				clearInfoLabels();
+				printStatusError("Unknown ServerNumber");
+				buttonOK_.setEnabled(false);
+				tspHandler_ = null;
+			} catch (TspNoServerFoundException e) {				
+				clearInfoLabels();
+				printStatusError("No server found on host");
+				buttonOK_.setEnabled(false);
+				tspHandler_ = null;	
 			} catch (TspProviderNotFoundException e) {
 				clearInfoLabels();
 				printStatusError("No TSP provider found on this host");
 				buttonOK_.setEnabled(false);
-				tspHandler_ = null;
+				tspHandler_ = null;						
 			} catch (Exception e) {
 				clearInfoLabels();
 				printStatusError(e.getMessage());
 				buttonOK_.setEnabled(false);
 				tspHandler_ = null;
-			}
-		}
+			}		
 	}
 
 	private void clearInfoLabels() {

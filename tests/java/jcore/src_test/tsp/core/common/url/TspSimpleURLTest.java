@@ -1,4 +1,4 @@
-/* $Id: TspSimpleURLTest.java,v 1.2 2004-11-11 06:29:32 sgalles Exp $
+/* $Id: TspSimpleURLTest.java,v 1.3 2004-11-22 07:05:04 sgalles Exp $
  * -----------------------------------------------------------------------
  * 
  * TSP Library - core components for a generic Transport Sampling Protocol.
@@ -60,9 +60,20 @@ public class TspSimpleURLTest extends TestCase {
 		
 	}
 
-	public void testNoProtocol() throws Exception{
+	public void testNoProtocol1() throws Exception{
 		
 			final String url = "://myhost/myserver:1";
+			TspURL o = new TspSimpleURL(url);
+			assertEquals(null, o.getProtocol());
+			assertEquals("myhost", o.getHost());
+			assertEquals("myserver", o.getServerName());
+			assertEquals(new Integer(1), o.getServerNumber());
+		
+	}
+	
+	public void testNoProtocol2() throws Exception{
+		
+			final String url = "//myhost/myserver:1";
 			TspURL o = new TspSimpleURL(url);
 			assertEquals(null, o.getProtocol());
 			assertEquals("myhost", o.getHost());
@@ -91,6 +102,8 @@ public class TspSimpleURLTest extends TestCase {
 			assertEquals("myserver", o.getServerName());
 			assertEquals(null, o.getServerNumber());
 	}
+	
+	
 
 	private void assertUrlIsEmpty(TspURL o) {
 		assertEquals(null, o.getProtocol());
@@ -129,6 +142,17 @@ public class TspSimpleURLTest extends TestCase {
 			assertEquals("myhost", o.getHost());
 			assertEquals(null, o.getServerName());
 			assertEquals(new Integer(1), o.getServerNumber());
+		
+	}
+	
+	public void testMixedEmpty3() throws Exception{
+		
+			final String url = "///myserver:";
+			TspURL o = new TspSimpleURL(url);
+			assertEquals(null, o.getProtocol());
+			assertEquals(null, o.getHost());
+			assertEquals("myserver", o.getServerName());
+			assertEquals(null, o.getServerNumber());
 		
 	}
 

@@ -23,7 +23,7 @@
  *     Individual: 
  * 		   Christophe Pecquerie
  *
- * $Id: TspDataPlugin.java,v 1.2 2004-02-13 12:12:01 cpecquerie Exp $
+ * $Id: TspDataPlugin.java,v 1.3 2004-11-22 07:05:04 sgalles Exp $
  * 
  * Changes ------- 06-Jan-2004 : Creation Date (NB);
  *  
@@ -148,7 +148,7 @@ public class TspDataPlugin extends Plugin implements DataSourceProvider, ActionL
 			for(int i=0; i<tdsc.tspHandler_.getSymbolTab().length ; i++)
 				if(tdsc.tspHandler_.getSymbolTab()[i].name.equals(id)) {
 					TspSampleSymbolInfo symbol = tdsc.tspHandler_.getSymbolTab()[i];
-					tdsc.addSource(new DataInfo(symbol.name,symbol.name,"Symbol from " + tdsc.tspHandler_.getHostname() + ":" + tdsc.tspHandler_.getProviderChannelId(),"NA"));
+					tdsc.addSource(new DataInfo(symbol.name,symbol.name,"Symbol from " + tdsc.tspHandler_.getUrl().getHost() + ":" + tdsc.tspHandler_.getProviderChannelId(),"NA"));
 					//Request this symbol to the provider
 					tdsc.tspHandler_.getSymbolTab()[i].sample = true;
 					break;

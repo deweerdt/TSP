@@ -23,7 +23,7 @@
  *     Individual: 
  * 		   Christophe Pecquerie
  *
- * $Id: TspDataSourceCollection.java,v 1.3 2004-11-06 11:45:58 sgalles Exp $
+ * $Id: TspDataSourceCollection.java,v 1.4 2004-11-22 07:05:04 sgalles Exp $
  * 
  * Changes ------- 06-Jan-2004 : Creation Date (NB);
  *  
@@ -214,7 +214,7 @@ public class TspDataSourceCollection
 			
 			TspSampleSymbolInfo[] symbolTab = tspHandler_.getSymbolTab();
 			//Create the new sources list
-			String hostname = tspHandler_.getHostname();
+			String hostname = tspHandler_.getUrl().getHost();
 			int channelID = tspHandler_.getProviderChannelId();
 			
 			//Remove all removed sources

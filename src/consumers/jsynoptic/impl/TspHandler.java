@@ -26,7 +26,7 @@
  * Individual:
  * 				Christophe Pecquerie
  * 
- * $Id: TspHandler.java,v 1.5 2004-11-14 17:16:36 sgalles Exp $
+ * $Id: TspHandler.java,v 1.6 2004-11-22 07:05:04 sgalles Exp $
  * 
  * Changes ------- 11-Dec-2003 : Creation Date (NB);
  *  
@@ -67,8 +67,7 @@ public class TspHandler extends TspConsumer implements Serializable {
 		}
 	}
 
-	private String hostName_;						//Hostname
-	private int provider_;							//Provider number
+	TspURL url_;																// URL for connection
 	private boolean isSampling_ = false;			//Flag telling if this handler is currently sampling
 	private int period_;							//Sampling period (default 100)
 	private double providerBaseFrequency_;			//Base frequency of the provider
@@ -101,15 +100,13 @@ public class TspHandler extends TspConsumer implements Serializable {
 	 * @throws UnknownHostException When the hostname could not be resolved
 	 * @throws TspProviderNotFoundException	When the RPC programm is not found
 	 */
-	public TspHandler(String hostname, int provider) throws UnknownHostException, TspProviderNotFoundException {
+	public TspHandler(TspURL url) throws TspURLException, TspProviderNotFoundException {
 
 		super();
 
 		//TspConfig.setLogLevel(TspConfig.LOG_FINER);
 
-		hostName_ = hostname;
-		provider_ = provider;
-
+		url_ = url;
 		//Setting default values
 		bufferDuration_ = 100;
 		period_ = 100;
@@ -117,10 +114,10 @@ public class TspHandler extends TspConsumer implements Serializable {
 
 		try {
 			/* open Session */
-			TspURL url = TspURLFactory.createEmpty();
+			/*TspURL url = TspURLFactory.createEmpty();
 			url.setProtocol("rpc");
 			url.setHost(hostName_);
-			url.setServerNumber(provider_);
+			url.setServerNumber(provider_);*/
 			sessionId_ = openSession(url);
 
 			if (sessionId_ >= 0) {
@@ -147,11 +144,7 @@ public class TspHandler extends TspConsumer implements Serializable {
 
 		} catch (TspConsumerException e) {			
 			throw new TspProviderNotFoundException();			
-		} catch (TspUnknownHostException e) {			
-			throw new UnknownHostException();
-		} catch (TspURLException e) {			
-			throw new TspProviderNotFoundException();
-		}
+		} 
 
 	}
 	/**
@@ -214,10 +207,10 @@ public class TspHandler extends TspConsumer implements Serializable {
 
 	/**
 	 * 
-	 * @return Returns the hostname
+	 * @return Returns the url
 	 */
-	public String getHostname() {
-		return hostName_;
+	public TspURL getUrl() {
+		return url_;
 	}
 	
 	/**
@@ -372,11 +365,8 @@ public class TspHandler extends TspConsumer implements Serializable {
 		
 		
 		try {
-			/* open Session */
-			TspURL url = TspURLFactory.createEmpty();
-			url.setHost(hostName_);
-			url.setServerNumber(provider_);
-			sessionId_ = openSession(url);
+			/* open Session */			
+			sessionId_ = openSession(url_);
 			if (sessionId_ >= 0) {
 
 				tspSession_ = getSession(sessionId_);
@@ -482,23 +472,10 @@ public class TspHandler extends TspConsumer implements Serializable {
 		out.defaultWriteObject();
 	}
 
-	/**
-	 * @return Returns the provider_.
-	 */
-	public int getProviderId() {
-		return provider_;
-	}
-
-	/**
-	 * @param provider_ The provider_ to set.
-	 */
-	public void setProviderId(int provider_) {
-		this.provider_ = provider_;
-	}
 	
 	public String getId() {
 		return	"TSP "	
-		+ getHostname()
+		+ getUrl().getHost()
 		+ " (" 
 		+ getRoundedSamplingFrequencyString(2)
 		+ "Hz,"

@@ -150,7 +150,7 @@ For jstdout you can choose the provider url with :
 where urlValue being :
 	protocol://host/serverName:serverNumber
 All fields are optional, for example :
-	ant jstdout-run -Dtsp.url=":///StubbedServer"
+	ant jstdout-run -Dtsp.url="///StubbedServer"
 	
 You can run TSP JUnit test with the command :
    ant test-report   
