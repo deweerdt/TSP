@@ -10,8 +10,8 @@ SOURCES = \
 	tsp_consumer.c \
     tsp_group.c \
     tsp_stream_receiver.c \
-    tsp_data_receiver.c  \
-    tsp_sample_ringbuf.c 
+    tsp_data_receiver.c  
+
 
 
 OBJECTS=$(SOURCES:%.c=%.o) 
