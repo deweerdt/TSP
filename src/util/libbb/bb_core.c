@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.2 2004-09-20 20:55:59 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.3 2004-10-05 22:02:18 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -261,13 +261,13 @@ bb_value_write(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc,const char* value,
       ((int64_t*)data)[idx] = strtoll(value,(char **)NULL,hexval ? 16 : 10);
       break; 
     case E_BB_UINT16:
-      ((u_int16_t*)data)[idx] = strtol(value,(char **)NULL,hexval ? 16 : 10);
+      ((u_int16_t*)data)[idx] = strtoul(value,(char **)NULL,hexval ? 16 : 10);
       break;
     case E_BB_UINT32:
-      ((u_int32_t*)data)[idx] = strtol(value,(char **)NULL,hexval ? 16 : 10);
+      ((u_int32_t*)data)[idx] = strtoul(value,(char **)NULL,hexval ? 16 : 10);
       break;	
     case E_BB_UINT64:
-      ((u_int64_t*)data)[idx] = strtoll(value,(char **)NULL,hexval ? 16 : 10);
+      ((u_int64_t*)data)[idx] = strtoull(value,(char **)NULL,hexval ? 16 : 10);
       break;	
     case E_BB_CHAR:
       retval = E_NOK;
