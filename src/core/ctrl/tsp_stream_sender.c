@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_stream_sender.c,v 1.8 2002-12-02 15:14:45 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_stream_sender.c,v 1.9 2002-12-05 10:55:54 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -34,10 +34,10 @@ stream  from the producer for the asked symbols. This layer is the network layer
 #define TSP_DATA_ADDRESS_STRING_SIZE 256
 
 /* (µs) */
-#define TSP_STREAM_SENDER_CONNECTION_POOL_TIME ((int)(1e5))
+#define TSP_STREAM_SENDER_CONNECTION_POLL_TIME ((int)(1e5))
 
 /* (µs) */
-#define TSP_STREAM_SENDER_FIFO_POOL_TIME       ((int)(1e5))
+#define TSP_STREAM_SENDER_FIFO_POLL_TIME       ((int)(1e5))
 
 struct TSP_socket_t
 {
@@ -72,6 +72,12 @@ struct TSP_socket_t
    * Tell if the stop function was called 
    */
   int is_stopped;
+
+  /** 
+   * When the send fails, broken = TRUE;
+   */
+  int connection_ok;
+
 
 };
 
@@ -118,13 +124,13 @@ static void* TSP_streamer_sender_thread_sender(void* arg)
  
     /* Wait for consumer connection before we send data */  
 
-  STRACE_INFO(("Thread stream sender created : waiting for client to connect..."));
+  STRACE_DEBUG(("Thread stream sender created : waiting for client to connect..."));
   while(!sock->client_is_connected)
     {
-      tsp_usleep(TSP_STREAM_SENDER_CONNECTION_POOL_TIME);
+      tsp_usleep(TSP_STREAM_SENDER_CONNECTION_POLL_TIME);
      
     }
-  STRACE_INFO(("Client connected ! Send loop starts !"));
+  STRACE_DEBUG(("Client connected ! Send loop starts !"));
 
   item = RINGBUF_PTR_GETBYADDR(sock->out_ringbuf);
   /* FIXME : gerer l'arret */
@@ -139,16 +145,16 @@ static void* TSP_streamer_sender_thread_sender(void* arg)
 	  item = RINGBUF_PTR_GETBYADDR(sock->out_ringbuf);      
 
 	}
-      	  tsp_usleep(TSP_STREAM_SENDER_FIFO_POOL_TIME);
+      	  tsp_usleep(TSP_STREAM_SENDER_FIFO_POLL_TIME);
 	  item = RINGBUF_PTR_GETBYADDR(sock->out_ringbuf);      
     }
 
   if(!sock->is_stopped)
     {
-      STRACE_WARNING(("Connection with client was lost ! "));
+      STRACE_DEBUG(("Connection with client was lost ! "));
     }
 
-  STRACE_INFO(("End of fifo thread stream sender"));
+  STRACE_DEBUG(("End of fifo thread stream sender"));
       
   STRACE_IO(("-->OUT"));
 }
@@ -218,7 +224,7 @@ static void* TSP_streamer_sender_connector(void* arg)
   pthread_detach(pthread_self());
     
   /* Accept connection on socket */
-  STRACE_INFO(("Thread acceptor started waiting for client to connect", sock->hClient));
+  STRACE_DEBUG(("Thread acceptor started waiting for client to connect", sock->hClient));
   sock->hClient = accept(sock->socketId, NULL, &Len);
 
   if(sock->hClient > 0)
@@ -226,7 +232,7 @@ static void* TSP_streamer_sender_connector(void* arg)
 
       /* OK, the client is connected */
       sock->client_is_connected = TRUE;
-      STRACE_INFO(("New connection accepted on socket client socket %d", sock->hClient));
+      STRACE_DEBUG(("New connection accepted on socket client socket %d", sock->hClient));
     }
   else
     {
@@ -288,6 +294,7 @@ TSP_stream_sender_t TSP_stream_sender_create(int fifo_size)
   sock->out_ringbuf = 0;
   sock->client_is_connected = FALSE;
   sock->is_stopped = FALSE;
+  sock->connection_ok = TRUE;
   
   /* Init socket */
   sock->socketId = socket(AF_INET, SOCK_STREAM, 0);
@@ -482,7 +489,8 @@ int TSP_stream_sender_send(TSP_stream_sender_t sender, const char *buffer, int b
   
   int Total;
   int nread;
-  int identSocket = ((TSP_socket_t*)sender)->hClient;
+  TSP_socket_t* sock = (TSP_socket_t*)sender;
+  int identSocket = sock->hClient;
 
   STRACE_IO(("-->IN"));
 
@@ -503,7 +511,8 @@ int TSP_stream_sender_send(TSP_stream_sender_t sender, const char *buffer, int b
 	      else 
 		{
 		  
-		  STRACE_INFO(("send failed"));
+		  STRACE_DEBUG(("send failed"));
+		  sock->connection_ok = FALSE;
 		  return FALSE;
 		}
 	    }
@@ -530,6 +539,14 @@ int TSP_stream_sender_is_client_connected(TSP_stream_sender_t sender)
 
   return sock->client_is_connected;
 }
+
+int TSP_stream_sender_is_connection_ok(TSP_stream_sender_t sender)
+{
+  TSP_socket_t* sock = (TSP_socket_t*)sender;
+
+  return sock->connection_ok;
+}
+
 
 TSP_stream_sender_ringbuf_t* TSP_stream_sender_get_ringbuf(TSP_stream_sender_t sender)
 {
