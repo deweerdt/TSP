@@ -1,7 +1,9 @@
 # Makesubdirs
 
 
-all debug clean print config::
+build debug destroy print config::
+	@echo "### $(SUBDIRS)"
+	@echo "### $(TSP_TARGET)"
 	@for dir in $(SUBDIRS); \
 	 do \
 		(cd $$dir; $(MAKE) "LEVEL=$$LEVEL---" $@); \

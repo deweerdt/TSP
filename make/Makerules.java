@@ -4,7 +4,7 @@
 # default targets section
 # -----------------------
 
-clean::
+destroy::
 	@echo "@@@ removing class files ..."
 	$(RM) *~
 	$(RM) -rf $(CLASSBASE)/$(JPACKAGEDIR)
