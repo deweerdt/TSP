@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_stream_sender.c,v 1.4 2002-10-09 07:45:21 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_stream_sender.c,v 1.5 2002-10-28 14:11:37 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -230,7 +230,6 @@ TSP_stream_sender_t TSP_stream_sender_create(int fifo_size)
 {
   SFUNC_NAME(TSP_stream_sender_create);
   int status = 0;
-  struct hostent* Host_p = NULL;
   int OptInt = 0;
   int ret = TRUE;
   /*int Len = 0;*/
@@ -317,16 +316,6 @@ TSP_stream_sender_t TSP_stream_sender_create(int fifo_size)
 	}
 
       /* Bind to socket : */
-      /* Get host from the database */
-      Host_p = gethostbyname(host);
-      if (Host_p == (struct hostent *) NULL)
-	{
-	  STRACE_ERROR(("pb get host by name"));
-
-	  close(sock->socketId);
-	  return 0;
-	}
-
       {
 	/*#ifndef __OSF1__
 	  long InAddr;
