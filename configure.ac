@@ -53,8 +53,22 @@ AC_MSG_RESULT([Enabled, will be configured])
 AC_CHECK_PROG([JAVA],[java],[`which java`],[notfound],[$PATH],[rej])
 AC_CHECK_PROG([JAVAC],[javac],[`which javac`],[notfound],[$PATH],[rej])
 AC_CHECK_PROG([JAVADOC],[javadoc],[`which javadoc`],[notfound],[$PATH],[rej])
-JTSP="yes"
-#ENABLED_TSP_TARGET=$ENABLED_TSP_TARGET:java  # java is not a real target
+AC_MSG_CHECKING([Java setup verification...])
+if test "$JAVA" = "notfound"; then
+  AC_MSG_RESULT([NOK: Java executer (java) not found java TSP target is DISABLED])
+  JTSP="no"
+elif test "$JAVAC" = "notfound"; then
+  AC_MSG_RESULT([NOK: Java compiler (javac) not found java TSP target is DISABLED])
+  JTSP="no"
+elif test "$JAVADOC" = "notfound"; then
+  AC_MSG_RESULT([Ok (but see warning)])	
+  AC_MSG_WARN([Java Documentation generator (javadoc) not found, check your java setup])
+  JTSP="yes"
+else
+  AC_MSG_RESULT([Ok])
+  JTSP="yes"
+fi
+#ENABLED_TSP_TARGET=$ENABLED_TSP_TARGET:java  # java is TSP pseudo target
 else
 AC_MSG_RESULT([Disabled, won't be configured])
 fi
@@ -159,6 +173,11 @@ fi
 ############################################################################
 
 AC_MSG_NOTICE([Enabled TSP target are <$ENABLED_TSP_TARGET>])
+if test "$JTSP" = yes; then
+AC_MSG_NOTICE([TSP Java pseudo-target (jtsp) is ENABLED])
+else
+AC_MSG_NOTICE([TSP Java pseudo-target (jtsp) is DISABLED])
+fi
 
 AC_ARG_ENABLE(tsp-consumer,   [  --enable-tsp-consumer        map TSP target to the TSP consumer],
 	      TSPCONSUMER=$enableval,
