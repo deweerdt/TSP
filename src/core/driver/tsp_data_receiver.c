@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_data_receiver.c,v 1.8 2002-12-02 15:14:50 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_data_receiver.c,v 1.9 2002-12-03 16:14:18 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -118,6 +118,14 @@ static int TSP_data_receiver_process_reserved_group_id(int group_index, TSP_samp
 
     case TSP_RESERVED_GROUP_RECONF: 
 	sample->provider_global_index = TSP_DUMMY_PROVIDER_GLOBAL_INDEX_RECONF;
+	break;
+
+    case TSP_RESERVED_GROUP_GLU_DATA_LOST: 
+	sample->provider_global_index = TSP_DUMMY_PROVIDER_GLOBAL_INDEX_GLU_DATA_LOST;
+	break;
+
+    case TSP_RESERVED_GROUP_CONSUMER_DATA_LOST: 
+	sample->provider_global_index = TSP_DUMMY_PROVIDER_GLOBAL_INDEX_CONSUMER_DATA_LOST;
 	break;
     
     default:	 

@@ -1,6 +1,6 @@
 /*!  \file 
  
-$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_const_def.h,v 1.12 2002-11-26 14:06:12 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_const_def.h,v 1.13 2002-12-03 16:14:20 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -68,8 +68,19 @@ operations.i*/
 
 enum TSP_msg_ctrl_t
   {
+
+    /** Message control, end of stream */
     TSP_MSG_CTRL_EOF,
+
+    /** Message control, end of stream and list of symbols changed */
     TSP_MSG_CTRL_RECONF,
+
+    /** data were lost for all consumers by the GLU (ex : provider too slow) */
+    TSP_MSG_CTRL_GLU_DATA_LOST,
+
+    /** data were lost for a consumer (ex : consumer too slow) */
+    TSP_MSG_CTRL_CONSUMER_DATA_LOST
+
   };
 
 typedef enum TSP_msg_ctrl_t TSP_msg_ctrl_t;
@@ -81,6 +92,10 @@ typedef enum TSP_msg_ctrl_t TSP_msg_ctrl_t;
 #define TSP_RESERVED_GROUP_ASYNCHRONE 0xFFFFFFFE
 
 #define TSP_RESERVED_GROUP_RECONF     0xFFFFFFFD
+
+#define TSP_RESERVED_GROUP_GLU_DATA_LOST     0xFFFFFFFC
+
+#define TSP_RESERVED_GROUP_CONSUMER_DATA_LOST     0xFFFFFFFB
 
 /*-------- MISC --------*/
 

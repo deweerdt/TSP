@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_datapool.c,v 1.11 2002-12-02 15:14:45 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_datapool.c,v 1.12 2002-12-03 16:14:15 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -233,6 +233,9 @@ static void* TSP_datapool_thread(void* datapool)
 	  break;
 	case   GLU_GET_RECONF :
 	  msg_ctrl = TSP_MSG_CTRL_RECONF;
+	  break;
+	case   GLU_GET_DATA_LOST :
+	  msg_ctrl = TSP_MSG_CTRL_GLU_DATA_LOST;
 	  break;
 	default:
 	  STRACE_ERROR(("?"));

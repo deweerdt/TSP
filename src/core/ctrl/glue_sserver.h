@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/Attic/glue_sserver.h,v 1.9 2002-11-19 13:09:23 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/Attic/glue_sserver.h,v 1.10 2002-12-03 16:14:15 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -31,10 +31,20 @@ enum GLU_server_type_t
 
 enum GLU_get_state_t
 {
+  /** new item available */
   GLU_GET_NEW_ITEM,
+
+  /** no item availble */
   GLU_GET_NO_ITEM,
+
+  /** end of data stream */
   GLU_GET_EOF,
+
+  /** end of data stream, and list of symbols changed */
   GLU_GET_RECONF,
+
+  /** Data were lost in GLU internals */
+  GLU_GET_DATA_LOST
 
 };
 

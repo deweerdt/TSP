@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_sample_ringbuf.h,v 1.4 2002-11-29 17:34:46 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_sample_ringbuf.h,v 1.5 2002-12-03 16:14:18 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -34,7 +34,12 @@ the consumer to retreive the n asked symbols
 /* Used to tell that a connection problem occured (added in the ringbuf by the data_receiver)*/
 #define TSP_DUMMY_PROVIDER_GLOBAL_INDEX_RECEIVER_ERROR   0xFFFFFFFD
 
+/* Used to tell that on the provider side, the GLU lost some data (provider too slow ?)*/
+#define TSP_DUMMY_PROVIDER_GLOBAL_INDEX_GLU_DATA_LOST   0xFFFFFFFC
 
+/* Used to tell that on the provider side, some data were lost for this consumer (consumer too slow ?),
+   or network overload ? */
+#define TSP_DUMMY_PROVIDER_GLOBAL_INDEX_CONSUMER_DATA_LOST   0xFFFFFFFB
 
  
 

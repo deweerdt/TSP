@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.15 2002-12-03 10:29:30 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.16 2002-12-03 16:14:17 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -1145,7 +1145,18 @@ int TSP_consumer_read_sample(TSP_provider_t provider, TSP_sample_t* sample, int*
 	      /* FIXME : get last error à gerer ? */
 	      break;
 	    case TSP_DUMMY_PROVIDER_GLOBAL_INDEX_RECEIVER_ERROR :
-	      STRACE_INFO (("status message RECEIVER ERROR"));
+	      STRACE_WARNING (("status message RECEIVER ERROR"));
+	      /* FIXME : get last error à gerer ? */
+	      break;
+	    case TSP_DUMMY_PROVIDER_GLOBAL_INDEX_GLU_DATA_LOST :
+	      STRACE_WARNING (("status message GLU DATA LOST. Some data were lost by the GLU on the provider side. "
+			       "is the provider too slow ?"));
+	      /* FIXME : get last error à gerer ? */
+	      break;
+	    case TSP_DUMMY_PROVIDER_GLOBAL_INDEX_CONSUMER_DATA_LOST :
+	      STRACE_WARNING (("status message CONSUMER DATA LOST. Some data were lost for this consumer"
+			       " on the provider side. Is the consumer too slow, or"
+			       " the network overloaded ?"));
 	      /* FIXME : get last error à gerer ? */
 	      break;
 	    default:
