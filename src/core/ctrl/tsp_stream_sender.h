@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_stream_sender.h,v 1.3 2002-10-09 07:45:21 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_stream_sender.h,v 1.4 2002-11-29 17:33:23 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -39,6 +39,8 @@ RINGBUF_DECLARE_TYPE_DYNAMIC(TSP_stream_sender_ringbuf_t,TSP_stream_sender_item_
 
 
 TSP_stream_sender_t TSP_stream_sender_create(int fifo_size);
+void TSP_stream_sender_stop(TSP_stream_sender_t sender);
+void TSP_stream_sender_destroy(TSP_stream_sender_t sender);
 
 int TSP_stream_sender_send(TSP_stream_sender_t sender, const char *buffer, int bufferLen);
 

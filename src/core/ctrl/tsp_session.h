@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.h,v 1.5 2002-11-19 13:16:35 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.h,v 1.6 2002-11-29 17:33:23 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -31,15 +31,16 @@ int TSP_add_session(channel_id_t* new_channel_id, GLU_handle_t glu_h);
 
 void TSP_session_init(void);
 
-int TSP_close_session_by_channel(channel_id_t channel_id);
+void TSP_close_session_by_channel(channel_id_t channel_id);
 
 int TSP_session_add_symbols(TSP_sample_symbol_info_list_t* symbols);
-
-void TSP_session_free_create_symbols_table_call(TSP_answer_sample_t** ans_sample);
 
 int TSP_session_create_symbols_table_by_channel(const TSP_request_sample_t* req_sample,
 						TSP_answer_sample_t* ans_sample,
 						int use_global_datapool);
+void TSP_session_create_symbols_table_by_channel_free_call(TSP_answer_sample_t* ans_sample);
+void TSP_session_destroy_symbols_table_by_channel(channel_id_t channel_id);
+
 
 /* FIXME : en faire un return int ? */
 void TSP_session_all_session_send_data(time_stamp_t t);
@@ -50,8 +51,8 @@ void TSP_session_send_msg_ctrl_by_channel(channel_id_t channel_id, TSP_msg_ctrl_
 
 const char* TSP_session_get_data_address_string_by_channel(channel_id_t channel_id);
 
-int TSP_session_create_data_sender_by_channel(channel_id_t channel_id, int start_local_thread);
-
+int TSP_session_create_data_sender_by_channel(channel_id_t channel_id, int no_fifo);
+int TSP_session_destroy_data_sender_by_channel(channel_id_t channel_id, int stop_local_thread);
 
 int  TSP_session_get_sample_symbol_info_list_by_channel(channel_id_t channel_id,
 							TSP_sample_symbol_info_list_t* symbol_list);

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_stream_receiver.c,v 1.2 2002-09-05 09:11:12 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_stream_receiver.c,v 1.3 2002-11-29 17:33:31 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -27,6 +27,9 @@ stream  from the producer for the asked symbols. This layer is the network layer
 struct TSP_socket_t
 {
   int socketId;
+
+  /** TRUE if TSP_stream_receiver_is_stopped was called */
+  int is_stopped;
 };
 
 typedef struct TSP_socket_t TSP_socket_t;
@@ -45,9 +48,8 @@ TSP_stream_receiver_t TSP_stream_receiver_create(const  char* data_address)
   unsigned short port;
   char* last; /*For strtok_r*/
   
-  /* FIXME : faire la desallocation */
-  /* FIXME : si la socket ne peut pas etre connecte il y a une fuite de memoire*/
   TSP_socket_t* sock = (TSP_socket_t*)calloc(1, sizeof(TSP_socket_t));
+  sock->is_stopped = FALSE;
   TSP_CHECK_ALLOC(sock, 0);
 
   
@@ -70,6 +72,7 @@ TSP_stream_receiver_t TSP_stream_receiver_create(const  char* data_address)
 	  STRACE_ERROR(("Probleme with set socket size"));
 
 	  close(sock->socketId);
+	  free(sock);
 	  return 0;
 	}
 
@@ -82,6 +85,7 @@ TSP_stream_receiver_t TSP_stream_receiver_create(const  char* data_address)
 	{
           STRACE_ERROR(("pb set local address reuse"));
 	  close(sock->socketId);
+	  free(sock);
 	  return 0;
 	}
 
@@ -95,6 +99,7 @@ TSP_stream_receiver_t TSP_stream_receiver_create(const  char* data_address)
 	  STRACE_ERROR(("pb set periodic state control"));
 
 	  close(sock->socketId);
+	  free(sock);
 	  return 0;
 	}
 
@@ -107,6 +112,7 @@ TSP_stream_receiver_t TSP_stream_receiver_create(const  char* data_address)
 	  STRACE_ERROR(("pb set TCP no delay"));
 
 	  close(sock->socketId);
+	  free(sock);
 	  return 0;
 	}
 
@@ -118,6 +124,7 @@ TSP_stream_receiver_t TSP_stream_receiver_create(const  char* data_address)
 	  STRACE_ERROR(("pb get host by name"));
 
 	  close(sock->socketId);
+	  free(sock);
 	  return 0;
 	}
 
@@ -147,20 +154,82 @@ TSP_stream_receiver_t TSP_stream_receiver_create(const  char* data_address)
 	{
 	  STRACE_ERROR(("pb connecting to socket"));
 	  close(sock->socketId);
-	  sock->socketId = 0;
+	  free(sock);
 	  return 0;
 	}
 
+    }
+  else
+    {
+      free(sock);
     }
 
     
   return sock;
 }
 
+void TSP_stream_receiver_prepare_stop(TSP_stream_receiver_t receiver)
+{
+  SFUNC_NAME(TSP_stream_receiver_prepare_stop);
+
+  TSP_socket_t* sock = (TSP_socket_t*)receiver;
+
+
+  STRACE_IO(("-->IN"));
+  
+  sock->is_stopped = TRUE;    
+
+  STRACE_IO(("-->OUT"));
+
+}
+
+
+void TSP_stream_receiver_stop(TSP_stream_receiver_t receiver)
+{
+  SFUNC_NAME(TSP_stream_receiver_stop);
+
+  TSP_socket_t* sock = (TSP_socket_t*)receiver;
+
+
+  STRACE_IO(("-->IN"));
+
+  sock->is_stopped = TRUE;      
+  shutdown(sock->socketId, SHUT_RDWR);
+  close(sock->socketId);
+
+  STRACE_IO(("-->OUT"));
+
+}
+
+void TSP_stream_receiver_destroy(TSP_stream_receiver_t receiver)
+{
+  SFUNC_NAME(TSP_stream_receiver_destroy);
+
+  TSP_socket_t* sock = (TSP_socket_t*)receiver;
+
+  STRACE_IO(("-->IN"));
+
+  free(sock);
+
+  STRACE_IO(("-->OUT"));
+
+}
+
+
+int TSP_stream_receiver_is_stopped(TSP_stream_receiver_t receiver)
+{
+  SFUNC_NAME(TSP_stream_receiver_is_stopped);
+
+  TSP_socket_t* sock = (TSP_socket_t*)receiver;
+
+  return sock->is_stopped;
+
+}
+
 int TSP_stream_receiver_receive(TSP_stream_receiver_t receiver, char *buffer, int bufferLen)
 {
 
-  SFUNC_NAME(TSP_stream_receiver_create);
+  SFUNC_NAME(TSP_stream_receiver_receive);
 
   int nread;
   int Total;
@@ -182,12 +251,12 @@ int TSP_stream_receiver_receive(TSP_stream_receiver_t receiver, char *buffer, in
 	      else 
 		{
 		  
-		  STRACE_ERROR(("send failed"));
+		  STRACE_INFO(("read failed"));
 		  return FALSE;
 		}
 	    }else if (nread == 0)
 	      {
-		STRACE_ERROR(("Received EOF"));
+		STRACE_INFO(("Received socket EOF"));
 		return FALSE;
 	      }
 	  

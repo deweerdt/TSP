@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_data_receiver.c,v 1.6 2002-11-19 13:21:53 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_data_receiver.c,v 1.7 2002-11-29 17:33:30 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -75,6 +75,26 @@ static int TSP_data_receiver_double_decoder(void* out_double,  char* in_buf)
 
 }
 
+static void TSP_data_receiver_process_receiver_error(TSP_sample_ringbuf_t* sample_fifo)
+{
+
+  SFUNC_NAME(TSP_data_receiver_process_receiver_error);
+  int ret = TRUE;
+  TSP_sample_t* sample;
+
+  STRACE_IO(("-->IN"));
+  
+  sample = RINGBUF_PTR_PUTBYADDR(sample_fifo);
+  assert(sample);
+  sample->time = -1;
+  sample->user_value = -1;	
+  sample->provider_global_index = TSP_DUMMY_PROVIDER_GLOBAL_INDEX_RECEIVER_ERROR;
+  RINGBUF_PTR_PUTBYADDR_COMMIT(sample_fifo);
+    
+  STRACE_IO(("-->OUT"));
+
+}
+
 static int TSP_data_receiver_process_reserved_group_id(int group_index, TSP_sample_ringbuf_t* sample_fifo)
 {
 
@@ -125,11 +145,9 @@ TSP_data_receiver_t TSP_data_receiver_create(const char* data_address)
     
   STRACE_IO(("-->IN"));
 
-  /* FIXME : desallouer */
+
   receiver = (TSP_struct_data_receiver_t*)calloc(1, sizeof(TSP_struct_data_receiver_t));
   TSP_CHECK_ALLOC(receiver, 0);
-
-  /* FIXME : desallouer */
 
   /* Allocate buffer for reception*/
   receiver->buf = (char*)calloc(TSP_DATA_STREAM_CREATE_BUFFER_SIZE, sizeof(char));
@@ -140,6 +158,7 @@ TSP_data_receiver_t TSP_data_receiver_create(const char* data_address)
     {
       /* FIXME : bof...*/
       STRACE_ERROR(("TSP_stream_receiver_create failed")); 
+      free(receiver->buf);receiver->buf = 0;
       free(receiver);
       receiver = 0;
     
@@ -180,7 +199,7 @@ int TSP_data_receiver_receive(TSP_data_receiver_t _receiver,
   int* buf_int;  
   TSP_sample_t* sample;
 
-  STRACE_IO(("-->IN"));
+
 
   *fifo_full = FALSE;
 
@@ -243,9 +262,10 @@ int TSP_data_receiver_receive(TSP_data_receiver_t _receiver,
 			}
 		      else
 			{
-			  STRACE_ERROR(("Receive RingBuffer full : %d missed data",
+			  STRACE_ERROR(("Receive RingBuffer full : %d missed data. Looks like a bug",
 					RINGBUF_PTR_MISSED(sample_fifo)));
-			  /* FIXME : This else close must be suppressed. If we are here. It is a bug */
+			  /* FIXME : This else  must be suppressed. If we are here. It is a bug 'coz' the
+			   fifo can not be full, by design */
 			  assert(0);
 			  exit(-1);
 			}
@@ -257,7 +277,12 @@ int TSP_data_receiver_receive(TSP_data_receiver_t _receiver,
 		}
 	      else
 		{
-		  STRACE_ERROR(("Unable to receive samples"));
+		  if(!TSP_stream_receiver_is_stopped(receiver->stream_receiver))
+		    {
+		      STRACE_WARNING(("Unable to receive samples"));
+		      /* Add in fifo a message to report the incident via the read_sample API*/
+		      TSP_data_receiver_process_receiver_error(sample_fifo);
+		    }
 		}
 	
 	    }
@@ -267,32 +292,82 @@ int TSP_data_receiver_receive(TSP_data_receiver_t _receiver,
 	      ret = TSP_data_receiver_process_reserved_group_id(group_index, sample_fifo);
 	      if(!ret)
 		{
-		  STRACE_ERROR(("The received group id is corrupted"));
+		  STRACE_ERROR(("The received group id is corrupted. This should not happen..."));
+		  assert(0);
+		  TSP_data_receiver_process_receiver_error(sample_fifo);
 		}
 	    }
       
 	}
       else
 	{
-	  STRACE_ERROR(("Unable to receive group size and time stamp"));
-
+	  if(!TSP_stream_receiver_is_stopped(receiver->stream_receiver))
+	    {		  
+	      STRACE_WARNING(("Unable to receive group size and time stamp"));
+	      /* Add in fifo a message to report the incident via the read sample API*/
+	      TSP_data_receiver_process_receiver_error(sample_fifo);
+	    }
 	}
     }
   else
     {
-
-      *fifo_full = TRUE;
-      ret = TRUE;
+      if(!TSP_stream_receiver_is_stopped(receiver->stream_receiver))
+	{	
+	  *fifo_full = TRUE;
+	  ret = TRUE;
+	}
     }
     
-  STRACE_IO(("-->OUT"));
 
-  return ret;
-    
-  /*FIXME : gerer les autres cas, et les broken pipe*/
-        
 
+  return ret;    
 }
+
+void TSP_data_receiver_stop(TSP_data_receiver_t _receiver)
+{
+
+   SFUNC_NAME(TSP_data_receiver_receive);
+   
+   TSP_struct_data_receiver_t*  receiver = ( TSP_struct_data_receiver_t*) _receiver;
+
+   STRACE_IO(("-->IN"));
+
+   TSP_stream_receiver_stop(receiver->stream_receiver);
+
+   STRACE_IO(("-->OUT"));
+}
+
+void TSP_data_receiver_prepare_stop(TSP_data_receiver_t _receiver)
+{
+
+   SFUNC_NAME(TSP_data_receiver_receive);
+   
+   TSP_struct_data_receiver_t*  receiver = ( TSP_struct_data_receiver_t*) _receiver;
+
+   STRACE_IO(("-->IN"));
+
+   TSP_stream_receiver_prepare_stop(receiver->stream_receiver);
+
+   STRACE_IO(("-->OUT"));
+}
+
+
+void TSP_data_receiver_destroy(TSP_data_receiver_t _receiver)
+{
+
+   SFUNC_NAME(TSP_data_receiver_receive);
+   
+   TSP_struct_data_receiver_t*  receiver = ( TSP_struct_data_receiver_t*) _receiver;
+
+   STRACE_IO(("-->IN"));
+   
+   TSP_stream_receiver_destroy(receiver->stream_receiver);
+   free(receiver->buf); receiver->buf = 0;
+   free(receiver); 
+
+   STRACE_IO(("-->OUT"));
+}
+
 
 TSP_data_decoder_t TSP_data_receiver_get_double_decoder(void)
 {

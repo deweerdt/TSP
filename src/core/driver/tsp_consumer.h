@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.h,v 1.7 2002-11-19 13:20:19 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.h,v 1.8 2002-11-29 17:33:30 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -109,6 +109,7 @@ typedef  void* TSP_provider_t;
 * removes the arguments it knows from the argument list, leaving anything
 * it does not recognize for your application to parse or ignore. 
 * This creates a set of standard arguments accepted by all TSP applications.
+* This function must be called once per program
 * @param argc Use the argc main arg before using it
 * @param argc Use the argv main arg before using it
 * @return TRUE = OK
@@ -122,6 +123,7 @@ int TSP_consumer_init(int* argc, char** argv[]);
 * The consumer may use the TSP_consumer_get_server_info to retreive information about
 * each provider, so as to choose what provider(s) will be left opened.
 * The consumer may then close providers with the TSP_consumer_close function.
+* Do not mix the open_all functions and the open_one functions.
 * @param host_name Name of host on which the providers must be opened
 * @param providers Array of found providers
 * @param nb_providers Total number of providers in 'providers' array
@@ -211,11 +213,19 @@ int TSP_consumer_request_sample(TSP_provider_t provider,
 const TSP_consumer_symbol_requested_list_t* TSP_consumer_get_requested_sample(TSP_provider_t provider);
 
 /** 
- * Prepare the sampling sequence.
+ * Prepare and start the sampling sequence.
  * @param provider The provider handle
  * @return TRUE or FALSE. TRUE = OK.
  */				      
 int TSP_consumer_request_sample_init(TSP_provider_t provider);    
+
+
+/** 
+ * Stop and destroy the sampling sequence
+ * @param provider The provider handle
+ * @return TRUE or FALSE. TRUE = OK.
+ */				      
+int TSP_consumer_request_sample_destroy(TSP_provider_t provider);    
 
 
 /*FIXME : ajouter des codes d'erreur (eof, symbol manqué, symbol ne sera plus recu ),
@@ -234,12 +244,14 @@ int TSP_consumer_read_sample(TSP_provider_t provider,
 int TSP_consumer_request_close(TSP_provider_t provider);
 
 
-void TSP_consumer_close_all(TSP_provider_t providers[]);				  
-void TSP_consumer_close(TSP_provider_t provider);
+int TSP_consumer_close_all(TSP_provider_t providers[]);				  
+
+int TSP_consumer_close(TSP_provider_t provider);
 
 /**
 * End of TSP librairie use
-* call this function when you are done with the librairie
+* call this function when you are done with the librairie.
+* This function must be called once per program.
 */
 void TSP_consumer_end();
 

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.12 2002-11-19 13:20:18 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.13 2002-11-29 17:33:30 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -139,6 +139,50 @@ typedef struct TSP_otsp_t TSP_otsp_t;
 
 /*-------------------------------------------------------------------*/
 
+static void TSP_consumer_delete_information(TSP_otsp_t* otsp)
+{
+  SFUNC_NAME(TSP_consumer_delete_information);
+  int i;
+
+  STRACE_IO(("-->IN"));
+
+  for(i = 0 ; i< otsp->information.symbols.len ; i++)
+    {
+      free(otsp->information.symbols.val[i].name);
+      otsp->information.symbols.val[i].name = 0;
+    }
+  free(otsp->information.symbols.val);
+  otsp->information.symbols.val = 0;
+  
+  STRACE_IO(("-->OUT"));
+
+}
+
+static void TSP_consumer_delete_requested_symbol(TSP_otsp_t* otsp)
+{
+  SFUNC_NAME(TSP_consumer_delete_requested_symbol);
+  int i;
+
+  STRACE_IO(("-->IN"));
+
+    if(otsp->requested_sym.val)
+    {
+      for (i = 0 ;  i < otsp->requested_sym.len ; i++)
+	{
+	  /* free strdup */
+	  free(otsp->requested_sym.val[i].name);
+	  otsp->requested_sym.val[i].name = 0;
+      
+	}
+      free(otsp->requested_sym.val);
+      otsp->requested_sym.val = 0;
+    }
+
+  STRACE_IO(("-->OUT"));
+
+}
+
+
 /**
  * Allocate a consumer object.
  * @param server handle for the command canal (RPC) for the consumer
@@ -194,10 +238,9 @@ static void TSP_delete_object_tsp(TSP_otsp_t* o)
 	
   STRACE_IO(("-->IN"));
 
-  /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
-  /* A faire : desallocation de la liste des symboles */
-  /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
-
+  TSP_consumer_delete_information(o);
+  TSP_consumer_delete_requested_symbol(o);
+  TSP_group_delete_group_table(o->groups); o->groups = 0;
   free(o);
 	
   STRACE_IO(("-->OUT"));
@@ -221,10 +264,6 @@ static  void TSP_print_object_tsp(TSP_otsp_t* o)
 
 int TSP_consumer_init(int* argc, char** argv[])
 {
-  /* FIXME : FUITE */
-  /* FIXME : coder le filtrage de la ligne de commande */
-  /* et ajouter la valeur pas defaut provenant de la ligne de commande */
-
   int i;
   int final_argc = 1;
   int found_stream_start = FALSE;
@@ -235,7 +274,6 @@ int TSP_consumer_init(int* argc, char** argv[])
   SFUNC_NAME((TSP_consumer_init));
   STRACE_IO(("-->IN"));
 
-  /* FUITE */
   X_argv = (char**)calloc(*argc, sizeof(char*));
   X_tsp_argv.TSP_argv_t_val = (char**)calloc(*argc, sizeof(char*));
   X_tsp_argv.TSP_argv_t_len = 0;
@@ -339,7 +377,19 @@ int TSP_consumer_init(int* argc, char** argv[])
 
 void TSP_consumer_end()
 {
+  SFUNC_NAME((TSP_consumer_end));
+  STRACE_IO(("-->IN"));
+  
+  /* This is the end my friend ... the end ...*/
 
+  /* Some day, we will find stuff to do here ;) */
+
+  /* By the way. do ->NOT<- free X_tsp_argv and X_argv,
+     the main code may be using them... */
+
+  STRACE_INFO(("End..."));
+
+  STRACE_IO(("-->OUT"));
 }
 
 /**
@@ -408,13 +458,6 @@ void TSP_consumer_open_all(const char*  host_name, TSP_provider_t** providers, i
       STRACE_ERROR(("Unable to get server max number"));
     }
 
-  /* Realloc size of the found servers */
-  *providers = (TSP_provider_t*)realloc(*providers,sizeof(TSP_provider_t)*(*nb_providers));
-  if(*nb_providers > 0)
-    {
-      TSP_CHECK_ALLOC((*providers),);
-    }
-
   STRACE_INFO(("%d server opened", *nb_providers));
   STRACE_IO(("-->OUT"));
 
@@ -425,12 +468,13 @@ void TSP_consumer_open_all(const char*  host_name, TSP_provider_t** providers, i
  * This function is used to clean up after a 
  * @param provider the providers that must be close.
  */
-void TSP_consumer_close_all(TSP_provider_t providers[])
+int TSP_consumer_close_all(TSP_provider_t providers[])
 {	
-  SFUNC_NAME(TSP_remote_close_all_provider);
+  SFUNC_NAME(TSP_consumer_close_all);
 
   int server_max_number;
   int i;
+  int ret = TRUE;
 	
   STRACE_IO(("-->IN"));
 	
@@ -440,14 +484,22 @@ void TSP_consumer_close_all(TSP_provider_t providers[])
 		
       for(i = 0 ; i < server_max_number ; i++)
 	{
-	  TSP_consumer_close(providers[i]);
-	  providers[i] = 0;
+	  if(providers[i])
+	    {
+	      ret = (ret && TSP_consumer_close(providers[i]));
+	      providers[i] = 0;
+	    }
 				
 	}
     }
   else
     {
       STRACE_ERROR(("Unable to get server max number"));
+    }
+  
+  if(!ret)
+    {
+      STRACE_WARNING(("Some close operations failed"));
     }
 	
   free(providers);
@@ -460,23 +512,21 @@ void TSP_consumer_close_all(TSP_provider_t providers[])
  * Close a provider.
  * @param provider the provider that must be close.
  */
-void TSP_consumer_close(TSP_provider_t provider)
+int TSP_consumer_close(TSP_provider_t provider)
 {	
-  SFUNC_NAME(TSP_close_provider);
-
+  SFUNC_NAME(TSP_consumer_close);
 	
   TSP_otsp_t* otsp = (TSP_otsp_t*)provider;
-	
-  STRACE_IO(("-->IN"));
+    int ret;
 
-	
-  if(otsp)
-    {
-      TSP_remote_close_server(otsp->server);
-      TSP_delete_object_tsp(otsp);
-    }
-	
+  STRACE_IO(("-->IN"));
+  
+  TSP_remote_close_server(otsp->server);
+  TSP_delete_object_tsp(otsp);
+  	
   STRACE_IO(("-->OUT"));
+
+  return ret;
 
 }
 
@@ -584,7 +634,7 @@ int TSP_consumer_request_open(TSP_provider_t provider, int custom_argc, char* cu
 int TSP_consumer_request_close(TSP_provider_t provider)
 {
 	
-  SFUNC_NAME(TSP_request_provider_close);
+  SFUNC_NAME(TSP_consumer_request_close);
 
 	
   TSP_otsp_t* otsp = (TSP_otsp_t*)provider;
@@ -621,6 +671,7 @@ int TSP_consumer_request_close(TSP_provider_t provider)
 	
 }
 
+
 /**
  * Request sample symbol information list.
  * @param provider the provider on which apply the action
@@ -629,7 +680,7 @@ int TSP_consumer_request_close(TSP_provider_t provider)
 int TSP_consumer_request_information(TSP_provider_t provider)
 {
 	
-  SFUNC_NAME(TSP_request_provider_information);
+  SFUNC_NAME(TSP_consumer_request_information);
 
 	
   TSP_otsp_t* otsp = (TSP_otsp_t*)provider;
@@ -642,10 +693,14 @@ int TSP_consumer_request_information(TSP_provider_t provider)
 
 	
   TSP_CHECK_SESSION(otsp, FALSE);
+
+  /* Delete allocation of any previous call */
+  TSP_consumer_delete_information(otsp);
 	
   req_info.version_id = TSP_VERSION;
   req_info.channel_id = otsp->channel_id;
 	
+  /* Ask the provider for informations */
   ans_sample = TSP_request_information(&req_info, otsp->server);
     
   if( NULL != ans_sample)
@@ -846,8 +901,8 @@ int TSP_consumer_request_sample(TSP_provider_t provider, TSP_consumer_symbol_req
       if(ret)
 	{
 	  STRACE_INFO(("Total groupe number = %d", ans_sample->provider_group_number));
-	  /* Create group table */
-	  /* FIXME : faire la desallocation */
+	  /* Create group table but delete any previous allocation*/
+	  TSP_group_delete_group_table(otsp->groups);
 	  otsp->groups = TSP_group_create_group_table(&(ans_sample->symbols), ans_sample->provider_group_number);
 	  if( 0 != otsp->groups)
 	    {
@@ -920,8 +975,7 @@ static void* TSP_request_provider_thread_receiver(void* arg)
 	}
       else
         {
-	  STRACE_ERROR(("function TSP_data_receiver_receive failed"));
-	  /*FIXME : IL faudra faire autre chose sans doute */
+	  STRACE_INFO(("function TSP_data_receiver_receive returned FALSE. End of Thread"));
 	  break;
         }
  
@@ -932,7 +986,7 @@ static void* TSP_request_provider_thread_receiver(void* arg)
 
 int TSP_consumer_request_sample_init(TSP_provider_t provider)
 {
-  SFUNC_NAME(TSP_request_provider_sample_init);
+  SFUNC_NAME(TSP_consumer_request_sample_init);
 
 	
   TSP_otsp_t* otsp = (TSP_otsp_t*)provider;
@@ -1002,6 +1056,71 @@ int TSP_consumer_request_sample_init(TSP_provider_t provider)
   return ret;
 }
 
+int TSP_consumer_request_sample_destroy(TSP_provider_t provider)
+{
+  SFUNC_NAME(TSP_consumer_request_sample_destroy);
+	
+  TSP_otsp_t* otsp = (TSP_otsp_t*)provider;
+  int ret = FALSE;
+  TSP_answer_sample_destroy_t* ans_sample = 0;
+  TSP_request_sample_destroy_t req_sample;
+  int i;
+	
+  STRACE_IO(("-->IN"));
+  
+  
+  TSP_CHECK_SESSION(otsp, FALSE);
+  
+  req_sample.version_id = TSP_VERSION;
+  req_sample.channel_id = otsp->channel_id;  
+  
+  /* turn all alarms off, coz the provider is going to break its socket */
+  TSP_data_receiver_prepare_stop(otsp->receiver);
+
+  /* break the provider socket !  */
+  ans_sample = TSP_request_sample_destroy(&req_sample, otsp->server);  
+  if(ans_sample)    
+    {
+      switch (ans_sample->status)
+	{
+	case TSP_STATUS_OK :
+	  ret = TRUE;
+	  break;
+	case TSP_STATUS_ERROR_UNKNOWN :
+	  STRACE_WARNING(("Provider unknown error"));
+	  break;
+	case TSP_STATUS_ERROR_VERSION :
+	  STRACE_WARNING(("Provider version error"));
+	  break;
+	default:
+	  STRACE_ERROR(("The provider sent an unreferenced error. It looks like a bug."));
+	  break;
+	}
+    }
+  else
+    {
+      ret = FALSE;
+      STRACE_WARNING(("Unable to communicate with the provider"));            
+    }
+  
+    /* Destroy our socket */
+  TSP_data_receiver_stop(otsp->receiver);
+  
+  /* Wait for receiver thread to end */
+  pthread_join(otsp->thread_receiver, NULL);
+
+  /* OK, the thread is stopped. We can desallocate */
+  TSP_data_receiver_destroy(otsp->receiver);
+
+  /*Destroy ringbuf*/
+  RINGBUF_PTR_DESTROY(otsp->sample_fifo);
+  
+  STRACE_IO(("-->OUT"));
+	
+  return ret;
+}
+
+
 int TSP_consumer_read_sample(TSP_provider_t provider, TSP_sample_t* sample, int* new_sample)
 {
   SFUNC_NAME(TSP_receive);
@@ -1009,7 +1128,7 @@ int TSP_consumer_read_sample(TSP_provider_t provider, TSP_sample_t* sample, int*
   TSP_otsp_t* otsp = (TSP_otsp_t*)provider;
   int ret = TRUE;
     
-  STRACE_IO(("-->IN"));
+
  
   if(0 != otsp->sample_fifo)
     {
@@ -1035,6 +1154,10 @@ int TSP_consumer_read_sample(TSP_provider_t provider, TSP_sample_t* sample, int*
 		  STRACE_INFO (("status message RECONF"));
 		  /* FIXME : get last error à gerer ? */
 		  break;
+		case TSP_DUMMY_PROVIDER_GLOBAL_INDEX_RECEIVER_ERROR :
+		  STRACE_INFO (("status message RECEIVER ERROR"));
+		  /* FIXME : get last error à gerer ? */
+		  break;
 		default:
 		  STRACE_ERROR (("Unknown status message"));
 		  /* FIXME : get last error à gerer ? */
@@ -1047,7 +1170,7 @@ int TSP_consumer_read_sample(TSP_provider_t provider, TSP_sample_t* sample, int*
       STRACE_ERROR(("Sample ring buf does not exist. was sample_request_init called ?"));
     }
   
-  STRACE_IO(("-->OUT"));
+
     
   return ret;
     

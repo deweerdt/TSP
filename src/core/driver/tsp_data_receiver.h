@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_data_receiver.h,v 1.2 2002-10-01 15:31:06 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_data_receiver.h,v 1.3 2002-11-29 17:33:31 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -34,6 +34,9 @@ int TSP_data_receiver_receive(TSP_data_receiver_t _receiver,
 			      int* fifo_full) ;
 
 TSP_data_receiver_t TSP_data_receiver_create(const char* data_address);
+void TSP_data_receiver_prepare_stop(TSP_data_receiver_t _receiver);
+void TSP_data_receiver_stop(TSP_data_receiver_t _receiver);
+void TSP_data_receiver_destroy(TSP_data_receiver_t _receiver);
 
 TSP_data_decoder_t TSP_data_receiver_get_double_decoder(void);
 

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_client.c,v 1.5 2002-09-19 08:37:04 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_client.c,v 1.6 2002-11-29 17:33:34 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -217,7 +217,6 @@ int TSP_request_close(const TSP_request_close_t* req_close, TSP_server_t server)
   int result;
 	
   STRACE_IO(("-->IN"));
-
 	
   LOCAL_RPCCHECK_FALSE;
     
@@ -225,7 +224,6 @@ int TSP_request_close(const TSP_request_close_t* req_close, TSP_server_t server)
   TSP_STRACE_RPC_ERROR(server, result);
   
   STRACE_IO(("-->OUT"));
-
 	
   return result;
 }	
@@ -298,4 +296,25 @@ TSP_answer_sample_init_t * TSP_request_sample_init(
 	
   return result;
 }
+
+TSP_answer_sample_destroy_t*
+TSP_request_sample_destroy(const TSP_request_sample_destroy_t* req_sample,
+			   TSP_server_t server)
+{
+  SFUNC_NAME(TSP_request_sample_destroy);
+  
+  TSP_answer_sample_destroy_t* result;
+	
+  STRACE_IO(("-->IN"));
+	
+  LOCAL_RPCCHECK_0;
+	
+  result = tsp_request_sample_destroy_1(*req_sample, server);
+  TSP_STRACE_RPC_ERROR(server, result);
+	
+  STRACE_IO(("-->OUT"));
+	
+  return result;
+}
+
 	

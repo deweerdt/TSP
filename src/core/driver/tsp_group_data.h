@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_group_data.h,v 1.2 2002-10-01 15:33:20 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_group_data.h,v 1.3 2002-11-29 17:33:31 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -67,7 +67,11 @@ struct TSP_group_table_t
    */
   int max_group_len;
 
+  /** groups */
   TSP_group_t* groups;
+
+  /** allocate room for items */
+  TSP_group_item_t* items_table;
     
 };
 

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_group.c,v 1.2 2002-10-01 15:32:16 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_group.c,v 1.3 2002-11-29 17:33:31 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -29,6 +29,27 @@ Purpose   : Implemenation the groups management
 /*---------------------------------------------------------*/
 /*                  FONCTIONS EXTERNE  			            */
 /*---------------------------------------------------------*/
+
+
+
+void TSP_group_delete_group_table(TSP_groups_t groups)
+{
+   SFUNC_NAME(TSP_group_create_group_table);
+
+   TSP_group_table_t* table = (TSP_group_table_t*)groups;
+
+   STRACE_IO(("-->IN"));
+   
+   if(table)
+     {
+       free(table->items_table);table->items_table = 0;
+       free(table->groups);table->groups = 0;
+       free(table);
+     }
+
+   STRACE_IO(("-->OUT"));
+}
+
 
 /**
 * Allocate the group table.
@@ -67,7 +88,8 @@ TSP_group_create_group_table(const TSP_sample_symbol_info_list_t* symbols, int g
     
     /*Allocate room for all group items*/
   table->groups_summed_size = symbols->TSP_sample_symbol_info_list_t_len;
-  items_table = (TSP_group_item_t*)calloc(table->groups_summed_size, sizeof(TSP_group_item_t));
+  table->items_table = (TSP_group_item_t*)calloc(table->groups_summed_size, sizeof(TSP_group_item_t));
+  items_table = table->items_table;
   TSP_CHECK_ALLOC(items_table, 0);
         
   /*Initialize groups items*/

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_stream_receiver.h,v 1.1 2002-08-27 08:56:09 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_stream_receiver.h,v 1.2 2002-11-29 17:33:31 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -23,6 +23,11 @@ stream  from the procuder for the asked symbols. This layer is the network layer
 typedef  void* TSP_stream_receiver_t;
 
 TSP_stream_receiver_t TSP_stream_receiver_create(const char* data_address);
+void TSP_stream_receiver_destroy(TSP_stream_receiver_t receiver);
+
+void TSP_stream_receiver_prepare_stop(TSP_stream_receiver_t receiver);
+void TSP_stream_receiver_stop(TSP_stream_receiver_t receiver);
+int TSP_stream_receiver_is_stopped(TSP_stream_receiver_t receiver);
 
 int TSP_stream_receiver_receive(TSP_stream_receiver_t receiver, char *buffer, int bufferLen);
 
