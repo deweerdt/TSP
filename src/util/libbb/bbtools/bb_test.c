@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <math.h>
 #include <libgen.h>
+#include <string.h>
 #include <bb_core.h>
 #include <bb_simple.h>
 #include "tsp_abs_types.h"
