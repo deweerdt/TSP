@@ -4,7 +4,7 @@
 # Default tools
 # -------------
 # Using standard tools
-CC = gcc
+CC = gcc -mcpu=v9 -m64 
 #CC = cc -xarch=v9
 
 # Default options
