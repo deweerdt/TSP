@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_rpc.x,v 1.11 2002-11-19 13:26:56 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_rpc.x,v 1.12 2002-11-29 17:40:29 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -221,7 +221,7 @@ program TSP_RPC {
 	
 	TSP_answer_sample_init_t	TSP_REQUEST_SAMPLE_INIT(TSP_request_sample_init_t req_sample) = 107;
 	
-	TSP_answer_sample_destroy_t	TSP_REQUEST_SAMPLE_DESTROY(TSP_request_sample_destroy_t req_sample) = 108;
+	TSP_answer_sample_destroy_t	TSP_REQUEST_SAMPLE_DESTROY(TSP_request_sample_destroy_t req_destroy) = 108;
 	
 	void				TSP_EXEC_FEATURE(TSP_exec_feature_t exec_feature) = 109;
 	
