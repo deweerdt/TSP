@@ -1,7 +1,7 @@
 
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_tools.c,v 1.6 2005-02-23 23:55:04 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_tools.c,v 1.7 2005-02-25 21:49:28 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -49,7 +49,6 @@ Purpose   : BlackBoard Idiom implementation
 #define BB_TOOLS_C
 #include <bb_tools.h>
 #include <bb_simple.h>
-
 
 void 
 bbtools_logMsg(FILE* stream, char* fmt, ...) {

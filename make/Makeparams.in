@@ -21,6 +21,8 @@ DIREXEC= $(DIRBASE)/$(TSP_TARGET)/$(TSP_MODE)
 DIRBIN = $(DIREXEC)/bin
 DIRLIB = $(DIREXEC)/lib
 DIROBJ = $(DIREXEC)/obj
+DIRSHOBJ = $(DIREXEC)/shobj
+DIRSHLIB = $(DIRLIB)
 
 # ---------------
 # Compilers parameters (configure-)detected for the TSP host
@@ -30,6 +32,8 @@ DIROBJ = $(DIREXEC)/obj
 CC		= @CC@
 CFLAGS		= @CFLAGS@
 CPPFLAGS	+= @CPPFLAGS@
+SHAREDLIB_CFLAGS = -fpic
+SHAREDLIB_LDFLAGS = -shared
 
 CXX		= @CXX@
 CXXFLAGS	= @CXXFLAGS@
@@ -42,6 +46,8 @@ AR		= @AR@
 ARFLAGS		= @ARFLAGS@
 
 LDLIBS		= @LDLIBS@
+
+SWIG		= swig
 
 # ----------------
 # TSP component list

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_tools.h,v 1.4 2005-02-23 01:34:48 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_tools.h,v 1.5 2005-02-25 21:49:28 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -39,6 +39,7 @@ Purpose   : BlackBoard Idiom implementation
 
 #include <stdio.h>
 #include <bb_core.h>
+#include <tsp_abs_types.h>
 
 /**
  * @defgroup BBTools
@@ -164,21 +165,18 @@ extern const char* bbtools_cmdhelp_tab[];
 
 BEGIN_C_DECLS
 
-void 
-bbtools_logMsg(FILE* stream, char* fmt, ...);
-
 /**
  * Initialise BBTools request.
  * @param req OUT, the request to initialize.
  */
-void
+void 
 bbtools_init(bbtools_request_t* req);
 
 /**
  * The BBTools command generic API.
  * @ingroup BBTools_API
  */
-int32_t
+int32_t 
 bbtools(bbtools_request_t* req);
 
 /**
@@ -195,7 +193,7 @@ bbtools_cmd(const char* bbtools_string);
  * @ingroup BBTools_API
  */
 E_BBTOOLS_CMD_T
-bbtools_check_args(int argc, char** argv);
+bbtools_checkargs(bbtools_request_t* req);
 
 /**
  * Print usage of the specified bbtools command.
@@ -213,7 +211,7 @@ bbtools_usage(bbtools_request_t* req);
  * @ingroup BBTools_API
  */
 S_BB_T*
-bbtools_check_bbname(const char* bbname);
+bbtools_checkbbname(const char* bbname);
 
 /**
  *

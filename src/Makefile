@@ -15,6 +15,8 @@ build::
 	- mkdir -p $(DIRINC)
 	- mkdir -p $(DIRLIB)
 	- mkdir -p $(DIROBJ)
+	- mkdir -p $(DIRSHLIB)
+	- mkdir -p $(DIRSHOBJ)
 	- mkdir -p $(DIRSCRIPT)
 	- cd $(DEVBASE)/exec; rm -f current; ln -s DEV current; cd $(DEVBASE)/src;
 
