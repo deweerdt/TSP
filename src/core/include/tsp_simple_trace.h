@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/include/Attic/tsp_simple_trace.h,v 1.2 2002-09-12 08:49:04 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/Attic/tsp_simple_trace.h,v 1.3 2002-10-01 15:40:30 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -29,7 +29,7 @@ static int _strace_debug_level=-1;
     if (_strace_debug_level >= level ) \
         { \
 	        printf("%7s||%s##%s##%d: ", src, __FILE__, strace_szfunc, __LINE__); \
-            printf##text; printf("\n"); fflush(stdout);\
+            printf text; printf("\n"); fflush(stdout);\
         } \
 } 
 				  
