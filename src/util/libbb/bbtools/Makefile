@@ -3,13 +3,11 @@ include $(DEVBASE)/make/Makeparams
 # ---------------------
 # Vars to build project
 # ---------------------
-XSCRIPT = bb_findlabel
+XSCRIPT = bb_findlabel bb_find \
+	bb_dump \
+	bb_read bb_write \
+	bb_checkid bb_destroy
 SOURCES = \
-	bb_checkid.c \
-	bb_dump.c \
-	bb_destroy.c \
-	bb_read.c \
-	bb_write.c \
 	bb_simu.c \
 	bb_tools_main.c
 
@@ -20,14 +18,9 @@ ADD_LIB =  $(DIRLIB)/libbb.a
 ifeq (${TSP_TARGET},vxworks)
 #TARGET= nothing to do
 else
-TARGET0=$(DIRBIN)/bb_checkid
-TARGET1=$(DIRBIN)/bb_dump
-TARGET2=$(DIRBIN)/bb_destroy
-TARGET3=$(DIRBIN)/bb_read
-TARGET4=$(DIRBIN)/bb_write
-TARGET5=$(DIRBIN)/bb_simu
-TARGET6=$(DIRBIN)/bb_tools
-TARGETS=$(TARGET0) $(TARGET1) $(TARGET2) $(TARGET3) $(TARGET4) $(TARGET5) $(TARGET6)
+TARGET1=$(DIRBIN)/bb_simu
+TARGET2=$(DIRBIN)/bb_tools
+TARGETS=$(TARGET1) $(TARGET2)
 endif
 
 CPPFLAGS += -I..
@@ -42,17 +35,9 @@ build::	$(TARGETS)
 
 $(TARGET1): $(DIRLIB)/libbb.a 
 
-$(TARGET2): $(DIRLIB)/libbb.a
-
-$(TARGET3): $(DIRLIB)/libbb.a
-
-$(TARGET4): $(DIRLIB)/libbb.a
-
-$(TARGET5): $(DIRLIB)/libbb.a
-
-$(TARGET6): $(DIRLIB)/libbb.a $(DIROBJ)/bb_tools_main.o
-	@echo "@@@ Specific Linking  $(TARGET6) ..."
-	$(LINK.c) -o $(TARGET6) $(DIROBJ)/bb_tools_main.o -L$(DIRLIB) $(ADD_LIB) $(LDLIBS) 
+$(TARGET2): $(DIRLIB)/libbb.a $(DIROBJ)/bb_tools_main.o
+	@echo "@@@ Specific Linking  $(TARGET2) ..."
+	$(LINK.c) -o $(TARGET2) $(DIROBJ)/bb_tools_main.o -L$(DIRLIB) $(ADD_LIB) $(LDLIBS) 
 
 
 destroy ::
