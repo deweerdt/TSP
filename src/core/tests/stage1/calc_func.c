@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/tests/stage1/Attic/calc_func.c,v 1.2 2002-12-18 16:27:39 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/tests/stage1/Attic/calc_func.c,v 1.3 2002-12-20 13:55:24 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -62,12 +62,15 @@ double calc_func (int index, double my_time)
 	  ret = sin (t); 
 	  break;
 	case 2: 
-	  tmp = (double)rand()/65535;
+	  /* FIXME : the rand function is not MT-safe for SUN */
+	  /*tmp = (double)rand()/65535;
 	  ret = 10*tmp+mem/10.0; 
 	  if (n%20>=10) mem += tmp/100.0; else mem -= tmp/100.0;
-	  if (n%500==0) mem = 0;
+	  if (n%500==0) mem = 0;*/
+	  ret = sin(t);
+	  ret = ( ret > 0 ? ret : 1+ret); 
 	  break;
-	case 3: 
+	case 3:  
 	  ret = log (n%10+r+1); 
 	  break;
 	case 4: 

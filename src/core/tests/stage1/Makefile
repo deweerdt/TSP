@@ -18,7 +18,7 @@ debug:
 #client building 
 build_client : $(DIRBIN)/tsp_client_printer
 
-$(DIRBIN)/tsp_client_printer :  $(LIB_CLIENT) client1.c
+$(DIRBIN)/tsp_client_printer :  $(LIB_CLIENT) client1.c calc_func.c
 	$(COMPILE.c) calc_func.c  -o $(DIRBIN)/calc_func.o
 	$(COMPILE.c) client1.c -o $(DIRBIN)/client1.o
 	$(LINK.c)   $(DIRBIN)/client1.o $(DIRBIN)/calc_func.o $(LIB_CLIENT) $(LDLIBS) -o $@
