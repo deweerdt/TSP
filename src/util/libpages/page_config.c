@@ -9,7 +9,7 @@
 
 
 /* Don't forget to update PGC_var_type_t  AND var_type_str */
-static xmlChar* X_var_type_str[] = { "DOUBLE", "TITLE", "HEXA", "STRING", NULL};
+static xmlChar* X_var_type_str[] = { "DOUBLE", "TITLE", "HEXA", "BIN", "STRING", NULL};
 static xmlChar* X_widget_type_str[] = { "view", "draw" ,NULL};
 
 const xmlChar* PGC_LABEL_DOC="page_config";

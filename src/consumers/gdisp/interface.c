@@ -23,6 +23,7 @@
 #include "support.h"
 #include "page.h"
 #include "tsp_consumer.h"
+#include "tsp_abs_types.h"
 #include "plotwindow.h"
 
 #include "tnt_rotate.xpm"
@@ -31,6 +32,7 @@
 
 #define LABEL_DOUBLE_FORMAT "%17s : %-14.8lg"
 #define LABEL_HEXA_FORMAT "%17s : 0x%08x"
+#define LABEL_BIN_FORMAT "%17s : 0b%8s\n                      %8s\n                      %8s\n                      %8s"
 
 extern display_page* pages;
 extern TSP_provider_t tsp;
@@ -112,6 +114,23 @@ static void on_togglebutton_toggled                (GtkToggleButton *togglebutto
       
 }
 
+void convert_to_bin(uint32_t anuint32, char binstr[4][9]) {
+  int i;
+  static uint8_t mask[8] = {0x01,0x02,0x04,0x08,
+			    0x10,0x20,0x40,0x80};
+
+  for (i=0;i<8;++i) {
+    binstr[0][7-i] = ((anuint32 & 0xFF000000) >> 24) & mask[i] ? '1' : '0';
+    binstr[1][7-i] = ((anuint32 & 0x00FF0000) >> 16) & mask[i] ? '1' : '0';
+    binstr[2][7-i] = ((anuint32 & 0x0000FF00) >> 8) & mask[i] ? '1' : '0';
+    binstr[3][7-i] = ((anuint32 & 0x000000FF) >> 0) & mask[i] ? '1' : '0';
+  }
+  binstr[0][8] = '\0';
+  binstr[1][8] = '\0';
+  binstr[2][8] = '\0';
+  binstr[3][8] = '\0';
+}
+
 gint
 redraw_widgets (gpointer data)
 {
@@ -163,6 +182,8 @@ redraw_widgets (gpointer data)
   for (i=0; i < conf_data.nb_page; i++) {
     for (j=0; j < pages[i].variables->len; j++) {
       int color_index;
+      uint32_t myuint32;
+      uint8_t myuint32str[4][9];
       var = g_ptr_array_index(pages[i].variables, j);
 
       switch (var->type) {
@@ -192,12 +213,19 @@ redraw_widgets (gpointer data)
 	gtk_label_set_text(label, "FIXME : VAR_STRING");
 	break;
       case VAR_HEXA:
-	/*TODO*/
-	/*bstable_get_double_value(var->text, &val_double);*/
 	label = GTK_LABEL(var->widget);
 	sprintf(buffer, LABEL_HEXA_FORMAT, var->legend == NULL ? var->text : var->legend, (long) rint(var->double_value));
 	gtk_label_set_text(label, buffer);
 	break;
+      case VAR_BIN:
+	/*TODO*/
+	myuint32 = (unsigned long) rint(var->double_value);	
+        convert_to_bin(myuint32,myuint32str);
+	label = GTK_LABEL(var->widget);
+	sprintf(buffer, LABEL_BIN_FORMAT, var->legend == NULL ? var->text : var->legend, 
+		myuint32str[0],myuint32str[1],myuint32str[2],myuint32str[3]);
+	gtk_label_set_text(label, buffer);
+	break;	
       default:
 	g_warning("update_variables: unknown variable type : %d", var->type);
 	continue;

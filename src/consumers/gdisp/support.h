@@ -12,9 +12,9 @@
  */
 
 /* Don't forget to update variable_type AND variable_type_str */
-typedef enum {VAR_DOUBLE, VAR_TITLE, VAR_HEXA, VAR_STRING } variable_type;
+typedef enum {VAR_DOUBLE, VAR_TITLE, VAR_HEXA, VAR_BIN, VAR_STRING } variable_type;
 typedef enum {WIDGET_VIEW, WIDGET_DRAW } widget_type_t;
-static char *variable_type_str[] = { "VAR_DOUBLE", "VAR_TITLE", "VAR_HEXA", "VAR_STRING", NULL};
+static char *variable_type_str[] = { "VAR_DOUBLE", "VAR_TITLE", "VAR_HEXA", "VAR_BIN", "VAR_STRING", NULL};
 
 #define VAR_TYPE_NAME(i) variable_type_str[(i)]
 /*inline */int VAR_TYPE_VAL (char *str);

@@ -32,9 +32,13 @@ static variable_type pgc_vtype_to_local_vtype(PGC_var_type_t pgc_vtype)
     case PGC_HEXA :
       local_vtype = VAR_HEXA;
       break;
+    case PGC_BIN :
+      local_vtype = VAR_BIN;
+      break;  
     case PGC_STRING :
       local_vtype = VAR_STRING;
       break;
+      
     default :
       fprintf(stderr, "Unknown var type : libpage_config version mismatch\n");
       exit(-1);      

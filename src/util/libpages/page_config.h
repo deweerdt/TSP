@@ -29,7 +29,7 @@ struct PGC_page_t
 
 typedef struct PGC_page_t PGC_page_t;
 
-enum PGC_var_type_t {PGC_DOUBLE = 0, PGC_TITLE, PGC_HEXA, PGC_STRING };
+enum PGC_var_type_t {PGC_DOUBLE = 0, PGC_TITLE, PGC_HEXA, PGC_BIN, PGC_STRING };
 typedef enum PGC_var_type_t PGC_var_type_t;
 
 enum PGC_widget_type_t {PGC_WIDGET_VIEW = 0, PGC_WIDGET_DRAW };
