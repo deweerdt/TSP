@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/consumers/gdisp/gdispmain.c,v 1.3 2004-09-27 13:47:01 tractobob Exp $
+$Header: /home/def/zae/tsp/tsp/src/consumers/gdisp/gdispmain.c,v 1.4 2004-10-05 12:35:38 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -204,8 +204,8 @@ static int main_window_start(char* conf_file, char* tsp_prov_url)
 		    
 		      if(TSP_consumer_request_sample_init(tsp,0,0))
 			{
-			
-			  create_mainwin(&conf_data, conf_file);
+			  sprintf(name, "%s @ %s", conf_file, TSP_consumer_get_connected_name(tsp));
+			  create_mainwin(&conf_data, name);
 			
 			  ret = TRUE;
 			}
@@ -239,31 +239,45 @@ static int main_window_start(char* conf_file, char* tsp_prov_url)
   return ret;
 }
 
+void usage(char *txt)
+{
+  printf("\nUSAGE : %s -x fileconf.xml [-u tsp_serverURL]\n\n", txt);
+  printf(TSP_URL_FORMAT_USAGE);
+}
 
 int
 main (int argc, char **argv) 
 {
+  char myopt; /* Options */
+  char* config_file = NULL;
+  char* tsp_prov_url = "";
+
   gtk_init(&argc, &argv);
 
   if(!TSP_consumer_init(&argc, &argv))
     return -1;
 			
-  if(argc > 1)
+  while ((myopt = getopt(argc, argv, "u:x:h")) != -1)
     {
-      char* config_file = argv[1];
-      char* tsp_prov_url = argv[2];
-
-      if(!main_window_start(config_file, tsp_prov_url))
-	{
-	  return -1;
+      switch(myopt)
+        {
+        case 'u': tsp_prov_url = optarg; break;
+        case 'x': config_file = optarg; break;
+	default: break;
 	}
     }
-  else
+ 
+  if(!config_file)
     {
-      printf("usage : %s fileconf.xml [tsp_serverURL]  \n", argv[0]);
+      usage(argv[0]);
       return -1;
     }
 
-
+  if(!main_window_start(config_file, tsp_prov_url))
+    {
+      usage(argv[0]);
+      return -1;
+    }
+  
   gtk_main();
 }
