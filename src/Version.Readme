@@ -70,3 +70,10 @@ V-0.4: Creation 03/10/02	tag TSP_0_4 SG
 V-0.4.1: Creation 09/10/02 	tag TSP_0_4_1 SG
 	snapshot developpement version before huge modification for TL1 link
 	- fifo and thread send was implemented for socket write (active stream only)
+
+V-0.5: Creation 18/12/02 	tag TSP_0_5 SG
+	- libUTIL added in test dir
+	- Buffer overflow detected both on the GLU side and for the consumer buffer
+	  (provider side)
+	- garbage collector for the acidentally disconnected sessions
+	- 'request close' implementation works
