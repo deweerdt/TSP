@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_consumers.c,v 1.2 2004-03-26 21:09:17 esteban Exp $
+$Id: gdisp_consumers.c,v 1.3 2004-05-11 19:47:36 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -106,6 +106,7 @@ gdisp_consumingInit (Kernel_T *kernel)
   gint            hostStatus       = 0;
   GString        *messageString    = (GString*)NULL;
 
+  guint           providerIdentity = 0;
   TSP_provider_t *providerList     = (TSP_provider_t*)NULL;
   gint            providerListSize = 0;
   gint            providerCpt      = 0;
@@ -224,8 +225,9 @@ gdisp_consumingInit (Kernel_T *kernel)
      * Set up its status to 'SESSION_CLOSED'.
      * Insert it into the kernel provider list.
      */
-    newProvider->pHandle = providerList[providerCpt];
-    newProvider->pName   =
+    newProvider->pHandle   = providerList[providerCpt];
+    newProvider->pIdentity = providerIdentity++;
+    newProvider->pName     =
       g_string_new(TSP_consumer_get_connected_name(newProvider->pHandle));
     assert(newProvider->pName);
 
@@ -382,9 +384,12 @@ gdisp_consumingEnd (Kernel_T *kernel)
   while (providerItem != (GList*)NULL) {
 
     provider = (Provider_T*)providerItem->data;
+
     g_free(provider->pSymbolList);
+
     if (provider->pSampleList.len != 0)
       free(provider->pSampleList.val);
+
     g_free(provider);
 
     providerItem = g_list_next(providerItem);

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_plot2D.h,v 1.3 2004-03-26 21:09:17 esteban Exp $
+$Id: gdisp_plot2D.h,v 1.4 2004-05-11 19:47:41 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -76,6 +76,7 @@ typedef struct Plot2D_T_ {
   PlotType_T           p2dType;
   KindOfPlot_T         p2dSubType;
   gboolean             p2dHasFocus;
+  gboolean             p2dIsWorking;
 
   /*
    * List of pointer on TSP_Symbol_T.

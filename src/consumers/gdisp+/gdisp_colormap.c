@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_colormap.c,v 1.2 2004-03-26 21:09:17 esteban Exp $
+$Id: gdisp_colormap.c,v 1.3 2004-05-11 19:47:35 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -590,7 +590,7 @@ gdisp_getProviderColor (Kernel_T *kernel,
    * Definition of colors affected to each provider.
    */
   gint providerColors[]  = { 6, 10, 16, 27, 33, 37 };
-  gint providerColorSize = 6;
+  gint providerColorSize = GD_MAX_PROVIDER_NUMBER;
 
   assert(kernel->colors);
 

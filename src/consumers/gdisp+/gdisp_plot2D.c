@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_plot2D.c,v 1.4 2004-05-10 06:57:11 dufy Exp $
+$Id: gdisp_plot2D.c,v 1.5 2004-05-11 19:47:38 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -278,7 +278,7 @@ gdisp_drawSymbolName ( Kernel_T *kernel,
    * Clear window content.
    */
   gdk_gc_set_foreground(plot->p2dGContext,
-			&kernel->colors[_BLACK_]);
+			&kernel->colors[_GREY_]);
 
   gdk_window_get_geometry(xAxis == TRUE ?
 			  plot->p2dXSymbolWindow : plot->p2dYSymbolWindow,
@@ -300,15 +300,15 @@ gdisp_drawSymbolName ( Kernel_T *kernel,
   /*
    * TSP Symbol list attached to the X and Y axis.
    */
-  gdk_gc_set_foreground(plot->p2dGContext,
-			&kernel->colors[_WHITE_]);
-
   if (xAxis == TRUE) {
 
     xPosition = X_SYMBOL_OFFSET;
     yPosition = Y_SYMBOL_OFFSET;
 
     symbol = (Symbol_T*)plot->p2dXSymbolList->data;
+
+    gdk_gc_set_foreground(plot->p2dGContext,
+			  &kernel->colors[_BLACK_]);
 
     gdk_draw_string(plot->p2dXSymbolWindow,
 		    plot->p2dFont,
@@ -327,6 +327,9 @@ gdisp_drawSymbolName ( Kernel_T *kernel,
 			    &windowHeight,
 			    &windowDepth);
 
+    gdk_gc_set_foreground(plot->p2dGContext,
+			  &kernel->colors[_WHITE_]);
+
     gdk_draw_rectangle(plot->p2dXSymbolWindow,
 		       plot->p2dGContext,
 		       FALSE, /* rectangle is not filled */
@@ -340,6 +343,9 @@ gdisp_drawSymbolName ( Kernel_T *kernel,
 
     xPosition = X_SYMBOL_OFFSET;
     yPosition = Y_SYMBOL_OFFSET;
+
+    gdk_gc_set_foreground(plot->p2dGContext,
+			  &kernel->colors[_BLACK_]);
 
     symbolItem = g_list_first(plot->p2dYSymbolList);
     while (symbolItem != (GList*)NULL) {
@@ -384,6 +390,9 @@ gdisp_drawSymbolName ( Kernel_T *kernel,
     /*
      * White rectangle around window.
      */
+    gdk_gc_set_foreground(plot->p2dGContext,
+			  &kernel->colors[_WHITE_]);
+
     gdk_draw_rectangle(plot->p2dYSymbolWindow,
 		       plot->p2dGContext,
 		       FALSE, /* rectangle is not filled */
@@ -1621,9 +1630,10 @@ gdisp_createPlot2D (Kernel_T *kernel)
   /*
    * Few initialisations.
    */
-  plot->p2dHasFocus = FALSE;
-  plot->p2dType     = GD_PLOT_2D;
-  plot->p2dSubType  = GD_2D_F2T;
+  plot->p2dHasFocus  = FALSE;
+  plot->p2dIsWorking = FALSE;
+  plot->p2dType      = GD_PLOT_2D;
+  plot->p2dSubType   = GD_2D_F2T;
 
   /*
    * Create a table : dimension 2 x 2, homogeneous.
@@ -1987,32 +1997,40 @@ gdisp_addSymbolsToPlot2D (Kernel_T *kernel,
 			  xDrop,
 			  yDrop) == TRUE) {
 
-    plot->p2dSubType = GD_2D_F2T;
-
     /*
-     * Do not forget to decrement the reference of the X symbol.
+     * We cannot change X symbol while plot is been working...
+     * It is a choice. Technically, it is possible, but what for ?
      */
-    gdisp_dereferenceSymbolList(plot->p2dXSymbolList);
-    plot->p2dXSymbolList = (GList*)NULL;
+    if (plot->p2dIsWorking == FALSE) {
 
-    /*
-     * Only one symbol on X axis.
-     * Take the first symbol of the incoming list.
-     */
-    symbolItem = g_list_first(symbolList);
-    if (symbolItem != (GList*)NULL) {
+      plot->p2dSubType = GD_2D_F2T;
 
-      plot->p2dXSymbolList = g_list_append(plot->p2dXSymbolList,
-					   symbolItem->data);
+      /*
+       * Do not forget to decrement the reference of the X symbol.
+       */
+      gdisp_dereferenceSymbolList(plot->p2dXSymbolList);
+      plot->p2dXSymbolList = (GList*)NULL;
 
-      symbol = (Symbol_T*)symbolItem->data;
-      symbol->sReference++;
+      /*
+       * Only one symbol on X axis.
+       * Take the first symbol of the incoming list. DO NOT LOOP.
+       */
+      symbolItem = g_list_first(symbolList);
+      if (symbolItem != (GList*)NULL) {
 
-    }
+	plot->p2dXSymbolList = g_list_append(plot->p2dXSymbolList,
+					     symbolItem->data);
 
-    gdisp_manageSymbolNameWindow(kernel,
-				 plot,
-				 plot->p2dXSymbolList);
+	symbol = (Symbol_T*)symbolItem->data;
+	symbol->sReference++;
+
+      }
+
+      gdisp_manageSymbolNameWindow(kernel,
+				   plot,
+				   plot->p2dXSymbolList);
+
+    } /* p2dIsWorking == FALSE */
 
   }
   else {
@@ -2143,6 +2161,8 @@ gdisp_startStepOnPlot2D (Kernel_T *kernel,
   if (g_list_length(plot->p2dYSymbolList) == 0 ||
       g_list_length(plot->p2dXSymbolList) == 0    ) {
 
+    plot->p2dIsWorking = FALSE;
+
     return FALSE;
 
   }
@@ -2156,7 +2176,7 @@ gdisp_startStepOnPlot2D (Kernel_T *kernel,
   if (plot->p2dSignalsAreBlocked == FALSE) {
 
     nbEvents = plot->p2dSignalIdentities->len;
-    for(cptEvent=0; cptEvent<nbEvents; cptEvent++) {
+    for (cptEvent=0; cptEvent<nbEvents; cptEvent++) {
 
       eventID = (guint)g_array_index(plot->p2dSignalIdentities,
 				     guint,
@@ -2170,6 +2190,12 @@ gdisp_startStepOnPlot2D (Kernel_T *kernel,
     plot->p2dSignalsAreBlocked = TRUE;
 
   }
+
+
+  /*
+   * Tell the plot it has been started by the application kernel.
+   */
+  plot->p2dIsWorking = TRUE;
 
   return TRUE /* everything's ok */;
 
@@ -2340,7 +2366,7 @@ gdisp_stopStepOnPlot2D (Kernel_T *kernel,
   if (plot->p2dSignalsAreBlocked == TRUE) {
 
     nbEvents = plot->p2dSignalIdentities->len;
-    for(cptEvent=0; cptEvent<nbEvents; cptEvent++) {
+    for (cptEvent=0; cptEvent<nbEvents; cptEvent++) {
 
       eventID = (guint)g_array_index(plot->p2dSignalIdentities,
 				     guint,
@@ -2354,6 +2380,11 @@ gdisp_stopStepOnPlot2D (Kernel_T *kernel,
     plot->p2dSignalsAreBlocked = FALSE;
 
   }
+
+  /*
+   * Tell the plot it has been stopped by the application kernel.
+   */
+  plot->p2dIsWorking = FALSE;
 
 }
 

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_symbols.c,v 1.2 2004-03-26 21:09:17 esteban Exp $
+$Id: gdisp_symbols.c,v 1.3 2004-05-11 19:47:43 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -73,16 +73,21 @@ gdispInsertAndSortSymbols (Kernel_T  *kernel,
 			   guint      stringFilterSize)
 {
 
+#define GD_MAKE_DIFFERENCE_WITH_PIXMAP
+
   GList      *providerItem   =      (GList*)NULL;
   Symbol_T   *symbolPtr      =   (Symbol_T*)NULL;
   Provider_T *provider       = (Provider_T*)NULL;
   gint        symbolCpt      =                 0,
-              symbolCount    =                 0,
-              providerCount  =                 0;
+              rowNumber      =                 0;
   gchar      *symbolInfos[_SYMBOL_CLIST_COLUMNS_NB_] =
                                                     { (gchar*)NULL,
 						      "n/a",
 						      "undefined" };
+#if defined(GD_MAKE_DIFFERENCE_WITH_PIXMAP)
+  GdkPixmap  *idPixmap       = (GdkPixmap*)NULL;
+  GdkBitmap  *idPixmapMask   = (GdkBitmap*)NULL;
+#endif
 
   assert(kernel);
 
@@ -119,30 +124,56 @@ gdispInsertAndSortSymbols (Kernel_T  *kernel,
 
 	    symbolInfos[0] = symbolPtr->sInfo.name;
 
-	    gtk_clist_append(GTK_CLIST(kernel->widgets.symbolCList),
-			     symbolInfos);
+	    rowNumber =
+	      gtk_clist_append(GTK_CLIST(kernel->widgets.symbolCList),
+			       symbolInfos);
 
 	    /*
-	     * Provider color may have not been calculated before.
-	     * Provider color still may be null if the maximum number
-	     * of providers is excedeed. Cf. << gdisp_colormap.c >>
+	     * If there are several providers, show symbol appartenance.
 	     */
-	    if (provider->pColor == (GdkColor*)NULL)
-	      provider->pColor = gdisp_getProviderColor(kernel,
-							providerCount);
+	    if (gdisp_getProviderNumber(kernel) > 1) {
 
-	    gtk_clist_set_background(GTK_CLIST(kernel->widgets.symbolCList),
-				     symbolCount, /* row */
-				     provider->pColor);
+#if defined(GD_MAKE_DIFFERENCE_WITH_PIXMAP)
+
+	      gdisp_getProviderIdPixmap(kernel,
+					kernel->widgets.symbolCList,
+					provider->pIdentity,
+					&idPixmap,
+					&idPixmapMask);
+
+	      gtk_clist_set_pixtext(GTK_CLIST(kernel->widgets.symbolCList),
+				    rowNumber,
+				    0, /* first column */
+				    symbolPtr->sInfo.name,
+				    5, /* spacing */
+				    idPixmap,
+				    idPixmapMask);
+
+#else
+
+	      /*
+	       * Provider color may have not been calculated before.
+	       * Provider color still may be null if the maximum number
+	       * of providers is excedeed. Cf. << gdisp_colormap.c >>
+	       */
+	      if (provider->pColor == (GdkColor*)NULL)
+		provider->pColor = gdisp_getProviderColor(kernel,
+							  provider->pIdentity);
+
+	      gtk_clist_set_background(GTK_CLIST(kernel->widgets.symbolCList),
+				       rowNumber, /* row */
+				       provider->pColor);
+
+#endif
+
+	    }
 
 	    /*
 	     * Remember here the symbol the row refers to.
 	     */
 	    gtk_clist_set_row_data(GTK_CLIST(kernel->widgets.symbolCList),
-				   symbolCount, /* row */
+				   rowNumber, /* row */
 				   (gpointer)symbolPtr);
-
-	    symbolCount++;
 
 	  } /* filter */
 
@@ -152,7 +183,6 @@ gdispInsertAndSortSymbols (Kernel_T  *kernel,
 
       } /* provider status */
 
-      providerCount++;
       providerItem = g_list_next(providerItem);
 
     }
@@ -187,7 +217,7 @@ gdispInsertAndSortSymbols (Kernel_T  *kernel,
    */
   gtk_clist_thaw(GTK_CLIST(kernel->widgets.symbolCList));
 
-  return symbolCount;
+  return (rowNumber + 1);
 
 }
 

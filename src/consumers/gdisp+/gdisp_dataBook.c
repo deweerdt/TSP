@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_dataBook.c,v 1.1 2004-03-26 21:09:17 esteban Exp $
+$Id: gdisp_dataBook.c,v 1.2 2004-05-11 19:47:36 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -118,6 +118,12 @@ gdispDestroySignalHandler (GtkWidget *dataBookWindow,
   kernel->widgets.spRadioButton       = (GtkWidget*)NULL;
   kernel->widgets.apRadioButton       = (GtkWidget*)NULL;
   kernel->widgets.filterEntry         = (GtkWidget*)NULL;
+
+  /*
+   * FIXME : give hand to "allSymbols", "sampledSymbols", "providers"
+   * and "graphicPlots" pages to destroy possible ressouces.
+   * example : provider pixmaps in "providers" page.
+   */
 
 }
 
@@ -462,9 +468,11 @@ gdisp_showDataBook (gpointer factoryData,
   /*
    * Temporary.
    */
+#if defined(STEF)
   gtk_widget_set_sensitive(gtk_notebook_get_nth_page(GTK_NOTEBOOK(notebook),
 						     1),
 			   FALSE);
+#endif
 
 }
 

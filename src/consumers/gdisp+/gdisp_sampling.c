@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_sampling.c,v 1.3 2004-03-30 20:17:44 esteban Exp $
+$Id: gdisp_sampling.c,v 1.4 2004-05-11 19:47:43 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -792,6 +792,12 @@ gdisp_preSamplingThread (void *data )
 
 
   /*
+   * All provider threads must keep on running...
+   */
+  kernel->samplingThreadMustExit = FALSE;
+
+
+  /*
    * Loop on each provider, and launch the sampling thread.
    */
   providerItem = g_list_first(kernel->providerList);
@@ -898,12 +904,6 @@ gdisp_startSamplingProcess (Kernel_T *kernel)
     return FALSE;
 
   }
-
-
-  /*
-   * All provider threads must keep on running...
-   */
-  kernel->samplingThreadMustExit = FALSE;
 
 
   /*
@@ -1105,9 +1105,9 @@ gdisp_affectRequestedSymbolsToProvider ( Kernel_T *kernel )
       /*
        * Transfer information to provider.
        */
-      provider->pSampleList.len = requestedSymbolArray->len;
       provider->pSampleList.val =
 	(TSP_consumer_symbol_requested_t*)requestedSymbolArray->data;
+      provider->pSampleList.len = requestedSymbolArray->len;
 
 
       /*

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_defaultPlot.c,v 1.2 2004-03-26 21:09:17 esteban Exp $
+$Id: gdisp_defaultPlot.c,v 1.3 2004-05-11 19:47:36 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -865,9 +865,9 @@ gdisp_getDefaultPlotPeriod (Kernel_T *kernel,
 {
 
   /*
-   * My period is 1000 milli-seconds.
+   * My period is pure science fiction...
    */
-  return 10000000; /* in order to avoid disturbing other plots */
+  return G_MAXINT; /* in order to avoid disturbing other plots */
 
 }
 

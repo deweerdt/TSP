@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_kernel.c,v 1.3 2004-03-30 20:17:43 esteban Exp $
+$Id: gdisp_kernel.c,v 1.4 2004-05-11 19:47:36 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -234,12 +234,13 @@ gdisp_activateRegisteredActions ( void *data )
   Kernel_T  *kernel             = (Kernel_T*)data;
   void     (*action)(Kernel_T*) = (void(*)(Kernel_T*))NULL;
   guint      cptAction          = 0;
+  guint      nbActions          = 0;
 
   /*
    * Loop over all registered actions and activate them.
    */
-  for (cptAction=0;
-       cptAction<kernel->kernelRegisteredActions->len; cptAction++) {
+  nbActions = kernel->kernelRegisteredActions->len;
+  for (cptAction=0; cptAction<nbActions;  cptAction++) {
 
     action = (void(*)(Kernel_T*))
              g_ptr_array_index(kernel->kernelRegisteredActions,cptAction);
@@ -285,12 +286,13 @@ gdisp_createKernel (gint    argc,
   /*
    * Defaults.
    */
-  kernel->isThreadSafe    = FALSE;
-  kernel->sortingMethod   = GD_SORT_BY_PROVIDER;
-  kernel->dndScope        = GD_DND_UNICAST;
-  kernel->argCounter      = argc;
-  kernel->argTable        = argv;
-  kernel->stepTimerPeriod = GD_TIMER_MIN_PERIOD; /* milli-seconds */
+  kernel->isThreadSafe           = FALSE;
+  kernel->sortingMethod          = GD_SORT_BY_PROVIDER;
+  kernel->dndScope               = GD_DND_UNICAST;
+  kernel->argCounter             = argc;
+  kernel->argTable               = argv;
+  kernel->stepTimerPeriod        = GD_TIMER_MIN_PERIOD; /* milli-seconds */
+  kernel->samplingThreadMustExit = TRUE;
 
   /*
    * Try to know whether a multi-threaded environment is available ?

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_plotText.c,v 1.1 2004-03-26 21:09:17 esteban Exp $
+$Id: gdisp_plotText.c,v 1.2 2004-05-11 19:47:41 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -509,16 +509,12 @@ gdisp_stepOnPlotText (Kernel_T *kernel,
        */
       sprintf(sValue,"%f ",symbol->sLastValue);
 
-#define TEXT_ONLY
-
-#if defined(TEXT_ONLY)
-
       gtk_clist_set_text(GTK_CLIST(plot->pttCList),
 			 rowNumber,
 			 GD_SYMBOL_VALUE_COLUMN,
 			 sValue);
 
-#else
+#if defined(TRY_PIXMAP)
 
       gtk_clist_set_pixtext(GTK_CLIST(plot->pttCList),
 			    rowNumber,

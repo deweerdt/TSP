@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_kernel.h,v 1.4 2004-03-30 20:17:43 esteban Exp $
+$Id: gdisp_kernel.h,v 1.5 2004-05-11 19:47:37 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -62,7 +62,7 @@ File      : Graphic Tool Kernel Interface.
 
 
 /*
- * 9 out of 170 colors.
+ * 10 out of 170 colors.
  */
 #define _RED_       3
 #define _GREEN_    10
@@ -219,10 +219,18 @@ typedef enum {
 
 /*
  * A TSP provider definition.
+ *
+ * The number of provider is limited because I have only 6 ball pixmaps
+ * to represent them. That's all. There is no other reason.
+ * Theorically, there is no limit, except the number of ball pixmaps.
+ * Feel free to create other ball pixmaps...
  */
+#define GD_MAX_PROVIDER_NUMBER 6
+
 typedef struct Provider_T_ {
 
   TSP_provider_t    pHandle;
+  guint             pIdentity;
 
   ProviderStatus_T  pStatus;
   GString          *pName;
@@ -411,6 +419,8 @@ typedef struct KernelWidget_T_ {
   GdkBitmap         *mainBoardErrorPixmapMask;
   GtkWidget         *mainBoardOutputList;
   guint              mainBoardOutputListSize;
+  GdkPixmap         *providerPixmaps    [GD_MAX_PROVIDER_NUMBER];
+  GdkBitmap         *providerPixmapMasks[GD_MAX_PROVIDER_NUMBER];
   GdkPixmap         *pilotBoardDigitPixmap;
   GtkWidget         *pilotBoardTimeArea;
   GdkGC             *pilotBoardTimeContext;

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_providers.c,v 1.3 2004-03-30 20:17:44 esteban Exp $
+$Id: gdisp_providers.c,v 1.4 2004-05-11 19:47:42 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -277,10 +277,9 @@ gdisp_createProviderList ( Kernel_T  *kernel,
 
   GList            *providerItem     =      (GList*)NULL;
   Provider_T       *provider         = (Provider_T*)NULL;
-  gint              providerCount    = 0;
-  guint             providerLoad     = 0;
 
   gchar            *rowInfo  [  2];
+  guint             rowNumber        = 0;
   gchar             rowBuffer[128];
   guint             bgColorId        = _WHITE_;
 
@@ -333,7 +332,7 @@ gdisp_createProviderList ( Kernel_T  *kernel,
     provider = (Provider_T*)providerItem->data;
 
     provider->pColor = gdisp_getProviderColor(kernel,
-					      providerCount++);
+					      provider->pIdentity);
 
 
     /* ------------------------ FRAME WITH LABEL ------------------------ */
@@ -343,7 +342,7 @@ gdisp_createProviderList ( Kernel_T  *kernel,
      * Align the label at the left of the frame.
      * Set the style of the frame.
      */
-    sprintf(rowBuffer," %d ",providerCount);
+    sprintf(rowBuffer," %d ",provider->pIdentity + 1);
     frame = gtk_frame_new(rowBuffer);
 
     gtk_frame_set_label_align(GTK_FRAME(frame),0.1,0.0);
@@ -371,7 +370,7 @@ gdisp_createProviderList ( Kernel_T  *kernel,
     /* ---------------------- PROVIDER LOGO ---------------------- */
 
     /*
-     * Use GDK services to create TSP Logo (XPM format).
+     * Use GDK services to create provider Logo (XPM format).
      */
     style  = gtk_widget_get_style(scrolledWindow);
     pixmap = gdk_pixmap_create_from_xpm_d(scrolledWindow->window,
@@ -411,61 +410,61 @@ gdisp_createProviderList ( Kernel_T  *kernel,
     rowInfo[0] = "Name";
     rowInfo[1] = provider->pName->str;
 
-    gtk_clist_append(GTK_CLIST(provider->pCList),
-		     rowInfo);
+    rowNumber  = gtk_clist_append(GTK_CLIST(provider->pCList),
+				  rowInfo);
+
+    if (gdisp_getProviderNumber(kernel) > 1) {
+
+      gdisp_getProviderIdPixmap(kernel,
+				provider->pCList,
+				provider->pIdentity,
+				&pixmap,
+				&mask);
+
+      gtk_clist_set_pixtext(GTK_CLIST(provider->pCList),
+			    rowNumber,
+			    1, /* second column */
+			    provider->pName->str,
+			    5, /* spacing */
+			    pixmap,
+			    mask);
+
+    }
 
     rowInfo[0] = "Status";
     rowInfo[1] = gdisp_providerStatusToString(provider->pSamplingThreadStatus,
 					      &bgColorId);
 
-    gtk_clist_append(GTK_CLIST(provider->pCList),
-		     rowInfo);
+    rowNumber  = gtk_clist_append(GTK_CLIST(provider->pCList),
+				  rowInfo);
 
     rowInfo[1] = rowBuffer;
 
     rowInfo[0] = "Base Frequency";
     sprintf(rowInfo[1],"%3.0f",provider->pBaseFrequency);
 
-    gtk_clist_append(GTK_CLIST(provider->pCList),
-		     rowInfo);
+    rowNumber  = gtk_clist_append(GTK_CLIST(provider->pCList),
+				  rowInfo);
 
     rowInfo[0] = "Total Symbols";
     sprintf(rowInfo[1],"%d",provider->pSymbolNumber);
 
-    gtk_clist_append(GTK_CLIST(provider->pCList),
-		     rowInfo);
+    rowNumber  = gtk_clist_append(GTK_CLIST(provider->pCList),
+				  rowInfo);
 
     rowInfo[0] = "Sampled Symbols";
     sprintf(rowInfo[1],"%d",provider->pSampleList.len);
 
-    gtk_clist_append(GTK_CLIST(provider->pCList),
-		     rowInfo);
+    rowNumber  = gtk_clist_append(GTK_CLIST(provider->pCList),
+				  rowInfo);
 
     /* ----------------------------------------------------------- */
 
-    providerLoad    = provider->pLoad;
-    provider->pLoad = 0; /* re-init for next cycle */
+    rowInfo[0] = "Detected Flow";
+    sprintf(rowInfo[1],"0 Bytes/s, 0 %c",'%');
 
-    if (providerLoad > provider->pMaxLoad) {
-
-      /*
-       * This may happend because GTK timers are not very precise...
-       * So a 1 second period timer does not occur exactly every second.
-       * So percentage may be higher than 100 %.
-       */
-      providerLoad = provider->pMaxLoad;
-
-    }
-
-    rowInfo[0] = "Load";
-    sprintf(rowInfo[1],
-	    "%d Bytes/s, %d %c",
-	    providerLoad,
-	    (guint)(100.0 * (gfloat)providerLoad / (gfloat)provider->pMaxLoad),
-	    '%');
-
-    gtk_clist_append(GTK_CLIST(provider->pCList),
-		     rowInfo);
+    rowNumber  = gtk_clist_append(GTK_CLIST(provider->pCList),
+				  rowInfo);
 
     /* ----------------------------------------------------------- */
 

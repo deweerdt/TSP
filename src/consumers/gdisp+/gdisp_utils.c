@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_utils.c,v 1.2 2004-03-26 21:09:17 esteban Exp $
+$Id: gdisp_utils.c,v 1.3 2004-05-11 19:47:52 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -538,6 +538,61 @@ gdisp_getMessagePixmaps (Kernel_T  *kernel,
 
 }
 
+
+/*
+ * Get back pixmap according to provider identity.
+ */
+#include "pixmaps/gdisp_magentaBall.xpm"
+#include "pixmaps/gdisp_cyanBall.xpm"
+#include "pixmaps/gdisp_yellowBall.xpm"
+#include "pixmaps/gdisp_blueBall.xpm"
+#include "pixmaps/gdisp_greenBall.xpm"
+#include "pixmaps/gdisp_redBall.xpm"
+
+void
+gdisp_getProviderIdPixmap ( Kernel_T   *kernel,
+			    GtkWidget  *parent,
+			    guint       providerIdentity,
+			    GdkPixmap **identityPixmap,
+			    GdkBitmap **identityPixmapMask )
+{
+
+  GtkStyle   *style  =  (GtkStyle*)NULL;
+  GdkPixmap  *pixmap = (GdkPixmap*)NULL;
+  GdkBitmap  *mask   = (GdkBitmap*)NULL;
+  gchar     **pixmapTable[GD_MAX_PROVIDER_NUMBER] = { gdisp_magentaBall,
+						      gdisp_cyanBall,
+						      gdisp_yellowBall,
+						      gdisp_blueBall,
+						      gdisp_greenBall,
+						      gdisp_redBall };
+
+  /*
+   * Get back parent widget style.
+   */
+  style = gtk_widget_get_style(parent);
+
+  /*
+   * Get back the correct pixmap according to provider identity.
+   * Create the pixmap if it does not already exist.
+   */
+  pixmap = kernel->widgets.providerPixmaps[providerIdentity];
+  if (pixmap == (GdkPixmap*)NULL) {
+
+    pixmap = gdk_pixmap_create_from_xpm_d(parent->window,
+					  &mask,
+					  &kernel->colors[_WHITE_],
+					  pixmapTable[providerIdentity]);
+
+    kernel->widgets.providerPixmaps    [providerIdentity] = pixmap;
+    kernel->widgets.providerPixmapMasks[providerIdentity] = mask;
+
+  }
+
+  *identityPixmap     = pixmap;
+  *identityPixmapMask = mask;
+
+}
 
 
 /*

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_pages.c,v 1.3 2004-03-30 20:17:44 esteban Exp $
+$Id: gdisp_pages.c,v 1.4 2004-05-11 19:47:38 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -95,7 +95,13 @@ gdispManageDeleteEventFromWM (GtkWidget *pageWindow,
 			      gpointer   data)
 {
 
-  return FALSE;
+  Kernel_T *kernel = (Kernel_T*)data;
+
+  /*
+   * Allow the window manager to close graphic page windows
+   * only if sampling is off.
+   */
+  return (kernel->samplingThreadMustExit == FALSE ? TRUE : FALSE);
 
 }
 
@@ -494,6 +500,8 @@ gdisp_dataReceivedDNDCallback (GtkWidget        *pageWindow,
   guint             nRow            =                       0;
   guint             xPositionInPlot =                       0;
   guint             yPositionInPlot =                       0;
+  gdouble           xRatioInPlot    =                     0.0;
+  gdouble           yRatioInPlot    =                     0.0;
 
   PlotSystemData_T *plotSystemData  = (PlotSystemData_T*)NULL;
   guint             plotIdentity    =                       0;
@@ -604,6 +612,14 @@ gdisp_dataReceivedDNDCallback (GtkWidget        *pageWindow,
 	yPositionInPlot = plotHeight - yPositionInPlot;
 
 	/*
+	 * For BROADCAST purpose, as GDK windows may have different
+	 * sizes, compute the drop coordinates as a percentage of the
+	 * plot dimensions.
+	 */
+	xRatioInPlot = (gdouble)xPositionInPlot / (gdouble)plotWidth;
+	yRatioInPlot = (gdouble)yPositionInPlot / (gdouble)plotHeight;
+
+	/*
 	 * Take care of Drag & Drop operation scope.
 	 */
 	switch (kernel->dndScope) {
@@ -663,11 +679,28 @@ gdisp_dataReceivedDNDCallback (GtkWidget        *pageWindow,
 
 	  /*
 	   * Loop over all graphic plots of all existing graphic pages.
+	   * The difference between the BROADCAST mode and the two previous
+	   * ones is that we loop here upon all graphic pages that MAY have
+	   * different sizes.
+	   * So "plotWidth", "plotHeight" and drop coordinates have to be
+	   * recomputed for each page.
 	   */
 	  pageItem = g_list_first(kernel->pageList);
 	  while (pageItem != (GList*)NULL) {
 
-	    page = (Page_T*)pageItem->data;
+	    page       = (Page_T*)pageItem->data;
+	    pageWindow = page->pWindow;
+
+	    plotWidth  =
+	      (pageWindow->allocation.width  - (2 * GD_PAGE_BORDER_WIDTH) -
+	       ((page->pColumns - 1) * GD_PAGE_COL_SPACINGS)) / page->pColumns;
+
+	    plotHeight =
+	      (pageWindow->allocation.height - (2 * GD_PAGE_BORDER_WIDTH) -
+	       ((page->pRows    - 1) * GD_PAGE_ROW_SPACINGS)) / page->pRows;
+
+	    xPositionInPlot = (guint)(xRatioInPlot * (gdouble)plotWidth );
+	    yPositionInPlot = (guint)(yRatioInPlot * (gdouble)plotHeight);
 
 	    for (nRow=0; nRow<page->pRows; nRow++) {
 
@@ -676,11 +709,6 @@ gdisp_dataReceivedDNDCallback (GtkWidget        *pageWindow,
 		plotIdentity   = nRow * page->pColumns + nColumn;
 		plotSystemData = &page->pPlotSystemData[plotIdentity];
 
-		/*
-		 * FIXME : what happens if pages are not the same size ?
-		 *         BUG I guess....
-		 *         because {x,y}PositionInPlot are false.
-		 */
 		gdisp_finalizeDragAndDropOperation(kernel,
 						   page,
 						   plotSystemData,
@@ -899,9 +927,9 @@ gdisp_createGraphicPage (gpointer factoryData,
   newPage->pName    = g_string_new("Graphic Page");
   assert(newPage->pName);
 
-  kernel->pageList = g_list_append(kernel->pageList,
-				   (gpointer)newPage);
-  assert(kernel->pageList);
+  g_string_sprintf(newPage->pName,
+		   "Graphic Page #%d",
+		   g_list_length(kernel->pageList) + 1);
 
   /* --------------------- PLOT SYSTEMS --------------------- */
 
@@ -922,6 +950,7 @@ gdisp_createGraphicPage (gpointer factoryData,
     plotSystemData->plotSystem = &kernel->plotSystems[GD_PLOT_DEFAULT];
     plotSystemData->plotData   =
                        (*plotSystemData->plotSystem->psCreate)(kernel);
+    plotSystemData->plotCycle  = G_MAXINT;
 
     plotSystemData++;
 
@@ -1024,7 +1053,7 @@ gdisp_createGraphicPage (gpointer factoryData,
 		       3 * screenHeight / 4); /* height */
 
   gtk_window_set_title(GTK_WINDOW(newPage->pWindow),
-		       "GDISP+ Graphic Page.");
+		       newPage->pName->str);
 
   gtk_container_set_border_width(GTK_CONTAINER(newPage->pWindow),
 				 GD_PAGE_BORDER_WIDTH);
@@ -1109,6 +1138,14 @@ gdisp_createGraphicPage (gpointer factoryData,
 		   "Graphic page correctly created (%d).",
 		   g_list_length(kernel->pageList));
   kernel->outputFunc(kernel,messageString,GD_MESSAGE);
+
+  /*
+   * Now that all has been created within the graphic page,
+   * insert the graphic page into the kernel page list.
+   */
+  kernel->pageList = g_list_append(kernel->pageList,
+				   (gpointer)newPage);
+  assert(kernel->pageList);
 
 }
 

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_prototypes.h,v 1.3 2004-03-30 20:17:44 esteban Exp $
+$Id: gdisp_prototypes.h,v 1.4 2004-05-11 19:47:42 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -168,6 +168,12 @@ GtkWidget *gdisp_getMessagePixmaps (Kernel_T   *kernel,
 				    GtkWidget  *window,
 				    Message_T   messageType,
 				    gchar      *message);
+
+void       gdisp_getProviderIdPixmap (Kernel_T   *kernel,
+				      GtkWidget  *parent,
+				      guint       providerIdentity,
+				      GdkPixmap **identityPixmap,
+				      GdkBitmap **identityPixmapMask);
 
 void       gdisp_getStringTableFromStringList ( gchar   *stringList,
 						gchar ***stringTable,

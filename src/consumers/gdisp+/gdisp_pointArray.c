@@ -135,22 +135,26 @@ dparray_setMarkerIndex (DoublePointArray_T *pArray,
 
 }
 
-
-
-DoublePoint_T  DP_ARRAY_GET_SAMPLE(DoublePointArray_T *pArray, int i)
+DoublePoint_T
+DP_ARRAY_GET_SAMPLE (DoublePointArray_T *pArray, int i)
 {
-  if (i>=0)
+
+  if (i >= 0)
     return pArray->samples[ i % pArray->nbSamples ]; 
   else
     return pArray->samples[0]; 
+
 }
 
-DoublePoint_T*  DP_ARRAY_GET_SAMPLE_PTR(DoublePointArray_T *pArray, int i)
+DoublePoint_T*
+DP_ARRAY_GET_SAMPLE_PTR (DoublePointArray_T *pArray, int i)
 {
-  if (i>=0)
+
+  if (i >= 0)
     return &pArray->samples[ i % pArray->nbSamples ]; 
   else
     return &pArray->samples[0]; 
+
 }
 
 
