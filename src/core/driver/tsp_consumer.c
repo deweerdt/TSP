@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.14 2002-12-02 15:14:49 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.15 2002-12-03 10:29:30 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -1119,53 +1119,43 @@ int TSP_consumer_read_sample(TSP_provider_t provider, TSP_sample_t* sample, int*
   TSP_otsp_t* otsp = (TSP_otsp_t*)provider;
   int ret = TRUE;
     
+  assert(otsp->sample_fifo!=0);
 
- 
-  if(0 != otsp->sample_fifo)
+  *new_sample =  !(RINGBUF_PTR_ISEMPTY(otsp->sample_fifo)) ;
+  if (*new_sample)
     {
-      if ((*new_sample) =  (!(RINGBUF_PTR_ISEMPTY(otsp->sample_fifo))))
+      RINGBUF_PTR_NOCHECK_GET(otsp->sample_fifo ,(*sample));
+      /* FIXME : si on ne peut plus recevoir et que le fifo est vide --> erreur 
+	 (mémoriser un etat dans le thread), faire également un EOF ?*/
+
+      /* end of stream ? */
+      if ( sample->provider_global_index < 0 )
 	{
-	  RINGBUF_PTR_NOCHECK_GET(otsp->sample_fifo ,(*sample));
-	  /* FIXME : si on ne peut plus recevoir et que le fifo est vide --> erreur 
-	   (mémoriser un etat dans le thread), faire également un EOF ?*/
+	  ret = FALSE;
 
-	  /* end of stream ? */
-	  if ( sample->provider_global_index < 0 )
+	  STRACE_INFO(("Received status message %X",  sample->provider_global_index));
+	  switch(sample->provider_global_index)
 	    {
-	      ret = FALSE;
-
-	      STRACE_INFO(("Received status message %X",  sample->provider_global_index));
-	      switch(sample->provider_global_index)
-		{
-		case TSP_DUMMY_PROVIDER_GLOBAL_INDEX_EOF :
-		  STRACE_INFO (("status message EOF"));
-		  /* FIXME : get last error à gerer ? */
-		  break;
-		case TSP_DUMMY_PROVIDER_GLOBAL_INDEX_RECONF :
-		  STRACE_INFO (("status message RECONF"));
-		  /* FIXME : get last error à gerer ? */
-		  break;
-		case TSP_DUMMY_PROVIDER_GLOBAL_INDEX_RECEIVER_ERROR :
-		  STRACE_INFO (("status message RECEIVER ERROR"));
-		  /* FIXME : get last error à gerer ? */
-		  break;
-		default:
-		  STRACE_ERROR (("Unknown status message"));
-		  /* FIXME : get last error à gerer ? */
-		}
+	    case TSP_DUMMY_PROVIDER_GLOBAL_INDEX_EOF :
+	      STRACE_INFO (("status message EOF"));
+	      /* FIXME : get last error à gerer ? */
+	      break;
+	    case TSP_DUMMY_PROVIDER_GLOBAL_INDEX_RECONF :
+	      STRACE_INFO (("status message RECONF"));
+	      /* FIXME : get last error à gerer ? */
+	      break;
+	    case TSP_DUMMY_PROVIDER_GLOBAL_INDEX_RECEIVER_ERROR :
+	      STRACE_INFO (("status message RECEIVER ERROR"));
+	      /* FIXME : get last error à gerer ? */
+	      break;
+	    default:
+	      STRACE_ERROR (("Unknown status message"));
+	      /* FIXME : get last error à gerer ? */
 	    }
 	}
-    }      
-  else
-    {
-      STRACE_ERROR(("Sample ring buf does not exist. was sample_request_init called ?"));
     }
-  
-
-    
+      
   return ret;
-    
-
 }
 
 /**
