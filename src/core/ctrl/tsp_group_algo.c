@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_group_algo.c,v 1.6 2002-11-29 17:27:23 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_group_algo.c,v 1.7 2002-12-05 10:56:27 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -255,7 +255,7 @@ TSP_group_algo_allocate_group_table(const TSP_sample_symbol_info_list_t* symbols
     }
     
   
-  STRACE_INFO(("Max group size = %d", table->max_group_len));
+  STRACE_DEBUG(("Max group size = %d", table->max_group_len));
   STRACE_IO(("-->OUT"));
 
     
