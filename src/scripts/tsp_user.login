@@ -11,7 +11,7 @@ if ( "$HOST_UNAME" == "Linux" )  then
 #Sun & Sun64
 else if ( "$HOST_UNAME" == "SunOS") then
     #try to find isalist util
-    set SPARC_TYPE=` isalist | awk '{ print $1 }' | grep sparcv9 ` 
+    set SPARC_TYPE=` isalist | awk '{ print $1 }' | grep sparcv9 `  
     if( $? == 0 ) then
 	if( $SPARC_TYPE != "" ) then
 	    setenv HOST_TARGET "sun64"
@@ -60,7 +60,7 @@ setenv HOME_EXEC_CURRENT $HOME_EXEC_BASE/current
 ##############################
 
 
-setenv PATH ${PATH}:${HOME_EXEC_CURRENT}/bin.consumer:${HOME_EXEC_CURRENT}/bin.provider:${TSP_BASE}/src/tsp/tests/etape1:${TSP_BASE}/src/scripts
+setenv PATH ${PATH}:${HOME_EXEC_CURRENT}/bin.consumer:${HOME_EXEC_CURRENT}/bin.provider:${TSP_BASE}/src/tsp/tests/etape1:${TSP_BASE}/src/scripts:${TSP_BASE}/src/tsp/tests/stage2
 
 
 
