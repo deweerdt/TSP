@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.h,v 1.3 2004-10-05 22:55:15 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.h,v 1.4 2004-10-12 17:17:04 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -105,7 +105,8 @@ typedef struct S_BB_DATADESC {
   char name[VARNAME_MAX_SIZE+1];
   /** Variable (BlackBoard) type */
   E_BB_TYPE_T type;
-  /** Dimension. 1 if scalar, > 1 for single dimension array.
+  /** 
+   * Dimension. 1 if scalar, > 1 for single dimension array.
    * There is no multidimensionnal array type.
    */
   int32_t dimension;
