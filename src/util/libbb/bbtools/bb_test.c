@@ -55,7 +55,7 @@ main (int argc, char ** argv) {
   }
 
   /* Publish data in the BB */
-  /**************************/
+  /**************************/ 
 
   display_level = (uint32_t*) bb_simple_publish(mybb,"display_level",basename(argv[0]),-1, E_BB_UINT32, sizeof(uint32_t),1);
   *display_level = 0;

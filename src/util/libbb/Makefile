@@ -3,13 +3,15 @@ include $(DEVBASE)/make/Makeparams
 SUBDIRS = bbtools
 
 # -----------------------------------------------------------
-XINC    = bb_utils.h bb_core.h bb_simple.h bb_sha1.h
+XINC    = bb_utils.h bb_core.h bb_simple.h bb_sha1.h \
+	  bb_tools.h
 
 SOURCES = \
 	bb_utils.c \
 	bb_core.c \
 	bb_simple.c \
-	bb_sha1.c
+	bb_sha1.c \
+	bb_tools.c
 
 OBJECTS=$(SOURCES:%.c=$(DIROBJ)/%.o) 
 
