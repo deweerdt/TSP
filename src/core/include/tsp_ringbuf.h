@@ -166,6 +166,7 @@ extern "C" {
 --
 */
 
+/* 'pad' is there for alignement purpose */
 #define RINGBUF_DECLARE_TYPE_DYNAMIC(TypeName, ItemType) \
 	typedef struct \
 	{ \
@@ -173,6 +174,7 @@ extern "C" {
 		int		put; \
 		int		get; \
 		int		missed; \
+                int              pad; \
 		ItemType*	buf; \
 	} TypeName
 
