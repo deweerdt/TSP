@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_datapool.c,v 1.18 2004-09-14 16:48:26 dufy Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_datapool.c,v 1.19 2004-09-16 07:53:18 dufy Exp $
 
 -----------------------------------------------------------------------
 
@@ -25,7 +25,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 -----------------------------------------------------------------------
 
 Project   : TSP
-Maintainer : tsp@astrium-space.com
+Maintainer: tsp@astrium.eads.net 
 Component : Provider
 
 -----------------------------------------------------------------------
@@ -46,10 +46,10 @@ may be unified in this source .
 #include "tsp_session.h"
 #include "tsp_time.h"
 
-/* Poll time waiting for  consumer connection (µs) */
+/* Poll time waiting for  consumer connection (us) */
 #define TSP_LOCAL_WORKER_CONNECTION_POLL_TIME ((int)(1e5))
 
-/* Data Poll period (µs) */
+/* Data Poll period (us) */
 #define TSP_DATAPOOL_POLL_PERIOD ((int)(1e4))
 
 
@@ -117,6 +117,8 @@ TSP_datapool_table_t X_global_datapool = {FALSE,FALSE,0,0,0};
  */ 
 void TSP_datapool_get_reverse_list (int *nb, int **list)
 {
+  assert(nb!=NULL);
+  assert(list!=NULL);
   *nb = X_global_datapool.nb_wanted_items;
   *list = X_global_datapool.reverse_index;
 }
@@ -129,6 +131,7 @@ void TSP_datapool_get_reverse_list (int *nb, int **list)
 inline int TSP_datapool_push_next_item(glu_item_t* item)
 {
   X_global_datapool.items[item->provider_global_index].user_value = item->value;
+  return 0;
 }
 
 /**
@@ -140,15 +143,15 @@ int TSP_datapool_push_commit(time_stamp_t time_stamp, GLU_get_state_t state)
 {
   STRACE_DEBUG(("Datapool push new item time %d",time_stamp)); 
 
-  /* Yep ! throw data to client */
-  /* Send data to all clients  */	      		  
-  /* For a global datapool, the thread must not end, even if a client is disconnected, so
-     we do not check any returned value from TSP_session_all_session_send_data */
-  TSP_session_all_session_send_data(time_stamp);		  
-
    /* Send end status message */
-  if (state != GLU_GET_NEW_ITEM) 
+  if (state == GLU_GET_NEW_ITEM) 
     {
+      /* Yep ! throw data to client */
+      /* Send data to all clients  */	      		  
+      /* For a global datapool, the thread must not end, even if a client is disconnected, so
+	 we do not check any returned value from TSP_session_all_session_send_data */
+      TSP_session_all_session_send_data(time_stamp);		  
+    } else {
       TSP_msg_ctrl_t msg_ctrl;  
       switch(state)
 	{
@@ -169,15 +172,13 @@ int TSP_datapool_push_commit(time_stamp_t time_stamp, GLU_get_state_t state)
 	  assert(0);
 	}
 
-      /* The lastest data were not sent coz we did not compare the latest timestamp. So, send them !*/
-      /* Send data to all clients  */	      
-      TSP_session_all_session_send_data(time_stamp);		  
+      /* Send msgctrl to all clients  */	      
       TSP_session_all_session_send_msg_ctrl(msg_ctrl);		  
 
       /* End of thread. Our datapool is dead */
       X_global_datapool.terminated = TRUE;
     }
-  
+  return 0;  
 }
 
 /* DON'T WANT ANYMORE this fucking thread passive callback f....cking philo */
@@ -198,8 +199,6 @@ void* TSP_datapool_thread(void* datapool)
   TSP_msg_ctrl_t msg_ctrl;  
   int data_link_ok = TRUE; /**< Used to store the  data link state for a local thread (broken or ok) */
 
-  STRACE_IO(("-->IN"));
-  
   /* FIXME : The datapool might not be coherent when a client is already
      connected and this thread starts after the connection
      for the client */
@@ -268,9 +267,6 @@ void* TSP_datapool_thread(void* datapool)
 
   /* End of thread. Our datapool is dead */
   obj_datapool->terminated = TRUE;
-
-  STRACE_IO(("-->OUT"));
-
 }
 
 
@@ -285,14 +281,10 @@ int TSP_local_datapool_wait_for_end_thread(TSP_datapool_t datapool)
   int status;
   TSP_datapool_table_t* obj_datapool = (TSP_datapool_table_t*)datapool;
 
-  STRACE_IO(("-->IN"));
-
   status = pthread_join(obj_datapool->worker_id, NULL);
   TSP_CHECK_THREAD(status, FALSE);
 
-  STRACE_IO(("-->OUT"));
   return TRUE;
-
 }
 
 
@@ -306,15 +298,12 @@ int TSP_local_datapool_start_thread(TSP_datapool_t datapool)
   int status;
   TSP_datapool_table_t* obj_datapool = (TSP_datapool_table_t*)datapool;
 
-  STRACE_IO(("-->IN"));
-
   STRACE_ERROR(("Func is deprecated, use global datapool"));
   return -1;
 
   status = pthread_create(&(obj_datapool->worker_id), NULL, TSP_datapool_thread,  datapool);
   TSP_CHECK_THREAD(status, FALSE);
 
-  STRACE_IO(("-->OUT"));
   return TRUE;
 
 }
@@ -329,11 +318,6 @@ static int TSP_global_datapool_init(void)
 {
 	 
   TSP_sample_symbol_info_list_t symbols;
-  int i;
-  int status;
- 
-     
-  STRACE_IO(("-->IN"));
 	
   /* Here the datapool is global */
   X_global_datapool.h_glu = GLU_GLOBAL_HANDLE;   
@@ -357,14 +341,17 @@ static int TSP_global_datapool_init(void)
   X_global_datapool.initialized = TRUE;
   X_global_datapool.terminated = FALSE;
     
-  STRACE_IO(("-->OUT"));
   return TRUE;
 
 }
 
 static void TSP_datapool_internal_free(TSP_datapool_table_t* obj_datapool)
 {
-     free(obj_datapool->items);obj_datapool->items = 0;
+     free(obj_datapool->items);
+     obj_datapool->items = 0;
+     free(obj_datapool->reverse_index);
+     obj_datapool->reverse_index = 0;
+     obj_datapool->nb_wanted_items = 0;
 }
 
 void TSP_local_datapool_destroy(TSP_datapool_t datapool)
@@ -373,18 +360,13 @@ void TSP_local_datapool_destroy(TSP_datapool_t datapool)
 
    TSP_datapool_internal_free(obj_datapool);
    free(obj_datapool);
-   
 }
 
 
 TSP_datapool_t TSP_local_datapool_allocate(int symbols_number, GLU_handle_t h_glu )
 {
-	 
-  TSP_sample_symbol_info_list_t symbols;
   TSP_datapool_table_t* datapool;
      
-  STRACE_IO(("-->IN"));
-
   datapool = (TSP_datapool_table_t*)calloc(1,sizeof(TSP_datapool_table_t));
   TSP_CHECK_ALLOC(datapool, 0);
 	
@@ -397,9 +379,7 @@ TSP_datapool_t TSP_local_datapool_allocate(int symbols_number, GLU_handle_t h_gl
   datapool->initialized = TRUE;
   datapool->terminated = FALSE;
     
-  STRACE_IO(("-->OUT"));
   return datapool;
-
 }
 
 
@@ -407,9 +387,6 @@ void* TSP_datapool_get_symbol_value(TSP_datapool_t datapool, int provider_global
 {
   void* p = 0;
   TSP_datapool_table_t* obj_datapool = (TSP_datapool_table_t*)datapool;
-	
-  STRACE_IO(("-->IN"));
-
 	
   TSP_CHECK_PROVIDER_GLOBAL_INDEX(*obj_datapool, provider_global_index, 0);
 
@@ -434,9 +411,6 @@ void* TSP_datapool_get_symbol_value(TSP_datapool_t datapool, int provider_global
     }
   */
     
-  STRACE_IO(("-->OUT"));
-
-	
   return p;
 }
 

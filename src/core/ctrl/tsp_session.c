@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.c,v 1.15 2004-09-14 16:48:26 dufy Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.c,v 1.16 2004-09-16 07:53:18 dufy Exp $
 
 -----------------------------------------------------------------------
 
@@ -37,7 +37,7 @@ opened session from a client
  */
 
 #ifdef __OpenBSD__
-#include <machine/types.h>
+#include <machine/types.h> 
 #include <machine/endian.h>
 #endif /* __OpenBSD__ */
 
@@ -112,8 +112,6 @@ static TSP_session_t* TSP_get_session(channel_id_t channel_id)
   TSP_session_t* session = 0;
   int i = 0;
 	
-  STRACE_IO(("-->IN channel_id=%u", channel_id));
-  
   for( i = 0 ;  i < X_session_nb ; i++)
     {
       if( X_session_t[i].channel_id == channel_id )
@@ -131,20 +129,6 @@ static TSP_session_t* TSP_get_session(channel_id_t channel_id)
     }
 	
   return session ;
-}
-
-static void TSP_print_object_session(TSP_session_t* o)
-{
-  SFUNC_NAME(TSP_print_object_tsp);
-
-	
-  /*STRACE_INFO(("----------------------------------------------"));
-
-    STRACE_INFO(("SERVER_INFO->INFO='%s'\n", o->server_info.info));
-
-    STRACE_INFO(("----------------------------------------------"));
-
-  */
 }
 
 static void TSP_session_close_session(channel_id_t channel_id)
@@ -189,37 +173,22 @@ static  void TSP_session_destroy_symbols_table(TSP_session_t* session)
 
 void TSP_session_init(void)
 {
-		
-  STRACE_IO(("-->IN"));
-
-	
   if( FALSE == X_initialized )
     {
       /* Mise a 0 de la zone memoire */
       memset(X_session_t, 0, TSP_MAX_CLIENT_NUMBER*sizeof(TSP_session_t));
       X_initialized = TRUE;
     }
-	
-  STRACE_IO(("-->OUT"));
-
 }
 
 
 void TSP_session_close_session_by_channel(channel_id_t channel_id)
 {
-
-
-  SFUNC_NAME(TSP_session_close_session_by_channel);
-  int i;
-  int ret = FALSE;
-
   TSP_LOCK_MUTEX(&X_session_list_mutex,);
 
   TSP_session_close_session(channel_id);
 
   TSP_UNLOCK_MUTEX(&X_session_list_mutex,);
-
-  STRACE_IO(("-->OUT"));
 }
 
 int TSP_session_get_nb_session(void)
@@ -243,8 +212,6 @@ int TSP_add_session(channel_id_t* new_channel_id, GLU_handle_t glu_h)
 
   *new_channel_id = 0;
 	
-  STRACE_IO(("-->IN"));
-
   TSP_LOCK_MUTEX(&X_session_list_mutex,FALSE);
 
   /* Is there room left for the new session ? */
@@ -287,9 +254,6 @@ int TSP_add_session(channel_id_t* new_channel_id, GLU_handle_t glu_h)
   	
   TSP_UNLOCK_MUTEX(&X_session_list_mutex,FALSE);
 
-  STRACE_IO(("-->OUT"));
-
-	
   return TRUE;
 }
 
@@ -298,17 +262,13 @@ void TSP_session_destroy_symbols_table_by_channel(channel_id_t channel_id)
 {
   TSP_session_t* session = 0;
    
-  STRACE_IO(("-->IN"));
-        
   TSP_LOCK_MUTEX(&X_session_list_mutex,);    
-  TSP_GET_SESSION(session, channel_id,);
+  TSP_GET_SESSION(session, channel_id,); 
 
-  TSP_session_destroy_symbols_table(session);
+  TSP_session_destroy_symbols_table(session);  
 
   TSP_UNLOCK_MUTEX(&X_session_list_mutex,);
 
-  STRACE_IO(("-->OUT"));
-   
 }
 
 
@@ -317,11 +277,8 @@ int TSP_session_create_symbols_table_by_channel(const TSP_request_sample_t* req_
 
 {
   int ret = FALSE;
-  char port[200];
   TSP_session_t* session = 0;
   TSP_datapool_t target_datapool = 0;    
-    
-  STRACE_IO(("-->IN"));
 
   TSP_LOCK_MUTEX(&X_session_list_mutex,FALSE);
 
@@ -353,10 +310,7 @@ int TSP_session_create_symbols_table_by_channel(const TSP_request_sample_t* req_
     
   TSP_UNLOCK_MUTEX(&X_session_list_mutex,FALSE);
 
-  STRACE_IO(("-->OUT"));
-
   return ret;
-    
 }
 
 void TSP_session_create_symbols_table_by_channel_free_call(TSP_answer_sample_t* ans_sample)
@@ -392,9 +346,9 @@ int TSP_session_send_msg_ctrl_by_channel(channel_id_t channel_id, TSP_msg_ctrl_t
 
   /* The mutex can not be kept 'coz' we are going to block other sessions */
   /* So, be carefull : the session must not be suppressed when the send is active */
-  TSP_LOCK_MUTEX(&X_session_list_mutex,);
-  TSP_GET_SESSION(session, channel_id,);
-  TSP_UNLOCK_MUTEX(&X_session_list_mutex,);
+  TSP_LOCK_MUTEX(&X_session_list_mutex,-1);
+  TSP_GET_SESSION(session, channel_id,-1);
+  TSP_UNLOCK_MUTEX(&X_session_list_mutex,-1);
 
   if( (session->session_data->data_link_broken == FALSE) 
       &&  session->session_data->groups
@@ -421,9 +375,9 @@ int TSP_session_send_data_by_channel(channel_id_t channel_id, time_stamp_t t)
 
   /* The mutex can not be kept 'coz' we are going to block other sessions */
   /*So, warning : the session must not be suppressed when the send is active */
-  TSP_LOCK_MUTEX(&X_session_list_mutex,);
-  TSP_GET_SESSION(session, channel_id,);
-  TSP_UNLOCK_MUTEX(&X_session_list_mutex,);
+  TSP_LOCK_MUTEX(&X_session_list_mutex,-1);
+  TSP_GET_SESSION(session, channel_id,-1);
+  TSP_UNLOCK_MUTEX(&X_session_list_mutex,-1);
 
   if( (session->session_data->data_link_broken == FALSE) 
       &&  session->session_data->groups

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_stream_sender.c,v 1.13 2004-07-28 13:05:38 mia Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_stream_sender.c,v 1.14 2004-09-16 07:53:18 dufy Exp $
 
 -----------------------------------------------------------------------
 
@@ -42,12 +42,15 @@ stream  to the consumers.
 #include <netinet/tcp.h>
 #include <sys/socket.h>
 #include <signal.h>
+#include <strings.h> /* for bzero */
+#include <string.h>  /* for bzero too :=} */
 
 #ifndef SHUT_RDWR
 #define SHUT_RDWR 2
 #endif
 
 #include "tsp_stream_sender.h"
+#include "tsp_time.h"
 
 #define TSP_DATA_ADDRESS_STRING_SIZE 256
 
@@ -116,7 +119,7 @@ typedef struct TSP_socket_t TSP_socket_t;
 
 typedef void Sigfunc(int);
 
-static Sigfunc* signal(int signo, Sigfunc* func)
+Sigfunc* signal(int signo, Sigfunc* func)
 {
   struct sigaction act, oact;
   
@@ -143,15 +146,12 @@ static Sigfunc* signal(int signo, Sigfunc* func)
 
 void* TSP_streamer_sender_thread_sender(void* arg)
 {
-  SFUNC_NAME(TSP_streamer_sender_thread_sender);
-    
   TSP_socket_t* sock = (TSP_socket_t*)arg;
   TSP_stream_sender_item_t* item = 0;
   int connection_ok = TRUE;
+  static int status = 0;
      
-  STRACE_IO(("-->IN"));
- 
-    /* Wait for consumer connection before we send data */  
+  /* Wait for consumer connection before we send data */  
 
   STRACE_DEBUG(("Thread stream sender created : waiting for client to connect..."));
   while(!sock->client_is_connected)
@@ -184,8 +184,7 @@ void* TSP_streamer_sender_thread_sender(void* arg)
     }
 
   STRACE_DEBUG(("End of fifo thread stream sender"));
-      
-  STRACE_IO(("-->OUT"));
+  return &status;
 }
 
 
@@ -220,14 +219,10 @@ static int TSP_stream_sender_init_bufferized(TSP_socket_t* sock)
   
 }
 
-static TSP_stream_sender_save_address_string(TSP_socket_t* sock, 
+static void TSP_stream_sender_save_address_string(TSP_socket_t* sock, 
 					     char* host, unsigned short port)
 {   
-  SFUNC_NAME(TSP_stream_sender_save_address_string);
-        
   char strPort[10];
-    
-  STRACE_IO(("-->IN"));
     
   sprintf(strPort,"%u",(int)port);
   strcpy(sock->data_address, host);
@@ -239,22 +234,16 @@ static TSP_stream_sender_save_address_string(TSP_socket_t* sock,
 
 static void* TSP_streamer_sender_connector(void* arg)
 {
-
-
   /* FIXME : When the client can't find us (somehow, ex : routing error on the network)
      this function badly leaks */
-
-  SFUNC_NAME(TSP_streamer_sender_connector);
     
   TSP_socket_t* sock = (TSP_socket_t*)arg;
   int Len = 0;
     
-  STRACE_IO(("-->IN"));
-
   pthread_detach(pthread_self());
     
   /* Accept connection on socket */
-  STRACE_DEBUG(("Thread acceptor started waiting for client to connect", sock->hClient));
+  STRACE_DEBUG(("Thread acceptor started waiting for client to connect %d", sock->hClient));
   sock->hClient = accept(sock->socketId, NULL, &Len);
 
   if(sock->hClient > 0)
@@ -271,7 +260,7 @@ static void* TSP_streamer_sender_connector(void* arg)
       return 0;
     }
     
-  STRACE_IO(("-->OUT"));
+  return 0;
 }
 
 const char* TSP_stream_sender_get_data_address_string(TSP_stream_sender_t sender)
@@ -291,10 +280,8 @@ TSP_stream_sender_t TSP_stream_sender_create(int fifo_size, int buffer_size)
   SFUNC_NAME(TSP_stream_sender_create);
   int status = 0;
   int OptInt = 0;
-  int ret = TRUE;
-  /*int Len = 0;*/
   char host[TSP_MAXHOSTNAMELEN+1];
-  unsigned short port;  TSP_socket_t* sock;
+  TSP_socket_t* sock;
   pthread_t thread_connect_id;
   
   STRACE_IO(("-->IN"));

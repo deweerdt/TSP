@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_group_algo.c,v 1.10 2004-08-31 09:58:52 dufy Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_group_algo.c,v 1.11 2004-09-16 07:53:18 dufy Exp $
 
 -----------------------------------------------------------------------
 
@@ -348,9 +348,6 @@ int TSP_group_algo_create_symbols_table(const TSP_sample_symbol_info_list_t* in_
     
   if(table)
     {
-      int frequency_ratio;
-      int phase;
-    
       /* Allocate memory for the out_symbols */
       out_symbols->TSP_sample_symbol_info_list_t_len = table->groups_summed_size;
       out_symbols->TSP_sample_symbol_info_list_t_val = 

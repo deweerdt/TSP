@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_data_sender.c,v 1.14 2004-08-31 09:58:52 dufy Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_data_sender.c,v 1.15 2004-09-16 07:53:18 dufy Exp $
 
 -----------------------------------------------------------------------
 
@@ -291,15 +291,11 @@ static int TSP_data_sender_to_stream_sender(TSP_struct_data_sender_t* data_sende
  */
 int TSP_data_sender_send_msg_ctrl(TSP_data_sender_t sender, TSP_msg_ctrl_t msg_ctrl)
 {
-  SFUNC_NAME(TSP_data_sender_send);
-
   TSP_struct_data_sender_t* data_sender = (TSP_struct_data_sender_t*)sender;
-  TSP_stream_sender_item_t* fifo_item = 0;
   int* buf_int = 0;
   int tsp_reserved_group;
   int ret = TRUE;
   TSP_stream_sender_item_t* tosend;
-  STRACE_IO(("-->IN"));
 
   /*---------------------------*/
   /* Traduce enum */

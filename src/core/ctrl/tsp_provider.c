@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: tsp_provider.c,v 1.21 2004-09-14 16:48:26 dufy Exp $
+$Id: tsp_provider.c,v 1.22 2004-09-16 07:53:18 dufy Exp $
 
 -----------------------------------------------------------------------
 
@@ -43,12 +43,10 @@ Purpose   : Main implementation for the producer module
 #include "tsp_server.h"
 #include "tsp_datapool.h"
 #include "glue_sserver.h"	
-
-static char* X_default_stream_init = 0;
+#include "tsp_time.h"	
 
 /** modified argc and argv, will be returned to user code after init */
 static  char** X_argv = 0;
-static  int X_argc = 0;
 
 /** Default values for args to the GLU */
 static  char** X_glu_argv = 0;
