@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_server.c,v 1.18 2004-10-07 08:56:33 tractobob Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_server.c,v 1.19 2004-10-28 20:10:44 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -37,42 +37,44 @@ Purpose   :
 
 #include "tsp_sys_headers.h"
 
+/* FIXME a quoi sert ce define ? */
 #define PORTMAP
 #include <rpc/rpc.h>
 #include <netdb.h>
+#include <rpc/pmap_clnt.h>
+#include <stdio.h>
+#include <unistd.h>
 
 
 /* FIXME RP : beurk, RPC is compiled before CTRL could export this include, how sould I call Request Manager and GLU then ? */
+#include "../ctrl/tsp_provider.h"
 #include "../ctrl/tsp_request.h"
 #include "../ctrl/glue_sserver.h"
 
 #include "tsp_server.h"
-
 #include "tsp_rpc.h"
+#include "tsp_rpc_confprogid.h"
+
+void
+tsp_rpc_1(struct svc_req *rqstp, register SVCXPRT *transp) ;
+
 
 #ifndef TSP_RPC_CLEANUP
 
+#define TSP_URL_MAXLENGTH 256
 
 typedef struct {
   int  server_number;
-  char url[256];
+  char url[TSP_URL_MAXLENGTH];
   SVCXPRT *xprt;
 } TSP_rpc_request_config_t;
 
 TSP_provider_info_t* tsp_provider_information_1_svc(struct svc_req *rqstp)
 {
-  
-  static TSP_provider_info_t server_info;
-	
-  STRACE_IO(("-->IN"));
-
-    
-  server_info.info = GLU_get_server_name();
-    
+  static TSP_provider_info_t server_info;	
+  STRACE_IO(("-->IN"));    
+  server_info.info = GLU_get_server_name();    
   STRACE_IO(("-->OUT"));
-
-	
-
   return &server_info;
 }
 
@@ -81,16 +83,9 @@ TSP_answer_open_t* tsp_request_open_1_svc(TSP_request_open_t req_open, struct sv
 
   static TSP_answer_open_t ans_open;
 	
-
-
-  STRACE_IO(("-->IN"));
-
-	
-  TSP_provider_request_open(&req_open, &ans_open);
-	
-  STRACE_IO(("-->OUT"));
-
-	
+  STRACE_IO(("-->IN"));	
+  TSP_provider_request_open(&req_open, &ans_open);	
+  STRACE_IO(("-->OUT"));	
   return &ans_open;
 
 }
@@ -114,14 +109,9 @@ TSP_answer_sample_t* tsp_request_information_1_svc(TSP_request_information_t req
 
   static TSP_answer_sample_t ans_sample;
 	
-  STRACE_IO(("-->IN"));
-
-	
+  STRACE_IO(("-->IN"));	
   TSP_provider_request_information(&req_info, &ans_sample);
-
-  STRACE_IO(("-->OUT"));
-
-	
+  STRACE_IO(("-->OUT"));       
   return &ans_sample;
 
 }
@@ -132,9 +122,7 @@ TSP_answer_feature_t* tsp_request_feature_1_svc(TSP_request_feature_t req_featur
   static TSP_answer_feature_t ans_feature;
 	
   STRACE_IO(("-->IN"));
-
   STRACE_IO(("-->OUT"));
-
 	
   return &ans_feature;
 
@@ -147,7 +135,6 @@ TSP_answer_sample_t* tsp_request_sample_1_svc(TSP_request_sample_t req_sample, s
   static TSP_answer_sample_t ans_sample;
 
   STRACE_IO(("-->IN"));
-
   /* For each call memory was allocate by TSP_provider_request_sample */
   if(!first_call)
     {
@@ -156,7 +143,6 @@ TSP_answer_sample_t* tsp_request_sample_1_svc(TSP_request_sample_t req_sample, s
   first_call = FALSE;
 
   TSP_provider_request_sample(&req_sample, &ans_sample);
-
 
   STRACE_IO(("-->OUT"));
 	
@@ -170,23 +156,16 @@ TSP_answer_sample_init_t* tsp_request_sample_init_1_svc(TSP_request_sample_init_
   static TSP_answer_sample_init_t ans_sample;
 
   STRACE_IO(("-->IN"));
-
     
   /*TBD FIXME Desallouer l'appel precedent*/
   /*if( 0 != ans_sample)
     {
     TSP_session_free_create_symbols_table_call(&ans_sample);
     }*/
-
     
   TSP_provider_request_sample_init(&req_sample, &ans_sample);
-
-	
-    
-
   STRACE_IO(("-->OUT"));
 
-	
   return &ans_sample;
 
 }
@@ -197,9 +176,7 @@ TSP_answer_sample_destroy_t* tsp_request_sample_destroy_1_svc(TSP_request_sample
   static TSP_answer_sample_destroy_t ans_sample;
 	
   STRACE_IO(("-->IN"));
-
   TSP_provider_request_sample_destroy(&req_sample, &ans_sample);
-
   STRACE_IO(("-->OUT"));
 
 	
@@ -217,10 +194,6 @@ void* tsp_exec_feature_1_svc(TSP_exec_feature_t exec_feature, struct svc_req * r
   return (void*)NULL;
 }
 
-
-
-void
-tsp_rpc_1(struct svc_req *rqstp, register SVCXPRT *transp) ;
 
 static int TSP_rpc_init(TSP_rpc_request_config_t *config)
 {
@@ -257,8 +230,8 @@ static void TSP_rpc_run(TSP_rpc_request_config_t *config)
 {
   int32_t rpc_progid = TSP_get_progid(config->server_number);
 
-   /* svc_create does not exist for linux, we must use the deprecated function */
-  pmap_unset (rpc_progid, TSP_RPC_VERSION_INITIAL);
+  /* svc_create does not exist for linux, we must use the deprecated function */
+  //pmap_unset (rpc_progid, TSP_RPC_VERSION_INITIAL);
 	
   config->xprt = svctcp_create(RPC_ANYSOCK, 0, 0);
   if (config->xprt == NULL) 
@@ -283,14 +256,15 @@ static void TSP_rpc_run(TSP_rpc_request_config_t *config)
 
 static void TSP_rpc_stop(TSP_rpc_request_config_t *config)
 {
+  //STRACE_DEBUG(("calling svc_exit..."));
+  //svc_destroy(config->xprt);
+
   /* Clean-up Port map so that next provider could use this ProgId */
   if(config->server_number >= 0)
     {
+      svc_unregister(TSP_get_progid(config->server_number),TSP_RPC_VERSION_INITIAL);
       pmap_unset (TSP_get_progid(config->server_number), TSP_RPC_VERSION_INITIAL);
     }
-
-  STRACE_DEBUG(("calling svc_exit..."));
-  svc_destroy(config->xprt);
 }
 
 /*==================================================================*/
@@ -311,12 +285,13 @@ int TSP_rpc_request(TSP_provider_request_handler_t* this)
 
 int TSP_rpc_request_config(TSP_provider_request_handler_t* this)
 {
-  TSP_rpc_request_config_t *config = (TSP_rpc_request_config_t *)this->config_param;
+  TSP_rpc_request_config_t *config = (TSP_rpc_request_config_t *)(this->config_param);
   char hostname[MAXHOSTNAMELEN], *servername;
 
   config->server_number = TSP_provider_get_server_base_number();
-  strcpy(config->url, "");
-
+  /* do not buffer overflow */
+  memset(&config->url[0],'\0',TSP_URL_MAXLENGTH);
+  
   config->server_number = TSP_rpc_init(config);
   if(config->server_number < 0)
     {
@@ -329,7 +304,9 @@ int TSP_rpc_request_config(TSP_provider_request_handler_t* this)
     {
       gethostname(hostname, MAXHOSTNAMELEN);
       servername = GLU_get_server_name();
-      sprintf(config->url, TSP_URL_FORMAT, TSP_RPC_PROTOCOL, hostname, servername, config->server_number);
+      
+      sprintf(config->url, /* TSP_URL_MAXLENGTH, pour snprintf quand Solaris 2.5 sera mort */
+	       TSP_URL_FORMAT, TSP_RPC_PROTOCOL, hostname, servername, config->server_number);
 
       this->status = TSP_RQH_STATUS_CONFIGURED;
 
@@ -343,11 +320,11 @@ int TSP_rpc_request_config(TSP_provider_request_handler_t* this)
 void* TSP_rpc_request_run(TSP_provider_request_handler_t* this)
 {
 
-  TSP_rpc_request_config_t *config = (TSP_rpc_request_config_t *)this->config_param;
+  TSP_rpc_request_config_t *config = (TSP_rpc_request_config_t *)(this->config_param);
 
   STRACE_IO(("-->IN"));  
  
-  pthread_detach(pthread_self()); /* FIXME shoudl we do this */
+  //pthread_detach(pthread_self()); /* FIXME shoudl we do this */
 
   if(config->server_number >= 0)
     {
@@ -363,7 +340,7 @@ void* TSP_rpc_request_run(TSP_provider_request_handler_t* this)
 
 char *TSP_rpc_request_url(TSP_provider_request_handler_t* this)
 {
-  TSP_rpc_request_config_t *config = (TSP_rpc_request_config_t*)this->config_param;
+  TSP_rpc_request_config_t *config = (TSP_rpc_request_config_t*)(this->config_param);
   if(this->status == TSP_RQH_STATUS_RUNNING)
     return config->url;
   else
@@ -372,7 +349,7 @@ char *TSP_rpc_request_url(TSP_provider_request_handler_t* this)
 
 int TSP_rpc_request_stop(TSP_provider_request_handler_t* this)
 {
-  TSP_rpc_request_config_t *config = (TSP_rpc_request_config_t*)this->config_param;
+  TSP_rpc_request_config_t *config = (TSP_rpc_request_config_t*)(this->config_param);
   
   TSP_rpc_stop(config);
   this->status = TSP_RQH_STATUS_STOPPED;
@@ -382,7 +359,7 @@ int TSP_rpc_request_stop(TSP_provider_request_handler_t* this)
 
 
 #else
-void main(void)
+int main(void)
 {
   int servernumber;
   for(servernumber=0; servernumber<TSP_MAX_SERVER_NUMBER; servernumber++)
@@ -390,5 +367,6 @@ void main(void)
       svc_unregister (TSP_get_progid(servernumber), TSP_RPC_VERSION_INITIAL);
       pmap_unset (TSP_get_progid(servernumber), TSP_RPC_VERSION_INITIAL);
     }
+  return 0;
 }
 #endif /* TSP_RPC_CLEANUP */
