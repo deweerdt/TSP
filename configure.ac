@@ -53,6 +53,23 @@ fi
 ##########################
 
 ################################
+# XML config reader.
+# is xml2-config present ?
+################################
+AC_CHECK_PROG([XML2_CONFIG],[xml2-config],[`which xml2-config`],[notfound],[$PATH],[rej])
+AC_MSG_CHECKING([lib XML2 setup verification...])
+if test "$XML2_CONFIG" = "notfound"; then
+  AC_MSG_RESULT([NOK: xml2-config script (xml2-devel package) not found TSP consumer using XML config files are DISABLED])
+  XML2_CONFIG_USER="no"
+else
+  AC_MSG_RESULT([Ok])
+  XML2_CONFIG_USER="yes"
+fi
+################################
+### End of XML2 devel check  ###
+################################
+
+################################
 # GTK based consumer.
 # is gtk-config present ?
 ################################
@@ -306,6 +323,7 @@ AC_SUBST(TSP_BASE)
 AC_SUBST(ENABLED_TSP_TARGET)
 AC_SUBST(BB)
 AC_SUBST(TSPCONSUMER)
+AC_SUBST(XML2_CONFIG_USER)
 AC_SUBST(GTK_BASED_CONSUMER)
 AC_SUBST(TSPPROVIDER)
 
