@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_provider.c,v 1.12 2002-11-29 17:29:57 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_provider.c,v 1.13 2002-12-05 10:53:41 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -44,6 +44,8 @@ static int X_tsp_provider_init_ok = FALSE;
 /** Tells is the GLU is active or pasive */
 static int X_glu_is_active;
 
+/* polling time for session garbage collector */
+#define TSP_GARBAGE_COLLECTOR_POLL_TIME_US ((int)(5e6))
 
 static int TSP_cmd_line_parser(int* argc, char** argv[])
 {
@@ -224,8 +226,6 @@ void TSP_provider_request_open(const TSP_request_open_t* req_open,
   
     /*Fortify_EnterScope();*/
 
-
-
    ans_open->version_id = UNDEFINED_VERSION_ID;
    ans_open->channel_id = UNDEFINED_CHANNEL_ID;
    ans_open->status = TSP_STATUS_ERROR_UNKNOWN;
@@ -235,12 +235,12 @@ void TSP_provider_request_open(const TSP_request_open_t* req_open,
      {
        for( i = 0; i< req_open->argv.TSP_argv_t_len ;i++)
 	 {
-	   STRACE_INFO(("arg %d is '%s'", i,  req_open->argv.TSP_argv_t_val[i]));
+	   STRACE_DEBUG(("arg %d is '%s'", i,  req_open->argv.TSP_argv_t_val[i]));
 	 }
      }
    else
      {
-          STRACE_INFO(("No custom args from consumer"));
+          STRACE_DEBUG(("No custom args from consumer"));
      }
 
 
@@ -290,21 +290,24 @@ void TSP_provider_request_open(const TSP_request_open_t* req_open,
 }
 
 
+static void TSP_provider_request_close_priv(channel_id_t channel_id)
+{
+  SFUNC_NAME(TSP_provider_request_close_priv);		
+  STRACE_IO(("-->IN"));
+
+  TSP_session_destroy_symbols_table_by_channel(channel_id);
+  TSP_session_close_session_by_channel(channel_id);
+
+  STRACE_IO(("-->OUT"));
+}
 
 void TSP_provider_request_close(const TSP_request_close_t* req_close)
 
 {
-  SFUNC_NAME(TSP_request_close);
-		
+  SFUNC_NAME(TSP_provider_request_close);		
   STRACE_IO(("-->IN"));
 
-  TSP_session_destroy_symbols_table_by_channel(req_close->channel_id);
-  TSP_close_session_by_channel(req_close->channel_id);
-
-
-  /*Fortify_LeaveScope();
-  Fortify_OutputStatistics();*/
-
+  TSP_provider_request_close_priv(req_close->channel_id);
 
   STRACE_IO(("-->OUT"));
 	
@@ -356,38 +359,6 @@ void  TSP_provider_request_information(TSP_request_information_t* req_info,
   STRACE_IO(("-->OUT"));
 }
 
-/** Provider initialisation function.
- * @param s The char string that may be used by the sample server
- */
-
-int TSP_provider_private_init(int* argc, char** argv[])
-{
-  SFUNC_NAME(TSP_provider_private_init);
-
-  int ret = TRUE;
-  assert(argc);
-  assert(argv);
-  
-  ret = TSP_cmd_line_parser(argc, argv);
-  if(ret)
-    {
-      /* Faire le traitement du nom du serveur */
-      TSP_session_init();
-
-      /* Initialise GLU server */
-      ret = GLU_init(X_glu_argc, X_glu_argv);
-    }
-
-  if(!ret)
-    {
-      STRACE_INFO(("TSP init error"));
-    }
-
-  X_tsp_provider_init_ok = ret;
-  STRACE_IO(("-->OUT"));
-  
-  return ret;
-}
 
 void TSP_provider_request_sample_free_call(TSP_answer_sample_t* ans_sample)
 {
@@ -487,7 +458,7 @@ void  TSP_provider_request_sample_init(TSP_request_sample_init_t* req_info,
       ans_sample->data_address =
 	(char*)TSP_session_get_data_address_string_by_channel(req_info->channel_id);
   
-      STRACE_INFO(("DATA_ADDRESS = '%s'", ans_sample->data_address));
+      STRACE_DEBUG(("DATA_ADDRESS = '%s'", ans_sample->data_address));
     }
   else
     {
@@ -499,6 +470,17 @@ void  TSP_provider_request_sample_init(TSP_request_sample_init_t* req_info,
 
 }
 
+static void TSP_provider_request_sample_destroy_priv(channel_id_t channel_id)
+{
+  SFUNC_NAME(TSP_provider_request_sample_destroy_priv);     
+
+  int stop_local_thread = ( X_glu_is_active ? FALSE : TRUE );  
+  if(!TSP_session_destroy_data_sender_by_channel(channel_id, stop_local_thread))
+    {
+      STRACE_ERROR(("TSP_session_destroy_data_sender_by_channel failed"));
+    }
+}
+
 void  TSP_provider_request_sample_destroy(TSP_request_sample_destroy_t* req_info, 
 					  TSP_answer_sample_destroy_t* ans_sample)
 {
@@ -508,27 +490,89 @@ void  TSP_provider_request_sample_destroy(TSP_request_sample_destroy_t* req_info
     
   ans_sample->version_id = UNDEFINED_VERSION_ID;
   ans_sample->channel_id = req_info->channel_id;
-  ans_sample->status = TSP_STATUS_ERROR_UNKNOWN;
+  ans_sample->status = TSP_STATUS_OK;
  
   if(req_info->version_id <= TSP_VERSION)
     {      
-      int stop_local_thread = ( X_glu_is_active ? FALSE : TRUE );
-      if(TSP_session_destroy_data_sender_by_channel(req_info->channel_id, stop_local_thread))
-	{
-	  ans_sample->status = TSP_STATUS_OK;
-	}
-      else     
-	{
-	  STRACE_ERROR(("TSP_session_destroy_data_sender_by_channel failed"));
-	}
-    
+      TSP_provider_request_sample_destroy_priv(req_info->channel_id);
     }
   else
     {
-      STRACE_ERROR(("TSP version ERROR. Requested=%d Current=%d",req_info->version_id, TSP_VERSION ));
+      STRACE_ERROR(("TSP version ERROR. Requested=%d Current=%d for session %d",
+		    req_info->version_id, TSP_VERSION,req_info->channel_id  ));
       ans_sample->status = TSP_STATUS_ERROR_VERSION;
     }
 
   STRACE_IO(("-->OUT"));
 
+}
+
+
+/** Provider initialisation function.
+ * @param s The char string that may be used by the sample server
+ */
+static void* TSP_provider_garbage_collector_thread(void* dummy)
+{
+   SFUNC_NAME(TSP_provider_garbage_collector_thread);
+   channel_id_t channel_id;
+
+   STRACE_IO(("-->IN"));
+
+   /* Save memory ! */
+   pthread_detach(pthread_self());
+
+   while(TRUE)
+     {
+       while(TSP_session_get_garbage_session(&channel_id))
+	 {
+	   /* Do what some rude consumer should have done itself */
+	   TSP_provider_request_sample_destroy_priv(channel_id);
+	   TSP_provider_request_close_priv(channel_id);
+	   STRACE_INFO(("Session No %d 'garbage-collected'", channel_id));
+	 }
+       tsp_usleep(TSP_GARBAGE_COLLECTOR_POLL_TIME_US);
+     }
+
+   STRACE_IO(("-->OUT"));
+}
+
+
+/** Provider initialisation function.
+ * @param s The char string that may be used by the sample server
+ */
+
+int TSP_provider_private_init(int* argc, char** argv[])
+{
+  SFUNC_NAME(TSP_provider_private_init);
+
+  int ret = TRUE;
+  int status;
+  pthread_t thread;
+  assert(argc);
+  assert(argv);
+  
+  ret = TSP_cmd_line_parser(argc, argv);
+  if(ret)
+    {
+      /* init sessions */
+      TSP_session_init();
+
+      /* Initialise GLU server */
+      ret = GLU_init(X_glu_argc, X_glu_argv);
+
+      /* Lauch garbage collection for sessions */
+      status = pthread_create(&thread, NULL, TSP_provider_garbage_collector_thread,  NULL);
+      TSP_CHECK_THREAD(status, FALSE);
+      
+    }
+
+  if(!ret)
+    {
+      STRACE_INFO(("TSP init error"));
+    }
+
+  X_tsp_provider_init_ok = ret;
+  STRACE_IO(("-->OUT"));
+  
+  return ret;
 }
