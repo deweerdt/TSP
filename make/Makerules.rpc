@@ -1,9 +1,6 @@
 # Makerules.rpc
 
-#default RPCGEN and RPCGENVX are defined in Makeparams
-
-RPCGEN.UNIX = $(RPCGEN)
-RPCGEN.VX = $(RPCGENVX)
+#default RPCGEN is defined in Makeparams
 
 #---------------------------------------------------------------#
 #       Files
@@ -20,30 +17,13 @@ rpcgen: $(RPC).h
 
 $(RPC).h : $(RPC).x 
 	@echo "@@@ Generating RPC stubs ..."
-	echo "#ifdef VXWORKS" > $(RPC).h
-	$(RPCGEN.VX) $(RPCGENFLAGS) -h $(RPC).x >> $(RPC).h
-	echo "#else /* !VXWORKS */" >> $(RPC).h
-	$(RPCGEN.UNIX) $(RPCGENFLAGS) -h $(RPC).x >> $(RPC).h
-	echo "#endif /* !VXWORKS */" >> $(RPC).h
-	#
-	echo "#ifdef VXWORKS" > $(RPC)_xdr.c
-	$(RPCGEN.VX) $(RPCGENFLAGS) -c $(RPC).x >> $(RPC)_xdr.c
-	echo "#else /* !VXWORKS */" >> $(RPC)_xdr.c
-	$(RPCGEN.UNIX) $(RPCGENFLAGS) -c $(RPC).x >> $(RPC)_xdr.c 
-	echo "#endif /* !VXWORKS */" >> $(RPC)_xdr.c
-	#
-	echo "#ifdef VXWORKS" > $(RPC)_clnt.c
-	$(RPCGEN.VX) $(RPCGENFLAGS) -l $(RPC).x >> $(RPC)_clnt.c
-	echo "#else /* !VXWORKS */" >> $(RPC)_clnt.c
-	$(RPCGEN.UNIX) $(RPCGENFLAGS) -l $(RPC).x >> $(RPC)_clnt.c 
-	echo "#endif /* !VXWORKS */" >> $(RPC)_clnt.c
-	#
-	echo "#ifdef VXWORKS" > $(RPC)_svc.c
-	echo "#define static extern" >> $(RPC)_svc.c
-	$(RPCGEN.VX) $(RPCGENFLAGS) -s tcp $(RPC).x >> $(RPC)_svc.c
-	echo "#else /* !VXWORKS */" >> $(RPC)_svc.c
-	$(RPCGEN.UNIX) $(RPCGENFLAGS) -m $(RPC).x >> $(RPC)_svc.c 
-	echo "#endif /* !VXWORKS */" >> $(RPC)_svc.c
+	$(RPCGEN) $(RPCGENFLAGS) -h $(RPC).x >> $(RPC).h
+	$(RPCGEN) $(RPCGENFLAGS) -c $(RPC).x >> $(RPC)_xdr.c 
+	$(RPCGEN) $(RPCGENFLAGS) -l $(RPC).x >> $(RPC)_clnt.c 
+	@echo "#ifdef VXWORKS" > $(RPC)_svc.c
+	@echo "#define static extern" >> $(RPC)_svc.c
+	@echo "#endif /* !VXWORKS */" >> $(RPC)_svc.c
+	$(RPCGEN) $(RPCGENFLAGS) -m $(RPC).x >> $(RPC)_svc.c 
 
 rpc.server.bin : $(RPC_SVC_SRC:%.c=$(DIRBIN)/%.o) $(RPC_SERVER_SRC:%.c=$(DIRBIN)/%.o)
  

@@ -21,6 +21,9 @@ LD  = $(WIND_BASE)/host/$(WIND_HOST_TYPE)/bin/ldppc
 AS  = $(WIND_BASE)/host/$(WIND_HOST_TYPE)/bin/asppc
 AR  = $(WIND_BASE)/host/$(WIND_HOST_TYPE)/bin/arppc
 
+# FIXME : find a reason to a different VXWORKS rpcgen ...
+RPCGEN=$(DEVBASE)/../tools/rpcgen/vxrpcgen.suncdt.vxworks
+
 # Default options
 # ---------------
 ARFLAGS = rvs
