@@ -140,13 +140,14 @@ AC_CANONICAL_HOST
 
 AC_MSG_CHECKING([for TSP host target])
 
+ARFLAGS="rvs"
+
 case "$host" in
     *linux*)	
 	AC_MSG_RESULT([Linux is OK])
 	HOST_TARGET=linux
-	ARFLAGS="rvs"
 	LDLIBS="-lm  -lpthread"
-	CPPFLAGS="-D_REENTRANT  -DUSE_STRACE -DTSP_NO_XDR_ENCODE"
+	CPPFLAGS="-D_REENTRANT  -DUSE_STRACE -DTSP_NO_XDR_ENCODE -Wall"
         ;;
     *openbsd*)
 	AC_MSG_RESULT([OpenBSD is OK])	
@@ -154,14 +155,20 @@ case "$host" in
         ;;
     sparc-sun-solaris*)
 	AC_MSG_RESULT([Sparc Solaris is OK])	
+	CPPFLAGS="-D__EXTENSIONS__ -D_REENTRANT  -DUSE_STRACE -DTSP_NO_XDR_ENCODE -Wall"
+	LDLIBS="-lsocket -lnsl -lm -lposix4 -lgen -lpthread"
 	HOST_TARGET=sun
         ;;
     sparc-sun-sunos*)
 	AC_MSG_RESULT([Sparc SunOS is OK])
+	CPPFLAGS="-D__EXTENSIONS__ -D_REENTRANT  -DUSE_STRACE -DTSP_NO_XDR_ENCODE -Wall"
+	LDLIBS="-lsocket -lnsl -lm -lposix4 -lgen -lpthread"
 	HOST_TARGET=sun
         ;;
     *osf*)
 	AC_MSG_RESULT([OSF1 Host is OK])
+	CPPFLAGS="-D__EXTENSIONS__ -D_REENTRANT  -DUSE_STRACE -DTSP_NO_XDR_ENCODE -Wall"
+	LDLIBS="-lsocket -lnsl -lm -lposix4 -lgen -lpthread"
 	HOST_TARGET=dec
 	;;
 	*)
