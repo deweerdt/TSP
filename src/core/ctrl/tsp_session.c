@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.c,v 1.4 2002-10-09 07:44:02 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.c,v 1.5 2002-10-10 15:59:26 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -519,14 +519,34 @@ int TSP_session_create_data_sender_by_channel(channel_id_t channel_id, int start
 	
   TSP_GET_SESSION(session, channel_id, FALSE);
 
-  /* Create a sender */
-  if(want_out_fifo)
+ 
+  if(start_local_thread)
     {
-      session->session_data->sender = TSP_data_sender_create(1000);
+      /* each datapool will have its own thread, so we dont need any buffer out for the socket --> size 0 */
+      /* FIXME : retour ? */
+      session->session_data->sender = TSP_data_sender_create(0);
     }
   else
     {
-      session->session_data->sender = TSP_data_sender_create(0);
+      /* There is one single data pool, ask for a ringbuf to the socket layer */
+      /* We calculate it with the server frequency */
+      double base_frequency = GLU_get_base_frequency();
+      if( base_frequency > 0 )
+	{
+	  int ringbuf_size = TSP_STREAM_SENDER_RINGBUF_SIZE * base_frequency;
+	  
+	  STRACE_INFO(("Stream sender ringbuf size will be : %d items (i.e. %d secondes)",
+		       ringbuf_size,
+		       TSP_STREAM_SENDER_RINGBUF_SIZE));
+	  /* FIXME : retour ? */
+	  session->session_data->sender = TSP_data_sender_create(ringbuf_size);      
+	}
+      else
+	{
+	  STRACE_ERROR(("GLU return base frequency = %f", base_frequency));
+	  return FALSE;
+	}
+      
     }
 
   if(0 != session->session_data->sender)

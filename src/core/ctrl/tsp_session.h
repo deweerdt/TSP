@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.h,v 1.3 2002-10-09 07:44:02 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.h,v 1.4 2002-10-10 15:59:26 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -23,6 +23,9 @@ opened session from a client
 
 #include "tsp_datastruct.h"
 #include "glue_sserver.h"
+
+
+
 
 int TSP_add_session(channel_id_t* new_channel_id, GLU_handle_t glu_h);
 
