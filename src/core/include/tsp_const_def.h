@@ -1,6 +1,6 @@
 /*!  \file 
  
-$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_const_def.h,v 1.13 2002-12-03 16:14:20 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_const_def.h,v 1.14 2002-12-05 14:42:40 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -222,8 +222,8 @@ we use 255 and we define our own MAXHOSTNAMELEN*/
 
 /*-------- DATA STREAM ENDIAN CONVERSION --------*/
 
-#define TSP_ENCODE_DOUBLE_TO_GUINT64(val) (GUINT64_TO_LE (*(guint64*)val))
-#define TSP_DECODE_DOUBLE_TO_GUINT64(val) (GUINT64_FROM_LE (*(guint64*)val))
+#define TSP_ENCODE_DOUBLE_TO_GUINT64(val) (GUINT64_TO_BE (*(guint64*)val))
+#define TSP_DECODE_DOUBLE_TO_GUINT64(val) (GUINT64_FROM_BE (*(guint64*)val))
 
 #define TSP_ENCODE_INT(val) (GINT_TO_BE (val))
 #define TSP_DECODE_INT(val) (GINT_FROM_BE (val)) 
