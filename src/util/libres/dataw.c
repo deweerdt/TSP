@@ -1,6 +1,6 @@
 /*!  \file
 
-$Header: /home/def/zae/tsp/tsp/src/util/libres/dataw.c,v 1.1 2003-01-31 18:32:56 tsp_admin Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libres/dataw.c,v 1.2 2004-09-06 16:07:33 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -239,6 +239,7 @@ void	d_writ_r(d_whandle h, void *buf)
 {
 	int	n;
 	data_write* obj = (data_write*)h;
+	void *p;
 
 	if (obj->firstw) {				/* si premier write ecriture	*/
 		n = write (obj->datafd,"\001",1);	/* de \001 pour delimiter	*/
@@ -248,6 +249,22 @@ void	d_writ_r(d_whandle h, void *buf)
 		else
 			obj->recl = obj->vnum * sizeof(float);	/* nombre de char par record	*/
 	}
+
+	/* FIXME : buf is supposed to be typed to float XOR double
+	   shall swap 32 or 64 according to my endianity */
+	p=(void *)buf;
+	if(obj->use_dbl)
+	  for(n=0; n<obj->recl; n+=sizeof(double))
+	  {
+	    DOUBLE_TO_BE(p);
+	    p += sizeof(double);
+	  }
+	else
+	  for(n=0; n<obj->recl; n+=sizeof(float))
+	  {
+	    FLOAT_TO_BE(p);
+	    p += sizeof(float);
+	  }
 
 	if ((n = write (obj->datafd,(void *)buf,obj->recl)) != obj->recl) {
 		fprintf (stderr,"*** d_writ : Erreur a l'ecriture\n");

@@ -1,6 +1,6 @@
 /*!  \file
 
-$Header: /home/def/zae/tsp/tsp/src/util/libres/datar.c,v 1.3 2003-03-17 15:54:57 yduf Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libres/datar.c,v 1.4 2004-09-06 16:07:33 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -252,6 +252,7 @@ int	d_read_r (d_rhandle h, void *buf)
 {
   data_read* obj = (data_read*)h;
   int	n;
+  void  *p;
 
   if (obj->firstr) {
     lseek (obj->datafd,obj->pdat,0);
@@ -259,6 +260,22 @@ int	d_read_r (d_rhandle h, void *buf)
   }
   if ((n=read(obj->datafd,buf,obj->recl)) != obj->recl)
     return (EOF);
+
+  /* FIXME : buf is supposed to be typed to float XOR double
+     shall swap 32 or 64 according to my endianity */
+  p=(void *)buf;
+  if(obj->use_dbl)
+    for(n=0; n<obj->recl; n+=sizeof(double))
+      {
+	DOUBLE_TO_BE(p);
+	p += sizeof(double);
+      }
+  else
+    for(n=0; n<obj->recl; n+=sizeof(float))
+      {
+	FLOAT_TO_BE(p);
+	p += sizeof(float);
+      }
 
   return (obj->recl);
 }
