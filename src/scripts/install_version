@@ -41,7 +41,7 @@ if ( ! -d $DDEST ) then
 	exit (1)
 endif
 
-unlink current
+#unlink current
 \ln -s $DDEST current
 echo "Post-installing Version $DDEST..."
 
