@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: glue_stub.c,v 1.3 2003-02-27 15:35:46 tsp_admin Exp $
+$Id: glue_stub.c,v 1.4 2003-02-27 18:07:23 tsp_admin Exp $
 
 -----------------------------------------------------------------------
 
@@ -50,7 +50,7 @@ RINGBUF_DECLARE_TYPE_DYNAMIC(glu_ringbuf,glu_item_t);
 #define GLU_RING_BUFSIZE (1000 * 100 * 10)
 
 /* TSP glue server defines */
-#define TSP_STUB_FREQ 100 /*Hz*/
+#define TSP_STUB_FREQ 100.0 /*Hz*/
 #define TSP_USLEEP_PERIOD_US (1000000/TSP_STUB_FREQ) /*given in µS, value 10ms*/
 #define GLU_MAX_SYMBOLS 1000
 
@@ -93,6 +93,7 @@ static void* GLU_thread(void* arg)
   int i, symbols_nb;
   tsp_hrtime_t current_time;
   glu_item_t item;
+  double memo_val[GLU_MAX_SYMBOLS]; /*for debug informatin */
 
   symbols_nb  = GLU_get_symbol_number();
   current_time = X_lasttime = tsp_gethrtime();  
@@ -109,7 +110,9 @@ static void* GLU_thread(void* arg)
 	      if (i!=0)
 		item.value = calc_func(i, my_time);
 	      else
-		item.value = (double)(my_time / TSP_STUB_FREQ);
+		item.value = (double)(my_time) / (double)(TSP_STUB_FREQ);
+	      memo_val[i]=item.value;
+
 	      RINGBUF_PTR_PUT(glu_ring, item);
 	    }
 	}
@@ -130,7 +133,12 @@ static void* GLU_thread(void* arg)
       
       my_time++;    
       
-      if (!(my_time%1000))  STRACE_INFO(("TOP %d!", my_time));
+      if (!(my_time%1000))  STRACE_INFO(("TOP %d : %s=%g \t%s=%g \t%s=%g \t%s=%g", my_time,
+					 X_sample_symbol_info_list_val[0].name, memo_val[0],
+					 X_sample_symbol_info_list_val[1].name, memo_val[1],
+					 X_sample_symbol_info_list_val[2].name, memo_val[2],
+					 X_sample_symbol_info_list_val[3].name, memo_val[3]
+					));
     }
     
   return arg;
