@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/tests/stage3/Attic/glue_sserver3.c,v 1.5 2002-10-24 13:34:10 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/tests/stage3/Attic/glue_sserver3.c,v 1.6 2002-12-05 10:48:32 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -236,7 +236,12 @@ int GLU_commit_add_block(GLU_handle_t h_glu)
 
 GLU_server_type_t GLU_get_server_type(void)
 {
-  return GLU_SERVER_TYPE_PASIVE;
+  return GLU_SERVER_TYPE_PASSIVE;
+}
+
+void GLU_forget_data(GLU_handle_t h_glu)
+{
+  /* meaningless : i do nothing */  
 }
 
 
