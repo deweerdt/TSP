@@ -148,8 +148,8 @@ int main(int argc, char *argv[]){
     {
       for( i = 0 ; i<nb_providers ; i++)
 	{
-	  const TSP_otsp_server_info_t* info_struct = TSP_consumer_get_server_info(providers[i]) ;
-	  STRACE_INFO(("Server Nb %d, info = '%s'", i, info_struct->info));
+	  const char* info = TSP_consumer_get_server_info(providers[i]) ;
+	  STRACE_INFO(("Server Nb %d, info = '%s'", i,info));
 	  
 	}
     }
@@ -194,13 +194,11 @@ int main(int argc, char *argv[]){
   for( i = 0 ; i< information->symbols.len ; i++)
     {
       STRACE_INFO(("Id=%d Sym='%s'",i, information->symbols.val[i].name));
-      symbols.val[i].index = information->symbols.val[i].index;;
+      symbols.val[i].name = information->symbols.val[i].name;;
       symbols.val[i].period = period;
       symbols.val[i].phase = 0;
     }
   
-  
-      
 
   /* take only the first, midle and last variable in 'first_last' mode*/
   switch(test_mode)
@@ -252,7 +250,7 @@ int main(int argc, char *argv[]){
   d_wcom("");
   for (i = 0; i < symbols.len; i++)
     {
-      d_wnam(information->symbols.val[symbols.val[i].index].name, "");
+      d_wnam(symbols.val[i].name, "?");
       
     }
 
@@ -289,7 +287,7 @@ int main(int argc, char *argv[]){
 	    {
 	      count++;
 	      d_writ(res_values);
-	      STRACE_INFO(("Write %f", *(float*)res_values));
+	      /*STRACE_INFO(("Write %f", *(float*)res_values));*/
 	      res_value_i = 0;
 	      if(stop)
 		{

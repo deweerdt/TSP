@@ -21,6 +21,7 @@ struct data_test_t
   int index;
   int period;
   int phase;
+  char* name;
 
 };
 
@@ -28,10 +29,10 @@ typedef struct data_test_t data_test_t;
 
 /* requested samples */
 static data_test_t data_test[] = {
-  {10,2,0},
-  {20,3,2},
-  {30,5,3},
-  {-2,-2,-2}
+  {10,2,0,"Symbol10"},
+  {20,3,2,"Symbol20"},
+  {30,5,3,"Symbol30"},
+  {-2,-2,-2,NULL}
 };
 
 struct group_test_t 
@@ -135,11 +136,11 @@ int main(int argc, char *argv[]){
     {
       for( i = 0 ; i<nb_providers ; i++)
 	{
-	  const TSP_otsp_server_info_t* info_struct = TSP_consumer_get_server_info(providers[i]) ;
-	  STRACE_INFO(("Server Nb %d, info = '%s'", i, info_struct->info));
+	  const char* info = TSP_consumer_get_server_info(providers[i]) ;
+	  STRACE_INFO(("Server Nb %d, info = '%s'", i,info));
 	  
 	  /* Check name */
-	  if(strcmp(info_struct->info, "ServeurPetitScarabe"))
+	  if(strcmp(info, "ServeurPetitScarabe"))
 	    {
 	      STRACE_ERROR(("Serveur name corrupted"));
 	      STRACE_TEST(("STAGE 002 | STEP 001 : FAILED"));
@@ -193,7 +194,7 @@ int main(int argc, char *argv[]){
     {
       symbols.val[i].phase = data_test[i].phase ;
       symbols.val[i].period = data_test[i].period ;
-      symbols.val[i].index = data_test[i].index ;
+      symbols.val[i].name = data_test[i].name ;
     }
   /*-------------------------------------------------------------------------------------------------------*/ 
   /* TEST : STAGE 002 | STEP 004 */

@@ -1,7 +1,7 @@
 #include "tsp_sys_headers.h"
 #include "tsp_prjcfg.h"
 
-#include "tsp_provider.h"
+#include "tsp_provider_init.h"
 
 
 int main(int argc, char *argv[])
