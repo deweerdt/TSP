@@ -123,6 +123,7 @@ redraw_widgets (gpointer data)
   int i, j;
   TSP_sample_t sample;
   int new_sample;
+  unsigned long ulong_value;
   DoublePoint pt;
 
   variable** ptr_var;
@@ -194,8 +195,8 @@ redraw_widgets (gpointer data)
 	/*TODO*/
 	/*bstable_get_double_value(var->text, &val_double);*/
 	label = GTK_LABEL(var->widget);
-	sprintf(buffer, LABEL_HEXA_FORMAT, var->legend == NULL ? var->text : var->legend, (unsigned int) val_double);
-	gtk_label_set_text(label, "FIXME : VAR_HEXA");
+	sprintf(buffer, LABEL_HEXA_FORMAT, var->legend == NULL ? var->text : var->legend, (long) lrint(var->double_value));
+	gtk_label_set_text(label, buffer);
 	break;
       default:
 	g_warning("update_variables: unknown variable type : %d", var->type);
