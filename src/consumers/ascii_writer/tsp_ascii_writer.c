@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer.c,v 1.6 2004-10-23 12:03:06 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer.c,v 1.7 2004-10-25 20:41:23 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -46,7 +46,6 @@ Purpose   : TSP ascii writer consumer
 #include <unistd.h>
 #include <string.h>
 #include <strings.h>
-#include <pthread.h>
 #include <assert.h>
 #include <errno.h>
 
@@ -59,9 +58,6 @@ static TSP_provider_t* myproviders = NULL;
 #define MAX_VAR_NAME_SIZE 256
 static char tc_output_buffer[OUTPUT_STREAM_BUFFER_SIZE];
 static int stop_it = 0;
-
-pthread_cond_t  tsp_ascii_writer_condvar = PTHREAD_COND_INITIALIZER;
-pthread_mutex_t tsp_ascii_writer_mutex   = PTHREAD_MUTEX_INITIALIZER;
 
 int tsp_ascii_writer_parse_error    =  0;
 int tsp_ascii_writer_lineno         =  0;
