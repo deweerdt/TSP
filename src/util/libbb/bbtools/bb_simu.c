@@ -15,6 +15,21 @@ typedef struct mytype {
   uint8_t byte;
 } mytype_t;
 
+double *DYN_0_d_qsat;		/* 4 elems */
+double *ORBT_0_d_possat_m;	/* 4 elems */
+double *ECLA_0_d_ecl_sol;
+double *ECLA_0_d_ecl_lune;
+double *POSA_0_d_DirSol;	/* 3 elems */
+double *POSA_0_d_DirLun;	/* 3 elems */
+double *Sequenceur_0_d_t_s;
+
+#define BB_PUBLISH(bb_name,name,base,instance,bb_type,c_type,dim) \
+  name = (c_type*) bb_simple_publish(bb_name, #name, (base), instance, bb_type, sizeof(c_type), dim); \
+  printf ("INFO : BB_PUBLISH %s[%d] type %s\n", #name, dim, #c_type); \
+  for (i=0;i<dim;++i) { \
+    name[i] = (c_type)0; \
+  }
+
 int 
 main (int argc, char ** argv) {
 
@@ -96,7 +111,15 @@ main (int argc, char ** argv) {
   for (i=0;i<BIG_SIZE;++i) {
     HugeArray[i] = cos(*Titi/(i+1));
   }
-  
+
+  BB_PUBLISH(mybb, DYN_0_d_qsat, "", -1, E_BB_DOUBLE, double, 4);
+  BB_PUBLISH(mybb, ORBT_0_d_possat_m, "", -1,  E_BB_DOUBLE, double, 3);
+  BB_PUBLISH(mybb, ECLA_0_d_ecl_sol, "", -1,  E_BB_DOUBLE, double, 1);
+  BB_PUBLISH(mybb, ECLA_0_d_ecl_lune, "", -1,  E_BB_DOUBLE, double, 1);
+  BB_PUBLISH(mybb, POSA_0_d_DirSol, "", -1,  E_BB_DOUBLE, double, 3);
+  BB_PUBLISH(mybb, POSA_0_d_DirLun, "", -1,  E_BB_DOUBLE, double, 3);
+  BB_PUBLISH(mybb, Sequenceur_0_d_t_s, "", -1,  E_BB_DOUBLE, double, 1);
+
   for (i=0;i<3;++i) {
     printf("Toto[%d] = %d\n",i,Toto[i]);  
   }
@@ -108,6 +131,24 @@ main (int argc, char ** argv) {
   i = 0;
   sleep(5);
   while (i<2000000) {
+    double dq1, dq2, teta, d=7e6 /*km*/;
+    *Sequenceur_0_d_t_s = *Sequenceur_0_d_t_s + 0.01; /* 10 Hz Simu */
+    teta = *Sequenceur_0_d_t_s*2*3.14/100; /* 100s for a complete turn around */
+    ORBT_0_d_possat_m[0] = d*cos(teta); /* simple circular orbit */
+    ORBT_0_d_possat_m[1] = d*sin(teta); /* do better later */
+    ORBT_0_d_possat_m[2] = d*0.0; /* force Z axis is null */
+    dq1 = cos(teta)/4;
+    dq2 = sin(teta)/4;
+    DYN_0_d_qsat[0] = 0.7+dq1;
+    DYN_0_d_qsat[1] = 0.3-dq1;
+    DYN_0_d_qsat[2] = 0.3+dq2;
+    DYN_0_d_qsat[3] = -0.2-dq2;
+    POSA_0_d_DirLun[1] = 0.4; /* e6 */
+    POSA_0_d_DirSol[0] = 0.15; /* e3 */
+    *ECLA_0_d_ecl_lune = 1;
+    *ECLA_0_d_ecl_sol = 1;
+
+
     Tata[0] = sin((2.0*i)/180.0);
     Tata[1] = cos((2.0*i)/180.0);
     Toto[0] = i % 1000;
@@ -150,6 +191,7 @@ main (int argc, char ** argv) {
     }
     usleep(10000);
     ++i;
+    if (i%100==0) printf (".");
   }
   
   /* Destruction BB */
