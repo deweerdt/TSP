@@ -103,6 +103,9 @@ V-0.6.1: Creation 26/05/04	tag TSP_0_6_1	YD
         - Adding tsp_gdisp+ in source version		    	- Euskadi 
 	- Make again the things work on DEC/Alpha stations	- YD
 	- Add jSynoptic plugins for JAVA consumer		- CP 
+	- Add VxWorks support					- JL/RP
 
 V-0.6.x: Creation ??/??/04	tag TSP_0_6_X	??	
+	- Change get_next_item to push method			- YD
+	- Add OpenBSD Support					- FD
         - What was done						-  ??
