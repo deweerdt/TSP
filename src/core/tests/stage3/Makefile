@@ -20,16 +20,16 @@ debug:
 
 
 #client building 
-build_client : $(DIRBIN)/tsp_client3_reswriter
+build_client : $(DIRBIN)/tsp_client_reswriter
 
-$(DIRBIN)/tsp_client3_reswriter :  $(LIB_CLIENT) client3.c
+$(DIRBIN)/tsp_client_reswriter :  $(LIB_CLIENT) client3.c
 	$(COMPILE.c) client3.c -o $(DIRBIN)/client3.o
 	$(LINK.c)   $(DIRBIN)/client3.o   $(LIB_CLIENT) $(LDLIBS) -o $@
 
 #serveur building 
-build_server : $(DIRBIN)/tsp_server3_resreader
+build_server : $(DIRBIN)/tsp_server_resreader
 
-$(DIRBIN)/tsp_server3_resreader :  $(LIB_SERVEUR) server3.c glue_sserver3.c
+$(DIRBIN)/tsp_server_resreader :  $(LIB_SERVEUR) server3.c glue_sserver3.c
 	$(COMPILE.c) server3.c  -o $(DIRBIN)/server3.o
 	$(COMPILE.c) glue_sserver3.c  -o $(DIRBIN)/glue_sserver3.o
 	$(LINK.c)   $(DIRBIN)/server3.o   $(DIRBIN)/glue_sserver3.o $(LIB_SERVEUR) $(LDLIBS) -o $@

@@ -18,16 +18,16 @@ debug:
 
 
 #client building 
-build_client : $(DIRBIN)/tsp_client2_grouptest
+build_client : $(DIRBIN)/tsp_client_grouptest
 
-$(DIRBIN)/tsp_client2_grouptest :  $(LIB_CLIENT) client2.c
+$(DIRBIN)/tsp_client_grouptest :  $(LIB_CLIENT) client2.c
 	$(COMPILE.c) client2.c -o $(DIRBIN)/client2.o
 	$(LINK.c)   $(DIRBIN)/client2.o $(LIB_CLIENT) $(LDLIBS) -o $@
 
 #serveur building 
-build_server : $(DIRBIN)/tsp_server2_grouptest
+build_server : $(DIRBIN)/tsp_server_grouptest
 
-$(DIRBIN)/tsp_server2_grouptest :  $(LIB_SERVEUR) server2.c glue_sserver2.c
+$(DIRBIN)/tsp_server_grouptest :  $(LIB_SERVEUR) server2.c glue_sserver2.c
 	$(COMPILE.c) server2.c  -o $(DIRBIN)/server2.o
 	$(COMPILE.c) glue_sserver2.c  -o $(DIRBIN)/glue_sserver2.o
 	$(LINK.c)   $(DIRBIN)/server2.o $(DIRBIN)/glue_sserver2.o $(LIB_SERVEUR) $(LDLIBS) -o $@
