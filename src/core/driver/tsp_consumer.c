@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.5 2002-09-19 08:37:01 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.6 2002-10-01 15:29:42 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -24,7 +24,9 @@ Purpose   : Main implementation for the TSP consumer library
 #include "tsp_data_receiver.h"
 #include "tsp_sample_ringbuf.h"
 
- 
+
+/* Pool time for network data read (µs) */
+#define TSP_RECEIVER_THREAD_WAIT_FIFO_FULL (2e5)
 
 /**
  * Quick check for a session validity.
@@ -42,7 +44,15 @@ Purpose   : Main implementation for the TSP consumer library
 			return (ret); \
 		} \
 	}
-	
+
+/** 
+   * Default initialisation stream coming from command line.
+   * This string is used in request open if an other string is not
+   * provided
+   */
+static  char* X_default_stream_init = 0;
+
+/*-----------------------------------------------------------------*/
 
 /**
  * TSP object.
@@ -98,7 +108,7 @@ struct TSP_otsp_t
   /**
    * Array of ringbuf for all symbols managed by server
    */
-  TSP_sample_ringbuf_t** sample_ringbuf;
+  TSP_sample_ringbuf_t* sample_fifo;
   
   /**
    * Receiver thread.
@@ -107,9 +117,11 @@ struct TSP_otsp_t
    */
   pthread_t thread_receiver;
 
+
   /** If data_link_broken = TRUE, the server is unreachable.*/	
   int data_link_broken; 
 
+  
   
 };
 
@@ -152,7 +164,7 @@ static TSP_otsp_t* TSP_new_object_tsp(	TSP_server_t server,
   obj->symbols.TSP_sample_symbol_info_list_t_val = 0;
   obj->groups = 0;
   obj->receiver = 0;
-  obj->sample_ringbuf = NULL;
+  obj->sample_fifo = NULL;
   obj->data_link_broken=FALSE;
 	
   STRACE_IO(("-->OUT"));
@@ -194,6 +206,27 @@ static  void TSP_print_object_tsp(TSP_otsp_t* o)
 }
 
 /*-------------------------------------------------------------------*/
+
+int TSP_consumer_init(int* argc, char** argv[])
+{
+  /* FIXME : FUITE */
+  /* FIXME : coder le filtrage de la ligne de commande */
+  /* et ajouter la valeur pas defaut provenant de la ligne de commande */
+
+  return TRUE;
+  
+}
+
+int TSP_consumer_is_command_ligne_stream_init(void)
+{
+  /* Coder */
+  return FALSE;
+}
+
+void TSP_consumer_end()
+{
+
+}
 
 /**
  * Open all providers.
@@ -359,7 +392,7 @@ void TSP_print_provider_info(TSP_provider_t provider)
  * @param provider the provider on which apply the action
  * @return The action result (TRUE or FALSE)
  */
-int TSP_request_provider_open(TSP_provider_t provider)
+int TSP_request_provider_open(TSP_provider_t provider, char* stream_init)
 {
 	
   SFUNC_NAME(TSP_request_provider_open);
@@ -374,6 +407,23 @@ int TSP_request_provider_open(TSP_provider_t provider)
 
 	
   req_open.version_id = TSP_VERSION;
+  req_open.stream_init = "";
+  req_open.use_stream_init = FALSE;
+
+  /* Does the user want a specific stream_init value ? */
+  if(0 != stream_init)
+    {
+      /* yes */
+      req_open.stream_init = stream_init;
+      req_open.use_stream_init = TRUE;
+    }
+  /* Nop. Fallback to command line if provided */
+  else if(X_default_stream_init)
+    {
+      req_open.stream_init = X_default_stream_init;
+      req_open.use_stream_init = TRUE;
+    }
+  
 
 	
   if(0 != otsp)
@@ -381,8 +431,22 @@ int TSP_request_provider_open(TSP_provider_t provider)
       ans_open = TSP_request_open(&req_open, otsp->server);
       if( NULL != ans_open)
 	{
-	  otsp->channel_id = ans_open->channel_id;
-	  ret = TRUE;
+
+	  switch (ans_open->status)
+	    {
+	    case TSP_STATUS_OK :
+	      otsp->channel_id = ans_open->channel_id;
+	      ret = TRUE;
+	      break;
+	    case TSP_STATUS_ERROR_SEE_STRING :
+	      STRACE_WARNING(("Provider error : %s", ans_open->status_str));
+	      break;
+	    case TSP_STATUS_ERROR_UNKNOWN :
+	      STRACE_WARNING(("Provider unknown error"));
+	      break;
+	    default:
+	      break;
+	    }
 	}
       else
 	{
@@ -506,13 +570,6 @@ int TSP_request_provider_information(TSP_provider_t provider)
 			
 	}
         
-      /* Create the array of pointers for the samples ring buffer (one ring buf
-	 for each symbol)*/
-      /* FIXME : desallouer */
-      otsp->sample_ringbuf = (TSP_sample_ringbuf_t**)calloc(symbols_number, sizeof(TSP_sample_ringbuf_t*));
-      TSP_CHECK_ALLOC(otsp->sample_ringbuf, FALSE);
-
-        
 			
       ret = TRUE;
     }
@@ -605,11 +662,6 @@ int TSP_request_provider_sample(TSP_request_sample_t* req_sample, TSP_provider_t
       if( 0 != otsp->groups)
         {
 	  ret = TRUE;
-	    
-	  /* Create ring buffer arrays per asked symbol (n asked symbols => n ring buf )*/
-	  TSP_sample_ringbuf_create(&(ans_sample->symbols),otsp->sample_ringbuf);
-	    
-		    
         }
       else
         {
@@ -636,7 +688,7 @@ static void* TSP_request_provider_thread_receiver(void* arg)
   SFUNC_NAME(TSP_request_provider_thread_receiver);
     
   TSP_otsp_t* otsp = (TSP_otsp_t*)arg;
-    
+  int is_fifo_full;  
                     
   STRACE_IO(("-->IN"));
   STRACE_INFO(("Receiver thread started. Id=%u", pthread_self())); 
@@ -646,13 +698,21 @@ static void* TSP_request_provider_thread_receiver(void* arg)
   /* FIXME : faire le detach */
   while(TRUE)
     {
-      if(!TSP_data_receiver_receive(otsp->receiver, otsp->groups, otsp->sample_ringbuf))
+      if(TSP_data_receiver_receive(otsp->receiver, otsp->groups, otsp->sample_fifo, &is_fifo_full))
+	{
+	  /* Fifo is full, wait for user thread to free room for new data */
+	  if(is_fifo_full)
+	    {
+	      tsp_usleep(TSP_RECEIVER_THREAD_WAIT_FIFO_FULL);      
+	    }
+	}
+      else
         {
 	  STRACE_ERROR(("function TSP_data_receiver_receive failed"));
-	  
 	  /*FIXME : IL faudra faire autre chose sans doute */
 	  break;
         }
+ 
     }
     
   STRACE_IO(("-->OUT"));
@@ -670,75 +730,95 @@ int TSP_request_provider_sample_init(TSP_provider_t provider)
   int i;
 	
   STRACE_IO(("-->IN"));
-
-	
+  
+  
   TSP_CHECK_SESSION(otsp, FALSE);
-	
+  
   /* FIXME : la fonction rpc correspondante doit etre simplifiee 
      en ne gardarnt que la data_adress en retour*/
-
+  
   req_sample.version_id = TSP_VERSION;
   req_sample.channel_id = otsp->channel_id;
-
-	
+  
+  
   ans_sample = TSP_request_sample_init(&req_sample, otsp->server);
-  STRACE_DEBUG(("data_address = '%s'", ans_sample->data_address));
-
-  /* Create the data receiver */
-  otsp->receiver = TSP_data_receiver_create(ans_sample->data_address);
-    
-  if(otsp->receiver)
+  
+  if( ans_sample)
     {
-      int status;
-    
-      /* Begin to receive */
-      status = pthread_create(&(otsp->thread_receiver), 
-			      NULL,
-			      TSP_request_provider_thread_receiver,
-			      otsp);
-                                   
-      TSP_CHECK_THREAD(status, FALSE);
-      ret = TRUE;
+      
+
+      STRACE_DEBUG(("data_address = '%s'", ans_sample->data_address));
+      
+      /* Create the data receiver */
+      otsp->receiver = TSP_data_receiver_create(ans_sample->data_address);
+      
+      if(otsp->receiver)
+	{
+	  int status;
+
+	  /* Create receiver fifo */
+	  RINGBUF_PTR_INIT(TSP_sample_ringbuf_t,
+			   otsp->sample_fifo,
+			   TSP_sample_t, 
+			   RINGBUF_SZ(TSP_CONSUMER_RINGBUF_SIZE) )
+	  	    
+	    
+	  /* Begin to receive */
+	  status = pthread_create(&(otsp->thread_receiver), 
+				  NULL,
+				  TSP_request_provider_thread_receiver,
+				  otsp);
+	  
+	  TSP_CHECK_THREAD(status, FALSE);
+	  ret = TRUE;
+	  
+	}
+      else
+	{
+	  STRACE_ERROR(("Unable to create data receiver"));
+	  
+	}
     }
   else
     {
-      STRACE_ERROR(("Unable to create data receiver"));
-
+      STRACE_ERROR(("Unable to communicate with the provider"));
     }
-    
+  
   STRACE_IO(("-->OUT"));
 
 	
   return ret;
 }
 
-int TSP_read_sample(TSP_provider_t provider, int provider_global_index, TSP_sample_t* sample, int* new_sample)
+int TSP_read_sample(TSP_provider_t provider, TSP_sample_t* sample, int* new_sample)
 {
   SFUNC_NAME(TSP_receive);
 
-    
   TSP_otsp_t* otsp = (TSP_otsp_t*)provider;
-  TSP_sample_ringbuf_t* symbol_ringbuf = otsp->sample_ringbuf[provider_global_index];
-  int ret = FALSE;
+  int ret = TRUE;
     
   STRACE_IO(("-->IN"));
 
-  if(0 != symbol_ringbuf)
+  if(0 != otsp->sample_fifo)
     {
-      
-      if ( *new_sample = !(RINGBUF_PTR_ISEMPTY(symbol_ringbuf)) )
+      if ((*new_sample) =  (!(RINGBUF_PTR_ISEMPTY(otsp->sample_fifo))))
 	{
-	  RINGBUF_PTR_NOCHECK_GET( symbol_ringbuf,(*sample));
+	  RINGBUF_PTR_NOCHECK_GET(otsp->sample_fifo ,(*sample));
+	  /* FIXME : si on ne peut plus recevoir et que le fifo est vide --> erreur 
+	   (mémoriser un etat dans le thread), faire également un EOF ?*/
+
+	  /* end of stream ? */
+	  if ( TSP_DUMMY_PROVIDER_GLOBAL_INDEX_EOF == sample->provider_global_index )
+	    {
+	      ret = FALSE;
+	    }
 	}
-      
-      ret = TRUE;
     }      
   else
     {
-      STRACE_ERROR(("Sample ring buf does not exist for global_index %d", provider_global_index))
-	}
-    
-
+      STRACE_ERROR(("Sample ring buf does not exist. was sample_request_init called ?"));
+    }
+  
   STRACE_IO(("-->OUT"));
     
   return ret;
