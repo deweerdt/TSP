@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_plot2D.c,v 1.10 2004-11-17 09:29:36 dufy Exp $
+$Id: gdisp_plot2D.c,v 1.11 2004-11-19 13:50:15 dufy Exp $
 
 -----------------------------------------------------------------------
 
@@ -371,10 +371,12 @@ gdisp_drawSymbolName ( Kernel_T *kernel,
  * Use to recalculate all min & max bornes for this plot
  * Not very fast, but simple, and only called on FULL_REDRAW or X_SCROLL
  * FIXME : profile this to see if it is the gdisp++ bottle neck
+ * the flag raw_update should be use if the pixel area is not yet very clear 
+ * when the optimisation to compare new & old min/max in pixel might be wrong
  */
 
 static int
-gdisp_plot2DRecomputeMinMax (Plot2D_T       *plot)
+gdisp_plot2DRecomputeMinMax (Plot2D_T       *plot, gboolean raw_update)
 {
 
   guint               nbCurves   =                         0;
@@ -389,7 +391,6 @@ gdisp_plot2DRecomputeMinMax (Plot2D_T       *plot)
   KindOfRedraw_T      drawType   =     GD_2D_ADD_NEW_SAMPLES; /* Try to be optimist */
   gdouble	      old_delta_x=			 0.0;
   gdouble	      new_delta_x=			 0.0;
-
 
   /* Must take care, slope might be unitialized, but used to filter pixels */
   if (plot->p2dPtSlope.x == 0) plot->p2dPtSlope.x = 1e99;
@@ -432,7 +433,11 @@ gdisp_plot2DRecomputeMinMax (Plot2D_T       *plot)
 
     } /* end for this curve */
   } /* end for all curves */
-  
+
+
+  if (nbCurves==0)
+    return drawType; /* to early to compute something */
+
   /* Add some margins to this min/max */
   if (plot->p2dSubType != GD_2D_F2T) {
     newMin.x -= (newMax.x-newMin.x)*GDISP_2D_MARGIN_RATIO;
@@ -443,12 +448,12 @@ gdisp_plot2DRecomputeMinMax (Plot2D_T       *plot)
   
   old_delta_x = plot->p2dPtMax.x - plot->p2dPtMin.x;
 
-  if ( X_SAMPLE_TO_PLOT(plot,newMax.x) != X_SAMPLE_TO_PLOT(plot,plot->p2dPtMax.x) ) {
+  if ( raw_update || X_SAMPLE_TO_PLOT(plot,newMax.x) != X_SAMPLE_TO_PLOT(plot,plot->p2dPtMax.x) ) {
     drawType	     = GD_2D_SCROLL_X_AXIS; 
     plot->p2dPtMax.x = newMax.x;
   }
 
-  if ( X_SAMPLE_TO_PLOT(plot,newMin.x) != X_SAMPLE_TO_PLOT(plot,plot->p2dPtMin.x) ) {
+  if ( raw_update || X_SAMPLE_TO_PLOT(plot,newMin.x) != X_SAMPLE_TO_PLOT(plot,plot->p2dPtMin.x) ) {
     drawType	     = GD_2D_SCROLL_X_AXIS; 
     plot->p2dPtScroll.x = newMin.x - plot->p2dPtMin.x;
     plot->p2dPtMin.x = newMin.x;
@@ -461,20 +466,26 @@ gdisp_plot2DRecomputeMinMax (Plot2D_T       *plot)
     } 
   }
 
-  if ( Y_SAMPLE_TO_PLOT(plot,newMin.y) != Y_SAMPLE_TO_PLOT(plot,plot->p2dPtMin.y) ) {
+  if ( raw_update || Y_SAMPLE_TO_PLOT(plot,newMin.y) != Y_SAMPLE_TO_PLOT(plot,plot->p2dPtMin.y) ) {
     drawType	     = GD_2D_FULL_REDRAW; 
     plot->p2dPtMin.y = newMin.y;
   }
 
-  if ( Y_SAMPLE_TO_PLOT(plot,plot->p2dPtMax.y) != Y_SAMPLE_TO_PLOT(plot,newMax.y) ) {
+  if ( raw_update || Y_SAMPLE_TO_PLOT(plot,plot->p2dPtMax.y) != Y_SAMPLE_TO_PLOT(plot,newMax.y) ) {
     drawType	     = GD_2D_FULL_REDRAW; 
     plot->p2dPtMax.y = newMax.y;
   }
 
-  plot->p2dPtSlope.x =
-    plot->p2dAreaWidth  / (plot->p2dPtMax.x - plot->p2dPtMin.x);
-  plot->p2dPtSlope.y =
-    plot->p2dAreaHeight / (plot->p2dPtMax.y - plot->p2dPtMin.y);
+  if (plot->p2dPtMax.x != plot->p2dPtMin.x)
+    plot->p2dPtSlope.x = plot->p2dAreaWidth  / (plot->p2dPtMax.x - plot->p2dPtMin.x);
+  else
+    plot->p2dPtSlope.x = 1.0;
+
+  if (plot->p2dPtMax.y != plot->p2dPtMin.y)    
+    plot->p2dPtSlope.y = plot->p2dAreaHeight / (plot->p2dPtMax.y - plot->p2dPtMin.y);
+  else
+    plot->p2dPtSlope.y = 1.0;
+    
   
   return drawType;
 }
@@ -582,7 +593,7 @@ gdisp_deleteSelectedSymbolName ( Kernel_T *kernel,
        * We have just removed one symbol.
        * we recompute the bounding box (min, max) 
        */
-       gdisp_plot2DRecomputeMinMax (plot);
+      plot->p2dIsDirty = TRUE;
 
     }
 
@@ -960,6 +971,10 @@ gdisp_plot2DSwapBuffers (Kernel_T       *kernel,
 
   GDISP_TRACE(3,"Swaping front and back buffers\n");
 
+  /* Something might need a full redraw instead of a nice add sample (start, move, ...) */
+  if (plot->p2dIsDirty)
+    drawType = GD_2D_FULL_REDRAW;
+
   /*
    * Take care of draw type.
    */
@@ -997,6 +1012,7 @@ gdisp_plot2DSwapBuffers (Kernel_T       *kernel,
 
   }
 
+  plot->p2dIsDirty = FALSE; /* now it is clean and well updated */
 }
 
 
@@ -1371,6 +1387,10 @@ gdisp_plot2DDrawBackBuffer (Kernel_T       *kernel,
 
   GDISP_TRACE(3,"Drawing into back buffer\n");
 
+  /* This might not be very fast, but should fix the growing min/max */
+  if (drawType == GD_2D_FULL_REDRAW || plot->p2dIsDirty)
+    drawType = gdisp_plot2DRecomputeMinMax (plot,plot->p2dIsDirty);
+
   /*
    * Do not redraw background when simply adding new samples.
    */
@@ -1468,6 +1488,10 @@ gdisp_plot2DConfigure (GtkWidget         *area,
   plot->p2dAreaWidth  = event->width;
   plot->p2dAreaHeight = event->height;
 
+  /*
+   * Should Refresh graphic area.
+   */
+  plot->p2dIsDirty = TRUE;
 
   /*
    * Some difficulties to create the back buffer in the 'create' procedure,
@@ -2263,12 +2287,15 @@ gdisp_startStepOnPlot2D (Kernel_T *kernel,
 
   }
 
-  gdisp_plot2DRecomputeMinMax (plot);
-
   /*
    * Tell the plot it has been started by the application kernel.
    */
   plot->p2dIsWorking = TRUE;
+
+  /*
+   * Should Refresh graphic area.
+   */
+  plot->p2dIsDirty = TRUE;
 
   return TRUE /* everything's ok */;
 
@@ -2358,11 +2385,6 @@ gdisp_stepOnPlot2D (Kernel_T *kernel,
 	  
   } /* end loop upon curves */
   
-
-    /* This might not be very fast, but should fix the growing min/max */
-  if (drawType == GD_2D_FULL_REDRAW)
-    drawType = gdisp_plot2DRecomputeMinMax (plot);
-
 
   /*
    * Put here what must be done at each step.
