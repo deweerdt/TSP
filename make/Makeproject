@@ -17,4 +17,4 @@ INCLUDE_UTIL = $(DEVBASE)/../plot442/util
 
 INCLUDE_NTL1 = -I$(DEVBASE)/../tl1/generic/include -I$(DEVBASE)/../tl1/versions/current/include
 
-CPPFLAGS += -I$(DIRINC) -I$(INCLUDE_UTIL)
+CPPFLAGS += -I. -I$(DIRINC) -I$(INCLUDE_UTIL)

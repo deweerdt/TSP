@@ -38,7 +38,8 @@ $(DIRBIN)/% : $(DIRBIN)/%.o
 	$(LINK.c) $< -o $@ $(LDLIBS)
 
 .o.a:
-	$(AR) $(ARFLAGS) $@ $%
+	$(AR) $(ARFLAGS) $@ $% 
+
 
 
 
