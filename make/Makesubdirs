@@ -1,9 +1,14 @@
 # Makesubdirs
 
+
 all debug clean print config::
 	@for dir in $(SUBDIRS); \
 	 do \
 		echo ">>>$(LEVEL) BEGIN (`pwd`/$$dir) [$@]"; \
-		(cd $$dir; $(MAKE) "LEVEL=$$LEVEL---" $@); \
+		if ! (cd $$dir; $(MAKE) "LEVEL=$$LEVEL---" $@); then \
+			break; \
+		fi; \
 		echo ">>>$(LEVEL) END (`pwd`/$$dir)"; \
 	 done
+
+
