@@ -57,16 +57,7 @@ TODO list:
 - Find a real sexy name for that STUF
 
 ==========
- JTSP		@sgalles
+ JTSP		@Erk & @sgalles
 ==========
-- Add a Ant task to create API Javadoc
-- Add a Ant task to create the tar.gz distribution files (both for bundled)
-and non bundled jar)
-- Refactor exceptions (use JDK 1.4 base Exceptions)
-- Integrate TspURL class
-- Refactor TspURL using regexp 
-- Allow Jsynoptic to use an URL
-- Use Doug Lea util.concurrent package as RingBuf for JTSP
-- Try to improve RPC error messages in TspRpcException
-- Get ride of JAVA Makefiles (et remove JAVA ref in configure)
+- look in src/jcore/TODO
 
