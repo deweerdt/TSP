@@ -12,7 +12,7 @@ else
 		tutorial \
 		gdisp
 	ifeq (${BUILD_JAVA},yes)
-		SUBDIRS += jstdout
+		SUBDIRS += jstdout jsynoptic
 	endif
 	include $(DEVBASE)/make/Makesubdirs
 endif
