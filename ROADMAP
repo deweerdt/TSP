@@ -1,0 +1,27 @@
+
+Last update by $Author: erk $ on $Date: 2004-10-28 20:27:26 $
+**************************************************************************
+
+                  This is the TSP version roadmap.
+
+**************************************************************************
+TSP 0.6.3 : 
+   - push philosophy
+   - Blackboard OK on all supported platform   (excepted VxWorks)
+   - Ascii writer OK on all supported platform (excepted VxWorks)
+
+TSP 0.6.4 :
+   - uniform [XML] config file for TSP consumer
+
+TSP 0.7   : 
+   - inversed API
+
+TSP 0.8   : 
+   - Any type (string, int, array) dans le datapool 
+   - Array Handling
+
+TSP 0.9   : 
+   - Asynchroneous group implementation
+
+TSP 1.0   : 
+   - Remote write protocol and API
