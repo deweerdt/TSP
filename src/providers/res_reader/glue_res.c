@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: glue_res.c,v 1.1 2003-01-31 18:22:25 tsp_admin Exp $
+$Id: glue_res.c,v 1.2 2003-02-27 15:37:33 tsp_admin Exp $
 
 -----------------------------------------------------------------------
 
@@ -47,6 +47,7 @@ Purpose   : Implementation for the glue_server
 #define GLU_STREAM_INIT_USAGE "GLU stream init usage : filename[.res]"
 #define GLU_RES_FILE_ARG_NUMBER 1
 
+static double res_freq=0;
 
 struct GLU_state_t
 {
@@ -190,6 +191,7 @@ GLU_handle_t GLU_get_instance(int argc, char* argv[], char** error_info)
   SFUNC_NAME(GLU_get_instance);
 
   int i;
+  double t1, t2, freq;
   int nbrec;  
   char namev[RES_NAME_LEN];
   char descv[RES_DESC_LEN];
@@ -238,6 +240,17 @@ GLU_handle_t GLU_get_instance(int argc, char* argv[], char** error_info)
 		calloc((obj->nbvar+1),sizeof(double))
 		: calloc((obj->nbvar+1),sizeof(float));
 	      TSP_CHECK_ALLOC(obj->res_values, FALSE);
+	      
+	      /* Try to compute res file frequency */
+	      d_read_r(obj->h_res, obj->res_values);
+	      t1 = obj->use_dbl ? ((double*)(obj->res_values)) [0] : ((float*)(obj->res_values)) [0];
+	      d_read_r(obj->h_res, obj->res_values);
+	      t2 = obj->use_dbl ? ((double*)(obj->res_values)) [0] : ((float*)(obj->res_values)) [0];
+	      if (t2!=t1)
+		res_freq = 1/(t2-t1);
+	      else
+		res_freq = 0;
+	      d_restart_r(obj); /* ask to restart from begining */
 
 	    }
 	  else
@@ -274,6 +287,6 @@ GLU_handle_t GLU_get_instance(int argc, char* argv[], char** error_info)
 
 double GLU_get_base_frequency(void)
 {
-  /* Server is pasive, no frequency at all*/
-  return 0.0;
+/* Server is passive, frequency is computed in get instance */
+return res_freq;
 }
