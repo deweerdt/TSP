@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: glue_stub.c,v 1.1 2004-07-28 13:09:44 mia Exp $
+$Id: glue_stub.c,v 1.2 2004-07-30 09:20:42 mia Exp $
 
 -----------------------------------------------------------------------
 
@@ -129,7 +129,7 @@ void* GLU_thread(void* arg)
 	}
       
 
-      if(RINGBUF_PTR_MISSED(glu_ring))
+      if(RINGBUF_PTR_MISSED(glu_ring) && !data_missed)
 	{
 	  data_missed = TRUE;
 	  STRACE_ERROR(("TOP %d, data missed : %d ticks\n", my_time, tickGet() - tickNow));
