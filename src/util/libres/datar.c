@@ -1,6 +1,6 @@
 /*!  \file
 
-$Header: /home/def/zae/tsp/tsp/src/util/libres/datar.c,v 1.2 2003-02-27 15:39:31 tsp_admin Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libres/datar.c,v 1.3 2003-03-17 15:54:57 yduf Exp $
 
 -----------------------------------------------------------------------
 
@@ -25,7 +25,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 -----------------------------------------------------------------------
 
 Project   : TSP
-Maintainer : tsp@astrium-space.com
+Maintainer: tsp@astrium-space.com
 Component : libUTIL
 
 -----------------------------------------------------------------------
@@ -265,8 +265,10 @@ int	d_read_r (d_rhandle h, void *buf)
 
 int	d_restart_r (d_rhandle h)
 {
+  int ret=0;
   data_read* obj = (data_read*)h;
-  lseek (obj->datafd,obj->pdat,0);
+  ret = lseek (obj->datafd,obj->pdat,0);
+  return ret;
 }
     
 /*-----------------------------------------------------*\
