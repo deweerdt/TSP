@@ -6,7 +6,7 @@ all debug clean print config::
 	 do \
 		(cd $$dir; $(MAKE) "LEVEL=$$LEVEL---" $@); \
 		if [ $$? -ne 0 ]; then \
-			break; \
+			exit 1; \
 		fi; \
 	 done
 
