@@ -1,0 +1,67 @@
+#!/bin/tcsh
+
+cd $HOME_EXEC_BASE
+
+if ($1 == "") then
+	set availv=`ls -d V-*`
+	echo "Available versions are:"
+	foreach version ($availv)
+	   set name="$version"
+	   if ( -l $name ) then 
+	      set symlink=`ls -l $name | cut -d\> -f2-` 
+	      set local="(symbolic link to $symlink)"
+	   else
+	      set local=" "
+           endif
+	   echo "  ---> $name $local" 
+	end
+	set current=`ls -l current | cut -d\> -f2-`
+	echo "Current installed version is: $current"
+	echo "Use 'install_version <num_version>' to install available version <num_version>" 
+	exit(1)
+endif
+
+setenv DDEST V-$1
+
+if ( -l $DDEST ) then
+	set target=`ls -l $DDEST | cut -d\> -f2-`
+	if ( ! -d $target ) then
+		echo "ERROR : version <$DDEST> is a symbolic to <$target>, which is unreachable (networked version??)"
+	exit(1)
+	endif
+endif 
+
+if ( ! -d $DDEST ) then
+	echo "ERROR : version $DDEST does not exist"
+	exit (1)
+endif
+
+unlink current
+\ln -s $DDEST current
+echo "Post-installing Version V-$1..."
+
+echo "Setting up <mia.db> link..."    
+if ( -e $ADA_SYMBPATH ) then
+    if ( -f $ADA_SYMBPATH/mia.db ) then
+	echo "<mia.db> found in <$ADA_SYMBPATH>, taking this one"
+	pushd $BENCH_DATA > /dev/null
+	# is there any mia.db in the $BENCH_DATA/ directory
+	if ( -e mia.db ) then
+	    # unlink if its alink
+	    if ( -l mia.db ) then
+		unlink mia.db
+	    # rename if its a file
+	    else 
+	    mv mia.db mia.db.orig
+	    endif
+	endif
+	ln -s $ADA_SYMBPATH/mia.db
+	popd > /dev/null
+    else
+	echo "\!\!\! NO <mia.db> found in <$ADA_SYMBPATH> keeping original one \!\!\!"
+    endif	
+endif
+
+echo "$HOME_EXEC_BASE is ready for use in V-$1"
+
+

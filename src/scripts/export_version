@@ -1,0 +1,59 @@
+#!/bin/tcsh
+set priv_exec = "/home2/breiz/rocsat/tools/priv_exec/mkpriv_exec"
+switch($1)
+case "ROC1"
+        set dirs = "/home/guimoux/roc1exec"
+        breaksw
+case "ROC2"
+        set dirs = "/home/guipavas/roc2exec"
+        breaksw
+case "ROC3"
+        set dirs = "/apds101/bscao/roc3exec"
+        set dirbscao = "/apds101/bscao/roc3exec"
+	set priv_exec = "/apds101/bscao/rocbva/bin/mkpriv_exec"
+        breaksw
+case "ROC4"
+        set dirs = "/home2/breiz/stentor_dev/exec"
+        breaksw
+case "ROC5"
+        set dirs = "/home/croisic/roc5exec"
+        breaksw
+case "ROC6"
+        set dirs = "/home/vazen/roc6exec"
+        breaksw
+case "ALL"
+        set dirs = "/home/guimoux/roc1exec /home/guipavas/roc2exec /home/boussac/roc3exec /home/croisic/roc5exec /home/vazen/roc6exec"
+        breaksw
+default:
+        echo "usage : $0 'cible ROC1/ROC2/ROC3/ROC5/ROC6/ALL' 'no.version'"
+        exit (1)
+        breaksw
+endsw
+set src = "$DEVBASE/exec/V-$2" 
+if ( ! -d $src ) then
+        echo "ERROR : version $src does not exist"
+        exit (1)
+endif
+       
+foreach dir ($dirs)
+        set mach = `echo $dirs | cut -f 3 -d "/"`
+        echo "Copying $src to $dir"
+        \rm -Rf $dir/V-$2
+	cp -rf $src $dir
+        echo "Changing group ID of <$dir/V-$2> to <essai>"
+        chgrp -R essai $dir/V-$2
+        echo "Rsh to <$mach>, for setUID simulator"
+	if ( "$1" == "ROC3" ) then
+           echo "#### Delivery version has been put on apds1: <$dir/V-$2>"
+	   echo "#### Should rsh to boussac to set-UID simulator"
+	   echo "####  0) rlogin -l rocbva boussac   "
+	   echo "####  1) <$priv_exec $dir/V-$2/bin.sunrt/sml_rocsat2>"
+	else
+	   rsh $mach $priv_exec $dir/V-$2/bin.sunrt/sml_rocsat2
+	   rsh $mach $priv_exec $dir/V-$2/scripts/myreboot
+	endif
+	if ( "$1" == "ROC4" ) then
+		mv $dir/V-$2 $dir/ROC_V-$2
+	endif
+end
+

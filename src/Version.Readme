@@ -1,0 +1,14 @@
+-------------------------------------------------------------------------------
+	 Historique des Versions TSP
+-------------------------------------------------------------------------------
+
+
+-------------------------------------------------------------------------------
+V-1: 	Creation 01/06/2000		tag TSP_1	SG
+	Consummer and provider works util connection and data send.
+	x consummers are able to connect to y  providers
+	Deconnection is not implemented
+	client1 is the test program for the consumer library
+	server1 is the test program for the provider library
+	This version will not work for provider and consumer hosts with heterogenous endianity
+	XDR encoding (slow), or XDR pseudo encoding (fast ! ) may be choosen at compil time with flag TSP_NO_XDR_ENCODE 

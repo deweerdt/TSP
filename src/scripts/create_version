@@ -1,0 +1,71 @@
+#!/bin/tcsh
+
+if ($#argv > 1) then
+	echo "usage : $0 '[num]'"
+	exit (1)
+endif
+
+unalias cd
+set local = $cwd
+
+# Creation du repertoire cible
+#-----------------------------
+cd $DEVBASE/exec
+if ($#argv < 1) then
+	set vnum = 0
+	while ( -e V-$vnum )
+		@ vnum ++
+	end
+else
+	if ( -e V-$1 ) then 
+		echo "V-$1 already exists"
+		exit (1)
+	endif
+	set vnum = $1
+	set vnumtag = `echo $vnum | sed -e "s/\./_/g"`
+endif
+
+set DSRC = $DEVBASE/exec/DEV
+set DDEST = $DEVBASE/exec/V-$vnum
+
+mkdir $DDEST
+set logFile = $DDEST/README
+
+
+# Recuperation des fichiers constituants une version
+#---------------------------------------------------
+echo "Creating the configured version $DDEST"
+echo "    Copying $DSRC to $DDEST"
+cd $DSRC
+(\cd $DSRC ; tar cpFf - . | (cd $DDEST ; tar xpvf -))
+
+echo "=======================================================" > $logFile
+echo "=== VERSION  $vnum :" `date` >>  $logFile
+echo "=======================================================" >> $logFile
+echo "" >> $logFile
+
+
+# Verification de Mise a Jour CVS
+#--------------------------------
+echo "    Creating cvs_config"
+cd $DEVBASE/src
+cvscheck | grep -v "not in CVS" >> $logFile
+cd $local
+
+vi +$ $DEVBASE/src/Version.Readme
+
+# Prise en compte de la configuration des fichiers CVS
+#----------------------------------------------------------
+cd $DEVBASE/src; cvs status > $DDEST/cvs_config
+cd $DEVBASE/make; cvs status >> $DDEST/cvs_config
+cvs tag TSP_$vnumtag $DEVBASE/src  $DEVBASE/make
+echo "Version "`basename $DDEST`" is now ready for use (CVSTag is: TSP_$vnumtag)"
+
+
+
+
+
+
+
+
+
