@@ -1,4 +1,8 @@
 /*
+ * This code has been taken from RFC 3174 on 
+ * http://ww.rfc-editors.org/
+ * File has been renamed to bb_sha1.[hc] to avoid name clash.
+ * 
  *  sha1.c
  *
  *  Description:
@@ -28,7 +32,7 @@
  *      a multiple of the size of an 8-bit character.
  *
  */
-#include "sha1.h"
+#include "bb_sha1.h"
 
 /*
  *  Define the SHA1 circular left shift macro

@@ -1,4 +1,8 @@
 /*
+ * This code has been taken from RFC 3174 on 
+ * http://ww.rfc-editors.org/
+ * File has been renamed to bb_sha1.[hc] to avoid name clash.
+ * 
  *  sha1.h
  *
  *  Description:
