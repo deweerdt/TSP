@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_data_receiver.c,v 1.9 2002-12-03 16:14:18 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_data_receiver.c,v 1.10 2002-12-05 10:55:22 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -35,6 +35,8 @@ struct TSP_struct_data_receiver_t
   TSP_stream_receiver_t stream_receiver;
     
   char* buf;
+
+  TSP_sample_callback_t read_callback;
 };
 
 typedef struct TSP_struct_data_receiver_t TSP_struct_data_receiver_t;
@@ -144,7 +146,7 @@ static int TSP_data_receiver_process_reserved_group_id(int group_index, TSP_samp
 
 }
 
-TSP_data_receiver_t TSP_data_receiver_create(const char* data_address)
+TSP_data_receiver_t TSP_data_receiver_create(const char* data_address, TSP_sample_callback_t callback)
 {
   SFUNC_NAME(TSP_data_receiver_create);
 
@@ -161,6 +163,7 @@ TSP_data_receiver_t TSP_data_receiver_create(const char* data_address)
   receiver->buf = (char*)calloc(TSP_DATA_STREAM_CREATE_BUFFER_SIZE, sizeof(char));
   TSP_CHECK_ALLOC(receiver->buf, 0);
     
+  receiver->read_callback = callback;
   receiver->stream_receiver = TSP_stream_receiver_create(data_address);
   if( 0 == receiver->stream_receiver)
     {
@@ -206,9 +209,11 @@ int TSP_data_receiver_receive(TSP_data_receiver_t _receiver,
   int ret = FALSE;
   int* buf_int;  
   TSP_sample_t* sample;
+  TSP_sample_t sample_buf;
   int receiver_stopped;
 
   *fifo_full = FALSE;
+  sample = &sample_buf;
 
   /* We read data if there enough room in ringbuf to store data, else, do nothing ; 
      we want the biggest group to have enough room, so we use max_group_len
@@ -250,12 +255,16 @@ int TSP_data_receiver_receive(TSP_data_receiver_t _receiver,
 		  /*printf("V=%f\n", *buf_double);*/
 		  for( rank = 0 ; rank < groups[group_index].group_len ; rank++)
 		    {
-		      /*STRACE_DEBUG(("RECEIVED : T=%d Gr=%d V=%f",
-			time_stamp,
-			group_index,  
-			buf_double[i]))*/
+
+		      /*--------------*/
+		      if(! (receiver->read_callback) )
+			{
+			  sample = RINGBUF_PTR_PUTBYADDR(sample_fifo);
+			}
+		      /*--------------*/
+
                      
-		      if( (sample = RINGBUF_PTR_PUTBYADDR(sample_fifo))  )
+		      if(sample)
 			{
 			  /* Call registered function to decode data */
 			  assert(groups[group_index].items[rank].data_decoder);		      
@@ -270,8 +279,14 @@ int TSP_data_receiver_receive(TSP_data_receiver_t _receiver,
 			  sample->time = time_stamp;
 			  sample->provider_global_index = groups[group_index].items[rank].provider_global_index;
 
-
-			  RINGBUF_PTR_PUTBYADDR_COMMIT(sample_fifo);
+			  if(! (receiver->read_callback) )
+			    {
+			      RINGBUF_PTR_PUTBYADDR_COMMIT(sample_fifo);
+			    }
+			  else
+			    {
+			      (receiver->read_callback)(sample);
+			    }
 			}
 		      else
 			{
@@ -391,7 +406,6 @@ int TSP_data_receiver_get_double_encoded_size(void)
 {
   return TSP_SIZEOF_ENCODED_DOUBLE;
 }
-
 
  
             
