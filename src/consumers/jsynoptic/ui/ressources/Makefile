@@ -6,10 +6,13 @@ JPACKAGEDIR=tsp/consumer/jsynoptic/ui/ressources
 
 SOURCES = \
 	tsp_pieuvre3.png
-	
+
 OBJECTS=$(SOURCES:%.png=$(CLASSBASE)/$(JPACKAGEDIR)/%.png)
 
-all:: $(OBJECTS)
+all::
+	$(MAKE) build
+
+build:: $(OBJECTS)
 	@echo "DONE ===" $(JPACKAGEDIR) " ==="
 
 destroy::
