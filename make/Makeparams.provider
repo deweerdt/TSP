@@ -9,4 +9,4 @@ DIRLIB = $(LIBBASE)/lib.provider
 
 # customize
 # ----------------
-include $(DEVBASE)/make/Makeparams.linux
+include $(DEVBASE)/make/Makeparams.$(HOST_TARGET)

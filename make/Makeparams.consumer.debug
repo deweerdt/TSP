@@ -10,4 +10,4 @@ DIRLIB = $(LIBBASE)/lib.consumer.debug
 
 # customize
 # ----------------
-include $(DEVBASE)/make/Makeparams.linux.debug
+include $(DEVBASE)/make/Makeparams.$(HOST_TARGET).debug
