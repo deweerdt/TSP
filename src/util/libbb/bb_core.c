@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.3 2004-10-05 22:02:18 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.4 2004-10-05 22:55:15 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -282,25 +282,62 @@ bb_value_write(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc,const char* value,
   return retval;
 }
 
-int32_t 
-bb_data_print(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc, FILE* pf) {
+int32_t
+bb_data_header_print(S_BB_DATADESC_T data_desc, FILE* pf, int32_t index) {
 
-  int32_t i;
-  char* data;
-  assert(bb);
-  /* on recupere l'adresse de la donnee dans le BB */
-  data = (char*)bb_data(bb) + data_desc.data_offset;
-  
   fprintf(pf,"---------- < %s > ----------\n",data_desc.name);
   fprintf(pf,"  type        = %d  (%s)\n",data_desc.type,E_BB_2STRING[data_desc.type]);
   fprintf(pf,"  dimension   = %d  \n",data_desc.dimension);
   fprintf(pf,"  type_size   = %d  \n",data_desc.type_size);
   fprintf(pf,"  data_offset = %ld \n",data_desc.data_offset);
-  fprintf(pf,"  value = ");
+  if (index>=0) {
+    fprintf(pf,"  value[%d] = ",index);
+  } else {
+    fprintf(pf,"  value = ");
+  }
   if (data_desc.dimension > 1) {
     fprintf(pf," [ ");
   } 
-  for (i=0; i< data_desc.dimension; ++i) {
+  if (index>=0) {
+    fprintf(pf,"... ");
+  }
+  return 0;
+} /* end of bb_data_header_print */
+
+int32_t
+bb_data_footer_print(S_BB_DATADESC_T data_desc, FILE* pf, int32_t index) {
+
+  if (index>=0) {
+    fprintf(pf,"... ");
+  }  
+  if (data_desc.dimension > 1) {
+    fprintf(pf,"]");
+  }  
+  fprintf(pf,"\n");    
+  fprintf(pf,"---------- ---------- ----------\n");
+
+  return 0;
+} /* end of bb_data_footer_print */
+
+int32_t 
+bb_value_print(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc, FILE* pf, int32_t index) {
+  
+  int32_t i,ibeg,iend;
+  char* data;
+  assert(bb);
+  /* on recupere l'adresse de la donnee dans le BB */
+  data = (char*)bb_data(bb) + data_desc.data_offset;
+  
+  if (index>=0) {
+    ibeg=index;
+    iend=index+1;
+  } else {
+    ibeg=0;
+    iend=data_desc.dimension;
+  }
+
+  for (i=ibeg; i< iend; ++i) {
+    
     switch (data_desc.type) {
     case E_BB_DOUBLE: 
       fprintf(pf,"%1.16f ",((double*) data)[i]);
@@ -337,14 +374,18 @@ bb_data_print(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc, FILE* pf) {
       break;
     }
   } 
-  if (data_desc.dimension > 1) {
-    fprintf(pf,"]");
-  }  
-  fprintf(pf,"\n");
-    
-  fprintf(pf,"---------- ---------- ----------\n");
+  return 0;
+} /* end of bb_value_print */
+
+int32_t 
+bb_data_print(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc, FILE* pf) {
+
+  bb_data_header_print(data_desc,pf,-1);
+  bb_value_print(bb,data_desc,pf,-1);
+  bb_data_footer_print(data_desc,pf,-1);
   return E_OK;
 } /* end of bb_data_print */
+
 int32_t 
 bb_create(S_BB_T** bb, 
 	       const char* pc_bb_name,

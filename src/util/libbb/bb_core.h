@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.h,v 1.2 2004-09-20 20:55:59 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.h,v 1.3 2004-10-05 22:55:15 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -271,6 +271,15 @@ bb_data_initialise(volatile S_BB_T* bb, S_BB_DATADESC_T* ps_data,void* pv_valeur
 
 int32_t
 bb_value_write(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc,const char* value, int32_t idx);
+
+int32_t
+bb_data_header_print(S_BB_DATADESC_T data_desc, FILE* pf, int32_t index);
+
+int32_t
+bb_data_footer_print(S_BB_DATADESC_T data_desc, FILE* pf, int32_t index);
+
+int32_t 
+bb_value_print(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc, FILE* pf, int32_t index);
 
 /**
  * Affiche le contenu d'un descripteur de donnée.
