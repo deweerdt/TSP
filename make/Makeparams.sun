@@ -1,8 +1,5 @@
 # Makeparams.sun
 
-
-BUILD_BB = no
-
 # Default tools
 # -------------
 # Using standard tools
