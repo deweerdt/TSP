@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/consumers/gdisp/gdispmain.c,v 1.1 2004-01-13 18:05:14 mia Exp $
+$Header: /home/def/zae/tsp/tsp/src/consumers/gdisp/gdispmain.c,v 1.2 2004-01-15 01:21:41 sgalles Exp $
 
 -----------------------------------------------------------------------
 
@@ -206,7 +206,7 @@ static int main_window_start(char* conf_file, char* tsp_prov_name)
 		      /* Create the list of variable per provider global id */
 		      init_index2vars();
 		    
-		      if(TSP_consumer_request_sample_init(tsp,0 ))
+		      if(TSP_consumer_request_sample_init(tsp,0,0))
 			{
 			
 			  create_mainwin(&conf_data, conf_file);
