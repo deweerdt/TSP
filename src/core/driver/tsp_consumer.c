@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.30 2004-10-06 09:44:38 tractobob Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.31 2005-02-20 14:04:19 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -498,7 +498,7 @@ TSP_provider_t* TSP_consumer_connect_url(const char*  url)
 	  return (TSP_provider_t*)TSP_new_object_tsp(server, url_lkup);
 	}
       
-      STRACE_ERROR(("No TSP provider on URL <%s>", url_lkup));
+      STRACE_INFO(("No TSP provider on URL <%s>", url_lkup));
       return NULL;
     }
 else
@@ -513,7 +513,7 @@ else
 	  if(provider)
 	    return provider;
 	}
-      STRACE_ERROR(("No TSP provider based on URL <%s>", url));
+      STRACE_INFO(("No TSP provider based on URL <%s>", url));
       return NULL;
       
     }
