@@ -3,10 +3,9 @@
 ARCHIVEID=`uname -n`
 WHO=`whoami`
 DATE=`date +%c`
-#TARDATE=`date +%d%m_%Y_%Hh%M`
-TARDATE=`date +%d%m_%Y`
+TARDATE=`date +%d%b%Y_%Hh%M`
 TARDIR=$1
-TARNAME=$1-$TARDATE.tar
+TARNAME=$1-$TARDATE-$WHO.tar
 TARGZ=$TARNAME.gz
 
 FILES=`find $TARDIR -type f -not -path "*/exec/*" -not -path "*CVS*" -iregex ".*[\.]?[^o]" -iregex "[^%#~]*"  -print`
