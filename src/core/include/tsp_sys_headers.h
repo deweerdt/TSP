@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_sys_headers.h,v 1.8 2002-12-24 14:14:28 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_sys_headers.h,v 1.9 2004-05-19 14:41:50 dufy Exp $
 
 -----------------------------------------------------------------------
 
@@ -57,8 +57,9 @@ Do not use this with others targets */
 #define pthread_create gprof_pthread_create
 #endif
 
+/* CHECKME: after Dec OSF1  V5.1, the system  pthread.h is POSIX enough to avoid localinclude */
+//#include "dec_pthread.h"
 #include <pthread.h>
-
 
 
 #endif

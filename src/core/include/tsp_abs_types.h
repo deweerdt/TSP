@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_abs_types.h,v 1.8 2002-12-24 14:14:27 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_abs_types.h,v 1.9 2004-05-19 14:41:50 dufy Exp $
 
 -----------------------------------------------------------------------
 
@@ -260,7 +260,8 @@ typedef unsigned long guint64;
 
 #define G_GUINT64_FORMAT "lu"
 
-#define TSP_SYSTEM_HAVE_THREADSAFE_USLEEP 1
+#define TSP_SYSTEM_HAVE_NANOSLEEP 1
+/*#define TSP_SYSTEM_HAVE_THREADSAFE_USLEEP 1*/
 
 #endif /* OSF1 / Alpha */
 

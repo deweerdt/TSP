@@ -1,6 +1,6 @@
 include $(DEVBASE)/make/Makeparams
 
-XINC = tsp_prjcfg.h tsp_abs_types.h tsp_const_def.h tsp_simple_trace.h tsp_sys_headers.h 
+XINC = tsp_prjcfg.h tsp_abs_types.h tsp_const_def.h tsp_simple_trace.h tsp_sys_headers.h dec_pthread.h
 
 build::
 	$(MAKE) export_include
