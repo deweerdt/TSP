@@ -35,9 +35,7 @@ TARGET=$(DIRLIB)/libtsp_res.a
 build:: $(TARGET)($(OBJECTS))
 
 destroy::
-	$(RM) 	 $(TARGET) 
-
-
+	$(RM) 	 $(TARGET) $(OBJECTS)
 
 include $(DEVBASE)/make/Makerules
 
