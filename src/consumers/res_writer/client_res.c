@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: client_res.c,v 1.4 2003-03-13 18:08:50 yduf Exp $
+$Id: client_res.c,v 1.5 2003-12-27 13:30:59 uid67973 Exp $
 
 -----------------------------------------------------------------------
 
@@ -256,7 +256,7 @@ int main(int argc, char *argv[]){
   /*-------------------------------------------------------------------------------------------------------*/ 
   /* Start sampling
   /*-------------------------------------------------------------------------------------------------------*/ 
-  if(!TSP_consumer_request_sample_init(providers[0],0))
+  if(!TSP_consumer_request_sample_init(providers[0],0,0))
     {
       STRACE_ERROR(("TSP_request_provider_sample_init failed"));
       return -1;

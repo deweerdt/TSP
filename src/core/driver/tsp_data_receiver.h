@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_data_receiver.h,v 1.6 2002-12-24 14:14:24 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_data_receiver.h,v 1.7 2003-12-27 13:31:01 uid67973 Exp $
 
 -----------------------------------------------------------------------
 
@@ -61,11 +61,11 @@ int TSP_data_receiver_receive(TSP_data_receiver_t _receiver,
 
 /**
  * Creation of the data receiver data object.
- * @param data_address The data address string (ex : 'hostname:port')
- * @param callback The callback function that must be called with the incoming data.
- * Set to 0 is not used
+ * @param data_address The data address string (ex : 'hostname:port' for TCP/IP based protocol)
+ * @param callback The callback function that must be called with the incoming data (set to 0 if not used)
+ * @param user_data pointer on any custom user data ( set to 0 if not used)
  */
-TSP_data_receiver_t TSP_data_receiver_create(const char* data_address, TSP_sample_callback_t callback);
+TSP_data_receiver_t TSP_data_receiver_create(const char* data_address, TSP_sample_callback_t callback, void* user_data);
 
 /**
  * Prepare the receiver to stop.

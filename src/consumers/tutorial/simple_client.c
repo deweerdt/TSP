@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: simple_client.c,v 1.2 2003-03-13 18:08:50 yduf Exp $
+$Id: simple_client.c,v 1.3 2003-12-27 13:30:59 uid67973 Exp $
 
 -----------------------------------------------------------------------
 
@@ -110,7 +110,7 @@ int main(int argc, char *argv[])
     perror_and_exit("TSP_request_provider_sample failed");
 
   /* Start the sampling sequence. */
-  if(!TSP_consumer_request_sample_init(providers[0], 0))
+  if(!TSP_consumer_request_sample_init(providers[0], 0, 0))
     perror_and_exit("TSP_request_provider_sample_init failed");
   
   /* Loop on data read */

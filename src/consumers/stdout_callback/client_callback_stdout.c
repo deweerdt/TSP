@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: client_stdout.c,v 1.2 2003-12-27 13:30:59 uid67973 Exp $
+$Id: client_callback_stdout.c,v 1.1 2003-12-27 13:30:59 uid67973 Exp $
 
 -----------------------------------------------------------------------
 
@@ -31,6 +31,7 @@ Component : Consumer
 -----------------------------------------------------------------------
 
 Purpose   : Simple consummer test that print samples received to stdout
+The callback function is used to harvest data
 
 -----------------------------------------------------------------------
 */
@@ -39,12 +40,65 @@ Purpose   : Simple consummer test that print samples received to stdout
 #include "tsp_prjcfg.h"
 #include "tsp_consumer.h"
 
+#include "calc_func.h"
+
 /*#include "fortify.h"*/
 
+static int test_mode = 0;
+static TSP_provider_t* providers = 0;
+static test_is_finished = FALSE;
+static int all_data_ok = TRUE;
 
 /* Number of samples  that will be counted before the data check test pass */
 #define TSP_TEST_COUNT_SAMPLES 200*1000
 #define TSP_NANOSLEEP_PERIOD_US (100*1000) /*µS*/
+
+#define USER_DATA "Hi ! I'm the user data that'll be used for the callback user data test ! "
+
+void test_callback(TSP_sample_t* sample, void* user_data){
+
+  SFUNC_NAME(test_callback);
+
+  static int i;int j;
+  static int t = -1000;  
+  static int count_samples = 0;
+
+  double calc;
+
+  i = sample->provider_global_index;
+  if(t == -1000) 
+    {
+      t = sample->time - 1; 
+    }
+  
+  count_samples++;
+  if(i == 1 )
+    {
+      printf ("TSP : Sample nb[%d] time=%d val=%f\n", count_samples, sample->time, sample->user_value);
+    }
+  
+  calc = calc_func(i,sample->time);
+  
+  /* i = 0 is t */
+  if(i != 0)
+    {
+      if((ABS(sample->user_value - calc ) > 1e-7) || (0 != strncmp((char*)user_data, USER_DATA, strlen(USER_DATA))))
+        {
+          STRACE_ERROR(("!!!!ERROR : T=%u, I=%d, V1=%f, V2=%f", sample->time,i,sample->user_value,calc ));			
+          all_data_ok = FALSE;
+        }
+    }
+  
+  t = sample->time;
+  
+  /* Test for end */
+  if(count_samples >= TSP_TEST_COUNT_SAMPLES && test_mode!=1)
+    {
+      test_is_finished = TRUE;
+    }
+  
+}
+
 
 int main(int argc, char *argv[]){
 
@@ -57,18 +111,15 @@ int main(int argc, char *argv[]){
   int nb_providers;
   int period=0;
   char* name;
-  int count_samples = 0;
+
   char symbol_buf[50];
   int test_ok = TRUE;
-  int test_mode = 0;
-  int all_data_ok = TRUE;
-  TSP_provider_t* providers;
 
 
   /*Fortify_EnterScope();*/
-  printf ("#=========================================================#\n");
-  printf ("# Launching <stdout_client> for printing symbols received #\n");
-  printf ("#=========================================================#\n");
+  printf ("#===========================================================================#\n");
+  printf ("# Launching <stdout_client> for printing symbols received (callback active) #\n");
+  printf ("#===========================================================================#\n");
  
   if(!TSP_consumer_init(&argc, &argv))
     {
@@ -214,7 +265,7 @@ int main(int argc, char *argv[]){
   /*-------------------------------------------------------------------------------------------------------*/ 
   /* TEST : STAGE 001 | STEP 005 */
   /*-------------------------------------------------------------------------------------------------------*/ 
-  if(!TSP_consumer_request_sample_init(providers[0], 0, 0))
+  if(!TSP_consumer_request_sample_init(providers[0], test_callback, (void*)(USER_DATA) ))
     {
       STRACE_ERROR(("TSP_request_provider_sample_init failed"));
       STRACE_TEST(("STAGE 001 | STEP 005 : FAILED"));
@@ -225,104 +276,49 @@ int main(int argc, char *argv[]){
   /*-------------------------------------------------------------------------------------------------------*/ 
   /* TEST : STAGE 001 | STEP 006 */
   /*-------------------------------------------------------------------------------------------------------*/ 
-  /* Loop on data read */
-  count_samples = 0;
   while(1)
     {
-      int new_sample;
-      TSP_sample_t sample;
-      int i;int j;
-      int t = -1000;
-      
-      new_sample = FALSE;
-      do{
-	if(TSP_consumer_read_sample(providers[0],&sample, &new_sample))
-	  {
-	    if(new_sample)
-	      {
-		    
-		double calc;
-		    
-		i = sample.provider_global_index;
-		if(t == -1000) 
-		  {
-		    t = sample.time - 1; 
-		  }
+      /* A 'condition' would have been cleaner to leave the test, but
+         it is somewhat overkill for such test code */
+      if(test_is_finished)
+        {          
+          if(all_data_ok)
+            {
+              
+              STRACE_TEST(("STAGE 001 | STEP 006 : PASSED" ));			
+              
+              /* If test mode, the return code is the number of opened providers */
+              /* --------------- */
+              /* Close providers */
+              /* --------------- */
+              if(!TSP_consumer_request_sample_destroy(providers[0]))
+                {
+                  STRACE_ERROR(("Function TSP_consumer_request_sample_destroy failed" ));	 
+                }
+              
+              if(!TSP_consumer_request_close(providers[0]))
+                {
+                  STRACE_ERROR(("Function TSP_consumer_request_close failed" ));			    
+                }
+              
+              TSP_consumer_disconnect_all(providers);
+              
+              TSP_consumer_end();
+              
+              printf ("#=========================================================#\n");
+              printf ("# End of Test OK \n");
+              printf ("#=========================================================#\n");
+              return nb_providers;
+            }
+          else
+            {
+              printf ("#=========================================================#\n");
+              printf ("# End of Test KO \n");
+              printf ("#=========================================================#\n");
+              return -1;
+            }
 
-		count_samples++;
-		if(i == 1 )
-		  {
-		    printf ("TSP : Sample nb[%d] time=%d val=%f\n", count_samples, sample.time, sample.user_value);
-		  }
-
-		calc = calc_func(i,sample.time);
-		
-		/* i = 0 is t */
-		if(i != 0)
-		  {
-		    if( (ABS(sample.user_value - calc) > 1e-7) && (t == (sample.time - 1)) )
-		      {
-			STRACE_ERROR(("!!!!ERROR : T=%u, I=%d, V1=%f, V2=%f", sample.time,i,sample.user_value,calc ));			
-			all_data_ok = FALSE;
-		      }
-		  }
-
-		t = sample.time;
-
-		/* Test */
-		if(count_samples >= TSP_TEST_COUNT_SAMPLES && test_mode!=1)
-		  {
-		    if(all_data_ok)
-		      {
-
-			STRACE_TEST(("STAGE 001 | STEP 006 : PASSED" ));			
-			
-			/* If test mode, the return code is the number of opened providers */
-			/* --------------- */
-			/* Close providers */
-			/* --------------- */
-			if(!TSP_consumer_request_sample_destroy(providers[0]))
-			  {
-			    STRACE_ERROR(("Function TSP_consumer_request_sample_destroy failed" ));	 
-			  }
-			
-			if(!TSP_consumer_request_close(providers[0]))
-			  {
-			    STRACE_ERROR(("Function TSP_consumer_request_close failed" ));			    
-			  }
-			
-			TSP_consumer_disconnect_all(providers);
-			
-
-			/* Fortify calls */
-			/*Fortify_LeaveScope();
-			  Fortify_OutputStatistics();*/
-			
-			/* goto once_again; */
-			TSP_consumer_end();
-
-			printf ("#=========================================================#\n");
-			printf ("# End of Test OK \n");
-			printf ("#=========================================================#\n");
-			return nb_providers;
-		      }
-		    else
-		      {
-			printf ("#=========================================================#\n");
-			printf ("# End of Test KO \n");
-			printf ("#=========================================================#\n");
-			return -1;
-		      }
-		  }
-	      }
-	  }
-	else
-	  {
-	    STRACE_ERROR(("TSP_read_sample failed"));
-	  }
-      } while(new_sample);
-
-      /* Used to give time to other thread for filling fifo of received samples */
+        }
       tsp_usleep(TSP_NANOSLEEP_PERIOD_US); 
 
     }

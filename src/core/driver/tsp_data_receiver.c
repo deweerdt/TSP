@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_data_receiver.c,v 1.14 2002-12-24 14:14:24 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_data_receiver.c,v 1.15 2003-12-27 13:30:59 uid67973 Exp $
 
 -----------------------------------------------------------------------
 
@@ -59,6 +59,8 @@ struct TSP_struct_data_receiver_t
   char* buf;
 
   TSP_sample_callback_t read_callback;
+
+  void* user_data;
 };
 
 typedef struct TSP_struct_data_receiver_t TSP_struct_data_receiver_t;
@@ -162,7 +164,7 @@ static int TSP_data_receiver_process_reserved_group_id(int group_index, TSP_samp
 
 }
 
-TSP_data_receiver_t TSP_data_receiver_create(const char* data_address, TSP_sample_callback_t callback)
+TSP_data_receiver_t TSP_data_receiver_create(const char* data_address, TSP_sample_callback_t callback, void* user_data)
 {
   SFUNC_NAME(TSP_data_receiver_create);
 
@@ -180,6 +182,7 @@ TSP_data_receiver_t TSP_data_receiver_create(const char* data_address, TSP_sampl
   TSP_CHECK_ALLOC(receiver->buf, 0);
     
   receiver->read_callback = callback;
+  receiver->user_data = user_data; 
   receiver->stream_receiver = TSP_stream_receiver_create(data_address);
   if( 0 == receiver->stream_receiver)
     {
@@ -265,13 +268,13 @@ int TSP_data_receiver_receive(TSP_data_receiver_t _receiver,
 		  for( rank = 0 ; rank < groups[group_index].group_len ; rank++)
 		    {
 
-
+		      
 		      /*--------------*/
-		     /* if(! (receiver->read_callback) )
-			{*/
+		      if(! (receiver->read_callback) )
+			{
 			  sample = RINGBUF_PTR_PUTBYADDR(sample_fifo);
-			  assert(sample); /* can not be full, be design */
-			/*}*/
+			  assert(sample); /* can not be full, by design */
+			}
 		      /*--------------*/
 
 		      /* Call registered function to decode data */
@@ -286,18 +289,16 @@ int TSP_data_receiver_receive(TSP_data_receiver_t _receiver,
 		      sample->time = time_stamp;
 		      sample->provider_global_index = groups[group_index].items[rank].provider_global_index;
 
-		      /* FIXME : enable callback function when the error code will be implemented
-			 for the callback */
-
-		      /*if(! (receiver->read_callback) )
-			{*/
-		      /*(sample_fifo)->put = ((sample_fifo)->put + 1) % (sample_fifo)->size ;*/
+		      /* FIXME : Implement error code returned by callback */
+		      if(! (receiver->read_callback) )
+			{
+			  /*(sample_fifo)->put = ((sample_fifo)->put + 1) % (sample_fifo)->size ;*/
 			  RINGBUF_PTR_PUTBYADDR_COMMIT(sample_fifo);
-			/*}
+			}
 		      else
 			{
-			  (receiver->read_callback)(sample);
-			}*/
+			  (receiver->read_callback)(sample, receiver->user_data);
+			}
 
 		      /* Goto next symbol */
 		      in_buf += groups[group_index].items[rank].sizeof_encoded_item;

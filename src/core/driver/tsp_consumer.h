@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: tsp_consumer.h,v 1.15 2003-01-22 13:17:05 erk Exp $
+$Id: tsp_consumer.h,v 1.16 2003-12-27 13:30:59 uid67973 Exp $
 
 -----------------------------------------------------------------------
 
@@ -78,7 +78,7 @@ typedef struct TSP_sample_t TSP_sample_t;
 /** Callback function type used to receive a sample item.
 FIXME : The callback function should transmit the error code
 too ( ex :  typedef void (*TSP_sample_callback_t) (TSP_sample_t* sample, TSP_consumer_status_t status);  */
-typedef void (*TSP_sample_callback_t) (TSP_sample_t* sample); 
+typedef void (*TSP_sample_callback_t) (TSP_sample_t* sample, void* user_data); 
 
 
 /** Structure used to request symbols */
@@ -293,14 +293,14 @@ const TSP_consumer_symbol_requested_list_t* TSP_consumer_get_requested_sample(TS
  * Prepare and start the sampling sequence.
  * @param provider The provider handle
  * @param callback Address of a callback function that must be called
- * when a sample is received. Set callback = 0 if you
+ * @param user_data pointer on any custom user data ( set 0 if not used)
  * do not want to use any callback function, and use the TSP_consumer_read_sample
  * function instead. DO NOT USE BOTH. Using the TSP_consumer_read_sample function
  * is easier as you do not have to deal with multi-thread problems, but the callback
  * function is CPU friendlier (theoricaly at least...)
  * @return TRUE or FALSE. TRUE = OK.
  */				      
-int TSP_consumer_request_sample_init(TSP_provider_t provider, TSP_sample_callback_t callback);    
+int TSP_consumer_request_sample_init(TSP_provider_t provider, TSP_sample_callback_t callback, void* user_data);    
 
 /** 
  * Stop and destroy the sampling sequence
