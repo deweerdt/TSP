@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: glue_sserver.h,v 1.17 2004-09-14 16:48:26 dufy Exp $
+$Id: glue_sserver.h,v 1.18 2004-10-07 08:59:04 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -64,7 +64,7 @@ enum GLU_server_type_t
       provider ask for them (typically File Based Glu/Provider)*/
   GLU_SERVER_TYPE_PASSIVE
 };
-typedef enum GLU_get_state_t GLU_get_state_t;
+typedef enum GLU_server_type_t GLU_server_type_t;
 
 
 
@@ -90,7 +90,7 @@ enum GLU_get_state_t
   GLU_GET_DATA_LOST
 
 };
-typedef enum GLU_server_type_t GLU_server_type_t;
+typedef enum GLU_get_state_t GLU_get_state_t;
 
 /** Item used to transmit a data sample */
 struct glu_item_t
