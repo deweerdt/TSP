@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.9 2005-02-06 17:09:23 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.10 2005-02-22 20:22:34 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -243,6 +243,8 @@ bb_value_write(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc,const char* value,
   int hexval;
   assert(bb);
   
+  retval = E_OK;
+
   if ((NULL != strstr(value,"0x")) | 
       (NULL != strstr(value,"0X"))
       ) {
@@ -580,7 +582,7 @@ bb_destroy(S_BB_T** bb) {
   
   /* on se detache de façon a provoquer la destruction */
   if (E_OK == retcode) {
-    if (-1 == shmdt(*bb)) {
+    if (-1 == shmdt((void*)*bb)) {
       strncpy(&syserr[0],strerror(errno),MAX_SYSMSG_SIZE);
       bb_logMsg(BB_LOG_SEVERE,"BlackBoard::bb_destroy", 
 		"SHM detach failed (%s)",syserr);
@@ -729,7 +731,7 @@ bb_detach(S_BB_T** bb) {
 /*   bb_logMsg(BB_LOG_INFO,"BlackBoard::bb_detach",  */
 /* 	      "Detachement du BB <%s>.",(*bb)->name); */
 
-  if (-1 == shmdt(*bb)) {
+  if (-1 == shmdt((void*)*bb)) {
     strncpy(&syserr[0],strerror(errno),MAX_SYSMSG_SIZE);
     bb_logMsg(BB_LOG_SEVERE,"BlackBoard::bb_detach", 
 		"SHM detach failed (%s)",syserr);
@@ -969,7 +971,7 @@ bb_snd_msg(volatile S_BB_T *bb,
   assert(bb);
   /* do not flood message queue if no one read it !!*/
   retcode  = msgctl(bb->msgid,IPC_STAT,&mystat);
-  if (!(mystat.__msg_cbytes > 2*MSG_BB_MAX_SIZE)) {
+  if (!(mystat.msg_cbytes > 2*MSG_BB_MAX_SIZE)) {
     /* Non blocking send */
     retcode = msgsnd(bb->msgid,msg,MSG_BB_MAX_SIZE,IPC_NOWAIT);
     if (-1 == retcode) {
@@ -992,7 +994,7 @@ bb_snd_msg(volatile S_BB_T *bb,
     /* NOP */
 /*     bb_logMsg(BB_LOG_WARNING, */
 /* 	      "Blackboard::bb_snd_msg", */
-/* 	      "Cannot send msg <%d> bytes already queued>",mystat.__msg_cbytes); */
+/* 	      "Cannot send msg <%d> bytes already queued>",mystat.msg_cbytes); */
   }
   
   return retcode;
