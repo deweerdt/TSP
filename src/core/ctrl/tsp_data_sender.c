@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_data_sender.c,v 1.3 2002-10-01 15:18:05 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_data_sender.c,v 1.4 2002-10-09 07:34:22 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -39,6 +39,12 @@ struct TSP_struct_data_sender_t
   
   /** Buffer used to create the data stream */
   char* buf                                    ;
+
+  /** is there a fifo in the strea sender ? */
+  int use_stream_sender_fifo;
+
+  /** the stream sender fifo */
+  TSP_stream_sender_ringbuf_t* stream_sender_fifo;
 
   
 };
@@ -85,7 +91,7 @@ static u_int TSP_data_sender_double_encoder(void* v_double,  char* out_buf, u_in
 
 }
 
-TSP_data_sender_t TSP_data_sender_create(void)
+TSP_data_sender_t TSP_data_sender_create(int fifo_size)
 {
   SFUNC_NAME(TSP_data_sender_create);
 
@@ -98,11 +104,34 @@ TSP_data_sender_t TSP_data_sender_create(void)
   TSP_CHECK_ALLOC(sender, 0);
 
   /* FIXME : a desallouer */
-  sender->buf = (char*)calloc(TSP_DATA_STREAM_CREATE_BUFFER_SIZE, sizeof(char) );
-  TSP_CHECK_ALLOC(sender->buf, 0);
+  
 
   /* Create the sender stream */
-  sender->stream_sender = (TSP_data_sender_t)TSP_stream_sender_create();
+  sender->stream_sender = (TSP_data_sender_t)TSP_stream_sender_create(fifo_size);
+
+  if(sender->stream_sender)
+    {
+      sender->use_stream_sender_fifo = fifo_size > 0 ? TRUE : FALSE ;
+      if(sender->use_stream_sender_fifo)
+	{
+	  sender->buf = 0;
+	  sender->stream_sender_fifo = TSP_stream_sender_get_ringbuf(sender->stream_sender);
+	}
+      else
+	{
+	  sender->buf = (char*)calloc(TSP_DATA_STREAM_CREATE_BUFFER_SIZE, sizeof(char) );
+	  TSP_CHECK_ALLOC(sender->buf, 0);
+	  sender->stream_sender_fifo = 0;
+	}
+    }
+  else
+    {
+      STRACE_ERROR(("Function TSP_stream_sender_create failed"));
+      free(sender);
+      sender = 0;
+    }
+  
+
     
   STRACE_IO(("-->OUT"));
 
@@ -128,6 +157,11 @@ int TSP_data_sender_send_eof(TSP_data_sender_t sender)
   STRACE_IO(("-->IN"));
   
   /*Encode dummy time stamp */
+  
+  /*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
+  /* FIXME : gere l'empilement du eof dans le ringbuf */
+  /*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
+
   buf_int[0] = TSP_ENCODE_INT(-1);
   buf_int[1] = TSP_ENCODE_INT(TSP_RESERVED_GROUPE_EOF);
   
@@ -163,67 +197,103 @@ int TSP_data_sender_send(TSP_data_sender_t _sender, TSP_groups_t _groups, time_s
   TSP_struct_data_sender_t* data_sender = (TSP_struct_data_sender_t*)_sender;
   TSP_algo_table_t* groups_table = (TSP_algo_table_t*) _groups;
 
-  int* buf_int;
 
-  char* buf_char;
-    
+  char* buf_main;
+  int* buf_int;
+  char* buf_char;    
   TSP_algo_group_t* group;
   int group_index;
   int i;
   int ret = TRUE;
   int size;
+  TSP_stream_sender_item_t* fifo_item = 0;
 
 
   STRACE_IO(("-->IN"));
   group_index = time_stamp % groups_table->table_len;
   group = &(groups_table->groups[group_index]);
     
+  /* check if we must use our own buf, or the stream sender's fifo */
+  if(data_sender->use_stream_sender_fifo)
+    {
+      /* yep */
+      fifo_item = RINGBUF_PTR_PUTBYADDR(data_sender->stream_sender_fifo);
+      if(fifo_item)
+	{
+	  buf_main = fifo_item->buf;
+	  fifo_item->len = 0;
+	}
+      else
+	{	  
+	  /* FIXME : gerer l'empilement d'un message d'erreur des qu'il y a de la place dans le ringbuf */
+	  ret = FALSE;
+	  STRACE_WARNING(("Stream sender ringbuf full"));
+	}
 
-  buf_int = (int*)(data_sender->buf);
-  *( buf_int++ ) = TSP_ENCODE_INT(time_stamp);
-  *( buf_int++ ) = TSP_ENCODE_INT(group_index);
-  buf_char = (char*)(buf_int);
+
+    }
+  else
+    {
+      buf_main = (char*)(data_sender->buf);
+    }
+  
+  if(ret)
+    {
+      buf_int = (int*)(buf_main);
+      *( buf_int++ ) = TSP_ENCODE_INT(time_stamp);
+      *( buf_int++ ) = TSP_ENCODE_INT(group_index);
+      buf_char = (char*)(buf_int);
 
   
-
-  if( group->group_len > 0)
-    {
-      for( i = 0 ; i < group->group_len ; i++)
-        {
-          /* FIXME : gerer tous les types */
-	  /* avec la fonction d'encodage */
-	  STRACE_DEBUG(("Gr=%d V=%f", group_index, *(double*)(group->items[i].data)));
-
-	  /* Call encode function */
-	  assert(group->items[i].data_encoder);
-	  size = (group->items[i].data_encoder)(group->items[i].data,
-						buf_char,
-						TSP_DATA_STREAM_CREATE_BUFFER_SIZE - ( buf_char - data_sender->buf) );
-	  if ( 0 == size )
+      if( group->group_len > 0)
+	{
+	  for( i = 0 ; i < group->group_len ; i++)
 	    {
-	      STRACE_ERROR(("data_encoder failed"));	    
-	      ret = FALSE;
-	      break;
-	    }
+	      /* FIXME : gerer tous les types */
+	      /* avec la fonction d'encodage */
+	      STRACE_DEBUG(("Gr=%d V=%f", group_index, *(double*)(group->items[i].data)));
+
+	      /* Call encode function */
+	      assert(group->items[i].data_encoder);
+	      size = (group->items[i].data_encoder)(group->items[i].data,
+						    buf_char,
+						    TSP_DATA_STREAM_CREATE_BUFFER_SIZE - ( buf_char - buf_main) );
+	      if ( 0 == size )
+		{
+		  STRACE_ERROR(("data_encoder failed"));	    
+		  ret = FALSE;
+		  break;
+		}
 	  
-	  buf_char += size;
-	  /**(double*)buf_char = *(double*)(group->items[i].data);
-	     buf_char += sizeof(double);*/
+	      buf_char += size;
+	      /**(double*)buf_char = *(double*)(group->items[i].data);
+		 buf_char += sizeof(double);*/
 
-        } /*for*/
-
-
-      if( ret && (FALSE == TSP_stream_sender_send(data_sender->stream_sender,
-						  data_sender->buf,
-						  buf_char - data_sender->buf)))
-        {
-	  STRACE_ERROR(("Function TSP_stream_sender_send failed "));
-	  ret = FALSE;
-
-        }
+	    } /*for*/
 
 
+	  /* FIFO or not FIFO ? */
+	  if(! (data_sender->use_stream_sender_fifo) )
+	    {
+	      /* Not FIFO */
+	      if( ret && (FALSE == TSP_stream_sender_send(data_sender->stream_sender,
+							  buf_main,
+							  buf_char - buf_main)))
+		{
+		  STRACE_ERROR(("Function TSP_stream_sender_send failed "));
+		  ret = FALSE;
 
+		}
+	    }
+	  else
+	    {
+	      /* FIFO */
+	      fifo_item->len = buf_char - buf_main;
+	      RINGBUF_PTR_PUTBYADDR_COMMIT(data_sender->stream_sender_fifo);
+	    }
+
+
+	}
     }
     
   STRACE_IO(("-->OUT"));

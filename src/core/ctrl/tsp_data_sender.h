@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_data_sender.h,v 1.2 2002-10-01 15:18:06 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_data_sender.h,v 1.3 2002-10-09 07:34:22 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -23,7 +23,10 @@ stream  for the asked symbols
 
 #include "tsp_group_algo.h"
 
+
+/** Anonymous data sender object */
 typedef  void* TSP_data_sender_t;
+
 
 /* FIXME : en release, ne pas faire la vérification de taille du buffer,
 donc le prototype devra etre : typedef u_int(*TSP_data_encoder_t)(void* v, char* out_buf); */
@@ -34,7 +37,7 @@ int TSP_data_sender_send(TSP_data_sender_t sender,
 			 TSP_groups_t groups,
 			 time_stamp_t time_stamp) ;
 
-TSP_data_sender_t TSP_data_sender_create(void);
+TSP_data_sender_t TSP_data_sender_create(int fifo_size);
 
 const char* TSP_data_sender_get_data_address_string(TSP_data_sender_t sender);
 
