@@ -6,6 +6,9 @@
 #include <sys/time.h>
 #include "alias.h"
 
+#ifdef __linux__
+#define MAXNAMELEN NAME_MAX
+#endif /* __linux__ */
 
 #define	DBG	if (0)		/* Turn 0 to 1 to activate debug traces */
 

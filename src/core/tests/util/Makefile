@@ -5,6 +5,7 @@ XINC    = libUTIL.h
 
 
 SOURCES = \
+	alias.c \
 	use_dbl.c \
 	nl.c \
 	initsim.c \
