@@ -1,6 +1,6 @@
 /*!  \file 
  
-$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_const_def.h,v 1.11 2002-11-19 13:25:54 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_const_def.h,v 1.12 2002-11-26 14:06:12 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -44,17 +44,15 @@ Purpose   :
 
 /*-------- SOCKET --------*/
 
-/* Size of buffer used to create the bite stream
+/* Size of socket buffer used to create the bite stream
 that will be sent thrue the socket */
 #define TSP_DATA_STREAM_CREATE_BUFFER_SIZE 1024*48
 
 /** Socket in and out buffer for Write and Read
-operations.
-ex : 8*1000*15 must be enough for 15000 elements in a group,
-for a 5 sec fifo, at 100Hz --> 40 Mo */
+operations.i*/
 /* FIXME : verifier cette taille par rappor a la taille du groupe max */
 /* FIXME : Il faut un ringbuf dont la taille peut etre allouee a la volee*/
-#define TSP_DATA_STREAM_SOCKET_BUFFER_SIZE (8*1000*15)
+#define TSP_DATA_STREAM_SOCKET_BUFFER_SIZE (8*2000)
 
 /** Duration of stream sender fifo in secondes */
 #define TSP_STREAM_SENDER_RINGBUF_SIZE 10
