@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_server.c,v 1.5 2002-10-09 08:27:51 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_server.c,v 1.6 2002-10-24 13:33:22 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -242,7 +242,8 @@ static TSP_rpc_init(int server_number)
 	
   if (ret)
     {
-      STRACE_INFO(("RPC server is going to be started with ProdId=%X",rpc_progid ));
+      STRACE_INFO(("RPC server is going to be started with ProdId=%X",rpc_progid ));\
+      STRACE_INFO(("launching svc_run..."));
       svc_run();
       STRACE_INFO(("svc_run returned"));
     }
