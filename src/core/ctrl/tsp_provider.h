@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: tsp_provider.h,v 1.11 2004-09-24 15:46:56 tractobob Exp $
+$Id: tsp_provider.h,v 1.12 2004-10-26 23:05:13 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -74,7 +74,7 @@ void  TSP_provider_request_sample_destroy(TSP_request_sample_destroy_t* req_info
 int TSP_provider_is_initialized(void);
 
 int TSP_provider_get_server_number(void);
-
+int TSP_provider_get_server_base_number(void );
 /** @} end group Provider */ 
 
 #endif /* _TSP_PROVIDER_H */
