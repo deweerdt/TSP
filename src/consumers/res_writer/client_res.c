@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: client_res.c,v 1.10 2004-09-24 15:46:56 tractobob Exp $
+$Id: client_res.c,v 1.11 2004-09-27 13:47:01 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -89,9 +89,9 @@ void catch_ctrl_c(int i)
 
 void usage (char *txt)
 {
-  STRACE_ERROR(("USAGE : %s -f -u [-tmdh]", txt));
+  STRACE_ERROR(("USAGE : %s -f [-u] [-tmdh]", txt));
   printf("\t -f filename  : output RES format filename\n");
-  printf("\t -u URL       : TSP Universal Resource Locator (rpc://host/name:port)\n");
+  printf("\t[-u URL]      : TSP Universal Resource Locator (rpc://host/name:port)\n");
   printf("\t[-t period]   : expressed in provider's cycles (1-N), default 1\n");
   printf("\t[-m mode]     : recording mode (1-3), default 1\n");
   printf("\t                1 = All variables, retry connection forever\n");
@@ -169,9 +169,18 @@ int main(int argc, char *argv[]){
 	}
     }
 
-  if(!out_file_res || nb_providers < 1)
+  if(!out_file_res)
     usage(argv[0]);
 
+  if(nb_providers == 0)
+    {
+      providers[nb_providers++] = TSP_consumer_connect_url(NULL);
+      if(!providers[0])
+        {
+          STRACE_ERROR(("Cannot connect to a TSP provider on local host"));
+          usage(argv[0]);
+	 }
+    }
 
   for(provider=0; provider<nb_providers; provider++)
     {

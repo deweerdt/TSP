@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: client_stdout.c,v 1.7 2004-09-22 14:25:58 tractobob Exp $
+$Id: client_stdout.c,v 1.8 2004-09-27 13:47:01 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -25,7 +25,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 -----------------------------------------------------------------------
 
 Project   : TSP
-Maintainer: tsp@astrium-space.com
+Maintainer: tsp@astrium.eads.net
 Component : Consumer
 
 -----------------------------------------------------------------------
@@ -52,7 +52,6 @@ int main(int argc, char *argv[]){
   TSP_consumer_symbol_requested_list_t symbols;
 
   int i, j;
-  int nb_providers;
   int period=0;
   char* name;
   int count_samples = 0;
@@ -61,7 +60,7 @@ int main(int argc, char *argv[]){
   int test_ok = TRUE;
   int test_mode = 0;
   int all_data_ok = TRUE;
-  TSP_provider_t* providers;
+  TSP_provider_t provider;
 
 
   /*Fortify_EnterScope();*/
@@ -87,7 +86,7 @@ int main(int argc, char *argv[]){
     name = argv[1];
     break;
   default : 
-      STRACE_ERROR(("USAGE %s : server period <test mode nb_sample> \n", argv[0]));
+      STRACE_ERROR(("USAGE %s : serverURL period <test mode nb_sample> \n", argv[0]));
       return -1;
   }
 
@@ -96,23 +95,20 @@ int main(int argc, char *argv[]){
   /*-------------------------------------------------------------------------------------------------------*/ 
   /* TEST : STAGE 001 | STEP 001 */
   /*-------------------------------------------------------------------------------------------------------*/ 
-  TSP_consumer_connect_all(name,&providers, &nb_providers);
-  if(nb_providers > 0)
+  provider = TSP_consumer_connect_url(name);
+  if(provider)
     {
-      for( i = 0 ; i<nb_providers ; i++)
+      const char* info = TSP_consumer_get_connected_name(provider) ;
+      STRACE_INFO(("Server %s, info = '%s'", name, info));
+	  
+      /* Check name */
+      if(strcmp(info, "StubbedServer"))
 	{
-	  const char* info = TSP_consumer_get_connected_name(providers[i]) ;
-	  STRACE_INFO(("Server Nb %d, info = '%s'", i, info));
-	  
-	  /* Check name */
-	  if(strcmp(info, "StubbedServer"))
-	    {
-	      STRACE_ERROR(("Serveur name corrupted"));
-	      STRACE_TEST(("STAGE 001 | STEP 001 : FAILED"));
-	      return -1;
-	    }
-	  
+	  STRACE_ERROR(("Serveur name corrupted"));
+	  STRACE_TEST(("STAGE 001 | STEP 001 : FAILED"));
+	  return -1;
 	}
+	  
     }
   else
     {
@@ -128,7 +124,7 @@ int main(int argc, char *argv[]){
   /*-------------------------------------------------------------------------------------------------------*/ 
   /* Le 1er provider existe puisqu'il y en a au moins 1 */
 
-  if(!TSP_consumer_request_open(providers[0], 0, 0))
+  if(!TSP_consumer_request_open(provider, 0, 0))
     {
       STRACE_ERROR(("TSP_request_provider_open failed"));
       STRACE_TEST(("STAGE 001 | STEP 002 : FAILED"));
@@ -140,7 +136,7 @@ int main(int argc, char *argv[]){
   /*-------------------------------------------------------------------------------------------------------*/ 
   /* TEST : STAGE 001 | STEP 003 */
   /*-------------------------------------------------------------------------------------------------------*/ 
-  if(!TSP_consumer_request_information(providers[0]))
+  if(!TSP_consumer_request_information(provider))
     {
       STRACE_ERROR(("TSP_request_provider_information failed"));
       STRACE_TEST(("STAGE 001 | STEP 003 : FAILED"));
@@ -148,7 +144,7 @@ int main(int argc, char *argv[]){
     }
   
   /* be wild, ask twice to try to trigger mem leak  */
-  if(!TSP_consumer_request_information(providers[0]))
+  if(!TSP_consumer_request_information(provider))
     {
       STRACE_ERROR(("TSP_request_provider_information failed"));
       STRACE_TEST(("STAGE 001 | STEP 003 : FAILED"));
@@ -156,7 +152,7 @@ int main(int argc, char *argv[]){
     }
 
 
-  information = TSP_consumer_get_information(providers[0]);
+  information = TSP_consumer_get_information(provider);
 
   /* Check total symbol number */
   if(information->symbols.len < 1 || information->symbols.len > 999999)
@@ -201,14 +197,14 @@ printf("%s != %s\n", symbol_buf,  information->symbols.val[i].name);
   /*-------------------------------------------------------------------------------------------------------*/ 
   /* TEST : STAGE 001 | STEP 004 */
   /*-------------------------------------------------------------------------------------------------------*/ 
-  if(!TSP_consumer_request_sample(providers[0], &symbols))
+  if(!TSP_consumer_request_sample(provider, &symbols))
     {
       STRACE_ERROR(("TSP_request_provider_sample failed"));
       STRACE_TEST(("STAGE 001 | STEP 004 : FAILED"));
       return -1;
     }
   /* be wild, ask twice to try to trigger mem leak  */
-  if(!TSP_consumer_request_sample(providers[0], &symbols))
+  if(!TSP_consumer_request_sample(provider, &symbols))
     {
       STRACE_ERROR(("TSP_request_provider_sample failed"));
       STRACE_TEST(("STAGE 001 | STEP 004 : FAILED"));
@@ -221,7 +217,7 @@ printf("%s != %s\n", symbol_buf,  information->symbols.val[i].name);
   /*-------------------------------------------------------------------------------------------------------*/ 
   /* TEST : STAGE 001 | STEP 005 */
   /*-------------------------------------------------------------------------------------------------------*/ 
-  if(!TSP_consumer_request_sample_init(providers[0], 0, 0))
+  if(!TSP_consumer_request_sample_init(provider, 0, 0))
     {
       STRACE_ERROR(("TSP_request_provider_sample_init failed"));
       STRACE_TEST(("STAGE 001 | STEP 005 : FAILED"));
@@ -243,7 +239,7 @@ printf("%s != %s\n", symbol_buf,  information->symbols.val[i].name);
       
       new_sample = FALSE;
       do{
-	if(TSP_consumer_read_sample(providers[0],&sample, &new_sample))
+	if(TSP_consumer_read_sample(provider,&sample, &new_sample))
 	  {
 	    if(new_sample)
 	      {
@@ -284,21 +280,20 @@ printf("%s != %s\n", symbol_buf,  information->symbols.val[i].name);
 
 			STRACE_TEST(("STAGE 001 | STEP 006 : PASSED" ));			
 			
-			/* If test mode, the return code is the number of opened providers */
 			/* --------------- */
 			/* Close providers */
 			/* --------------- */
-			if(!TSP_consumer_request_sample_destroy(providers[0]))
+			if(!TSP_consumer_request_sample_destroy(provider))
 			  {
 			    STRACE_ERROR(("Function TSP_consumer_request_sample_destroy failed" ));	 
 			  }
 			
-			if(!TSP_consumer_request_close(providers[0]))
+			if(!TSP_consumer_request_close(provider))
 			  {
 			    STRACE_ERROR(("Function TSP_consumer_request_close failed" ));			    
 			  }
 			
-			TSP_consumer_disconnect_all(providers);
+			TSP_consumer_disconnect_one(provider);
 			
 
 			/* Fortify calls */
@@ -311,7 +306,7 @@ printf("%s != %s\n", symbol_buf,  information->symbols.val[i].name);
 			printf ("#=========================================================#\n");
 			printf ("# End of Test OK \n");
 			printf ("#=========================================================#\n");
-			return nb_providers;
+			return 1;
 		      }
 		    else
 		      {

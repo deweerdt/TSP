@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/consumers/gdisp/gdispmain.c,v 1.2 2004-01-15 01:21:41 sgalles Exp $
+$Header: /home/def/zae/tsp/tsp/src/consumers/gdisp/gdispmain.c,v 1.3 2004-09-27 13:47:01 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -173,7 +173,7 @@ void init_index2vars(void)
 }
 
 
-static int main_window_start(char* conf_file, char* tsp_prov_name)
+static int main_window_start(char* conf_file, char* tsp_prov_url)
 {
   int		        i, j, nitem, ts_ok;
   char		        *f, name[1024];
@@ -188,13 +188,9 @@ static int main_window_start(char* conf_file, char* tsp_prov_name)
   /* Load configuration file  and initialise list of asked symbols */
   if (load_config(conf_file, &conf_data)) 
     {
-      TSP_provider_t* providers;
-      int nb_providers;
-      TSP_consumer_connect_all(tsp_prov_name,&providers, &nb_providers);
-      if(nb_providers > 0)
+      tsp = TSP_consumer_connect_url(tsp_prov_url);
+      if(tsp)
 	{
-	  /* Take first provider */
-	  tsp = providers[0];
 	  if(TSP_consumer_request_open(tsp, 0, 0))
 	    {
 	      if(TSP_consumer_request_information(tsp))
@@ -215,28 +211,28 @@ static int main_window_start(char* conf_file, char* tsp_prov_name)
 			}
 		      else
 			{
-			  fprintf(stderr, "Error while initializing data stream '%s'\n", tsp_prov_name);
+			  fprintf(stderr, "Error while initializing data stream '%s'\n", tsp_prov_url);
 			}
 		    }
 		  else
 		    {
-		      fprintf(stderr, "Error while asking for TSP symbols session on host '%s'\n", tsp_prov_name);
+		      fprintf(stderr, "Error while asking for TSP symbols session on host '%s'\n", tsp_prov_url);
 		    }
 		}
 	      else
 		{
-		  fprintf(stderr, "Error while asking for TSP information on host '%s'\n", tsp_prov_name);
+		  fprintf(stderr, "Error while asking for TSP information on host '%s'\n", tsp_prov_url);
 		}
 		
 	    }
 	  else
 	    {
-	      fprintf(stderr, "Error while opening TSP session on host '%s'\n", tsp_prov_name);
+	      fprintf(stderr, "Error while opening TSP session on host '%s'\n", tsp_prov_url);
 	    }	      
 	}
       else
 	{
-	  fprintf(stderr, "unable to find any TSP provider on host '%s'\n", tsp_prov_name);
+	  fprintf(stderr, "unable to find any TSP provider on host '%s'\n", tsp_prov_url);
 	}
     }
   
@@ -252,19 +248,19 @@ main (int argc, char **argv)
   if(!TSP_consumer_init(&argc, &argv))
     return -1;
 			
-  if(argc > 2)
+  if(argc > 1)
     {
       char* config_file = argv[1];
-      char* tsp_prov_name = argv[2];
+      char* tsp_prov_url = argv[2];
 
-      if(!main_window_start(config_file, tsp_prov_name))
+      if(!main_window_start(config_file, tsp_prov_url))
 	{
 	  return -1;
 	}
     }
   else
     {
-      printf("usage : %s fileconf.xml tsp_servername  \n", argv[0]);
+      printf("usage : %s fileconf.xml [tsp_serverURL]  \n", argv[0]);
       return -1;
     }
 
