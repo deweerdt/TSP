@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_abs_types.h,v 1.2 2002-08-29 13:05:31 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_abs_types.h,v 1.3 2002-09-05 09:14:14 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -70,6 +70,7 @@ typedef unsigned long long guint64;
 
 #define G_GUINT64_FORMAT "llu"
 
+#define TSP_SYSTEM_HAVE_GETHRTIME 1
 
 #endif /* SUN / sparc */
 
@@ -123,11 +124,14 @@ typedef unsigned long guint64;
 
 #define G_GUINT64_FORMAT "lu"
 
+#define TSP_SYSTEM_HAVE_GETHRTIME 1
+
 #endif /* SUN / sparcv9 (64 bits) */
 
 
 /* Linux / Intel */
-#if defined (__linux__) && defined (__i386__)
+#if defined (__linux__) &&  defined (__i386__) 
+
 
 typedef signed char gint8;
 typedef unsigned char guint8;
@@ -176,7 +180,9 @@ typedef unsigned long long guint64;
 
 #define G_GUINT64_FORMAT "llu"
 
+
 #endif /* Linux / Intel */
+
 
 /* OSF1 / Alpha */
 #if defined (__OSF1__) && defined (__alpha__)
@@ -228,6 +234,8 @@ typedef unsigned long guint64;
 
 #define G_GUINT64_FORMAT "lu"
 
+#define TSP_SYSTEM_HAVE_GETHRTIME 1
+
 #endif /* OSF1 / Alpha */
 
 /************************* end specific **************************************/
@@ -276,11 +284,6 @@ typedef unsigned long guint64;
 #define	TRUE	(!FALSE)
 #endif
 
-#undef	MAX
-#define MAX(a, b)  (((a) > (b)) ? (a) : (b))
-
-#undef	MIN
-#define MIN(a, b)  (((a) < (b)) ? (a) : (b))
 
 #undef	ABS
 #define ABS(a)	   (((a) < 0) ? -(a) : (a))
