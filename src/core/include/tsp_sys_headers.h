@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_sys_headers.h,v 1.5 2002-12-03 11:32:45 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_sys_headers.h,v 1.6 2002-12-05 14:43:03 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -34,6 +34,7 @@ Purpose   :
 #define pthread_create gprof_pthread_create
 #endif
 
+#include <pthread.h>
 
 
 
