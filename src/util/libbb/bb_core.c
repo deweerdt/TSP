@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.7 2004-11-02 19:31:30 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.8 2004-12-05 13:37:56 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -439,9 +439,20 @@ bb_create(S_BB_T** bb,
   }
   if((retcode==E_OK) && (-1==fd_shm)) {
     strncpy(syserr,strerror(errno),MAX_SYSMSG_SIZE);
-    bb_logMsg(BB_LOG_SEVERE,"BlackBoard::bb_create", 
+    /* Try to create an existing segment is NOT an error
+     * its an info that should be handled by the caller.
+     */
+    if (EEXIST!=errno)  {
+
+      bb_logMsg(BB_LOG_SEVERE,"BlackBoard::bb_create", 
 		"Cannot open shm segment <%s key = 0x%x> (%s)",
 		name_shm, bb_utils_ntok(name_shm), syserr);
+    } else {
+      bb_logMsg(BB_LOG_INFO,"BlackBoard::bb_create", 
+		"Cannot open shm segment <%s key = 0x%x> (%s)",
+		name_shm, bb_utils_ntok(name_shm), syserr);
+
+    }
     retcode = E_NOK; 
   }
 
@@ -664,11 +675,22 @@ bb_attach(S_BB_T** bb, const char* pc_bb_name) {
     retcode = E_NOK;
   }
   if((E_OK==retcode) && (-1==fd_shm)) {
+
     strncpy(syserr,strerror(errno),MAX_SYSMSG_SIZE);
-    bb_logMsg(BB_LOG_SEVERE,"BlackBoard::bb_attach", 
-	      "Cannot open shm segment <%s key = 0x%x> (%s)",
-	      name_shm, bb_utils_ntok(name_shm), syserr);
-  
+    /* attaching to a non-existing segment is NOT an error
+     * its an info that should be handled by the caller.
+     */
+    if (ENOENT!=errno) {
+
+      bb_logMsg(BB_LOG_SEVERE,"BlackBoard::bb_attach", 
+		"Cannot open shm segment <%s key = 0x%x> (%s)",
+		name_shm, bb_utils_ntok(name_shm), syserr);
+    } else {
+      bb_logMsg(BB_LOG_INFO,"BlackBoard::bb_attach", 
+		"Cannot open shm segment <%s key = 0x%x> (%s)",
+		name_shm, bb_utils_ntok(name_shm), syserr);
+
+    }
     retcode = E_NOK; 
   }
   free(name_shm);
