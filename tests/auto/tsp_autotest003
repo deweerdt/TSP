@@ -4,10 +4,11 @@ setenv STRACE_DEBUG 1
 
 echo "Run provider with no file"
 tsp_res_reader > /dev/null &
+tsp_res_reader file.res > /dev/null &
 sleep 1
 
 echo "Run consumer of file.res"
-tsp_res_writer localhost 1  --tsp-stream-init-start file.res --tsp-stream-init-stop out.res f 1 
+tsp_res_writer -f out.res -u localhost
 
 diff file.res out.res
 set RES=$status
