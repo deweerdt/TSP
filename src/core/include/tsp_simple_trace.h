@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/include/Attic/tsp_simple_trace.h,v 1.10 2004-09-15 13:43:07 dufy Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/Attic/tsp_simple_trace.h,v 1.11 2004-09-19 23:00:41 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -39,6 +39,7 @@ Purpose   : Some trace macro
 #define __TSP_SIMPLE_TRACE_H
 
 #include <stdio.h>
+#include <stdlib.h>
 
 #define SIMPLE_TRACE_FUNC(level,src,func,text) \
 { \
