@@ -23,7 +23,7 @@ int TSP_provider_rqh_manager_get_nb_running();
 
 #include <signal.h>
 
-RINGBUF_DECLARE_TYPE_DYNAMIC(glu_ringbuf,glu_item_t);
+/* RINGBUF_DECLARE_TYPE_DYNAMIC(glu_ringbuf,glu_item_t); */
 
 #define GLU_RING_BUFSIZE (1000 * 64 * 10)
 
@@ -38,7 +38,7 @@ extern pthread_t glu_thread_id;
 /* le nom du provider */
 static char* X_server_name = "BB-TSP-V0_2";
 /* le ringbuffer entre le GLU et le reste du monde */
-static glu_ringbuf* glu_ring = 0;
+/* static glu_ringbuf* glu_ring = 0; */
 /* la liste des symboles */
 static TSP_sample_symbol_info_t *X_sample_symbol_info_list_val = NULL;
 
@@ -181,12 +181,12 @@ GLU_init(int fallback_argc, char* fallback_argv[]) {
   }
   
   /* initialisation ringbuffer */
-  if (TRUE == retcode) {
-    /*    RINGBUF_PTR_INIT(glu_ringbuf, glu_ring, glu_item_t,  0, RINGBUF_SZ(GLU_RING_BUFSIZE)); */
-    RINGBUF_PTR_INIT(glu_ringbuf, glu_ring, glu_item_t,  0, RINGBUF_SZ(i_pg_index*32*10)); 
-    bb_logMsg(BB_LOG_CONFIG,"bb_tsp_provider::GLU_init","Ring Buffer Size is <%d>",glu_ring->size);
-    RINGBUF_PTR_RESET_CONSUMER (glu_ring);
-  }
+ /*  if (TRUE == retcode) { */
+     /*    RINGBUF_PTR_INIT(glu_ringbuf, glu_ring, glu_item_t,  0, RINGBUF_SZ(GLU_RING_BUFSIZE)); */ 
+/*     RINGBUF_PTR_INIT(glu_ringbuf, glu_ring, glu_item_t,  0, RINGBUF_SZ(i_pg_index*32*10));  */
+/*     bb_logMsg(BB_LOG_CONFIG,"bb_tsp_provider::GLU_init","Ring Buffer Size is <%d>",glu_ring->size); */
+/*     RINGBUF_PTR_RESET_CONSUMER (glu_ring); */
+/*   } */
   return retcode;
 } /* end of GLU_init */
 
@@ -234,16 +234,17 @@ static int data_missed = FALSE;
 static void* GLU_thread(void* arg) {
   
   int i;
-  int i_nb_symbols;
   glu_item_t item;
   static int last_missed = 0;
   sigset_t s_mask;
+  int nb_consumed_symbols;
+  int* ptr_consumed_index;
+  int pgi;
   
-  i_nb_symbols  = GLU_get_symbol_number();
   bb_logMsg(BB_LOG_INFO,
 	      "bb_tsp_provider::GLU_thread",
 	      "Provider thread started with <%d> symbols",
-	      i_nb_symbols);
+	      GLU_get_symbol_number());
   /*
    * On masque les signaux indesirables i.e. tous :))
    */
@@ -265,30 +266,33 @@ static void* GLU_thread(void* arg) {
      * MAJ des donnees du shadow BB 
      */    
     bb_shadow_update_data(shadow_bb,the_bb);
+    /* 
+     * Refresh the [reverse list of consumed symbols]
+     * Must be call at each step in case of new samples wanted 
+     */
+    TSP_datapool_get_reverse_list (&nb_consumed_symbols, &ptr_consumed_index); 
    /*  bb_simple_synchro_go(BB_SIMPLE_MSGID_SYNCHRO_COPY_ACK); */
-    while ( RINGBUF_PTR_ITEMS_LEFT(glu_ring) < (i_nb_symbols*sizeof(item)+64) ) {
-      usleep(300);
-      bb_logMsg(BB_LOG_WARNING,"bb_tsp_provider::GLU_thread",
-		  "RINGBUF nb Item Left= <%d>",RINGBUF_PTR_ITEMS_LEFT(glu_ring));
-      sched_yield();
-    } 
+/*     while ( RINGBUF_PTR_ITEMS_LEFT(glu_ring) < (nb_consumed_symbols*sizeof(item)+64) ) { */
+/*       usleep(300); */
+/*       bb_logMsg(BB_LOG_WARNING,"bb_tsp_provider::GLU_thread", */
+/* 		  "RINGBUF nb Item Left= <%d>",RINGBUF_PTR_ITEMS_LEFT(glu_ring)); */
+/*       sched_yield(); */
+/*     }  */
 
-    /* PUSH des valeurs dans le RING BUF */
-    for(i = 0 ; i <  i_nb_symbols ; ++i) {
+    /* PUSH des valeurs directement dans le datapool */
+    for(i = 0 ; i <  nb_consumed_symbols ; ++i) {
+      /* retrieve the pgi of the consumed symbol */
+      pgi = ptr_consumed_index[i];
       item.time                  = glu_time;
-      item.provider_global_index = i;
+      item.provider_global_index = pgi;
       /* we return a double value even if 
        * the blackboard type is different
        * since TSP only knows double ... till now */
-      item.value                 = bb_double_of(value_by_pgi[i],bbtype_by_pgi[i]);
-      RINGBUF_PTR_PUT(glu_ring, item);
+      item.value                 = bb_double_of(value_by_pgi[pgi],bbtype_by_pgi[pgi]);
+      TSP_datapool_push_next_item(&item);      
     }
+    TSP_datapool_push_commit(glu_time, GLU_GET_NEW_ITEM);
       
-    if(last_missed!=RINGBUF_PTR_MISSED(glu_ring)) {
-      last_missed = RINGBUF_PTR_MISSED(glu_ring);
-      data_missed = TRUE;
-    }
-    
     ++glu_time;
 /*     if ( 0 == (glu_time%1000) ) { */
 /*       bb_logMsg(BB_LOG_INFO,"bb_tsp_provider::GLU_thread", */
@@ -300,6 +304,11 @@ static void* GLU_thread(void* arg) {
   return NULL;
   
 } /* end of GLU_thread */
+
+int GLU_start(void)
+{
+  return pthread_create(&glu_thread_id, NULL, GLU_thread, NULL);  
+}
 
 GLU_handle_t 
 GLU_get_instance(int custom_argc,
@@ -313,48 +322,10 @@ GLU_get_instance(int custom_argc,
 }  /* end of GLU_get_instance */
 
 
-GLU_get_state_t 
-GLU_get_next_item(GLU_handle_t h_glu,glu_item_t* item) {
-
-  GLU_get_state_t res = GLU_GET_NEW_ITEM;
-  assert(h_glu == GLU_GLOBAL_HANDLE);
-  
-  if(!data_missed)
-    {
-      if (!RINGBUF_PTR_ISEMPTY(glu_ring))
-	{
-	  /* OK data found */
-	  RINGBUF_PTR_NOCHECK_GET(glu_ring ,(*item));                  
-	}
-      else
-	{
-	  res = GLU_GET_NO_ITEM;
-
-          /* Maybe there's no item coz the thread is not started : start it !
-             And yes, this is ugly. In a perfect world, this should be in GLU_get_instance,
-             but it does not work : the fifo may be full before the very first
-             GLU_get_next_item
-          */ 
-	  if(!glu_thread_id) {
-              pthread_create(&glu_thread_id, NULL, GLU_thread, NULL);
-	  } 
-
-	}
-    }
-  else
-    {
-      /* There's a huge problem, we were unable to put data
-	 in the ringbuffer */
-      res = GLU_GET_DATA_LOST;
-    }
-
-  return res;
-}
-
-void 
-GLU_forget_data(GLU_handle_t h_glu) {
-  RINGBUF_PTR_RESET_CONSUMER(glu_ring);
-}
+/* void  */
+/* GLU_forget_data(GLU_handle_t h_glu) { */
+/*   RINGBUF_PTR_RESET_CONSUMER(glu_ring); */
+/* } */
 
 
 int32_t 
