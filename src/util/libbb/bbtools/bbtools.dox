@@ -1,0 +1,36 @@
+/**
+ * @defgroup BBTools
+ * BB Tools are a set of TSP BlackBoard tools
+ * use to interact (locally) with any TSP BlackBoard.
+ * Those tools may be launch without argument and will provide
+ * a command line option summary (if needed).
+ *
+ * \par \c bb_findlabel \c \<bbname\> \c \<symbolpattern\>
+ * A command line tool used to find a symbol
+ * in a TSP BlackBoard.\n
+ * \arg \c bbname the name of the TSP BlackBoard.
+ * \arg \c symbolpattern the pattern to match against BlackBoard symbol.
+ * The command will list the name of 
+ * all symbols found in blackboard
+ * that match \c symbolpattern.
+ *
+ * \par \c bb_dump \c \<bbname\>
+ * Dump the specified  BlackBoard.\n
+ * \arg \c bbname the name of the TSP BlackBoard.
+ * The command will dump all symbols and associated value
+ * output may be huge if not filtered.
+ *
+ * \par \c bb_read \c \<bbname\>  \c \<symname\>
+ * Read the value of a specified symbol the specified BlackBoard.\n
+ * \arg \c bbname the name of the TSP BlackBoard.
+ * \arg \c symname the exact name of the BlackBoard symbol to read
+ * Value of the symbols is printed iff it is printable, non-printable
+ * value will gives '?'.
+ *
+ * \par \c bb_write \c \<bbname\> \c \<symname\> \c \<value\>
+ * Write to a BlackVBoard symbol variable.
+ * Write access is UNPROTECTED against concurrent access
+ * (read or write).
+ *
+ * @ingroup BlackBoard
+ */

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_utils.h,v 1.2 2004-11-07 18:23:55 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_utils.h,v 1.3 2004-11-12 17:29:47 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -43,7 +43,7 @@ Purpose   : Blackboard Idiom utilities
 /**
  * @defgroup BBUtils
  * @ingroup BlackBoard
- * Définition de différentes fonctions d'utilitées générales.
+ * General utility functions for TSP BlackBoard.
  */
 
 /**
@@ -62,47 +62,72 @@ typedef enum BB_LOG_LEVEL {
 
 
 /**
- * Construit le nom à utiliser pour la création
- * d'un segment de mémoire partagée à partir d'un nom
- * 'utilisateur'.
- * @param shm_name IN le nom utilisateur
- * @return le nom à utiliser pour créer le segment SHM
- *         La chaine de retour est allouée par la fonction
- *         et DOIT donc être désallouée par l'appelant.
+ * Build the string name used for creating a shm segment
+ * from a user supplied name.
+ * We use this for easy SHM name 'normalization' for easy
+ * shm portability. One may use the name with either 
+ * POSIX shm_open(3) or sys V shmget(2) through 
+ * @see bb_utils_ntok or @see bb_utils_ntok_user.
+ * @param shm_name IN, user supplied name.
+ * @return the name to be used by shm creator. 
+ *         The string is allocated (as strdup(3) do) so that
+ *         caller should free it.
  * @ingroup BBUtils
  */
 char* 
 bb_utils_build_shm_name(const char* shm_name);
 
-/**
- * Construit le nom à utiliser pour la création
- * d'un sémaphore à partir d'un nom 'utilisateur'.
- * @param sem_name IN le nom utilisateur
- * @return le nom à utiliser pour créer le sémaphore
- *         La chaine de retour est allouée par la fonction
- *         et DOIT donc être désallouée par l'appelant.
+/** 
+ * Build the string name used for creating a semaphore
+ * from a user supplied name.
+ * We use this for easy SEM name 'normalization' for easy
+ * semaphore portability. One may use the name with either 
+ * POSIX sem_open(3) or sys V semget(2) through 
+ * @see bb_utils_ntok or @see bb_utils_ntok_user.
+ * @param sem_name IN, user supplied name.
+ * @return the name to be used by semaphore creator. 
+ *         The string is allocated (as strdup(3) do) so that
+ *         caller should free it.
  * @ingroup BBUtils
  */
 char*
 bb_utils_build_sem_name(const char* sem_name);
 
 /**
- * Construit le nom à utiliser pour la création
- * d'une queue de message à partir d'un nom 'utilisateur'.
- * @param sem_name IN le nom utilisateur
- * @return le nom à utiliser pour créer la queue de message
- *         La chaine de retour est allouée par la fonction
- *         et DOIT donc être désallouée par l'appelant.
+ * Build the string name used for creating a message queue
+ * from a user supplied name.
+ * We use this for easy MSG name 'normalization' for easy
+ * message queue portability. One may use the name with either 
+ * POSIX mq_open(3) or sys V msgget(2) through 
+ * @see bb_utils_ntok or @see bb_utils_ntok_user.
+ * @param msg_name IN, user supplied name.
+ * @return the name to be used by message queue creator. 
+ *         The string is allocated (as strdup(3) do) so that
+ *         caller should free it.
  * @ingroup BBUtils
  */
 char*
-bb_utils_build_msg_name(const char* sem_name);
+bb_utils_build_msg_name(const char* msg_name);
+
+/**
+ * Build a SysV IPC key from a name and user specific value.
+ * The purpose of this function is to build a (quasi) unique
+ * key from unique entry as ftok(3) do with existing
+ * file name.
+ * We use SHA1 hash function Xored with the user_specific
+ * value supplied.
+ * @param name IN, the name representing the IPC element for which
+ *                 we want a key.
+ * @param user_specific_value IN, any user specific value 
+ *                               (for example uid).
+ * @return The generated SysV IPC key corresponding to the specified entry
+ */
 
 key_t
 bb_utils_ntok_user(const char* name, int32_t user_specific_value);
 
 /**
- * Construit une clef IPC SysV à partir d'un nom.
+ * Build a SysV IPC key from a name.
  * L'objectif de cette fonction est de générer des
  * clefs différentes pour des noms différents, à la manière
  * d'une fonction de hachage ou checksum parfaite.
@@ -111,14 +136,25 @@ bb_utils_ntok_user(const char* name, int32_t user_specific_value);
  * de caractere quelconque.
  * @param name un nom représentant l'élément IPC pour lequel on
  *                veut générer une clef.
- * @return la clef SysV correspondante au nom
+ * @return SysV IPC key corresponding to the specified name.
  * @ingroup BBUtils
  */
 key_t
 bb_utils_ntok(const char* name);
 
 
+/**
+ * Log message for BB Error.
+ * This function may be replaced by a project specific function
+ * which want to use BB with a unified log system.
+ * The default implementation use TSP STRACE facility.
+ * @param level IN, the log level.
+ * @param modname IN, the module who sent the message.
+ * @param fmt IN, format as in printf.
+ * @return 0 on success, -1 on error.
+ * @ingroup BBUtils
+ */
 int32_t 
-bb_logMsg(const BB_LOG_LEVEL_T e_level, const char* pc_who, char* pc_fmt, ...);
+bb_logMsg(const BB_LOG_LEVEL_T level, const char* modname, char* fmt, ...);
 
 #endif /* _BB_UTILS_H_ */

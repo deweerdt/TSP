@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.h,v 1.5 2004-10-18 20:36:56 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.h,v 1.6 2004-11-12 17:29:47 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -159,7 +159,7 @@ typedef struct S_BB {
    * This SysV sempahore set contains only 1 semaphore
    * which should be taken before any structural BB 
    * modification and/or BB data zone copy.
-   * @bb_shadow_get.
+   * @see bb_shadow_get.
    */
   int semid;
   /**
