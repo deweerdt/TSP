@@ -1,0 +1,17 @@
+# Makeparams.openbsd
+
+# Default tools
+# -------------
+# Using standard tools
+#CC=gcc
+
+
+# Default options
+# ---------------
+ARFLAGS = rvs
+#CPPFLAGS +=  -D_REENTRANT  -DUSE_STRACE -DTSP_NO_XDR_ENCODE
+CFLAGS += `glib-config --cflags`
+LDLIBS +=   -lm  -lpthread `glib-config --libs`
+
+
+#include .make.state

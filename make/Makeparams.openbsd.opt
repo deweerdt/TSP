@@ -1,0 +1,12 @@
+# Makeparams.openbsd.debug
+
+# Common tools
+# -------------
+include $(DEVBASE)/make/Makeparams.openbsd
+
+# Default options
+# ---------------
+CFLAGS = -O3 
+
+
+
