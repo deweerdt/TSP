@@ -1,6 +1,6 @@
 /*!  \file 
  
-$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_const_def.h,v 1.18 2003-07-15 14:42:24 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_const_def.h,v 1.19 2004-07-30 09:19:03 mia Exp $
 
 -----------------------------------------------------------------------
 
@@ -73,7 +73,11 @@ Purpose   : definitions and const that must have a program wide scope
 #define TSP_DATA_STREAM_SOCKET_FIFO_SIZE (1024*48)
 
 /** Duration of stream sender fifo in secondes */
+#ifdef VXWORKS
+#define TSP_STREAM_SENDER_RINGBUF_SIZE 2
+#else
 #define TSP_STREAM_SENDER_RINGBUF_SIZE 10
+#endif
 
 
 /** used to calculate the socket buffer size */
