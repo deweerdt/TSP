@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.3 2002-08-29 13:04:19 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.4 2002-09-05 09:08:37 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -13,7 +13,7 @@ Component : Consumer
 Purpose   : Main implementation for the TSP consumer library
 
 -----------------------------------------------------------------------
- */
+*/
 
 #include "tsp_sys_headers.h"
 #include <pthread.h>
@@ -53,7 +53,7 @@ struct TSP_otsp_t
   /* FIXME : avec un systeme de variables à enum indiquant chaque etat
      de la session (request fait, sample fait, sample_int fait, gerer les erreur
      si le client ne respecte pas les ordres d'appel, comme un automate
-   */
+  */
     
   /** Handle for the command canal connection.
    * (i.e. : handle on RPC connection for the current implementation).
@@ -96,8 +96,8 @@ struct TSP_otsp_t
   TSP_data_receiver_t receiver;
   
   /**
-    * Array of ringbuf for all symbols managed by server
-    */
+   * Array of ringbuf for all symbols managed by server
+   */
   TSP_sample_ringbuf_t** sample_ringbuf;
   
   /**
@@ -118,514 +118,516 @@ typedef struct TSP_otsp_t TSP_otsp_t;
 /*-------------------------------------------------------------------*/
 
 /**
-* Allocate a consumer object.
-* @param server handle for the command canal (RPC) for the consumer
-* @param server_info information sent by the provider about itself
-* @return the allocated consumer object
-*/ 
+ * Allocate a consumer object.
+ * @param server handle for the command canal (RPC) for the consumer
+ * @param server_info information sent by the provider about itself
+ * @return the allocated consumer object
+ */ 
 static TSP_otsp_t* TSP_new_object_tsp(	TSP_server_t server,
-		  		TSP_server_info_string_t server_info)
+					TSP_server_info_string_t server_info)
 {
-	SFUNC_NAME(TSP_new_object_tsp);
+  SFUNC_NAME(TSP_new_object_tsp);
 
 	
-	TSP_otsp_t* obj;
+  TSP_otsp_t* obj;
 	
-	STRACE_IO(("-->IN"));
+  STRACE_IO(("-->IN"));
 
 	
-	obj = (TSP_otsp_t*)calloc(1, sizeof(TSP_otsp_t) );
+  obj = (TSP_otsp_t*)calloc(1, sizeof(TSP_otsp_t) );
 	
-	if(0 == obj)
-	{ 
-		printf("ERROR : calloc error\n");
-		return 0;
-	}
+  if(0 == obj)
+    { 
+      printf("ERROR : calloc error\n");
+      return 0;
+    }
 	
-	obj->server = server;
-	strncpy(obj->server_info.info, server_info, STRING_SIZE_SERVER_INFO);
+  obj->server = server;
+  strncpy(obj->server_info.info, server_info, STRING_SIZE_SERVER_INFO);
 	
-	/* Init */
-	obj->channel_id = UNDEFINED_CHANNEL_ID;
+  /* Init */
+  obj->channel_id = UNDEFINED_CHANNEL_ID;
 	
-	obj->symbols.TSP_sample_symbol_info_list_t_len = 0;
-	obj->symbols.TSP_sample_symbol_info_list_t_val = 0;
-	obj->groups = 0;
-	obj->receiver = 0;
-	obj->sample_ringbuf = NULL;
-	obj->data_link_broken=FALSE;
+  obj->symbols.TSP_sample_symbol_info_list_t_len = 0;
+  obj->symbols.TSP_sample_symbol_info_list_t_val = 0;
+  obj->groups = 0;
+  obj->receiver = 0;
+  obj->sample_ringbuf = NULL;
+  obj->data_link_broken=FALSE;
 	
-	STRACE_IO(("-->OUT"));
+  STRACE_IO(("-->OUT"));
 
 	
-	return obj;
+  return obj;
 }
 
 
 static void TSP_delete_object_tsp(TSP_otsp_t* o)
 {
 
-	SFUNC_NAME(TSP_delete_object_tsp);
+  SFUNC_NAME(TSP_delete_object_tsp);
 
 	
-	STRACE_IO(("-->IN"));
+  STRACE_IO(("-->IN"));
 
-	/* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
-	/* A faire : desallocation de la liste des symboles */
-	/* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
+  /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
+  /* A faire : desallocation de la liste des symboles */
+  /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
 
-	free(o);
+  free(o);
 	
-	STRACE_IO(("-->OUT"));
+  STRACE_IO(("-->OUT"));
 
 }
 
 static  void TSP_print_object_tsp(TSP_otsp_t* o)
 {
-	SFUNC_NAME(TSP_print_object_tsp);
+  SFUNC_NAME(TSP_print_object_tsp);
 
 	
-	STRACE_IO(("-->IN"));
-	STRACE_INFO(("----------------------------------------------"));
-	STRACE_INFO(("SERVER_INFO->INFO='%s'\n", o->server_info.info));
-	STRACE_INFO(("----------------------------------------------"));
-	STRACE_IO(("-->OUT"));
+  STRACE_IO(("-->IN"));
+  STRACE_INFO(("----------------------------------------------"));
+  STRACE_INFO(("SERVER_INFO->INFO='%s'\n", o->server_info.info));
+  STRACE_INFO(("----------------------------------------------"));
+  STRACE_IO(("-->OUT"));
 
 }
 
 /*-------------------------------------------------------------------*/
 
 /**
-* Open all providers.
-* This function will try to find several providers on a host.
-* When this function was called, TSP_close_all_provider() must be called too
-* at the end of the process
-* @param target_name the host name where the providers must be found
-* @param providers pointer on an array of providers
-* @param nb_providers total number of providers found. Use this number to iterate
-* thrue the providers array. 
-*/
+ * Open all providers.
+ * This function will try to find several providers on a host.
+ * When this function was called, TSP_close_all_provider() must be called too
+ * at the end of the process
+ * @param target_name the host name where the providers must be found
+ * @param providers pointer on an array of providers
+ * @param nb_providers total number of providers found. Use this number to iterate
+ * thrue the providers array. 
+ */
 void TSP_open_all_provider(const char* target_name, TSP_provider_t** providers, int* nb_providers)
 {	
-	SFUNC_NAME(TSP_remote_open_all_provider);
+  SFUNC_NAME(TSP_remote_open_all_provider);
 	
-	int i;
+  int i;
 
-	/* Get max number of provider allowed on any host */
-	int server_max_number = TSP_get_server_max_number();
+  /* Get max number of provider allowed on any host */
+  int server_max_number = TSP_get_server_max_number();
 
-	STRACE_IO(("-->IN"));
+  STRACE_IO(("-->IN"));
 	
-	*nb_providers = 0;
+  *nb_providers = 0;
 	
-	if( server_max_number > 0 )
-	{
-		*providers = (TSP_provider_t*)calloc(server_max_number,sizeof(TSP_provider_t));
-		TSP_CHECK_ALLOC(providers,);
+  if( server_max_number > 0 )
+    {
+      *providers = (TSP_provider_t*)calloc(server_max_number,sizeof(TSP_provider_t));
+      TSP_CHECK_ALLOC(providers,);
 		
-		/* Iterate on all providers, and try to contact them */
-		for(i = 0 ; i < server_max_number ; i++)
-		{
-			TSP_server_t server;
-			TSP_server_info_string_t server_info;
+      /* Iterate on all providers, and try to contact them */
+      for(i = 0 ; i < server_max_number ; i++)
+	{
+	  TSP_server_t server;
+	  TSP_server_info_string_t server_info;
 
-			STRACE_DEBUG(("Trying to open server No %d", i));
+	  STRACE_DEBUG(("Trying to open server No %d", i));
 
-			/* Is server number 'i' alive ?*/ 
-			if(TSP_remote_open_server(  target_name,
-						    i, 
-						    &server,
-						    server_info))
-			  {
+	  /* Is server number 'i' alive ?*/ 
+	  if(TSP_remote_open_server(  target_name,
+				      i, 
+				      &server,
+				      server_info))
+	    {
 			  
-				(*providers)[*nb_providers] = TSP_new_object_tsp(server, server_info);
-				if( 0 == (*providers)[*nb_providers])
-				{
-					STRACE_ERROR(("TSP_new_object_tsp failedfor No=%d", i));
-					(*nb_providers) = 0;
-					return;
+	      (*providers)[*nb_providers] = TSP_new_object_tsp(server, server_info);
+	      if( 0 == (*providers)[*nb_providers])
+		{
+		  STRACE_ERROR(("TSP_new_object_tsp failedfor No=%d", i));
+		  (*nb_providers) = 0;
+		  return;
 
-				}
-				(*nb_providers)++;
-				
-			}
-			else
-			{
-				STRACE_DEBUG(("unable to open server No %d for target '%s'", i, target_name));
-			}
-				
 		}
+	      (*nb_providers)++;
+				
+	    }
+	  else
+	    {
+	      STRACE_DEBUG(("unable to open server No %d for target '%s'", i, target_name));
+	    }
+				
 	}
-	else
-	{
-		STRACE_ERROR(("Unable to get server max number"));
-	}
+    }
+  else
+    {
+      STRACE_ERROR(("Unable to get server max number"));
+    }
 
-	/* Realloc size of the found servers */
-	*providers = (TSP_provider_t*)realloc(*providers,sizeof(TSP_provider_t)*(*nb_providers));
-	if(*nb_providers > 0)
-	{
-	    TSP_CHECK_ALLOC((*providers),);
-	}
+  /* Realloc size of the found servers */
+  *providers = (TSP_provider_t*)realloc(*providers,sizeof(TSP_provider_t)*(*nb_providers));
+  if(*nb_providers > 0)
+    {
+      TSP_CHECK_ALLOC((*providers),);
+    }
 
-	STRACE_INFO(("%d server opened", *nb_providers));
-	STRACE_IO(("-->OUT"));
+  STRACE_INFO(("%d server opened", *nb_providers));
+  STRACE_IO(("-->OUT"));
 
 }
 
 /**
-* Close all providers.
-* This function is used to clean up after a 
-* @param provider the providers that must be close.
-*/
+ * Close all providers.
+ * This function is used to clean up after a 
+ * @param provider the providers that must be close.
+ */
 void TSP_close_all_provider(TSP_provider_t providers[])
 {	
-	SFUNC_NAME(TSP_remote_close_all_provider);
+  SFUNC_NAME(TSP_remote_close_all_provider);
 
-	int server_max_number;
-	int i;
+  int server_max_number;
+  int i;
 	
-	STRACE_IO(("-->IN"));
+  STRACE_IO(("-->IN"));
 	
-	server_max_number = TSP_get_server_max_number();
-	if( server_max_number > 0 )
-	{
+  server_max_number = TSP_get_server_max_number();
+  if( server_max_number > 0 )
+    {
 		
-		for(i = 0 ; i < server_max_number ; i++)
-		{
-			TSP_close_provider(providers[i]);
-			providers[i] = 0;
-				
-		}
-	}
-	else
+      for(i = 0 ; i < server_max_number ; i++)
 	{
-		STRACE_ERROR(("Unable to get server max number"));
+	  TSP_close_provider(providers[i]);
+	  providers[i] = 0;
+				
 	}
+    }
+  else
+    {
+      STRACE_ERROR(("Unable to get server max number"));
+    }
 	
-	free(providers);
+  free(providers);
 	
-	STRACE_IO(("-->OUT"));
+  STRACE_IO(("-->OUT"));
 
 }
 
 /**
-* Close a provider.
-* @param provider the provider that must be close.
-*/
+ * Close a provider.
+ * @param provider the provider that must be close.
+ */
 void TSP_close_provider(TSP_provider_t provider)
 {	
-	SFUNC_NAME(TSP_close_provider);
+  SFUNC_NAME(TSP_close_provider);
 
 	
-	TSP_otsp_t* otsp = (TSP_otsp_t*)provider;
+  TSP_otsp_t* otsp = (TSP_otsp_t*)provider;
 	
-	STRACE_IO(("-->IN"));
+  STRACE_IO(("-->IN"));
 
 	
-	if(otsp)
-	{
-		TSP_remote_close_server(otsp->server);
-		TSP_delete_object_tsp(otsp);
-	}
+  if(otsp)
+    {
+      TSP_remote_close_server(otsp->server);
+      TSP_delete_object_tsp(otsp);
+    }
 	
-	STRACE_IO(("-->OUT"));
+  STRACE_IO(("-->OUT"));
 
 }
 
 /**
-* Get the provider information string
-* @param provider the provider from which the string must be read
-* @return The information structure for the provider
-*/
+ * Get the provider information string
+ * @param provider the provider from which the string must be read
+ * @return The information structure for the provider
+ */
 const TSP_otsp_server_info_t* TSP_get_provider_simple_info(TSP_provider_t provider)			  
 {
-	TSP_otsp_t* otsp = (TSP_otsp_t*)provider;
+  TSP_otsp_t* otsp = (TSP_otsp_t*)provider;
 	
-	return(&(otsp->server_info));
+  return(&(otsp->server_info));
 }
 
 void TSP_print_provider_info(TSP_provider_t provider)
 {
-	SFUNC_NAME(TSP_print_provider_info);
+  SFUNC_NAME(TSP_print_provider_info);
 
 	
-	if(provider) TSP_print_object_tsp((TSP_otsp_t*)provider);
-	else STRACE_ERROR(("provider empty"));
+  if(provider) TSP_print_object_tsp((TSP_otsp_t*)provider);
+  else STRACE_ERROR(("provider empty"));
 }
 
 /**
-* Open the session for a remote_opened provider.
-* @param provider the provider on which apply the action
-* @return The action result (TRUE or FALSE)
-*/
+ * Open the session for a remote_opened provider.
+ * @param provider the provider on which apply the action
+ * @return The action result (TRUE or FALSE)
+ */
 int TSP_request_provider_open(TSP_provider_t provider)
 {
 	
-	SFUNC_NAME(TSP_request_provider_open);
+  SFUNC_NAME(TSP_request_provider_open);
 
 	
-	TSP_otsp_t* otsp = (TSP_otsp_t*)provider;
-	TSP_request_open_t req_open;
-	TSP_answer_open_t* ans_open = 0;
-	int ret = FALSE;
+  TSP_otsp_t* otsp = (TSP_otsp_t*)provider;
+  TSP_request_open_t req_open;
+  TSP_answer_open_t* ans_open = 0;
+  int ret = FALSE;
 	
-	STRACE_IO(("-->IN"));
+  STRACE_IO(("-->IN"));
 
 	
-	req_open.version_id = TSP_VERSION;
+  req_open.version_id = TSP_VERSION;
 
 	
-	if(0 != otsp)
+  if(0 != otsp)
+    {
+      ans_open = TSP_request_open(&req_open, otsp->server);
+      if( NULL != ans_open)
 	{
-		ans_open = TSP_request_open(&req_open, otsp->server);
-		if( NULL != ans_open)
-		{
-			otsp->channel_id = ans_open->channel_id;
-			ret = TRUE;
-		}
-		else
-		{
-			STRACE_ERROR(("Unable to communicate with the provider"));
+	  otsp->channel_id = ans_open->channel_id;
+	  ret = TRUE;
+	}
+      else
+	{
+	  STRACE_ERROR(("Unable to communicate with the provider"));
 
-		}
+	}
 		
-	}
-	else
-	{
-		STRACE_ERROR(("This provider need to be remote_opened first"));
+    }
+  else
+    {
+      STRACE_ERROR(("This provider need to be remote_opened first"));
 
-	}
+    }
 	
-	STRACE_IO(("-->OUT"));
+  STRACE_IO(("-->OUT"));
 
 	
-	return ret;
+  return ret;
 	
 }
 
 /**
-* Close the session for a provider after a TSP_request_provider_open.
-* @param provider the provider on which apply the action
-* @return The action result (TRUE or FALSE)
-*/
+ * Close the session for a provider after a TSP_request_provider_open.
+ * @param provider the provider on which apply the action
+ * @return The action result (TRUE or FALSE)
+ */
 int TSP_request_provider_close(TSP_provider_t provider)
 {
 	
-	SFUNC_NAME(TSP_request_provider_close);
+  SFUNC_NAME(TSP_request_provider_close);
 
 	
-	TSP_otsp_t* otsp = (TSP_otsp_t*)provider;
-	TSP_request_close_t req_close;
-	int ret = FALSE;
+  TSP_otsp_t* otsp = (TSP_otsp_t*)provider;
+  TSP_request_close_t req_close;
+  int ret = FALSE;
 	
-	STRACE_IO(("-->IN"));
+  STRACE_IO(("-->IN"));
 
 	
-	TSP_CHECK_SESSION(otsp, FALSE);
+  TSP_CHECK_SESSION(otsp, FALSE);
 	
-	req_close.version_id = TSP_VERSION;
-	req_close.channel_id = otsp->channel_id;
+  req_close.version_id = TSP_VERSION;
+  req_close.channel_id = otsp->channel_id;
 	
-	STRACE_DEBUG(("Trying to close channel_id=%"G_GUINT64_FORMAT, otsp->channel_id));
+  STRACE_DEBUG(("Trying to close channel_id=%"G_GUINT64_FORMAT, otsp->channel_id));
 
 	
-	ret = TSP_request_close(&req_close, otsp->server);
-	if( FALSE == ret)
-	{
-		STRACE_DEBUG(("Unable to close channel_id=%"G_GUINT64_FORMAT, otsp->channel_id));
+  ret = TSP_request_close(&req_close, otsp->server);
+  if( FALSE == ret)
+    {
+      STRACE_DEBUG(("Unable to close channel_id=%"G_GUINT64_FORMAT, otsp->channel_id));
 
-	}
-	else
-	{
-		STRACE_DEBUG(("channel_id=%"G_GUINT64_FORMAT" is closed", otsp->channel_id));
+    }
+  else
+    {
+      STRACE_DEBUG(("channel_id=%"G_GUINT64_FORMAT" is closed", otsp->channel_id));
 
-	}
+    }
 	
-	STRACE_IO(("-->OUT"));
+  STRACE_IO(("-->OUT"));
 
 	
-	return ret;
+  return ret;
 	
 }
 
 /**
-* Request sample symbol information list.
-* @param provider the provider on which apply the action
-* @return The action result (TRUE or FALSE)
-*/
+ * Request sample symbol information list.
+ * @param provider the provider on which apply the action
+ * @return The action result (TRUE or FALSE)
+ */
 int TSP_request_provider_information(TSP_provider_t provider)
 {
 	
-	SFUNC_NAME(TSP_request_provider_information);
+  SFUNC_NAME(TSP_request_provider_information);
 
 	
-	TSP_otsp_t* otsp = (TSP_otsp_t*)provider;
-	TSP_request_information_t req_info;
-	TSP_answer_sample_t* ans_sample = 0;
-	int ret = FALSE;
-	int i;
+  TSP_otsp_t* otsp = (TSP_otsp_t*)provider;
+  TSP_request_information_t req_info;
+  TSP_answer_sample_t* ans_sample = 0;
+  int ret = FALSE;
+  int i;
 	
-	STRACE_IO(("-->IN"));
+  STRACE_IO(("-->IN"));
 
 	
-	TSP_CHECK_SESSION(otsp, FALSE);
+  TSP_CHECK_SESSION(otsp, FALSE);
 	
-	req_info.version_id = TSP_VERSION;
-	req_info.channel_id = otsp->channel_id;
+  req_info.version_id = TSP_VERSION;
+  req_info.channel_id = otsp->channel_id;
 	
-	ans_sample = TSP_request_information(&req_info, otsp->server);
+  ans_sample = TSP_request_information(&req_info, otsp->server);
     
-    /* Save all thoses sample data in memory */
-	if( NULL != ans_sample)
-	{
-		unsigned int symbols_number =
-			ans_sample->symbols.TSP_sample_symbol_info_list_t_len;
-		unsigned int i;
+  /* Save all thoses sample data in memory */
+  if( NULL != ans_sample)
+    {
+      unsigned int symbols_number =
+	ans_sample->symbols.TSP_sample_symbol_info_list_t_len;
+      unsigned int i;
 	
-		otsp->symbols.TSP_sample_symbol_info_list_t_len = symbols_number;
+      otsp->symbols.TSP_sample_symbol_info_list_t_len = symbols_number;
 			
-		STRACE_DEBUG(("Total number of symbols found = %d",symbols_number));
+      STRACE_DEBUG(("Total number of symbols found = %d",symbols_number));
 
 			
-		otsp->symbols.TSP_sample_symbol_info_list_t_val = 
-			(TSP_sample_symbol_info_t* )calloc(1,symbols_number*sizeof(TSP_sample_symbol_info_t));
-		TSP_CHECK_ALLOC(otsp->symbols.TSP_sample_symbol_info_list_t_val, FALSE);
+      otsp->symbols.TSP_sample_symbol_info_list_t_val = 
+	(TSP_sample_symbol_info_t* )calloc(1,symbols_number*sizeof(TSP_sample_symbol_info_t));
+      TSP_CHECK_ALLOC(otsp->symbols.TSP_sample_symbol_info_list_t_val, FALSE);
 
 		
-		for(i = 0 ; i< symbols_number ; i++)
-		{
-			otsp->symbols.TSP_sample_symbol_info_list_t_val[i] = 
-				ans_sample->symbols.TSP_sample_symbol_info_list_t_val[i];
-				
-			otsp->symbols.TSP_sample_symbol_info_list_t_val[i].name =
-				strdup(ans_sample->symbols.TSP_sample_symbol_info_list_t_val[i].name);
-				
-			TSP_CHECK_ALLOC(otsp->symbols.TSP_sample_symbol_info_list_t_val[i].name, FALSE);
-
-			
-		}
-        
-        /* Create the array of pointers for the samples ring buffer (one ring buf
-        for each symbol)*/
-        /* FIXME : desallouer */
-        otsp->sample_ringbuf = (TSP_sample_ringbuf_t**)calloc(symbols_number, sizeof(TSP_sample_ringbuf_t*));
-        TSP_CHECK_ALLOC(otsp->sample_ringbuf, FALSE);
-
-        
-			
-		ret = TRUE;
-	}
-	else
+      for(i = 0 ; i< symbols_number ; i++)
 	{
-		STRACE_ERROR(("Unable to communicate with the provider"));
+	  otsp->symbols.TSP_sample_symbol_info_list_t_val[i] = 
+	    ans_sample->symbols.TSP_sample_symbol_info_list_t_val[i];
+				
+	  otsp->symbols.TSP_sample_symbol_info_list_t_val[i].name =
+	    strdup(ans_sample->symbols.TSP_sample_symbol_info_list_t_val[i].name);
+				
+	  TSP_CHECK_ALLOC(otsp->symbols.TSP_sample_symbol_info_list_t_val[i].name, FALSE);
 
+			
 	}
+        
+      /* Create the array of pointers for the samples ring buffer (one ring buf
+	 for each symbol)*/
+      /* FIXME : desallouer */
+      otsp->sample_ringbuf = (TSP_sample_ringbuf_t**)calloc(symbols_number, sizeof(TSP_sample_ringbuf_t*));
+      TSP_CHECK_ALLOC(otsp->sample_ringbuf, FALSE);
+
+        
+			
+      ret = TRUE;
+    }
+  else
+    {
+      STRACE_ERROR(("Unable to communicate with the provider"));
+
+    }
 		
 	
-	STRACE_IO(("-->OUT"));
+  STRACE_IO(("-->OUT"));
 
 	
-	return ret;
+  return ret;
 	
 }
 
 /**
-* Get sample symbol information list.
-* The list must habe been requested first with TSP_request_provider_information
-* @param provider the provider on which apply the action
-* @return The symbol list.
-*/
+ * Get sample symbol information list.
+ * The list must habe been requested first with TSP_request_provider_information
+ * @param provider the provider on which apply the action
+ * @return The symbol list.
+ */
 TSP_sample_symbol_info_list_t*  TSP_get_provider_information(TSP_provider_t provider)
 {
-	SFUNC_NAME(TSP_get_provider_information);
+  SFUNC_NAME(TSP_get_provider_information);
 
 	
-	TSP_otsp_t* otsp = (TSP_otsp_t*)provider;
+  TSP_otsp_t* otsp = (TSP_otsp_t*)provider;
 	
-	STRACE_IO(("-->IN"));
+  STRACE_IO(("-->IN"));
 
 	
-	TSP_CHECK_SESSION(otsp, 0);
+  TSP_CHECK_SESSION(otsp, 0);
 	
-	STRACE_IO(("-->OUT"));
+  STRACE_IO(("-->OUT"));
 
 	
-	return &(otsp->symbols);
+  return &(otsp->symbols);
 	
 
 }
 
 /**
-* Configure the list of symbols that will be sampled.
-* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-* MISSING : consumer_timeout & feature_words
-* @param provider the provider on which apply the action
-* @return The action result (TRUE or FALSE)
-*/
+ * Configure the list of symbols that will be sampled.
+ * !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+ * MISSING : consumer_timeout & feature_words
+ * @param provider the provider on which apply the action
+ * @return The action result (TRUE or FALSE)
+ */
 int TSP_request_provider_sample(TSP_request_sample_t* req_sample, TSP_provider_t provider)
 {
-	SFUNC_NAME(TSP_request_provider_sample);
+  SFUNC_NAME(TSP_request_provider_sample);
 
 	
-	TSP_otsp_t* otsp = (TSP_otsp_t*)provider;
-	int ret = FALSE;
-	TSP_answer_sample_t* ans_sample = 0;
-    int i;
+  TSP_otsp_t* otsp = (TSP_otsp_t*)provider;
+  int ret = FALSE;
+  TSP_answer_sample_t* ans_sample = 0;
+  int i;
 	
-	STRACE_IO(("-->IN"));
+  STRACE_IO(("-->IN"));
 
 	
-	TSP_CHECK_SESSION(otsp, FALSE);
+  TSP_CHECK_SESSION(otsp, FALSE);
 	
-	req_sample->version_id = TSP_VERSION;
-	req_sample->channel_id = otsp->channel_id;
+  req_sample->version_id = TSP_VERSION;
+  req_sample->channel_id = otsp->channel_id;
 	
-	ans_sample = TSP_request_sample(req_sample, otsp->server);
+  ans_sample = TSP_request_sample(req_sample, otsp->server);
     
-    for( i = 0 ; i< ans_sample->symbols.TSP_sample_symbol_info_list_t_len ; i++)
+       
+  if( 0 != ans_sample)
     {
-        STRACE_DEBUG(("N=%s Id=%d Gr=%d Rank=%d", 
-        ans_sample->symbols.TSP_sample_symbol_info_list_t_val[i].name,
-        ans_sample->symbols.TSP_sample_symbol_info_list_t_val[i].provider_global_index,
-        ans_sample->symbols.TSP_sample_symbol_info_list_t_val[i].provider_group_index,
-        ans_sample->symbols.TSP_sample_symbol_info_list_t_val[i].provider_group_rank))    
-    }
-    STRACE_DEBUG(("NOMBRE DE GROUPES = %d", ans_sample->provider_group_number));
+      
+      for( i = 0 ; i< ans_sample->symbols.TSP_sample_symbol_info_list_t_len ; i++)
+	{
+	  STRACE_DEBUG(("N=%s Id=%d Gr=%d Rank=%d", 
+			ans_sample->symbols.TSP_sample_symbol_info_list_t_val[i].name,
+			ans_sample->symbols.TSP_sample_symbol_info_list_t_val[i].provider_global_index,
+			ans_sample->symbols.TSP_sample_symbol_info_list_t_val[i].provider_group_index,
+			ans_sample->symbols.TSP_sample_symbol_info_list_t_val[i].provider_group_rank));    
+	}
+      STRACE_INFO(("Total groupe number = %d", ans_sample->provider_group_number));
+      
 
     
-	if( 0 != ans_sample)
-	{
-    
-        /* Create group table */
-        /* FIXME : faire la desallocation */
-        otsp->groups = TSP_group_create_group_table(&(ans_sample->symbols), ans_sample->provider_group_number);
-        if( 0 != otsp->groups)
+      /* Create group table */
+      /* FIXME : faire la desallocation */
+      otsp->groups = TSP_group_create_group_table(&(ans_sample->symbols), ans_sample->provider_group_number);
+      if( 0 != otsp->groups)
         {
-            ret = TRUE;
+	  ret = TRUE;
 	    
-            /* Create ring buffer arrays per asked symbol (n asked symbols => n ring buf )*/
-            TSP_sample_ringbuf_create(&(ans_sample->symbols),otsp->sample_ringbuf);
+	  /* Create ring buffer arrays per asked symbol (n asked symbols => n ring buf )*/
+	  TSP_sample_ringbuf_create(&(ans_sample->symbols),otsp->sample_ringbuf);
 	    
 		    
         }
-        else
+      else
         {
-            STRACE_ERROR(("Function TSP_group_create_group_table failed"));
+	  STRACE_ERROR(("Function TSP_group_create_group_table failed"));
 
         }
-	}
-	else
-	{
-		STRACE_ERROR(("Unable to communicate with the provider"));
+    }
+  else
+    {
+      STRACE_ERROR(("Unable to communicate with the provider"));
 
-	}
+    }
     
 	
-	STRACE_IO(("-->OUT"));
+  STRACE_IO(("-->OUT"));
 
 	
-	return ret;
+  return ret;
 }
 
 static void* TSP_request_provider_thread_receiver(void* arg)
