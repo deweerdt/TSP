@@ -2,7 +2,7 @@
 <page_config display_frequency="10.0" period="1"  widget="draw" visible="true" no_border="false" rows="3" duration="50.0">
 
   <page title="Draw" x="50" y="50" width="450" height="440" rows="3" >   
-     <variable name="Symbol1" type="DOUBLE"   />
+     <variable name="t" type="DOUBLE"   />
      <variable name="Symbol2" type="DOUBLE"   />
      <variable name="Symbol3" type="DOUBLE"   />
      <variable name="Symbol4" type="DOUBLE"   />
