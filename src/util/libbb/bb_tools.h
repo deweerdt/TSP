@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_tools.h,v 1.1 2005-02-18 23:43:49 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_tools.h,v 1.2 2005-02-22 21:57:15 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -47,11 +47,56 @@ Purpose   : BlackBoard Idiom implementation
  */
 
 /**
- * The list of BB Tools command.
+ * @defgroup BBTools_API
+ * The BlackBoard tools.
  * @ingroup BBTools
+ */
+
+/**
+ * @defgroup BBTools_Command
+ * The BB Tools command line interface.
+ * Those tools may be launch without argument and will provide
+ * a command line option summary (if needed).
+ *
+ * \par \c bb_findlabel \c \<bbname\> \c \<labelmatch\>
+ * A command line tool used to find a label
+ * in the specified BlackBoard.\n
+ * \arg \c bbname the blackboard name
+ * \arg \c labelmatch the part to find
+ * The command will list the name of
+ * all symbols found in blackboard
+ * that match \c labelmatch.
+ *
+ * \par \c bb_dump \c \<bbname\>
+ * Dump the specified BlackBoard.\n
+ * \arg \c bbname the blackboard name
+ * The command will dump all symbols and associated value
+ * output may be huge if not filtered.
+ *
+ * \par \c bb_read \c \<bbname\> \c \<symname\>
+ * Read the value of a specified symbol in specified Blackboard.\n
+ * \arg \c bbname the blackboard name
+ * \arg \c symname the exact name of the Blackboard symbol to read
+ * Value of the symbols is printed iff it is printable, non-printable
+ * value will gives '?'.
+ *
+ * \par \c bb_write \c \<bbname\> \c \<symname\> \c \<value\>
+ * Write to a BlackBoard symbol variable.
+ * \arg \c bbname the blackboard name
+ * \arg \c symname the blackboard symbol name
+ * \arg \c value the value to be written
+ *
+ * @ingroup BBTools
+ * @ingroup TSP_Applications
+ */
+
+/**
+ * The list of BB Tools command.
+ * @ingroup BBTools_API
  */
 typedef enum {E_BBTOOLS_UNKNOWN=0,
               E_BBTOOLS_GENERIC,
+	      E_BBTOOLS_HELP,
               E_BBTOOLS_READ, 
 	      E_BBTOOLS_WRITE,
 	      E_BBTOOLS_DUMP, 	                  
@@ -67,6 +112,7 @@ typedef enum {E_BBTOOLS_UNKNOWN=0,
 typedef struct bbtools_request {
   int32_t          verbose;
   int32_t          silent;
+  int32_t          nb_global_opt;
   int32_t          argc;
   char**           argv;
   E_BBTOOLS_CMD_T  cmd;
@@ -77,23 +123,45 @@ typedef struct bbtools_request {
 	      
 #ifdef BB_TOOLS_C
 const char* bbtools_cmdname_tab[] = {"bb_unknown",
-				    "bb_tools",
-				    "bb_read",
-				    "bb_write",
-				    "bb_dump",
-				    "bb_find",
-				    "bb_checkid",
-				    "bb_destroy",
-				    "bb_create",
-				    "bb_publish",
-				    "bb_synchro_send",
-				    "bb_synchro_recv"
+  				     "bb_tools",
+				     "bb_help",
+				     "bb_read",
+				     "bb_write",
+				     "bb_dump",
+				     "bb_find",
+				     "bb_checkid",
+				     "bb_destroy",
+				     "bb_create",
+				     "bb_publish",
+				     "bb_synchro_send",
+				     "bb_synchro_recv",
+				     "bb_last_cmd"
+};
+
+const char* bbtools_cmdhelp_tab[] = {"unknown bbtools command",
+  				     "generic bbtools command interface",
+				     "write bbtools help",
+				     "read symbol value from blackboard",
+				     "write symbol value from blackboard",
+				     "dump blackboard content",
+				     "find symbol in blackboard",
+				     "check blackboard IPC ID values",
+				     "destroy a blackboard",
+				     "create a blackboard",
+				     "publish symbol in blackboard",
+				     "send synchro message through blackboard MSQ queue",
+				     "recv [wait] synchro message from blackboard MSQ queue",
+				     "BB LAST COMMAND"
 };
 #else
 extern const char* bbtools_cmdname_tab[];
+extern const char* bbtools_cmdhelp_tab[];
 #endif
 
 BEGIN_C_DECLS
+
+void 
+bbtools_logMsg(FILE* stream, char* fmt, ...);
 
 /**
  * Initialise BBTools request.
@@ -104,7 +172,7 @@ bbtools_init(bbtools_request_t* req);
 
 /**
  * The BBTools command generic API.
- * @ingroup BBTools
+ * @ingroup BBTools_API
  */
 int32_t
 bbtools(bbtools_request_t* req);
@@ -113,14 +181,14 @@ bbtools(bbtools_request_t* req);
  * Return the BB Tools command type
  * from the string passed as parameter
  * @param bbtools_string the name of the bbtools command
- * @ingroup BBTools
+ * @ingroup BBTools_API
  */
 E_BBTOOLS_CMD_T
 bbtools_cmd(const char* bbtools_string);
 
 /**
  *
- * @ingroup BBTools
+ * @ingroup BBTools_API
  */
 E_BBTOOLS_CMD_T
 bbtools_check_args(int argc, char** argv);
@@ -129,96 +197,96 @@ bbtools_check_args(int argc, char** argv);
  * Print usage of the specified bbtools command.
  * @param stream IN, the stream to print on
  * @param bbtools_cmd IN, the bbtools command.
- * @ingroup BBTools
+ * @ingroup BBTools_API
  */
 void 
-bbtools_usage(FILE *stream, E_BBTOOLS_CMD_T bbtools_cmd, int argc, char** argv);
+bbtools_usage(bbtools_request_t* req);
 
 /**
  * Return the BB structure if the named
  * BB exists, NULL if not.
  * @param bbname IN, the name of a blackboard
- * @ingroup BBTools
+ * @ingroup BBTools_API
  */
 S_BB_T*
 bbtools_check_bbname(const char* bbname);
 
 /**
  *
- * @ingroup BBTools
+ * @ingroup BBTools_API
  */
 int32_t 
 bbtools_unimplemented_cmd(const char* bbtools_cmdname);
 
 /**
  *
- * @ingroup BBTools
+ * @ingroup BBTools_API
  */
 int32_t 
-bbtools_read(S_BB_T* bb, int argc, char** argv);
+bbtools_read(bbtools_request_t* req);
 
 /**
  *
- * @ingroup BBTools
+ * @ingroup BBTools_API
  */
 int32_t 
-bbtools_write(S_BB_T* bb, int argc, char** argv);
+bbtools_write(bbtools_request_t* req);
 
 /**
  *
- * @ingroup BBTools
+ * @ingroup BBTools_API
  */
 int32_t 
-bbtools_dump(S_BB_T* bb, int argc, char** argv);
+bbtools_dump(bbtools_request_t* req);
 
 /**
  *
- * @ingroup BBTools
+ * @ingroup BBTools_API
  */
 int32_t 
-bbtools_find(S_BB_T* bb, int argc, char** argv);
+bbtools_find(bbtools_request_t* req);
 
 /**
  *
- * @ingroup BBTools
+ * @ingroup BBTools_API
  */
 int32_t
-bbtools_checkid(S_BB_T* bb, int argc, char** argv);
+bbtools_checkid(bbtools_request_t* req);
 
 /**
  *
- * @ingroup BBTools
+ * @ingroup BBTools_API
  */
 int32_t
-bbtools_destroy(S_BB_T** bb, int argc, char** argv);
+bbtools_destroy(bbtools_request_t* req);
 
 /**
  *
- * @ingroup BBTools
+ * @ingroup BBTools_API
  */
 int32_t
-bbtools_create(S_BB_T** bb, int argc, char** argv);
+bbtools_create(bbtools_request_t* req);
 
 /**
  *
- * @ingroup BBTools
+ * @ingroup BBTools_API
  */
 int32_t
-bbtools_publish(S_BB_T* bb, int argc, char** argv);
+bbtools_publish(bbtools_request_t* req);
 
 /**
  *
- * @ingroup BBTools
+ * @ingroup BBTools_API
  */
 int32_t
-bbtools_synchro_send(S_BB_T* bb, int argc, char** argv);
+bbtools_synchro_send(bbtools_request_t* req);
 
 /**
  *
- * @ingroup BBTools
+ * @ingroup BBTools_API
  */
 int32_t
-bbtools_synchro_recv(S_BB_T* bb, int argc, char** argv);
+bbtools_synchro_recv(bbtools_request_t* req);
 
 
 END_C_DECLS

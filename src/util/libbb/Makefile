@@ -16,6 +16,7 @@ SOURCES = \
 OBJECTS=$(SOURCES:%.c=$(DIROBJ)/%.o) 
 
 TARGET=$(DIRLIB)/libbb.a
+#CFLAGS += -Werror -Wall
 
 # -----------------------------------------------------------
 # No label all:: because it's in Makeparams and calls build::	

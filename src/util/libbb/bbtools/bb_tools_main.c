@@ -28,15 +28,11 @@ main (int argc, char ** argv) {
   bbtools_request_t  the_request;
 
   /* Main options handling */
-  char*         error_string;
+  /*  char*         error_string;*/
   int           opt_ok;
   char          c_opt;
-  int           verbose;
-  int           silent;
 
   opt_ok            = 1;   
-  verbose           = 0;
-  silent            = 0;
   
   /* install SIGINT handler (POSIX way) */
   my_action.sa_handler = &my_sighandler;  
@@ -44,51 +40,62 @@ main (int argc, char ** argv) {
   my_action.sa_flags = SA_RESTART;
   sigaction(SIGINT,&my_action,&old_action);    
 
+  /* initialize bbtools request */
   bbtools_init(&the_request);
-
+  
   /* Analyse command line parameters */
-  while (opt_ok && (EOF != (c_opt = getopt(argc,argv,"sv:")))) {    
+  while (opt_ok && (EOF != (c_opt = getopt(argc,argv,"svh")))) {    
     switch (c_opt) {
     case 's':
-      silent  = 1;
+      the_request.silent  = 1;
+      opt_ok++;
       break;
     case 'v':
-      verbose = strtol(optarg,&error_string,10);
-      /* verbose format error default to level 1 */
-      if ('\0' != *error_string) {
-	verbose = 1;
-      } 
-      fprintf(stdout,"%s:: Verbose mode enabled.\n",bbtools_cmdname_tab[E_BBTOOLS_GENERIC]);
+/*       if (optarg !=NULL) { */
+/* 	the_request.verbose = strtol(optarg,&error_string,10); */
+ 	/* verbose format error default to level 1 */ 
+/* 	if ('\0' != *error_string) { */
+/* 	  the_request.verbose = 1; */
+/* 	}  */
+/*       } else { */
+	the_request.verbose = 1;
+	opt_ok++;
+/*       } */
+      bbtools_logMsg(stdout,"Verbose mode enabled.\n");
+      fflush(stdout);
+      break;
+    case 'h':
+      opt_ok             = 0;
+      the_request.cmd    = E_BBTOOLS_HELP;
       break;
     case '?':
-      fprintf(stderr,"%s:: Invalid command line option(s), correct it and rerun\n",argv[0]);
+      fprintf(stderr,"%s::Invalid command line option(s), correct it and rerun\n",argv[0]);
       retcode = -1;
       opt_ok  = 0;
+      the_request.cmd    = E_BBTOOLS_UNKNOWN;
       break;
     default:
       retcode = -1;
       opt_ok  = 0;
+      the_request.cmd    = E_BBTOOLS_UNKNOWN;
       break;
-    } /* end of switch */    
+    } /* end of switch */     
   }
+
+  /* indicates number of global options to skip */
+  the_request.nb_global_opt = opt_ok-1;
+  the_request.argv          = argv;
+  the_request.argc          = argc;
 
   /* check if global options are OK */
   if (!opt_ok) {
-    //bbtools_usage(stderr,bbtools_cmd,argc,argv);
-    exit(retcode);
+    the_request.stream = stderr;
+    bbtools_usage(&the_request);
+    exit(retcode); 
   }
 
-  /* retrieve command invoked */
-  //bbtools_cmd = bbtools_checkargs(argc,argv);
+  /* invoke bbtools */
+  retcode = bbtools(&the_request);
 
-  /* unknown command */
-  if (bbtools_cmd<=0) {
-    retcode = -1;
-    //bbtools_usage(stderr,bbtools_cmd,argc,argv);
-    exit(retcode);
-  }
-  
-  //retcode = bbtools(bbtools_cmd,argc,argv);
-  
   return (retcode);
-}
+} /* end of main */

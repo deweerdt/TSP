@@ -1,7 +1,7 @@
 
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_tools.c,v 1.1 2005-02-18 23:43:49 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_tools.c,v 1.2 2005-02-22 21:57:15 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -41,137 +41,265 @@ Purpose   : BlackBoard Idiom implementation
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
+#include <libgen.h>
+#include <stdarg.h>
 
 #include <bb_core.h>
+#include <bb_utils.h>
 #define BB_TOOLS_C
 #include <bb_tools.h>
 
+
+void 
+bbtools_logMsg(FILE* stream, char* fmt, ...) {
+  va_list args;
+  char    message[2048];
+
+  memset(message,0,2048);
+  va_start(args, fmt);
+  fprintf(stream,"%s::",bbtools_cmdname_tab[E_BBTOOLS_GENERIC]);
+  vfprintf(stream,fmt,args);
+  va_end(args);
+
+} /* end of bbtools_logMsg */
+
 void
 bbtools_init(bbtools_request_t* req) {
-  req->verbose = 0;
-  req->silent  = 0;
-  req->argc    = 0;
-  req->argv    = NULL;
-  req->cmd     = E_BBTOOLS_UNKNOWN;
-  req->stream  = NULL;
-  req->bbname  = NULL;
-  req->theBB   = NULL;
+  req->verbose       = 0;
+  req->silent        = 0;
+  req->argc          = 0;
+  req->argv          = NULL;
+  req->nb_global_opt = 0;
+  req->cmd           = E_BBTOOLS_UNKNOWN;
+  req->stream        = stdout;
+  req->bbname        = NULL;
+  req->theBB         = NULL;
 }  /* end of bbtools_init */
-
-int32_t
-bbtools(bbtools_request_t* req) {
-
-  /* 
-   * special case for bb_checkid which
-   * does not need to open a blackboard
-   */
-  if (E_BBTOOLS_CHECKID==req->cmd) {    
-    return bbtools_checkid(req->theBB,req->argc,req->argv);
-  } else { /* other bbtools command needs to open BlackBoard */
-    return -1;
-  }
-     
-  switch (req->cmd) {
-  case E_BBTOOLS_UNKNOWN:
-    bbtools_usage(stderr,req->cmd,req->argc,req->argv);
-    return -1;
-    break;  
-  case E_BBTOOLS_READ:    
-    bbtools_read(req->theBB,req->argc,req->argv);
-    break;
-  case E_BBTOOLS_WRITE:
-    break;
-  case E_BBTOOLS_DUMP:
-    break;
-  case E_BBTOOLS_FIND:
-    break;
-  case E_BBTOOLS_CHECKID:
-    /* nothing to do since we should not reach this statement */
-    break;
-  case E_BBTOOLS_DESTROY:
-    break;
-  case E_BBTOOLS_CREATE:
-    break;
-  case E_BBTOOLS_PUBLISH:
-    break;
-  case E_BBTOOLS_SYNCHRO_SEND:
-    break;
-  case E_BBTOOLS_SYNCHRO_RECV:
-    break;
-  default:
-    bbtools_usage(stderr,E_BBTOOLS_UNKNOWN,req->argc,req->argv);
-    return -1;
-    break;
-  }
-} /* end of bbtools */
 
 E_BBTOOLS_CMD_T 
 bbtools_cmd(const char* bbtools_string) {
 
   E_BBTOOLS_CMD_T retval;
   int32_t          i;
+  char*           cmdbasename;
+  char*           cmdstr_cpy;
+  char*           cmdstr_abbrev;
+
+  cmdstr_cpy = strdup(bbtools_string);
+  cmdbasename = basename(cmdstr_cpy);
 
   retval = E_BBTOOLS_UNKNOWN;
-
+  
+  /* complete name match */
   for (i=E_BBTOOLS_GENERIC;i<E_BBTOOLS_LASTCMD;++i) {
-    if (strncmp(bbtools_string,bbtools_cmdname_tab[i],strlen(bbtools_cmdname_tab[i]))) {
+    if (!strncmp(cmdbasename,bbtools_cmdname_tab[i],strlen(bbtools_cmdname_tab[i]))) {
       retval = i;
       break;
     }
   }
+  
+  /* abbreviate name match */
+  /* FIXME should implement partial match */
+  if (E_BBTOOLS_UNKNOWN == retval) {
+    for (i=E_BBTOOLS_GENERIC;i<E_BBTOOLS_LASTCMD;++i) {
+      cmdstr_abbrev = strstr(bbtools_cmdname_tab[i],"_")+1;
+      if (!strncmp(cmdbasename,cmdstr_abbrev,strlen(cmdstr_abbrev))) {
+	retval = i;
+	break;
+      }
+    }
+  }
+
+  free(cmdstr_cpy);
   return retval;
 } /* end of bbtools_cmd */
 
 E_BBTOOLS_CMD_T
-bbtools_checkargs(int argc, char** argv) {
+bbtools_checkargs(bbtools_request_t* req) {
   E_BBTOOLS_CMD_T retval = E_BBTOOLS_UNKNOWN;
 
   /* 
    * Check if we called us with non generic
    * bb_cmd name
    */
-  retval = bbtools_cmd(argv[0]);
+  retval = bbtools_cmd(req->argv[0]);
 
-  /* if we were call with the generic name
-   * compute bbtools command and shift arguments
+  /* 
+   * If we were call with the generic name
+   * compute bbtools command and shift args in the request.
    */
-  if (E_BBTOOLS_GENERIC < retval) {
-    retval = bbtools_cmd(argv[1]);
+  if ((E_BBTOOLS_GENERIC == retval) && (req->argc - req->nb_global_opt)>1) {
+    retval = bbtools_cmd(req->argv[1+req->nb_global_opt]);
+    req->argv = &(req->argv[1+req->nb_global_opt]);    
   } 
+  // else we return E_BBTOOLS_GENERIC specifying we do not have enough argument
+  
   
   return retval;
-} /* end of bb_tools_check_args */
+} /* end of bb_tools_checkargs */
+
+S_BB_T*
+bbtools_checkbbname(const char* bbname) {
+  S_BB_T* retval;
+  retval = NULL;
+  if (bb_attach(&retval,bbname) != E_OK) {
+    retval = NULL;
+  }  
+  return retval;
+} /* end of bbtools_checkbbname */
+
+
+int32_t
+bbtools(bbtools_request_t* req) {
+
+  int32_t retval = 0;
+
+  /* Get real bb_tools command */
+  req->cmd = bbtools_checkargs(req);
+
+  if (req->verbose) {
+    bbtools_logMsg(req->stream,
+		   "%s\n",
+		   bbtools_cmdname_tab[req->cmd]);
+  }
+
+  /*
+   * If NOT in those cases we need to open BB 
+   */
+  if (!((E_BBTOOLS_UNKNOWN==req->cmd) || 
+	(E_BBTOOLS_GENERIC==req->cmd) ||  
+	(E_BBTOOLS_HELP==req->cmd) ||  
+	(E_BBTOOLS_CHECKID==req->cmd) ||
+	(E_BBTOOLS_CREATE ==req->cmd))
+       
+      ) {
+    /* first request arg should be bbname */
+    req->theBB=bbtools_checkbbname(req->argv[0]);
+    if (NULL == req->theBB) {
+      if (!req->silent) {
+	bbtools_logMsg(req->stream,
+		       "Blackboard <%s> does not exist\n",
+		       req->argv[0]);
+      }
+      return -1;
+    }
+  }
+
+  switch (req->cmd) {
+  case E_BBTOOLS_UNKNOWN:
+    req->stream = stderr;
+    bbtools_usage(req);
+    return -1;
+    break;  
+  case E_BBTOOLS_GENERIC:
+  case E_BBTOOLS_HELP:
+    req->stream = stdout;
+    bbtools_usage(req);
+    return -1;
+    break;  
+  case E_BBTOOLS_READ:    
+    bbtools_read(req);
+    break;
+  case E_BBTOOLS_WRITE:
+    bbtools_write(req);
+    break;
+  case E_BBTOOLS_DUMP:
+    bbtools_dump(req);
+    break;
+  case E_BBTOOLS_FIND:
+    bbtools_find(req);
+    break;
+  case E_BBTOOLS_CHECKID:
+    return bbtools_checkid(req);
+    break;
+  case E_BBTOOLS_DESTROY:
+    bbtools_destroy(req);
+    break;
+  case E_BBTOOLS_CREATE:
+    bbtools_create(req);
+    break;
+  case E_BBTOOLS_PUBLISH:
+    bbtools_publish(req);
+    break;
+  case E_BBTOOLS_SYNCHRO_SEND:
+    bbtools_synchro_send(req);
+    break;
+  case E_BBTOOLS_SYNCHRO_RECV:
+    bbtools_synchro_recv(req);
+    break;
+  default:
+    req->stream = stderr;
+    req->cmd    = E_BBTOOLS_UNKNOWN;
+    bbtools_usage(req);
+    return -1;
+    break;
+  }
+
+  if (NULL != req->theBB) {
+    bb_detach(&req->theBB);
+  }
+  return retval;
+} /* end of bbtools */
+
+
+#define BBTOOLS_MAX_BLANK 80
+
+char* bbtools_fillspace(int size, const char* str) {
+  static char myspace[BBTOOLS_MAX_BLANK];
+  int i;
+  for (i=0;i<size-strlen(str);++i) {
+    myspace[i] = ' ';    
+  }
+  myspace[i] = '\0';
+  return myspace;
+} /* end of bbtools_fillspace */
 
 void 
-bbtools_usage(FILE *stream, E_BBTOOLS_CMD_T bbtools_cmd, int argc, char** argv) {
+bbtools_usage(bbtools_request_t* req) {
 
   int32_t i;
 
-  fprintf(stream, 
-	  "Usage: %s::%s [bbtools_opts] <bbtools_cmd> [cmd_opts]\n",
-	  bbtools_cmdname_tab[E_BBTOOLS_GENERIC],
-	  bbtools_cmdname_tab[bbtools_cmd]);
-
-  switch (bbtools_cmd) {
+  switch (req->cmd) {
   case E_BBTOOLS_UNKNOWN:
-    fprintf(stream,
-	    "supported <bbtools_cmd> are: \n");
-    for (i=E_BBTOOLS_GENERIC+1;i<E_BBTOOLS_LASTCMD-1;++i) {
-      fprintf(stream,
-	      "%s, ",
-	      bbtools_cmdname_tab[i]
+    fprintf(req->stream, 
+	    "%s::unknown %s command\n",
+	    bbtools_cmdname_tab[E_BBTOOLS_GENERIC],
+	    bbtools_cmdname_tab[E_BBTOOLS_GENERIC]);	    
+  case E_BBTOOLS_GENERIC:
+  case E_BBTOOLS_HELP:
+    fprintf(req->stream, 
+	    "Usage: %s [bbtools_opts] <bbtools_cmd> [cmd_opts]\n",
+	    bbtools_cmdname_tab[E_BBTOOLS_GENERIC]);
+    fprintf(req->stream,"   bbtools_opts:\n");
+    fprintf(req->stream,"    -s silent mode (may be used for silent scripting)\n");
+    fprintf(req->stream,"    -v verbose mode\n");
+    fprintf(req->stream,"   supported <bbtools_cmd> are: \n");
+    for (i=E_BBTOOLS_GENERIC+1;i<E_BBTOOLS_LASTCMD;++i) {
+      fprintf(req->stream,
+	      "    %s%s: %s\n",
+	      bbtools_cmdname_tab[i],
+	      bbtools_fillspace(20,bbtools_cmdname_tab[i]),
+	      bbtools_cmdhelp_tab[i]
 	      );
     }
-    fprintf(stream,
-	    "%s",
-	    bbtools_cmdname_tab[i]  
-	    );
-    break;  
+    break;
   case E_BBTOOLS_READ:    
+    fprintf(req->stream,
+	    "Usage: %s <bbname> <symbol_name>\n",
+	    bbtools_cmdname_tab[E_BBTOOLS_READ]);    	    
+    break;    
   case E_BBTOOLS_WRITE:
+    fprintf(req->stream,
+	    "Usage: %s <bbname> <symbol_name> <value>\n",
+	    bbtools_cmdname_tab[E_BBTOOLS_WRITE]);    	    
+    break;    
   case E_BBTOOLS_DUMP:
   case E_BBTOOLS_FIND:
   case E_BBTOOLS_CHECKID:
+    	fprintf(req->stream,
+		"Usage: %s <bbname> <user_specific_value>\n",
+		bbtools_cmdname_tab[E_BBTOOLS_CHECKID]);
+    break;
   case E_BBTOOLS_DESTROY:
   case E_BBTOOLS_CREATE:
   case E_BBTOOLS_PUBLISH:
@@ -179,77 +307,102 @@ bbtools_usage(FILE *stream, E_BBTOOLS_CMD_T bbtools_cmd, int argc, char** argv) 
   case E_BBTOOLS_SYNCHRO_RECV:
     break;
   default:
-    fprintf(stream, 
+    fprintf(req->stream, 
 	    "default: should never be reached?\n");
   }
 
 } /* end of bb_tools_usage */
 
-S_BB_T*
-bbtools_check_bbname(const char* bbname) {
-  S_BB_T* retval;
-  retval = NULL;
-  if (bb_attach(&retval,bbname) != E_OK) {
-    retval = NULL;
-  }  
-  return retval;
-} /* end of bbtools_check_bbname */
 
 int32_t 
 bbtools_unimplemented_cmd(const char* cmdname) {
 
-  fprintf(stderr,"%s::<%s> not implemented!\n",
-	  bbtools_cmdname_tab[E_BBTOOLS_GENERIC],
-	  cmdname);
+  bbtools_logMsg(stderr,"<%s> not implemented!\n",
+		 cmdname);
+
   return -1;
 } /* end of bbtools_unimplemented_cmd */
 
 int32_t 
-bbtools_read(S_BB_T* bb, int argc, char** argv) {
+bbtools_read(bbtools_request_t* req) {
   return  bbtools_unimplemented_cmd(bbtools_cmdname_tab[E_BBTOOLS_READ]);
 } /* end of bbtools_read */
 
 int32_t 
-bbtools_write(S_BB_T* bb, int argc, char** argv) {
+bbtools_write(bbtools_request_t* req) {
   return  bbtools_unimplemented_cmd(bbtools_cmdname_tab[E_BBTOOLS_WRITE]);
 }  /* end of bbtools_write */
 
 int32_t 
-bbtools_dump(S_BB_T* bb, int argc, char** argv) {
+bbtools_dump(bbtools_request_t* req) {
    return  bbtools_unimplemented_cmd(bbtools_cmdname_tab[E_BBTOOLS_DUMP]);
 }  /* end of bbtools_dump */
 
 int32_t
-bbtools_find(S_BB_T* bb, int argc, char** argv) {
+bbtools_find(bbtools_request_t* req) {
    return  bbtools_unimplemented_cmd(bbtools_cmdname_tab[E_BBTOOLS_FIND]);
 }  /* end of bbtools_find */
 
 int32_t
-bbtools_checkid(S_BB_T* bb, int argc, char** argv) {
+bbtools_checkid(bbtools_request_t* req) {
+  int32_t retcode=0;
+  int32_t user_specific_value;
+  char*   shm_name;
+  char*   sem_name;
+  char*   msg_name;
+  
+  if (req->argc<3) {
+    bbtools_logMsg(req->stream,"%s : argument missing\n", bbtools_cmdname_tab[E_BBTOOLS_CHECKID]);
+    bbtools_usage(req);
+    retcode = -1;
+    return retcode;
+  }
+
+  user_specific_value = atoi(req->argv[2]);
+
+  shm_name = bb_utils_build_shm_name(req->argv[1]);
+  sem_name = bb_utils_build_sem_name(req->argv[1]);
+  msg_name = bb_utils_build_msg_name(req->argv[1]);
+  bbtools_logMsg(req->stream,
+		 "SHM Key [name=<%s>] is 0x%08x\n",
+		 shm_name,
+		 bb_utils_ntok_user(shm_name,user_specific_value));
+  bbtools_logMsg(req->stream,
+		 "SEM Key [name=<%s>] is 0x%08x\n",
+		 sem_name,
+		 bb_utils_ntok_user(sem_name,user_specific_value));
+  bbtools_logMsg(req->stream,
+		 "MSG Key [name=<%s>] is 0x%08x\n",
+		 msg_name,
+		 bb_utils_ntok_user(msg_name,user_specific_value));
+  
+  free(msg_name);
+  free(sem_name);    
+  free(shm_name);
   return  bbtools_unimplemented_cmd(bbtools_cmdname_tab[E_BBTOOLS_CHECKID]);
 } /* end of bbtools_checkid */
 
 int32_t
-bbtools_destroy(S_BB_T** bb, int argc, char** argv) {
+bbtools_destroy(bbtools_request_t* req) {
   return  bbtools_unimplemented_cmd(bbtools_cmdname_tab[E_BBTOOLS_DESTROY]);
 }  /* end of bbtools_destroy */
 
 int32_t
-bbtools_create(S_BB_T** bb, int argc, char** argv) {
+bbtools_create(bbtools_request_t* req) {
   return  bbtools_unimplemented_cmd(bbtools_cmdname_tab[E_BBTOOLS_CREATE]);
 }  /* end of bbtools_create */
 
 int32_t
-bbtools_publish(S_BB_T* bb, int argc, char** argv) {
+bbtools_publish(bbtools_request_t* req) {
   return  bbtools_unimplemented_cmd(bbtools_cmdname_tab[E_BBTOOLS_PUBLISH]);
 } /* end of bbtools_publish */
 
 int32_t
-bbtools_synchro_send(S_BB_T* bb, int argc, char** argv) {
+bbtools_synchro_send(bbtools_request_t* req) {
   return  bbtools_unimplemented_cmd(bbtools_cmdname_tab[E_BBTOOLS_SYNCHRO_SEND]);
 } /* end of bbtools_synchro_send */
 
 int32_t
-bbtools_synchro_recv(S_BB_T* bb, int argc, char** argv) {
+bbtools_synchro_recv(bbtools_request_t* req) {
  return  bbtools_unimplemented_cmd(bbtools_cmdname_tab[E_BBTOOLS_SYNCHRO_RECV]);
 } /* end of bbtools_synchro_recv */

@@ -56,7 +56,7 @@ $(TARGET6): $(DIRLIB)/libbb.a $(DIROBJ)/bb_tools_main.o
 
 
 destroy ::
-	$(RM) $(TARGETS)
+	$(RM) $(TARGETS) $(DIROBJ)/bb_tools_main.o
 	$(MAKE) remove_script
 
 include $(DEVBASE)/make/Makerules
