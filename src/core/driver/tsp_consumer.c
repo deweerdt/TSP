@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.1 2002-08-27 08:56:09 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.2 2002-08-28 09:15:24 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -681,9 +681,14 @@ int TSP_read_sample(TSP_provider_t provider, int provider_global_index, TSP_samp
 
   if(0 != symbol_ringbuf)
     {
-      *new_sample = RINGBUF_PTR_GET( symbol_ringbuf,(*sample));
+      
+      if ( *new_sample = !(RINGBUF_PTR_ISEMPTY(symbol_ringbuf)) )
+	{
+	  RINGBUF_PTR_NOCHECK_GET( symbol_ringbuf,(*sample));
+	}
+      
       ret = TRUE;
-    }
+    }      
   else
     {
       STRACE_ERROR(("Sample ring buf does not exist for global_index %d", provider_global_index))
