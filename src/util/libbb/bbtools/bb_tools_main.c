@@ -10,6 +10,9 @@
 #include <bb_core.h>
 #include <bb_tools.h>
 
+void 
+bbtools_logMsg(FILE* stream, char* fmt, ...);
+
 static void 
 my_sighandler(int signum) {
   fprintf(stderr,"%s::Captured signal<%d>\n",

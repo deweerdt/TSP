@@ -273,7 +273,7 @@ SWIG_UnpackData(char *c, void *ptr, int sz) {
 #endif
 
 /*
- * $Header: /home/def/zae/tsp/tsp/src/util/libbb/scripting/Attic/bb_tools_wrap.c,v 1.1 2005-02-25 21:49:28 erk Exp $
+ * $Header: /home/def/zae/tsp/tsp/src/util/libbb/scripting/Attic/bb_tools_tclwrap.c,v 1.1 2005-02-27 13:37:53 erk Exp $
  * 
  * swigtcl8.swg
  */
@@ -1048,8 +1048,10 @@ static swig_type_info *swig_types[7];
 
 #define SWIG_init    Bb_Init
 #define SWIG_name    "bb"
-#define SWIG_prefix  ""
-#define SWIG_version "0.0"
+#define SWIG_prefix  "bb::"
+#define SWIG_namespace "bb"
+
+#define SWIG_version "0.1"
 
 
 #ifdef __cplusplus
@@ -1082,7 +1084,7 @@ _wrap_bbtools_request_t_verbose_set(ClientData clientData, Tcl_Interp *interp, i
     int32_t arg2 ;
     int32_t *argp2 ;
     
-    if (SWIG_GetArgs(interp, objc, objv,"oo:bbtools_request_t_verbose_set self verbose ",0,0) == TCL_ERROR) SWIG_fail;
+    if (SWIG_GetArgs(interp, objc, objv,"oo:bb::bbtools_request_t_verbose_setself verbose ",0,0) == TCL_ERROR) SWIG_fail;
     if ((SWIG_ConvertPtr(objv[1], (void **) &arg1, SWIGTYPE_p_bbtools_request_t,SWIG_POINTER_EXCEPTION | 0) != TCL_OK)) SWIG_fail;
     if ((SWIG_ConvertPtr(objv[2], (void **) &argp2, SWIGTYPE_p_int32_t,SWIG_POINTER_EXCEPTION ) != TCL_OK)) SWIG_fail;
     arg2 = *argp2; 
@@ -1100,7 +1102,7 @@ _wrap_bbtools_request_t_verbose_get(ClientData clientData, Tcl_Interp *interp, i
     bbtools_request_t *arg1 = (bbtools_request_t *) 0 ;
     int32_t result;
     
-    if (SWIG_GetArgs(interp, objc, objv,"o:bbtools_request_t_verbose_get self ",0) == TCL_ERROR) SWIG_fail;
+    if (SWIG_GetArgs(interp, objc, objv,"o:bb::bbtools_request_t_verbose_getself ",0) == TCL_ERROR) SWIG_fail;
     if ((SWIG_ConvertPtr(objv[1], (void **) &arg1, SWIGTYPE_p_bbtools_request_t,SWIG_POINTER_EXCEPTION | 0) != TCL_OK)) SWIG_fail;
     result =  ((arg1)->verbose);
     
@@ -1122,7 +1124,7 @@ _wrap_bbtools_request_t_silent_set(ClientData clientData, Tcl_Interp *interp, in
     int32_t arg2 ;
     int32_t *argp2 ;
     
-    if (SWIG_GetArgs(interp, objc, objv,"oo:bbtools_request_t_silent_set self silent ",0,0) == TCL_ERROR) SWIG_fail;
+    if (SWIG_GetArgs(interp, objc, objv,"oo:bb::bbtools_request_t_silent_setself silent ",0,0) == TCL_ERROR) SWIG_fail;
     if ((SWIG_ConvertPtr(objv[1], (void **) &arg1, SWIGTYPE_p_bbtools_request_t,SWIG_POINTER_EXCEPTION | 0) != TCL_OK)) SWIG_fail;
     if ((SWIG_ConvertPtr(objv[2], (void **) &argp2, SWIGTYPE_p_int32_t,SWIG_POINTER_EXCEPTION ) != TCL_OK)) SWIG_fail;
     arg2 = *argp2; 
@@ -1140,7 +1142,7 @@ _wrap_bbtools_request_t_silent_get(ClientData clientData, Tcl_Interp *interp, in
     bbtools_request_t *arg1 = (bbtools_request_t *) 0 ;
     int32_t result;
     
-    if (SWIG_GetArgs(interp, objc, objv,"o:bbtools_request_t_silent_get self ",0) == TCL_ERROR) SWIG_fail;
+    if (SWIG_GetArgs(interp, objc, objv,"o:bb::bbtools_request_t_silent_getself ",0) == TCL_ERROR) SWIG_fail;
     if ((SWIG_ConvertPtr(objv[1], (void **) &arg1, SWIGTYPE_p_bbtools_request_t,SWIG_POINTER_EXCEPTION | 0) != TCL_OK)) SWIG_fail;
     result =  ((arg1)->silent);
     
@@ -1162,7 +1164,7 @@ _wrap_bbtools_request_t_nb_global_opt_set(ClientData clientData, Tcl_Interp *int
     int32_t arg2 ;
     int32_t *argp2 ;
     
-    if (SWIG_GetArgs(interp, objc, objv,"oo:bbtools_request_t_nb_global_opt_set self nb_global_opt ",0,0) == TCL_ERROR) SWIG_fail;
+    if (SWIG_GetArgs(interp, objc, objv,"oo:bb::bbtools_request_t_nb_global_opt_setself nb_global_opt ",0,0) == TCL_ERROR) SWIG_fail;
     if ((SWIG_ConvertPtr(objv[1], (void **) &arg1, SWIGTYPE_p_bbtools_request_t,SWIG_POINTER_EXCEPTION | 0) != TCL_OK)) SWIG_fail;
     if ((SWIG_ConvertPtr(objv[2], (void **) &argp2, SWIGTYPE_p_int32_t,SWIG_POINTER_EXCEPTION ) != TCL_OK)) SWIG_fail;
     arg2 = *argp2; 
@@ -1180,7 +1182,7 @@ _wrap_bbtools_request_t_nb_global_opt_get(ClientData clientData, Tcl_Interp *int
     bbtools_request_t *arg1 = (bbtools_request_t *) 0 ;
     int32_t result;
     
-    if (SWIG_GetArgs(interp, objc, objv,"o:bbtools_request_t_nb_global_opt_get self ",0) == TCL_ERROR) SWIG_fail;
+    if (SWIG_GetArgs(interp, objc, objv,"o:bb::bbtools_request_t_nb_global_opt_getself ",0) == TCL_ERROR) SWIG_fail;
     if ((SWIG_ConvertPtr(objv[1], (void **) &arg1, SWIGTYPE_p_bbtools_request_t,SWIG_POINTER_EXCEPTION | 0) != TCL_OK)) SWIG_fail;
     result =  ((arg1)->nb_global_opt);
     
@@ -1202,7 +1204,7 @@ _wrap_bbtools_request_t_argc_set(ClientData clientData, Tcl_Interp *interp, int 
     int32_t arg2 ;
     int32_t *argp2 ;
     
-    if (SWIG_GetArgs(interp, objc, objv,"oo:bbtools_request_t_argc_set self argc ",0,0) == TCL_ERROR) SWIG_fail;
+    if (SWIG_GetArgs(interp, objc, objv,"oo:bb::bbtools_request_t_argc_setself argc ",0,0) == TCL_ERROR) SWIG_fail;
     if ((SWIG_ConvertPtr(objv[1], (void **) &arg1, SWIGTYPE_p_bbtools_request_t,SWIG_POINTER_EXCEPTION | 0) != TCL_OK)) SWIG_fail;
     if ((SWIG_ConvertPtr(objv[2], (void **) &argp2, SWIGTYPE_p_int32_t,SWIG_POINTER_EXCEPTION ) != TCL_OK)) SWIG_fail;
     arg2 = *argp2; 
@@ -1220,7 +1222,7 @@ _wrap_bbtools_request_t_argc_get(ClientData clientData, Tcl_Interp *interp, int 
     bbtools_request_t *arg1 = (bbtools_request_t *) 0 ;
     int32_t result;
     
-    if (SWIG_GetArgs(interp, objc, objv,"o:bbtools_request_t_argc_get self ",0) == TCL_ERROR) SWIG_fail;
+    if (SWIG_GetArgs(interp, objc, objv,"o:bb::bbtools_request_t_argc_getself ",0) == TCL_ERROR) SWIG_fail;
     if ((SWIG_ConvertPtr(objv[1], (void **) &arg1, SWIGTYPE_p_bbtools_request_t,SWIG_POINTER_EXCEPTION | 0) != TCL_OK)) SWIG_fail;
     result =  ((arg1)->argc);
     
@@ -1241,7 +1243,7 @@ _wrap_bbtools_request_t_argv_set(ClientData clientData, Tcl_Interp *interp, int 
     bbtools_request_t *arg1 = (bbtools_request_t *) 0 ;
     char **arg2 = (char **) 0 ;
     
-    if (SWIG_GetArgs(interp, objc, objv,"oo:bbtools_request_t_argv_set self argv ",0,0) == TCL_ERROR) SWIG_fail;
+    if (SWIG_GetArgs(interp, objc, objv,"oo:bb::bbtools_request_t_argv_setself argv ",0,0) == TCL_ERROR) SWIG_fail;
     if ((SWIG_ConvertPtr(objv[1], (void **) &arg1, SWIGTYPE_p_bbtools_request_t,SWIG_POINTER_EXCEPTION | 0) != TCL_OK)) SWIG_fail;
     if ((SWIG_ConvertPtr(objv[2], (void **) &arg2, SWIGTYPE_p_p_char,SWIG_POINTER_EXCEPTION | 0) != TCL_OK)) SWIG_fail;
     if (arg1) (arg1)->argv = arg2;
@@ -1258,7 +1260,7 @@ _wrap_bbtools_request_t_argv_get(ClientData clientData, Tcl_Interp *interp, int 
     bbtools_request_t *arg1 = (bbtools_request_t *) 0 ;
     char **result;
     
-    if (SWIG_GetArgs(interp, objc, objv,"o:bbtools_request_t_argv_get self ",0) == TCL_ERROR) SWIG_fail;
+    if (SWIG_GetArgs(interp, objc, objv,"o:bb::bbtools_request_t_argv_getself ",0) == TCL_ERROR) SWIG_fail;
     if ((SWIG_ConvertPtr(objv[1], (void **) &arg1, SWIGTYPE_p_bbtools_request_t,SWIG_POINTER_EXCEPTION | 0) != TCL_OK)) SWIG_fail;
     result = (char **) ((arg1)->argv);
     
@@ -1274,7 +1276,7 @@ _wrap_bbtools_request_t_cmd_set(ClientData clientData, Tcl_Interp *interp, int o
     bbtools_request_t *arg1 = (bbtools_request_t *) 0 ;
     int arg2 ;
     
-    if (SWIG_GetArgs(interp, objc, objv,"oi:bbtools_request_t_cmd_set self cmd ",0,&arg2) == TCL_ERROR) SWIG_fail;
+    if (SWIG_GetArgs(interp, objc, objv,"oi:bb::bbtools_request_t_cmd_setself cmd ",0,&arg2) == TCL_ERROR) SWIG_fail;
     if ((SWIG_ConvertPtr(objv[1], (void **) &arg1, SWIGTYPE_p_bbtools_request_t,SWIG_POINTER_EXCEPTION | 0) != TCL_OK)) SWIG_fail;
     if (arg1) (arg1)->cmd = (E_BBTOOLS_CMD_T )arg2;
     
@@ -1290,7 +1292,7 @@ _wrap_bbtools_request_t_cmd_get(ClientData clientData, Tcl_Interp *interp, int o
     bbtools_request_t *arg1 = (bbtools_request_t *) 0 ;
     int result;
     
-    if (SWIG_GetArgs(interp, objc, objv,"o:bbtools_request_t_cmd_get self ",0) == TCL_ERROR) SWIG_fail;
+    if (SWIG_GetArgs(interp, objc, objv,"o:bb::bbtools_request_t_cmd_getself ",0) == TCL_ERROR) SWIG_fail;
     if ((SWIG_ConvertPtr(objv[1], (void **) &arg1, SWIGTYPE_p_bbtools_request_t,SWIG_POINTER_EXCEPTION | 0) != TCL_OK)) SWIG_fail;
     result = (int) ((arg1)->cmd);
     
@@ -1306,7 +1308,7 @@ _wrap_bbtools_request_t_stream_set(ClientData clientData, Tcl_Interp *interp, in
     bbtools_request_t *arg1 = (bbtools_request_t *) 0 ;
     FILE *arg2 = (FILE *) 0 ;
     
-    if (SWIG_GetArgs(interp, objc, objv,"oo:bbtools_request_t_stream_set self stream ",0,0) == TCL_ERROR) SWIG_fail;
+    if (SWIG_GetArgs(interp, objc, objv,"oo:bb::bbtools_request_t_stream_setself stream ",0,0) == TCL_ERROR) SWIG_fail;
     if ((SWIG_ConvertPtr(objv[1], (void **) &arg1, SWIGTYPE_p_bbtools_request_t,SWIG_POINTER_EXCEPTION | 0) != TCL_OK)) SWIG_fail;
     if ((SWIG_ConvertPtr(objv[2], (void **) &arg2, SWIGTYPE_p_FILE,SWIG_POINTER_EXCEPTION | SWIG_POINTER_DISOWN) != TCL_OK)) SWIG_fail;
     if (arg1) (arg1)->stream = arg2;
@@ -1323,7 +1325,7 @@ _wrap_bbtools_request_t_stream_get(ClientData clientData, Tcl_Interp *interp, in
     bbtools_request_t *arg1 = (bbtools_request_t *) 0 ;
     FILE *result;
     
-    if (SWIG_GetArgs(interp, objc, objv,"o:bbtools_request_t_stream_get self ",0) == TCL_ERROR) SWIG_fail;
+    if (SWIG_GetArgs(interp, objc, objv,"o:bb::bbtools_request_t_stream_getself ",0) == TCL_ERROR) SWIG_fail;
     if ((SWIG_ConvertPtr(objv[1], (void **) &arg1, SWIGTYPE_p_bbtools_request_t,SWIG_POINTER_EXCEPTION | 0) != TCL_OK)) SWIG_fail;
     result = (FILE *) ((arg1)->stream);
     
@@ -1339,7 +1341,7 @@ _wrap_bbtools_request_t_bbname_set(ClientData clientData, Tcl_Interp *interp, in
     bbtools_request_t *arg1 = (bbtools_request_t *) 0 ;
     char *arg2 ;
     
-    if (SWIG_GetArgs(interp, objc, objv,"os:bbtools_request_t_bbname_set self bbname ",0,&arg2) == TCL_ERROR) SWIG_fail;
+    if (SWIG_GetArgs(interp, objc, objv,"os:bb::bbtools_request_t_bbname_setself bbname ",0,&arg2) == TCL_ERROR) SWIG_fail;
     if ((SWIG_ConvertPtr(objv[1], (void **) &arg1, SWIGTYPE_p_bbtools_request_t,SWIG_POINTER_EXCEPTION | 0) != TCL_OK)) SWIG_fail;
     {
         if (arg1->bbname) free((char*)arg1->bbname);
@@ -1362,7 +1364,7 @@ _wrap_bbtools_request_t_bbname_get(ClientData clientData, Tcl_Interp *interp, in
     bbtools_request_t *arg1 = (bbtools_request_t *) 0 ;
     char *result;
     
-    if (SWIG_GetArgs(interp, objc, objv,"o:bbtools_request_t_bbname_get self ",0) == TCL_ERROR) SWIG_fail;
+    if (SWIG_GetArgs(interp, objc, objv,"o:bb::bbtools_request_t_bbname_getself ",0) == TCL_ERROR) SWIG_fail;
     if ((SWIG_ConvertPtr(objv[1], (void **) &arg1, SWIGTYPE_p_bbtools_request_t,SWIG_POINTER_EXCEPTION | 0) != TCL_OK)) SWIG_fail;
     result = (char *) ((arg1)->bbname);
     
@@ -1378,7 +1380,7 @@ _wrap_bbtools_request_t_theBB_set(ClientData clientData, Tcl_Interp *interp, int
     bbtools_request_t *arg1 = (bbtools_request_t *) 0 ;
     S_BB_T *arg2 = (S_BB_T *) 0 ;
     
-    if (SWIG_GetArgs(interp, objc, objv,"oo:bbtools_request_t_theBB_set self theBB ",0,0) == TCL_ERROR) SWIG_fail;
+    if (SWIG_GetArgs(interp, objc, objv,"oo:bb::bbtools_request_t_theBB_setself theBB ",0,0) == TCL_ERROR) SWIG_fail;
     if ((SWIG_ConvertPtr(objv[1], (void **) &arg1, SWIGTYPE_p_bbtools_request_t,SWIG_POINTER_EXCEPTION | 0) != TCL_OK)) SWIG_fail;
     if ((SWIG_ConvertPtr(objv[2], (void **) &arg2, SWIGTYPE_p_S_BB_T,SWIG_POINTER_EXCEPTION | SWIG_POINTER_DISOWN) != TCL_OK)) SWIG_fail;
     if (arg1) (arg1)->theBB = arg2;
@@ -1395,7 +1397,7 @@ _wrap_bbtools_request_t_theBB_get(ClientData clientData, Tcl_Interp *interp, int
     bbtools_request_t *arg1 = (bbtools_request_t *) 0 ;
     S_BB_T *result;
     
-    if (SWIG_GetArgs(interp, objc, objv,"o:bbtools_request_t_theBB_get self ",0) == TCL_ERROR) SWIG_fail;
+    if (SWIG_GetArgs(interp, objc, objv,"o:bb::bbtools_request_t_theBB_getself ",0) == TCL_ERROR) SWIG_fail;
     if ((SWIG_ConvertPtr(objv[1], (void **) &arg1, SWIGTYPE_p_bbtools_request_t,SWIG_POINTER_EXCEPTION | 0) != TCL_OK)) SWIG_fail;
     result = (S_BB_T *) ((arg1)->theBB);
     
@@ -1411,7 +1413,7 @@ _wrap_bbtools_request_t_newline_set(ClientData clientData, Tcl_Interp *interp, i
     bbtools_request_t *arg1 = (bbtools_request_t *) 0 ;
     char *arg2 ;
     
-    if (SWIG_GetArgs(interp, objc, objv,"os:bbtools_request_t_newline_set self newline ",0,&arg2) == TCL_ERROR) SWIG_fail;
+    if (SWIG_GetArgs(interp, objc, objv,"os:bb::bbtools_request_t_newline_setself newline ",0,&arg2) == TCL_ERROR) SWIG_fail;
     if ((SWIG_ConvertPtr(objv[1], (void **) &arg1, SWIGTYPE_p_bbtools_request_t,SWIG_POINTER_EXCEPTION | 0) != TCL_OK)) SWIG_fail;
     {
         if (arg2) strncpy(arg1->newline,arg2,2);
@@ -1429,7 +1431,7 @@ _wrap_bbtools_request_t_newline_get(ClientData clientData, Tcl_Interp *interp, i
     bbtools_request_t *arg1 = (bbtools_request_t *) 0 ;
     char *result;
     
-    if (SWIG_GetArgs(interp, objc, objv,"o:bbtools_request_t_newline_get self ",0) == TCL_ERROR) SWIG_fail;
+    if (SWIG_GetArgs(interp, objc, objv,"o:bb::bbtools_request_t_newline_getself ",0) == TCL_ERROR) SWIG_fail;
     if ((SWIG_ConvertPtr(objv[1], (void **) &arg1, SWIGTYPE_p_bbtools_request_t,SWIG_POINTER_EXCEPTION | 0) != TCL_OK)) SWIG_fail;
     result = (char *)(char *) ((arg1)->newline);
     
@@ -1444,7 +1446,7 @@ static int
 _wrap_new_bbtools_request_t(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
     bbtools_request_t *result;
     
-    if (SWIG_GetArgs(interp, objc, objv,":new_bbtools_request_t ") == TCL_ERROR) SWIG_fail;
+    if (SWIG_GetArgs(interp, objc, objv,":bb::new_bbtools_request_t") == TCL_ERROR) SWIG_fail;
     result = (bbtools_request_t *)(bbtools_request_t *) calloc(1, sizeof(bbtools_request_t));
     
     Tcl_SetObjResult(interp,SWIG_NewInstanceObj((void *) result, SWIGTYPE_p_bbtools_request_t,0));
@@ -1458,7 +1460,7 @@ static int
 _wrap_delete_bbtools_request_t(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
     bbtools_request_t *arg1 = (bbtools_request_t *) 0 ;
     
-    if (SWIG_GetArgs(interp, objc, objv,"o:delete_bbtools_request_t self ",0) == TCL_ERROR) SWIG_fail;
+    if (SWIG_GetArgs(interp, objc, objv,"o:bb::delete_bbtools_request_tself ",0) == TCL_ERROR) SWIG_fail;
     if ((SWIG_ConvertPtr(objv[1], (void **) &arg1, SWIGTYPE_p_bbtools_request_t,SWIG_POINTER_EXCEPTION | 0) != TCL_OK)) SWIG_fail;
     free((char *) arg1);
     
@@ -1525,7 +1527,7 @@ _wrap_bbtools_cmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *
     char *arg1 ;
     int result;
     
-    if (SWIG_GetArgs(interp, objc, objv,"s:bbtools_cmd bbtools_string ",&arg1) == TCL_ERROR) SWIG_fail;
+    if (SWIG_GetArgs(interp, objc, objv,"s:bb::bbtools_cmdbbtools_string ",&arg1) == TCL_ERROR) SWIG_fail;
     result = (int)bbtools_cmd((char const *)arg1);
     
     Tcl_SetObjResult(interp,Tcl_NewIntObj((long) result));
@@ -1540,7 +1542,7 @@ _wrap_bbtools_checkargs(ClientData clientData, Tcl_Interp *interp, int objc, Tcl
     bbtools_request_t *arg1 = (bbtools_request_t *) 0 ;
     int result;
     
-    if (SWIG_GetArgs(interp, objc, objv,"o:bbtools_checkargs req ",0) == TCL_ERROR) SWIG_fail;
+    if (SWIG_GetArgs(interp, objc, objv,"o:bb::bbtools_checkargsreq ",0) == TCL_ERROR) SWIG_fail;
     if ((SWIG_ConvertPtr(objv[1], (void **) &arg1, SWIGTYPE_p_bbtools_request_t,SWIG_POINTER_EXCEPTION | 0) != TCL_OK)) SWIG_fail;
     result = (int)bbtools_checkargs(arg1);
     
@@ -1555,7 +1557,7 @@ static int
 _wrap_bbtools_usage(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
     bbtools_request_t *arg1 = (bbtools_request_t *) 0 ;
     
-    if (SWIG_GetArgs(interp, objc, objv,"o:bbtools_usage req ",0) == TCL_ERROR) SWIG_fail;
+    if (SWIG_GetArgs(interp, objc, objv,"o:bb::bbtools_usagereq ",0) == TCL_ERROR) SWIG_fail;
     if ((SWIG_ConvertPtr(objv[1], (void **) &arg1, SWIGTYPE_p_bbtools_request_t,SWIG_POINTER_EXCEPTION | 0) != TCL_OK)) SWIG_fail;
     bbtools_usage(arg1);
     
@@ -1571,7 +1573,7 @@ _wrap_bbtools_checkbbname(ClientData clientData, Tcl_Interp *interp, int objc, T
     char *arg1 ;
     S_BB_T *result;
     
-    if (SWIG_GetArgs(interp, objc, objv,"s:bbtools_checkbbname bbname ",&arg1) == TCL_ERROR) SWIG_fail;
+    if (SWIG_GetArgs(interp, objc, objv,"s:bb::bbtools_checkbbnamebbname ",&arg1) == TCL_ERROR) SWIG_fail;
     result = (S_BB_T *)bbtools_checkbbname((char const *)arg1);
     
     Tcl_SetObjResult(interp,SWIG_NewInstanceObj((void *) result, SWIGTYPE_p_S_BB_T,0));
@@ -1586,7 +1588,7 @@ _wrap_bbtools_unimplemented_cmd(ClientData clientData, Tcl_Interp *interp, int o
     char *arg1 ;
     int32_t result;
     
-    if (SWIG_GetArgs(interp, objc, objv,"s:bbtools_unimplemented_cmd bbtools_cmdname ",&arg1) == TCL_ERROR) SWIG_fail;
+    if (SWIG_GetArgs(interp, objc, objv,"s:bb::bbtools_unimplemented_cmdbbtools_cmdname ",&arg1) == TCL_ERROR) SWIG_fail;
     result = bbtools_unimplemented_cmd((char const *)arg1);
     
     {
@@ -1606,7 +1608,7 @@ _wrap_bbtools_read(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj 
     bbtools_request_t *arg1 = (bbtools_request_t *) 0 ;
     int32_t result;
     
-    if (SWIG_GetArgs(interp, objc, objv,"o:bbtools_read req ",0) == TCL_ERROR) SWIG_fail;
+    if (SWIG_GetArgs(interp, objc, objv,"o:bb::bbtools_readreq ",0) == TCL_ERROR) SWIG_fail;
     if ((SWIG_ConvertPtr(objv[1], (void **) &arg1, SWIGTYPE_p_bbtools_request_t,SWIG_POINTER_EXCEPTION | 0) != TCL_OK)) SWIG_fail;
     result = bbtools_read(arg1);
     
@@ -1627,7 +1629,7 @@ _wrap_bbtools_write(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj
     bbtools_request_t *arg1 = (bbtools_request_t *) 0 ;
     int32_t result;
     
-    if (SWIG_GetArgs(interp, objc, objv,"o:bbtools_write req ",0) == TCL_ERROR) SWIG_fail;
+    if (SWIG_GetArgs(interp, objc, objv,"o:bb::bbtools_writereq ",0) == TCL_ERROR) SWIG_fail;
     if ((SWIG_ConvertPtr(objv[1], (void **) &arg1, SWIGTYPE_p_bbtools_request_t,SWIG_POINTER_EXCEPTION | 0) != TCL_OK)) SWIG_fail;
     result = bbtools_write(arg1);
     
@@ -1648,7 +1650,7 @@ _wrap_bbtools_dump(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj 
     bbtools_request_t *arg1 = (bbtools_request_t *) 0 ;
     int32_t result;
     
-    if (SWIG_GetArgs(interp, objc, objv,"o:bbtools_dump req ",0) == TCL_ERROR) SWIG_fail;
+    if (SWIG_GetArgs(interp, objc, objv,"o:bb::bbtools_dumpreq ",0) == TCL_ERROR) SWIG_fail;
     if ((SWIG_ConvertPtr(objv[1], (void **) &arg1, SWIGTYPE_p_bbtools_request_t,SWIG_POINTER_EXCEPTION | 0) != TCL_OK)) SWIG_fail;
     result = bbtools_dump(arg1);
     
@@ -1669,7 +1671,7 @@ _wrap_bbtools_find(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj 
     bbtools_request_t *arg1 = (bbtools_request_t *) 0 ;
     int32_t result;
     
-    if (SWIG_GetArgs(interp, objc, objv,"o:bbtools_find req ",0) == TCL_ERROR) SWIG_fail;
+    if (SWIG_GetArgs(interp, objc, objv,"o:bb::bbtools_findreq ",0) == TCL_ERROR) SWIG_fail;
     if ((SWIG_ConvertPtr(objv[1], (void **) &arg1, SWIGTYPE_p_bbtools_request_t,SWIG_POINTER_EXCEPTION | 0) != TCL_OK)) SWIG_fail;
     result = bbtools_find(arg1);
     
@@ -1690,7 +1692,7 @@ _wrap_bbtools_checkid(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_O
     bbtools_request_t *arg1 = (bbtools_request_t *) 0 ;
     int32_t result;
     
-    if (SWIG_GetArgs(interp, objc, objv,"o:bbtools_checkid req ",0) == TCL_ERROR) SWIG_fail;
+    if (SWIG_GetArgs(interp, objc, objv,"o:bb::bbtools_checkidreq ",0) == TCL_ERROR) SWIG_fail;
     if ((SWIG_ConvertPtr(objv[1], (void **) &arg1, SWIGTYPE_p_bbtools_request_t,SWIG_POINTER_EXCEPTION | 0) != TCL_OK)) SWIG_fail;
     result = bbtools_checkid(arg1);
     
@@ -1711,7 +1713,7 @@ _wrap_bbtools_destroy(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_O
     bbtools_request_t *arg1 = (bbtools_request_t *) 0 ;
     int32_t result;
     
-    if (SWIG_GetArgs(interp, objc, objv,"o:bbtools_destroy req ",0) == TCL_ERROR) SWIG_fail;
+    if (SWIG_GetArgs(interp, objc, objv,"o:bb::bbtools_destroyreq ",0) == TCL_ERROR) SWIG_fail;
     if ((SWIG_ConvertPtr(objv[1], (void **) &arg1, SWIGTYPE_p_bbtools_request_t,SWIG_POINTER_EXCEPTION | 0) != TCL_OK)) SWIG_fail;
     result = bbtools_destroy(arg1);
     
@@ -1732,7 +1734,7 @@ _wrap_bbtools_create(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Ob
     bbtools_request_t *arg1 = (bbtools_request_t *) 0 ;
     int32_t result;
     
-    if (SWIG_GetArgs(interp, objc, objv,"o:bbtools_create req ",0) == TCL_ERROR) SWIG_fail;
+    if (SWIG_GetArgs(interp, objc, objv,"o:bb::bbtools_createreq ",0) == TCL_ERROR) SWIG_fail;
     if ((SWIG_ConvertPtr(objv[1], (void **) &arg1, SWIGTYPE_p_bbtools_request_t,SWIG_POINTER_EXCEPTION | 0) != TCL_OK)) SWIG_fail;
     result = bbtools_create(arg1);
     
@@ -1753,7 +1755,7 @@ _wrap_bbtools_publish(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_O
     bbtools_request_t *arg1 = (bbtools_request_t *) 0 ;
     int32_t result;
     
-    if (SWIG_GetArgs(interp, objc, objv,"o:bbtools_publish req ",0) == TCL_ERROR) SWIG_fail;
+    if (SWIG_GetArgs(interp, objc, objv,"o:bb::bbtools_publishreq ",0) == TCL_ERROR) SWIG_fail;
     if ((SWIG_ConvertPtr(objv[1], (void **) &arg1, SWIGTYPE_p_bbtools_request_t,SWIG_POINTER_EXCEPTION | 0) != TCL_OK)) SWIG_fail;
     result = bbtools_publish(arg1);
     
@@ -1774,7 +1776,7 @@ _wrap_bbtools_synchro_send(ClientData clientData, Tcl_Interp *interp, int objc, 
     bbtools_request_t *arg1 = (bbtools_request_t *) 0 ;
     int32_t result;
     
-    if (SWIG_GetArgs(interp, objc, objv,"o:bbtools_synchro_send req ",0) == TCL_ERROR) SWIG_fail;
+    if (SWIG_GetArgs(interp, objc, objv,"o:bb::bbtools_synchro_sendreq ",0) == TCL_ERROR) SWIG_fail;
     if ((SWIG_ConvertPtr(objv[1], (void **) &arg1, SWIGTYPE_p_bbtools_request_t,SWIG_POINTER_EXCEPTION | 0) != TCL_OK)) SWIG_fail;
     result = bbtools_synchro_send(arg1);
     
@@ -1795,7 +1797,7 @@ _wrap_bbtools_synchro_recv(ClientData clientData, Tcl_Interp *interp, int objc, 
     bbtools_request_t *arg1 = (bbtools_request_t *) 0 ;
     int32_t result;
     
-    if (SWIG_GetArgs(interp, objc, objv,"o:bbtools_synchro_recv req ",0) == TCL_ERROR) SWIG_fail;
+    if (SWIG_GetArgs(interp, objc, objv,"o:bb::bbtools_synchro_recvreq ",0) == TCL_ERROR) SWIG_fail;
     if ((SWIG_ConvertPtr(objv[1], (void **) &arg1, SWIGTYPE_p_bbtools_request_t,SWIG_POINTER_EXCEPTION | 0) != TCL_OK)) SWIG_fail;
     result = bbtools_synchro_recv(arg1);
     
@@ -1816,7 +1818,7 @@ _wrap_bbtools_memset(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Ob
     bbtools_request_t *arg1 = (bbtools_request_t *) 0 ;
     int32_t result;
     
-    if (SWIG_GetArgs(interp, objc, objv,"o:bbtools_memset req ",0) == TCL_ERROR) SWIG_fail;
+    if (SWIG_GetArgs(interp, objc, objv,"o:bb::bbtools_memsetreq ",0) == TCL_ERROR) SWIG_fail;
     if ((SWIG_ConvertPtr(objv[1], (void **) &arg1, SWIGTYPE_p_bbtools_request_t,SWIG_POINTER_EXCEPTION | 0) != TCL_OK)) SWIG_fail;
     result = bbtools_memset(arg1);
     
