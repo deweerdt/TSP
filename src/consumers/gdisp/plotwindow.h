@@ -22,8 +22,9 @@
 
 #include <gdk/gdk.h>
 #include <gtk/gtkwidget.h>
+#ifndef __OpenBSD__
 #include <values.h>
-
+#endif /* ! __OpenBSD__ */
 
 #ifdef __cplusplus
 extern "C" {

@@ -25,6 +25,11 @@
 
 #include "plotwindow.h"
 
+#ifdef __OpenBSD__
+#include <sys/limits.h>
+#define MAXINT INT_MAX
+#endif /* __OpenBSD__ */
+
 #include <sys/time.h>
 #include <sys/types.h>
 #include <unistd.h>
