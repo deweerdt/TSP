@@ -14,11 +14,11 @@ clean::
 
 %.class : %.java
 	@echo "@@@ Compiling $< (target $@)..."
-	$(JAVAC) $(JFLAGS) -classpath $(CLASSBASE):$(JARBASE):$(JRPCBASE)/classes  $< 
+	$(JAVAC) $(JFLAGS) -classpath $(CLASSBASE):$(JARBASE):$(JRPCJAR)  $< 
 
 $(CLASSBASE)/$(JPACKAGEDIR)/%.class : %.java
 	@echo "@@@ Compiling $< (target $@)..."
-	$(JAVAC) $(JFLAGS) -classpath $(CLASSBASE):$(JARBASE):$(JRPCBASE)/classes  -d $(CLASSBASE) $< 
+	$(JAVAC) $(JFLAGS) -classpath $(CLASSBASE):$(JARBASE):$(JRPCJAR)  -d $(CLASSBASE) $< 
 
 
 %.jar : %.class

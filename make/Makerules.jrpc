@@ -27,7 +27,7 @@ $(RPC).java : $(RPC).x
 	$(JRPCGEN) -p $(JPACKAGE) -c $(RPC)ClientStub -noserver $(RPC).x
 	@echo "@@@ Generating JRPC stubs (RPC server side) ..."
 	$(JRPCGEN) -p $(JPACKAGE) -s $(RPC)ServerStub -noclient $(RPC).x
-	$(JAVAC) $(JFLAGS) -classpath $(CLASSBASE):$(JARBASE):$(JRPCBASE)/classes \
+	$(JAVAC) $(JFLAGS) -classpath $(CLASSBASE):$(JARBASE):$(JRPCJAR) \
 	-d $(CLASSBASE) TSP_*_t.java
 
 rpc.server.bin : $(OBJECTS_SVC) 

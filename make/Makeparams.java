@@ -11,10 +11,10 @@ JAVA = java
 JAVAC = javac
 # Use RemoteTea Java RPCGEN (see: http://acplt.plt.rwth-aachen.de/ks/english/remotetea.html)
 # Customize your installation of RemoteTea
-JRPCBASE = $(DEVBASE)/../RemoteTea
-JRPCGENJAR = $(JRPCBASE)/classes/jrpcgen.jar
-JRPCJAR = $(JRPCBASE)/classes/oncrpc.jar
-JRPCPORTMAPJAR = $(JRPCBASE)/classes/jportmap.jar
+JRPCBASE = $(DEVBASE)/external/RemoteTea
+JRPCGENJAR = $(JRPCBASE)/jrpcgen.jar
+JRPCJAR = $(JRPCBASE)/oncrpc.jar
+JRPCPORTMAPJAR = $(JRPCBASE)/jportmap.jar
 JRPCGEN = $(JAVA) -jar $(JRPCGENJAR)
 JAR = jar
 
