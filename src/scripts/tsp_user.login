@@ -4,12 +4,29 @@
 
 set HOST_UNAME=`uname -a | awk '{ print $1 }'`
 
+#Linux
 if ( "$HOST_UNAME" == "Linux" )  then
 	setenv HOST_TARGET "linux"
+
+#Sun & Sun64
 else if ( "$HOST_UNAME" == "SunOS") then
-      setenv HOST_TARGET "sun"
+    #try to find isalist util
+    set SPARC_TYPE=` isalist | awk '{ print $1 }' | grep sparcv9 ` 
+    if( $? == 0 ) then
+	if( $SPARC_TYPE != "" ) then
+	    setenv HOST_TARGET "sun64"
+	else
+	    setenv HOST_TARGET "sun"
+	endif	
+    else
+	setenv HOST_TARGET "sun"
+    endif
+
+#dec
 else if ( "$HOST_UNAME" == "OSF1") then
       setenv HOST_TARGET "dec"
+
+#???
 else
      echo "ERROR : Unknown system : $HOST_UNAME"
      exit -1
