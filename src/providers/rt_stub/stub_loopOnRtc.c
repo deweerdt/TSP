@@ -34,21 +34,19 @@
 /* Projet */
 #include "histogram.h"
 #include "tsp_provider_init.h"
+#include "tsp_datapool.h"
 #include "tsp_sys_headers.h"
 #include "glue_sserver.h"
 #include "tsp_ringbuf.h"
 #include "tsp_time.h"
 #include "calc_func.h"
 
-RINGBUF_DECLARE_TYPE_DYNAMIC(glu_ringbuf,glu_item_t);
-
 
 /* TSP glue server defines */
 #define TSP_STUB_FREQ 128 /*Hz, must be a 2 power for RTC*/
-#define TSP_PERIOD_US (1000000/TSP_STUB_FREQ) /*given in ÂµS, value 10ms*/
+#define TSP_PERIOD_US (1000000/TSP_STUB_FREQ) /*given in µS, value 10ms*/
 #define GLU_MAX_SYMBOLS 100
 /* Glue server ringbuf size */
-#define GLU_RING_BUFSIZE (GLU_MAX_SYMBOLS * TSP_STUB_FREQ * 10)
 
 
 /* Nasty static variables */
@@ -267,8 +265,6 @@ int  GLU_get_symbol_number(void)
   return i;
 }
 
-static int data_missed = FALSE;
-
 static void* GLU_thread(void* arg)
 {
   
@@ -346,16 +342,14 @@ static void* GLU_thread(void* arg)
 	    default :
 		item.value = calc_func(i, my_time); break;
 	    }
-	  RINGBUF_PTR_PUT(glu_ring, item);
+	  TSP_datapool_push_next_item(&item);
 	}
       
-      if(last_missed!=RINGBUF_PTR_MISSED(glu_ring))
-	{
-	  last_missed = RINGBUF_PTR_MISSED(glu_ring);
-	  data_missed = TRUE;
-	}
       
-       if (rt_mode==0 && !(my_time%10))  
+      /* Finalize the datapool state with new time : Ready to send */
+      TSP_datapool_push_commit(my_time, GLU_GET_NEW_ITEM);
+
+      if (rt_mode==0 && !(my_time%10))  
 	 printf("TOP %d : %s=%g \t%s=%g \t%s=%g \t%s=%g", my_time,
 		X_sample_symbol_info_list_val[0].name, simtime,
 		X_sample_symbol_info_list_val[1].name, rtctime,
@@ -405,51 +399,13 @@ int GLU_init(int fallback_argc, char* fallback_argv[])
   X_sample_symbol_info_list_val[6].name = strdup("jitter_max");
   X_sample_symbol_info_list_val[7].name = strdup("retard");
 
-  RINGBUF_PTR_INIT(glu_ringbuf, glu_ring, glu_item_t,  0, RINGBUF_SZ(GLU_RING_BUFSIZE));
-  RINGBUF_PTR_RESET_CONSUMER (glu_ring);
-
   return TRUE;
 }
 
-/* not used */
-
-GLU_get_state_t GLU_get_next_item(GLU_handle_t h_glu,glu_item_t* item)
+int GLU_start(void)
 {
   static pthread_t thread_id = 0;	
-  GLU_get_state_t res = GLU_GET_NEW_ITEM;
-  assert(h_glu == GLU_GLOBAL_HANDLE);
-  
-  if(!data_missed)
-    {
-      if (!RINGBUF_PTR_ISEMPTY(glu_ring))
-	{
-	  /* OK data found */
-	  RINGBUF_PTR_NOCHECK_GET(glu_ring ,(*item));                  
-	}
-      else
-	{
-	  res = GLU_GET_NO_ITEM;
-
-          /* Maybe there's no item coz the thread is not started : start it !
-             And yes, this is ugly. In a perfect world, this should be in GLU_get_instance,
-             but it does not work : the fifo may be full before the very first
-             GLU_get_next_item
-          */ 
-          if(!thread_id)
-            {
-              pthread_create(&thread_id, NULL, GLU_thread, NULL);
-	      /* Launch RealTime */
-            }        
-	}
-    }
-  else
-    {
-      /* There's a huge problem, we were unable to put data
-	 in the ringbuffer */
-      res = GLU_GET_DATA_LOST;
-    }
-
-  return res;
+  return pthread_create(&thread_id, NULL, GLU_thread, NULL);
 }
 
 GLU_handle_t GLU_get_instance(int argc, char* argv[], char** error_info)
@@ -466,19 +422,12 @@ double GLU_get_base_frequency(void)
   return TSP_STUB_FREQ;
 }
 
-void GLU_forget_data(GLU_handle_t h_glu)
-{
-  RINGBUF_PTR_RESET_CONSUMER(glu_ring);
-}
-
-
 int  GLU_get_sample_symbol_info_list(GLU_handle_t h_glu,TSP_sample_symbol_info_list_t* symbol_list)
 {
   symbol_list->TSP_sample_symbol_info_list_t_len = GLU_get_symbol_number();
   symbol_list->TSP_sample_symbol_info_list_t_val = X_sample_symbol_info_list_val;
   return TRUE;
 }
-
 
 GLU_server_type_t GLU_get_server_type(void)
 {
