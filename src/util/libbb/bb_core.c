@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.10 2005-02-22 20:22:34 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.11 2005-02-23 09:18:09 dufy Exp $
 
 -----------------------------------------------------------------------
 
@@ -376,7 +376,7 @@ bb_value_print(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc, FILE* pf, int32_t
       break;	
     case E_BB_CHAR:
       fprintf(pf,"0x%02x<%c> ",((char*) data)[i],
-	      isprint(((char*) data)[i]) ? ((char*) data)[i] : '?');
+	      isprint((int)data[i]) ? ((char*) data)[i] : '?');
       break;
     case E_BB_USER:
       for (j=0; j<data_desc.type_size; ++j) {
