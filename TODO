@@ -44,4 +44,5 @@ TODO list:
   that has plenty of reasons to fail )
 - Implement properly the callback function used to read the samples
   (the error code must be added)
-
+- res recorder with indianity
+=======
