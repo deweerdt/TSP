@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_rpc.x,v 1.8 2002-10-01 15:45:07 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_rpc.x,v 1.9 2002-10-04 15:28:41 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -34,11 +34,16 @@ struct TSP_answer_open_t
 
 };
 
+typedef string   TSP_argv_item_t<>;
+typedef TSP_argv_item_t TSP_argv_t<>;	
+
 struct TSP_request_open_t
 {
 	int version_id;
-	string stream_init<>;
-	int use_stream_init;
+/*	string stream_init<>;
+	int use_stream_init;*/
+
+	TSP_argv_t argv;	
 
 };
 

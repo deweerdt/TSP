@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/Attic/glue_sserver.h,v 1.4 2002-10-01 15:15:33 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/Attic/glue_sserver.h,v 1.5 2002-10-04 15:28:26 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -88,7 +88,7 @@ char* GLU_get_server_name(void);
 */
 
 
-int GLU_init(char* fallback_stream_init);
+int GLU_init(int fallback_argc, char* fallback_argv[]);
 
 GLU_server_type_t GLU_get_server_type(void);
 
@@ -100,7 +100,7 @@ int GLU_add_block(GLU_handle_t h_glu,int provider_global_index, xdr_and_sync_typ
 
 int GLU_commit_add_block(GLU_handle_t h_glu);
 
-GLU_handle_t GLU_get_instance(char *stream_init, char** error_info);
+GLU_handle_t GLU_get_instance(int custom_argc, char* custom_argv[], char** error_info);
 
 /* active stream with handle */
 

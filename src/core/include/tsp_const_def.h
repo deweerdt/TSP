@@ -1,6 +1,6 @@
 /*!  \file 
  
-$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_const_def.h,v 1.7 2002-10-01 15:39:51 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_const_def.h,v 1.8 2002-10-04 15:28:38 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -18,7 +18,11 @@ Purpose   :
 
 #define _TSP_CONST_DEF_H
 
+
+/* TSP Version */
 #define TSP_VERSION 1
+
+
 
 /* Size of ringbuf  receiver */
 /* FIXME : faire l'allocation en fonction de la frequence de base */
@@ -47,6 +51,30 @@ typedef guint32 time_stamp_t;
 
 #define UNDEFINED_CHANNEL_ID (-1)
 #define UNDEFINED_VERSION_ID (-1)
+
+/*-------- TSP COMMAND LINE ARGS --------*/
+
+
+/* Provider and consumer side */
+#define TSP_ARG_PREFIX            "--tsp-"
+#define TSP_ARG_STREAM_INIT_START TSP_ARG_PREFIX"stream-init-start"
+#define TSP_ARG_STREAM_INIT_STOP  TSP_ARG_PREFIX"stream-init-stop"
+
+/* Provider side only */
+#define TSP_ARG_SERVER_NUMBER     TSP_ARG_PREFIX"server-number"
+
+
+/* Stuff...*/
+#define TSP_ARG_DUMMY_PROG_NAME   "GLU"
+
+#define TSP_ARG_CONSUMER_USAGE   "TSP consumer usage : " \
+                                 "[" TSP_ARG_STREAM_INIT_START \
+                                 " commands ... " TSP_ARG_STREAM_INIT_STOP "] "
+
+#define TSP_ARG_PROVIDER_USAGE   "TSP provider Usage : " \
+                                 "[" TSP_ARG_STREAM_INIT_START \
+                                 " commands ... " TSP_ARG_STREAM_INIT_STOP "] " \
+                                 " [" TSP_ARG_SERVER_NUMBER " number ]"
 
 /*-------- SOCKET --------*/
 

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.6 2002-10-01 15:29:42 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.7 2002-10-04 15:28:30 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -45,13 +45,17 @@ Purpose   : Main implementation for the TSP consumer library
 		} \
 	}
 
-/** 
-   * Default initialisation stream coming from command line.
-   * This string is used in request open if an other string is not
-   * provided
-   */
-static  char* X_default_stream_init = 0;
 
+/*-----------------------------------------------------------------*/
+/** modified argc and argv, will be returned to user code after init */
+static  char** X_argv = 0;
+static  int X_argc = 0;
+
+/** Default values for args bound to the provider */
+static TSP_argv_t X_tsp_argv;
+
+/** Tell if the initialisation was done and was OK */
+static int X_tsp_init_ok = FALSE;
 /*-----------------------------------------------------------------*/
 
 /**
@@ -213,15 +217,117 @@ int TSP_consumer_init(int* argc, char** argv[])
   /* FIXME : coder le filtrage de la ligne de commande */
   /* et ajouter la valeur pas defaut provenant de la ligne de commande */
 
-  return TRUE;
+  int i;
+  int final_argc = 1;
+  int found_stream_start = FALSE;
+  int found_stream_stop = FALSE;
+  char* p;
+  int ret = TRUE;
+
+  SFUNC_NAME((TSP_consumer_init));
+  STRACE_IO(("-->IN"));
+
+  /* FUITE */
+  X_argv = (char**)calloc(*argc, sizeof(char*));
+  X_tsp_argv.TSP_argv_t_val = (char**)calloc(*argc, sizeof(char*));
+  X_tsp_argv.TSP_argv_t_len = 0;
+  TSP_CHECK_ALLOC(X_argv, FALSE);
+  TSP_CHECK_ALLOC(X_tsp_argv.TSP_argv_t_val, FALSE);
+  /* Get program name anyway */
+  X_argv[0] = (*argv)[0];
+  for( i = 1 ; i < *argc && ret ; i++)
+    {
+      /* Is the arg a TSP arg ? */
+      p = strstr( (*argv)[i], TSP_ARG_PREFIX );
+      if(p && (p == (*argv)[i] ))
+	{
+	  
+	  /* TSP Arg */
+	  STRACE_INFO(("Tsp ARG : '%s'", (*argv)[i]));
+	  
+
+	  /* Look for start flag */
+	  if(!strcmp(TSP_ARG_STREAM_INIT_START, (*argv)[i]))
+	    {
+	      if(!found_stream_stop && !found_stream_start)
+		{
+		  found_stream_start = TRUE;
+		  /* Ok the user wants a default stream control, put
+		     the first dummy element */
+		  if ( 0 == X_tsp_argv.TSP_argv_t_len )
+		    {
+		      X_tsp_argv.TSP_argv_t_val[0] = TSP_ARG_DUMMY_PROG_NAME;
+		      X_tsp_argv.TSP_argv_t_len = 1;
+		    }
+		}
+	      else
+		{
+		  STRACE_WARNING(("Unexpected "TSP_ARG_STREAM_INIT_START));
+		  ret = FALSE;
+		}
+	    }
+	  else if (!strcmp(TSP_ARG_STREAM_INIT_STOP, (*argv)[i]))
+	    {
+	      if(found_stream_start && !found_stream_stop)		
+		{
+		  found_stream_stop = TRUE;
+		}
+	      else
+		{
+		  STRACE_WARNING(("Unexpected "TSP_ARG_STREAM_INIT_STOP));
+		  ret = FALSE;
+		}
+	    }
+	  else
+	    {
+	      /* Unkown option */
+	      STRACE_WARNING(("Unknown TSP option : '%s'",(*argv)[i] ))
+	      ret = FALSE;
+	    }
+	}
+      else /* Not a TSP arg */
+	{
+	  /* Are we in the TSP command line ? */
+	  if ( found_stream_start && !found_stream_stop )
+	    {
+	      X_tsp_argv.TSP_argv_t_val[X_tsp_argv.TSP_argv_t_len++] = (*argv)[i];
+	    }
+	  else
+	    {
+	      /* Nop, this arg is for the user */
+	      X_argv[final_argc] = (*argv)[i];
+	      final_argc++;
+	    }
+	}
+    } /* for */
+  
+  /* Check is the stop was found */
+  
+  if( found_stream_start && !found_stream_stop )
+    {
+      STRACE_WARNING(("A " TSP_ARG_STREAM_INIT_STOP " flag was expected"));
+      ret = FALSE;
+    }
+
+  /* swap argc and argv values */
+  *argc = final_argc;
+  *argv = X_argv;
+
+  STRACE_IO(("-->OUT"));
+
+  X_tsp_init_ok = ret;
+  
+  /* Display usage */
+  if(!ret)
+    {
+      STRACE_WARNING((TSP_ARG_CONSUMER_USAGE));
+    }
+
+  return ret;
   
 }
 
-int TSP_consumer_is_command_ligne_stream_init(void)
-{
-  /* Coder */
-  return FALSE;
-}
+
 
 void TSP_consumer_end()
 {
@@ -238,7 +344,7 @@ void TSP_consumer_end()
  * @param nb_providers total number of providers found. Use this number to iterate
  * thrue the providers array. 
  */
-void TSP_open_all_provider(const char* target_name, TSP_provider_t** providers, int* nb_providers)
+void TSP_open_all_provider(const char*  host_name, TSP_provider_t** providers, int* nb_providers)
 {	
   SFUNC_NAME(TSP_remote_open_all_provider);
 	
@@ -265,7 +371,7 @@ void TSP_open_all_provider(const char* target_name, TSP_provider_t** providers, 
 	  STRACE_DEBUG(("Trying to open server No %d", i));
 
 	  /* Is server number 'i' alive ?*/ 
-	  if(TSP_remote_open_server(  target_name,
+	  if(TSP_remote_open_server(  host_name,
 				      i, 
 				      &server,
 				      server_info))
@@ -284,7 +390,7 @@ void TSP_open_all_provider(const char* target_name, TSP_provider_t** providers, 
 	    }
 	  else
 	    {
-	      STRACE_DEBUG(("unable to open server No %d for target '%s'", i, target_name));
+	      STRACE_DEBUG(("unable to open server No %d for target '%s'", i, host_name));
 	    }
 				
 	}
@@ -392,7 +498,7 @@ void TSP_print_provider_info(TSP_provider_t provider)
  * @param provider the provider on which apply the action
  * @return The action result (TRUE or FALSE)
  */
-int TSP_request_provider_open(TSP_provider_t provider, char* stream_init)
+int TSP_request_provider_open(TSP_provider_t provider, int custom_argc, char* custom_argv[])
 {
 	
   SFUNC_NAME(TSP_request_provider_open);
@@ -404,28 +510,26 @@ int TSP_request_provider_open(TSP_provider_t provider, char* stream_init)
   int ret = FALSE;
 	
   STRACE_IO(("-->IN"));
-
+  assert(X_tsp_init_ok);
 	
   req_open.version_id = TSP_VERSION;
-  req_open.stream_init = "";
-  req_open.use_stream_init = FALSE;
 
-  /* Does the user want a specific stream_init value ? */
-  if(0 != stream_init)
-    {
-      /* yes */
-      req_open.stream_init = stream_init;
-      req_open.use_stream_init = TRUE;
-    }
-  /* Nop. Fallback to command line if provided */
-  else if(X_default_stream_init)
-    {
-      req_open.stream_init = X_default_stream_init;
-      req_open.use_stream_init = TRUE;
-    }
-  
+  /* Default argv to command line (may be empty) */
+  req_open.argv = X_tsp_argv;
 
-	
+  /* Does the user want a specific argv  value ? */
+  if( ( 0 != custom_argc)  && custom_argv)
+    {
+      /* Check if a command line exists and trace a warning */
+      if( 0 != X_tsp_argv.TSP_argv_t_len )
+	{
+	  STRACE_WARNING(("Overiding command line stream initialisation by custom stream initialisation")); 
+	}
+      req_open.argv.TSP_argv_t_val = custom_argv;
+      req_open.argv.TSP_argv_t_len = custom_argc;
+    }
+
+  	
   if(0 != otsp)
     {
       ans_open = TSP_request_open(&req_open, otsp->server);

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_provider.h,v 1.3 2002-10-01 15:24:44 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_provider.h,v 1.4 2002-10-04 15:28:26 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -24,7 +24,9 @@ Purpose   : Main interface for the producer module
 
 
 
-int TSP_init(int server_number, char* init_string);
+int TSP_provider_init(int* argc, char** argv[]);
+
+int TSP_provider_run(void);
 
 void TSP_request_open(const TSP_request_open_t* req_open,
 		      TSP_answer_open_t* ans_open);
