@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: client_res.c,v 1.2 2003-02-03 09:52:08 tsp_admin Exp $
+$Id: client_res.c,v 1.3 2003-02-27 15:38:34 tsp_admin Exp $
 
 -----------------------------------------------------------------------
 
@@ -46,8 +46,6 @@ Purpose   : Simple consummer for testing groups configuration
 /*µS*/
 #define TSP_NANOSLEEP_PERIOD_US (200*1000)
 
-/* Number of samples  that will be counted before the data check test pass */
-#define TSP_TEST_COUNT_SAMPLES 200000
 
 /* libUTIL */
 extern _use_dbl;
@@ -170,7 +168,7 @@ int main(int argc, char *argv[]){
 
   
   /*-------------------------------------------------------------------------------------------------------*/ 
-  /* TEST : STAGE 002 | STEP 001 */
+  /* Connection to providers
   /*-------------------------------------------------------------------------------------------------------*/ 
   TSP_consumer_connect_all(name,&providers, &nb_providers);
   if(nb_providers > 0)
@@ -179,7 +177,6 @@ int main(int argc, char *argv[]){
 	{
 	  const char* info = TSP_consumer_get_connected_name(providers[i]) ;
 	  STRACE_INFO(("Server Nb %d, info = '%s'", i,info));
-	  
 	}
     }
   else
@@ -192,11 +189,8 @@ int main(int argc, char *argv[]){
 
 
   /*-------------------------------------------------------------------------------------------------------*/ 
-  /* TEST : STAGE 002 | STEP 002 */
+  /* Open first provider
   /*-------------------------------------------------------------------------------------------------------*/ 
-  /* Le 1er provider existe puisqu'il y en a au moins 1 */
-
-
   if(!TSP_consumer_request_open(providers[0], 0, 0 ))
     {
       STRACE_ERROR(("TSP_request_provider_open failed"));
@@ -251,7 +245,7 @@ int main(int argc, char *argv[]){
  
   
   /*-------------------------------------------------------------------------------------------------------*/ 
-  /* TEST : STAGE 001 | STEP 004 */
+  /* Ask for sample list
   /*-------------------------------------------------------------------------------------------------------*/ 
   if(!TSP_consumer_request_sample(providers[0],&symbols))
     {
@@ -261,28 +255,27 @@ int main(int argc, char *argv[]){
 
 
   /*-------------------------------------------------------------------------------------------------------*/ 
-  /* TEST : STAGE 001 | STEP 005 */
+  /* Start sampling
   /*-------------------------------------------------------------------------------------------------------*/ 
   if(!TSP_consumer_request_sample_init(providers[0],0))
     {
       STRACE_ERROR(("TSP_request_provider_sample_init failed"));
       return -1;
     }
-  /*-------------------------------------------------------------------------------------------------------*/ 
-  /* TEST : STAGE 001 | STEP 006 */
+
   /*-------------------------------------------------------------------------------------------------------*/ 
   /* Loop on data read */
-
+  /*-------------------------------------------------------------------------------------------------------*/ 
   
   STRACE_INFO(("file=%s", out_file_res));
   d_wopen(out_file_res);
-  d_wcom("");
+  d_wcom(""); /* No comment */
+
   for (i = 0; i < symbols.len; i++)
     {
-      d_wnam(symbols.val[i].name, "?");
-      
+      d_wnam(symbols.val[i].name, "?"); /* write header with no unit */
     }
-
+  
   res_values = _use_dbl ? 
     calloc(( symbols.len+1),sizeof(double)) :
       calloc(( symbols.len+1),sizeof(float)) ;
@@ -291,7 +284,6 @@ int main(int argc, char *argv[]){
   res_value_i = 0;
   while(TSP_consumer_read_sample(providers[0],&sample, &new_sample) && !stop_end )
     {
-
       if(new_sample)
 	{
 	  double calc;
@@ -300,7 +292,6 @@ int main(int argc, char *argv[]){
 	    {
 	      double* d_res_values = (double*)res_values;
 	      d_res_values[res_value_i++] = sample.user_value;
-	       
 	    }
 	  else
 	    {
@@ -308,18 +299,16 @@ int main(int argc, char *argv[]){
 	      f_res_values[res_value_i++] = sample.user_value;	      
 	    }
 
+	  /* Received complete buffer, need to write */
 	  if( res_value_i == symbols.len )
 	    {
 	      count++;
 	      d_writ(res_values);
-	      /*STRACE_INFO(("Write %f", *(float*)res_values));*/
 	      res_value_i = 0;
 	      if(stop)
 		{
 		  stop_end = TRUE;
 		}
-
-
 	    }
 	}
       else
