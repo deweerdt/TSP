@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: simple_client.c,v 1.3 2003-12-27 13:30:59 uid67973 Exp $
+$Id: simple_client.c,v 1.4 2004-11-07 23:46:29 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -35,8 +35,11 @@ Purpose   : Simple consummer tutorial
 -----------------------------------------------------------------------
 */
 
+#include <stdio.h>
+#include <stdlib.h>
 /* All what you need for creating a TSP consumer */
 #include "tsp_consumer.h"
+#include "tsp_time.h"
 
 
 /* Just for fast exit */
