@@ -185,6 +185,7 @@ case "$host" in
     *openbsd*)
 	AC_MSG_RESULT([OpenBSD is OK])	
 	HOST_TARGET=openbsd
+	LDLIBS="-lsocket -lm -lposix4 -lgen -lpthread"
         ;;
     i386-pc-solaris*)
 	AC_MSG_RESULT([i386 Solaris is OK])	

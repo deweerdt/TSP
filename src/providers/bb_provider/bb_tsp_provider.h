@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/providers/bb_provider/bb_tsp_provider.h,v 1.4 2004-10-18 21:45:04 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/providers/bb_provider/bb_tsp_provider.h,v 1.5 2004-10-23 13:25:16 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -37,7 +37,9 @@ Purpose   : Blackboard TSP Provider
 #ifndef _BB_TSP_PROVIDER_H_
 #define _BB_TSP_PROVIDER_H_
 
+#ifndef HAVE_STDINT_H
 #include <stdint.h>
+#endif
 #include <pthread.h>
 
 #ifdef BB_TSP_PROVIDER_C

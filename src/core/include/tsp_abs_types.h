@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_abs_types.h,v 1.15 2004-10-23 12:03:06 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_abs_types.h,v 1.16 2004-10-23 13:25:16 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -137,6 +137,13 @@ Purpose   : Type abstraction : Stolen from GLIB public headers
 # define TSP_GUINT64_FORMAT "llu"
 # define TSP_SYSTEM_HAVE_NANOSLEEP
 # define TSP_HAVE_INT64 1
+
+/* Standard C types not defined in OBSD at the moment */
+typedef	int8_t	int_least8_t;
+typedef	int16_t	int_least16_t;
+typedef	int32_t	int_least32_t;
+typedef	int64_t	int_least64_t; 
+
 #endif /* OpenBSD / i386 */
 
 /*-----------------------------------------------------*/
