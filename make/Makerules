@@ -33,6 +33,10 @@ $(DIRBIN)/% : %.c
 	@echo "@@@ Linking $< ..."
 	$(LINK.c) $< -o $@ $(LDLIBS)
 
+$(DIRBIN)/% : $(DIRBIN)/%.o
+	@echo "@@@ Linking $< ..."
+	$(LINK.c) $< -o $@ $(LDLIBS)
+
 .o.a:
 	$(AR) $(ARFLAGS) $@ $%
 
