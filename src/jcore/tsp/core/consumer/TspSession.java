@@ -1,4 +1,4 @@
-/* $Id: TspSession.java,v 1.5 2004-11-14 14:23:06 sgalles Exp $
+/* $Id: TspSession.java,v 1.6 2004-11-14 17:16:36 sgalles Exp $
  * -----------------------------------------------------------------------
  * 
  * TSP Library - core components for a generic Transport Sampling Protocol.
@@ -34,6 +34,7 @@
 package tsp.core.consumer;
 
 import tsp.core.common.*;
+import tsp.core.common.url.TspUnknownProtocolException;
 import tsp.core.common.url.TspURL;
 import tsp.core.common.url.TspURLException;
 import tsp.core.common.url.TspUnknownHostException;
@@ -139,11 +140,16 @@ public class TspSession {
 
 		try {
 			
-			/* TODO : remove when serverNumber scanning implemented */
-			if (url.getServerNumber() == null)
-				url.setServerNumber(new Integer(0));
-			/* try to open RPC link to TSP provider RPC server */
-			requestSender = new TspRequestSender(InetAddress.getByName(url.getHost()), url.getServerNumber().intValue());
+						
+			/* TODO : create a factory depending on the protocol in order to obtain a request sender */
+			if(url.getProtocol() == null){
+				throw new TspUnknownProtocolException("No protocol specified");
+			}
+			if(!url.getProtocol().equals("rpc")){
+				throw new TspUnknownProtocolException("Unknown protocol : "  + url.getProtocol());
+			}
+											
+			requestSender = new TspRequestSender(url);
 								
 			state = TspSessionStatus.SENDER_READY;
 			/* Build the TSP request open */
@@ -160,10 +166,8 @@ public class TspSession {
 			answerOpen = new TspAnswerOpen(ansO);
 
 			state = TspSessionStatus.OPENED;
-			return answerOpen.theAnswer.channel_id;
-		} catch (UnknownHostException e) {
-			throw new TspUnknownHostException(e);
-		} catch (TspRpcException e) {
+			return answerOpen.theAnswer.channel_id;		
+		} catch (TspCommandChannelException e) {
 			throw new TspConsumerException(e);
 		}
 	}
@@ -200,7 +204,7 @@ public class TspSession {
 			}
 			return answerInfos;
 		}
-		catch (TspRpcException e) {
+		catch (TspCommandChannelException e) {
 			throw new TspConsumerException(e);
 		}
 	}
@@ -225,7 +229,7 @@ public class TspSession {
 			buildSampleGroups();
 			return answerSample;
 		}
-		catch (TspRpcException e) {
+		catch (TspCommandChannelException e) {
 			throw new TspConsumerException(e);
 		}
 	}
@@ -265,7 +269,7 @@ public class TspSession {
 
 			return asi;
 		}
-		catch (TspRpcException e) {
+		catch (TspCommandChannelException e) {
 			throw new TspConsumerException(e);
 		}
 		catch (TspCommonException e) {
@@ -306,7 +310,7 @@ public class TspSession {
 
 			return new TspAnswerSampleFinalize(theAnswer);
 		}
-		catch (TspRpcException e) {
+		catch (TspCommandChannelException e) {
 			throw new TspConsumerException(e);
 		}
 		catch (IOException e) {

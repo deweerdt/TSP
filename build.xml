@@ -4,6 +4,9 @@
 	<property name="tsp.consumers" value="${tsp.home}/src/consumers" />
 	<property name="project.build" value="${tsp.home}/exec/DEV/java/build" />
 	
+	<!-- default emply URL for executable -->
+	<property name="tsp.url" value="" />
+	
 	<!-- External Tools -->
 	<property name="ext.dir" value="${tsp.home}/external" />
 	
@@ -139,9 +142,16 @@ Jar :
 	<target name="consumers" depends="jsynoptic,jstdout">
 <echo>
 Commands that you can use to launch the consumers :
-   ant jstdout-run
+   ant jstdout-run 
    ant jsynoptic-run
-   
+	
+For jstdout you can choose the provider url with :
+       ant jstdout-run -Dtsp.url="urlValue"
+where urlValue being :
+	protocol://host/serverName:serverNumber
+All fields are optional, for example :
+	ant jstdout-run -Dtsp.url=":///StubbedServer"
+	
 You can run TSP JUnit test with the command :
    ant test-report   
 but to do this, you need to copy junit.jar into the lib directory of
@@ -240,7 +250,7 @@ You do not need ${jar.consumer} to run these consumers.
 		<java classname="tsp.consumer.jtspStdOut" fork="true">
 			<classpath refid="jstdout.classpath"/>
 			<classpath location="${jar.jstdout}" />
-			<arg value=":///"/>
+			<arg value="${tsp.url}"/>
 			<arg value="1"/>
 			<arg value="10"/>
 		</java>

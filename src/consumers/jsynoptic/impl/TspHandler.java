@@ -26,7 +26,7 @@
  * Individual:
  * 				Christophe Pecquerie
  * 
- * $Id: TspHandler.java,v 1.4 2004-11-09 05:49:46 sgalles Exp $
+ * $Id: TspHandler.java,v 1.5 2004-11-14 17:16:36 sgalles Exp $
  * 
  * Changes ------- 11-Dec-2003 : Creation Date (NB);
  *  
@@ -118,6 +118,7 @@ public class TspHandler extends TspConsumer implements Serializable {
 		try {
 			/* open Session */
 			TspURL url = TspURLFactory.createEmpty();
+			url.setProtocol("rpc");
 			url.setHost(hostName_);
 			url.setServerNumber(provider_);
 			sessionId_ = openSession(url);
@@ -140,15 +141,15 @@ public class TspHandler extends TspConsumer implements Serializable {
 					getSymbolTab()[i] = new TspSampleSymbolInfo(symbolList.getSymbolByRank(i));
 
 			}
-			else {
+			else {				
 				throw new TspProviderNotFoundException();
 			}
 
-		} catch (TspConsumerException e) {
-			throw new TspProviderNotFoundException();
-		} catch (TspUnknownHostException e) {
-			throw new UnknownHostException(e.getMessage());
-		} catch (TspURLException e) {
+		} catch (TspConsumerException e) {			
+			throw new TspProviderNotFoundException();			
+		} catch (TspUnknownHostException e) {			
+			throw new UnknownHostException();
+		} catch (TspURLException e) {			
 			throw new TspProviderNotFoundException();
 		}
 

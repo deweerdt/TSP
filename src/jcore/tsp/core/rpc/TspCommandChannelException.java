@@ -10,12 +10,12 @@ package tsp.core.rpc;
 /**
  * 
  */
-public class TspRpcException extends Exception {
+public class TspCommandChannelException extends Exception {
 
 	/**
 	 * 
 	 */
-	public TspRpcException() {
+	public TspCommandChannelException() {
 		super();
 		// TODO Auto-generated constructor stub
 	}
@@ -23,7 +23,7 @@ public class TspRpcException extends Exception {
 	/**
 	 * 
 	 */
-	public TspRpcException(String message) {
+	public TspCommandChannelException(String message) {
 		super(message);
 		// TODO Auto-generated constructor stub
 	}
@@ -31,7 +31,7 @@ public class TspRpcException extends Exception {
 	/**
 	 * 
 	 */
-	public TspRpcException(String message, Throwable cause) {
+	public TspCommandChannelException(String message, Throwable cause) {
 		super(message, cause);
 		// TODO Auto-generated constructor stub
 	}
@@ -39,7 +39,7 @@ public class TspRpcException extends Exception {
 	/**
 	 * 
 	 */
-	public TspRpcException(Throwable cause) {
+	public TspCommandChannelException(Throwable cause) {
 		super(cause);
 		// TODO Auto-generated constructor stub
 	}

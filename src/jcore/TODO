@@ -9,13 +9,16 @@
   consumer developper.
 
 @sgalles
+- Replace System.out with TspLog
+- Update Javadoc for exceptions
+- Add finally to prodid scan so as to avoid RPC connection leak
+- Modify sub URL exception so as to detail error for GUI (serverName, etc...)
 - Refactor TspURL using regexp. Some URL pattern are missing
 - Create a TspUserException with an enum for GUI traitement of
 recoverable exceptions
 - Add a Ant task to create API Javadoc
 - Add a Ant task to create the tar.gz distribution files (both for bundled)
 and non bundled jar)
-- Update Javadoc for exceptions
 - Use Doug Lea util.concurrent package as RingBuf for JTSP
 (if it matches what we want to do)
 - Try to improve RPC error messages in TspRpcException

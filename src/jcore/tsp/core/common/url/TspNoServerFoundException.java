@@ -1,4 +1,4 @@
-/* $Id: TspBadProtocolException.java,v 1.1 2004-11-09 05:49:46 sgalles Exp $
+/* $Id: TspNoServerFoundException.java,v 1.1 2004-11-14 17:16:36 sgalles Exp $
  * -----------------------------------------------------------------------
  * 
  * TSP Library - core components for a generic Transport Sampling Protocol.
@@ -37,13 +37,13 @@ package tsp.core.common.url;
 /**
  * 
  */
-public class TspBadProtocolException extends TspURLException {
+public class TspNoServerFoundException extends TspURLException {
 
 	
 	/**
 	 * 
 	 */
-	public TspBadProtocolException() {
+	public TspNoServerFoundException() {
 		super();
 		// TODO Auto-generated constructor stub
 	}
@@ -51,7 +51,7 @@ public class TspBadProtocolException extends TspURLException {
 	/**
 	 * 
 	 */
-	public TspBadProtocolException(String message) {
+	public TspNoServerFoundException(String message) {
 		super(message);
 		// TODO Auto-generated constructor stub
 	}
@@ -59,7 +59,7 @@ public class TspBadProtocolException extends TspURLException {
 	/**
 	 * 
 	 */
-	public TspBadProtocolException(String message, Throwable cause) {
+	public TspNoServerFoundException(String message, Throwable cause) {
 		super(message, cause);
 		// TODO Auto-generated constructor stub
 	}
@@ -67,7 +67,7 @@ public class TspBadProtocolException extends TspURLException {
 	/**
 	 * 
 	 */
-	public TspBadProtocolException(Throwable cause) {
+	public TspNoServerFoundException(Throwable cause) {
 		super(cause);
 		// TODO Auto-generated constructor stub
 	}
