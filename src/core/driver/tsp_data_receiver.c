@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_data_receiver.c,v 1.5 2002-10-01 15:31:06 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_data_receiver.c,v 1.6 2002-11-19 13:21:53 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -84,25 +84,30 @@ static int TSP_data_receiver_process_reserved_group_id(int group_index, TSP_samp
 
   STRACE_IO(("-->IN"));
   
+
+  sample = RINGBUF_PTR_PUTBYADDR(sample_fifo);
+  assert(sample);
+  sample->time = -1;
+  sample->user_value = -1;	
   switch(group_index)
     {
       /* received EOF */
-    case TSP_RESERVED_GROUPE_EOF: 
-      {
-	/* Ok put and EOF in FIFO an EOF */
-	sample = RINGBUF_PTR_PUTBYADDR(sample_fifo);
-	assert(sample);
-	sample->time = -1;
-	sample->user_value = -1;
+    case TSP_RESERVED_GROUP_EOF: 
 	sample->provider_global_index = TSP_DUMMY_PROVIDER_GLOBAL_INDEX_EOF;
-	RINGBUF_PTR_PUTBYADDR_COMMIT(sample_fifo);
-	ret = TRUE;
 	break;
-      }
+
+    case TSP_RESERVED_GROUP_RECONF: 
+	sample->provider_global_index = TSP_DUMMY_PROVIDER_GLOBAL_INDEX_RECONF;
+	break;
     
     default:	 
-      STRACE_ERROR(("Group id % in not a reserver group", group_index));
+      STRACE_ERROR(("Group id % in not a reserved group", group_index));
       ret = FALSE;
+    }
+  
+  if(ret)
+    {
+      RINGBUF_PTR_PUTBYADDR_COMMIT(sample_fifo);
     }
   
   STRACE_IO(("-->OUT"));
