@@ -1,4 +1,4 @@
-/* $Id: TspRequestSender.java,v 1.3 2004-11-14 17:16:36 sgalles Exp $
+/* $Id: TspRequestSender.java,v 1.4 2004-11-14 17:35:22 sgalles Exp $
  * -----------------------------------------------------------------------
  * 
  * TSP Library - core components for a generic Transport Sampling Protocol.
@@ -89,8 +89,14 @@ public class TspRequestSender {
 				} catch (TspUnknownServerNumberException e) {
 					System.out.println("No server found for serverNumber=" + serverNumber);
 					/* empty on purpose, retry */
+				} catch (TspCommandChannelException e) {
+					System.out.println("No server found for serverNumber=" + serverNumber);
+					/* empty on purpose, retry */
 				} catch (TspUnknownServerNameException e) {
-					/* it is not the right server, bu at least there's one server */
+					/*
+					 * it is not the right server, bu at least there's one
+					 * server
+					 */
 					System.out.println("No server found for serverName=" + url.getServerName() + " and serverNumber=" + serverNumber);
 					oneServerExists = true;	
 				} 	
