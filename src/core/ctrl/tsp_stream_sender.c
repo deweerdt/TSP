@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_stream_sender.c,v 1.1 2002-08-27 08:56:09 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_stream_sender.c,v 1.2 2002-09-05 09:06:13 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -28,6 +28,7 @@ stream  from the producer for the asked symbols. This layer is the network layer
 #include "tsp_stream_sender.h"
 
 #define TSP_DATA_ADDRESS_STRING_SIZE 256
+
 
 struct TSP_socket_t
 {
@@ -69,7 +70,7 @@ static Sigfunc* signal(int signo, Sigfunc* func)
 } 
 
 static TSP_stream_sender_save_address_string(TSP_socket_t* sock, 
-					     char* host, ushort port)
+					     char* host, unsigned short port)
 {   
   SFUNC_NAME(TSP_stream_sender_save_address_string);
         
@@ -97,11 +98,9 @@ static void* TSP_streamer_sender_connector(void* arg)
   STRACE_IO(("-->IN"));
     
   /* Accept connection on socket */
-#ifdef __linux__
-  sock->hClient = accept(sock->socketId, NULL, &(socklen_t)Len);
-#else
+
   sock->hClient = accept(sock->socketId, NULL, &Len);
-#endif
+
   if(sock->hClient > 0)
     {
       STRACE_INFO(("New connection accepted on socket client socket %d", sock->hClient));
@@ -136,13 +135,13 @@ TSP_stream_sender_t TSP_stream_sender_create(void)
   int OptInt = 0;
   int ret = TRUE;
   /*int Len = 0;*/
-  char host[MAXHOSTNAMELEN+1];
-  ushort port;  TSP_socket_t* sock;
+  char host[TSP_MAXHOSTNAMELEN+1];
+  unsigned short port;  TSP_socket_t* sock;
   pthread_t thread_connect_id;
   
   STRACE_IO(("-->IN"));
   
-  if( -1 == gethostname(host, MAXHOSTNAMELEN))
+  if( -1 == gethostname(host, TSP_MAXHOSTNAMELEN))
     {
       STRACE_ERROR(("gethostname error"));
 
@@ -247,7 +246,7 @@ TSP_stream_sender_t TSP_stream_sender_create(void)
 	    if( 0 ==  getsockname(sock->socketId, (struct sockaddr*) &buf_addr, &len) )
 	      {
 		/* Save the address in the tsp_socket struct */
-		ushort port =  ntohs(buf_addr.sin_port);
+		unsigned short port =  ntohs(buf_addr.sin_port);
 		TSP_stream_sender_save_address_string(sock, host, port);
 	      }
 	    else
