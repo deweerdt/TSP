@@ -10,7 +10,7 @@ SOURCES = \
 	bb_destroy.c \
 	bb_read.c \
 	bb_write.c \
-	bb_test.c \
+	bb_simu.c \
 	bb_tools_main.c
 
 OBJECTS = $(SOURCES:%.c=$(DIROBJ)/%.o)
@@ -25,7 +25,7 @@ TARGET1=$(DIRBIN)/bb_dump
 TARGET2=$(DIRBIN)/bb_destroy
 TARGET3=$(DIRBIN)/bb_read
 TARGET4=$(DIRBIN)/bb_write
-TARGET5=$(DIRBIN)/bb_test
+TARGET5=$(DIRBIN)/bb_simu
 TARGET6=$(DIRBIN)/bb_tools
 TARGETS=$(TARGET0) $(TARGET1) $(TARGET2) $(TARGET3) $(TARGET4) $(TARGET5) $(TARGET6)
 endif

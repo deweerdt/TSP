@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<page_config display_frequency="10.0" period="1"  widget="draw" visible="true" no_border="false" rows="3" duration="40.0">
+
+  <page title="Mixed" x="550" y="330" width="320" height="320" widget="view" rows="8" >   
+     <variable name="TextView" type="TITLE"   />
+     <variable name="bb_simu_display_level" legend="disp level_h" type="HEXA"   />
+     <variable name="bb_simu_display_level" legend="disp level_b" type="BIN"   />
+     <variable name="bb_simu_display_level" type="DOUBLE"   />
+     <variable name="bb_simu_1_Titi" legend="Titi" type="DOUBLE"   />
+     <variable name="bb_simu_1_Toto[0]" type="DOUBLE"   />
+     <variable name="bb_simu_1_Toto[1]" type="DOUBLE"   />
+     <variable name="bb_simu_1_Tata[1]" type="DOUBLE"   />
+     <variable name="bb_simu_1_Tata[2]" type="DOUBLE"   />
+     <variable name="GraphView" type="TITLE"   />
+     <variable name="bb_simu_1_Titi" type="DOUBLE" widget="draw"  />
+  </page>
+  <page title="Draw" x="20" y="330" width="500" height="200" widget="draw" rows="1" duration="10.0">   
+     <variable name="bb_simu_1_Tata[0]" type="DOUBLE"   />
+     <variable name="bb_simu_1_Toto[1]" type="DOUBLE"   />
+  </page>
+ </page_config>

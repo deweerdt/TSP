@@ -1,7 +1,7 @@
 
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_tools.c,v 1.4 2005-02-23 01:34:48 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_tools.c,v 1.5 2005-02-23 13:33:26 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -345,7 +345,9 @@ bbtools_usage(bbtools_request_t* req) {
     fprintf(req->stream,"Usage : %s <bbname>\n",
 	    bbtools_cmdname_tab[E_BBTOOLS_DUMP]);    	    
     break;
-  case E_BBTOOLS_FIND:    
+  case E_BBTOOLS_FIND:
+    fprintf(req->stream,"Usage : %s <bbname> <symbolpattern>\n",
+	    bbtools_cmdname_tab[E_BBTOOLS_FIND]); 
     break;
   case E_BBTOOLS_CHECKID:
     	fprintf(req->stream,
@@ -369,6 +371,14 @@ bbtools_usage(bbtools_request_t* req) {
   default:
     fprintf(req->stream, 
 	    "default: should never be reached?\n");
+  }
+
+  if ((req->cmd>=E_BBTOOLS_UNKNOWN) &&
+      (req->cmd<E_BBTOOLS_LASTCMD)) {
+    fprintf(req->stream, 
+	    "%s::%s\n",
+	    bbtools_cmdname_tab[req->cmd],
+	    bbtools_cmdhelp_tab[req->cmd]);
   }
 
 } /* end of bb_tools_usage */
@@ -567,7 +577,19 @@ bbtools_dump(bbtools_request_t* req) {
 int32_t
 bbtools_find(bbtools_request_t* req) {
   int32_t retcode = 0;
+/*   char*   varmatch; */
+/*   int     i; */
+
   retcode = bbtools_unimplemented_cmd(bbtools_cmdname_tab[E_BBTOOLS_FIND]);
+  
+/*   for (i=0; i< req->theBB->n_data;++i) { */
+/*     if (!strncmp(req->argv[1],(bb_data_desc(req->theBB)[i]).name,VARNAME_MAX_SIZE+1)) { */
+/*       retcode = i; */
+/*       break; */
+/*     } */
+/*  } */ /* end for */
+    
+
   return retcode;
 }  /* end of bbtools_find */
 

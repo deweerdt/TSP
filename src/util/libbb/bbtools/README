@@ -2,9 +2,9 @@
 BBTools are sample tools for using BB.
 You may try this:
 
-1) in a first window "bb_test -s"
-2) in a second window "bb_tsp_provider bb_test"
-3) in a third window "tsp_gdisp bb_test.xml localhost"
-4) in a fourth window "tsp_ascii_writer --f=bb_test_ascii_writer_config.dat --o=bb_test_ascii_writer.out --output_limit 50"
+1) in a first window "bb_simu -s"
+2) in a second window "bb_tsp_provider bb_simu"
+3) in a third window "tsp_gdisp bb_simu.xml localhost"
+4) in a fourth window "tsp_ascii_writer --f=bb_simu.dat --o=bb_simu.out --output_limit 50"
 5) in a fifth (yes you can do it)
-   gnuplot bb_test.gp
+   gnuplot bb_simu.gp
