@@ -1,11 +1,27 @@
 # ---------------------------------
 # Do not EDIT: @configure_input@
 # ---------------------------------
+.KEEP_STATE:
 
 # ----------------
 # common for all targets
 # ----------------
-include $(DEVBASE)/make/Makeproject
+DIRBASE   = $(DEVBASE)/exec/DEV
+DIRINC    = $(DIRBASE)/include
+DIRSCRIPT = $(DIRBASE)/scripts
+
+# Java binaries location
+CLASSBASE = $(DIRBASE)/java/classes
+JARBASE = $(DIRBASE)/java/classes
+
+RPCGEN=rpcgen
+CPPFLAGS += -I. -I$(DIRINC) 
+
+# target directory
+# ----------------
+DIREXEC= $(DIRBASE)/$(TSP_TARGET)/$(TSP_MODE)
+DIRBIN = $(DIREXEC)/bin
+DIRLIB = $(DIREXEC)/lib
 
 # ---------------
 # Compilers parameters (configure-)detected for the TSP host

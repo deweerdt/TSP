@@ -1,6 +1,6 @@
 # Makerules.rpc
 
-#default RPCGEN is defined in Makeproject
+#default RPCGEN is defined in Makeparams
 
 RPCGEN.UNIX = $(RPCGEN)
 RPCGEN.VX = $(RPCGEN.UNIX)

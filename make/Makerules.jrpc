@@ -1,7 +1,7 @@
 #  -*- Makefile -*-
 # Makerules.jrpc
 
-#default JRPCGEN is defined in Makeproject
+#default JRPCGEN is defined in Makeparams
 #JRPCGEN=$(JAVA) 
 
 #---------------------------------------------------------------#

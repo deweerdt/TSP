@@ -1,11 +1,5 @@
 # Makeparams.linux
 
-# target directory
-# ----------------
-DIREXEC= $(DIRBASE)/$(TSP_TARGET)/$(TSP_MODE)
-DIRBIN = $(DIREXEC)/bin
-DIRLIB = $(DIREXEC)/lib
-
 # Default tools
 # -------------
 # Using standard tools

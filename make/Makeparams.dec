@@ -1,14 +1,9 @@
 # Makeparams.dec
 
-include $(DEVBASE)/make/Makeproject
-
-
-
 # Default tools
 # -------------
-
+# Using standard tools
 RPCGEN=$(DEVBASE)/tools/rpcgen/vxrpcgen
-
 
 # Default options
 # ---------------
@@ -17,4 +12,4 @@ CFLAGS =
 CPPFLAGS += -D_REENTRANT   -DUSE_STRACE -DTSP_NO_XDR_ENCODE -D_OSF_SOURCE -D_XOPEN_SOURCE_EXTENDED
 LDLIBS =   -lm -lpthread  
 
-include .make.state
+#include .make.state
