@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_data_sender.c,v 1.4 2002-10-09 07:34:22 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_data_sender.c,v 1.5 2002-11-19 13:11:45 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -141,39 +141,101 @@ TSP_data_sender_t TSP_data_sender_create(int fifo_size)
 }
 
 /**
- * Send groupe EOF.
+ * Send message control.
  * @param sender sender used to send the data
  * The special group ID groupe EOF indicate the End of Stream for the consumer
+ * @param msg_ctrl The message that must be sent
  * @return TRUE = OK
  */
-int TSP_data_sender_send_eof(TSP_data_sender_t sender)
+int TSP_data_sender_send_msg_ctrl(TSP_data_sender_t sender, TSP_msg_ctrl_t msg_ctrl)
 {
   SFUNC_NAME(TSP_data_sender_send);
 
   TSP_struct_data_sender_t* data_sender = (TSP_struct_data_sender_t*)sender;
-  int* buf_int = (int*)(data_sender->buf);
+  TSP_stream_sender_item_t* fifo_item = 0;
+  char* buf_main = 0;
+  int* buf_int = 0;
+  int tsp_reserved_group;
   int ret = TRUE;
   
   STRACE_IO(("-->IN"));
+
+  /*---------------------------*/
+  /* Traduce enum */
+  switch(msg_ctrl)
+    {
+    case TSP_MSG_CTRL_EOF :
+      tsp_reserved_group = TSP_RESERVED_GROUP_EOF;
+      break;
+    case TSP_MSG_CTRL_RECONF :
+      tsp_reserved_group = TSP_RESERVED_GROUP_RECONF;
+      break;
+    default:
+      STRACE_ERROR(("We should not be there..."));
+      assert(0);
+      return FALSE;
+    }
+
+
+  /*-----------------------*/
+  /* check if we must use our own direct buffer and send the data, or
+     put it in a ringbuffer */
+  if(data_sender->use_stream_sender_fifo)
+    {
+      /* use ringbuffer */
+      fifo_item = RINGBUF_PTR_PUTBYADDR(data_sender->stream_sender_fifo);
+      if(fifo_item)
+	{
+	  buf_main = fifo_item->buf;
+	  fifo_item->len = 0;
+	}
+      else
+	{	  
+	  /* FIXME : gerer l'empilement d'un message d'erreur des qu'il y a de la place dans le ringbuf */
+	  ret = FALSE;
+	  STRACE_WARNING(("Stream sender ringbuf full"));
+	}
+    }
+  else  /* not ringbuffer, use direct buffer */
+    {
+      buf_main = (char*)(data_sender->buf);
+    }
   
-  /*Encode dummy time stamp */
-  
+    
   /*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
   /* FIXME : gere l'empilement du eof dans le ringbuf */
   /*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
 
-  buf_int[0] = TSP_ENCODE_INT(-1);
-  buf_int[1] = TSP_ENCODE_INT(TSP_RESERVED_GROUPE_EOF);
-  
-  if(!TSP_stream_sender_send(data_sender->stream_sender,
-			     data_sender->buf,
-			     sizeof(int)*2))
+ 
+  /*------------------------*/
+  /*Encode data */
+
+  if(ret)
     {
-      STRACE_ERROR(("Function TSP_stream_sender_send failed "));
-      ret = FALSE;
-      
-    }
+      buf_int = (int*)(buf_main);
+      buf_int[0] = TSP_ENCODE_INT(-1);
+      buf_int[1] = TSP_ENCODE_INT(tsp_reserved_group);
   
+      /*------------------------ */
+      /* use ringbuffer or not ? */
+      if(! (data_sender->use_stream_sender_fifo) )
+	{
+	  /* not ringbuffer. send data now */
+	  if( ret && (FALSE == TSP_stream_sender_send(data_sender->stream_sender,
+						      buf_main,
+						      sizeof(int)*2)))
+	    {
+	      STRACE_ERROR(("Function TSP_stream_sender_send failed "));
+	      ret = FALSE;
+	    }
+	}
+      else
+	{
+	  /* use ringbuffer */
+	  fifo_item->len = sizeof(int)*2;
+	  RINGBUF_PTR_PUTBYADDR_COMMIT(data_sender->stream_sender_fifo);
+	}
+    }
   
   STRACE_IO(("-->OUT"));
   
@@ -213,10 +275,11 @@ int TSP_data_sender_send(TSP_data_sender_t _sender, TSP_groups_t _groups, time_s
   group_index = time_stamp % groups_table->table_len;
   group = &(groups_table->groups[group_index]);
     
-  /* check if we must use our own buf, or the stream sender's fifo */
+  /* check if we must use our own direct buffer and send the data, or
+     put it in a ringbuffer */
   if(data_sender->use_stream_sender_fifo)
     {
-      /* yep */
+      /* use ringbuffer */
       fifo_item = RINGBUF_PTR_PUTBYADDR(data_sender->stream_sender_fifo);
       if(fifo_item)
 	{
@@ -229,10 +292,8 @@ int TSP_data_sender_send(TSP_data_sender_t _sender, TSP_groups_t _groups, time_s
 	  ret = FALSE;
 	  STRACE_WARNING(("Stream sender ringbuf full"));
 	}
-
-
     }
-  else
+  else  /* not ringbuffer, use direct buffer */
     {
       buf_main = (char*)(data_sender->buf);
     }
@@ -272,22 +333,21 @@ int TSP_data_sender_send(TSP_data_sender_t _sender, TSP_groups_t _groups, time_s
 	    } /*for*/
 
 
-	  /* FIFO or not FIFO ? */
+	  /* use ringbuffer or not ? */
 	  if(! (data_sender->use_stream_sender_fifo) )
 	    {
-	      /* Not FIFO */
+	      /* not ringbuffer. send data now */
 	      if( ret && (FALSE == TSP_stream_sender_send(data_sender->stream_sender,
 							  buf_main,
 							  buf_char - buf_main)))
 		{
 		  STRACE_ERROR(("Function TSP_stream_sender_send failed "));
 		  ret = FALSE;
-
 		}
 	    }
 	  else
 	    {
-	      /* FIFO */
+	      /* use ringbuffer */
 	      fifo_item->len = buf_char - buf_main;
 	      RINGBUF_PTR_PUTBYADDR_COMMIT(data_sender->stream_sender_fifo);
 	    }
