@@ -26,18 +26,19 @@ $(RPC).h : $(RPC).x
 	@echo "#endif /* !VXWORKS */" >> $(RPC)_svc.c
 	$(RPCGEN) $(RPCGENFLAGS) -m $(RPC).x >> $(RPC)_svc.c 
 
-rpc.server.bin : $(RPC_SVC_SRC:%.c=$(DIRBIN)/%.o) $(RPC_SERVER_SRC:%.c=$(DIRBIN)/%.o)
+rpc.server.bin : $(RPC_SVC_SRC:%.c=$(DIROBJ)/%.o) $(RPC_SERVER_SRC:%.c=$(DIROBJ)/%.o)
  
 rpc.server.lib : $(DIRLIB)/lib$(RPC_LIB_SUFFIX).a($(RPC_SVC_SRC:%.c=%.o) $(RPC_SERVER_SRC:%.c=%.o))
  
-rpc.client.bin : $(RPC_CLNT_SRC:%.c=$(DIRBIN)/%.o) $(RPC_CLIENT_SRC:%.c=$(DIRBIN)/%.o)
+rpc.client.bin : $(RPC_CLNT_SRC:%.c=$(DIROBJ)/%.o) $(RPC_CLIENT_SRC:%.c=$(DIROBJ)/%.o)
  
 rpc.client.lib : $(DIRLIB)/lib$(RPC_LIB_SUFFIX).a($(RPC_CLNT_SRC:%.c=%.o) $(RPC_CLIENT_SRC:%.c=%.o))
 
 rpc.clean:
-	@echo "@@@ removing RPC server objects and client objects ..."
+	@echo "@@@ removing RPC server objects and client objects [from dirobj]..."
 	$(RM) $(RPC).h $(RPC_FILES_SRC)
-	$(RM) $(RPC_FILES_SRC:%.c=$(DIRBIN)/%.o)
-	$(RM) $(RPC_SERVER_SRC:%.c=$(DIRBIN)/%.o) 
-	$(RM) $(RPC_CLIENT_SRC:%.c=$(DIRBIN)/%.o) 
-	$(RM) $(DIRLIB)/lib$(RPC)$(RPC_LIB_SUFFIX).a
+	$(RM) $(RPC_FILES_SRC:%.c=$(DIROBJ)/%.o)
+	$(RM) $(RPC_SERVER_SRC:%.c=$(DIROBJ)/%.o) 
+	$(RM) $(RPC_CLIENT_SRC:%.c=$(DIROBJ)/%.o) 
+	@echo "@@@ removing RPC server objects and client objects [from lib]..."
+	$(AR) -d $(DIRLIB)/lib$(RPC_LIB_SUFFIX).a $(RPC_CLNT_SRC:%.c=%.o) $(RPC_CLIENT_SRC:%.c=%.o) $(RPC_SVC_SRC:%.c=%.o) $(RPC_SERVER_SRC:%.c=%.o) 
