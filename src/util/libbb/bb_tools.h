@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_tools.h,v 1.2 2005-02-22 21:57:15 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_tools.h,v 1.3 2005-02-23 01:28:28 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -119,6 +119,7 @@ typedef struct bbtools_request {
   FILE*            stream;
   char*            bbname;
   S_BB_T*          theBB;
+  char             newline[2];
 } bbtools_request_t;
 	      
 #ifdef BB_TOOLS_C

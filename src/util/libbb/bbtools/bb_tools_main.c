@@ -44,7 +44,7 @@ main (int argc, char ** argv) {
   bbtools_init(&the_request);
   
   /* Analyse command line parameters */
-  while (opt_ok && (EOF != (c_opt = getopt(argc,argv,"svh")))) {    
+  while (opt_ok && (EOF != (c_opt = getopt(argc,argv,"nsvh")))) {    
     switch (c_opt) {
     case 's':
       the_request.silent  = 1;
@@ -67,6 +67,10 @@ main (int argc, char ** argv) {
     case 'h':
       opt_ok             = 0;
       the_request.cmd    = E_BBTOOLS_HELP;
+      break;
+    case 'n':
+      opt_ok++;
+      the_request.newline[0] = '\0' ;
       break;
     case '?':
       fprintf(stderr,"%s::Invalid command line option(s), correct it and rerun\n",argv[0]);

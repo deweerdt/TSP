@@ -1,7 +1,7 @@
 
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_tools.c,v 1.2 2005-02-22 21:57:15 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_tools.c,v 1.3 2005-02-23 01:28:28 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -74,6 +74,8 @@ bbtools_init(bbtools_request_t* req) {
   req->stream        = stdout;
   req->bbname        = NULL;
   req->theBB         = NULL;
+  req->newline[1]    = '\0';
+  req->newline[0]    = '\n';
 }  /* end of bbtools_init */
 
 E_BBTOOLS_CMD_T 
@@ -130,11 +132,17 @@ bbtools_checkargs(bbtools_request_t* req) {
    */
   if ((E_BBTOOLS_GENERIC == retval) && (req->argc - req->nb_global_opt)>1) {
     retval = bbtools_cmd(req->argv[1+req->nb_global_opt]);
+    /* shift argv */
+    req->argv = &(req->argv[2+req->nb_global_opt]);    
+    /* shift argc since we are in the bb_tools generic call case */
+    req->argc -= 2 + req->nb_global_opt;
+  }  else {
+    /* shift argv */
     req->argv = &(req->argv[1+req->nb_global_opt]);    
-  } 
-  // else we return E_BBTOOLS_GENERIC specifying we do not have enough argument
-  
-  
+    /* shift argc since we are in the bb_tools generic call case */
+    req->argc -= 1 + req->nb_global_opt;
+  }
+
   return retval;
 } /* end of bb_tools_checkargs */
 
@@ -147,6 +155,36 @@ bbtools_checkbbname(const char* bbname) {
   }  
   return retval;
 } /* end of bbtools_checkbbname */
+
+
+int32_t
+bbtools_parsearrayname(const char* provided_symname, S_BB_DATADESC_T* sym_data_desc, int32_t* array_index) {
+  char*    array_name;
+  char*    symname;
+  int32_t  retcode = 0;
+  assert(sym_data_desc);
+
+  symname = strdup(provided_symname);
+
+  array_name = strstr(symname,"[");
+  if (array_name) {
+    char* temp = "%d";
+    char* temp2;
+    temp2  = strdup(symname);
+    array_name  = strtok(temp2,"[");
+    strncpy(sym_data_desc->name,array_name,VARNAME_MAX_SIZE);
+    array_name = strtok(NULL,"]");
+    if (sscanf(array_name,temp,array_index)<1) {
+      retcode = -1;
+    }
+    free(temp2);
+  } else {
+    *array_index = -1;
+    strncpy(sym_data_desc->name,provided_symname,VARNAME_MAX_SIZE);  
+  }
+  free(symname);
+  return retcode;
+} /* end bbtools_parsearrayname */
 
 
 int32_t
@@ -168,13 +206,14 @@ bbtools(bbtools_request_t* req) {
    */
   if (!((E_BBTOOLS_UNKNOWN==req->cmd) || 
 	(E_BBTOOLS_GENERIC==req->cmd) ||  
-	(E_BBTOOLS_HELP==req->cmd) ||  
+	(E_BBTOOLS_HELP   ==req->cmd) ||  
 	(E_BBTOOLS_CHECKID==req->cmd) ||
 	(E_BBTOOLS_CREATE ==req->cmd))
-       
+      /* should not try to open BB if the bbname arg is missing */
+      && (req->argc > 0)
       ) {
     /* first request arg should be bbname */
-    req->theBB=bbtools_checkbbname(req->argv[0]);
+    req->theBB=bbtools_checkbbname(req->argv[0]);    
     if (NULL == req->theBB) {
       if (!req->silent) {
 	bbtools_logMsg(req->stream,
@@ -182,6 +221,8 @@ bbtools(bbtools_request_t* req) {
 		       req->argv[0]);
       }
       return -1;
+    } else { /* assign bbname */
+      req->bbname = req->argv[0];
     }
   }
 
@@ -192,6 +233,9 @@ bbtools(bbtools_request_t* req) {
     return -1;
     break;  
   case E_BBTOOLS_GENERIC:
+    req->stream = stdout;
+    bbtools_usage(req);
+    break;
   case E_BBTOOLS_HELP:
     req->stream = stdout;
     bbtools_usage(req);
@@ -273,6 +317,7 @@ bbtools_usage(bbtools_request_t* req) {
     fprintf(req->stream,"   bbtools_opts:\n");
     fprintf(req->stream,"    -s silent mode (may be used for silent scripting)\n");
     fprintf(req->stream,"    -v verbose mode\n");
+    fprintf(req->stream,"    -n no newline read mode\n");
     fprintf(req->stream,"   supported <bbtools_cmd> are: \n");
     for (i=E_BBTOOLS_GENERIC+1;i<E_BBTOOLS_LASTCMD;++i) {
       fprintf(req->stream,
@@ -294,16 +339,26 @@ bbtools_usage(bbtools_request_t* req) {
 	    bbtools_cmdname_tab[E_BBTOOLS_WRITE]);    	    
     break;    
   case E_BBTOOLS_DUMP:
-  case E_BBTOOLS_FIND:
+    fprintf(req->stream,"Usage : %s <bbname>\n",
+	    bbtools_cmdname_tab[E_BBTOOLS_DUMP]);    	    
+    break;
+  case E_BBTOOLS_FIND:    
+    break;
   case E_BBTOOLS_CHECKID:
     	fprintf(req->stream,
-		"Usage: %s <bbname> <user_specific_value>\n",
+		"Usage: %s <bbname> [<user_specific_value>]\n",
 		bbtools_cmdname_tab[E_BBTOOLS_CHECKID]);
     break;
   case E_BBTOOLS_DESTROY:
+    fprintf(req->stream,"Usage : %s <bbname>\n",
+	    bbtools_cmdname_tab[E_BBTOOLS_DESTROY]);    	  
+    break;
   case E_BBTOOLS_CREATE:
+    break;
   case E_BBTOOLS_PUBLISH:
+    break;
   case E_BBTOOLS_SYNCHRO_SEND:
+    break;
   case E_BBTOOLS_SYNCHRO_RECV:
     break;
   default:
@@ -325,22 +380,190 @@ bbtools_unimplemented_cmd(const char* cmdname) {
 
 int32_t 
 bbtools_read(bbtools_request_t* req) {
-  return  bbtools_unimplemented_cmd(bbtools_cmdname_tab[E_BBTOOLS_READ]);
+  int32_t retval  = 0;
+  S_BB_DATADESC_T sym_data_desc;
+  int32_t array_index;
+  void *sym_value;
+  
+  if (req->argc<2) {
+    bbtools_logMsg(req->stream,"%s: <%d> argument(s) missing\n",
+		   bbtools_cmdname_tab[E_BBTOOLS_READ],
+		   2-req->argc);
+    bbtools_usage(req);
+    retval = -1;
+    return retval;
+  }
+  if (bbtools_parsearrayname(req->argv[1],&sym_data_desc,&array_index)) {
+    bbtools_logMsg(req->stream,"%s: cannot parse symname <%s>",
+		   bbtools_cmdname_tab[E_BBTOOLS_READ],
+		   req->argv[1]);
+    retval = -1;
+  } else {
+    /* scalar read case */
+    if (-1 == array_index) {
+      if (req->verbose) {
+	bbtools_logMsg(req->stream,
+		       "%s: Trying to read symbol <%s> on blackboard <%s>...\n",
+		       bbtools_cmdname_tab[E_BBTOOLS_READ],
+		       sym_data_desc.name,
+		       req->bbname);
+      }
+    } else { /* single array element case */
+      if (req->verbose) {
+	bbtools_logMsg(req->stream,
+		       "%s: Trying to read index <%d> of array symbol <%s> on blackboard <%s>...\n",
+		       bbtools_cmdname_tab[E_BBTOOLS_READ],
+		       array_index,
+		       sym_data_desc.name,
+		       req->bbname);
+      }		       
+    }
+    /* 
+     * Use low-level subscribe in order to discover the 
+     * type of the variable
+     */
+    sym_value = bb_subscribe(req->theBB,&sym_data_desc);    
+
+    if (NULL==sym_value) {
+      bbtools_logMsg(req->stream,"%s: symbol <%s> not found in BB <%s>\n",
+		     bbtools_cmdname_tab[E_BBTOOLS_READ],
+		     sym_data_desc.name,
+		     req->bbname);
+    } else {
+      if ((array_index!=-1) && (sym_data_desc.dimension <= array_index)) {
+	bbtools_logMsg(req->stream,"%s: index <%d> exceeding symbol array dimension <%d>\n",
+		       bbtools_cmdname_tab[E_BBTOOLS_READ],
+		       array_index,
+		       sym_data_desc.dimension);
+      } else {
+	if (req->verbose) {
+	  bb_data_header_print(sym_data_desc,req->stream,array_index);
+	  bb_value_print(req->theBB,sym_data_desc,req->stream,array_index);
+	  bb_data_footer_print(sym_data_desc,req->stream,array_index);
+	} else {
+	  bb_value_print(req->theBB,sym_data_desc,req->stream,array_index);
+	  fprintf(req->stream,"%s",req->newline);
+	}
+      }
+    }	       
+  }
+
+  return retval;
+
 } /* end of bbtools_read */
 
 int32_t 
 bbtools_write(bbtools_request_t* req) {
-  return  bbtools_unimplemented_cmd(bbtools_cmdname_tab[E_BBTOOLS_WRITE]);
+  int32_t retval = 0;
+  S_BB_DATADESC_T sym_data_desc;
+  int32_t array_index;
+  void *sym_value;
+
+  if (req->argc<3) {
+    bbtools_logMsg(req->stream,"%s: <%d> argument(s) missing\n",
+		   bbtools_cmdname_tab[E_BBTOOLS_WRITE],
+		   3-req->argc);
+    bbtools_usage(req);
+    retval = -1;
+    return retval;
+  }
+
+  if (bbtools_parsearrayname(req->argv[1],&sym_data_desc,&array_index)) {
+    bbtools_logMsg(req->stream,"%s: cannot parse symname <%s>",
+		   bbtools_cmdname_tab[E_BBTOOLS_WRITE],
+		   req->argv[1]);
+    retval = -1;
+  } else {
+    /* scalar write case */
+    if (-1 == array_index) {
+      if (req->verbose) {
+	bbtools_logMsg(req->stream,
+		       "%s: Trying to write symbol <%s> on blackboard <%s>...\n",
+		       bbtools_cmdname_tab[E_BBTOOLS_WRITE],
+		       sym_data_desc.name,
+		       req->bbname);
+      }
+    } else { /* single array element case */      
+      if (req->verbose) {
+	bbtools_logMsg(req->stream,
+		       "%s: Trying to write index <%d> of array symbol <%s> on blackboard <%s>...\n",
+		       bbtools_cmdname_tab[E_BBTOOLS_WRITE],
+		       array_index,
+		       sym_data_desc.name,
+		       req->bbname);
+      }		       
+    }
+    /* 
+     * Use low-level subscribe in order to discover the 
+     * type of the variable
+     */
+    sym_value = bb_subscribe(req->theBB,&sym_data_desc);
+    if ((sym_data_desc.dimension>1) && (-1==array_index)) {
+      if (req->verbose) {
+	  bbtools_logMsg(req->stream,"%s: Implicit first array element write\n",
+			 bbtools_cmdname_tab[E_BBTOOLS_WRITE]);
+
+      }
+      array_index = 0;
+      if (req->verbose) {
+	bbtools_logMsg(req->stream,
+		       "%s: Trying to write index <%d> of array symbol <%s> on blackboard <%s>...\n",
+		       bbtools_cmdname_tab[E_BBTOOLS_WRITE],
+		       array_index,
+		       sym_data_desc.name,
+		       req->bbname);
+      }
+    }
+
+    if (NULL==sym_value) {
+      bbtools_logMsg(req->stream,"%s: symbol <%s> not found in BB <%s>\n",
+		     bbtools_cmdname_tab[E_BBTOOLS_WRITE],
+		     sym_data_desc.name,
+		     req->bbname);
+    } else {
+      if ((array_index!=-1) && (sym_data_desc.dimension <= array_index)) {
+	bbtools_logMsg(req->stream,"%s: index <%d> exceeding symbol array dimension <%d>\n",
+		       bbtools_cmdname_tab[E_BBTOOLS_WRITE],
+		       array_index,
+		       sym_data_desc.dimension);
+      } else {
+	if (req->verbose) {
+	  bbtools_logMsg(req->stream,"Writing <%s>\n",
+			 req->argv[2]);
+	}
+	bb_value_write(req->theBB,sym_data_desc,req->argv[2],array_index);
+      }
+    }	       
+  }
+  return retval;
 }  /* end of bbtools_write */
 
 int32_t 
 bbtools_dump(bbtools_request_t* req) {
-   return  bbtools_unimplemented_cmd(bbtools_cmdname_tab[E_BBTOOLS_DUMP]);
+  int32_t retcode = 0;
+  if (req->argc<1) {
+    bbtools_logMsg(req->stream,"%s: <%d> argument missing\n", 
+		   bbtools_cmdname_tab[E_BBTOOLS_DUMP],
+		   1-req->argc);
+    bbtools_usage(req);
+    retcode = -1;
+    return retcode;
+  }
+  if (req->verbose) {
+    bbtools_logMsg(req->stream,
+		   "%s: dump BB <%s>\n",
+		   bbtools_cmdname_tab[E_BBTOOLS_DUMP],
+		   req->bbname);
+  }
+  retcode = bb_dump(req->theBB,req->stream);
+  return retcode;
 }  /* end of bbtools_dump */
 
 int32_t
 bbtools_find(bbtools_request_t* req) {
-   return  bbtools_unimplemented_cmd(bbtools_cmdname_tab[E_BBTOOLS_FIND]);
+  int32_t retcode = 0;
+  retcode = bbtools_unimplemented_cmd(bbtools_cmdname_tab[E_BBTOOLS_FIND]);
+  return retcode;
 }  /* end of bbtools_find */
 
 int32_t
@@ -351,18 +574,29 @@ bbtools_checkid(bbtools_request_t* req) {
   char*   sem_name;
   char*   msg_name;
   
-  if (req->argc<3) {
-    bbtools_logMsg(req->stream,"%s : argument missing\n", bbtools_cmdname_tab[E_BBTOOLS_CHECKID]);
+  if (req->argc<1) {
+    bbtools_logMsg(req->stream,"%s: at least <%d> argument(s) missing\n", 
+		   bbtools_cmdname_tab[E_BBTOOLS_CHECKID],
+		   1-req->argc);
     bbtools_usage(req);
     retcode = -1;
     return retcode;
   }
 
-  user_specific_value = atoi(req->argv[2]);
 
-  shm_name = bb_utils_build_shm_name(req->argv[1]);
-  sem_name = bb_utils_build_sem_name(req->argv[1]);
-  msg_name = bb_utils_build_msg_name(req->argv[1]);
+  if (req->argc > 1) {
+    user_specific_value = atoi(req->argv[1]);
+  } else {
+    user_specific_value = getuid();
+  }
+  if (req->verbose) {
+    fprintf(stdout,"Computing BB IPC ID for BB <%s> with specific user value <%d>\n",
+	    req->argv[0],user_specific_value);
+  }
+
+  shm_name = bb_utils_build_shm_name(req->argv[0]);
+  sem_name = bb_utils_build_sem_name(req->argv[0]);
+  msg_name = bb_utils_build_msg_name(req->argv[0]);
   bbtools_logMsg(req->stream,
 		 "SHM Key [name=<%s>] is 0x%08x\n",
 		 shm_name,
@@ -379,30 +613,54 @@ bbtools_checkid(bbtools_request_t* req) {
   free(msg_name);
   free(sem_name);    
   free(shm_name);
-  return  bbtools_unimplemented_cmd(bbtools_cmdname_tab[E_BBTOOLS_CHECKID]);
+  return  retcode;
 } /* end of bbtools_checkid */
 
 int32_t
 bbtools_destroy(bbtools_request_t* req) {
-  return  bbtools_unimplemented_cmd(bbtools_cmdname_tab[E_BBTOOLS_DESTROY]);
+  int32_t retcode = 0;
+  if (req->argc<1) {
+    bbtools_logMsg(req->stream,"%s: <%d> argument missing\n", 
+		   bbtools_cmdname_tab[E_BBTOOLS_DESTROY],
+		   1-req->argc);
+    bbtools_usage(req);
+    retcode = -1;
+    return retcode;
+  }
+  if (req->verbose) {
+    bbtools_logMsg(req->stream,
+		   "%s: destroying BB <%s>\n",
+		   bbtools_cmdname_tab[E_BBTOOLS_DESTROY],
+		   req->bbname);
+  }
+  retcode = bb_destroy(&(req->theBB));
+  return retcode;
 }  /* end of bbtools_destroy */
 
 int32_t
 bbtools_create(bbtools_request_t* req) {
-  return  bbtools_unimplemented_cmd(bbtools_cmdname_tab[E_BBTOOLS_CREATE]);
+  int32_t retcode = 0;
+  retcode = bbtools_unimplemented_cmd(bbtools_cmdname_tab[E_BBTOOLS_CREATE]);
+  return retcode;
 }  /* end of bbtools_create */
 
 int32_t
 bbtools_publish(bbtools_request_t* req) {
-  return  bbtools_unimplemented_cmd(bbtools_cmdname_tab[E_BBTOOLS_PUBLISH]);
+  int32_t retcode = 0;
+  retcode = bbtools_unimplemented_cmd(bbtools_cmdname_tab[E_BBTOOLS_PUBLISH]);
+  return retcode;
 } /* end of bbtools_publish */
 
 int32_t
 bbtools_synchro_send(bbtools_request_t* req) {
-  return  bbtools_unimplemented_cmd(bbtools_cmdname_tab[E_BBTOOLS_SYNCHRO_SEND]);
+  int32_t retcode = 0;
+  retcode = bbtools_unimplemented_cmd(bbtools_cmdname_tab[E_BBTOOLS_SYNCHRO_SEND]);
+  return retcode;
 } /* end of bbtools_synchro_send */
 
 int32_t
 bbtools_synchro_recv(bbtools_request_t* req) {
- return  bbtools_unimplemented_cmd(bbtools_cmdname_tab[E_BBTOOLS_SYNCHRO_RECV]);
+  int32_t retcode = 0;
+  retcode = bbtools_unimplemented_cmd(bbtools_cmdname_tab[E_BBTOOLS_SYNCHRO_RECV]);
+  return retcode;
 } /* end of bbtools_synchro_recv */
