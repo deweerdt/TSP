@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: tsp_provider.c,v 1.24 2004-09-24 15:46:56 tractobob Exp $
+$Id: tsp_provider.c,v 1.25 2004-10-07 09:01:18 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -40,7 +40,6 @@ Purpose   : Main implementation for the producer module
 #include "tsp_provider.h"
 
 #include "tsp_session.h"
-#include "tsp_datapool.h"
 #include "glue_sserver.h"	
 #include "tsp_time.h"	
 
@@ -536,6 +535,8 @@ void* TSP_provider_garbage_collector_thread(void* dummy)
        tsp_usleep(TSP_GARBAGE_COLLECTOR_POLL_TIME_US);
      }
 
+   /* never reached */
+   return (void*)NULL;
 }
 
 

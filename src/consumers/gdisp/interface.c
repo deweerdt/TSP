@@ -119,7 +119,7 @@ redraw_widgets (gpointer data)
   char buffer[512];
   int var_index, var_offset, var_drvnum;
   
-  double val_double;
+  double val_double = 0;
   int i, j;
   TSP_sample_t sample;
   int new_sample;
@@ -194,7 +194,7 @@ redraw_widgets (gpointer data)
 	/*TODO*/
 	/*bstable_get_double_value(var->text, &val_double);*/
 	label = GTK_LABEL(var->widget);
-	sprintf(buffer, LABEL_HEXA_FORMAT, var->legend == NULL ? var->text : var->legend, val_double);
+	sprintf(buffer, LABEL_HEXA_FORMAT, var->legend == NULL ? var->text : var->legend, (unsigned int) val_double);
 	gtk_label_set_text(label, "FIXME : VAR_HEXA");
 	break;
       default:
@@ -562,7 +562,7 @@ create_mainwin (conf_data_t* conf_data, const gchar* conf_file_name)
 	gtk_widget_set_usize (togglebutton, 27, 24);
 	gtk_signal_connect (GTK_OBJECT (togglebutton), "toggled",
 			    GTK_SIGNAL_FUNC (on_togglebutton_toggled),
-			    (gpointer)i+1);
+			    (gpointer)(i+1));
 
 
 	/* Add variables in page */
