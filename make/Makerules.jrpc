@@ -1,0 +1,43 @@
+#  -*- Makefile -*-
+# Makerules.jrpc
+
+#default JRPCGEN is defined in Makeproject
+#JRPCGEN=$(JAVA) 
+
+#---------------------------------------------------------------#
+#       Files
+#---------------------------------------------------------------#
+RPC_FILES_SRC = $(RPC).java $(RPC)ClientStub.java $(RPC)ServerStub.java
+
+RPC_CLNT_SRC =  $(RPC).java $(RPC)ClientStub.java
+RPC_SVC_SRC  =  $(RPC).java $(RPC)ServerStub.java
+
+OBJECTS_CLNT =  $(RPC_CLNT_SRC:%.java=$(CLASSBASE)/$(JPACKAGEDIR)/%.class) \
+		$(RPC_CLIENT_SRC:%.java=$(CLASSBASE)/$(JPACKAGEDIR)/%.class)
+OBJECTS_SVC  =  $(RPC_SVC_SRC:%.java=$(CLASSBASE)/$(JPACKAGEDIR)/%.class) \
+		$(RPC_SERVER_SRC:%.java=$(CLASSBASE)/$(JPACKAGEDIR)/%.class)
+
+# Building rules section
+# ----------------------
+
+rpcgen: $(RPC).java
+
+$(RPC).java : $(RPC).x 
+	@echo "@@@ Generating JRPC stubs (RPC client side) ..."
+	$(JRPCGEN) -p $(JPACKAGE) -c $(RPC)ClientStub -noserver $(RPC).x
+	@echo "@@@ Generating JRPC stubs (RPC server side) ..."
+	$(JRPCGEN) -p $(JPACKAGE) -s $(RPC)ServerStub -noclient $(RPC).x
+	$(JAVAC) $(JFLAGS) -classpath $(CLASSBASE):$(JARBASE):$(JRPCBASE)/classes \
+	-d $(CLASSBASE) TSP_*_t.java
+
+rpc.server.bin : $(OBJECTS_SVC) 
+
+rpc.client.bin : $(OBJECTS_CLNT)
+
+rpc.clean:
+	@echo "@@@ removing RPC server objects and client objects ..."
+	$(RM) *~
+	$(RM) $(RPC).java $(RPC_FILES_SRC) 
+	$(RM) TSP_*_t.java
+	$(RM) -rf $(CLASSBASE)/$(JPACKAGEDIR)
+
