@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.27 2004-09-27 12:18:00 tractobob Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.28 2004-09-27 13:48:18 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -378,15 +378,16 @@ int TSP_consumer_init(int* argc, char** argv[])
 
 
 
-void TSP_consumer_end()
-{
+void TSP_consumer_end(void)
+{	
+
   STRACE_IO(("-->IN"));
   
   /* This is the end my friend ... the end ...*/
 
   /* Some day, we will find stuff to do here ;) */
 
-  /* By the way. do ->NOT<- free X_tsp_argv and X_argv,
+   /* By the way. do ->NOT<- free X_tsp_argv and X_argv,
      the main code may be using them... */
 
   STRACE_INFO(("End..."));
@@ -401,29 +402,21 @@ TSP_provider_t* TSP_consumer_connect_url(const char*  url)
   TSP_server_info_string_t server_info;
 
   int i, servernumber;
-  char url_tok[MAXHOSTNAMELEN], *protocol, *hostname, *servername, *p;
+  char url_tok[2*MAXHOSTNAMELEN], url_lkup[2*MAXHOSTNAMELEN];
+  char *protocol, *hostname, *servername, *p;
 
-  /** Parse (simply ...) URL **/
-  /** Possible uses are :
-
-      PROTOCOL://HOST/SERVER:PORT
-      PROTOCOL://HOST/SERVER     = PROTOCOL://HOST/SERVER:(find first)
-      PROTOCOL://HOST/:0         = PROTOCOL://HOST/(find any):0
-      PROTOCOL://HOST            = PROTOCOL://HOST/(find any):(find first)
-      PROTOCOL://                = PROTOCOL://localhost/(find any):(find first)
-      /// or :///                 = rpc://localhost/(find any):(find first)
-
-      Others may have unpredictable results ... 
-  **/
- 
+  /** Parse (simply ...) URL **/ 
   protocol = NULL;
   hostname = NULL;
   servername = NULL;
   servernumber = -1;
 
+  if(!url)
+    url = "";
+
   bzero(url_tok, sizeof(url_tok));
   strcpy(url_tok, url);
-
+    
   protocol = url_tok;
   p = strstr(url_tok, "://");
   if(!p)
@@ -469,7 +462,7 @@ TSP_provider_t* TSP_consumer_connect_url(const char*  url)
   if(!p)
     {
       /* servername should be OK (or 0 length), set p to number field */
-      p = servername;
+      p = servername + strlen(servername);
     }
   else
     {
@@ -479,18 +472,20 @@ TSP_provider_t* TSP_consumer_connect_url(const char*  url)
     }
 
   if(*p)
-    servernumber = atoi(p);
+    {
+      servernumber = atoi(p);
+      if(errno == EINVAL)
+	servernumber = -1;
+    }
 
-  printf("Looking for URL <");
-  printf(TSP_URL_FORMAT, protocol, hostname, servername, servernumber);
-  printf(">\n");
 
   /** Full URL, or without server name : try to connect to server number **/
-  if( strlen(protocol) != 0 && servernumber >= 0 )
+  if( servernumber >= 0 )
     {
-      /* Is server number alive on given host ?*/ 
-      STRACE_DEBUG(("Trying to open server %d on %s", servernumber, hostname ));
-      /* FIXME : should we try server_name here ? */
+      sprintf(url_lkup, TSP_URL_FORMAT, protocol, hostname, servername, servernumber);
+      STRACE_INFO(("Trying to connect to <%s>", url_lkup ));
+
+      /* Is server name/number alive on given host on that protocol ?*/ 
       if(TSP_remote_open_server(  protocol,
 				  hostname,
 				  servername,
@@ -502,23 +497,22 @@ TSP_provider_t* TSP_consumer_connect_url(const char*  url)
 	  return (TSP_provider_t*)TSP_new_object_tsp(server, server_info);
 	}
       
-      STRACE_ERROR(("No such TSP provider on URL %s", url));
+      STRACE_ERROR(("No TSP provider on URL <%s>", url_lkup));
       return NULL;
     }
 else
     {
-      /** Partial URL, without server number : try to find one **/
+      /** Partial URL, without server number : try to find one, by recursion **/
       int server_max_number = TSP_get_server_max_number();
-      char new_url[MAXHOSTNAMELEN];
-      
+       
       for(i = 0; i < server_max_number; i++)
 	{
-	  sprintf(new_url, TSP_URL_FORMAT, protocol, hostname, servername, i);
-	  provider = TSP_consumer_connect_url(new_url);
+	  sprintf(url_lkup, TSP_URL_FORMAT, protocol, hostname, servername, i);
+	  provider = TSP_consumer_connect_url(url_lkup);
 	  if(provider)
 	    return provider;
 	}
-      STRACE_ERROR(("No such TSP provider on URL %s", url));
+      STRACE_ERROR(("No TSP provider based on URL <%s>", url));
       return NULL;
       
     }
@@ -527,6 +521,23 @@ else
   return NULL;
 }
 
+void TSP_consumer_disconnect_one(TSP_provider_t provider)
+{	
+  TSP_otsp_t* otsp = (TSP_otsp_t*)provider;
+
+  STRACE_IO(("-->IN"));
+  
+  TSP_remote_close_server(otsp->server);
+  TSP_delete_object_tsp(otsp);
+  	
+  STRACE_IO(("-->OUT"));
+
+}
+
+
+
+/*--- Connect/Disconnect All & Get Connected name deprecated ... ---*/
+
 void TSP_consumer_connect_all(const char*  host_name, TSP_provider_t** providers, int* nb_providers)
 {	
 	
@@ -534,6 +545,8 @@ void TSP_consumer_connect_all(const char*  host_name, TSP_provider_t** providers
 
   /* Get max number of provider allowed on any host */
   int server_max_number = TSP_get_server_max_number();
+
+  fprintf(stderr, "\n\007This function is now deprecated, use TSP_consumer_connect_url instead\007\n");
 
   STRACE_IO(("-->IN"));
 	
@@ -589,13 +602,16 @@ void TSP_consumer_connect_all(const char*  host_name, TSP_provider_t** providers
 
 }
 
+
 void TSP_consumer_disconnect_all(TSP_provider_t providers[])
 {	
   int server_max_number;
   int i;
 	
   STRACE_IO(("-->IN"));
-	
+
+  fprintf(stderr, "\n\007This function is now deprecated, use TSP_consumer_disconnect_one instead\007\n");
+
   server_max_number = TSP_get_server_max_number();
   if( server_max_number > 0 )
     {
@@ -621,19 +637,7 @@ void TSP_consumer_disconnect_all(TSP_provider_t providers[])
 
 }
 
-
-void TSP_consumer_disconnect_one(TSP_provider_t provider)
-{	
-  TSP_otsp_t* otsp = (TSP_otsp_t*)provider;
-
-  STRACE_IO(("-->IN"));
-  
-  TSP_remote_close_server(otsp->server);
-  TSP_delete_object_tsp(otsp);
-  	
-  STRACE_IO(("-->OUT"));
-
-}
+/*--- End of deprecated functions ---*/
 
 const char* TSP_consumer_get_connected_name(TSP_provider_t provider)			  
 {

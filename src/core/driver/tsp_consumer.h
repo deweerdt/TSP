@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: tsp_consumer.h,v 1.16 2003-12-27 13:30:59 uid67973 Exp $
+$Id: tsp_consumer.h,v 1.17 2004-09-27 13:48:18 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -24,9 +24,9 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 -----------------------------------------------------------------------
 
-Project   : TSP
-Maintainer : tsp@astrium-space.com
-Component : Consumer
+Project    : TSP
+Maintainer : tsp@astrium.eads.net
+Component  : Consumer
 
 -----------------------------------------------------------------------
 
@@ -173,6 +173,12 @@ int TSP_consumer_init(int* argc, char** argv[]);
 void TSP_consumer_end();
 
 
+/*----
+  TSP_consumer_connect_all
+  TSP_consumer_disconnect_all
+                       deprecated, use URL connection instead 
+---*/
+
 /**
 * Connects to all found providers on the given host.
 * The consumer may use the TSP_consumer_get_connected_name to retreive information about
@@ -189,13 +195,22 @@ void TSP_consumer_connect_all(const char* host_name,
 * Disconnected all found providers.
 * @param providers Array of providers from which we want to be disconnected
 */
-void TSP_consumer_disconnect_all(TSP_provider_t providers[]);				  
+void TSP_consumer_disconnect_all(TSP_provider_t providers[]);				 
 
 /**
- * Disconnect one given provider.
- * FIXME : not implemented at all  :(
- */ 
-void TSP_consumer_disconnect_one(TSP_provider_t provider);
+* Connects to a provider based on a given URL.
+* @param url   URL to the provider that must be opened
+* Possible formats for URL are :
+*      PROTOCOL://HOST/SERVER:PORT
+*      PROTOCOL://HOST/SERVER     = PROTOCOL://HOST/SERVER:(find first)
+*      PROTOCOL://HOST/:0         = PROTOCOL://HOST/(find any):0
+*      PROTOCOL://HOST            = PROTOCOL://HOST/(find any):(find first)
+*      PROTOCOL:// or PROTOCOL    = PROTOCOL://localhost/(find any):(find first)
+*      void, /, //, /// or :///   = rpc://localhost/(find any):(find first)
+*
+*      Others may have unpredictable results ... 
+*/
+TSP_provider_t* TSP_consumer_connect_url(const char* url);
 
 
 /** 
@@ -205,7 +220,15 @@ void TSP_consumer_disconnect_one(TSP_provider_t provider);
  * @param provider The provider handle
  * @return The provider name
  */				  
-const char* TSP_consumer_get_connected_name(TSP_provider_t provider);			  
+const char* TSP_consumer_get_connected_name(TSP_provider_t provider);		
+
+/**
+ * Disconnect one given provider.
+ */ 
+void TSP_consumer_disconnect_one(TSP_provider_t provider);
+
+
+	  
 
 /** 
  * Ask the provider for a new consumer session.
