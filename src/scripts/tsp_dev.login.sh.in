@@ -35,7 +35,7 @@ export DEVBASE=$TSP_BASE
 echo "Using DEVBASE=$DEVBASE"
 
 if [ -z "$STRACE_DEBUG" ]; then 
-    export STRACE_DEBUG=3
+    export STRACE_DEBUG=1
 fi
 echo "Using STRACE_DEBUG=$STRACE_DEBUG"
 
