@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_abs_types.h,v 1.12 2004-08-31 13:39:50 dufy Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_abs_types.h,v 1.13 2004-08-31 16:00:19 dufy Exp $
 
 -----------------------------------------------------------------------
 
@@ -48,15 +48,47 @@ Purpose   : Type abstraction : Stolen from GLIB public headers
 
 /*** Platform specific ***/
 
-/* SUN / sparc (32 bits) */
-#if  defined(__sun) && defined(__sparc) && !defined(__sparcv9)
-# define TSP_INT64_CONSTANT(val)  (val##LL)
+/* SUN / sparc (32/64 bits) */
+#if  defined(__sun)  && defined(__sparc)
 # define TSP_BYTE_ORDER TSP_BIG_ENDIAN
-# define TSP_GUINT64_FORMAT "llu"
 # define TSP_SYSTEM_HAVE_GETHRTIME
 # define TSP_SYSTEM_HAVE_NANOSLEEP
 # define TSP_HAVE_INT64 1
-#endif /* SUN / sparc */
+# if  defined(__sparcv9)
+#   define TSP_INT64_CONSTANT(val)  (val##L)
+#   define TSP_GUINT64_FORMAT "lu"
+# else /* not sparcv9, an old one */
+#   define TSP_INT64_CONSTANT(val)  (val##LL)
+#   define TSP_GUINT64_FORMAT "llu"
+    /* Old sparc lacks from simple types, need to do it by our own */
+#   ifndef _SYS_INT_TYPES_H 
+#	ifndef _UINT16_T
+		typedef unsigned short   uint16_t;
+#		define _UINT16_T
+#	endif
+#	ifndef _INT16_T
+		typedef short   int16_t;
+#		define _INT16_T
+#	endif
+#	ifndef _UINT32_T
+		typedef unsigned long   uint32_t;
+#		define _UINT32_T
+#	endif
+#	ifndef _INT32_T
+		typedef long   int32_t;
+#		define _INT32_T
+#	endif
+#	ifndef _UINT64_T
+		typedef u_longlong_t    uint64_t;
+#		define _UINT64_T
+#	endif
+#	ifndef _INT64_T
+		typedef longlong_t    int64_t;
+#		define _INT64_T
+#	endif
+#   endif /* Exists SYS_TYPES_H */ 
+# endif /* ! sparcv9 */
+#endif /* SUN */
 
 
 /* Linux / Intel */
