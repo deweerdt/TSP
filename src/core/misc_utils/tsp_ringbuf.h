@@ -193,6 +193,7 @@ extern "C" {
 		free((name)); \
 		(name) = NULL; \
 	}
+
 		
 #define RINGBUF_PTR_PUT(name, item) \
 	{ \
@@ -306,11 +307,20 @@ extern "C" {
 
 #define RINGBUF_PTR_ITEMS(name) \
 	( \
-		((name)->put >= (name)->get) ? \
+		((name)->put > (name)->get) ? \
 			(name)->put - (name)->get \
 		: \
 			(name)->size - (name)->get + (name)->put \
 	)
+ 
+#define RINGBUF_PTR_ITEMS_LEFT(name) \
+	( \
+		((name)->put >= (name)->get) ? \
+			(name)->size - (name)->put + (name)->get \
+		: \
+			(name)->get - (name)->put \
+	)
+
 
 #ifdef __cplusplus
 }
