@@ -1,4 +1,5 @@
 # Makerules.rpc
+# -*- makefile -*-
 
 #default RPCGEN is defined in Makeparams
 
