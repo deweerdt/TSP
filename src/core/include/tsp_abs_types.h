@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_abs_types.h,v 1.3 2002-09-05 09:14:14 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_abs_types.h,v 1.4 2002-09-17 09:36:47 fancelli Exp $
 
 -----------------------------------------------------------------------
 
@@ -185,7 +185,7 @@ typedef unsigned long long guint64;
 
 
 /* OSF1 / Alpha */
-#if defined (__OSF1__) && defined (__alpha__)
+#if defined (__osf__) && defined (__alpha)
 
 typedef signed char gint8;
 typedef unsigned char guint8;
@@ -234,7 +234,7 @@ typedef unsigned long guint64;
 
 #define G_GUINT64_FORMAT "lu"
 
-#define TSP_SYSTEM_HAVE_GETHRTIME 1
+
 
 #endif /* OSF1 / Alpha */
 
