@@ -32,8 +32,8 @@ if ( ! -x $BIN2ASC ) then
     exit (1)
 endif
 
-set PROVIDER=tsp_server$TESTNB
-set CONSUMER=tsp_client$TESTNB
+set PROVIDER=tsp_server${TESTNB}_resreader
+set CONSUMER=tsp_client${TESTNB}_reswriter
 
 #create a timetag (avoid mixing up files thrue parallel tests)
 set TIMETAG=`date| sed -e 's/[ :]//g'` 

@@ -1,0 +1,8 @@
+#!/bin/tcsh
+
+# Waiting for time out
+custom_killall client1
+custom_killall serveur1
+
+
+

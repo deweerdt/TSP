@@ -3,8 +3,8 @@
 #get test number
 set TESTNB=`echo $0 | perl -n -e  '~/([1-9][0-9]*)$/;print $1'`
 
-set PROVIDER=tsp_server$TESTNB
-set CONSUMER=tsp_client$TESTNB
+set PROVIDER=tsp_server${TESTNB}_grouptest
+set CONSUMER=tsp_client${TESTNB}_grouptest
 
 
 echo "------------------------------------"
