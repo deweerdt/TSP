@@ -8,7 +8,7 @@ TARDIR=$1
 TARNAME=$1-$TARDATE-$WHO.tar
 TARGZ=$TARNAME.gz
 
-FILES=`find $TARDIR -type f -not -path "*/exec/*" -not -path "*CVS*" -iregex ".*[\.]?[^o]" -iregex "[^%#~]*" -not -path ".*cscope.*" -not -name "core\.*" -print`
+FILES=`find $TARDIR -type f -not -path "*/exec/*" -not -path "*CVS*" \( -iregex ".*[\.]?[^o]" -or -iregex "[^%#~]*" \) -not -name "*cscope\.*" -not -name "core\.*" -print`
 echo Making archive: $TARGZ
 echo "Archive made by $WHO on $ARCHIVEID, $DATE " > $TARDIR/archiveid;
 tar cvf $TARNAME $FILES $TARDIR/archiveid
