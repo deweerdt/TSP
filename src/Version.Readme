@@ -39,4 +39,34 @@ V-0.3.1: Creation 19/09/02	tag TSP_0_3_1 SG
 	26713 galles     1  58    0 3200K 2776K sleep   0:00  0.20% xterm
 	27169 galles     5  58    0   33M   33M sleep   0:00  0.14% tsp_serveur1
 
+V-0.4: Creation 03/10/02	tag TSP_0_4 SG
+	Same as V-0.3.1 
+	test STAGE3 used to test pasive data stream with two
+	differents consumers asking for two differents pasive stream
+
+	The pasive stream is read from a RES file (double res file and
+	float res files supported). The tsp_client3 is able to produce
+	a new RES file with the data stream
+
+	The test uses the programs bin2asc and diff to compare the created
+	RES file, and the original RES file
+
+	Added in this version :
+	- On the consumer side, onz single ringbuf is now used for every symbols
+	- The consumer stop getting data from the socket when its output ringbuf
+	is going to be full (as a consequency, the TSP consumer library does not
+	need to know if a data stream is a pasive or an active one, as the stream
+	is auto-regulated between the consumer and the provider (by the consumer) )
+	- As a pasive stream may end, an EOF was created for the consumer to
+	know when its file must be closed
+	- On the consumer and provider side the init function are able to catch tsp
+	specific normalized command line arguments from the command line "à la GTK" :
+		- [ --tsp-stream-init-start commands ... --tsp-stream-init ] allows
+		to send stream init command from the consumer to the provider ; the
+		same command can be used on the provider command line
+		- [ --tsp-server-number number ] set the server number on the 
+		provider side (0 is default)
+	 
+	
+
 
