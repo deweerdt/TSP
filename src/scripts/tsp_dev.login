@@ -61,7 +61,7 @@ setenv HOME_EXEC_CURRENT $HOME_EXEC_BASE/current
 ##############################
 
 
-setenv PATH ${TSP_BASE}/src/scripts:${HOME_EXEC_CURRENT}/bin.consumer.debug:${HOME_EXEC_CURRENT}/bin.provider.debug:${TSP_BASE}/src/tsp/tests/etape1:${TSP_BASE}/src/tsp/tests/stage2:${PATH}
+setenv PATH ${TSP_BASE}/src/scripts:${HOME_EXEC_CURRENT}/bin.consumer.debug:${HOME_EXEC_CURRENT}/bin.provider.debug:${TSP_BASE}/src/tsp/tests/etape1:${TSP_BASE}/src/tsp/tests/stage2:${TSP_BASE}/src/tsp/tests/stage3:${PATH}
 
 
 ##############################
@@ -139,7 +139,7 @@ alias go_ep 'cd ${HOME_EXEC_CURRENT}/bin.provider'
 alias go_epd 'cd ${HOME_EXEC_CURRENT}/bin.provider.debug'
 alias go_tsp 'cd ${TSP_BASE}'
 alias go_scripts 'cd ${TSP_BASE}/src/scripts'
-
+alias go_tests 'cd ${TSP_BASE}/src/tsp/tests'
 
 
 
