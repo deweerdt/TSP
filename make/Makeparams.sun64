@@ -1,0 +1,16 @@
+# Makeparams.suncdtv9
+
+
+# Default tools
+# -------------
+# Using standard tools
+CC=gcc
+#CC = cc -xarch=v9
+
+# Default options
+# ---------------
+ARFLAGS = rvs
+CFLAGS = 
+CPPFLAGS +=  -D__EXTENSIONS__ -D_REENTRANT  -DUSE_STRACE -DTSP_NO_XDR_ENCODE
+LDLIBS = -lsocket -lnsl -lm -lposix4 -lgen -lpthread  
+

@@ -1,0 +1,15 @@
+# Makeparams.suncdt
+
+
+# Default tools
+# -------------
+# Using standard tools
+#CC=gcc
+
+# Default options
+# ---------------
+ARFLAGS = rvs
+CFLAGS = 
+CPPFLAGS +=  -D__EXTENSIONS__ -D_REENTRANT  -DUSE_STRACE -DTSP_NO_XDR_ENCODE
+LDLIBS = -lsocket -lnsl -lm -lposix4 -lgen -lpthread  
+
