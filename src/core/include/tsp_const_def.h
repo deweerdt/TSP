@@ -1,6 +1,6 @@
 /*!  \file 
  
-$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_const_def.h,v 1.3 2002-09-05 09:16:03 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_const_def.h,v 1.4 2002-09-05 13:30:44 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -92,6 +92,9 @@ typedef struct  TSP_otsp_server_info_t TSP_otsp_server_info_t;
 /* First RPC PROG_ID that will be used 
 to calculate the PROG ID for each server*/
 #define TSP_RPC_PROGID_BASE_COUNT 0x31230010
+
+/* Time out for client connection to server (secondes) )*/
+#define TSP_RPC_CONNECT_TIMEOUT 20
 
 /*------- SYSTEM -------*/
 
