@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: client_group.c,v 1.3 2004-09-22 14:25:58 tractobob Exp $
+$Id: client_group.c,v 1.4 2004-11-07 23:57:16 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -41,6 +41,8 @@ Purpose   : Simple consummer for testing groups configuration
 /* Allow us to cheat with groups internal and hidden structures*/
 #include "tsp_group_data.h"
 
+TSP_groups_t TSP_test_get_groups(TSP_provider_t provider);
+
 /*µS*/
 #define TSP_NANOSLEEP_PERIOD_US (200*1000)
 
@@ -79,7 +81,7 @@ typedef struct group_test_t group_test_t;
 
 /* Calculated group numbers */
 static group_test_t group_test[] = {
-  /*00*/ { 10, -1, -1 , -1},
+                { 10, -1, -1 , -1}, /*00*/
 	 /*01*/ { -1, -1, -1 , -1},
 	 /*02*/ { 10, 20, -1 , -1},
 	 /*03*/ { 30, -1, -1 , -1},
@@ -109,9 +111,7 @@ static group_test_t group_test[] = {
 	 /*27*/ { -1, -1, -1 , -1},
 	 /*28*/ { 10, 30, -1 , -1},
 	 /*29*/ { 20, -1, -1 , -1},
-	 /*30*/ { -2, -2, -2 , -2},
-
-   
+	 /*30*/ { -2, -2, -2 , -2}   
 };
 
 
@@ -119,13 +119,10 @@ int main(int argc, char *argv[]){
 
   TSP_consumer_symbol_requested_list_t symbols;
 
-  int i, j, count=0;
+  int i, j;
   int nb_providers;
   int period=0;
   char* name;
-  int count_samples = 0;
-  char symbol_buf[50];
-  int test_ok = TRUE;
   int test_mode;
 
 
