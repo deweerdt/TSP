@@ -1,10 +1,13 @@
 # Makeparams.dec
 
+BUILD_JAVA = no
+BUILD_BB = no
+
 # Default tools
 # -------------
 # Using standard tools
 CC = cxx
-RPCGEN=$(DEVBASE)/../tools/rpcgen/vxrpcgen.dec
+RPCGEN=$(DEVBASE)/../tools/rpcgen/vxrpcgen.suncdt.vxworks
 
 # Default options
 # ---------------
