@@ -5,14 +5,11 @@ setenv STRACE_DEBUG 1
 echo "Run provider with no file"
 tsp_res_reader > /dev/null &
 sleep 1
-A
 
 echo "Run consumer of file.res"
-tsp_res_writer localhost 1  --tsp-stream-init-start file.res --tsp-stream-init-stop out1.res f 1 
-echo "Ask reader to read again the former output"
-tsp_res_writer localhost 1  --tsp-stream-init-start out1.res --tsp-stream-init-stop out2.res f 1 
+tsp_res_writer localhost 1  --tsp-stream-init-start file.res --tsp-stream-init-stop out.res f 1 
 
-diff out1.res out2.res
+diff file.res out.res
 set RES=$status
 
 if ( "$RES" == "0") then
@@ -22,7 +19,7 @@ else
     exit 1
 endif
 
-\rm out*.res
+\rm out.res
 
 echo "--------------------------------"
 echo "-------- END AUTOTEST ----------"
