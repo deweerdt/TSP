@@ -1,6 +1,6 @@
 /*!  \file
 
-$Header: /home/def/zae/tsp/tsp/src/util/libres/Attic/datarwcpp.h,v 1.2 2003-02-03 20:22:18 sgalles Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libres/Attic/datarwcpp.h,v 1.3 2003-02-06 22:43:18 sgalles Exp $
 
 -----------------------------------------------------------------------
 
@@ -100,20 +100,20 @@ namespace LibUtil
 	 virtual ~Datarwcpp() ;
 
 	 /* Read */
-	 bool ropen(const std::string& file);
-	 bool ruse_double() const;
-	 bool rget_nb_records() const;
-	 const std::vector<VarInfo>& rget_vars_info() const;
-	 const std::vector<std::string>& rget_comments() const;
+	 bool r_open(const std::string& file);
+	 bool r_is_double() const;
+	 bool r_get_nb_rec() const;
+	 const std::vector<VarInfo>& r_get_vars_info() const;
+	 const std::vector<std::string>& r_get_comments() const;
 
-	 bool rupdate_used_buf(int rec_number);
-	 const std::vector<float>& rget_float_buf() const;
-	 const std::vector<double>& rget_double_buf() const;
+	 bool r_update_buf();
+	 const std::vector<float>& r_get_float_buf() const;
+	 const std::vector<double>& r_get_double_buf() const;
 	 
        private:
-	 int rget_intern_nb_records() const ;
-	 int rget_intern_nb_vars() const ;
-	 int rget_intern_nb_comments() const ;
+	 int r_get_intern_nb_rec() const ;
+	 int r_get_intern_nb_vars() const ;
+	 int r_get_intern_nb_comments() const ;
 
 
        };

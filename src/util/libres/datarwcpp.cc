@@ -1,6 +1,6 @@
 /*!  \file
 
-$Header: /home/def/zae/tsp/tsp/src/util/libres/Attic/datarwcpp.cc,v 1.2 2003-02-03 20:22:18 sgalles Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libres/Attic/datarwcpp.cc,v 1.3 2003-02-06 22:43:18 sgalles Exp $
 
 -----------------------------------------------------------------------
 
@@ -79,7 +79,7 @@ LibUtil::Datarwcpp::~Datarwcpp()
   if(_vec_fbuf) delete(_vec_fbuf);
 }
 
-bool LibUtil::Datarwcpp::ropen(const std::string& file)
+bool LibUtil::Datarwcpp::r_open(const std::string& file)
 {
 
   int iuse_dbl;
@@ -90,9 +90,9 @@ bool LibUtil::Datarwcpp::ropen(const std::string& file)
 
       _use_double = ((iuse_dbl != 0) ? true : false);
 
-      _nb_records = rget_intern_nb_records();  
-      int nb_vars  = rget_intern_nb_vars();
-      int nb_comments  = rget_intern_nb_comments();
+      _nb_records = r_get_intern_nb_rec();  
+      int nb_vars  = r_get_intern_nb_vars();
+      int nb_comments  = r_get_intern_nb_comments();
 
       /* init buf */
       if(_use_double)
@@ -136,71 +136,71 @@ bool LibUtil::Datarwcpp::ropen(const std::string& file)
 }
 
 
-int  LibUtil::Datarwcpp::rget_intern_nb_records() const
+int  LibUtil::Datarwcpp::r_get_intern_nb_rec() const
 { 
    assert(_h->hr);
    return d_rval_r(_h->hr, 'r');
 }
 
-int  LibUtil::Datarwcpp::rget_intern_nb_vars() const 
+int  LibUtil::Datarwcpp::r_get_intern_nb_vars() const 
 { 
    assert(_h->hr);
    return d_rval_r(_h->hr, 'v');
 }
 
 
-int  LibUtil::Datarwcpp::rget_intern_nb_comments() const 
+int  LibUtil::Datarwcpp::r_get_intern_nb_comments() const 
 { 
    assert(_h->hr);
    return d_rval_r(_h->hr, 'c');
 }
 
 
-const std::vector<LibUtil::VarInfo>& LibUtil::Datarwcpp::rget_vars_info() const
+const std::vector<LibUtil::VarInfo>& LibUtil::Datarwcpp::r_get_vars_info() const
 {
   assert(_h->hr);
   return _vars_info;
 }
 
-const std::vector<std::string>& LibUtil::Datarwcpp::rget_comments() const
+const std::vector<std::string>& LibUtil::Datarwcpp::r_get_comments() const
 {
   assert(_h->hr);
   return _comments;
 }
 
-bool LibUtil::Datarwcpp::ruse_double() const
+bool LibUtil::Datarwcpp::r_is_double() const
 {
   assert(_h->hr);
   return _use_double;
 }
 
-bool  LibUtil::Datarwcpp::rget_nb_records() const
+bool  LibUtil::Datarwcpp::r_get_nb_rec() const
 {
   assert(_h->hr);
   return _nb_records;
 }
 
-bool LibUtil::Datarwcpp::rupdate_used_buf(int rec_number)
+bool LibUtil::Datarwcpp::r_update_buf()
 {
    assert(_h->hr);
 
    bool ret = false;
    if(_use_double)
      {
-       int n = d_dread_r (_h->hr, _dbuf,  rec_number);
+       int n = d_read_r (_h->hr, _dbuf);
        if(n != EOF)
 	 {
 	   ret = true;
 	   for (int i = 0 ; i <  _vec_dbuf->size() ;  i++)
 	     {
-	       (*_vec_dbuf)[i] = _dbuf[i];	       
+	       (*_vec_dbuf)[i] = _dbuf[i];
 	     }
 	 }
        
      }
    else
      {
-       int n = d_dread_r (_h->hr, _fbuf,  rec_number);
+       int n = d_read_r (_h->hr, _fbuf);
        if(n != EOF)
 	 {
 	   ret = true;
@@ -216,12 +216,15 @@ bool LibUtil::Datarwcpp::rupdate_used_buf(int rec_number)
 }
 
 
-const std::vector<float>&  LibUtil::Datarwcpp::rget_float_buf() const
+const std::vector<float>&  LibUtil::Datarwcpp::r_get_float_buf() const
 {
+
+  assert(!r_is_double());
   return (*_vec_fbuf);
 }
 
-const std::vector<double>&  LibUtil::Datarwcpp::rget_double_buf() const
+const std::vector<double>&  LibUtil::Datarwcpp::r_get_double_buf() const
 {
+  assert(r_is_double());
   return (*_vec_dbuf);
 }
