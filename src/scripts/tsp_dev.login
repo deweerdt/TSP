@@ -23,6 +23,11 @@ if ( ! $?DEVBASE ) then
 endif
 echo "Using DEVBASE         = $DEVBASE"
 
+if ( ! $?STRACE_DEBUG ) then 
+	setenv STRACE_DEBUG 3
+endif
+echo "Using STRACE_DEBUG= $STRACE_DEBUG"
+
 
 ##############################
 # Rajout du vxWorks
