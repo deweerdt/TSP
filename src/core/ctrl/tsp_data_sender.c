@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_data_sender.c,v 1.1 2002-08-27 08:56:09 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_data_sender.c,v 1.2 2002-09-05 09:02:42 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -135,15 +135,15 @@ int TSP_data_sender_send(TSP_data_sender_t _sender, TSP_groups_t _groups, time_s
   int i;
   int ret = TRUE;
   int size;
-  hrtime_t avant_send;
+
 
   STRACE_IO(("-->IN"));
   group_index = time_stamp % groups_table->table_len;
   group = &(groups_table->groups[group_index]);
     
   buf_int = (int*)(data_sender->buf);
-  *( buf_int++ ) = time_stamp;
-  *( buf_int++ ) = group_index;
+  *( buf_int++ ) = TSP_ENCODE_INT(time_stamp);
+  *( buf_int++ ) = TSP_ENCODE_INT(group_index);
   buf_char = (char*)(buf_int);
 
   if( group->group_len > 0)
@@ -172,7 +172,7 @@ int TSP_data_sender_send(TSP_data_sender_t _sender, TSP_groups_t _groups, time_s
 
         } /*for*/
 
-      avant_send = gethrtime();
+
       if( ret && (FALSE == TSP_stream_sender_send(data_sender->stream_sender,
 						  data_sender->buf,
 						  buf_char - data_sender->buf)))
@@ -181,11 +181,6 @@ int TSP_data_sender_send(TSP_data_sender_t _sender, TSP_groups_t _groups, time_s
 	  ret = FALSE;
 
         }
-      /*if(!(time_stamp % 17))
-	{
-	STRACE_INFO(("SOCKET  T=%f", ((double)(gethrtime() - avant_send)) / 1000000 ));
-	}*/
-
     }
     
   STRACE_IO(("-->OUT"));
