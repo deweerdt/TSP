@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_datapool.c,v 1.4 2002-09-18 08:14:52 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_datapool.c,v 1.5 2002-10-01 15:20:13 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -24,9 +24,12 @@ consumer
 #include "tsp_datapool.h"
 
 #include "tsp_datastruct.h"
-#include "glue_sserver.h"
+
 #include "tsp_session.h"
 #include "tsp_time.h"
+
+/* Pool time waiting for  consumer connection µs */
+#define TSP_LOCAL_WORKER_CONNECTION_POOL_TIME (1e5)
 
 /*-----------------------------------------------------*/
 
@@ -43,21 +46,45 @@ struct TSP_datapool_item_t
 
 typedef struct TSP_datapool_item_t TSP_datapool_item_t;
 
+struct TSP_datapool_table_t
+{
+  TSP_datapool_item_t* items;
+  int size;
+  
+  pthread_t worker_id;
+
+  /** Only for global thread id*/
+  glu_ringbuf* ring;
+
+  /** Only for local thread id.
+   * The id of the session linked to the local datapool
+   */
+  channel_id_t session_channel_id;
+
+  /** handle on GLU */
+  GLU_handle_t h_glu;
+
+};
+
+typedef struct TSP_datapool_table_t TSP_datapool_table_t;
+
 
 
 /*-----------------------------------------------------*/
 
-static TSP_datapool_item_t* X_datapool_t = 0;
+TSP_datapool_table_t X_global_datapool = {0,0,0};
+
+/*static TSP_datapool_item_t* X_datapool_t = 0;
 static int X_datapool_size = 0;
-static glu_ringbuf* X_ring = 0;
+static glu_ringbuf* X_ring = 0;*/
 
 /*-----------------------------------------------------*/
 
-#define TSP_CHECK_PROVIDER_GLOBAL_INDEX(index, ret) \
+#define TSP_CHECK_PROVIDER_GLOBAL_INDEX(obj, index, ret) \
 { \
-	if( index >= X_datapool_size ) \
+	if( (index) >= (obj).size ) \
 	{ \
-		STRACE_ERROR(("ERROR :-->OUT : provider_global_index %d does not exist !", index)) \
+		STRACE_ERROR(("ERROR :-->OUT : provider_global_index %d does not exist !",(index))) \
 		return ret; \
 	} \
 }
@@ -76,20 +103,20 @@ int* TSP_datapool_get_symbol_usage_counter(int provider_global_index, xdr_and_sy
   STRACE_IO(("-->IN"));
 
 	
-  TSP_CHECK_PROVIDER_GLOBAL_INDEX(provider_global_index, FALSE);
+  TSP_CHECK_PROVIDER_GLOBAL_INDEX(X_global_datapool, provider_global_index, FALSE);
 	
   /*FIXME : Remettre ca comme il faut */
-  p = &(X_datapool_t[provider_global_index].user_counter_sync);
+  p = &(X_global_datapool.items[provider_global_index].user_counter_sync);
     
   /*
     
     switch(type)
     {
     case XDR_DATA_TYPE_USER | TSP_DATA_TYPE_SYNC :
-    p = &(X_datapool_t[provider_global_index].user_counter_sync);
+    p = &(X_global_datapool.items[provider_global_index].user_counter_sync);
     break;
     case XDR_DATA_TYPE_USER | TSP_DATA_TYPE_ASYNC :
-    p = &(X_datapool_t[provider_global_index].user_counter_async);
+    p = &(X_global_datapool.items[provider_global_index].user_counter_async);
     break;
     default :
     STRACE_ERROR(("Unknown xdr_and_sync_type_t : %X", type));
@@ -101,10 +128,77 @@ int* TSP_datapool_get_symbol_usage_counter(int provider_global_index, xdr_and_sy
   return p;
 }
 
-extern long count_add;
-static void* TSP_worker(void* arg)
+
+/**
+ * Thread created per session when the sample server is a pasive one.
+ * @param datapool The datapool object instance that will be linked to the thread
+ */ 
+static void* TSP_local_worker(void* datapool)
 {
-  SFUNC_NAME(TSP_worker);
+
+  /* FIXME : WARNING : la datapool a un pointeur sur le GLU, donc, ne pas détruire le
+     GLU avant d'avoir arreté ce Thread */
+
+  SFUNC_NAME(TSP_local_worker);
+  time_stamp_t time_stamp;
+  glu_item_t item;
+  int more_items;
+  TSP_datapool_table_t* obj_datapool = (TSP_datapool_table_t*)datapool;  
+
+  STRACE_IO(("-->IN"));
+  
+  STRACE_INFO(("Local datapool thread started for session %d",obj_datapool->session_channel_id)); 
+  
+  /* Wait for consumer connection before we send data */  
+  while(!TSP_session_is_consumer_connected_by_channel(obj_datapool->session_channel_id))
+    {
+      tsp_usleep(TSP_LOCAL_WORKER_CONNECTION_POOL_TIME);
+    }
+  STRACE_INFO(("Consumer connected for session id %d",obj_datapool->session_channel_id)); 
+  /* FIXME : s'occuper des divers types raw, string... */
+
+  /* get first item */
+  more_items = GLU_pasive_get_next_item(obj_datapool->h_glu, &item);
+  if (more_items)
+    {
+      time_stamp = item.time;
+      /* Update datapool */
+      obj_datapool->items[item.provider_global_index].user_value = item.value;           
+
+      while(GLU_pasive_get_next_item(obj_datapool->h_glu, &item))
+	{       
+	  /* is the datapool coherent ? */
+	  if( time_stamp != item.time )
+	    {
+	      /* Yep ! throw data to client */
+	      TSP_session_send_data_by_channel(obj_datapool->session_channel_id, time_stamp);	  
+	      time_stamp = item.time;
+ 
+	    }
+	  /* Update datapool */
+	  obj_datapool->items[item.provider_global_index].user_value = item.value;     
+	}      
+
+      /* The lastest data were not sent coz we did not compare the latest timestamp*/
+      TSP_session_send_data_by_channel(obj_datapool->session_channel_id, time_stamp);
+
+      /* Send group EOF */
+      TSP_session_send_data_eof_by_channel(obj_datapool->session_channel_id);
+    }
+      
+  STRACE_IO(("-->OUT"));
+
+}
+
+extern long count_add;
+
+/**
+ * Thread created when the sample server is an active one
+ * @param dummy Not used
+ */ 
+static void* TSP_global_worker(void* dummy)
+{
+  SFUNC_NAME(TSP_global_worker);
 
   tsp_hrtime_t apres_fifo=0, avant_fifo=0, apres_send=0,avant_send=0;
   double total_send, total_fifo = 0;
@@ -119,11 +213,11 @@ static void* TSP_worker(void* arg)
   STRACE_IO(("-->IN"));
     
   /* wait for data */
-  while (RINGBUF_PTR_ISEMPTY(X_ring))
+  while (RINGBUF_PTR_ISEMPTY(X_global_datapool.ring))
     {
       tsp_usleep(TSP_DATAPOOL_POOL_PERIOD);
     }
-  RINGBUF_PTR_NOCHECK_GET(X_ring,item);
+  RINGBUF_PTR_NOCHECK_GET(X_global_datapool.ring,item);
 
   time_stamp = item.time;
   count_remove ++;
@@ -131,9 +225,9 @@ static void* TSP_worker(void* arg)
   /* flush ringbuff until first time_stamp of a whole new data set   */
   do
     {
-      if (!RINGBUF_PTR_ISEMPTY(X_ring))
+      if (!RINGBUF_PTR_ISEMPTY(X_global_datapool.ring))
 	{
-	  RINGBUF_PTR_NOCHECK_GET(X_ring, item); 
+	  RINGBUF_PTR_NOCHECK_GET(X_global_datapool.ring, item); 
 	  count_remove ++;
 	}
       else
@@ -145,14 +239,14 @@ static void* TSP_worker(void* arg)
      
   /*FIXME : gerer tous les machins avec les types user, raw...*/
   /* Resfresh data pool with new value */
-  X_datapool_t[item.provider_global_index].user_value = item.value;     
+  X_global_datapool.items[item.provider_global_index].user_value = item.value;     
   time_stamp = item.time;
 
   /* infinite loop on buff to update datapool */
   while(1)
     {
       avant_fifo = tsp_gethrtime();
-      item_ptr = RINGBUF_PTR_GETBYADDR(X_ring);   
+      item_ptr = RINGBUF_PTR_GETBYADDR(X_global_datapool.ring);   
 
       /* while data with same time in buff, fill datapool */
       while(item_ptr && (time_stamp == item_ptr->time))
@@ -163,11 +257,11 @@ static void* TSP_worker(void* arg)
 	  /* time stamp change, need to send every things */
 	  /*FIXME : gerer tous les machins avec les types user, raw...*/
 	  /* Resfresh data pool with new value */
-	  X_datapool_t[item_ptr->provider_global_index].user_value = item_ptr->value;
+	  X_global_datapool.items[item_ptr->provider_global_index].user_value = item_ptr->value;
   
 	  /*FIXME : gérer le fait qu'on peut perdre des données ! */            
-	  RINGBUF_PTR_GETBYADDR_COMMIT(X_ring);
-	  item_ptr = RINGBUF_PTR_GETBYADDR(X_ring);
+	  RINGBUF_PTR_GETBYADDR_COMMIT(X_global_datapool.ring);
+	  item_ptr = RINGBUF_PTR_GETBYADDR(X_global_datapool.ring);
 	}
       
       /*---*/
@@ -179,8 +273,10 @@ static void* TSP_worker(void* arg)
       if (item_ptr && (time_stamp != item_ptr->time))
 	{
 	  avant_send = tsp_gethrtime();
+
 	  /* Send data to all clients  */	      
 	  TSP_session_all_session_send_data(time_stamp);
+
 	  apres_send = tsp_gethrtime();	 
 	  total_send += (double)(apres_send - avant_send)/1e6;
 	  nombre_send ++;
@@ -194,7 +290,7 @@ static void* TSP_worker(void* arg)
 	}
       
       /* wait for data */
-      while (RINGBUF_PTR_ISEMPTY(X_ring))
+      while (RINGBUF_PTR_ISEMPTY(X_global_datapool.ring))
 	{
 	  tsp_usleep(TSP_DATAPOOL_POOL_PERIOD);
 	} 
@@ -208,35 +304,64 @@ static void* TSP_worker(void* arg)
 /*                  FONCTIONS EXTERNE  			   */
 /*---------------------------------------------------------*/
 
-int TSP_datapool_init(void)
+/**
+ * Start local datapool thread be per session.
+ * Only used when the sample server is a pasive one
+ * @param datapool The datapool instance that will be linked to the thread
+ */ 
+int TSP_local_datapool_start_thread(TSP_datapool_t datapool)
+{
+  SFUNC_NAME(TSP_global_datapool_init);
+  int status;
+  TSP_datapool_table_t* obj_datapool = (TSP_datapool_table_t*)datapool;
+
+  STRACE_IO(("-->IN"));
+
+  status = pthread_create(&(obj_datapool->worker_id), NULL, TSP_local_worker,  datapool);
+  TSP_CHECK_THREAD(status, FALSE);
+
+  STRACE_IO(("-->OUT"));
+  return TRUE;
+
+}
+
+/**
+ * Start global datapool thread.
+ * Only used when the sample server is an active one
+ * @return TRUE = OK
+ */ 
+int TSP_global_datapool_init(void)
 {
 	 
-  SFUNC_NAME(TSP_datapool_init);
+  SFUNC_NAME(TSP_global_datapool_init);
 
 	
   TSP_sample_symbol_info_list_t symbols;
   int i;
   int status;
-  pthread_t thread_id;
+ 
      
   STRACE_IO(("-->IN"));
 	
-  GLU_get_sample_symbol_info_list(&symbols);
+  /* Here the datapool is global */
+  X_global_datapool.h_glu = GLU_GLOBAL_HANDLE;   
 
-  X_datapool_size = symbols.TSP_sample_symbol_info_list_t_len;
+  GLU_get_sample_symbol_info_list(X_global_datapool.h_glu, &symbols);
 
-  X_datapool_t = 
-    (TSP_datapool_item_t*)calloc(X_datapool_size,
+  X_global_datapool.size = symbols.TSP_sample_symbol_info_list_t_len;
+
+  X_global_datapool.items = 
+    (TSP_datapool_item_t*)calloc(X_global_datapool.size,
 				 sizeof(TSP_datapool_item_t));
-  TSP_CHECK_ALLOC(X_datapool_t, FALSE);
+  TSP_CHECK_ALLOC(X_global_datapool.items, FALSE);
     
   /* Get ring buffer */
-  X_ring = GLU_get_ringbuf();
+  X_global_datapool.ring = GLU_active_get_ringbuf(X_global_datapool.h_glu);
     
   /* Demarrage du thread */
   /* FIXME : faire l'arret du thread */
   /* FIXME : detacher le thread */
-  status = pthread_create(&thread_id, NULL, TSP_worker,  NULL);
+  status = pthread_create(&(X_global_datapool.worker_id), NULL, TSP_global_worker,  NULL);
   TSP_CHECK_THREAD(status, FALSE);
 
     
@@ -245,7 +370,43 @@ int TSP_datapool_init(void)
 
 }
 
-int TSP_datapool_add_symbols(TSP_sample_symbol_info_list_t* symbols)
+
+TSP_datapool_t TSP_local_datapool_allocate(channel_id_t session_channel_id, int symbols_number, GLU_handle_t h_glu )
+{
+	 
+  SFUNC_NAME(TSP_local_datapool_allocate);
+
+	
+  TSP_sample_symbol_info_list_t symbols;
+  TSP_datapool_table_t* datapool;
+     
+  STRACE_IO(("-->IN"));
+
+  /* FIXME : fuite, fuite, fuite ...*/
+
+  datapool = (TSP_datapool_table_t*)calloc(1,sizeof(TSP_datapool_table_t));
+  TSP_CHECK_ALLOC(datapool, 0);
+	
+  datapool->size = symbols_number;
+
+  datapool->items = (TSP_datapool_item_t*)calloc(datapool->size,sizeof(TSP_datapool_item_t));
+  TSP_CHECK_ALLOC(datapool->items, 0);
+    
+  /* set session linked to this datapool*/
+  datapool->session_channel_id = session_channel_id;
+
+  datapool->h_glu = h_glu;
+
+  /* No ring buffer at all for a local datapool*/
+  datapool->ring = 0;
+    
+  STRACE_IO(("-->OUT"));
+  return datapool;
+
+}
+
+
+int TSP_global_datapool_add_symbols(TSP_sample_symbol_info_list_t* symbols)
 {
 	
   SFUNC_NAME(TSP_datapool_add_symbols);
@@ -272,7 +433,8 @@ int TSP_datapool_add_symbols(TSP_sample_symbol_info_list_t* symbols)
 	  if ( 0 == (*p_usage_counter))
 	    {
 				/* No. We had it to the list*/
-	      if(!GLU_add_block(index,type))
+	      /* FIXME : faire un appel a une fonction de session GLU_session_add_block_per_channel */
+	      if(!GLU_add_block(GLU_GLOBAL_HANDLE, index,type))
 		{
 		  ret = FALSE;
 		  STRACE_ERROR(("Unable to add symbol to sample_server for global_index=%d", index));
@@ -293,7 +455,8 @@ int TSP_datapool_add_symbols(TSP_sample_symbol_info_list_t* symbols)
 		
       if(ret)
 	{
-	  if(!GLU_commit_add_block())
+	      /* FIXME : faire un appel a une fonction de session GLU_session_add_block_per_channel */
+	  if(!GLU_commit_add_block(GLU_GLOBAL_HANDLE))
 	    {
 	      ret = FALSE;
 	      STRACE_ERROR(("GLU_commit_add_block failed"));
@@ -310,28 +473,29 @@ int TSP_datapool_add_symbols(TSP_sample_symbol_info_list_t* symbols)
 
 }
 
-void* TSP_datapool_get_symbol_value(int provider_global_index, xdr_and_sync_type_t type)
+void* TSP_datapool_get_symbol_value(TSP_datapool_t datapool, int provider_global_index, xdr_and_sync_type_t type)
 {
   SFUNC_NAME(TSP_datapool_get_symbol_value);
 
 	
   void* p = 0;
+  TSP_datapool_table_t* obj_datapool = (TSP_datapool_table_t*)datapool;
 	
   STRACE_IO(("-->IN"));
 
 	
-  TSP_CHECK_PROVIDER_GLOBAL_INDEX(provider_global_index, 0);
+  TSP_CHECK_PROVIDER_GLOBAL_INDEX(*obj_datapool, provider_global_index, 0);
 
   /*FIXME !!!!!!!!!!!!!!!!!!!!!!!!!!!
     A remettre */
     
   /* Temporaire*/
-  p = &(X_datapool_t[provider_global_index].user_value);
+  p = &(obj_datapool->items[provider_global_index].user_value);
 	
   /*switch(type & XDR_DATA_TYPE_MASK)
     {
     case XDR_DATA_TYPE_USER | TSP_DATA_TYPE_SYNC :
-    p = &(X_datapool_t[provider_global_index].user_value);
+    p = &(X_global_datapool.items[provider_global_index].user_value);
     break;
     default :
     STRACE_ERROR(("Unknown XDR type : %X", type));
@@ -342,4 +506,10 @@ void* TSP_datapool_get_symbol_value(int provider_global_index, xdr_and_sync_type
 
 	
   return p;
+}
+
+
+TSP_datapool_t TSP_global_datapool_get_instance(void)
+{
+  return &X_global_datapool;
 }

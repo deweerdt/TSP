@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_datapool.h,v 1.1 2002-08-27 08:56:09 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_datapool.h,v 1.2 2002-10-01 15:20:14 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -23,13 +23,24 @@ consumer
 #include "tsp_prjcfg.h"
 
 #include "tsp_datastruct.h"
+#include "glue_sserver.h"
 
-int TSP_datapool_init(void);
+typedef  void* TSP_datapool_t;
 
-int TSP_datapool_add_symbols(TSP_sample_symbol_info_list_t* symbols);
+int TSP_global_datapool_init(void);
 
-void* TSP_datapool_get_symbol_value
-(int provider_global_index,
- xdr_and_sync_type_t type);
+TSP_datapool_t TSP_local_datapool_allocate(channel_id_t session_channel_id, int symbols_number, GLU_handle_t h_glu );
+
+TSP_datapool_t TSP_global_datapool_get_instance(void);
+
+int TSP_global_datapool_add_symbols(TSP_sample_symbol_info_list_t* symbols);
+
+void*
+TSP_datapool_get_symbol_value(TSP_datapool_t datapool, 
+			      int provider_global_index,
+			      xdr_and_sync_type_t type);
+
+
+int TSP_local_datapool_start_thread(TSP_datapool_t datapool);
 
 #endif _TSP_DATAPOOL_H
