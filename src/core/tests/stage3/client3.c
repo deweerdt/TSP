@@ -38,8 +38,8 @@ int main(int argc, char *argv[]){
   int new_sample;
   TSP_sample_t sample;
   char* out_file_res;
-  char* in_file_res;
   int res_value_i;
+  char* custom_argv[10];
   
   int all_data_ok = TRUE;
 
@@ -58,24 +58,24 @@ int main(int argc, char *argv[]){
   STRACE_INFO(("Autodetect CPU : %d bits", sizeof(long)*8));
 
     /* TSP Init */
+  if(!TSP_consumer_init(&argc, &argv))
+    {
+      STRACE_ERROR(("TSP init failed"));
+      return -1;
+    }
+    
 
-  if (argc>6)
+  if (argc == 6)
     {   
       name = argv[1];
       period = atoi (argv[2]);
-      in_file_res = argv[3];
-      if(!strcmp("_", in_file_res))
-	{
-	  in_file_res = 0;
-	 
-	}
      
-      out_file_res = argv[4];
-      if(!strcmp("f", argv[5]))
+      out_file_res = argv[3];
+      if(!strcmp("f", argv[4]))
 	{
 	   _use_dbl = 0;
 	}
-      else if(!strcmp("d", argv[5]))
+      else if(!strcmp("d", argv[4]))
 	{
 	   _use_dbl = 1;
 	}
@@ -84,12 +84,12 @@ int main(int argc, char *argv[]){
 	  STRACE_ERROR(("param 5 must f or d for float of double"));
 	  return -1;
 	}
-      test_mode = atoi(argv[6]);
+      test_mode = atoi(argv[5]);
 
     }
   else
     {
-      STRACE_ERROR(("USAGE : %s server period   (in_file.res|_)  out_file.res (f|d) (1|2|3) ", argv[0]));
+      STRACE_ERROR(("USAGE : %s server period  out_file.res (f|d) (1|2|3) [ --tsp-stream-init-start file[.res] --tsp-stream-init-stop ]", argv[0]));
       STRACE_ERROR(("Last arg is mode test number :"));
       STRACE_ERROR(("- 1 : All variables"));
       STRACE_ERROR(("- 2 : 3 variables (first, middle, last)"));
@@ -98,8 +98,6 @@ int main(int argc, char *argv[]){
       return -1;
     }
 
-  if(!TSP_consumer_init(&argc, &argv))
-    return -1;
   
   /*-------------------------------------------------------------------------------------------------------*/ 
   /* TEST : STAGE 002 | STEP 001 */
@@ -128,12 +126,13 @@ int main(int argc, char *argv[]){
   /*-------------------------------------------------------------------------------------------------------*/ 
   /* Le 1er provider existe puisqu'il y en a au moins 1 */
 
-  if(!TSP_request_provider_open(providers[0], in_file_res))
+
+  if(!TSP_request_provider_open(providers[0], 0, 0 ))
     {
       STRACE_ERROR(("TSP_request_provider_open failed"));
-      return -1;
+	  return -1;
     }
-
+  
 
 
   /*-------------------------------------------------------------------------------------------------------*/ 

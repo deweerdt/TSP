@@ -108,6 +108,12 @@ int main(int argc, char *argv[]){
  
   STRACE_INFO(("Autodetect CPU : %d bits", sizeof(long)*8));
 
+  if(!TSP_consumer_init(&argc, &argv))
+    {
+      STRACE_ERROR(("TSP init failed"));
+      return -1;
+    }
+
   if (argc>2)
     {   
       name = argv[1];
@@ -157,7 +163,7 @@ int main(int argc, char *argv[]){
   /*-------------------------------------------------------------------------------------------------------*/ 
   /* Le 1er provider existe puisqu'il y en a au moins 1 */
 
-  if(!TSP_request_provider_open(providers[0], 0))
+  if(!TSP_request_provider_open(providers[0], 0, 0))
     {
       STRACE_ERROR(("TSP_request_provider_open failed"));
       STRACE_TEST(("STAGE 002 | STEP 001 : FAILED"));

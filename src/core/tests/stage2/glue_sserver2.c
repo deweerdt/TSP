@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/tests/stage2/Attic/glue_sserver2.c,v 1.2 2002-09-30 12:06:53 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/tests/stage2/Attic/glue_sserver2.c,v 1.3 2002-10-04 15:23:25 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -159,7 +159,7 @@ static void* GLU_thread(void* arg)
 
 }
 
-int GLU_init(char* fallback_stream_init)
+int GLU_init(int fallback_argc, char* fallback_argv[])
 {
   SFUNC_NAME(TSP_glue_sserver_init);
 
@@ -248,7 +248,7 @@ int GLU_pasive_get_next_item(GLU_handle_t h_glu, glu_item_t* item)
   return FALSE;
 }
 
-GLU_handle_t GLU_get_instance(char *stream_init, char** error_info)
+GLU_handle_t GLU_get_instance(int argc, char* argv[], char** error_info)
 {
   if(error_info)
     *error_info = "";

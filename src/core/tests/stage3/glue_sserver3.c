@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/tests/stage3/Attic/glue_sserver3.c,v 1.2 2002-10-01 15:47:42 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/tests/stage3/Attic/glue_sserver3.c,v 1.3 2002-10-04 15:23:28 galles Exp $
 
 -----------------------------------------------------------------------
 
@@ -34,6 +34,10 @@ Purpose   : Implementation for the glue_server
 
 
 #define GLU_MAX_SYMBOLS 1000
+
+#define GLU_STREAM_INIT_USAGE "GLU stream init usage : filename[.res]"
+
+#define GLU_RES_FILE_ARG_NUMBER 1
 
 /*RINGBUF_DEFINE_DYNAMIC(glu_ringbuf, glu_ring,  RINGBUF_SZ(GLU_RING_BUFSIZE));*/
 
@@ -137,7 +141,7 @@ int GLU_pasive_get_next_item(GLU_handle_t h_glu, glu_item_t* item)
   
 }
 
-int GLU_init(char* fallback_stream_init)
+int GLU_init(int fallback_argc, char* fallback_argv[])
 {
   SFUNC_NAME(GLU_init);
 
@@ -145,31 +149,39 @@ int GLU_init(char* fallback_stream_init)
   int use_dbl;
 
   STRACE_IO(("-->IN"));
-
+  
   /* is there a fallback stream ? */
-  if(fallback_stream_init)
+  if(fallback_argc && fallback_argv)
     {
-      /* Yes, we must test it */
-      d_rhandle h_res = d_ropen_r(fallback_stream_init, &use_dbl);
-      if(h_res)
+      /* Yes, we must test it. We are expectig one arg */
+      if(fallback_argc > 1)
 	{
-	  int nbrec;
-	  int nbvar;
-	  nbvar = d_rval_r(h_res, 'v');
-	  nbrec = d_rval_r(h_res, 'r');
+	  d_rhandle h_res = d_ropen_r(fallback_argv[GLU_RES_FILE_ARG_NUMBER], &use_dbl);
+	  if(h_res)
+	    {
+	      int nbrec;
+	      int nbvar;
+	      nbvar = d_rval_r(h_res, 'v');
+	      nbrec = d_rval_r(h_res, 'r');
 
-	  /* ok */
-	  STRACE_INFO(("Total number of records for default RES = %d", nbrec));
-	  STRACE_INFO(("Total number of variables for default RES = %d", nbvar));	  
-	  STRACE_INFO(("Data type for default RES = %s", use_dbl ? "DOUBLE" : "FLOAT" ));	  
-	   d_rclos_r(h_res);
+	      /* ok */
+	      STRACE_INFO(("Total number of records for default RES = %d", nbrec));
+	      STRACE_INFO(("Total number of variables for default RES = %d", nbvar));	  
+	      STRACE_INFO(("Data type for default RES = %s", use_dbl ? "DOUBLE" : "FLOAT" ));	  
+	      d_rclos_r(h_res);
+	    }
+	  else
+	    {
+	      /* yeak ! */
+	      ret = FALSE;	      
+	      STRACE_WARNING(("Provided fallback stream '%s' does not work...bye...bye...", fallback_argv[1]));
+	    }
 	}
       else
 	{
-	  /* yeak ! */
 	  ret = FALSE;
-	  STRACE_ERROR(("Provided fallback stream '%s' does not work...bye...bye...", fallback_stream_init));
-	}            
+	  STRACE_WARNING((GLU_STREAM_INIT_USAGE));
+	}
     }
 
   STRACE_IO(("-->OUT"));
@@ -234,7 +246,7 @@ GLU_server_type_t GLU_get_server_type(void)
 
 
 
-GLU_handle_t GLU_get_instance(char *stream_init, char** error_info)
+GLU_handle_t GLU_get_instance(int argc, char* argv[], char** error_info)
 {
 
   SFUNC_NAME(GLU_get_instance);
@@ -243,8 +255,8 @@ GLU_handle_t GLU_get_instance(char *stream_init, char** error_info)
   int nbrec;  
   char namev[RES_NAME_LEN];
   char descv[RES_DESC_LEN];
-  GLU_state_t* obj;
-  char* file;
+  GLU_state_t* obj = 0;
+
 
   STRACE_IO(("-->IN"));
   
@@ -252,63 +264,79 @@ GLU_handle_t GLU_get_instance(char *stream_init, char** error_info)
  if(error_info)
    *error_info = "";
 
- if(stream_init)
+ if(argc && argv)
    {
-
-     /* FIXME : quand la fonction renvera une code d'erreur, le verifier ! */
-     obj = (GLU_state_t*)calloc(1, sizeof(GLU_state_t) );
-     obj->time_stamp = -1;
-
-     /* FIXME : faire le close dans le GLU_end */
-     obj->h_res = d_ropen_r(stream_init, &(obj->use_dbl));
-     STRACE_INFO(("stream_init = '%s'", stream_init));
-     if( obj->h_res )
+     /* At least 1 parameter (the res file ) */
+     if( argc > 1 )
        {
-	 obj->nbvar = d_rval_r(obj->h_res, 'v');
-	 nbrec = d_rval_r(obj->h_res, 'r');
-	 obj->current_var = obj->nbvar;
+	 char* res_file = argv[GLU_RES_FILE_ARG_NUMBER];
+	 /* FIXME : quand la fonction renvera une code d'erreur, le verifier ! */
+	 obj = (GLU_state_t*)calloc(1, sizeof(GLU_state_t) );
+	 TSP_CHECK_ALLOC(obj, 0);
+	 obj->time_stamp = -1;
 
-	 STRACE_INFO(("Total number of records = %d", nbrec));
-	 STRACE_INFO(("Total number of variables = %d", obj->nbvar));
-	 STRACE_INFO(("Data type = %s", obj->use_dbl ? "DOUBLE" : "FLOAT" ));
+	 /* FIXME : faire le close dans le GLU_end */
+	 STRACE_INFO(("stream_init = '%s'", res_file));
+	 obj->h_res = d_ropen_r(res_file, &(obj->use_dbl));
+	 
+	 if( obj->h_res )
+	   {
+	     obj->nbvar = d_rval_r(obj->h_res, 'v');
+	     nbrec = d_rval_r(obj->h_res, 'r');
+	     obj->current_var = obj->nbvar;
 
-	 obj->sample_symbol_info_list_val = calloc (obj->nbvar+1, sizeof (TSP_sample_symbol_info_t)) ;
-	 assert(obj->sample_symbol_info_list_val);
-	 for (i=0; i<obj->nbvar; i++)
-	   {      
-	     d_rnam_r(obj->h_res, namev, descv, i);
+	     STRACE_INFO(("Total number of records = %d", nbrec));
+	     STRACE_INFO(("Total number of variables = %d", obj->nbvar));
+	     STRACE_INFO(("Data type = %s", obj->use_dbl ? "DOUBLE" : "FLOAT" ));
 
-	     obj->sample_symbol_info_list_val[i].name = strdup(namev);
-	     obj->sample_symbol_info_list_val[i].provider_global_index = i;
-	     obj->sample_symbol_info_list_val[i].period = 1;
-	   }
+	     obj->sample_symbol_info_list_val = calloc (obj->nbvar+1, sizeof (TSP_sample_symbol_info_t)) ;
+	     assert(obj->sample_symbol_info_list_val);
+	     for (i=0; i<obj->nbvar; i++)
+	       {      
+		 d_rnam_r(obj->h_res, namev, descv, i);
+
+		 obj->sample_symbol_info_list_val[i].name = strdup(namev);
+		 obj->sample_symbol_info_list_val[i].provider_global_index = i;
+		 obj->sample_symbol_info_list_val[i].period = 1;
+	       }
   
-	 obj->res_values = obj->use_dbl ?
-	   calloc((obj->nbvar+1),sizeof(double))
-	   : calloc((obj->nbvar+1),sizeof(float));
-	 TSP_CHECK_ALLOC(obj->res_values, FALSE);
+	     obj->res_values = obj->use_dbl ?
+	       calloc((obj->nbvar+1),sizeof(double))
+	       : calloc((obj->nbvar+1),sizeof(float));
+	     TSP_CHECK_ALLOC(obj->res_values, FALSE);
+
+	   }
+	 else
+	   {
+	     STRACE_ERROR(("Function d_rval_r failed for file : '%s'", res_file));
+	     if(error_info)
+	       *error_info = "Unable to open file";
+	     free(obj);
+	     obj = 0;
+	   }
 
        }
      else
        {
-	 STRACE_ERROR(("Function d_rval_r failed for file : '%s'", stream_init));
+	 STRACE_WARNING(("Wrong number of parameters"));
 	 if(error_info)
-	   *error_info = "Unable to open file";
-
-	 return 0;
+	   *error_info = "Wrong number of parameters ; " GLU_STREAM_INIT_USAGE ;
+	 free(obj);
+	 obj = 0;
        }
+
    }
  else
    {
-     STRACE_INFO(("A Stream initialisation string must be provided"));
+     STRACE_WARNING(("A Stream initialisation string must be provided"));
      if(error_info)
-       *error_info = "A Stream initialisation string must be provided";
-
-     return 0;
+       *error_info = "A Stream initialisation string must be provided\n" GLU_STREAM_INIT_USAGE ;
+     free(obj);
+     obj = 0;
    }
 
-  STRACE_IO(("-->OUT"));
+ STRACE_IO(("-->OUT"));
 
-  return obj;
+ return obj;
 
 }

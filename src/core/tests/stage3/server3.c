@@ -9,30 +9,21 @@ int main(int argc, char *argv[])
   SFUNC_NAME(main);
 
   int i;
-  int host_number;
-  char* filename;
 
   STRACE_IO(("-->IN"));
 
   STRACE_INFO(("Autodetect CPU : %d bits", sizeof(long)*8));
   
-  if(argc>2)
+  if(argc == 1)
     {
-      host_number = atoi(argv[1]);
-      filename = argv[2];
-      if(!strcmp("_", filename))
-	{
-	  filename = 0;
-	}
-    }
-  else
-    {
-      STRACE_ERROR(("USAGE %s : server_number (in_file_res|_)", argv[0]));
-      return -1;
+      printf("USAGE %s : [ --tsp-stream-init-start file.res --tsp-stream-init-stop ]\n", argv[0]);
     }
 
-  /* Init server */
-  TSP_init(host_number, filename);
+  if(TSP_provider_init(&argc, &argv))
+    {
+      
+      TSP_provider_run();
+    }
     
   STRACE_IO(("-->OUT"));
 

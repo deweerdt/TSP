@@ -18,7 +18,7 @@ setenv STRACE_DEBUG 2
 
 
 
-$PROVIDER 0  > /dev/null &
+$PROVIDER   > /dev/null &
 sleep 1
 
 #useful : will connect to servers 1,2,3 et talks to 1

@@ -55,14 +55,14 @@ set OUT_RESFILE_VARLIST2="/tmp/tsp_test_stage3_out2_file_$TIMETAG.var"
 setenv STRACE_DEBUG 2
 
 #Run provider with no file
-$PROVIDER 0 _ > /dev/null &
+$PROVIDER > /dev/null &
 sleep 1
 
 
 
 #Run consumer test 1
-$CONSUMER localhost 1  $IN_RESFILE1 $OUT_RESFILE1 $OUTFILETYPE1 1 &
-$CONSUMER localhost 1  $IN_RESFILE2 $OUT_RESFILE2 $OUTFILETYPE2 1
+$CONSUMER localhost 1  --tsp-stream-init-start $IN_RESFILE1 --tsp-stream-init-stop $OUT_RESFILE1 $OUTFILETYPE1 1 &
+$CONSUMER localhost 1  --tsp-stream-init-start $IN_RESFILE2 --tsp-stream-init-stop $OUT_RESFILE2 $OUTFILETYPE2 1
 sleep 3
 
 #1-> Create variable list from initial .res
@@ -119,8 +119,8 @@ endif
 #------------------------------------------------
 
 #We keep the same provider
-$CONSUMER localhost 1  $IN_RESFILE1 $OUT_RESFILE1 $OUTFILETYPE1 2 &
-$CONSUMER localhost 1  $IN_RESFILE2 $OUT_RESFILE2 $OUTFILETYPE2 2
+$CONSUMER localhost 1  --tsp-stream-init-start $IN_RESFILE1 --tsp-stream-init-stop $OUT_RESFILE1 $OUTFILETYPE1 2 &
+$CONSUMER localhost 1  --tsp-stream-init-start $IN_RESFILE2 --tsp-stream-init-stop $OUT_RESFILE2 $OUTFILETYPE2 2
 sleep 3
 
 
