@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.4 2004-10-05 22:55:15 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.5 2004-10-18 20:36:56 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -51,6 +51,7 @@ Purpose   : Blackboard Idiom implementation
 
 #include <bb_core.h>
 #include <bb_utils.h>
+#include "tsp_abs_types.h"
 
 /**
  * Convert type to string for display use.
@@ -58,22 +59,25 @@ Purpose   : Blackboard Idiom implementation
 static const char* E_BB_2STRING[] = {"NoAType 0",
 				     "double", 
 				     "float", 
+				     "int8_t",
 				     "int16_t",
 				     "int32_t",
 				     "int64_t",
-				     "u_int16_t",
-				     "u_int32_t",
-				     "u_int64_t",
+				     "uint8_t",
+				     "uint16_t",
+				     "uint32_t",
+				     "uint64_t",
 				     "char",
+				     "uchar",
 				     "UserType",
 				     "NotAType end"};
 
 int32_t 
 bb_size(const int32_t n_data, const int32_t data_size) {
-  /* On dimensionne le segment shm a
-   * la taille d'une structure de BB +
-   * la taille du tableau descripteur de donnee +
-   * la taille de la zone de donnee
+  /* The SHM segment os sized to:
+   *  BB structure size +
+   *  data descriptor array size +
+   *  data zone size
    */
   return (sizeof(S_BB_T) + 
     sizeof(S_BB_DATADESC_T)*n_data +
@@ -85,8 +89,7 @@ bb_find(volatile S_BB_T* bb, const char* var_name) {
   
   int32_t retval;  
   int32_t i;
-  
-  
+    
   retval = -1;
   assert(bb);
   for (i=0; i< bb->n_data;++i) {
@@ -95,7 +98,6 @@ bb_find(volatile S_BB_T* bb, const char* var_name) {
       break;
     }
   } /* end for */
-
   
   return retval;
 } /* end of  bb_find */
@@ -138,6 +140,9 @@ bb_double_of(void* value, E_BB_TYPE_T bbtype) {
   case E_BB_FLOAT:
     retval = *((float*)value);
     break;
+  case E_BB_INT8:
+    retval = *((int8_t*)value);
+    break; 
   case E_BB_INT16:
     retval = *((int16_t*)value);
     break; 
@@ -147,20 +152,23 @@ bb_double_of(void* value, E_BB_TYPE_T bbtype) {
   case E_BB_INT64:
     retval = *((int64_t*)value);
     break; 
+  case E_BB_UINT8:
+    retval = *((uint8_t*)value);
+    break;  
   case E_BB_UINT16:
-    retval = *((u_int16_t*)value);
+    retval = *((uint16_t*)value);
     break;
   case E_BB_UINT32:
-    retval = *((u_int32_t*)value);
+    retval = *((uint32_t*)value);
     break;	
   case E_BB_UINT64:
-    retval = *((u_int64_t*)value);
+    retval = *((uint64_t*)value);
     break;	
   case E_BB_CHAR:
-    /* FIXME what to do here */
-    break;
+  case E_BB_UCHAR:
   case E_BB_USER:
-    /* FIXME we cannot convert */
+    /* FIXME could not convert set 0.0 */
+    retval = 0.0;
     break; 
   default:
     retval = 0.0;
@@ -199,13 +207,13 @@ bb_data_initialise(volatile S_BB_T* bb, S_BB_DATADESC_T* data_desc,void* default
       ((int64_t*) data)[i] = default_value ? *((long *) default_value) : 0;
       break; 
     case E_BB_UINT16:
-      ((u_int16_t*) data)[i] = default_value ? *((unsigned short *) default_value) : 0;
+      ((uint16_t*) data)[i] = default_value ? *((unsigned short *) default_value) : 0;
       break;
     case E_BB_UINT32:
-      ((u_int32_t*) data)[i] = default_value ? *((unsigned int *) default_value) : 0;
+      ((uint32_t*) data)[i] = default_value ? *((unsigned int *) default_value) : 0;
       break;	
     case E_BB_UINT64:
-      ((u_int64_t*) data)[i] = default_value ? *((unsigned long *) default_value) : 0;
+      ((uint64_t*) data)[i] = default_value ? *((unsigned long *) default_value) : 0;
       break;	
     case E_BB_CHAR:
       ((char *) data)[i] = default_value ? *((char *) default_value) : '\0';
@@ -261,13 +269,13 @@ bb_value_write(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc,const char* value,
       ((int64_t*)data)[idx] = strtoll(value,(char **)NULL,hexval ? 16 : 10);
       break; 
     case E_BB_UINT16:
-      ((u_int16_t*)data)[idx] = strtoul(value,(char **)NULL,hexval ? 16 : 10);
+      ((uint16_t*)data)[idx] = strtoul(value,(char **)NULL,hexval ? 16 : 10);
       break;
     case E_BB_UINT32:
-      ((u_int32_t*)data)[idx] = strtoul(value,(char **)NULL,hexval ? 16 : 10);
+      ((uint32_t*)data)[idx] = strtoul(value,(char **)NULL,hexval ? 16 : 10);
       break;	
     case E_BB_UINT64:
-      ((u_int64_t*)data)[idx] = strtoull(value,(char **)NULL,hexval ? 16 : 10);
+      ((uint64_t*)data)[idx] = strtoull(value,(char **)NULL,hexval ? 16 : 10);
       break;	
     case E_BB_CHAR:
       retval = E_NOK;
@@ -283,31 +291,31 @@ bb_value_write(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc,const char* value,
 }
 
 int32_t
-bb_data_header_print(S_BB_DATADESC_T data_desc, FILE* pf, int32_t index) {
+bb_data_header_print(S_BB_DATADESC_T data_desc, FILE* pf, int32_t idx) {
 
   fprintf(pf,"---------- < %s > ----------\n",data_desc.name);
   fprintf(pf,"  type        = %d  (%s)\n",data_desc.type,E_BB_2STRING[data_desc.type]);
   fprintf(pf,"  dimension   = %d  \n",data_desc.dimension);
   fprintf(pf,"  type_size   = %d  \n",data_desc.type_size);
   fprintf(pf,"  data_offset = %ld \n",data_desc.data_offset);
-  if (index>=0) {
-    fprintf(pf,"  value[%d] = ",index);
+  if (idx>=0) {
+    fprintf(pf,"  value[%d] = ",idx);
   } else {
     fprintf(pf,"  value = ");
   }
   if (data_desc.dimension > 1) {
     fprintf(pf," [ ");
   } 
-  if (index>=0) {
+  if (idx>=0) {
     fprintf(pf,"... ");
   }
   return 0;
 } /* end of bb_data_header_print */
 
 int32_t
-bb_data_footer_print(S_BB_DATADESC_T data_desc, FILE* pf, int32_t index) {
+bb_data_footer_print(S_BB_DATADESC_T data_desc, FILE* pf, int32_t idx) {
 
-  if (index>=0) {
+  if (idx>=0) {
     fprintf(pf,"... ");
   }  
   if (data_desc.dimension > 1) {
@@ -320,7 +328,7 @@ bb_data_footer_print(S_BB_DATADESC_T data_desc, FILE* pf, int32_t index) {
 } /* end of bb_data_footer_print */
 
 int32_t 
-bb_value_print(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc, FILE* pf, int32_t index) {
+bb_value_print(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc, FILE* pf, int32_t idx) {
   
   int32_t i,ibeg,iend;
   char* data;
@@ -328,9 +336,9 @@ bb_value_print(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc, FILE* pf, int32_t
   /* on recupere l'adresse de la donnee dans le BB */
   data = (char*)bb_data(bb) + data_desc.data_offset;
   
-  if (index>=0) {
-    ibeg=index;
-    iend=index+1;
+  if (idx>=0) {
+    ibeg=idx;
+    iend=idx+1;
   } else {
     ibeg=0;
     iend=data_desc.dimension;
@@ -355,13 +363,13 @@ bb_value_print(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc, FILE* pf, int32_t
       fprintf(pf,"%lld ",((int64_t*) data)[i]);
       break; 
     case E_BB_UINT16:
-      fprintf(pf,"0x%x ",((u_int16_t*) data)[i]);
+      fprintf(pf,"0x%x ",((uint16_t*) data)[i]);
       break;
     case E_BB_UINT32:
-      fprintf(pf,"0x%x ",((u_int32_t*) data)[i]);
+      fprintf(pf,"0x%x ",((uint32_t*) data)[i]);
       break;	
     case E_BB_UINT64:
-      fprintf(pf,"0x%llx ",((u_int64_t*) data)[i]);
+      fprintf(pf,"0x%llx ",((uint64_t*) data)[i]);
       break;	
     case E_BB_CHAR:
       fprintf(pf,"0x%x<%c> ",((char*) data)[i],((char*) data)[i]);
@@ -713,8 +721,8 @@ bb_publish(volatile S_BB_T *bb, S_BB_DATADESC_T* data_desc) {
    */
   bb_lock(bb);
   if (bb_find(bb,data_desc->name) != -1) {
-/*     bb_logMsg(BB_LOG_WARNING,"BlackBoard::bb_publish",  */
-/* 	      "Key <%s> already exists in blackboard (automatic subscribe)!!",data_desc->name); */
+     bb_logMsg(BB_LOG_FINER,"BlackBoard::bb_publish",
+	       "Key <%s> already exists in blackboard (automatic subscribe)!!",data_desc->name);
     bb_unlock(bb);
     retval = bb_subscribe(bb,data_desc);
     bb_lock(bb);
@@ -757,7 +765,7 @@ bb_subscribe(volatile S_BB_T *bb,
 	     S_BB_DATADESC_T* data_desc) {
   
   void* retval;
-  int32_t  i_index;
+  int32_t  idx;
   
   retval = NULL;
   assert(bb);
@@ -765,14 +773,14 @@ bb_subscribe(volatile S_BB_T *bb,
   
   /* on cherche la donnee publiee par sa clef */
   bb_lock(bb);
-  i_index = bb_find(bb,data_desc->name);
-  if (i_index==-1) {
+  idx = bb_find(bb,data_desc->name);
+  if (idx==-1) {
     retval = NULL;      
   } else {
-    data_desc->type            = (bb_data_desc(bb)[i_index]).type;
-    data_desc->dimension       = (bb_data_desc(bb)[i_index]).dimension;
-    data_desc->type_size       = (bb_data_desc(bb)[i_index]).type_size;
-    data_desc->data_offset     = (bb_data_desc(bb)[i_index]).data_offset;
+    data_desc->type            = (bb_data_desc(bb)[idx]).type;
+    data_desc->dimension       = (bb_data_desc(bb)[idx]).dimension;
+    data_desc->type_size       = (bb_data_desc(bb)[idx]).type_size;
+    data_desc->data_offset     = (bb_data_desc(bb)[idx]).data_offset;
     retval = (char*) bb_data(bb) + data_desc->data_offset;
   }
   bb_unlock(bb);

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_utils.c,v 1.3 2004-10-05 22:08:06 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_utils.c,v 1.4 2004-10-18 20:36:56 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -45,6 +45,7 @@ Purpose   : Blackboard Idiom utilities
 
 #include <bb_utils.h>
 #include <bb_sha1.h>
+#include "tsp_simple_trace.h"
 
 char* 
 bb_utils_build_shm_name(const char* shm_name) {
@@ -144,17 +145,33 @@ bb_utils_ntok(const char* name) {
 } /* end of bb_utils_ntok */
 
 int32_t 
-bb_logMsg(const BB_LOG_LEVEL_T e_level, const char* pc_who, char* pc_fmt, ...) {
+bb_logMsg(const BB_LOG_LEVEL_T level, const char* who, char* fmt, ...) {
   va_list args;
   char    message[2048];
 
   memset(message,0,2048);
-  va_start(args, pc_fmt);
-  vsnprintf(message, 2048, pc_fmt, args);
+  va_start(args, fmt);
+  vsnprintf(message, 2048, fmt, args);
   va_end(args);
   
-  fprintf(stderr,"WARNING : %s : %s\n",pc_who, message);
- 
+  switch (level) {
+    
+  case BB_LOG_ABORT:
+  case BB_LOG_SEVERE:
+    STRACE_ERROR(("%s : %s",who,message));
+    break;
+  case BB_LOG_WARNING:
+    STRACE_WARNING(("%s : %s",who,message));
+    break;
+  case BB_LOG_INFO:
+  case BB_LOG_CONFIG:
+    STRACE_INFO(("%s : %s",who,message));
+    break;
+  case BB_LOG_FINE:
+  case BB_LOG_FINER:
+    STRACE_DEBUG(("%s : %s",who,message));
+
+  }
   return 0;
 }
 

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_simple.c,v 1.3 2004-09-21 21:59:58 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_simple.c,v 1.4 2004-10-18 20:36:56 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -87,9 +87,9 @@ void* bb_simple_subscribe(S_BB_T* bb_simple,
 			  const char* var_name,
 			  const char* module_name,
 			  const int module_instance,
-			  E_BB_TYPE_T  type,
+			  E_BB_TYPE_T*  type,
 			  int* type_size,
-			  int dimension) {
+			  int* dimension) {
   
   void* retval;
   S_BB_DATADESC_T s_data_desc;
@@ -106,26 +106,28 @@ void* bb_simple_subscribe(S_BB_T* bb_simple,
   }
   
   retval = bb_subscribe(bb_simple,&s_data_desc);  
-  
+  *type      = s_data_desc.type;
+  *type_size = s_data_desc.type_size;
+  *dimension = s_data_desc.dimension;
   return retval;
 } /* end of bb_simple_subscribe */
 
 
 
 int32_t 
-bb_simple_synchro_config(int type_synchro) {
+bb_simple_synchro_config(int synchro_type) {
   
   int32_t retcode=E_OK;
   
-  switch (type_synchro) {
+  switch (synchro_type) {
   case BB_SIMPLE_SYNCHRO_PROCESS:
   case BB_SIMPLE_SYNCHRO_THREAD:
-    bb_simple_synchro_type = type_synchro;
+    bb_simple_synchro_type = synchro_type;
     break;
   default:
     bb_logMsg(BB_LOG_SEVERE,"BlackBoard::bb_simple_synchro_config",
 		"Invalid synchro type <%d>, BB_SIMPLE_SYNCHRO_PROCESS <%d> used",
-		type_synchro,BB_SIMPLE_SYNCHRO_PROCESS);
+		synchro_type,BB_SIMPLE_SYNCHRO_PROCESS);
     bb_simple_synchro_type = BB_SIMPLE_SYNCHRO_PROCESS;
   }
   
@@ -195,11 +197,11 @@ bb_simple_synchro_verify(S_BB_T* bb_simple) {
 } /* end of bb_simple_synchro_verify */
 
 int32_t 
-bb_simple_thread_synchro_go(int type_msg) {
+bb_simple_thread_synchro_go(int msg_type) {
   
   int32_t retcode;
   
-  switch (type_msg) {
+  switch (msg_type) {
   case BB_SIMPLE_MSGID_SYNCHRO_COPY:
     pthread_mutex_lock(&bb_simple_go_mutex);
     pthread_cond_broadcast(&bb_simple_go_condvar);
@@ -212,7 +214,7 @@ bb_simple_thread_synchro_go(int type_msg) {
     break;
   default:
     bb_logMsg(BB_LOG_SEVERE,"BlackBoard::bb_simple_thread_synchro_go", 
-	      "Invalid thread synchro ID <%d>",type_msg);
+	      "Invalid thread synchro ID <%d>",msg_type);
   }
   /* pthread_cond_broadcast always succeed */
   retcode = E_OK;
@@ -221,11 +223,11 @@ bb_simple_thread_synchro_go(int type_msg) {
 } /* end of bb_simple_synchro_go */
 
 int32_t 
-bb_simple_thread_synchro_wait(int type_msg) {
+bb_simple_thread_synchro_wait(int msg_type) {
   
   int32_t retcode;
   
-  switch (type_msg) {
+  switch (msg_type) {
   case BB_SIMPLE_MSGID_SYNCHRO_COPY:
     pthread_mutex_lock(&bb_simple_go_mutex);
     pthread_cond_wait(&bb_simple_go_condvar,&bb_simple_go_mutex);
@@ -238,7 +240,7 @@ bb_simple_thread_synchro_wait(int type_msg) {
     break;
   default:
     bb_logMsg(BB_LOG_SEVERE,"BlackBoard::bb_simple_thread_synchro_wait", 
-	      "Invalid thread synchro ID <%d>",type_msg);
+	      "Invalid thread synchro ID <%d>",msg_type);
   }
   /* pthread_cond_wait always succeed (or never return)*/
   retcode = E_OK;

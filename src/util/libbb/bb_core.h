@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.h,v 1.4 2004-10-12 17:17:04 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.h,v 1.5 2004-10-18 20:36:56 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -67,6 +67,7 @@ union semun {
  * Every process/thread attached to the blackboard may
  * publish or subscribe to a piece of data using a key
  * (string based in this implementation).
+ * @ingroup TSP_Utils
  */
 
 #define MAX_SYSMSG_SIZE     255
@@ -87,13 +88,16 @@ union semun {
  */
 typedef enum {E_BB_DOUBLE=1, 
 	      E_BB_FLOAT,
+	      E_BB_INT8, 
 	      E_BB_INT16, 
 	      E_BB_INT32, 
 	      E_BB_INT64, 
+	      E_BB_UINT8, 
 	      E_BB_UINT16, 
 	      E_BB_UINT32, 
 	      E_BB_UINT64,
 	      E_BB_CHAR,
+	      E_BB_UCHAR,
               E_BB_USER} E_BB_TYPE_T;
 	      
 /**
@@ -196,16 +200,12 @@ typedef struct S_BB {
 
 
 /**
- * Renvoie la taille occupée par un blackboard
- * contenant au plus 'n_data' et dont
- * la zone de donnée est de taille 'i_taille_donnees'
- * octet.
- * @param n_data IN le nombre de données maximum stockable
- *                     dans ce blackboard.
- * @param data_size IN la taille (en octet) de la zone de donnée
- *                         du blackboard
- * @return la taille en octet occupé par un blackboard
- *         de ce type
+ * Return the size of a blackboard with 
+ * n_data publishable elements
+ * with a data zone of size data_size byte.
+ * @param n_data IN the number of publishable data in blackboard
+ * @param data_size IN the size (in byte) of the blackboard data zone.
+ * @return the size (in byte) of this kind of blackboard.
  * @ingroup BlackBoard
  */
 int32_t
@@ -253,67 +253,62 @@ double
 bb_double_of(void *value, E_BB_TYPE_T bbtype);
 
 /**
- * Initialise une structure de donnée nouvellement
- * allouée à une valeur par défaut.
- * Si le pointeur vers la valeur par défaut est 
- * NULL on initialise à 0 pour tous les types
- * sauf le type E_BB_USER pour lequel on remplit
- * la mémoire allouée de zéro binaire.
- * @param bb IN pointeur vers le blackboard auquel est liée la donnée
- * @param ps_data INOUT pointeur vers la structure de description de la donnee
- *                doit être non NULL.
- * @param pv_valeur_defaut INOUT valeur par défaut pour l'initialisation.
- *                         Si NULL alors on initialise à zéro.
- * @return E_OK si initialisation réalisée E_NOK sinon.
+ * Initialise a freshly created structure to a default value.
+ * If default value pointer is NULL then all type are 
+ * initialized to 0 but the E_BB_USER for which
+ * the data zone is set to binary 0.
+ * @param bb IN pointer to the blackboard whose the data belongs.
+ * @param data_desc INOUT pointer to the data descriptor structure
+ *                (should NOT be NULL).
+ * @param default_value INOUT default pointer to the default value used for init.
+ *                         If NULL then initialize to 0.
+ * @return E_OK if init OK E_NOK otherwise.
  * @ingroup BlackBoard
  */
 int32_t 
-bb_data_initialise(volatile S_BB_T* bb, S_BB_DATADESC_T* ps_data,void* pv_valeur_defaut);
+bb_data_initialise(volatile S_BB_T* bb, S_BB_DATADESC_T* data_desc,void* default_value);
 
 int32_t
 bb_value_write(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc,const char* value, int32_t idx);
 
 int32_t
-bb_data_header_print(S_BB_DATADESC_T data_desc, FILE* pf, int32_t index);
+bb_data_header_print(S_BB_DATADESC_T data_desc, FILE* pf, int32_t idx);
 
 int32_t
-bb_data_footer_print(S_BB_DATADESC_T data_desc, FILE* pf, int32_t index);
+bb_data_footer_print(S_BB_DATADESC_T data_desc, FILE* pf, int32_t idx);
 
 int32_t 
-bb_value_print(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc, FILE* pf, int32_t index);
+bb_value_print(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc, FILE* pf, int32_t idx);
 
 /**
- * Affiche le contenu d'un descripteur de donnée.
- * @param bb IN pointeur vers le blackboard auquel est liée la donnée
- * @param ps_data INOUT pointeur vers la structure de description de la donnee.
- * @param pf INOUT pointeur de fichier vers lequel on affiche. 
- *           Doit être non NULL.
- * @return renvoie toujours E_OK sauf si pf est NULL.
+ * Print the content of a data descriptor.
+ * @param bb IN pointer to BB where the data reside
+ * @param data_desc INOUT pointer to data descriptor.
+ * @param pf INOUT stream file pointer to be used for printing.
+ * @return always return E_OK unless pf is NULL.
  * @ingroup BlackBoard
  */
 int32_t 
-bb_data_print(volatile S_BB_T* bb, S_BB_DATADESC_T ps_data, FILE* pf);
+bb_data_print(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc, FILE* pf);
 
 /**
- * Creation d'un blackboard.
- * Ouvre le segment de mémoire partagée et alloue la taille
- * demandée, mmap la zone sur une structure de donnée décrivant un blackboard et 
- * initialise cette dernière.
- * Seul un process doit appeler cette fonction.
- * Les autres processes doivent se contenter de s'attacher
- * au blackboard via bb_attach(S_BB_T**, const char*).
- * @param bb INOUT Pointeur de pointeur sur le BB.
- *                    En entree, ce pointeur doit être non nul.
- *                    En sortie, l'élément pointé est le blackboard nouvellement
- *                    crée.
- * @param pc_bb_name IN Nom du blackboard
- * @param n_data IN le nombre de données maximum du blackboard.
- *                        C'est-à-dire le nombre d'éléments différenciable
- *                        (par leur clef) du blackboard.
- * @param data_size IN la taille des données du blackboard (en octet).
- *                         C'est-à-dire la somme des tailles de toutes
- *                         les données à allouer dans le blackboard.
- * @return code de retour E_OK si creation reussie.
+ * Create a blackboard.
+ * Create a shared memory segment of the specified size then
+ * mmap it for the current process and initialize the zone
+ * to contains a fresh new blackboard structure.
+ * Only one process should create a blackboard others should
+ * attach through @see bb_attach(S_BB_T**, const char*). 
+ * @param bb INOUT Pointer to a BB pointer.
+ *                    IN, non NULL pointer.
+ *                    OUT, the pointed element is the new created BB
+ *                         or NULL is creation failed.
+ * @param pc_bb_name IN, the blackboard name
+ * @param n_data IN maximum data to be stored in blackboard.
+ *                  I.e. the number of different published element in BB
+ *                 (each element has an associated key)
+ * @param data_size IN the maximum data zone size (in byte) of the blackboard.
+ *                     This is the sum of all data published in the blackboard.
+ * @return E_OK if creation succeed E_NOK if failed.
  * @ingroup BlackBoard
  */
 int32_t 
@@ -322,194 +317,182 @@ bb_create(S_BB_T** bb,
 	  int n_data,
 	  int data_size);
 /**
- * Destruction d'un blackboard.
- * Détruit le contenu de la structure de donnée décrivant un blackboard.
- * @param bb INOUT Pointeur de pointeur sur le BB.
- *                    Ce pointeur doit être non nul.
- * @return code de retour E_OK si destruction reussie.
+ * Destroy a blackboard.
+ * Destroy the BB  structure. Destroy the shared memory segment
+ * and detach from it. Note that effective shared memory segment
+ * destruction will occur when the last process attached 
+ * is detached (through @see bb_detach for example).
+ * @param bb INOUT Pointer to BB pointer.
+ *                 Should not be NULL.
+ * @return E_OK on success E_NOK otherwise.
  * @ingroup BlackBoard
  */
 int32_t 
 bb_destroy(S_BB_T** bb);
 
 /**
- * Verouillage d'un blackboard.
- * On doit verrouiller le blackboard avant
- * toute modification structurelle ou pour protéger
- * d'autres processus de modifications concurrentes.
- * Cet appel est bloquant.
- * Les interfaces de publication et d'abonnement au blackboard
- * vérouille automatiquement le blackboard.
- * @param bb INOUT Pointeur sur le BB.
- *                    Ce pointeur doit être non nul.
- * @return code de retour E_OK si lock reussi.
+ * Lock blackboard.
+ * A BlackBoard should be locked befaore any structural change
+ * or to protect different process against each other from
+ * concurrent modifications.
+ * This is a blocking call (using sys V semaphore).
+ * @see bb_publish/ @see bb_subscribe automatically lock the blackboard.
+ * @param bb INOUT BB pointer, should not be NULL.
+ * @return E_OK if lock succeed, E_NOK otherwise.
  * @ingroup BlackBoard
  */
 int32_t 
 bb_lock(volatile S_BB_T* bb);
 
 /**
- * Déverouillage d'un blackboard.
- * @param bb INOUT Pointeur sur le BB.
- *                    Ce pointeur doit être non nul.
- * @return code de retour E_OK si unlock reussi.
+ * Unlock blackboard.
+ * @param bb INOUT, BB pointer, should not be NULL.
+ * @return E_OK if unlock succeed, E_NOK otherwise.
  * @ingroup BlackBoard
  */
 int32_t 
 bb_unlock(volatile S_BB_T* bb);
 
 /**
- * Connexion à un blackboard.
- * Se connecte à un blackboard existant.
- * @param bb OUT Pointeur de pointeur sur le BB.
- *                  Ce pointeur doit être non nul.
- *                  La valeur du pointeur est mise à jour si la connexion au 
- *                  BB a réussie.
- * @param pc_bb_name IN Nom du blackboard
- * @return code de retour E_OK si le blackboard existe et
- *                             que la connexion est acceptée E_NOK sinon.
+ * Attach to an existing blackboard.=
+ * @param bb OUT, Pointer to BB pointer (should not be NULL).
+ *               the pointed value is updated is BB attach succeed.
+ * @param bb_name IN, blackboard name
+ * @return  E_OK  if blackboard exists and attach succeed
+ *                E_NOK otherwise.
  * @ingroup BlackBoard
  */
 int32_t 
-bb_attach(S_BB_T** bb, const char* pc_bb_name);
+bb_attach(S_BB_T** bb, const char* bb_name);
 
 /**
- * Deconnexion à un blackboard.
- * @param bb INOUT Pointeur de pointeur sur le BB.
- *                  Ce pointeur doit être non nul.
- * @return code de retour E_OK si le blackboard existe et
- *                             que la connexion est accepté E_NOK sinon.
+ * Detach from blackboard.
+ * @param bb INOUT, Pointer to BB pointer (should not be NULL)
+ * @return E_OK if blackboard exists and detach succeed E_NOK otherwise.
  * @ingroup BlackBoard
  */
 int32_t 
 bb_detach(S_BB_T** bb);
 
 /**
- * Demande de publication d'une donnée dans un blackboard.
- * Cette demande réalise l'allocation de l'espace
- * nécessaire dans le blackboard et renvoie
- * l'adresse à laquelle la donnée à été alloué.
- * @param bb INOUT Pointeur sur le blackboard.
- *                    Ce pointeur doit être non nul.
- * @param ps_data_desc INOUT Descripteur de la donnée à publish.
- *                          En sortie si la donnée a été allouée
- *                          le champ S_BB_DATADESC_T.pv_donnee
- *                          est mis à jour.
- * @return adresse de la donnée allouée, NULL
- *         si allocation impossible.
+ * Publish a data in a blackboard.
+ * This request allocate space for the specified data in blackboard
+ * and return the address of the newly allocated space.
+ * This function has the same semantic as malloc(3).
+ * @param bb INOUT, BB pointer (should not be NULL).
+ * @param data_desc INOUT, Data descriptor of the data to be published.
+ *                         OUT, if data has been properly allocated
+ *                         the S_BB_DATADESC_T.data_offset is updated.
+ * @return address of the allocated data, NULL
+ *         if allocation failed.
  * @ingroup BlackBoard
  */
 void* 
-bb_publish(volatile S_BB_T *bb, S_BB_DATADESC_T* ps_data_desc);
+bb_publish(volatile S_BB_T *bb, S_BB_DATADESC_T* data_desc);
 
 /**
- * Demande d'abonnement à une donnée dans un blackboard.
- * Cette demande cherche la donnée dans le blackboard
- * et renvoie son adresse si elle est trouvée.
- * @param bb IN Pointeur sur le blackboard.
- *                    Ce pointeur doit être non nul.
- * @param ps_data_desc INOUT Descripteur de la donnée à chercher.
- *                          En sortie si la donnée a été trouvée
- *                          le champ S_BB_DATADESC_T.pv_donnee
- *                          est mis à jour.
- * @return adresse de la donnée si elle est présente, NULL
- *         si la donnée est absente.
+ * Subscribe to blackboard data.
+ * The function search the data in BB and return its
+ * address if found.
+ * @param bb IN, pointer to BB.
+ * @param data_desc INOUT, data descriptor for the searched data on entry
+ *                         updated data desc if found.
+ * @return data address if found NULL if not found.
  * @ingroup BlackBoard
  */
 void* 
-bb_subscribe(volatile S_BB_T *bb, S_BB_DATADESC_T* ps_data_desc);
+bb_subscribe(volatile S_BB_T *bb, S_BB_DATADESC_T* data_desc);
 
 /**
- * Demande de dumper un blackboard.
- * On écrit dans un flux stdio la description et le 
- * contenu d'un blackboard.
- * @param bb INOUT Pointeur sur le blackboard.
- *                    Ce pointeur doit être non nul.
- * @param p_filedesc INOUT Descripteur de flux stdio.
- * @return code de retour E_OK si dump reussi.
+ * Dump a blackboard to a file stream.
+ * Blackboard description and all data content is dumped.
+ * @param bb INOUT, pointer to BB.
+ * @param filedesc INOUT, file stream descriptor.
+ * @return E_OK if dump succeed E_NOK otherwise.
  * @ingroup BlackBoard
  */
 int32_t 
-bb_dump(volatile S_BB_T *bb, FILE* p_filedesc);
+bb_dump(volatile S_BB_T *bb, FILE* filedesc);
 
 /**
- * Renvoi le nombre de données maximum
- * stockable dans le blackboard.
- * @param bb IN Pointeur sur le blackboard.
- *                 Ce pointeur doit être non nul.
- * @return Le nombre de données maximum
- *         stockable dans le blackboard.
+ * Return the maximum number of data that
+ * could be published in blackboard.
+ * @param bb IN, pointer to blackboard.
+ * @return the maximum number of data that could be published in blackboard
  * @ingroup BlackBoard
  */
 int
 bb_get_nb_max_item(volatile S_BB_T *bb);
 
 /**
- * Renvoi le nombre de données actuellement
- * stockées dans le blackboard.
- * @param bb IN Pointeur sur le blackboard.
- *                 Ce pointeur doit être non nul.
- * @return Le nombre de données actuellement
- *         stockées dans le blackboard.
+ * Return the number of data that
+ * are currently published in blackboard. 
+ * @param bb IN, pointer to blackboard. 
+ * @return the number of data currently published in blackboard. 
  * @ingroup BlackBoard
  */
 int
 bb_get_nb_item(volatile S_BB_T *bb);
 
 /**
- * Renvoi la taille mémoire occupée par un blackboard.
- * @param bb IN Pointeur sur le blackboard.
- *                 Ce pointeur doit être non nul.
- * @return La taille mémoire (en octets) occupé par le BB.
+ * Return the memory occupation (in byte) of a blackboard.
+ * @param bb IN, pointer to BB.
+ * @return memory occupied by the specified BB in bytes
  * @ingroup BlackBoard
  */
 int
 bb_get_mem_size(volatile S_BB_T *bb);
 
 /**
- * Demande l'ombre d'un blackboard.
- * L'ombre d'un blackboard est un blackboard dont on
- * sait qu'il ne sera partagé par aucun autre processus.
- * Les seules opérations valident sur une ombre de blackboard
- * sont (bb_shadow_get, bb_shadow_update_data) et l'accès
- * direct aux données du blackboard.
- * @param bb_shadow INOUT Pointeur sur la zone de donnée pré-allouée
- *                         qui doit recevoir le shadow blackboard
- * @param bb_src IN Pointeur sur le blackboard source
- *                     de l'ombre.
- * @return code de retour E_OK si l'ombre reussie.
+ * Ask for a shadow blackboard creation.
+ * A shadow blackboard is a blackboard which does not
+ * reside in shared memory is meant to be in local memory.
+ * This BB is not meant to be shared between several process
+ * or thread.
+ * The only valid operation on a shadow BB are:
+ *      - bb_shadow_get, 
+ *      - bb_shadow_update_data
+ *      - direct access to BB data
+ * This kind of BB is used for flip/flop BB distribution
+ * with a blackboard TSP provider.
+ * @param bb_shadow INOUT, pointer to pre-allocated data zone
+ *                         which will receive the shadow BB.
+ * @param bb_src IN, pointer to source blackboard to be shadowed.
+ * @return  E_OK on success E_NOK if not.
  * @ingroup BlackBoard
  */
 int32_t 
 bb_shadow_get(S_BB_T *bb_shadow, volatile S_BB_T *bb_src);
 
 /**
- * Demande la MAJ de la zone de données d'une ombre de blackboard.
- * @param bb_shadow INOUT Pointeur sur l'ombre de blackboard.
- * @param bb_src IN Pointeur sur le blackboard source
- *                     de l'ombre.
- * @return code de retour E_OK si l'update reussie.
+ * Update the data zone of a shadow blackboard.
+ * This is essentially a memcpy of the blackboard data zone.
+ * @param bb_shadow INOUT, pointer to shadow BB
+ * @param bb_src IN, pointer to source BB (the same BB
+ *                   initially used for making shadow)
+ * @return E_OK on success.
  * @ingroup BlackBoard
  */
 int32_t 
 bb_shadow_update_data(S_BB_T *bb_shadow, volatile S_BB_T *bb_src);
 
 /**
- * Renvoie l'identifiant de la queue de message lié au blackboard.
- * @param bb INOUT Pointeur sur le blackboard.
- *                    Ce pointeur doit être non nul.
- * @return identifiant de la queue de message liée au blackboard
+ * Return the BB message queue identifier.
+ * @param bb INOUT, pointer to BB.
+ * @return message queue id 
  * @ingroup BlackBoard
  */
 int32_t 
 bb_msg_id(volatile S_BB_T *bb);
 
 /**
- * Demande d'envoi de message via le blackboard.
- * @param bb INOUT Pointeur sur le blackboard.
- *                    Ce pointeur doit être non nul.
- * @param msg INOUT Pointeur sur le message à envoyer
- * @return code de retour E_OK si dump reussi.
+ * Send message through BB msg queue.
+ * This is a non blocking call, if there is no more
+ * room in the message queue, the message is not sent
+ * and lost.
+ * @param bb INOUT, pointer to BB
+ * @param msg INOUT, pointer to message to be sent
+ * @return E_OK on success E_NOK otherwise.
  * @ingroup BlackBoard
  */
 int32_t 
@@ -517,12 +500,14 @@ bb_snd_msg(volatile S_BB_T *bb, S_BB_MSG_T* msg);
 
 
 /**
- * Demande de réception d'un message via le blackboard.
- * Cet appel est bloquant si aucun message n'est disponible.
- * @param bb INOUT Pointeur sur le blackboard.
- *                    Ce pointeur doit être non nul.
- * @param msg INOUT Pointeur sur le message à envoyer
- * @return code de retour E_OK si dump reussi.
+ * Receive a message on the BB message queue.
+ * This is a blocking call.
+ * @param bb INOUT, pointer to BB.
+ * @param msg INOUT, the message to be read.
+ *                  The type of the message to be received should be
+ *                  be specified on entry in the message structure
+ *                  msg->mtype.
+ * @return E_OK on success, E_NOK otherwise
  * @ingroup BlackBoard
  */
 int32_t 

@@ -3,7 +3,9 @@
 
   <page title="Mixed" x="550" y="330" width="320" height="320" widget="view" rows="8" >   
      <variable name="TextView" type="TITLE"   />
-     <variable name="bb_test_1_Titi" type="DOUBLE"   />
+     <variable name="bb_test_display_level" type="HEXA"   />
+     <variable name="bb_test_display_level" type="DOUBLE"   />
+     <variable name="bb_test_1_Titi" legend="Titi" type="DOUBLE"   />
      <variable name="bb_test_1_Toto[0]" type="DOUBLE"   />
      <variable name="bb_test_1_Toto[1]" type="DOUBLE"   />
      <variable name="bb_test_1_Tata[1]" type="DOUBLE"   />
