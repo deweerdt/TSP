@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_datapool.h,v 1.9 2004-09-14 16:48:26 dufy Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_datapool.h,v 1.10 2004-10-07 09:00:30 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -56,7 +56,7 @@ void TSP_datapool_get_reverse_list (int *nb, int **list);
  * Insted of thread created, we push directly the data
  * @param item : what to push
  */ 
-inline int TSP_datapool_push_next_item(glu_item_t* item);
+/*inline*/ int TSP_datapool_push_next_item(glu_item_t* item);
 
 /**
  * End of push, we commit the whole
