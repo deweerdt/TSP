@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/Attic/glue_sserver.h,v 1.14 2003-01-28 15:20:22 SyntDev1 Exp $
+$Id: glue_sserver.h,v 1.15 2003-03-13 18:04:04 yduf Exp $
 
 -----------------------------------------------------------------------
 
@@ -25,7 +25,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 -----------------------------------------------------------------------
 
 Project   : TSP
-Maintainer : tsp@astrium-space.com
+Maintainer: tsp@astrium-space.com
 Component : Provider
 
 -----------------------------------------------------------------------
@@ -39,9 +39,8 @@ Purpose   : Interface for the glue server : the data producer
 #define _TSP_GLUESERVER_H
 
 #include "tsp_prjcfg.h"
+#include "tsp_datastruct.h"  /* FIXME : just for TSP_sample_symbol_info_list_t, and shouldn't use generated rpc struct */
 
-
-#include "tsp_datastruct.h"
 
 /**
  * @defgroup GLUServer
@@ -161,10 +160,9 @@ char* GLU_get_server_name(void);
 * started with no fallback stream at all (it usually is
 * acceptable)
 *
-* @param fallback_argc Number of fallback initialisation elements
-* 'à la' main(argc,argv).
-* @param fallback_argv Fallback initialisation elements
-* 'à la' main(argc,argv). The first usefull parameter is always
+* @param fallback_argc Number of fallback initialisation elements as used in main(argc, argv)
+* @param fallback_argv Fallback initialisation elements as used in main(argc, argv)
+* The first usefull parameter is always
 * fallback_argv[1], so as the getopt* functions may be used to
 * parse those parameters
 * @return Return FALSE if a fatal error occur during initialisation
@@ -198,10 +196,10 @@ GLU_server_type_t GLU_get_server_type(void);
  * GLU object and return this handle when the instanciation succed
  * 
  * @param custom_argc Number of consumer initialisation elements
- * 'à la' main(argc,argv) (when the consumer do not provide any parameters
+ * (when the consumer do not provide any parameters
  * this parameter is equal to fallback_argc of GLU_init)
  * @param custom_argv Initialisation elements
- * 'à la' main(argc,argv). The first usefull parameter is always
+ * The first usefull parameter is always
  * fallback_argv[1], so as the getopt* functions may be used to
  * parse those parameters (when the consumer do not provide any parameters
  * this parameter is equal to fallback_argv of GLU_init)
@@ -220,7 +218,7 @@ GLU_handle_t GLU_get_instance(int custom_argc,
 * @param symbol_list List of symbols
 * @return TRUE of FALSE. TRUE = OK;
 */
-int  GLU_get_sample_symbol_info_list(GLU_handle_t h_glu,TSP_sample_symbol_info_list_t* symbol_list);
+int  GLU_get_sample_symbol_info_list(GLU_handle_t h_glu, TSP_sample_symbol_info_list_t* symbol_list);
 
 
 /**
@@ -253,7 +251,7 @@ void GLU_forget_data(GLU_handle_t h_glu);
 
 #endif /*_TSP_GLUESERVER_H*/
 
-/*
+/* Might be remove
 int GLU_add_block(GLU_handle_t h_glu,int provider_global_index, xdr_and_sync_type_t type);
 
 int GLU_commit_add_block(GLU_handle_t h_glu);

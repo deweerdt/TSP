@@ -1,6 +1,7 @@
-include $(DEVBASE)/make/Makeparams.$(T)
+include $(DEVBASE)/make/Makeparams
 
-XINC    = tsp_provider.h tsp_session.h   glue_sserver.h tsp_datapool.h \
+XINC    = tsp_provider.h glue_sserver.h
+#XINC    = tsp_provider.h tsp_session.h   glue_sserver.h tsp_datapool.h \
           tsp_group_algo.h tsp_data_sender.h tsp_group_algo_data.h \
           tsp_stream_sender.h 
 
@@ -14,35 +15,21 @@ SOURCES = \
 
 OBJECTS=$(SOURCES:%.c=%.o) 
 
-
 TARGET=$(DIRLIB)/libtsp_provider.a
 
-.PRECIOUS: $(TARGET)
+CPPFLAGS += -I../rpc -I ../misc_utils
 
-all::
-	$(MAKE) common debug
+# -----------------------------------------------------------
+# No label all:: because it's in Makeparams and calls build::	
+# same thing for clean:: that calls destroy::
+# -----------------------------------------------------------
 
-common:
-	$(MAKE) T=provider$(D) build
-debug::
-	$(MAKE) D=.debug	common
+build:: $(TARGET)($(OBJECTS))
+	$(MAKE) export_include
 
-build : $(TARGET)($(OBJECTS))
-
-
-
-
-clean::
-	$(MAKE) clean_common clean_debug
-
-clean_debug:
-	$(MAKE) D=.debug clean_common
-
-clean_common:
-	$(MAKE) T=provider$(D) destroy
-
-destroy :
+destroy::
 	$(RM) 	$(TARGET)
+	$(MAKE) remove_include
 
 
 
