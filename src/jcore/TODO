@@ -1,0 +1,15 @@
+-*- text -*-
+
+- handle Exception/Error in a clean way :))
+
+- implement provider-side of the library.
+
+- use Java properties for some configuration
+  values used in TspConfig.java
+  for example the TspConfig.RPC_PROGID_BASE
+
+- use Java 1.4 logger facilities in order to 
+  provide easier debugging and tracing facility for
+  consumer developper.
+
+- specify clean TSP exception hierarchy

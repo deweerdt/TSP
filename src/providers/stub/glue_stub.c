@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: glue_stub.c,v 1.1 2003-01-31 18:22:25 tsp_admin Exp $
+$Id: glue_stub.c,v 1.2 2003-02-07 16:09:48 SyntDev1 Exp $
 
 -----------------------------------------------------------------------
 
@@ -47,7 +47,7 @@ Purpose   : Implementation for the glue_server, for stub test
 RINGBUF_DECLARE_TYPE_DYNAMIC(glu_ringbuf,glu_item_t);
 
 /* Glue server ringbuf size */
-#define GLU_RING_BUFSIZE (1000 * 100 * 3)
+#define GLU_RING_BUFSIZE (1000 * 100 * 10)
 
 /* TSP glue server defines */
 #define TSP_USLEEP_PERIOD_US 10*1000 /*µS*/

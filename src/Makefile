@@ -16,6 +16,8 @@ dirs:
 	- mkdir -p $(BINBASE)/bin.consumer.debug
 	- mkdir -p $(BINBASE)/bin.provider
 	- mkdir -p $(BINBASE)/bin.provider.debug
+	- mkdir -p $(CLASSBASE)
+	- mkdir -p $(JARBASE)
 
 clean::
 	find . -name .make.state -exec rm -f {} \; -print
@@ -24,9 +26,9 @@ clean::
 
 SUBDIRS =  \
 	core \
+	jcore \
 	util \
 	providers \
 	consumers 
-
 
 include $(DEVBASE)/make/Makesubdirs

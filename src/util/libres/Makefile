@@ -1,6 +1,8 @@
 
 include $(DEVBASE)/make/Makeparams.$(T)
 
+RPC=NONE
+
 XINC    = libUTIL.h
 
 
@@ -32,6 +34,7 @@ TARGET=$(DIRLIB)/libtsp_res.a
 
 all::
 	$(MAKE) common debug
+
 common:
 	$(MAKE) T=consumer$(D)	build
 	$(MAKE) T=provider$(D)	build	
@@ -40,9 +43,6 @@ debug::
 	$(MAKE) D=.debug	common
 
 build : $(TARGET)($(OBJECTS))
-
-
-
 
 
 clean::
@@ -56,8 +56,6 @@ clean_common:
 
 destroy :
 	$(RM) 	 $(TARGET) 
-
-
 
 
 
