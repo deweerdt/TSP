@@ -94,7 +94,7 @@ it is only a limitation of the exemple 'tsp_client_printer')
 
 You can launch plenty of clients, each with its own ratio.
 
-Remember that the variable are 'doubles' (8 bytes), and the
+Remember that the variables are 'doubles' (8 bytes), and the
 'tsp_server_stub' provides 1000 variables at 100Hz...
 So, with more that one consumer on a provider, at full rate,
 it can be rather tough for a 10Mbits network...
