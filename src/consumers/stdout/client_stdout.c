@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: client_stdout.c,v 1.4 2004-07-28 12:56:30 mia Exp $
+$Id: client_stdout.c,v 1.5 2004-08-31 15:39:19 dufy Exp $
 
 -----------------------------------------------------------------------
 
@@ -43,8 +43,8 @@ Purpose   : Simple consummer test that print samples received to stdout
 
 
 /* Number of samples  that will be counted before the data check test pass */
-#define TSP_TEST_COUNT_SAMPLES 60
-#define TSP_NANOSLEEP_PERIOD_US (100*1000) /*µS*/
+#define TSP_TEST_COUNT_SAMPLES 100  
+#define TSP_NANOSLEEP_PERIOD_US (100*1000) /* 10Hz */
 
 int main(int argc, char *argv[]){
 
@@ -159,9 +159,9 @@ int main(int argc, char *argv[]){
   information = TSP_consumer_get_information(providers[0]);
 
   /* Check total symbol number */
-  if(1000 !=  information->symbols.len )
+  if(information->symbols.len < 1 || information->symbols.len > 999999)
     {
-      STRACE_ERROR(("The total number of symbols should be 1000"));
+      STRACE_ERROR(("The total number of symbols should be fair, and not %d",information->symbols.len));
       STRACE_TEST(("STAGE 001 | STEP 003 : FAILED"));
       return -1;      
     }
