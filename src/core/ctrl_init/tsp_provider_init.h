@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl_init/tsp_provider_init.h,v 1.7 2004-09-24 15:46:56 tractobob Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl_init/tsp_provider_init.h,v 1.8 2004-10-04 08:56:07 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -24,9 +24,9 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 -----------------------------------------------------------------------
 
-Project   : TSP
+Project    : TSP
 Maintainer : tsp@astrium.eads.net
-Component : Provider
+Component  : Provider
 
 -----------------------------------------------------------------------
 
@@ -50,6 +50,7 @@ Purpose   : Function calls to launch a TSP Provider program
  * @return TRUE or FALSE. OK = TRUE.
  */
 int TSP_provider_init(int* argc, char** argv[]);
+void TSP_provider_end(void);
 
 /*@{*/ 
 /**
@@ -89,7 +90,8 @@ int TSP_provider_run(int spawn_mode);
  */
 #define TSP_PUBLISH_URLS_NONE    0x0000
 #define TSP_PUBLISH_URLS_PRINT   0x0010
-#define TSP_PUBLISH_URLS_SNMP    0x0100
+#define TSP_PUBLISH_URLS_FILE    0x0100
+#define TSP_PUBLISH_URLS_SNMP    0x1000
 /*@}*/ 
 
 /**

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl_init/tsp_provider_init.c,v 1.9 2004-09-24 15:46:56 tractobob Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl_init/tsp_provider_init.c,v 1.10 2004-10-04 08:56:07 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -53,6 +53,10 @@ int TSP_provider_init(int* argc, char** argv[])
   
   /* Initialize tsp request handlers structures */
   ret = TSP_provider_rqh_manager_init();
+
+  /* install atexit handler to close properly */
+  atexit(TSP_provider_end);
+
   STRACE_IO(("-->OUT"));
   return ret;
 
@@ -103,13 +107,19 @@ int TSP_provider_run(int spawn_mode)
 } /* TSP_provider_run */
 
 
-int TSP_provider_end(void)
+void TSP_provider_end(void)
 {
   /* TODO : call flush on streams */
 
-  TSP_provider_rqh_manager_end();
+  /* remove any published URL */
+  {
+    char systemCmd[512];
+    sprintf(systemCmd, "rm -f /tmp/TSP.%d", getpid());
+    system(systemCmd);
+  }
 
-  return TRUE;
+  /* Call handlers end function */
+  TSP_provider_rqh_manager_end();
 }
 
 void TSP_provider_print_usage(void)
@@ -125,23 +135,31 @@ char **TSP_provider_urls(int pub_mode)
   /* Check running handlers and copy their URLs */
   nb = TSP_provider_rqh_manager_get_nb_running();
   if(nb > 0)
-    {
-      urls = (char**)calloc(nb,sizeof(char*));
+    {      urls = (char**)calloc(nb,sizeof(char*));
       for(rank = 0; rank < nb; rank ++)
 	{
 	  url = TSP_provider_rqh_manager_get_url(rank);
 	  if(url)
 	    {
 	      urls[rank] = strdup(url);
+
 	      if(pub_mode & TSP_PUBLISH_URLS_PRINT)
-		printf("TSP Provider #%d URL : <%s>\n", rank, url);
+		printf("TSP Provider on PID %d - URL #%d : <%s>\n", getpid(), rank, url);
+
+	      if(pub_mode & TSP_PUBLISH_URLS_FILE)
+		{
+		  char systemCmd[512];
+		  sprintf(systemCmd, "echo \"%s\" > /tmp/TSP.%d", url, getpid());
+		  system(systemCmd);
+		}
+
 	      if(pub_mode & TSP_PUBLISH_URLS_SNMP)
 		/* TODO */
 		STRACE_ERROR(("SNMP publication of TSP URLs not yet implemented\n"));
 	    }
 	  else
 	    {
-	      STRACE_ERROR(("Request Handler #%d did not provided an URL"));
+	      STRACE_ERROR(("Request Handler #%d did not provided an URL", rank));
 	      urls[rank] = strdup("");
 	    }
 	}
