@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_pixmaps.c,v 1.1 2004-10-28 19:15:05 esteban Exp $
+$Id: gdisp_pixmaps.c,v 1.2 2005-02-16 21:25:08 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -227,7 +227,6 @@ gdisp_getPixmapById ( Kernel_T  *kernel,
   GList     *requestedPixmapListItem =    (GList*)NULL;
   Pixmap_T  *requestedPixmap         = (Pixmap_T*)NULL;
   gchar    **pixmapAddr              =   (gchar**)NULL;
-  GtkStyle  *style                   = (GtkStyle*)NULL;
 
 
   /*
@@ -268,7 +267,6 @@ gdisp_getPixmapByAddr ( Kernel_T   *kernel,
   GList     *requestedPixmapListItem = (GList*)NULL;
   Pixmap_T  *requestedPixmap         = (Pixmap_T*)NULL;
   Pixmap_ID  pixmapId                = GD_PIX_NbPixmaps;
-  GtkStyle  *style                   = (GtkStyle*)NULL;
 
 
   /*

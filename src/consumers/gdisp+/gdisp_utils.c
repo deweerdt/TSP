@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_utils.c,v 1.5 2004-10-22 20:17:34 esteban Exp $
+$Id: gdisp_utils.c,v 1.6 2005-02-16 21:25:08 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -711,8 +711,8 @@ gdisp_positionIsInsideZone ( PlotSystemZone_T *zone,
       j=0;
     }
 
-    if (zone->pszY[i] < y && zone->pszY[j] >= y ||
-	zone->pszY[j] < y && zone->pszY[i] >= y    ) {
+    if ((zone->pszY[i] < y && zone->pszY[j] >= y) ||
+	(zone->pszY[j] < y && zone->pszY[i] >= y)    ) {
 
       if (zone->pszX[i] + (y - zone->pszY[i]) /
 	  (zone->pszY[j] - zone->pszY[i]) *
