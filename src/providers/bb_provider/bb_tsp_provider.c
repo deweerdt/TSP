@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/providers/bb_provider/bb_tsp_provider.c,v 1.8 2004-10-26 23:46:54 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/providers/bb_provider/bb_tsp_provider.c,v 1.9 2005-02-23 16:41:50 dufy Exp $
 
 -----------------------------------------------------------------------
 
@@ -79,6 +79,7 @@ static TSP_sample_symbol_info_t *X_sample_symbol_info_list_val = NULL;
 static S_BB_T* the_bb = NULL;
 static char* the_bbname = NULL;
 static S_BB_T* shadow_bb = NULL;
+static int nb_symbols = 0;
 
 /* Le time stamp time du GLU */
 static time_stamp_t glu_time = 0;
@@ -167,6 +168,7 @@ GLU_init(int fallback_argc, char* fallback_argv[]) {
       i_nb_item_scalaire += bb_data_desc(shadow_bb)[i].dimension;
     }
   }
+  nb_symbols = i_nb_item_scalaire;
   /* On alloue une liste de symboles de la taille
    * correspondant au nombre de données (scalaire) enregistrées dans le BB
    */
@@ -191,7 +193,8 @@ GLU_init(int fallback_argc, char* fallback_argv[]) {
     if (bb_data_desc(shadow_bb)[i].type < E_BB_CHAR) {
       if (bb_data_desc(shadow_bb)[i].dimension > 1) {
 	for (j=0;j<bb_data_desc(shadow_bb)[i].dimension; ++j) {
-	  i_temp = strlen(bb_data_desc(shadow_bb)[i].name)+9;
+	  // FIXME calculer la taille exacte j*log10
+	  i_temp = strlen(bb_data_desc(shadow_bb)[i].name)+10;
 	  X_sample_symbol_info_list_val[i_pg_index].name = malloc(i_temp);
 	  assert(X_sample_symbol_info_list_val[i_pg_index].name);
 	  snprintf(X_sample_symbol_info_list_val[i_pg_index].name, 
@@ -220,7 +223,7 @@ GLU_init(int fallback_argc, char* fallback_argv[]) {
       STRACE_INFO(("Skipping unhandled symbol type <%d> name <%s>",bb_data_desc(shadow_bb)[i].type,bb_data_desc(shadow_bb)[i].name));
     }
   } /* loop over bb items */
-  
+    
   return retcode;
 } /* end of GLU_init */
 
@@ -239,13 +242,15 @@ GLU_server_type_t GLU_get_server_type(void) {
 
 
 int  GLU_get_symbol_number(void) {
-  int i = 0;
-  TSP_sample_symbol_info_t* p  = X_sample_symbol_info_list_val;
+
+  return nb_symbols;
+/*   int i = 0; */
+/*   TSP_sample_symbol_info_t* p  = X_sample_symbol_info_list_val; */
 	
-  for( p=X_sample_symbol_info_list_val; p->name!=0 ; ++p) {
-    ++i;
-  }
-  return i;
+/*   for( p=X_sample_symbol_info_list_val; p->name!=0 ; ++p) { */
+/*     ++i; */
+/*   } */
+/*   return i; */
 }  /* end of GLU_get_symbol_number */
 
 int  
