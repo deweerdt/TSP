@@ -1,0 +1,37 @@
+/* XPM */
+static char *gdisp_warningLogo[] = {
+/* width height ncolors chars_per_pixel */
+"14 14 16 1",
+/* colors */
+"  c None",
+". c #C4AC2B",
+"X c #DBC634",
+"o c #927D1A",
+"O c #F7D631",
+"+ c #DFD362",
+"@ c #EFCE18",
+"# c #EFCE21",
+"$ c #F1E786",
+"% c #F9E791",
+"& c #F1DE6B",
+"* c #EFD22D",
+"= c None",
+"- c None",
+"; c None",
+": c None",
+/* pixels */
+"  ==%$$&++=-  ",
+" =%%&*@@*X++- ",
+"=%$O@@@@@@#++-",
+"=%O@@@  @@@#+-",
+"$+@@@@  @@@@XX",
+"$*@@@@  @@@@#.",
+"&@@@@@  @@@@@.",
+"+@@@@@  @@@@@.",
+"+*@@@@@@@@@@#o",
+"+X@@@@  @@@@.o",
+"=+#@@@  @@@@o;",
+"-+X#@@@@@@@oo ",
+" -XXX#@@@.oo  ",
+"  --...ooo    "
+};

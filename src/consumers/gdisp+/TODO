@@ -1,0 +1,46 @@
+
+ #####  #####  ###    #####
+   #    #   #  #  #   #   #
+   #    #   #  #   #  #   #
+   #    #   #  #  #   #   #
+   #    #####  ###    #####
+
+
+1) At main / kernel level.
+
+  - many things are hardcoded (plot frequency = 10 Hz).
+       make them be dynamically modified via GUI.
+  - save / load symbol and graphic configuration (XML)
+  - HTML help on line with the use of GtkHTML widget.
+       Before that, the GtkHTML widget should be modified
+       in order to avoid linking with Gnome and Bonobo libraries.
+  - graphic plots may become independant dynamic modules.
+  - animation of TSP logo.
+
+2) At sampling level.
+
+  - graphical status of threads.
+
+
+3) At 2D plot level.
+
+  - plot titles must be in a dedicated GDK window in order to stop
+    scrolling.
+  - implementation of "startStep" and "stopStep" methods.
+  - tolerance band for each of Y symbols.
+  - finalize the link between sampling threads and graphic plots.
+
+
+4) At page management level.
+
+  - correct the bug when D&D occurs in broadcast mode with graphic
+    pages of different size.
+  - dynamically extend a graphic plot upward, downward, to the left,
+    to the right.
+  - implement not square graphic pages (L x C with L != C )
+
+
+5) At symbol level.
+
+  - change the way a symbol is graphically affected to a provider.
+      replace the color by a pixmap representing the provider.

@@ -1,0 +1,36 @@
+/* XPM */
+static char *gdisp_onePixmap[] = {
+/* width height ncolors chars_per_pixel */
+"12 12 17 1",
+/* colors */
+"  c #000000",
+". c #A5A5A5",
+"X c #393939",
+"o c #313131",
+"O c #292929",
+"+ c #CECECE",
+"@ c #9C9C9C",
+"# c #949494",
+"$ c #8C8C8C",
+"% c None",
+"& c #4A4A4A",
+"* c #F7F7F7",
+"= c #E7E7E7",
+"- c #101010",
+"; c #080808",
+": c #B5B5B5",
+"> c None",
+/* pixels */
+"%%*#X--X@*%%",
+"%=o  ;O  o=%",
+"*o   $+   o*",
+"$  &=*+    $",
+"o    .+    o",
+";    @+    ;",
+";    @+    ;",
+"o    @+    o",
+"$    @+    $",
+"*o   $:   o*",
+"%=O      o=%",
+"%%*$o;;X#*%%"
+};
