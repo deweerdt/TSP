@@ -34,6 +34,7 @@ else
 endif
 
 
+
 if ( "$HOST_TARGET" != "dec" ) then
 	setenv HOST_BASE "/home2/breiz/tnt/$HOST_TARGET"
 else
@@ -104,7 +105,7 @@ setenv VX_68K_OPTION
 #endif
 
 alias go_ec 'cd ${HOME_EXEC_CURRENT}/bin.consumer'
-alias go_ecd 'cd ${HOME_EXEC_CURRENT}/bin.consumer.d	ebug'
+alias go_ecd 'cd ${HOME_EXEC_CURRENT}/bin.consumer.debug'
 alias go_ep 'cd ${HOME_EXEC_CURRENT}/bin.provider'
 alias go_epd 'cd ${HOME_EXEC_CURRENT}/bin.provider.debug'
 alias go_tsp 'cd ${TSP_BASE}'
@@ -116,9 +117,9 @@ alias go_scripts 'cd ${TSP_BASE}/src/scripts'
 ##############################
 # CVS 
 ##############################
-setenv CVSROOT /home2/breiz/tnt/CVSROOT
-alias lcvs 'cvs -d /home2/breiz/tnt/CVSROOT '
-alias gcvs 'cvs -d /home2/breiz/dev442/CVSROOT'
+#setenv CVSROOT /net/breiz/home2/breiz/tnt/CVSROOT
+#alias lcvs 'cvs -d /net/breiz/home2/breiz/tnt/CVSROOT '
+#alias gcvs 'cvs -d /net/breiz/home2/breiz/dev442/CVSROOT'
 
 
 
