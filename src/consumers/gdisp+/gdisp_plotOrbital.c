@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_plotOrbital.c,v 1.1 2005-03-08 21:28:17 esteban Exp $
+$Id: gdisp_plotOrbital.c,v 1.2 2005-03-10 21:38:36 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -65,6 +65,138 @@ File      : A spacecraft orbiting around the Earth.
  --------------------------------------------------------------------
 */
 
+static void
+gdisp_draw ( OpenGL_T *opengl )
+{
+
+  GLUquadricObj *quadObj = (GLUquadricObj*)NULL;
+
+  glClearColor(0.0,
+	       0.0,
+	       0.0,
+	       0.0);
+
+  glShadeModel(GL_FLAT);
+
+  glViewport(0,
+	     0,
+	     (GLsizei)opengl->openglWindowWidth,
+	     (GLsizei)opengl->openglWindowHeight); 
+
+  glMatrixMode(GL_PROJECTION);
+
+  glLoadIdentity();
+  glFrustum(-1.0,
+	    1.0,
+	    -1.0,
+	    1.0,
+	    1.5,
+	    20.0);
+
+  glMatrixMode(GL_MODELVIEW);
+
+  glClear(GL_COLOR_BUFFER_BIT);
+
+  glColor3f(1.0,
+	    0.0,
+	    0.0);
+
+  glLoadIdentity (); /* clear the matrix */
+
+  /* viewing transformation  */
+  gluLookAt(0.0,
+	    0.0,
+	    5.0,
+	    0.0,
+	    0.0,
+	    0.0,
+	    0.0,
+	    1.0,
+	    0.0);
+
+  glScalef(1.0,
+	   2.0,
+	   1.0); /* modeling transformation */ 
+
+  quadObj = gluNewQuadric ();
+  gluQuadricDrawStyle (quadObj, GLU_LINE);
+  gluSphere (quadObj, 1.0, 16, 16);
+  gluDeleteQuadric (quadObj);
+
+  glFlush();
+
+}
+
+/*
+ * Resize OpenGL host window
+ * according to graphic area structure notifications.
+ */
+static void
+gdisp_onGraphicAreaConfigure ( GtkWidget         *widget,
+			       GdkEventConfigure *event,
+			       gpointer           data )
+{
+
+  PlotOrbital_T *plot   = (PlotOrbital_T*)data;
+  OpenGL_T      *opengl = plot->poOpengl;
+
+#if defined(GDISP_OPENGL_DEBUG)
+  printf("Configure graphic area...%d %d\n",event->width,event->height);
+#endif
+
+  if (event->width > 0 && event->height > 0) {
+
+    opengl->openglWindowWidth  = event->width;
+    opengl->openglWindowHeight = event->height;
+
+    if (opengl->openglWindow != (GdkWindow*)NULL) {
+
+      gdk_window_resize(opengl->openglWindow,
+			opengl->openglWindowWidth,
+			opengl->openglWindowHeight);
+
+    }
+
+  }
+
+}
+
+
+/*
+ * Handle OpenGL events.
+ */
+static GdkFilterReturn
+gdisp_handleOpenGLevents ( GdkXEvent *xevent,
+			   GdkEvent  *event,
+			   gpointer   data )
+{
+
+  PlotOrbital_T *plot   = (PlotOrbital_T*)data;
+  XEvent        *xEvent = (XEvent*)xevent;
+  OpenGL_T      *opengl = plot->poOpengl;
+
+  switch (xEvent->type) {
+
+  case Expose :
+    gdisp_grabOpenGL(plot->poOpengl);
+    gdisp_draw(opengl);
+    break;
+
+  case ConfigureNotify :
+    plot->poWidth  = plot->poOpengl->openglWindowWidth;
+    plot->poHeight = plot->poOpengl->openglWindowHeight;
+    gdisp_grabOpenGL(plot->poOpengl);
+    gdisp_draw(opengl);
+    break;
+
+  default :
+    break;
+
+  }
+
+  return GDK_FILTER_REMOVE;
+
+}
 
 
 /*
@@ -78,6 +210,25 @@ gdisp_createPlotOrbital (Kernel_T *kernel)
 
   PlotOrbital_T *plot = (PlotOrbital_T*)NULL;
 
+  /*
+   * Dynamic allocation.
+   */
+  plot = g_malloc0(sizeof(PlotOrbital_T));
+  assert(plot);
+
+  /*
+   * Few initialisations.
+   */
+  plot->poType = GD_PLOT_ORBITAL;
+
+  /*
+   * Insert a graphic area.
+   */
+  plot->poGraphicArea = gtk_drawing_area_new();
+
+  gtk_object_set_data(GTK_OBJECT(plot->poGraphicArea),
+		      "plotPointer",
+		      (gpointer)plot);
 
   /*
    * Return the opaque structure.
@@ -98,9 +249,15 @@ gdisp_destroyPlotOrbital(Kernel_T *kernel,
   PlotOrbital_T *plot = (PlotOrbital_T*)data;
 
   /*
+   * End OpenGL mapping onto the GTK drawing area.
+   */
+  gdisp_disconnectFromOpenGL(plot->poOpengl);
+
+  /*
    * Now destroy everything.
    */
-
+  gdisp_dereferenceSymbolList(plot->poSymbolList);
+  gtk_widget_destroy(plot->poGraphicArea);
 
   /*
    * Free opaque structure.
@@ -125,6 +282,7 @@ gdisp_setPlotOrbitalParent (Kernel_T  *kernel,
   /*
    * Store parent widget.
    */
+  plot->poParent = parent;
 
 }
 
@@ -144,6 +302,8 @@ gdisp_setPlotOrbitalInitialDimensions (Kernel_T *kernel,
   /*
    * Remeber here initial dimensions of the viewport.
    */
+  plot->poWidth  = width;
+  plot->poHeight = height;
 
 }
 
@@ -160,7 +320,7 @@ gdisp_getPlotOrbitalTopLevelWidget (Kernel_T  *kernel,
 
   PlotOrbital_T *plot = (PlotOrbital_T*)data;
 
-  return (GtkWidget*)plot->poTable;
+  return (GtkWidget*)plot->poGraphicArea;
 
 }
 
@@ -179,6 +339,34 @@ gdisp_showPlotOrbital (Kernel_T  *kernel,
   /*
    * Now show everything.
    */
+  gtk_widget_show(plot->poGraphicArea);
+
+
+  /*
+   * Map OpenGL rendering onto this GTK drawing area.
+   */
+  plot->poOpengl =
+    gdisp_connectToOpenGL(kernel,
+			  plot->poGraphicArea,
+			  plot->poWidth,
+			  plot->poHeight,
+			  OPENGL_RGB | OPENGL_SINGLE | OPENGL_DIRECT);
+
+  /*
+   * Handle our new OpenGL window events.
+   */
+  gdk_window_add_filter(plot->poOpengl->openglWindow,
+			gdisp_handleOpenGLevents,
+			(gpointer)plot);
+
+  /*
+   * Do not forget to catch parent window configure events,
+   * in order to resize our new OpenGL GDK window.
+   */
+  gtk_signal_connect(GTK_OBJECT(plot->poGraphicArea),
+		     "configure_event",
+		     gdisp_onGraphicAreaConfigure,
+		     (gpointer)plot);
 
 }
 
@@ -196,7 +384,7 @@ gdisp_getPlotOrbitalType (Kernel_T *kernel,
   /*
    * Return the type of the plot.
    */
-  return GD_PLOT_ORBITAL;
+  return plot->poType;
 
 }
 
@@ -398,7 +586,8 @@ gdisp_initOrbitalPlotSystem (Kernel_T     *kernel,
   plotSystem->psGetInformation    = gdisp_getPlotOrbitalInformation;
   plotSystem->psTreatSymbolValues = gdisp_treatPlotOrbitalSymbolValues;
   plotSystem->psGetPeriod         = gdisp_getPlotOrbitalPeriod;
-  plotSystem->psGetDropZones      = gdisp_getPlotOrbitalDropZones;
+  /* plotSystem->psGetDropZones      = gdisp_getPlotOrbitalDropZones; */
+
 
 }
 

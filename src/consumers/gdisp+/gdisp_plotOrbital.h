@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_plotOrbital.h,v 1.1 2005-03-08 21:28:17 esteban Exp $
+$Id: gdisp_plotOrbital.h,v 1.2 2005-03-10 21:38:36 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -43,6 +43,12 @@ File      : Definition of 'orbital plot' private structures.
 #define __ORBITAL_PLOT_H__
 
 /*
+ * For OpenGL mapping needs.
+ */
+#include "gdisp_openglUtils.h"
+
+
+/*
  * Private structure of an 'orbital plot'.
  */
 typedef struct PlotOrbital_T_ {
@@ -50,23 +56,29 @@ typedef struct PlotOrbital_T_ {
   /*
    * Attributes.
    */
-  PlotType_T           poType;
-  gboolean             poHasFocus;
+  PlotType_T  poType;
 
   /*
    * List of pointer on TSP_Symbol_T.
    */
-  GList               *poSymbolList;
+  GList      *poSymbolList;
 
   /*
    * Graphic widget.
    */
-  GtkWidget           *poTable;
+  GtkWidget  *poGraphicArea;
+  guint       poWidth;
+  guint       poHeight;
 
   /*
    * Parent widget.
    */
-  GtkWidget           *poParent;
+  GtkWidget  *poParent;
+
+  /*
+   * OpenGL mapping.
+   */
+  OpenGL_T   *poOpengl;
 
 } PlotOrbital_T;
 
