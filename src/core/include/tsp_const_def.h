@@ -1,6 +1,6 @@
 /*!  \file 
  
-$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_const_def.h,v 1.17 2002-12-24 14:14:27 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_const_def.h,v 1.18 2003-07-15 14:42:24 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -57,6 +57,8 @@ Purpose   : definitions and const that must have a program wide scope
 
 /* Max server total number */
 #define TSP_MAX_SERVER_NUMBER 20
+
+#define TSP_MAX_REQUEST_HANDLERS TSP_MAX_SERVER_NUMBER
 
 /** Max period that can be asked by a consumer, for a symbol */
 #define TSP_MAX_PERIOD 100000
@@ -277,6 +279,8 @@ typedef struct  TSP_otsp_server_info_t TSP_otsp_server_info_t;
  * endianity so as to be CPU friendly for the producer. At least this
  * should be the default behaviour. Then, a lazy consumer should be able
  * to tell a producer that it wants to receive the data in the its endianity
+ * FIXME: Erk: look at Corba CDR-encoding fashion to handle endianity.
+ * FIXEM which may be instructive.
  */
 #define TSP_ENCODE_DOUBLE_TO_GUINT64(val) (GUINT64_TO_BE (*(guint64*)val))
 #define TSP_DECODE_DOUBLE_TO_GUINT64(val) (GUINT64_FROM_BE (*(guint64*)val))

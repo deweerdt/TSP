@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl_init/tsp_provider_init.c,v 1.4 2002-12-18 16:27:23 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl_init/tsp_provider_init.c,v 1.5 2003-07-15 14:42:24 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -40,6 +40,7 @@ Purpose   : Function calls to launch a TSP Provider program
 
 #include "tsp_provider.h"
 #include "tsp_server.h"
+#include "tsp_request.h"
 
 int TSP_provider_init(int* argc, char** argv[])
 {
@@ -49,24 +50,50 @@ int TSP_provider_init(int* argc, char** argv[])
   STRACE_IO(("-->IN"));
 
   ret = TSP_provider_private_init(argc, argv);
-
+  
+  /* Initialize tsp request handlers structures */
+  ret = TSP_provider_rqh_manager_init();
   STRACE_IO(("-->OUT"));
   return ret;
 
-}
+} /* End of TSP_provider_init */
 
-int TSP_provider_run(int blocking)
+int TSP_provider_run(int spawn_mode)
 {
   SFUNC_NAME(TSP_provider_run);
 
   int ret = FALSE;
   STRACE_IO(("-->IN"));
-
-
+  
+  
   if(TSP_provider_is_initialized())
     {            
       int server_number = TSP_provider_get_server_number();
-      ret = TSP_command_init(server_number, blocking);
+      /* ret = TSP_command_init(server_number, spawn_mode); */
+      /* build and install default request handlers */
+      TSP_provider_request_handler_t rqh;
+      rqh.config = TSP_rpc_request_config;
+      rqh.run    = TSP_rpc_request_run;
+      rqh.stop   = TSP_rpc_request_stop;
+      
+      TSP_provider_rqh_manager_install(0,rqh);
+
+      /*
+       * un-comment this if you want to tests
+       * two RPC request handler
+       * rqh.config = TSP_rpc_request_config2;
+       * TSP_provider_rqh_manager_install(1,rqh);
+       */
+      
+      ret = TSP_provider_rqh_manager_refresh();
+
+      /* If we are launched in a blocking mode 
+       * Wait for every request handler thread to terminate
+       * !!! Thread MUST NOT DETACHED themslevs though !!!
+       */
+      if (spawn_mode) {
+	TSP_provider_rqh_manager_waitend();
+      }
     }
   else
     {
@@ -76,7 +103,7 @@ int TSP_provider_run(int blocking)
   STRACE_IO(("-->OUT"));
   return ret;  
   
-}
+  } /* TSP_provider_run */
 
 
 void TSP_provider_print_usage(void)

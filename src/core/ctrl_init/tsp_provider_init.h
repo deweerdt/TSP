@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl_init/tsp_provider_init.h,v 1.5 2002-12-24 14:14:21 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl_init/tsp_provider_init.h,v 1.6 2003-07-15 14:42:24 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -46,18 +46,38 @@ Purpose   : Function calls to launch a TSP Provider program
  * Call this function at the start of your main function
  * with the received argc/argv. Then use the modified argc/argv.
  * @param argc You must provide the real argc before using it
- * @param argv You must provider the real argv before using it
+ * @param argv You must provide the real argv before using it
  * @return TRUE or FALSE. OK = TRUE.
  */
 int TSP_provider_init(int* argc, char** argv[]);
 
+/*@{*/ 
+/**
+ * The different value of the TSP
+ * asynchronous request handling mode
+ */
+#define TSP_ASYNC_REQUEST_SIMPLE_NON_BLOCKING      0x00
+#define TSP_ASYNC_REQUEST_SIMPLE_BLOCKING          0x01
+#define TSP_ASYNC_REQUEST_DYNAMIC_BLOCKING         0x11
+#define TSP_ASYNC_REQUEST_DYNAMIC_NON_BLOCKING     0x10
+/*@}*/ 
+
 /**
  * Main run function for a TSP provider.
  * Call this function to launch the provider after the initialisation
- * @param blocking If blocking = TRUE. This function will block forever.
+ * @param spawn_mode 
+ *       - 0x00 simple non blocking mode, a separate thread will be
+ *              spawned in order to handle TSP request.
+ *              The default TSP asynchronous request channel is used.
+ *       - 0x01 simple blocking mode, this function will block forever.
+ *       - 0x10 dynamic non blocking mode, several separate thread will
+ *              be spawned in order to handle TSP request on several
+ *              TSP asynchronous request channel (ONC RPC, XML RPC, SOAP, CORBA,...).
+ *              The number of thread launched may vary dynamically.
+ *       - 0x11 dynamic blocking mode, this function will block forever.
  * @return TRUE or FALSE. OK = TRUE.
  */
-int TSP_provider_run(int blocking);
+int TSP_provider_run(int spawn_mode);
 
 void TSP_provider_print_usage(void);
 

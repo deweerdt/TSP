@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: tsp_server.h,v 1.4 2003-01-22 13:17:05 erk Exp $
+$Id: tsp_server.h,v 1.5 2003-07-15 14:42:24 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -42,20 +42,30 @@ Purpose   :
 
 /**
  * @defgroup Server
- * The Client module is the set of functions which encapsulate
+ * The Server module is the set of functions which encapsulate
  * the RPC machinery.
  * @ingroup Provider
  * @{
  */
 
+int TSP_rpc_request_config(void* config_param);
+int TSP_rpc_request_config2(void* config_param);
+void* TSP_rpc_request_run(void* config_param);
+int TSP_rpc_request_stop();
+
 /**
-* Initialise command canal communication.
+* Initialise command communication canal.
 * @param server_number Every provider on a given host must have its own server number ;
 * All must be different
-* @param blocking if blocking = true, the program will be blocked in this fonction forever
+* @param spawn_mode the value of the parameter specify the behavior of the TSP asynchronous
+*         command link:
+*            - 0 simple non blocking call, the asynchronous command will be handled
+*                by a unique thread spawned by this call.
+*            - 1 blocking call the command will never return
+*            - 10 non-blocking with dynamic spawning of asynchronous command receiver
 * @return TRUE = OK
 */
-int TSP_command_init(int server_number, int blocking);
+int TSP_command_init(int server_number, int spawn_mode);
 
 /** @} end group Server */ 
 

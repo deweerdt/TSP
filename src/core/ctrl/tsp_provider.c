@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: tsp_provider.c,v 1.18 2003-02-03 11:55:07 SyntDev1 Exp $
+$Id: tsp_provider.c,v 1.19 2003-07-15 14:42:24 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -60,6 +60,16 @@ static int X_server_number = 0;
 
 
 static int X_tsp_provider_init_ok = FALSE;
+
+/**
+ * The mutex used to serialize 
+ * the asynchronous request that may be issued by different 
+ * TSP asynchronous command link (RPC, XML-RPC, CORBA...)
+ * Note that normally we may use several mutexes
+ * in order to serialize more efficiently the asynchronous request.
+ * That is one for tsp_request_open and 1 for each client after that.
+ */
+static pthread_mutex_t X_tsp_request_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 /** Tells is the GLU is active or pasive */
 static int X_glu_is_active;
@@ -235,10 +245,12 @@ void TSP_provider_request_open(const TSP_request_open_t* req_open,
 		      TSP_answer_open_t* ans_open)
 {
   SFUNC_NAME(TSP_provider_request_open);
+
   GLU_handle_t glu_h;
   char* error_info;
   int i;
 	
+  TSP_LOCK_MUTEX(&X_tsp_request_mutex,);
   STRACE_IO(("-->IN"));
 
 
@@ -304,8 +316,10 @@ void TSP_provider_request_open(const TSP_request_open_t* req_open,
      }
 
   STRACE_IO(("-->OUT"));
-	
-}
+
+  TSP_UNLOCK_MUTEX(&X_tsp_request_mutex,);	
+
+} /* End of TSP_provider_request_open */
 
 
 static void TSP_provider_request_close_priv(channel_id_t channel_id)
@@ -323,21 +337,25 @@ void TSP_provider_request_close(const TSP_request_close_t* req_close)
 
 {
   SFUNC_NAME(TSP_provider_request_close);		
+  TSP_LOCK_MUTEX(&X_tsp_request_mutex,);
+
   STRACE_IO(("-->IN"));
 
   TSP_provider_request_close_priv(req_close->channel_id);
 
   STRACE_IO(("-->OUT"));
-	
-}
+
+  TSP_UNLOCK_MUTEX(&X_tsp_request_mutex,);
+} /* End of TSP_provider_request_close */
 
 void  TSP_provider_request_information(TSP_request_information_t* req_info, 
  			      TSP_answer_sample_t* ans_sample)
 {
-
   SFUNC_NAME(tsp_request_information);	
-  int ret;
 
+
+  int ret;
+  TSP_LOCK_MUTEX(&X_tsp_request_mutex,);
   STRACE_IO(("-->IN"));
        
   
@@ -371,11 +389,11 @@ void  TSP_provider_request_information(TSP_request_information_t* req_info,
     STRACE_ERROR(("TSP version ERROR. Requested=%d Current=%d",req_info->version_id, TSP_VERSION ));
     ans_sample->status = TSP_STATUS_ERROR_VERSION;
   }
-
-
   		
   STRACE_IO(("-->OUT"));
-}
+
+  TSP_UNLOCK_MUTEX(&X_tsp_request_mutex,);
+} /* End of TSP_provider_request_information */
 
 
 void TSP_provider_request_sample_free_call(TSP_answer_sample_t* ans_sample)
@@ -393,9 +411,11 @@ void  TSP_provider_request_sample(TSP_request_sample_t* req_info,
 			 TSP_answer_sample_t* ans_sample)
 {
   SFUNC_NAME(TSP_request_sample);
-    
+
+
   int use_global_datapool;
-	
+
+  TSP_LOCK_MUTEX(&X_tsp_request_mutex,);	
   STRACE_IO(("-->IN"));
 
   ans_sample->version_id = TSP_VERSION;
@@ -443,15 +463,18 @@ void  TSP_provider_request_sample(TSP_request_sample_t* req_info,
 
 	
   STRACE_IO(("-->OUT"));
-}
+
+  TSP_UNLOCK_MUTEX(&X_tsp_request_mutex,);
+} /* End of TSP_provider_request_sample */
 
 void  TSP_provider_request_sample_init(TSP_request_sample_init_t* req_info, 
 				       TSP_answer_sample_init_t* ans_sample)
-{
-
+{  
   SFUNC_NAME(TSP_request_sample_init);
+
+
   int start_local_thread;
-    
+  TSP_LOCK_MUTEX(&X_tsp_request_mutex,);    
   STRACE_IO(("-->IN"));
     
   ans_sample->version_id = UNDEFINED_VERSION_ID;
@@ -487,7 +510,8 @@ void  TSP_provider_request_sample_init(TSP_request_sample_init_t* req_info,
 
   STRACE_IO(("-->OUT"));
 
-}
+  TSP_UNLOCK_MUTEX(&X_tsp_request_mutex,);
+} /* End of TSP_provider_request_sample_init */
 
 static void TSP_provider_request_sample_destroy_priv(channel_id_t channel_id)
 {
@@ -503,8 +527,9 @@ static void TSP_provider_request_sample_destroy_priv(channel_id_t channel_id)
 void  TSP_provider_request_sample_destroy(TSP_request_sample_destroy_t* req_info, 
 					  TSP_answer_sample_destroy_t* ans_sample)
 {
-
   SFUNC_NAME(TSP_provider_request_sample_destroy);
+  TSP_LOCK_MUTEX(&X_tsp_request_mutex,);
+
   STRACE_IO(("-->IN"));
     
   ans_sample->version_id = req_info->version_id;
@@ -523,8 +548,8 @@ void  TSP_provider_request_sample_destroy(TSP_request_sample_destroy_t* req_info
     }
 
   STRACE_IO(("-->OUT"));
-
-}
+  TSP_UNLOCK_MUTEX(&X_tsp_request_mutex,);
+} /* End of  TSP_provider_request_sample_destroy */
 
 
 static void* TSP_provider_garbage_collector_thread(void* dummy)
@@ -565,14 +590,14 @@ int TSP_provider_private_init(int* argc, char** argv[])
   
   ret = TSP_cmd_line_parser(argc, argv);
   if(ret)
-    {
+     {
       /* init sessions */
       TSP_session_init();
 
       /* Initialise GLU server */
       ret = GLU_init(X_glu_argc, X_glu_argv);
 
-      /* Lauch garbage collection for sessions */
+      /* Launch garbage collection for sessions */
       status = pthread_create(&thread, NULL, TSP_provider_garbage_collector_thread,  NULL);
       TSP_CHECK_THREAD(status, FALSE);
       
@@ -587,4 +612,4 @@ int TSP_provider_private_init(int* argc, char** argv[])
   STRACE_IO(("-->OUT"));
   
   return ret;
-}
+} /* End of TSP_provider_private_init */

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_server.c,v 1.9 2002-12-18 16:27:36 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_server.c,v 1.10 2003-07-15 14:42:24 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -279,7 +279,7 @@ static void* TSP_thread_rpc_init(void* arg)
 {
   /* FIXME : creer le thread détaché */
     
-  SFUNC_NAME( TSP_streamer_sender_thread_sender);
+  SFUNC_NAME(TSP_thread_rpc_init);
   int server_number = (int)arg;
 
   pthread_detach(pthread_self());
@@ -291,13 +291,64 @@ static void* TSP_thread_rpc_init(void* arg)
   STRACE_IO(("-->OUT"));
 }
 
+int TSP_rpc_request_config(void* config_param) {
+
+  SFUNC_NAME(TSP_rpc_request_config);
+
+  int retval = TRUE;
+  int** i = (int **) config_param;
+
+  STRACE_IO(("-->IN"));
+  *i = calloc(1,sizeof(int));
+  **i = TSP_provider_get_server_number();
+
+  STRACE_IO(("-->OUT"));
+  return retval;
+
+} /* end of TSP_rpc_request_config */
+
+int TSP_rpc_request_config2(void* config_param) {
+
+  SFUNC_NAME(TSP_rpc_request_config);
+  int retval = TRUE;
+  int** i = (int **) config_param;
+
+  STRACE_IO(("-->IN"));
+  *i = calloc(1,sizeof(int));
+  **i = TSP_provider_get_server_number()+1;
+
+  STRACE_IO(("-->OUT"));
+  return retval;
+
+} /* end of TSP_rpc_request_config2 */
+
+
+void *TSP_rpc_request_run(void* config_param) {
+
+  SFUNC_NAME(TSP_rpc_request_run);
+  int* server_number = (int *) config_param;
+
+  pthread_detach(pthread_self()); /* FIXME shoudl we do this */
+
+  STRACE_IO(("-->IN"));  
+  
+  TSP_rpc_init(*server_number);
+  
+  STRACE_IO(("-->OUT"));
+  /* FIXME implements cond var notification */
+} /* end of TSP_rpc_request_run */
+
+int TSP_rpc_request_stop() {
+  SFUNC_NAME(TSP_rpc_request_stop);
+  int retval = TRUE;
+  /* FIXME NOP */
+  return retval;
+} /* end of TSP_rpc_request_stop */
 
 int TSP_command_init(int server_number, int blocking)
 {
   SFUNC_NAME(TSP_command_init);
   int ret = FALSE;
-
-
 
   STRACE_IO(("-->IN"));
 
@@ -307,8 +358,6 @@ int TSP_command_init(int server_number, int blocking)
       int status;
       status = pthread_create(&thread_id, NULL, TSP_thread_rpc_init,  (void*)server_number);
       TSP_CHECK_THREAD(status, FALSE);
-
-
     }
   else
     {
@@ -318,4 +367,4 @@ int TSP_command_init(int server_number, int blocking)
   STRACE_IO(("-->OUT"));
 
   return ret;
-}
+} /* end of TSP_command_init */
