@@ -1,0 +1,150 @@
+#!/bin/tcsh
+
+#-----------------------------------------------
+#CUSTOMIZE : input RES File name (must be in stage3 directory)
+set CUSTOM_RESFILE="file1.res"
+#-----------------------------------------------
+
+
+#get test number with script name
+set TESTNB=`echo $0 | perl -n -e  '~/([1-9][0-9]*)$/;print $1'`
+
+echo "------------------------------------"
+echo "---------- AUTOTEST $TESTNB ------------"
+echo "------------------------------------"
+echo " - pasive data stream check "
+echo " - STEP 1 : check all symbols "
+echo " - STEP 2 : check first, middle, and last symbol "
+
+set TESTPATH=$DEVBASE/src/tsp/tests/stage$TESTNB
+
+set PROVIDER=tsp_server$TESTNB
+set CONSUMER=tsp_client$TESTNB
+
+#create a timetag (avoid mixing up files thrue parallel tests)
+set TIMETAG=`date| sed -e 's/[ :]//g'` 
+
+#create file names
+set IN_RESFILE=$TESTPATH/$CUSTOM_RESFILE
+set OUT_RESFILE="/tmp/tsp_test_stage3_out_file_$TIMETAG.res"
+set IN_ASCFILE="/tmp/tsp_test_stage3_in_file_$TIMETAG.asc"
+set OUT_ASCFILE="/tmp/tsp_test_stage3_out_file_$TIMETAG.asc"
+set IN_RESFILE_VARLIST="/tmp/tsp_test_stage3_in_file_$TIMETAG.var"
+set OUT_RESFILE_VARLIST="/tmp/tsp_test_stage3_out_file_$TIMETAG.var"
+
+setenv STRACE_DEBUG 2
+
+#Run provider
+$PROVIDER 0  $IN_RESFILE > /dev/null &
+sleep 1
+
+#Run consumer
+$CONSUMER localhost 1 $OUT_RESFILE
+
+#kill the provider
+custom_killall $PROVIDER
+
+#cat toto | perl -p -e 's/\s+/ /g; s/VT >//g;' | perl -n -e 'print "$_\n"' | bin2asc file1.res
+
+#1-> Create variable list from initial .res
+#2-> remove anoying 'VT >', replace tab, \n and multiple spaces by one space
+#3 -> Add \n at the end
+#by the way, we use >& because it seems that the var list is redirected to the err stream by bin2asc..
+#dont't ask me why.
+echo "-v" |  bin2asc $IN_RESFILE  >&  $IN_RESFILE_VARLIST
+perl -i -p -e 's/\s+/ /g; s/VT >//g;' $IN_RESFILE_VARLIST
+perl -i -n -e 'print "$_\n"' $IN_RESFILE_VARLIST
+
+#Create variable list from new .res
+echo "-v" |  bin2asc $OUT_RESFILE  >&  $OUT_RESFILE_VARLIST
+perl -i -p -e 's/\s+/ /g; s/VT >//g;' $OUT_RESFILE_VARLIST
+perl -i -n -e 'print "$_\n"' $OUT_RESFILE_VARLIST
+
+# create ascii file from in .res file for all variables
+cat $IN_RESFILE_VARLIST | bin2asc $IN_RESFILE > $IN_ASCFILE 
+
+# create ascii file from in .res file for all variables
+cat $OUT_RESFILE_VARLIST | bin2asc $OUT_RESFILE > $OUT_ASCFILE 
+
+# calc file diff
+# well, if there are too many diff, the RES_DIFF will be too long and the script will fail. That's what we want anyway.
+set RES_DIFF=`diff  $IN_ASCFILE $OUT_ASCFILE`
+
+
+\rm $OUT_RESFILE
+\rm $IN_ASCFILE
+\rm $OUT_ASCFILE
+\rm $OUT_RESFILE_VARLIST
+
+
+if ( "$RES_DIFF" == "") then
+    echo "TEST||STAGE $TESTNB STEP 1 : PASSED"
+else
+    echo "@@@@ TEST||STAGE $TESTNB STEP 1 : FAILED @@@@"
+    exit 1
+endif
+
+#------------------------------------------------
+
+#Run provider
+$PROVIDER 0  $IN_RESFILE > /dev/null &
+sleep 1
+
+#Run consumer with test mode2 (only first and last var)
+$CONSUMER localhost 1 $OUT_RESFILE first_last
+
+#kill the provider
+custom_killall $PROVIDER
+
+#get first, midle and last variable name from all var names
+set FIRST_MIDLE_LAST_VAR=`perl -n -a -e 'print "$F[0] $F[int(($#F+1)/2)] $F[$#F]\n"' $IN_RESFILE_VARLIST`
+
+#create a whole new file from variable names from the new res file
+#normally the new var file must have only FIRST_VAR and LAST_VAR
+#Create variable list from new .res
+echo "-v" |  bin2asc $OUT_RESFILE  >&  $OUT_RESFILE_VARLIST
+perl -i -p -e 's/\s+/ /g; s/VT >//g;' $OUT_RESFILE_VARLIST
+perl -i -n -e 'print "$_\n"' $OUT_RESFILE_VARLIST
+
+# create ascii file from in .res file for first, midle and last variables
+echo "$FIRST_MIDLE_LAST_VAR" | bin2asc $IN_RESFILE > $IN_ASCFILE 
+
+# create ascii file from in .res file for all variables for the new file
+cat $OUT_RESFILE_VARLIST | bin2asc $OUT_RESFILE > $OUT_ASCFILE 
+
+# calc file diff
+# well, if there are too many diff, the RES_DIFF will be too long and the script will fail. That's what we want anyway.
+set RES_DIFF=`diff  $IN_ASCFILE $OUT_ASCFILE`
+
+\rm $OUT_RESFILE
+\rm $IN_ASCFILE
+\rm $OUT_ASCFILE
+\rm $IN_RESFILE_VARLIST
+\rm $OUT_RESFILE_VARLIST
+
+
+if ( "$RES_DIFF" == "") then
+    echo "TEST||STAGE $TESTNB STEP 2 : PASSED"
+else
+    echo "TEST||@@@@ STAGE $TESTNB STEP 2 : FAILED @@@@"
+    exit 1
+endif
+
+echo "TEST||++++ STAGE $TESTNB : PASSED ++++"
+
+
+
+echo "------------------------------------"
+echo "-------- END AUTOTEST $TESTNB ----------"
+echo "------------------------------------"
+exit 0
+
+
+
+
+
+
+
+
+
+
