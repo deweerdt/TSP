@@ -1,0 +1,32 @@
+# Makefile.skeleton
+
+include $(DEVBASE)/make/Makeparams.$(T)
+
+XINC = {the include files to export}
+XSCRIPT = {the script files to  export}
+SUBDIRS = {the subdir to build}
+
+all::
+	$(MAKE) T={arch} {target-1}
+	$(MAKE) T={arch} {target-2}
+
+clean::
+	$(MAKE) T={arch} destroy
+
+{target-1} : {dependecies}
+
+{target-2} : {dependecies}
+
+destroy:
+	$(RM) {target-1}
+
+#-- uncomment if SUBDIRS must be built 
+#-- before the local target
+include $(DEVBASE)/make/Makesubdirs
+
+include $(DEVBASE)/make/Makerules
+
+#-- uncomment if SUBDIRS must be built 
+#-- after the local target
+include $(DEVBASE)/make/Makesubdirs
+
