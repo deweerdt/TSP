@@ -23,6 +23,10 @@ clean::
 	mv -i $(BINBASE) $(BINBASE).old
 
 SUBDIRS =  \
-	core  
+	core \
+	util \
+	providers \
+	consumers 
+
 
 include $(DEVBASE)/make/Makesubdirs
