@@ -195,7 +195,7 @@ redraw_widgets (gpointer data)
 	/*TODO*/
 	/*bstable_get_double_value(var->text, &val_double);*/
 	label = GTK_LABEL(var->widget);
-	sprintf(buffer, LABEL_HEXA_FORMAT, var->legend == NULL ? var->text : var->legend, (long) lrint(var->double_value));
+	sprintf(buffer, LABEL_HEXA_FORMAT, var->legend == NULL ? var->text : var->legend, (long) rint(var->double_value));
 	gtk_label_set_text(label, buffer);
 	break;
       default:
