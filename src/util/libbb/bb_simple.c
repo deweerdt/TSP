@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_simple.c,v 1.2 2004-09-20 20:55:59 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_simple.c,v 1.3 2004-09-21 21:59:58 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -35,6 +35,7 @@ Purpose   : BlackBoard Idiom implementation
 -----------------------------------------------------------------------
  */
 #include <sys/msg.h>
+#include <string.h>
 
 #include <bb_utils.h>
 #include <bb_core.h>
