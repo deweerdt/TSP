@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.h,v 1.4 2002-10-10 15:59:26 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.h,v 1.5 2002-11-19 13:16:35 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -43,8 +43,10 @@ int TSP_session_create_symbols_table_by_channel(const TSP_request_sample_t* req_
 
 /* FIXME : en faire un return int ? */
 void TSP_session_all_session_send_data(time_stamp_t t);
+void TSP_session_all_session_send_msg_ctrl(TSP_msg_ctrl_t msg_ctrl);
+
 void TSP_session_send_data_by_channel(channel_id_t channel_id, time_stamp_t t);
-void TSP_session_send_data_eof_by_channel(channel_id_t channel_id);
+void TSP_session_send_msg_ctrl_by_channel(channel_id_t channel_id, TSP_msg_ctrl_t msg_ctrl);
 
 const char* TSP_session_get_data_address_string_by_channel(channel_id_t channel_id);
 
@@ -54,8 +56,13 @@ int TSP_session_create_data_sender_by_channel(channel_id_t channel_id, int start
 int  TSP_session_get_sample_symbol_info_list_by_channel(channel_id_t channel_id,
 							TSP_sample_symbol_info_list_t* symbol_list);
 
+int TSP_session_get_symbols_global_index_by_channel(channel_id_t channel_id,
+						   TSP_sample_symbol_info_list_t* symbol_list);
 
 int TSP_session_is_consumer_connected_by_channel(channel_id_t channel_id);
+
+
+
 
 /**
  * Get current total number of session.

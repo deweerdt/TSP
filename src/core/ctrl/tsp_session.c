@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.c,v 1.5 2002-10-10 15:59:26 galles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.c,v 1.6 2002-11-19 13:16:35 tntdev Exp $
 
 -----------------------------------------------------------------------
 
@@ -292,7 +292,7 @@ int TSP_session_create_symbols_table_by_channel(const TSP_request_sample_t* req_
 
   TSP_LOCK_MUTEX(&X_session_list_mutex,FALSE);
     
-  session =  TSP_get_session(req_sample->channel_id);
+  TSP_GET_SESSION(session, req_sample->channel_id, FALSE)
     
   /* Use global datapool, or local datapool ? */
   if(use_global_datapool)
@@ -389,10 +389,9 @@ int  TSP_session_get_sample_symbol_info_list_by_channel(channel_id_t channel_id,
 
 }
 
-
-void TSP_session_send_data_eof_by_channel(channel_id_t channel_id)
+void TSP_session_send_msg_ctrl_by_channel(channel_id_t channel_id, TSP_msg_ctrl_t msg_ctrl)
 {
-  SFUNC_NAME(TSP_session_send_data_eof_by_channel);
+  SFUNC_NAME(TSP_session_send_data_msg_ctrl_by_channel);
 
   TSP_session_t* session;
 
@@ -407,7 +406,7 @@ void TSP_session_send_data_eof_by_channel(channel_id_t channel_id)
       &&  session->session_data->groups
       &&  session->session_data->sender)
     {
-      if(!TSP_data_sender_send_eof(session->session_data->sender))
+      if(!TSP_data_sender_send_msg_ctrl(session->session_data->sender, msg_ctrl))
 
 	{
 	  STRACE_ERROR(("Function TSP_data_sender_send_eof failed"));
@@ -503,6 +502,60 @@ void TSP_session_all_session_send_data(time_stamp_t t)
   /*STRACE_IO(("-->OUT"));*/
 
 }
+
+
+/**
+ * Send msg ctrl to all clients
+ * This function is called by the datapool thread,
+ * and for all opened session it send available data
+ * to the clients.
+ * @param msg_ctrl The message that must be sent
+ */
+void TSP_session_all_session_send_msg_ctrl(TSP_msg_ctrl_t msg_ctrl)
+{
+
+  SFUNC_NAME(TSP_session_all_session_send_msg_ctrl);
+    
+  int i;
+  /* STRACE_IO(("-->IN"));*/
+
+  TSP_LOCK_MUTEX(&X_session_list_mutex,);
+
+  for( i = 0 ; i< X_session_nb ; i++)
+    {
+    
+      /* FIXME !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	 session_data->sender sert à savoir si sample init
+	 a ete fait, et session_data->groups si le sample tout
+	 court a ete fait. Les remettre a 0 en cas de destruction
+	 de la connection */
+    
+      if( X_session_t[i].session_data->groups /* The sample request was done */
+	  && X_session_t[i].session_data->sender /* The sample request init was done */)
+	{
+                      
+          assert(X_session_t[i].session_data);
+
+	  if( X_session_t[i].session_data->data_link_broken == FALSE)
+	    {
+	      if(!TSP_data_sender_send_msg_ctrl(X_session_t[i].session_data->sender, msg_ctrl))
+		{
+		  STRACE_WARNING(("Function TSP_data_sender_send_msg_ctrl failed for session %d",X_session_t[i].channel_id ));
+		  X_session_t[i].session_data->data_link_broken = TRUE;
+		  
+		}
+
+	    }
+            
+	}
+    }
+
+  TSP_UNLOCK_MUTEX(&X_session_list_mutex,);
+
+  /*STRACE_IO(("-->OUT"));*/
+
+}
+
 
 int TSP_session_create_data_sender_by_channel(channel_id_t channel_id, int start_local_thread)
 {
@@ -607,7 +660,7 @@ const char* TSP_session_get_data_address_string_by_channel(channel_id_t channel_
 
 int TSP_session_is_consumer_connected_by_channel(channel_id_t channel_id)
 {
-  /* TSP_data_sender_is_consumer_connected(*/
+
   
   SFUNC_NAME(TSP_session_is_consumer_connected_by_channel);
 					
@@ -622,5 +675,59 @@ int TSP_session_is_consumer_connected_by_channel(channel_id_t channel_id)
   TSP_UNLOCK_MUTEX(&X_session_list_mutex,FALSE);
 
   return consumer_is_connected;
+
+}
+
+
+int TSP_session_get_symbols_global_index_by_channel(channel_id_t channel_id,
+						   TSP_sample_symbol_info_list_t* symbol_list)
+{
+  SFUNC_NAME(TSP_session_check_requested_symbols_by_channel);
+					
+  TSP_session_t* session;
+  TSP_sample_symbol_info_list_t origin_sym_list;
+  int i,j;
+  int ret = TRUE;
+  STRACE_IO(("-->IN"));
+    
+  TSP_LOCK_MUTEX(&X_session_list_mutex,FALSE);
+  TSP_GET_SESSION(session, channel_id, FALSE);
+
+  /* Get the original GLU symbol list */
+   if(!GLU_get_sample_symbol_info_list(session->session_data->glu_h, &origin_sym_list))
+    {
+      STRACE_ERROR(("Function GLU_get_sample_symbol_info_list failed"));
+      return FALSE;
+    }
+
+   /* For each requested symbols, check by name, and find the provider global index */
+
+   for( i = 0 ; i < symbol_list->TSP_sample_symbol_info_list_t_len ; i++)
+     {
+       int found = FALSE;
+       TSP_sample_symbol_info_t* looked_for = &(symbol_list->TSP_sample_symbol_info_list_t_val[i]);
+       
+       for( j = 0 ; j < origin_sym_list.TSP_sample_symbol_info_list_t_len ; j++)
+	 {
+	   TSP_sample_symbol_info_t* compared = &(origin_sym_list.TSP_sample_symbol_info_list_t_val[j]);
+	   if(!strcmp(looked_for->name, compared->name))
+	     {
+	       found = TRUE;
+	       looked_for->provider_global_index = compared->provider_global_index;
+	     }
+	   if(found) break;
+	 }
+       if(!found)
+	 {
+	   ret = FALSE;
+	   STRACE_INFO(("Unable to find symbol '%s'",  looked_for->name));
+	   break;	   
+	 }
+     }
+   
+  TSP_UNLOCK_MUTEX(&X_session_list_mutex,FALSE);
+
+  STRACE_IO(("-->OUT"));
+  return ret;
 
 }
