@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_consumers.c,v 1.5 2004-06-26 20:51:04 esteban Exp $
+$Id: gdisp_consumers.c,v 1.6 2004-10-04 08:57:26 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -26,7 +26,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 -----------------------------------------------------------------------
 
 Project   : TSP
-Maintainer: tsp@astrium-space.com
+Maintainer: tsp@astrium.eads.net
 Component : Graphic Tool
 
 -----------------------------------------------------------------------
@@ -94,10 +94,10 @@ gdisp_insertHostProviders ( Kernel_T *kernel,
 
   GString        *messageString    = (GString*)NULL;
 
-  gchar          *hostName         = (gchar*)NULL;
+  gchar           hostUrl[256];
 
   guint           providerIdentity = 0;
-  TSP_provider_t *providerList     = (TSP_provider_t*)NULL;
+  TSP_provider_t  *providerList[TSP_MAX_REQUEST_HANDLERS], *trial;
   gint            providerListSize = 0;
   gint            providerCpt      = 0;
   gint            symbolCpt        = 0;
@@ -109,13 +109,19 @@ gdisp_insertHostProviders ( Kernel_T *kernel,
                                   (const TSP_consumer_information_t*)NULL;
 
   /*
-   * Connect to all found providers on the given host.
+   * Look for providers on the given host.
    */
-  hostName = host->hName->str;
-  TSP_consumer_connect_all(hostName,
-			   &providerList,
-			   &providerListSize);
-
+  for (providerCpt=0; providerCpt<TSP_MAX_SERVER_NUMBER; providerCpt++)
+    {
+      sprintf(hostUrl, "//%s/:%d", host->hName->str, providerCpt);
+  
+      trial = TSP_consumer_connect_url(hostUrl);
+      if(trial)
+	{
+	  providerList[providerListSize] = trial;
+	  providerListSize++;
+	}
+    }
 
   /*
    * Report the number of providers that have been found.
@@ -125,7 +131,7 @@ gdisp_insertHostProviders ( Kernel_T *kernel,
 
     g_string_sprintf(messageString,
 		     "No TSP provider found on host %s.",
-		     hostName);
+		     host->hName->str);
 
   }
   else {
@@ -133,7 +139,7 @@ gdisp_insertHostProviders ( Kernel_T *kernel,
     g_string_sprintf(messageString,
 		     "%d TSP provider(s) found on host %s.",
 		     providerListSize,
-		     hostName);
+		     host->hName->str);
 
   }
   kernel->outputFunc(kernel,messageString,GD_WARNING);

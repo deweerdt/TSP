@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_kernel.h,v 1.8 2004-06-26 20:51:04 esteban Exp $
+$Id: gdisp_kernel.h,v 1.9 2004-10-04 08:57:26 tractobob Exp $
 
 -----------------------------------------------------------------------
 
@@ -51,6 +51,7 @@ File      : Graphic Tool Kernel Interface.
  * TSP Consumer include.
  * Definitition of a dynamic array of double.
  */
+#include "tsp_const_def.h"
 #include "tsp_consumer.h"
 #include "gdisp_doubleArray.h"
 
