@@ -1,21 +1,24 @@
-# Makefile - makefile for target/src/posix
-#
-# modification history
-# --------------------
-#
-# DESCRIPTION
 # This file contains the makefile rules for building the posix library
-#
-#*/
 
-TGT_DIR=$(WIND_BASE)/target
+include $(DEVBASE)/make/Makeparams
 
-DOC_FILES=
+SOURCES = \
+	posixIpc.c \
+	posixThread.c \
+	posixWrap.c
 
-LIBNAME=lib$(CPU)$(TOOL)vx.a
-LIBDIRNAME=obj$(CPU)$(TOOL)vx
+TARGET=$(DIRLIB)/libtsp_posix.a
 
-OBJS=posixWrap.o
+OBJECTS=$(SOURCES:%.c=$(DIROBJ)/%.o)
 
-include $(TGT_DIR)/h/make/rules.library
+generate: $(TARGET)($(OBJECTS))
 
+build::
+	cd h; $(MAKE); cd .. 
+	$(MAKE) generate
+
+destroy::
+	cd h; $(MAKE) clean; cd ..
+	$(RM)    $(TARGET)
+
+include $(DEVBASE)/make/Makerules
