@@ -12,7 +12,9 @@ OBJECTS=$(SOURCES:%.c=$(DIROBJ)/%.o)
 ADD_LIB =  $(DIRLIB)/libtsp_provider.a $(DIRLIB)/libbb.a $(DIRLIB)/libtsp_services.a  $(DIRLIB)/libtsp_calc.a 
 
 ifeq (${TSP_TARGET},vxworks)
-#TARGET= nothing to do
+ADD_LIB =  $(DIRLIB)/libtsp_provider.a $(DIRLIB)/libtsp_services.a  $(DIRLIB)/libtsp_calc.a  $(DIRLIB)/libbb.a $(DIRLIB)/libtsp_posix.a
+TARGET=$(DIRBIN)/bb_vx_provider.o
+LDLIBS=
 else
 TARGET=$(DIRBIN)/bb_tsp_provider
 endif

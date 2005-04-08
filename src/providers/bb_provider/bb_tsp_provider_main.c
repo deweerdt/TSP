@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/providers/bb_provider/bb_tsp_provider_main.c,v 1.3 2004-10-26 23:46:54 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/providers/bb_provider/bb_tsp_provider_main.c,v 1.4 2005-04-08 15:24:09 le_tche Exp $
 
 -----------------------------------------------------------------------
 
@@ -45,6 +45,7 @@ Purpose   : Blackboard TSP Provider
 #include "bb_tsp_provider.h"
 #include "tsp_provider_init.h"
 
+#ifdef VXWORKS
 
 int 
 main (int argc, char ** argv) {
@@ -70,3 +71,25 @@ main (int argc, char ** argv) {
   
   return 0;
 }
+
+#else
+
+
+int launch_bb_vx_provider (char * bb_name) 
+{
+  int	argc = 2;
+  char	**argv;
+
+  argv = malloc(2*sizeof(char *));
+
+  argv[0] = strdup("launch_bb_vx_provider");
+  argv[1] = bb_name;
+
+  bb_simple_synchro_config(1);
+  bb_tsp_provider_initialise(&argc,&argv,
+			     TSP_ASYNC_REQUEST_SIMPLE | TSP_ASYNC_REQUEST_NON_BLOCKING,
+			     argv[1]);
+  return 0;
+}
+
+#endif

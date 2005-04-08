@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/providers/bb_provider/bb_tsp_provider.c,v 1.9 2005-02-23 16:41:50 dufy Exp $
+$Header: /home/def/zae/tsp/tsp/src/providers/bb_provider/bb_tsp_provider.c,v 1.10 2005-04-08 15:24:09 le_tche Exp $
 
 -----------------------------------------------------------------------
 
@@ -34,6 +34,7 @@ Purpose   : Blackboard TSP Provider
 
 -----------------------------------------------------------------------
  */
+#include <tsp_abs_types.h>
 #include "bb_core.h"
 #include "bb_simple.h"
 #define BB_TSP_PROVIDER_C
