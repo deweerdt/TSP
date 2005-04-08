@@ -8,8 +8,6 @@ DIRLIB = $(DIREXEC)/lib
 
 # Default tools : FIXME should be defined by autoconf
 # ---------------------------------------------------
-WIND_BASE      = /home1/breiz/PowerPC_tornado2.0
-WIND_HOST_TYPE = sun4-solaris2
 WIND_TARGET_TYPE = PPC604
 
 CPP = $(WIND_BASE)/host/$(WIND_HOST_TYPE)/bin/cppppc
@@ -18,13 +16,16 @@ LD  = $(WIND_BASE)/host/$(WIND_HOST_TYPE)/bin/ldppc
 AS  = $(WIND_BASE)/host/$(WIND_HOST_TYPE)/bin/asppc
 AR  = $(WIND_BASE)/host/$(WIND_HOST_TYPE)/bin/arppc
 
-# FIXME : find a reason to a different VXWORKS rpcgen ...
-RPCGEN=$(DEVBASE)/../tools/rpcgen/vxrpcgen.suncdt.vxworks
+RPCGEN=$(DEVBASE)/external/RpcGen/MyRpcGen
 
 # Default options
 # ---------------
 ARFLAGS = rvs
-CPPFLAGS += -DVXWORKS -D__PROTOTYPE_5_0 -DCPU=$(WIND_TARGET_TYPE) -I$(WIND_BASE)/target/h -I$(WIND_BASE)/target/h/types -I$(WIND_BASE)/target/config/all
-CFLAGS   += -B$(WIND_BASE)/host/sun4-solaris2/lib/gcc-lib/ -mstrict-align -fsigned-char -fvolatile -fno-builtin -fno-for-scope -nostdinc -Wall -Wmissing-prototypes -Wmissing-declarations -Wnested-externs -Winline -O2
-LDFLAGS  += -r 
+
+CPPFLAGS += -DUSE_STRACE -DVXWORKS -D__PROTOTYPE_5_0 -DCPU=$(WIND_TARGET_TYPE) -I$(WIND_BASE)/target/h -I$(WIND_BASE)/target/h/types -I$(WIND_BASE)/target/config/all
+
+CFLAGS   += -B$(WIND_BASE)/host/sun4-solaris2/lib/gcc-lib/ -mstrict-align -fsigned-char -fvolatile -fno-builtin -fno-for-scope -Wall -mlongcall -Wmissing-prototypes -Wmissing-declarations -Wnested-externs -Winline -O2
+
+LDFLAGS += -r -B$(WIND_BASE)/host/sun4-solaris2/lib/gcc-lib/ -L$(WIND_BASE)/host/$(WIND_HOST_TYPE)/lib/gcc-lib/powerpc-wrs-vxworks/gcc-2.96/$(WIND_TARGET_TYPE)gnu -nostdlib
+
 
