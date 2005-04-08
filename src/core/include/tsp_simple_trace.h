@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/include/Attic/tsp_simple_trace.h,v 1.14 2004-09-22 14:25:58 tractobob Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/Attic/tsp_simple_trace.h,v 1.15 2005-04-08 14:51:44 le_tche Exp $
 
 -----------------------------------------------------------------------
 
@@ -50,7 +50,7 @@ Purpose   : Some trace macro
         } else {\
             _strace_debug_level = 0; }\
     }\
-    if (_strace_debug_level >= level ) { \
+    if (_strace_debug_level & level ) { \
            printf("%7s||%s##%s##%d: ", src, __FILE__, func, __LINE__); \
            printf text; printf("\n"); fflush(stdout);\
     }\
@@ -62,9 +62,9 @@ Purpose   : Some trace macro
 #endif
 				  
 #ifdef  USE_STRACE
-# define STRACE_IO(text) SIMPLE_TRACE(5, "i/o", text)
+# define STRACE_IO(text) SIMPLE_TRACE(8, "i/o", text)
 # define STRACE_DEBUG(text) SIMPLE_TRACE(4, "debug", text)
-# define STRACE_INFO(text) SIMPLE_TRACE(3, "Info", text)
+# define STRACE_INFO(text) SIMPLE_TRACE(2, "Info", text)
 # define STRACE_TEST(text) SIMPLE_TRACE(1, "TEST", text)
 #else
 # define STRACE_IO(text)
