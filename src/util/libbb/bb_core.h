@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.h,v 1.8 2005-02-22 20:22:34 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.h,v 1.9 2005-04-08 14:55:28 le_tche Exp $
 
 -----------------------------------------------------------------------
 
@@ -37,15 +37,12 @@ Purpose   : BlackBoard Idiom implementation
 #ifndef _BB_H_
 #define _BB_H_
 
-#include <tsp_abs_types.h>
 #include <stdio.h>
 #include <sys/sem.h>
 #if defined(__GNU_LIBRARY__) && !defined(_SEM_SEMUN_UNDEFINED)
 /* union semun is defined by including <sys/sem.h> */
 #else
 #ifdef _SEM_SEMUN_UNDEFINED
-#undef _SEM_SEMUN_UNDEFINED
-#endif
 /**
  * Union a definir et utiliser
  * pour les appels 'semop' SysV.
@@ -57,6 +54,8 @@ union semun {
   unsigned short int *array;         /* array for GETALL & SETALL */
   struct seminfo *__buf;             /* buffer for IPC_INFO */
 };
+#undef _SEM_SEMUN_UNDEFINED
+#endif
 #endif
 
 
@@ -316,8 +315,8 @@ bb_data_print(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc, FILE* pf);
 int32_t 
 bb_create(S_BB_T** bb, 
 	  const char* pc_bb_name,
-	  int n_data,
-	  int data_size);
+	  int32_t n_data,
+	  int32_t data_size);
 /**
  * Destroy a blackboard.
  * Destroy the BB  structure. Destroy the shared memory segment
@@ -432,7 +431,7 @@ bb_dump(volatile S_BB_T *bb, FILE* filedesc);
  * @return the maximum number of data that could be published in blackboard
  * @ingroup BlackBoard
  */
-int
+int32_t
 bb_get_nb_max_item(volatile S_BB_T *bb);
 
 /**
@@ -442,7 +441,7 @@ bb_get_nb_max_item(volatile S_BB_T *bb);
  * @return the number of data currently published in blackboard. 
  * @ingroup BlackBoard
  */
-int
+int32_t
 bb_get_nb_item(volatile S_BB_T *bb);
 
 /**
@@ -451,7 +450,7 @@ bb_get_nb_item(volatile S_BB_T *bb);
  * @return memory occupied by the specified BB in bytes
  * @ingroup BlackBoard
  */
-int
+int32_t
 bb_get_mem_size(volatile S_BB_T *bb);
 
 /**

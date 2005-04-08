@@ -1,7 +1,7 @@
 
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_tools.c,v 1.8 2005-03-21 19:10:48 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_tools.c,v 1.9 2005-04-08 14:55:28 le_tche Exp $
 
 -----------------------------------------------------------------------
 
@@ -44,6 +44,7 @@ Purpose   : BlackBoard Idiom implementation
 #include <libgen.h>
 #include <stdarg.h>
 
+#include <tsp_abs_types.h>
 #include <bb_core.h>
 #include <bb_utils.h>
 #define BB_TOOLS_C

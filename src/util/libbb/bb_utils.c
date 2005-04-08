@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_utils.c,v 1.5 2004-11-07 18:23:55 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_utils.c,v 1.6 2005-04-08 14:55:28 le_tche Exp $
 
 -----------------------------------------------------------------------
 
@@ -43,6 +43,7 @@ Purpose   : Blackboard Idiom utilities
 
 #include <sys/ipc.h>
 
+#include <tsp_sys_headers.h>
 #include <bb_utils.h>
 #include <bb_sha1.h>
 #include "tsp_simple_trace.h"

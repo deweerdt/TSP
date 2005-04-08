@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.12 2005-02-23 17:28:11 dufy Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.13 2005-04-08 14:55:28 le_tche Exp $
 
 -----------------------------------------------------------------------
 
@@ -50,6 +50,7 @@ Purpose   : Blackboard Idiom implementation
 #include <sys/sem.h>
 #include <sys/msg.h>
 
+#include <tsp_abs_types.h>
 #include <bb_core.h>
 #include <bb_utils.h>
 #include "tsp_abs_types.h"
