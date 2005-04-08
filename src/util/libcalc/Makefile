@@ -15,9 +15,10 @@ TARGET=$(DIRLIB)/libtsp_calc.a
 # same thing for clean:: that calls destroy::
 # -----------------------------------------------------------
 
-build:: $(TARGET)($(OBJECTS))
+build:: $(TARGET)($(OBJECTS)) export_include
 
 destroy::
+	$(MAKE) remove_include
 	$(RM) 	 $(TARGET) 
 
 # -----------------------------------------------------------
