@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_sys_headers.h,v 1.17 2005-02-23 17:28:11 dufy Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_sys_headers.h,v 1.18 2005-04-08 14:52:21 le_tche Exp $
 
 -----------------------------------------------------------------------
 
@@ -79,5 +79,17 @@ Do not use this with others targets */
 #include <pthread.h>
 #include <sys/time.h>
 #include <sys/param.h>
+
+#ifdef VXWORKS
+/* VXWORKS part */
+# include <hostLib.h>
+# include <sockLib.h>
+# include <logLib.h>
+# include <tickLib.h>
+# include <taskLib.h>
+/* posix part */
+# include <libgen.h>
+# include <strings.h>
+#endif /* VXWORKS */
 
 #endif
