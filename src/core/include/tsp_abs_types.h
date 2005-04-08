@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_abs_types.h,v 1.19 2005-02-23 19:43:40 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_abs_types.h,v 1.20 2005-04-08 14:48:49 le_tche Exp $
 
 -----------------------------------------------------------------------
 
@@ -129,20 +129,14 @@ typedef int_least16_t int16_t;
 
 /* VXWORKS */
 #if  defined (VXWORKS)
+/* this works for VxWorks version 5.5.1 and WIND version 2.6 */
+# include <inttypes.h>
 # define TSP_BYTE_ORDER TSP_BIG_ENDIAN
 # define TSP_GUINT64_FORMAT "llu"
 # undef TSP_SYSTEM_HAVE_GETHRTIME 
 # define TSP_SYSTEM_HAVE_NANOSLEEP
 # define TSP_HAVE_INT64 1
 # define TSP_INT64_CONSTANT(val)  (val##LL)
-#       ifndef _UINT64_T
-                typedef unsigned long long    uint64_t;
-#               define _UINT64_T
-#       endif
-#       ifndef _INT64_T
-                typedef long long    int64_t;
-#               define _INT64_T
-#       endif
 #endif /* VXWORKS */
 
 /* FreeBSD : may need testing on non i386 */
