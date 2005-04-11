@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/external/VxWorks/posix/posixWrap.c,v 1.2 2005-04-08 14:45:20 le_tche Exp $
+$Header: /home/def/zae/tsp/tsp/external/VxWorks/posix/posixWrap.c,v 1.3 2005-04-11 09:46:10 le_tche Exp $
 
 -----------------------------------------------------------------------
 
@@ -43,6 +43,11 @@ Purpose   : posix implementation for VXWORKS
 #include <vxWorks.h>
 #include <taskLib.h>
 #include <sysLib.h>
+#include <rpc/rpc.h>
+#include <sys/socket.h>
+#include <netdb.h>
+#include <hostLib.h>
+#include <rpc/pmap_clnt.h>
 
 #include "strings.h"
 #include "libgen.h"
@@ -77,9 +82,27 @@ int getpid(void)
 
 ushort getrpcport(char *host, rpcprog_t  prognum,  rpcvers_t versnum, rpcprot_t proto)
 {
-  /* always return same port */
-  /* FIXME : return real port */
-  return 1;
+  struct sockaddr_in	address;
+  static int		getrpcport_called = 0;
+
+  if(getrpcport_called == 0) {
+    getrpcport_called = 1;
+    if(rpcTaskInit() == ERROR) {
+      return 0;
+    }
+  }
+  
+  memset( (char *)&address, 0, sizeof(address));
+
+  if ((address.sin_addr.s_addr = inet_addr (host)) == ERROR &&
+      (address.sin_addr.s_addr = hostGetByName (host)) == ERROR) {
+    return 0;
+  }
+
+  address.sin_family = AF_INET;
+  address.sin_port =  0;
+ 
+  return pmap_getport(&address, (u_long)prognum, (u_long)versnum, IPPROTO_TCP);
 }
 
 /* -------------------------------------------------------------------------------------------*/
