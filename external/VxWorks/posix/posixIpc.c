@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/external/VxWorks/posix/posixIpc.c,v 1.1 2005-04-08 14:45:20 le_tche Exp $
+$Header: /home/def/zae/tsp/tsp/external/VxWorks/posix/posixIpc.c,v 1.2 2005-04-11 07:46:21 le_tche Exp $
 
 -----------------------------------------------------------------------
 
@@ -47,8 +47,8 @@ Purpose   : posix implementation for VXWORKS
 #include <sys/sem.h>
 #include <sys/msg.h>
 
-#include "../../../src/core/include/tsp_abs_types.h"
-#include "../../../src/util/libbb/bb_core.h"
+
+#define MSG_MAX_SIZE		32
 
 /* declare vme_malloc function : must be provided in BSP or user application */
 extern void * vme_malloc(unsigned long size);
@@ -176,7 +176,7 @@ int msgget(key_t key, int msgflg)
 {
   MSG_Q_ID	msqid;
 
-  msqid = msgQCreate ( 3, MSG_BB_MAX_SIZE, MSG_Q_FIFO);
+  msqid = msgQCreate ( 3, MSG_MAX_SIZE, MSG_Q_FIFO);
 
   if(msqid == NULL) {
     errnoSet(ENOSPC);
@@ -197,7 +197,7 @@ int msgctl(int msqid, int cmd, struct msqid_ds *buf)
       return -1;
     }
     
-    return (nb*MSG_BB_MAX_SIZE);
+    return (nb*MSG_MAX_SIZE);
     break;
 
   case IPC_RMID:
