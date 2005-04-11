@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/providers/bb_provider/bb_tsp_provider_main.c,v 1.4 2005-04-08 15:24:09 le_tche Exp $
+$Header: /home/def/zae/tsp/tsp/src/providers/bb_provider/bb_tsp_provider_main.c,v 1.5 2005-04-11 08:24:07 le_tche Exp $
 
 -----------------------------------------------------------------------
 
@@ -45,7 +45,7 @@ Purpose   : Blackboard TSP Provider
 #include "bb_tsp_provider.h"
 #include "tsp_provider_init.h"
 
-#ifdef VXWORKS
+#ifndef VXWORKS
 
 int 
 main (int argc, char ** argv) {
@@ -73,6 +73,9 @@ main (int argc, char ** argv) {
 }
 
 #else
+#include <bb_core.h>
+#include <bb_simple.h>
+#include <bb_tools.h>
 
 
 int launch_bb_vx_provider (char * bb_name) 
@@ -85,10 +88,43 @@ int launch_bb_vx_provider (char * bb_name)
   argv[0] = strdup("launch_bb_vx_provider");
   argv[1] = bb_name;
 
-  bb_simple_synchro_config(1);
+  bb_simple_synchro_config(1);  /* FIXME : try to use mode PROCESS  */
+				/* 0 = BB_SIMPLE_SYNCHRO_PROCESS    */
+				/* 1 = BB_SIMPLE_SYNCHRO_THREAD     */
+
   bb_tsp_provider_initialise(&argc,&argv,
 			     TSP_ASYNC_REQUEST_SIMPLE | TSP_ASYNC_REQUEST_NON_BLOCKING,
 			     argv[1]);
+  return 0;
+}
+
+int debug_bb(char * cmd, char * bb_name, char * sym_name, char * value)
+{
+  bbtools_request_t  the_request;
+
+
+  the_request.argv[0] = bb_name;
+  the_request.verbose = 1;
+  the_request.silent = 0;
+
+  /* initialize bbtools request */
+  bbtools_init(&the_request);
+  the_request.theBB=bbtools_checkbbname(the_request.argv[0]);
+  
+  if(strcmp("READ", cmd) == 0) {
+    the_request.argc = 2;
+    the_request.argv[1] = sym_name;
+    bbtools_read(&the_request);
+  } else if(strcmp("WRITE", cmd) == 0) {
+    the_request.argc = 3;
+    the_request.argv[1] = sym_name;
+    the_request.argv[2] = value;
+    bbtools_write(&the_request);
+  } else if(strcmp("DUMP", cmd) == 0) {
+    the_request.argc = 1;
+    bbtools_dump(&the_request);
+  }
+  
   return 0;
 }
 
