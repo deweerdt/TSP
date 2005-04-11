@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/external/VxWorks/posix/posixIpc.c,v 1.2 2005-04-11 07:46:21 le_tche Exp $
+$Header: /home/def/zae/tsp/tsp/external/VxWorks/posix/posixIpc.c,v 1.3 2005-04-11 09:44:29 le_tche Exp $
 
 -----------------------------------------------------------------------
 
@@ -67,14 +67,14 @@ int shmget(key_t key, size_t size, int shmflg)
     }
   }
 
-  printf("shmget : ptr = 0x%x, size = 0x%x\n", shmget_ptr_global, size);
+  /*  printf("shmget : ptr = 0x%x, size = 0x%x\n", shmget_ptr_global, size); */
 
   return (int ) shmget_ptr_global;
 }
 
 void *shmat(int shmid, const void *shmaddr, int shmflg)
 {
-printf("shmat : ptr = 0x%x\n", shmid);
+  /*printf("shmat : ptr = 0x%x\n", shmid);*/
   return (char *) shmid;
 }
 
@@ -110,7 +110,7 @@ int semget(key_t key, int nsems, int semflg)
       errnoSet(ENOSPC);
       return -1;
     }
-printf("semget : SEM_ID=0x%x\n", id);    
+    /*printf("semget : SEM_ID=0x%x\n", id);    */
     return (int ) id;
   }
   else {
@@ -140,7 +140,7 @@ int semctl(int semid, int semnum, int cmd, ...)
       intUnlock (lockKey);
       taskUnlock();
       va_end(ap);
-printf("semctl :  SEM_ID=0x%x, val=%d\n", (SEM_ID ) semid, arg.val);    
+      /*printf("semctl :  SEM_ID=0x%x, val=%d\n", (SEM_ID ) semid, arg.val);    */
     }
     else {
       errnoSet(EACCES);
