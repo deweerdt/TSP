@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_server.c,v 1.19 2004-10-28 20:10:44 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_server.c,v 1.20 2005-04-11 09:42:45 le_tche Exp $
 
 -----------------------------------------------------------------------
 
@@ -201,15 +201,6 @@ static int TSP_rpc_init(TSP_rpc_request_config_t *config)
 
   STRACE_IO(("-->IN"));
 
-#ifdef VXWORKS
-  if(rpcTaskInit() == ERROR)
-    {
-      config->server_number = -1;
-      STRACE_IO(("-->OUT "));
-      return config->server_number;
-    }
-#endif
-
   /* look for a free port */
   while(rpcport && config->server_number<TSP_MAX_SERVER_NUMBER)
     {
@@ -232,7 +223,7 @@ static void TSP_rpc_run(TSP_rpc_request_config_t *config)
 
   /* svc_create does not exist for linux, we must use the deprecated function */
   //pmap_unset (rpc_progid, TSP_RPC_VERSION_INITIAL);
-	
+
   config->xprt = svctcp_create(RPC_ANYSOCK, 0, 0);
   if (config->xprt == NULL) 
     {
