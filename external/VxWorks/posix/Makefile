@@ -4,6 +4,7 @@ include $(DEVBASE)/make/Makeparams
 
 SOURCES = \
 	posixIpc.c \
+	posixThread.c \
 	posixWrap.c
 
 TARGET=$(DIRLIB)/libtsp_posix.a
