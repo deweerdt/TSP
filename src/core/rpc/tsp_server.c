@@ -1,12 +1,13 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_server.c,v 1.20 2005-04-11 09:42:45 le_tche Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_server.c,v 1.21 2005-04-12 08:17:53 le_tche Exp $
 
 -----------------------------------------------------------------------
 
 TSP Library - core components for a generic Transport Sampling Protocol.
 
 Copyright (c) 2002 Yves DUFRENNE, Stephane GALLES, Eric NOULARD and Robert PAGNOT 
+Copyright (c) 2005 Cesare BERTONA
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public

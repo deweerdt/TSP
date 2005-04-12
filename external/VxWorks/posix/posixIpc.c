@@ -1,12 +1,12 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/external/VxWorks/posix/posixIpc.c,v 1.3 2005-04-11 09:44:29 le_tche Exp $
+$Header $
 
 -----------------------------------------------------------------------
 
 TSP Library - core components for a generic Transport Sampling Protocol.
 
-Copyright (c) 2002 Yves DUFRENNE, Stephane GALLES, Eric NOULARD and Robert PAGNOT 
+Copyright (c) 2005 Cesare BERTONA
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -25,7 +25,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 -----------------------------------------------------------------------
 
 Project   : TSP
-Maintainer : tsp@astrium-space.com
+Maintainer: tsp@astrium.eads.net
 Component : external
 
 -----------------------------------------------------------------------
@@ -33,7 +33,7 @@ Component : external
 Purpose   : posix implementation for VXWORKS
 
 -----------------------------------------------------------------------
- */
+*/
 
 #include <stdio.h>
 #include <semLib.h>

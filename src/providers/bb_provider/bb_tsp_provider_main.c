@@ -1,12 +1,12 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/providers/bb_provider/bb_tsp_provider_main.c,v 1.5 2005-04-11 08:24:07 le_tche Exp $
+$Header $
 
 -----------------------------------------------------------------------
 
 TSP Library - core components for a generic Transport Sampling Protocol.
 
-Copyright (c) 2002 Yves DUFRENNE, Stephane GALLES, Eric NOULARD and Robert PAGNOT 
+Copyright (c) 2005 Cesare BERTONA
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -25,15 +25,16 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 -----------------------------------------------------------------------
 
 Project   : TSP
-Maintainer : tsp@astrium-space.com
-Component : Consumer
+Maintainer: tsp@astrium.eads.net
+Component : external
 
 -----------------------------------------------------------------------
 
-Purpose   : Blackboard TSP Provider
+Purpose   : posix implementation for VXWORKS
 
 -----------------------------------------------------------------------
- */
+*/
+
 #include <stdio.h>
 #include <malloc.h>
 #include <unistd.h>
