@@ -1,0 +1,7 @@
+#ifndef _TSP_XMLRPC_CONFIG_H
+#define _TSP_XMLRPC_CONFIG_H
+
+#define XMLRPC_CONFIG_PORT 8000
+#define XMLRPC_CONFIG_SERVER localhost
+
+#endif /* _TSP_XMLRPC_CONFIG_H */
