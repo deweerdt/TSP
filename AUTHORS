@@ -4,13 +4,12 @@ Yves DUFRENNE
 Stephane GALLES
 Eric NOULARD
 Robert PAGNOT
-Maintainer : tsp@astrium.eads.net
+Maintainers : tsp@astrium.eads.net, enoulard@free.fr
 
 Other Authors
 ----------------
 Marc LE ROY, for the 'RES file lib' (libUTIL) used for some tests
 Ivano COLTELLACCI, for the initial RINGBUF implementation
-
-
-
-
+Jerome LACHAIZE and Robert PAGNOT for the initial VxWorks port
+Cesare BERTONA for the BlackBoard VxWorks port
+Olivier MONARET for the Visu3D consumer
