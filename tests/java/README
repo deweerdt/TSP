@@ -1,0 +1,7 @@
+-*- text -*-
+
+The jcore modules and other 'Java' TSP
+part has been moved to the 'high' level module
+'jtsp'
+
+http://savannah.nongnu.org/cgi-bin/viewcvs/tsp/jtsp
