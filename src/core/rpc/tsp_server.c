@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_server.c,v 1.21 2005-04-12 08:17:53 le_tche Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_server.c,v 1.22 2005-06-26 16:01:47 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -223,7 +223,7 @@ static void TSP_rpc_run(TSP_rpc_request_config_t *config)
   int32_t rpc_progid = TSP_get_progid(config->server_number);
 
   /* svc_create does not exist for linux, we must use the deprecated function */
-  //pmap_unset (rpc_progid, TSP_RPC_VERSION_INITIAL);
+  /* pmap_unset (rpc_progid, TSP_RPC_VERSION_INITIAL); */
 
   config->xprt = svctcp_create(RPC_ANYSOCK, 0, 0);
   if (config->xprt == NULL) 
@@ -248,8 +248,8 @@ static void TSP_rpc_run(TSP_rpc_request_config_t *config)
 
 static void TSP_rpc_stop(TSP_rpc_request_config_t *config)
 {
-  //STRACE_DEBUG(("calling svc_exit..."));
-  //svc_destroy(config->xprt);
+  /* STRACE_DEBUG(("calling svc_exit...")); */
+  /* svc_destroy(config->xprt); */
 
   /* Clean-up Port map so that next provider could use this ProgId */
   if(config->server_number >= 0)
@@ -316,7 +316,7 @@ void* TSP_rpc_request_run(TSP_provider_request_handler_t* this)
 
   STRACE_IO(("-->IN"));  
  
-  //pthread_detach(pthread_self()); /* FIXME shoudl we do this */
+  /* pthread_detach(pthread_self()); */ /* FIXME shoudl we do this */ 
 
   if(config->server_number >= 0)
     {
