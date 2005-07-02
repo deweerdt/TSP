@@ -40,6 +40,8 @@ main (int argc, char ** argv) {
   int n_data;
   uint32_t* display_level;
   int32_t* Toto;
+  int8_t* aint8;
+  uint8_t* auint8;
   double* Titi;
   double* Tata;
   double* HugeArray;
@@ -74,6 +76,9 @@ main (int argc, char ** argv) {
 
   display_level = (uint32_t*) bb_simple_publish(mybb,"display_level",basename(argv[0]),-1, E_BB_UINT32, sizeof(uint32_t),1);
   *display_level = 0;
+
+  aint8 = (int8_t*) bb_simple_publish(mybb,"int8",basename(argv[0]),-1, E_BB_INT8, sizeof(int8_t),2);
+  auint8 = (uint8_t*) bb_simple_publish(mybb,"uint8",basename(argv[0]),-1, E_BB_UINT8, sizeof(uint8_t),2);
   
   myvar = (mytype_t*) bb_simple_publish(mybb,"mytype_t_var",basename(argv[0]),-1, E_BB_USER, sizeof(mytype_t),1);
   myvar->a = 1;

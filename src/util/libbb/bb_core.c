@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.13 2005-04-08 14:55:28 le_tche Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.14 2005-07-02 15:51:55 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -200,6 +200,9 @@ bb_data_initialise(volatile S_BB_T* bb, S_BB_DATADESC_T* data_desc,void* default
     case E_BB_FLOAT:
       ((float*) data)[i] = default_value ? *((float *) default_value) : 0.0;
       break;
+    case E_BB_INT8:
+      ((int8_t*) data)[i] = default_value ? *((int8_t *) default_value) : 0;
+      break;
     case E_BB_INT16:
       ((int16_t*) data)[i] = default_value ? *((short *) default_value) : 0;
       break; 
@@ -208,7 +211,10 @@ bb_data_initialise(volatile S_BB_T* bb, S_BB_DATADESC_T* data_desc,void* default
       break; 
     case E_BB_INT64:
       ((int64_t*) data)[i] = default_value ? *((long *) default_value) : 0;
-      break; 
+      break;       
+    case E_BB_UINT8:
+      ((uint8_t*) data)[i] = default_value ? *((uint8_t *) default_value) : 0;
+      break;
     case E_BB_UINT16:
       ((uint16_t*) data)[i] = default_value ? *((unsigned short *) default_value) : 0;
       break;
@@ -264,6 +270,9 @@ bb_value_write(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc,const char* value,
     case E_BB_FLOAT:
       ((float *)data)[idx] = atof(value);
       break;
+    case E_BB_INT8:
+      ((int8_t*)data)[idx] = strtol(value,(char **)NULL,hexval ? 16 : 10);
+      break; 
     case E_BB_INT16:
       ((int16_t*)data)[idx] = strtol(value,(char **)NULL,hexval ? 16 : 10);
       break; 
@@ -272,6 +281,9 @@ bb_value_write(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc,const char* value,
       break; 
     case E_BB_INT64:
       ((int64_t*)data)[idx] = strtoll(value,(char **)NULL,hexval ? 16 : 10);
+      break; 
+    case E_BB_UINT8:
+      ((uint8_t*)data)[idx] = strtol(value,(char **)NULL,hexval ? 16 : 10);
       break; 
     case E_BB_UINT16:
       ((uint16_t*)data)[idx] = strtoul(value,(char **)NULL,hexval ? 16 : 10);
@@ -358,6 +370,9 @@ bb_value_print(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc, FILE* pf, int32_t
     case E_BB_FLOAT:
       fprintf(pf,"%f ",((float*) data)[i]);
       break;
+    case E_BB_INT8:
+      fprintf(pf,"%d ",((int8_t*) data)[i]);
+      break;
     case E_BB_INT16:
       fprintf(pf,"%d ",((int16_t*) data)[i]);
       break; 
@@ -366,6 +381,9 @@ bb_value_print(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc, FILE* pf, int32_t
       break; 
     case E_BB_INT64:
       fprintf(pf,"%lld ",((int64_t*) data)[i]);
+      break;
+    case E_BB_UINT8:
+      fprintf(pf,"0x%x ",((uint8_t*) data)[i]);
       break; 
     case E_BB_UINT16:
       fprintf(pf,"0x%x ",((uint16_t*) data)[i]);
