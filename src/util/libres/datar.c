@@ -1,6 +1,6 @@
 /*!  \file
 
-$Header: /home/def/zae/tsp/tsp/src/util/libres/datar.c,v 1.6 2004-09-16 09:21:31 tractobob Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libres/datar.c,v 1.7 2005-07-05 14:09:18 tsp_admin Exp $
 
 -----------------------------------------------------------------------
 
@@ -93,6 +93,8 @@ Purpose   :
 #include  <stdlib.h>
 #include  <string.h>
 #include  <sys/param.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 #define _LIBUTIL_COMPIL
 #include "libUTIL.h"

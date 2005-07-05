@@ -1,6 +1,6 @@
 /*!  \file
 
-$Header: /home/def/zae/tsp/tsp/src/util/libres/dataw.c,v 1.2 2004-09-06 16:07:33 tractobob Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libres/dataw.c,v 1.3 2005-07-05 14:09:18 tsp_admin Exp $
 
 -----------------------------------------------------------------------
 
@@ -85,6 +85,8 @@ Purpose   :
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/param.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 #define _LIBUTIL_COMPIL
 #include "libUTIL.h"
@@ -159,7 +161,7 @@ d_whandle	d_wopen_r (char *name , int use_dbl)
 		strcat(nam, ".res");
 
 	obj->datafd = open (nam,(O_TRUNC | O_CREAT | O_RDWR),
-		(S_IWUSR | S_IWGRP | S_IRUSR | S_IRGRP));
+		(S_IWUSR | S_IWGRP | S_IRUSR | S_IRGRP | S_IROTH));
 
 
 	if(obj->datafd<=0) {
