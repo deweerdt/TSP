@@ -3,7 +3,7 @@ include $(DEVBASE)/make/Makeparams
 ifeq (${HOST_TARGET},java)
 #	SUBDIRS = 
 else
-SUBDIRS = libcalc libres
+SUBDIRS = libcalc libres libhisto
 ifeq (${BUILD_XML2_CONFIG_USER},yes)
 	SUBDIRS += libpages
 endif
