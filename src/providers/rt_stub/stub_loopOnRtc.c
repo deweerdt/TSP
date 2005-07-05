@@ -40,6 +40,7 @@
 #include "tsp_ringbuf.h"
 #include "tsp_time.h"
 #include "calc_func.h"
+#include "glue_sserver.h"
 
 
 /* TSP glue server defines */
@@ -51,7 +52,6 @@
 
 /* Nasty static variables */
 static TSP_sample_symbol_info_t *X_sample_symbol_info_list_val;
-static glu_ringbuf* glu_ring = 0;
 
 // My Globals : Bouh
 int stopit;

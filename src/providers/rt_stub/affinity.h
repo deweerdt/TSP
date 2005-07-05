@@ -3,6 +3,7 @@
 
 #include <sched.h>
 #include <unistd.h>
+#include <errno.h>
 #include <linux/unistd.h>
 #include <sys/syscall.h> 
 #include <sys/types.h> 
