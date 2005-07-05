@@ -195,8 +195,7 @@ main (int argc, char ** argv) {
       }
     }
     usleep(10000);
-    ++i;
-    if (i%100==0) printf (".");
+    if (++i%100==0) { printf ("."); fflush(stdout); }
   }
   
   /* Destruction BB */
