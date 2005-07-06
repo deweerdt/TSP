@@ -132,3 +132,6 @@ V-0.6.4: Creation 27/02/05	tag TSP_0_6_4	Erk
 
 V-0.7.x: Creation ??/??/05	tag TSP_0_7_X	??	
         - What was done						- ??
+        - Add a spec file for RPM building			- Erk/FredB
+        - Incorporate Perl scripting I/F as new module          - Erk/PierreM
+        - Correct bb_tools uint8/int8 bugs                      - Erk
