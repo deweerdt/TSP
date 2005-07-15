@@ -7,7 +7,7 @@ VISUAL_DIFF=tkdiff
 # Affiche la version du script
 version ()
 {
-    printf "\n%s\n" "psinfo V1.0 - E.N. - 05/10/2004"
+    printf "\n%s\n" "psinfo V1.0-tsp - 15/07/2005"
     printf "%s\n" "Find and print information about a process"    
 } # end of version
 

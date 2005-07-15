@@ -1,0 +1,3 @@
+#!/bin/sh
+prefix=@prefix@
+export PATH=$PATH:@exec_prefix@/tsp/bin:@prefix@/tsp/scripts
