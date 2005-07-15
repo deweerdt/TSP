@@ -4,7 +4,7 @@
 # THIS FILE NEED TO BE PROCESSED WITH AUTOCONF
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # 
-AC_INIT([the Transport Sampling Protocol], [0.6.4a], [tsp@astrium.eads.net], [tsp])
+AC_INIT([the Transport Sampling Protocol], [0.6.4b], [tsp@astrium.eads.net], [tsp])
 
 echo "**********************************************************"
 echo "*  TSP: AC_PACKAGE_NAME, version AC_PACKAGE_VERSION       "
@@ -385,6 +385,13 @@ for target in $list_targets; do
 	done
 done
 
+echo "install::" >> $dest
+for target in $list_targets; do
+	for mode in $list_modes; do
+		echo "	\$(MAKE) TSP_TARGET=$target TSP_MODE=$mode		install_once" >> $dest
+	done
+done
+
 
 ############################################################################
 
@@ -419,10 +426,11 @@ AC_SUBST(GTK_BASED_CONSUMER)
 AC_SUBST(LEX_YACC_PARSER)
 AC_SUBST(TSPPROVIDER)
 
-
 # Config for outputed files
 AC_CONFIG_FILES([src/scripts/tsp_dev.login
 		src/scripts/tsp_dev.login.sh
+		src/scripts/tsp_profile.sh
+		src/scripts/tsp_profile.csh
 		make/Makeparams
 		src/doxy/Makefile:src/doxy/doc.mk])
 
