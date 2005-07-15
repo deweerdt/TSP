@@ -42,6 +42,17 @@ destroy::
 		mv -i $(DIRBASE) $(DIRBASE).old ; \
 	fi
 
+install_once::
+	$(INSTALL_DATA) -D $(DEVBASE)/exec/current/include/tsp_consumer.h $(prefix)/tsp/include/tsp_consumer.h
+	$(INSTALL_DATA)  $(DEVBASE)/exec/current/include/* $(prefix)/tsp/include
+	$(INSTALL_DATA) -D $(DEVBASE)/exec/current/$(TSP_TARGET)/$(TSP_MODE)/lib/libtsp_consumer.a $(prefix)/tsp/lib/libtsp_consumer.a
+	$(INSTALL_DATA)  $(DEVBASE)/exec/current/$(TSP_TARGET)/$(TSP_MODE)/lib/* $(prefix)/tsp/lib
+	$(INSTALL_PROGRAM) -D $(DEVBASE)/exec/current/$(TSP_TARGET)/$(TSP_MODE)/bin/tsp_stub_server $(exec_prefix)/tsp/bin/tsp_stub_server
+	$(INSTALL_PROGRAM) $(DEVBASE)/exec/current/$(TSP_TARGET)/$(TSP_MODE)/bin/* $(exec_prefix)/tsp/bin
+	$(INSTALL_PROGRAM) -D $(DEVBASE)/exec/current/scripts/bb_checkid $(exec_prefix)/tsp/scripts/bb_checkid
+	$(INSTALL_PROGRAM) $(DEVBASE)/exec/current/scripts/* $(exec_prefix)/tsp/scripts
+	$(INSTALL_PROGRAM) $(DEVBASE)/src/scripts/tsp_profile.sh $(DEVBASE)/src/scripts/tsp_profile.csh $(exec_prefix)/tsp/scripts
+	$(INSTALL_PROGRAM) $(DEVBASE)/src/scripts/psinfo.sh $(exec_prefix)/tsp/scripts
 
 include $(DEVBASE)/make/Makesubdirs
 
