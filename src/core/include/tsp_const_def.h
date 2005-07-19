@@ -1,6 +1,6 @@
 /*!  \file 
  
-$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_const_def.h,v 1.25 2005-07-19 17:37:58 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_const_def.h,v 1.26 2005-07-19 19:38:17 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -39,6 +39,12 @@ Purpose   : definitions and const that must have a program wide scope
 
 
 #define TSP_PROJECT_URL "https://savannah.nongnu.org/projects/tsp"
+/* 
+ * The following macro should be used to print-out TSP 
+ * versio in binary executable. We should find a way to 
+ * automatically change this when tagging... FIXME: erk
+ */
+#define TSP_SOURCE_VERSION "0.6.5"
 
 /** TSP Version */
 #define TSP_VERSION 1

@@ -1,7 +1,7 @@
 
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_tools.c,v 1.11 2005-07-19 17:37:58 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_tools.c,v 1.12 2005-07-19 19:38:17 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -317,7 +317,7 @@ bbtools_usage(bbtools_request_t* req) {
   case E_BBTOOLS_GENERIC:
   case E_BBTOOLS_HELP:
     fprintf(req->stream, 
-	    "TSP bbtools (%s)\n",TSP_PROJECT_URL);
+	    "TSP bbtools v%s (%s)\n",TSP_SOURCE_VERSION,TSP_PROJECT_URL);
     fprintf(req->stream, 
 	    "Usage: %s [bbtools_opts] <bbtools_cmd> [cmd_opts]\n",
 	    bbtools_cmdname_tab[E_BBTOOLS_GENERIC]);

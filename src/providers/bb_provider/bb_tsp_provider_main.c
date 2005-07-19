@@ -61,7 +61,7 @@ main (int argc, char ** argv) {
 
   if (argc<2) {
     fprintf(stderr, 
-	    "TSP bb_provider (%s)\n",TSP_PROJECT_URL);
+	    "TSP bb_provider v%s (%s)\n",TSP_SOURCE_VERSION,TSP_PROJECT_URL);
     fprintf(stderr,"%s : argument missing\n",argv[0]);
     fprintf(stderr,"Usage: %s <bbname>\n",argv[0]);
     exit(-1);
