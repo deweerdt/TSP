@@ -1,6 +1,6 @@
 /*!  \file 
  
-$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_const_def.h,v 1.24 2004-09-23 16:11:57 tractobob Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_const_def.h,v 1.25 2005-07-19 17:37:58 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -37,6 +37,8 @@ Purpose   : definitions and const that must have a program wide scope
 #ifndef _TSP_CONST_DEF_H
 #define _TSP_CONST_DEF_H
 
+
+#define TSP_PROJECT_URL "https://savannah.nongnu.org/projects/tsp"
 
 /** TSP Version */
 #define TSP_VERSION 1

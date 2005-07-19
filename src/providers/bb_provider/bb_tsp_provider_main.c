@@ -45,6 +45,7 @@ Purpose   : posix implementation for VXWORKS
 
 #include "bb_tsp_provider.h"
 #include "tsp_provider_init.h"
+#include "tsp_const_def.h"
 
 #ifndef VXWORKS
 
@@ -59,6 +60,8 @@ main (int argc, char ** argv) {
   sigprocmask(SIG_BLOCK, &allsigs, NULL);
 
   if (argc<2) {
+    fprintf(stderr, 
+	    "TSP bb_provider (%s)\n",TSP_PROJECT_URL);
     fprintf(stderr,"%s : argument missing\n",argv[0]);
     fprintf(stderr,"Usage: %s <bbname>\n",argv[0]);
     exit(-1);
