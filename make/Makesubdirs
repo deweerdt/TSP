@@ -4,8 +4,10 @@
 build debug destroy print config::
 	@for dir in $(SUBDIRS); \
 	 do \
+		if [ -d $$dir ]; then \
 		(cd $$dir; $(MAKE) $(QUIET) $@); \
 		if [ $$? -ne 0 ]; then \
 			exit 1; \
 		fi; \
+		fi;\
 	 done
