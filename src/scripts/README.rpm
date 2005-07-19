@@ -1,0 +1,21 @@
+You will find here a TSP spec file: tsp.spec.
+
+The spec file is maintained and tested on a Mandriva distro.
+You may find binary and source RPM on http://enoulard.free.fr/tsp.
+
+If you want to build an RPM for your favorite distro:
+
+1) Copy tsp.spec at your favorite location
+2) take the corresponding TSP tarball at
+   https://savannah.nongnu.org/download/tsp/
+
+3) Put the tarball in your RPM source dir (e.g. /usr/src/RPM/SOURCES)
+
+4) Customize the spec file if needed.
+
+5) rpmbuild -bb tsp.spec
+   should build the binary RPM
+
+6) rpmbuild -bs tsp.spec
+   should build the source RPM
+
