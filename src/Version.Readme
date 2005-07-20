@@ -130,8 +130,8 @@ V-0.6.4: Creation 27/02/05	tag TSP_0_6_4	Erk
         - Serious bug fix in BB TSP Provider (bug #12120)       - Erk/Duf
         - Infancy of TSP scripting binding                   	- Erk
 
-V-0.7.x: Creation ??/??/05	tag TSP_0_7_X	??	
-        - What was done						- ??
+V-0.6.5: Creation ??/??/05	tag TSP_0_6_5	Erk
         - Add a spec file for RPM building			- Erk/FredB
         - Incorporate Perl scripting I/F as new module          - Erk/PierreM
         - Correct bb_tools uint8/int8 bugs                      - Erk
+V-0.7.x: Creation ??/??/05	tag TSP_0_7_X	??	
