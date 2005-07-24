@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.h,v 1.10 2005-04-11 07:22:18 le_tche Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.h,v 1.11 2005-07-24 21:43:53 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -44,6 +44,8 @@ Purpose   : BlackBoard Idiom implementation
 /* union semun is defined by including <sys/sem.h> */
 #else
 #ifdef _SEM_SEMUN_UNDEFINED
+#undef _SEM_SEMUN_UNDEFINED
+#endif
 /**
  * Union a definir et utiliser
  * pour les appels 'semop' SysV.
@@ -55,8 +57,6 @@ union semun {
   unsigned short int *array;         /* array for GETALL & SETALL */
   struct seminfo *__buf;             /* buffer for IPC_INFO */
 };
-#undef _SEM_SEMUN_UNDEFINED
-#endif
 #endif
 
 
