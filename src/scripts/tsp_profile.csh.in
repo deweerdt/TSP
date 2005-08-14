@@ -1,3 +1,0 @@
-#!/bin/csh
-set prefix @prefix@
-setenv PATH $PATH:@exec_prefix@/tsp/bin:@exec_prefix@/tsp/scripts

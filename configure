@@ -5880,7 +5880,7 @@ done
 
 
 # Config for outputed files
-                                                            ac_config_files="$ac_config_files src/scripts/tsp_dev.login src/scripts/tsp_dev.login.sh src/scripts/tsp_profile.sh src/scripts/tsp_profile.csh make/Makeparams src/doxy/Makefile:src/doxy/doc.mk"
+                                        ac_config_files="$ac_config_files src/scripts/tsp_dev.login src/scripts/tsp_dev.login.sh make/Makeparams src/doxy/Makefile:src/doxy/doc.mk"
 
 
 cat >confcache <<\_ACEOF
@@ -6410,8 +6410,6 @@ do
   # Handling of arguments.
   "src/scripts/tsp_dev.login" ) CONFIG_FILES="$CONFIG_FILES src/scripts/tsp_dev.login" ;;
   "src/scripts/tsp_dev.login.sh" ) CONFIG_FILES="$CONFIG_FILES src/scripts/tsp_dev.login.sh" ;;
-  "src/scripts/tsp_profile.sh" ) CONFIG_FILES="$CONFIG_FILES src/scripts/tsp_profile.sh" ;;
-  "src/scripts/tsp_profile.csh" ) CONFIG_FILES="$CONFIG_FILES src/scripts/tsp_profile.csh" ;;
   "make/Makeparams" ) CONFIG_FILES="$CONFIG_FILES make/Makeparams" ;;
   "src/doxy/Makefile" ) CONFIG_FILES="$CONFIG_FILES src/doxy/Makefile:src/doxy/doc.mk" ;;
   "src/core/include/tsp_prjcfg.h" ) CONFIG_HEADERS="$CONFIG_HEADERS src/core/include/tsp_prjcfg.h" ;;
