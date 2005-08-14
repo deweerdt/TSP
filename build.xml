@@ -17,10 +17,10 @@ is used by developper to automated some
 packaging task which are painful to be done
 with make or other ancient but respectable unix tools.
 For now you may use target
-         ant tar [-Dtsp.version="value"]
+         ant tar [-Dtsp.version="x.y.z"]
             which makes a gzip compressed tarball 
             in the tsp/dist directory
-         ant zip [-Dtsp.version="value"]
+         ant zip [-Dtsp.version="x.y.z"]
             which makes a zip archive
             in the tsp/dist directory
 the default value for the version is a time stamp containing 
@@ -108,7 +108,7 @@ date, time and user name.
               </zip>
         </target>
         <!-- RPM task requires ant-nodeps jpackage -->
-        <target name="rpm">
+        <target name="rpm" depends="tar">
             <mkdir dir="${dist.dir}/tmp"/> 
             <mkdir dir="${rpm.topdir}"/> 
             <mkdir dir="${rpm.topdir}/BUILD"/> 
@@ -130,5 +130,6 @@ date, time and user name.
             <copy file="${src.dir}/scripts/tsp.spec" todir="${rpm.topdir}/SPECS/"/>
 	    <rpm specFile="tsp.spec" topDir="${rpm.topdir}" command="-bb -vv --buildroot=${dist.dir}/tmp"/>
 <!--	    <rpm specFile="tsp.spec" topDir="${rpm.topdir}" command="-bb -vv"/> -->
+	    <rpm specFile="tsp.spec" topDir="${rpm.topdir}" command="-bs -vv --buildroot=${dist.dir}/tmp"/>
         </target>
 </project>
