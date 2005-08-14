@@ -17,12 +17,15 @@ is used by developper to automated some
 packaging task which are painful to be done
 with make or other ancient but respectable unix tools.
 For now you may use target
-         ant tar [-Dtsp.version="x.y.z"]
+         ant [-Dtsp.version="x.y.z"] tar
             which makes a gzip compressed tarball 
             in the tsp/dist directory
-         ant zip [-Dtsp.version="x.y.z"]
+         ant [-Dtsp.version="x.y.z"] zip
             which makes a zip archive
             in the tsp/dist directory
+         ant -Dtsp.version="x.y.z" rpm
+            which makes RPM archives
+            in the tsp/dist/RPM directories
 the default value for the version is a time stamp containing 
 date, time and user name.
             </echo>
