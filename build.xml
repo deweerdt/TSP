@@ -1,0 +1,113 @@
+<project name="TSP" basedir="." default="info" >
+	<property name="tsp.home.dir" value="." />
+	<property name="src.dir" value="${tsp.home.dir}/src" />
+	<property name="consumers.dir" value="${src.dir}/consumers" />
+	<property name="provider.dir" value="${src.dir}/provider" />
+	<property name="external.dir" value="${tsp.home.dir}/external" />
+	<property name="skeleton.dir" value="${tsp.home.dir}/skeleton" />
+	<property name="make.dir" value="${tsp.home.dir}/make" />
+	<property name="tests.dir" value="${tsp.home.dir}/tests" />
+	<property name="dist.dir" value="${tsp.home.dir}/dist" />          
+
+        <target name="info">
+            <echo>
+This is a ANT build file for the TSP which 
+is used by developper to automated some
+packaging task which are painful to be done
+with make or other ancient but respectable unix tools.
+For now you may use target
+         ant tar [-Dtsp.version="value"]
+            which makes a gzip compressed tarball 
+            in the tsp/dist directory
+         ant zip [-Dtsp.version="value"]
+            which makes a zip archive
+            in the tsp/dist directory
+the default value for the version is a time stamp containing 
+date, time and user name.
+            </echo>
+        </target>
+	
+	<target name="clean">
+               <echo> FIXME: Nothing done. </echo>
+	</target>		
+        <target name="prepare-dist">
+            <mkdir dir="${dist.dir}"/> 
+            <tstamp>
+		<format property="timeStamp" pattern="dMMMMyyyy-HH'h'mm" locale="en"/>
+	    </tstamp>
+            <property name="tsp.version" value="${timeStamp}-${user.name}" />
+        </target>
+        <target name="clean-dist">
+               <delete dir="${dist.dir}" />
+	</target>		
+
+        <target name="tar" depends="prepare-dist">
+              <tar destfile="${dist.dir}/tsp-${tsp.version}.tar">
+                 <tarfileset defaultexcludes="yes" dir="${tsp.home.dir}" prefix="tsp/">
+                      <include name="config*" />
+                      <include name="AUTHOR" />
+                      <include name="COPYING" />
+                      <include name="*.xml" />
+                      <include name="INSTALL" />
+                      <include name="install-sh" />
+                      <include name="Makefile" />
+                      <include name="README" />
+                      <include name="ROADMAP" />
+                      <include name="TODO" />
+                 </tarfileset>
+                 <tarfileset defaultexcludes="yes" dir="${src.dir}" prefix="tsp/src">
+                     <exclude name="${src.dir}/**/*~"/>
+                 </tarfileset>
+                 <tarfileset defaultexcludes="yes" dir="${src.dir}" prefix="tsp/external">
+                     <exclude name="${external.dir}/**/*~"/>
+                 </tarfileset>
+                 <tarfileset defaultexcludes="yes" dir="${src.dir}" prefix="tsp/skeleton">
+                     <exclude name="${skeleton.dir}/**/*~"/>
+                 </tarfileset>
+                 <tarfileset defaultexcludes="yes" dir="${src.dir}" prefix="tsp/make">
+                     <exclude name="${make.dir}/**/*~"/>
+                 </tarfileset>
+                 <tarfileset defaultexcludes="yes" dir="${src.dir}" prefix="tsp/tests">
+                     <exclude name="${tests.dir}/**/*~"/>
+                 </tarfileset>
+              </tar>
+              <gzip zipfile="${dist.dir}/tsp-${tsp.version}.tar.gz" src="${dist.dir}/tsp-${tsp.version}.tar" />
+              <delete file="${dist.dir}/tsp-${tsp.version}.tar" />
+        </target>
+
+        <target name="zip" depends="prepare-dist">
+              <zip destfile="${dist.dir}/tsp-${tsp.version}.zip">
+                 <zipfileset defaultexcludes="yes" dir="${tsp.home.dir}" prefix="tsp/">
+                      <include name="config*" />
+                      <include name="AUTHOR" />
+                      <include name="COPYING" />
+                      <include name="*.xml" />
+                      <include name="INSTALL" />
+                      <include name="install-sh" />
+                      <include name="Makefile" />
+                      <include name="README" />
+                      <include name="ROADMAP" />
+                      <include name="TODO" />
+                 </zipfileset>
+                 <zipfileset defaultexcludes="yes" dir="${src.dir}" prefix="tsp/src">
+                     <exclude name="${src.dir}/**/*~"/>
+                 </zipfileset>
+                 <zipfileset defaultexcludes="yes" dir="${src.dir}" prefix="tsp/external">
+                     <exclude name="${external.dir}/**/*~"/>
+                 </zipfileset>
+                 <zipfileset defaultexcludes="yes" dir="${src.dir}" prefix="tsp/skeleton">
+                     <exclude name="${skeleton.dir}/**/*~"/>
+                 </zipfileset>
+                 <zipfileset defaultexcludes="yes" dir="${src.dir}" prefix="tsp/make">
+                     <exclude name="${make.dir}/**/*~"/>
+                 </zipfileset>
+                 <zipfileset defaultexcludes="yes" dir="${src.dir}" prefix="tsp/tests">
+                     <exclude name="${tests.dir}/**/*~"/>
+                 </zipfileset>
+              </zip>
+        </target>
+
+        <target name="rpm">
+            <echo> NOT IMPLEMENTED yet!! </echo>              
+        </target>
+</project>
