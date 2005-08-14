@@ -1,6 +1,6 @@
 /*!  \file 
  
-$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_const_def.h,v 1.26 2005-07-19 19:38:17 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_const_def.h,v 1.27 2005-08-14 22:56:45 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -233,7 +233,11 @@ typedef struct  TSP_otsp_server_info_t TSP_otsp_server_info_t;
 
 /*-------- RPC --------*/
 
-#define TSP_RPC_PROTOCOL "rpc"
+#ifdef BUILD_XMLRPC
+#define TSP_PROTOCOL "xmlrpc"
+#else
+#define TSP_PROTOCOL "rpc"
+#endif
 /**
  * base RPC PROG_ID that will be used 
  * to calculate the PROG ID for each server
@@ -251,6 +255,14 @@ typedef struct  TSP_otsp_server_info_t TSP_otsp_server_info_t;
  * but linux define MAXHOSTNAMELEN to be 64.
  */
 #define TSP_MAXHOSTNAMELEN 255
+
+/* ------- URL LENGTH ----*/
+
+/**
+ * Max url length, 4096 looks like a sane value
+ * see http://www.faqts.com/knowledge_base/view.phtml/aid/329
+ */
+#define TSP_MAX_URL_LENGTH 4096
 
 /*-------- MACROS --------*/
 

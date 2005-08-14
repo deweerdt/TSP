@@ -173,6 +173,27 @@ fi
 ### End OpenGL part for TSP consumers
 #######################################
 
+######################################
+# Build XMLRPC for command transport
+######################################
+AC_ARG_ENABLE(xmlrpc,   [  --enable-xmlrpc              enable xmlrpc for TSP commands  (this feature is ALPHA and _disables_ RPC usage)],
+	      BUILD_XMLRPC=$enableval,
+	      BUILD_XMLRPC="no")
+if test "$BUILD_XMLRPC"  = "yes"; then
+	AC_CHECK_PROG([XMLRPC_CONFIG],[xmlrpc-c-config],[`which xmlrpc-c-config`],[notfound],[$PATH],[rej])
+	if test "$XMLRPC_CONFIG" = "notfound"; then
+	  AC_MSG_RESULT([NOK: xmlrpc-c-config script (xmlrpc-c-devel package) not found we'll use RPC instead])
+	  BUILD_XMLRPC="no"
+	else
+	  AC_MSG_RESULT([Ok])
+	  AC_MSG_CHECKING([enabling XMLRPC usage (disabling RPC)])
+	  BUILD_XMLRPC="yes"
+    fi    
+fi
+#######################################
+### End XMLRPC for command transport
+#######################################
+
 ################################
 # BlackBoard part of TSP
 ################################
@@ -425,6 +446,7 @@ AC_SUBST(XML2_CONFIG_USER)
 AC_SUBST(GTK_BASED_CONSUMER)
 AC_SUBST(LEX_YACC_PARSER)
 AC_SUBST(TSPPROVIDER)
+AC_SUBST(BUILD_XMLRPC)
 
 # Config for outputed files
 AC_CONFIG_FILES([src/scripts/tsp_dev.login
