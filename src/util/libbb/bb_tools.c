@@ -1,7 +1,7 @@
 
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_tools.c,v 1.12 2005-07-19 19:38:17 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_tools.c,v 1.13 2005-08-14 22:39:36 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -209,7 +209,7 @@ bbtools(bbtools_request_t* req) {
   if (!((E_BBTOOLS_UNKNOWN==req->cmd) || 
 	(E_BBTOOLS_GENERIC==req->cmd) ||  
 	(E_BBTOOLS_HELP   ==req->cmd) ||  
-	(E_BBTOOLS_CHECKID==req->cmd) ||
+	(E_BBTOOLS_CHECK_ID==req->cmd) ||
 	(E_BBTOOLS_CREATE ==req->cmd))
       /* should not try to open BB if the bbname arg is missing */
       && (req->argc > 0)
@@ -255,8 +255,8 @@ bbtools(bbtools_request_t* req) {
   case E_BBTOOLS_FIND:
     bbtools_find(req);
     break;
-  case E_BBTOOLS_CHECKID:
-    return bbtools_checkid(req);
+  case E_BBTOOLS_CHECK_ID:
+    return bbtools_check_id(req);
     break;
   case E_BBTOOLS_DESTROY:
     bbtools_destroy(req);
@@ -275,6 +275,9 @@ bbtools(bbtools_request_t* req) {
     break;
   case E_BBTOOLS_MEMSET:
     bbtools_memset(req);
+    break;
+  case E_BBTOOLS_CHECK_VERSION:
+    bbtools_check_version(req);
     break;
   default:
     req->stream = stderr;
@@ -353,10 +356,10 @@ bbtools_usage(bbtools_request_t* req) {
     fprintf(req->stream,"Usage : %s <bbname> <symbolpattern>\n",
 	    bbtools_cmdname_tab[E_BBTOOLS_FIND]); 
     break;
-  case E_BBTOOLS_CHECKID:
+  case E_BBTOOLS_CHECK_ID:
     	fprintf(req->stream,
 		"Usage: %s <bbname> [<user_specific_value>]\n",
-		bbtools_cmdname_tab[E_BBTOOLS_CHECKID]);
+		bbtools_cmdname_tab[E_BBTOOLS_CHECK_ID]);
     break;
   case E_BBTOOLS_DESTROY:
     fprintf(req->stream,"Usage : %s <bbname>\n",
@@ -381,6 +384,10 @@ bbtools_usage(bbtools_request_t* req) {
   case E_BBTOOLS_MEMSET:
     fprintf(req->stream,"Usage : %s <bbname> <bytevalue>\n",
 	    bbtools_cmdname_tab[E_BBTOOLS_MEMSET]);   
+    break;
+  case E_BBTOOLS_CHECK_VERSION:
+    fprintf(req->stream,"Usage : %s <bbname>\n",
+	    bbtools_cmdname_tab[E_BBTOOLS_CHECK_VERSION]);   
     break;
   default:
     fprintf(req->stream, 
@@ -636,7 +643,7 @@ bbtools_find(bbtools_request_t* req) {
 }  /* end of bbtools_find */
 
 int32_t
-bbtools_checkid(bbtools_request_t* req) {
+bbtools_check_id(bbtools_request_t* req) {
   int32_t retcode=0;
   int32_t user_specific_value;
   char*   shm_name;
@@ -645,7 +652,7 @@ bbtools_checkid(bbtools_request_t* req) {
   
   if (req->argc<1) {
     bbtools_logMsg(req->stream,"%s: at least <%d> argument(s) missing\n", 
-		   bbtools_cmdname_tab[E_BBTOOLS_CHECKID],
+		   bbtools_cmdname_tab[E_BBTOOLS_CHECK_ID],
 		   1-req->argc);
     bbtools_usage(req);
     retcode = -1;
@@ -683,7 +690,7 @@ bbtools_checkid(bbtools_request_t* req) {
   free(sem_name);    
   free(shm_name);
   return  retcode;
-} /* end of bbtools_checkid */
+} /* end of bbtools_check_id */
 
 int32_t
 bbtools_destroy(bbtools_request_t* req) {
@@ -807,3 +814,37 @@ bbtools_memset(bbtools_request_t* req) {
   retcode = bb_data_memset(req->theBB,value);
   return retcode;
 } /* end of bbtools_memset */
+
+int32_t
+bbtools_check_version(bbtools_request_t* req) {
+  int32_t retcode = 0;
+  if (req->argc<1) {
+    bbtools_logMsg(req->stream,"%s: <%d> argument missing\n", 
+		   bbtools_cmdname_tab[E_BBTOOLS_CHECK_VERSION],
+		   1-req->argc);
+    bbtools_usage(req);
+    retcode = -1;
+    return retcode;
+  }
+  if (req->verbose) {
+    bbtools_logMsg(req->stream,
+		   "%s: checking BB version for BB <%s>\n",
+		   bbtools_cmdname_tab[E_BBTOOLS_CHECK_VERSION],
+		   req->bbname);
+    
+  }
+  retcode = bb_check_version(req->theBB);
+  if (retcode != 0) {
+     bbtools_logMsg(req->stream,
+		   "%s: ERROR BB version mismatch !!\nbb_tools with BB version <0x%08X> used to access BB version <0x%08X>\n",
+		   bbtools_cmdname_tab[E_BBTOOLS_CHECK_VERSION],
+		    BB_VERSION_ID,req->theBB->bb_version_id);
+  } else {
+     bbtools_logMsg(req->stream,
+		   "%s: OK.\nbb_tools and accessed BB [%s] version are the same <0x%08X>\n",
+		   bbtools_cmdname_tab[E_BBTOOLS_CHECK_VERSION],
+		    req->bbname,
+		   req->theBB->bb_version_id);
+  }
+  return retcode;
+} /* end of bbtools_check_version */

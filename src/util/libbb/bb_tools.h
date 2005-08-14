@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_tools.h,v 1.5 2005-02-25 21:49:28 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_tools.h,v 1.6 2005-08-14 22:39:36 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -102,13 +102,14 @@ typedef enum {E_BBTOOLS_UNKNOWN=0,
 	      E_BBTOOLS_WRITE,
 	      E_BBTOOLS_DUMP, 	                  
 	      E_BBTOOLS_FIND,
-	      E_BBTOOLS_CHECKID,  
+	      E_BBTOOLS_CHECK_ID,  
               E_BBTOOLS_DESTROY,
 	      E_BBTOOLS_CREATE,
               E_BBTOOLS_PUBLISH, 
               E_BBTOOLS_SYNCHRO_SEND,
               E_BBTOOLS_SYNCHRO_RECV,
 	      E_BBTOOLS_MEMSET,
+	      E_BBTOOLS_CHECK_VERSION,
               E_BBTOOLS_LASTCMD} E_BBTOOLS_CMD_T;
 
 typedef struct bbtools_request {
@@ -132,13 +133,14 @@ const char* bbtools_cmdname_tab[] = {"bb_unknown",
 				     "bb_write",
 				     "bb_dump",
 				     "bb_find",
-				     "bb_checkid",
+				     "bb_check_id",
 				     "bb_destroy",
 				     "bb_create",
 				     "bb_publish",
 				     "bb_synchro_send",
 				     "bb_synchro_recv",
 				     "bb_memset",
+				     "bb_check_version",
 				     "bb_last_cmd"
 };
 
@@ -156,6 +158,7 @@ const char* bbtools_cmdhelp_tab[] = {"unknown bbtools command",
 				     "send synchro message through blackboard MSQ queue",
 				     "recv [wait] synchro message from blackboard MSQ queue",
 				     "memset blackboard data region",
+				     "check blackboard version vs bb_tools runtime version",
 				     "BB LAST COMMAND"
 };
 #else
@@ -253,7 +256,7 @@ bbtools_find(bbtools_request_t* req);
  * @ingroup BBTools_API
  */
 int32_t
-bbtools_checkid(bbtools_request_t* req);
+bbtools_check_id(bbtools_request_t* req);
 
 /**
  *
@@ -297,6 +300,13 @@ bbtools_synchro_recv(bbtools_request_t* req);
  */
 int32_t
 bbtools_memset(bbtools_request_t* req);
+
+/**
+ *
+ * @ingroup BBTools_API
+ */
+int32_t
+bbtools_check_version(bbtools_request_t* req);
 
 END_C_DECLS
 

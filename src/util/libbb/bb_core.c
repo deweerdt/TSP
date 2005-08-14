@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.14 2005-07-02 15:51:55 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.15 2005-08-14 22:39:36 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -74,6 +74,24 @@ static const char* E_BB_2STRING[] = {"NoAType 0",
 				     "uchar",
 				     "UserType",
 				     "NotAType end"};
+
+int32_t
+bb_check_version(volatile S_BB_T* bb) {
+  int32_t retval = 0;
+/*   union { */
+/*     uint16_t lower; */
+/*     uint16_t upper; */
+/*   } version_using, version_access; */
+
+  assert(bb);
+  retval = BB_VERSION_ID - bb->bb_version_id;
+/*   if (retval != 0) { */
+/*       bb_logMsg(BB_LOG_WARNING, "BlackBoard::bb_check_version", */
+/* 		"BB version mismatch using <0x%08X> for accessing <0x%08X>\n", */
+/* 		BB_VERSION_ID,bb->bb_version_id); */
+/*   } */
+  return retval;
+} /* end of bb_check_version */
 
 int32_t 
 bb_size(const int32_t n_data, const int32_t data_size) {
@@ -492,6 +510,7 @@ bb_create(S_BB_T** bb,
   if (E_OK == retcode) {
     /* RAZ de la mémoire allouee */
     memset(*bb,0,mmap_size);        
+    (*bb)->bb_version_id = BB_VERSION_ID;
     strncpy((*bb)->name,pc_bb_name,BB_NAME_MAX_SIZE+1);
     (*bb)->max_data_desc_size = n_data;
     (*bb)->data_desc_offset = sizeof(S_BB_T);

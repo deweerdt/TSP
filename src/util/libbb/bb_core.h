@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.h,v 1.11 2005-07-24 21:43:53 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.h,v 1.12 2005-08-14 22:39:36 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -79,6 +79,7 @@ union semun {
 #define BB_SHM_ACCESS_RIGHT 0770
 #define BB_SEM_ACCESS_RIGHT 0770
 #define BB_MSG_ACCESS_RIGHT 0770
+#define BB_VERSION_ID       0x0001000
 
 #define E_OK    0
 #define E_NOK  -1
@@ -114,7 +115,7 @@ typedef struct S_BB_DATADESC {
    * Dimension. 1 if scalar, > 1 for single dimension array.
    * There is no multidimensionnal array type.
    */
-  int32_t dimension;
+  uint32_t dimension;
   /** 
    * Type size (in byte).
    * This size enables the appropriate computation
@@ -155,6 +156,12 @@ typedef struct S_BB_MSG {
  * @ingroup BlackBoard
  */
 typedef struct S_BB {
+  /**
+   * The BlackBoard version identifier
+   * This is used by bb_tools and bb API in order
+   * to avoid version mismatch between API blackboard access.
+   */
+  int32_t bb_version_id;
   /** 
    * BB access semaphore. 
    * This SysV sempahore set contains only 1 semaphore
@@ -200,6 +207,17 @@ typedef struct S_BB {
 } S_BB_T;
 
 BEGIN_C_DECLS
+
+/**
+ * Check if the accessed blackboard is of the same
+ * version as the one used by this code.
+ * @return 0 if version is the same, < 0 if current
+ *         version is older than the accessed blackboard, 
+ *         > 0  for the converse.
+ * @ingroup BlackBoard
+ */
+int32_t
+bb_check_version(volatile S_BB_T* bb);
 
 /**
  * Return the size of a blackboard with 
