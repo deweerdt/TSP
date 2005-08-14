@@ -49,7 +49,7 @@ install_once::
 	$(INSTALL_DATA)  $(DEVBASE)/exec/current/$(TSP_TARGET)/$(TSP_MODE)/lib/* $(prefix)/lib
 	$(INSTALL_PROGRAM) -D $(DEVBASE)/exec/current/$(TSP_TARGET)/$(TSP_MODE)/bin/tsp_stub_server $(exec_prefix)/bin/tsp_stub_server
 	$(INSTALL_PROGRAM) $(DEVBASE)/exec/current/$(TSP_TARGET)/$(TSP_MODE)/bin/* $(exec_prefix)/bin
-	$(INSTALL_PROGRAM) -D $(DEVBASE)/exec/current/scripts/bb_checkid $(exec_prefix)/scripts/bb_checkid
+	$(INSTALL_PROGRAM) -D $(DEVBASE)/exec/current/scripts/bb_check_id $(exec_prefix)/scripts/bb_check_id
 	$(INSTALL_PROGRAM) $(DEVBASE)/exec/current/scripts/* $(exec_prefix)/scripts
 	$(INSTALL_PROGRAM) $(DEVBASE)/src/scripts/tsp_profile.sh $(DEVBASE)/src/scripts/tsp_profile.csh $(exec_prefix)/scripts
 	$(INSTALL_PROGRAM) $(DEVBASE)/src/scripts/psinfo.sh $(exec_prefix)/scripts
