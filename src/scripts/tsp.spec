@@ -57,7 +57,8 @@ rm -rf
 %attr(0755, root, root) %{prefix}/bin/tsp_stub_server
 %attr(0755, root, root) %{prefix}/bin/tsp_testgrp_client
 %attr(0755, root, root) %{prefix}/bin/tsp_tutorial_client
-%attr(0755, root, root) %{prefix}/scripts/bb_checkid
+%attr(0755, root, root) %{prefix}/scripts/bb_check_id
+%attr(0755, root, root) %{prefix}/scripts/bb_check_version
 %attr(0755, root, root) %{prefix}/scripts/psinfo.sh
 %attr(0755, root, root) %{prefix}/scripts/bb_destroy
 %attr(0755, root, root) %{prefix}/scripts/bb_dump
@@ -102,6 +103,7 @@ rm -rf
 
 %changelog
 * Sun Aug 14 2005 Erk
+  - Added new bb_check_version and rename bb_checkid --> bb_check_id
   - Change install path location prefix from /usr/local/tsp
     to /opt/tsp which is the recommanded path from 
     FHS 2.3 (http://www.pathname.com/fhs/) and
