@@ -9,7 +9,7 @@ Source:         %{name}-%{version}.tar.gz
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root
 
 %define prefix /opt/tsp
-%define bindir $RPM_BUILD_ROOT%{prefix}
+%define rpmprefix $RPM_BUILD_ROOT%{prefix}
 %define srcdir /%_topdir/SOURCES
 
 
@@ -28,7 +28,7 @@ tar xvfz %{srcdir}/%{name}-%{version}.tar.gz
 
 %build
 cd %{name}
-./configure --prefix=%{bindir} --enable-openGL
+./configure --prefix=%{rpmprefix} --enable-openGL
 source src/scripts/tsp_dev.login.sh
 make
   
