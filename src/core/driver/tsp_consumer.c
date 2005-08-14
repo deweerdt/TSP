@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.31 2005-02-20 14:04:19 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.32 2005-08-14 23:06:39 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -427,12 +427,12 @@ TSP_provider_t* TSP_consumer_connect_url(const char*  url)
       else p = url_tok; /* may start of string be the hostname ?! */
 
       /* no protocol specified, use default */
-      protocol = strdup(TSP_RPC_PROTOCOL);
+      protocol = strdup(TSP_PROTOCOL);
    }
   else
     {
       /* protocol should be OK (start of URL), set p to hostname field */
-      if(p == url_tok) protocol = strdup(TSP_RPC_PROTOCOL);
+      if(p == url_tok) protocol = strdup(TSP_PROTOCOL);
       *p = '\0';
       p += 3;
     }
@@ -567,7 +567,7 @@ void TSP_consumer_connect_all(const char*  host_name, TSP_provider_t** providers
 	  STRACE_DEBUG(("Trying to open server No %d", i));
 
 	  /* Is server number 'i' alive ?*/ 
-	  if(TSP_remote_open_server(  TSP_RPC_PROTOCOL,
+	  if(TSP_remote_open_server(  TSP_PROTOCOL,
 				      host_name,
 				      "",
 				      i, 
