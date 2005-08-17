@@ -1,6 +1,6 @@
 include $(DEVBASE)/make/Makeparams
 
-XINC = tsp_rpc.h tsp_datastruct.h  # FIXME : shoudl not need to export tsp_datastruct.h
+XINC = tsp_datastruct.h  # FIXME : shoudl not need to export tsp_datastruct.h
 #XINC    = tsp_provider.h glue_sserver.h tsp_datapool.h
 #XINC    = tsp_provider.h tsp_session.h   glue_sserver.h tsp_datapool.h \
           tsp_group_algo.h tsp_data_sender.h tsp_group_algo_data.h \
