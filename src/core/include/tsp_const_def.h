@@ -1,6 +1,6 @@
 /*!  \file 
  
-$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_const_def.h,v 1.28 2005-08-14 23:15:22 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_const_def.h,v 1.29 2005-08-17 12:54:24 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -256,6 +256,14 @@ typedef struct  TSP_otsp_server_info_t TSP_otsp_server_info_t;
  * but linux define MAXHOSTNAMELEN to be 64.
  */
 #define TSP_MAXHOSTNAMELEN 255
+
+/* ------- URL LENGTH ----*/
+
+/**
+ * Max url length, 4096 looks like a sane value
+ * see http://www.faqts.com/knowledge_base/view.phtml/aid/329
+ */
+#define TSP_MAX_URL_LENGTH 4096
 
 /* ------- URL LENGTH ----*/
 
