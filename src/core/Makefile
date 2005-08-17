@@ -2,8 +2,14 @@ include $(DEVBASE)/make/Makeparams
 #----------------------------------------------------------
 # core is only compiled for native host target and not java
 #----------------------------------------------------------
+	
+SUBDIRS = include misc_utils
 
-SUBDIRS = include misc_utils rpc
+ifeq (${BUILD_XMLRPC}, yes)
+	SUBDIRS += xmlrpc
+else
+	SUBDIRS += rpc
+endif
 
 ifeq (${BUILD_PROVIDER},yes)
 	SUBDIRS += ctrl ctrl_init
