@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: tsp_request.c,v 1.6 2004-10-07 08:58:05 tractobob Exp $
+$Id: tsp_request.c,v 1.7 2005-08-17 12:52:05 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -209,7 +209,8 @@ TSP_provider_rqh_manager_refresh(void) {
 		  if(rqh_p->status == TSP_RQH_STATUS_RUNNING)
 		    {
 		      rqh_manager_if.nb_running_rhq++;
-		      STRACE_INFO(("Request handler # %d started with URL %s", rank, TSP_rpc_request_url(rqh_p)));
+		      /*FIXME: should not reference rpc explicitely */
+		      /*STRACE_INFO(("Request handler # %d started with URL %s", rank, TSP_rpc_request_url(rqh_p)));*/
 		    }
 		  else
 		    {
