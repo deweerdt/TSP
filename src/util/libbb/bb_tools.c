@@ -1,7 +1,7 @@
 
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_tools.c,v 1.13 2005-08-14 22:39:36 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_tools.c,v 1.14 2005-08-26 21:01:17 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -370,7 +370,7 @@ bbtools_usage(bbtools_request_t* req) {
 	    bbtools_cmdname_tab[E_BBTOOLS_CREATE]);  
     break;
   case E_BBTOOLS_PUBLISH:
-    fprintf(req->stream,"Usage : %s <bbname> <symname> <symtype>\n",
+    fprintf(req->stream,"Usage : %s <bbname> <symbol_name> [<symbol_type>=BB_UINT] [<arraysize>=1]\n",
 	    bbtools_cmdname_tab[E_BBTOOLS_PUBLISH]);  
     break;
   case E_BBTOOLS_SYNCHRO_SEND:
@@ -716,14 +716,111 @@ bbtools_destroy(bbtools_request_t* req) {
 int32_t
 bbtools_create(bbtools_request_t* req) {
   int32_t retcode = 0;
-  retcode = bbtools_unimplemented_cmd(bbtools_cmdname_tab[E_BBTOOLS_CREATE]);
+  uint32_t ndata;
+  uint32_t datasize;
+
+  if (req->argc<2) {
+    bbtools_logMsg(req->stream,"%s: at least <%d> argument(s) missing\n", 
+		   bbtools_cmdname_tab[E_BBTOOLS_CREATE],
+		   2-req->argc);
+    bbtools_usage(req);
+    retcode = -1;
+    return retcode;
+  }
+
+  req->bbname = req->argv[0];
+  ndata =  atoi(req->argv[1]);
+  if (req->argc>2) {
+    datasize =  atoi(req->argv[2]);
+  } else {
+    datasize = 3*8*ndata;
+  }
+
+  if (req->verbose) {
+    bbtools_logMsg(req->stream,
+		   "%s: creating BB <%s> with <%d> elements and <%d> bytes for datazone\n",
+		   bbtools_cmdname_tab[E_BBTOOLS_CREATE],
+		   req->bbname,
+                   ndata,
+                   datasize);
+  }
+ 
+  retcode = bb_create(&(req->theBB),req->bbname,ndata,datasize);
+  if ((retcode != E_OK) && (req->verbose)) {
+    bbtools_logMsg(req->stream,
+		   "%s: creating failed to create BB <%s>\n",
+		   bbtools_cmdname_tab[E_BBTOOLS_CREATE],
+		   req->bbname);
+  }
   return retcode;
 }  /* end of bbtools_create */
 
 int32_t
 bbtools_publish(bbtools_request_t* req) {
   int32_t retcode = 0;
-  retcode = bbtools_unimplemented_cmd(bbtools_cmdname_tab[E_BBTOOLS_PUBLISH]);
+  char* symbol_type_str;
+  S_BB_DATADESC_T  symbol_desc;
+  int32_t dimension;
+
+  memset(&symbol_desc,0,sizeof(S_BB_DATADESC_T));
+  if (req->argc<2) {
+    bbtools_logMsg(req->stream,"%s: at least <%d> argument(s) missing\n", 
+		   bbtools_cmdname_tab[E_BBTOOLS_PUBLISH],
+		   2-req->argc);
+    bbtools_usage(req);
+    retcode = -1;
+    return retcode;
+  }
+  
+
+
+  if (req->argc>2) {
+    symbol_type_str = req->argv[2];
+  } else {
+    symbol_type_str = "UINT32";
+  }
+
+  /* guess if we have an array type or not using parse array... */
+  bbtools_parsearrayname(symbol_type_str,&symbol_desc,&dimension);
+  if (dimension==-1) {
+    /* default dimension is 1 (scalar) */
+    symbol_desc.dimension = 1;
+  } else {
+    symbol_desc.dimension = dimension;
+  }
+  /* copy symbol name */
+  strncpy(symbol_desc.name,req->argv[1],VARNAME_MAX_SIZE);    
+  /* find the requested type */
+  symbol_desc.type = bb_type_string2bb_type(symbol_type_str);
+
+  if (req->verbose) {
+    bbtools_logMsg(req->stream,
+		   "%s: publish symbol <%s> of type <%s> in BB <%s>\n",
+		   bbtools_cmdname_tab[E_BBTOOLS_PUBLISH],
+                   symbol_desc.name,
+		   symbol_type_str,
+		   req->bbname);
+  }
+
+  if (symbol_desc.type!=0) {
+    /* guess the type size */
+    if (symbol_desc.type != E_BB_USER) {
+      symbol_desc.type_size = sizeof_bb_type(symbol_desc.type);
+    } else {
+      /* FIXME the user case is not supported */
+      symbol_desc.type_size = 1;
+    }
+    /* do we have dimension (array type) */
+    
+    
+    bb_publish(req->theBB,&symbol_desc);
+  } else {
+    bbtools_logMsg(req->stream,
+		   "%s: publish FAILED unrecognized bb_type: <%s>\n",
+		   bbtools_cmdname_tab[E_BBTOOLS_PUBLISH],
+		   symbol_type_str);
+  }
+
   return retcode;
 } /* end of bbtools_publish */
 

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.h,v 1.12 2005-08-14 22:39:36 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.h,v 1.13 2005-08-26 21:01:17 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -207,6 +207,12 @@ typedef struct S_BB {
 } S_BB_T;
 
 BEGIN_C_DECLS
+
+size_t 
+sizeof_bb_type(E_BB_TYPE_T bb_type);
+
+E_BB_TYPE_T 
+bb_type_string2bb_type(const char* bb_type_string);
 
 /**
  * Check if the accessed blackboard is of the same

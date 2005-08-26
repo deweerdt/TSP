@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.15 2005-08-14 22:39:36 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.16 2005-08-26 21:01:17 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -74,6 +74,73 @@ static const char* E_BB_2STRING[] = {"NoAType 0",
 				     "uchar",
 				     "UserType",
 				     "NotAType end"};
+
+static const size_t E_BB_TYPE_SIZE[] = {0,
+					sizeof(double), 
+					sizeof(float), 
+					sizeof(int8_t),
+					sizeof(int16_t),
+					sizeof(int32_t),
+					sizeof(int64_t),
+					sizeof(uint8_t),
+					sizeof(uint16_t),
+					sizeof(uint32_t),
+					sizeof(uint64_t),
+					sizeof(char),
+					sizeof(unsigned char),
+					0,
+					0};
+
+size_t 
+sizeof_bb_type(E_BB_TYPE_T bb_type) {
+  size_t retval = 0;
+  if ((bb_type>=1) && (bb_type<=E_BB_USER)) {
+    retval = E_BB_TYPE_SIZE[bb_type];
+  }
+  return retval;
+}
+
+E_BB_TYPE_T 
+bb_type_string2bb_type(const char* bb_type_string) {
+  E_BB_TYPE_T retval = 0;
+  if (!strncasecmp("double",bb_type_string,strlen("double"))) {
+    retval = E_BB_DOUBLE;
+  } else
+  if (!strncasecmp("float",bb_type_string,strlen("float"))) {
+    retval = E_BB_FLOAT;
+  } else
+  if (!strncasecmp("int8",bb_type_string,strlen("int8"))) {
+    retval = E_BB_INT8;
+  } else
+  if (!strncasecmp("int16",bb_type_string,strlen("int16"))) {
+    retval = E_BB_INT16;
+  } else
+  if (!strncasecmp("int32",bb_type_string,strlen("int32"))) {
+    retval = E_BB_INT32;
+  } else
+  if (!strncasecmp("int64",bb_type_string,strlen("int64"))) {
+    retval = E_BB_INT64;
+  } else
+  if (!strncasecmp("uint8",bb_type_string,strlen("uint8"))) {
+    retval = E_BB_UINT8;
+  } else
+  if (!strncasecmp("uint16",bb_type_string,strlen("uint16"))) {
+    retval = E_BB_UINT16;
+  } else
+  if (!strncasecmp("uint32",bb_type_string,strlen("uint32"))) {
+    retval = E_BB_UINT32;
+  } else
+  if (!strncasecmp("uint64",bb_type_string,strlen("uint64"))) {
+    retval = E_BB_UINT64;
+  } else
+  if (!strncasecmp("char",bb_type_string,strlen("char"))) {
+    retval = E_BB_CHAR;
+  } else
+  if (!strncasecmp("uchar",bb_type_string,strlen("uchar"))) {
+    retval = E_BB_UCHAR;
+  }
+  return retval;
+}
 
 int32_t
 bb_check_version(volatile S_BB_T* bb) {
@@ -882,7 +949,7 @@ bb_dump(volatile S_BB_T *bb,FILE* p_filedesc) {
 	  bb->n_data,
 	  bb->max_data_desc_size);
   fprintf(p_filedesc,"  free data size       = %ld / %ld\n",
-	  bb->max_data_size - bb->data_free_offset + 1,
+	  bb->max_data_size - bb->data_free_offset,
 	  bb->max_data_size);  
   fprintf(p_filedesc,"  @data_desc           = 0x%x\n",
 	  (unsigned int) (bb_data_desc(bb)));
