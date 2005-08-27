@@ -8,9 +8,16 @@
 	<property name="make.dir" value="${tsp.home.dir}/make" />
 	<property name="tests.dir" value="${tsp.home.dir}/tests" />
 	<property name="dist.dir" value="${tsp.home.dir}/dist" />          
-        <property name="rpm.topdir" value="${dist.dir}/RPM" />          
+        <property name="rpm.topdir" value="${dist.dir}/RPM" />
+               
+        <target name="init">
+          <condition property="ant-1.5">
+              <contains string="${ant.version}" substring="1.5"/>
+          </condition>  
+        </target>
 
-        <target name="info">
+        <target name="info" depends="init">
+
             <echo>
 This is a ANT build file for the TSP which 
 is used by developper to automated some
@@ -27,14 +34,14 @@ For now you may use target
             which makes RPM archives
             in the tsp/dist/RPM directories
 the default value for the version is a time stamp containing 
-date, time and user name.
+date, time and user name.                     
             </echo>
         </target>
 	
 	<target name="clean">
-               <echo> FIXME: Nothing done. </echo>
+               <echo> Nothing to be done, see clean-dist. </echo>
 	</target>		
-        <target name="prepare-dist">
+        <target name="prepare-dist" depends="init">
             <mkdir dir="${dist.dir}"/> 
             <tstamp>
 		<format property="timeStamp" pattern="dMMMMyyyy-HH'h'mm" locale="en"/>
@@ -111,7 +118,7 @@ date, time and user name.
               </zip>
         </target>
         <!-- RPM task requires ant-nodeps jpackage -->
-        <target name="rpm" depends="tar">
+        <target name="rpm-common" depends="tar">
             <mkdir dir="${dist.dir}/tmp"/> 
             <mkdir dir="${rpm.topdir}"/> 
             <mkdir dir="${rpm.topdir}/BUILD"/> 
@@ -131,8 +138,15 @@ date, time and user name.
             </delete>
             <copy file="${dist.dir}/tsp-${tsp.version}.tar.gz" todir="${rpm.topdir}/SOURCES/"/>
             <copy file="${src.dir}/scripts/tsp.spec" todir="${rpm.topdir}/SPECS/"/>
-	    <rpm specFile="tsp.spec" topDir="${rpm.topdir}" command="-bb -vv --buildroot=${dist.dir}/tmp"/>
-<!--	    <rpm specFile="tsp.spec" topDir="${rpm.topdir}" command="-bb -vv"/> -->
+        </target>
+        <target name="rpm" depends="rpm-common,rpm-ant-1.6,rpm-ant-1.5">
+        </target>
+        <target name="rpm-ant-1.6" unless="ant-1.5">
+            <rpm specFile="tsp.spec" topDir="${rpm.topdir}" command="-bb -vv --buildroot=${dist.dir}/tmp"/>
 	    <rpm specFile="tsp.spec" topDir="${rpm.topdir}" command="-bs -vv --buildroot=${dist.dir}/tmp"/>
+        </target>
+        <target name="rpm-ant-1.5" if="ant-1.5">
+            <rpm specFile="tsp.spec" topDir="${rpm.topdir}" command="-bb -vv"/> 
+	    <rpm specFile="tsp.spec" topDir="${rpm.topdir}" command="-bs -vv"/>
         </target>
 </project>
