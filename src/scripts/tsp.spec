@@ -69,6 +69,8 @@ rm -rf
 %attr(0755, root, root) %{prefix}/scripts/bb_synchro_recv
 %attr(0755, root, root) %{prefix}/scripts/bb_synchro_send
 %attr(0755, root, root) %{prefix}/scripts/bb_write
+%attr(0755, root, root) %{prefix}/scripts/bb_create
+%attr(0755, root, root) %{prefix}/scripts/bb_publish
 %attr(0755, root, root) %{prefix}/scripts/tsp_profile.csh
 %attr(0755, root, root) %{prefix}/scripts/tsp_profile.sh
 %attr(0644, root, root) %{prefix}/include/bb_core.h
