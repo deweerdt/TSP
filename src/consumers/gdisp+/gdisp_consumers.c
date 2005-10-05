@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_consumers.c,v 1.9 2004-10-22 20:17:34 esteban Exp $
+$Id: gdisp_consumers.c,v 1.10 2005-10-05 19:21:00 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -72,8 +72,8 @@ File      : GDISP consumer management.
  * them into the double-linked list in the kernel.
  */
 static gint
-gdisp_sortProviderByName(gconstpointer data1,
-			 gconstpointer data2)
+gdisp_sortProviderByUrl(gconstpointer data1,
+			gconstpointer data2)
 {
 
   Provider_T *provider1 = (Provider_T*)data1,
@@ -94,8 +94,8 @@ gdisp_insertProvider ( Kernel_T *kernel,
 
   GString        *messageString    = (GString*)NULL;
 
-  static guint     providerIdentity = 0;
-  TSP_provider_t  *provider        = NULL;
+  static guint    providerIdentity = 0;
+  TSP_provider_t *provider         = NULL;
   gint            symbolCpt        = 0;
 
   Provider_T     *newProvider      = (Provider_T*)NULL;
@@ -130,17 +130,18 @@ gdisp_insertProvider ( Kernel_T *kernel,
      * Set up its status to 'SESSION_CLOSED'.
      * Insert it into the kernel provider list.
      */
-    newProvider->pHandle   = provider;
-    newProvider->pIdentity = providerIdentity++;
-    newProvider->pUrl      =
+    newProvider->pOriginalUrl = g_string_new(url);
+    newProvider->pHandle      = provider;
+    newProvider->pIdentity    = providerIdentity++;
+    newProvider->pUrl         =
       g_string_new(TSP_consumer_get_connected_name(newProvider->pHandle));
     assert(newProvider->pUrl);
-    
+
     newProvider->pStatus = GD_SESSION_CLOSED;
     
     kernel->providerList = g_list_insert_sorted(kernel->providerList,
 						(gpointer)newProvider,
-						gdisp_sortProviderByName);
+						gdisp_sortProviderByUrl);
     assert(kernel->providerList);
     
     
@@ -441,6 +442,38 @@ gdisp_getProviderNumber (Kernel_T *kernel)
 
 
 /*
+ * Get back the provider from an original url.
+ */
+Provider_T*
+gdisp_getProviderByOriginalUrl ( Kernel_T *kernel,
+				 gchar    *originalUrl )
+{
+
+  GList      *providerItem =      (GList*)NULL;
+  Provider_T *provider     = (Provider_T*)NULL;
+
+  /*
+   * Loop upon all providers.
+   */
+  providerItem = g_list_first(kernel->providerList);
+  while (providerItem != (GList*)NULL) {
+
+    provider = (Provider_T*)providerItem->data;
+
+    if (strcmp(provider->pOriginalUrl->str,originalUrl) == 0) {
+      return provider;
+    }
+
+    providerItem = g_list_next(providerItem);
+
+  }
+
+  return (Provider_T*)NULL;
+
+}
+
+
+/*
  * GDISP+ is a TSP consumer.
  * Close everything related to consummation.
  */
@@ -466,6 +499,9 @@ gdisp_consumingEnd (Kernel_T *kernel)
 
     if (provider->pSampleList.len != 0)
       free(provider->pSampleList.val);
+
+    g_string_free(provider->pUrl        ,TRUE);
+    g_string_free(provider->pOriginalUrl,TRUE);
 
     g_free(provider);
 

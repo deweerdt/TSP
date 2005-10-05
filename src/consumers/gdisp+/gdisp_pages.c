@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_pages.c,v 1.6 2004-10-22 20:17:34 esteban Exp $
+$Id: gdisp_pages.c,v 1.7 2005-10-05 19:21:00 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -83,6 +83,74 @@ File      : Graphic page management.
 
 
 /*
+ * Compute theorical plot dimensions.
+ */
+static void
+gdisp_computeTheoricalPlotDimensions ( GtkWidget *pageWindow,
+				       Page_T    *page,
+				       guint     *plotWidth,
+				       guint     *plotHeight ) {
+
+  *plotWidth  =
+    (pageWindow->allocation.width - (2 * GD_PAGE_BORDER_WIDTH) -
+     ((page->pColumns - 1) * GD_PAGE_COL_SPACINGS)) / page->pColumns;
+
+  *plotHeight =
+    (pageWindow->allocation.height - (2 * GD_PAGE_BORDER_WIDTH) -
+     ((page->pRows    - 1) * GD_PAGE_ROW_SPACINGS)) / page->pRows;
+
+}
+
+
+/*
+ * Graphic page destruction.
+ */
+static void
+gdisp_destroyGraphicPage ( Kernel_T *kernel,
+			   Page_T   *page )
+{
+
+  PlotSystemData_T *plotSystemData = (PlotSystemData_T*)NULL;
+
+  /*
+   * Remove the page from the kernel list.
+   */
+  kernel->pageList = g_list_remove(kernel->pageList,
+				   (gpointer)page);
+
+  /*
+   * Destroy all plots.
+   */
+  plotSystemData = page->pPlotSystemData;
+  while (plotSystemData <
+	 page->pPlotSystemData + (page->pRows * page->pColumns)) {
+
+    (*plotSystemData->plotSystem->psDestroy)(kernel,
+					     plotSystemData->plotData);
+
+    plotSystemData->plotData = (void*)NULL;
+
+    plotSystemData++;
+
+  }
+
+  /*
+   * Delete resources.
+   */
+  gtk_widget_destroy(page->pTable );
+  gtk_widget_destroy(page->pWindow);
+
+  g_string_free(page->pName,TRUE);
+
+  g_free(page->pPlotSystemData);
+
+  memset(page,0,sizeof(Page_T));
+  g_free(page);
+
+}
+
+
+/*
  * The "delete_event" occurs when the window manager sens this event
  * to the application, usually by the "close" option, or on the titlebar.
  * Returning TRUE means that we do not want to have the "destroy" event 
@@ -90,9 +158,9 @@ File      : Graphic page management.
  * be emitted, which in turn will call the "destroy" signal handler.
  */
 static gint
-gdispManageDeleteEventFromWM (GtkWidget *pageWindow,
-			      GdkEvent  *event,
-			      gpointer   data)
+gdisp_manageDeleteEventFromWM ( GtkWidget *pageWindow,
+				GdkEvent  *event,
+				gpointer   data )
 {
 
   Kernel_T *kernel = (Kernel_T*)data;
@@ -112,16 +180,15 @@ gdispManageDeleteEventFromWM (GtkWidget *pageWindow,
  * callback (see above).
  */
 static void
-gdispDestroySignalHandler (GtkWidget *pageWindow,
-			   gpointer   data)
+gdisp_destroySignalHandler ( GtkWidget *pageWindow,
+			     gpointer   data )
 {
 
-  Kernel_T         *kernel         = (Kernel_T*)data;
+  Kernel_T *kernel        = (Kernel_T*)data;
 
-  PlotSystemData_T *plotSystemData = (PlotSystemData_T*)NULL;
-  GString          *messageString  =  (GString*)NULL;
-  GList            *pageItem       =    (GList*)NULL;
-  Page_T           *page           =   (Page_T*)NULL;
+  GString  *messageString =  (GString*)NULL;
+  GList    *pageItem      =    (GList*)NULL;
+  Page_T   *page          =   (Page_T*)NULL;
 
 
   /*
@@ -151,37 +218,10 @@ gdispDestroySignalHandler (GtkWidget *pageWindow,
   if (page != (Page_T*)NULL) {
 
     /*
-     * Remove the page from the kernel list.
+     * Destroy the graphic page.
      */
-    kernel->pageList = g_list_remove(kernel->pageList,
-				     (gpointer)page);
-
-    /*
-     * Destroy all plots.
-     */
-    plotSystemData = page->pPlotSystemData;
-    while (plotSystemData <
-	   page->pPlotSystemData + (page->pRows * page->pColumns)) {
-
-      (*plotSystemData->plotSystem->psDestroy)(kernel,
-					       plotSystemData->plotData);
-
-      plotSystemData->plotData = (void*)NULL;
-
-      plotSystemData++;
-
-    }
-
-    /*
-     * Delete resources.
-     */
-    gtk_widget_destroy(page->pWindow);
-    g_string_free(page->pName,TRUE);
-
-    g_free(page->pPlotSystemData);
-
-    memset(page,0,sizeof(Page_T));
-    g_free(page);
+    gdisp_destroyGraphicPage(kernel,
+			     page);
 
     /*
      * Message.
@@ -205,9 +245,9 @@ gdispDestroySignalHandler (GtkWidget *pageWindow,
 #if defined(GD_PAGE_TREAT_EXPOSE_EVENT)
 
 static gboolean
-gdispHandlePageExpose (GtkWidget      *pWindow,
-		       GdkEventExpose *event,
-		       gpointer        data)
+gdisp_handlePageExpose ( GtkWidget      *pWindow,
+			 GdkEventExpose *event,
+			 gpointer        data )
 {
 
   Kernel_T *kernel = (Kernel_T*)data;
@@ -447,13 +487,10 @@ gdisp_dragMotionDNDCallback (GtkWidget      *pageWindow,
   page = (Page_T*)gtk_object_get_data(GTK_OBJECT(pageWindow),
 				      "pageInformation");
 
-  plotWidth  =
-    (pageWindow->allocation.width - (2 * GD_PAGE_BORDER_WIDTH) -
-     ((page->pColumns - 1) * GD_PAGE_COL_SPACINGS)) / page->pColumns;
-
-  plotHeight =
-    (pageWindow->allocation.height - (2 * GD_PAGE_BORDER_WIDTH) -
-     ((page->pRows    - 1) * GD_PAGE_ROW_SPACINGS)) / page->pRows;
+  gdisp_computeTheoricalPlotDimensions(pageWindow,
+				       page,
+				       &plotWidth,
+				       &plotHeight);
 
   /*
    * Deduce on what plot the drop operation occurs.
@@ -896,13 +933,10 @@ gdisp_dataReceivedDNDCallback (GtkWidget        *pageWindow,
       page = (Page_T*)gtk_object_get_data(GTK_OBJECT(pageWindow),
 					  "pageInformation");
 
-      plotWidth  =
-	(pageWindow->allocation.width - (2 * GD_PAGE_BORDER_WIDTH) -
-	 ((page->pColumns - 1) * GD_PAGE_COL_SPACINGS)) / page->pColumns;
-
-      plotHeight =
-	(pageWindow->allocation.height - (2 * GD_PAGE_BORDER_WIDTH) -
-	 ((page->pRows    - 1) * GD_PAGE_ROW_SPACINGS)) / page->pRows;
+      gdisp_computeTheoricalPlotDimensions(pageWindow,
+					   page,
+					   &plotWidth,
+					   &plotHeight);
 
       /*
        * Deduce on what plot the drop operation occurs.
@@ -1035,13 +1069,10 @@ gdisp_dataReceivedDNDCallback (GtkWidget        *pageWindow,
 	      page       = (Page_T*)pageItem->data;
 	      pageWindow = page->pWindow;
 
-	      plotWidth  =
-		(pageWindow->allocation.width  - (2 * GD_PAGE_BORDER_WIDTH) -
-		 ((page->pColumns - 1) * GD_PAGE_COL_SPACINGS)) / page->pColumns;
-
-	      plotHeight =
-		(pageWindow->allocation.height - (2 * GD_PAGE_BORDER_WIDTH) -
-		 ((page->pRows    - 1) * GD_PAGE_ROW_SPACINGS)) / page->pRows;
+	      gdisp_computeTheoricalPlotDimensions(pageWindow,
+						   page,
+						   &plotWidth,
+						   &plotHeight);
 
 	      xPositionInPlot = (guint)(xRatioInPlot * (gdouble)plotWidth );
 	      yPositionInPlot = (guint)(yRatioInPlot * (gdouble)plotHeight);
@@ -1059,7 +1090,8 @@ gdisp_dataReceivedDNDCallback (GtkWidget        *pageWindow,
 							  yRatioInPlot,
 							  &currentZone);
 
-		  if (canDrop == TRUE)
+		  if (canDrop == TRUE) {
+
 		    gdisp_finalizeDragAndDropOperation(kernel,
 						       page,
 						       plotSystemData,
@@ -1069,6 +1101,8 @@ gdisp_dataReceivedDNDCallback (GtkWidget        *pageWindow,
 						       nRow,
 						       currentZone ?
 						       currentZone->pszId : 0);
+
+		  } /* if */
 
 		} /* columns */
 
@@ -1163,55 +1197,74 @@ gdisp_getSymbolsInOnePlot ( Kernel_T         *kernel,
 			    void             *userData )
 {
 
-  GList **symbolList = (GList**)userData;
-  GList  *symbolItem =  (GList*)NULL;
-
-  /*
-   * Read the list of symbols on the X axis.
-   */
-  symbolItem =
-    (*plotSystemData->plotSystem->psGetSymbols)(kernel,
-						plotSystemData->plotData,
-						'X');
-
-  symbolItem = g_list_first(symbolItem);
-
-  while (symbolItem != (GList*)NULL) {
-
-    if (g_list_find(*symbolList,symbolItem->data) == (GList*)NULL) {
-
-      *symbolList = g_list_append(*symbolList,
-				  symbolItem->data);
-
-    }
-
-    symbolItem = g_list_next(symbolItem);
-
-  }
+  GArray            *plotZones     = (GArray*)NULL;
+  guint              currentZoneId = 0;
+  PlotSystemZone_T  *currentZone   = (PlotSystemZone_T*)NULL;
+  GList            **symbolList    = (GList**)userData;
+  GList             *symbolItem    =  (GList*)NULL;
 
 
   /*
-   * Read the list of symbols on the Y axis.
+   * Ask for referenced symbols. Take care of zones !!!
    */
-  symbolItem =
-    (*plotSystemData->plotSystem->psGetSymbols)(kernel,
-						plotSystemData->plotData,
-						'Y');
+  plotZones = (*plotSystemData->plotSystem->psGetDropZones)(kernel);
+ 
+  if (plotZones != (GArray*)NULL) {
 
-  symbolItem = g_list_first(symbolItem);
+    /*
+     * Loop over all declared zones.
+     */
+    while (currentZoneId < plotZones->len) {
 
-  while (symbolItem != (GList*)NULL) {
+      currentZone =
+	&g_array_index(plotZones,PlotSystemZone_T,currentZoneId);
 
-    if (g_list_find(*symbolList,symbolItem->data) == (GList*)NULL) {
+      symbolItem =
+	(*plotSystemData->plotSystem->psGetSymbols)(kernel,
+						    plotSystemData->plotData,
+						    currentZone->pszId);
 
-      *symbolList = g_list_append(*symbolList,
-				  symbolItem->data);
+      /* add symbol to the final list if not already present */
+      /* BEGIN */
+      symbolItem = g_list_first(symbolItem);
+      while (symbolItem != (GList*)NULL) {
+	if (g_list_find(*symbolList,symbolItem->data) == (GList*)NULL) {
+	  *symbolList = g_list_append(*symbolList,
+				      symbolItem->data);
+	}
+	symbolItem = g_list_next(symbolItem);
+      }
+      /* END */
 
+      currentZoneId++;
+
+    } /* loop over all declared zones */
+
+  } /* plotZones != (GArray*)NULL */
+
+  else {
+
+    /*
+     * No zone.
+     */
+    symbolItem =
+      (*plotSystemData->plotSystem->psGetSymbols)(kernel,
+						  plotSystemData->plotData,
+						  0 /* dummy zone id */);
+
+    /* add symbol to the final list if not already present */
+    /* BEGIN */
+    symbolItem = g_list_first(symbolItem);
+    while (symbolItem != (GList*)NULL) {
+      if (g_list_find(*symbolList,symbolItem->data) == (GList*)NULL) {
+	*symbolList = g_list_append(*symbolList,
+				    symbolItem->data);
+      }
+      symbolItem = g_list_next(symbolItem);
     }
+    /* END */
 
-    symbolItem = g_list_next(symbolItem);
-
-  }
+  } /* end else */
 
 }
 
@@ -1222,65 +1275,77 @@ gdisp_getSymbolsInOnePlot ( Kernel_T         *kernel,
  --------------------------------------------------------------------
 */
 
+/*
+ * Add a plot to a graphic page.
+ */
+PlotSystemData_T*
+gdisp_addPlotToGraphicPage (Kernel_T   *kernel,
+			    Page_T     *page,
+			    PlotType_T  plotType,
+			    guint       plotRow,
+			    guint       plotNbRows,
+			    guint       plotColumn,
+			    guint       plotNbColumns)
+{
+
+  PlotSystemData_T *plotSystemData = (PlotSystemData_T*)NULL;
+
+  /*
+   * Check.
+   */
+  if (page == (Page_T*)NULL) {
+    return (PlotSystemData_T*)NULL;
+  }
+  if (page->pCurrentNbPlotSystems == (page->pRows * page->pColumns)) {
+    return (PlotSystemData_T*)NULL;
+  }
+
+  /*
+   * Find the good position in page memory.
+   */
+  plotSystemData = &page->pPlotSystemData[page->pCurrentNbPlotSystems];
+
+  /*
+   * Set up requested plot type.
+   */
+  plotSystemData->plotSystem = &kernel->plotSystems[plotType];
+
+  /*
+   * Store information.
+   */
+  plotSystemData->plotRow       = plotRow;
+  plotSystemData->plotNbRows    = plotNbRows;
+  plotSystemData->plotColumn    = plotColumn;
+  plotSystemData->plotNbColumns = plotNbColumns;
+  plotSystemData->plotCycle     = G_MAXINT;
+
+  /*
+   * Create the plot in memory.
+   */
+  plotSystemData->plotData =
+                       (*plotSystemData->plotSystem->psCreate)(kernel);
+
+  /*
+   * Increase the number of already created plots.
+   */
+  page->pCurrentNbPlotSystems++;
+
+  return plotSystemData;
+
+}
+
 
 /*
  * Create GDISP+ graphic page.
  */
-void
-gdisp_createGraphicPage (gpointer factoryData,
-			 guint    pageDimension)
+Page_T*
+gdisp_allocateGraphicPage (Kernel_T *kernel,
+			   gchar    *pageTitle,
+			   guint     pageRows,
+			   guint     pageColumns)
 {
 
-  Kernel_T         *kernel         =  (Kernel_T*)factoryData;
-  Page_T           *newPage        =           (Page_T*)NULL;
-  GString          *messageString  =          (GString*)NULL;
-  PlotSystemData_T *plotSystemData = (PlotSystemData_T*)NULL;
-  PlotSystem_T     *defaultSystem  =     (PlotSystem_T*)NULL;
-  GtkWidget        *plotTopLevel   =        (GtkWidget*)NULL;
-  GdkGeometry       pWindowHints;
-#if defined(GD_PAGE_HAS_DND)
-  GtkTargetEntry    targetEntry;
-#endif
-
-  gint              screenWidth    =                 0;
-  gint              screenHeight   =                 0;
-  gint              row            =                 0;
-  gint              column         =                 0;
-
-
-  /* --------------------- BEGIN --------------------- */
-
-  assert(kernel);
-
-  /*
-   * Custom dimension management is not done yet.
-   */
-  if (pageDimension == 0) {
-    return;
-  }
-
-  /*
-   * CAUTION.
-   * Before anything, we must check out whether 'default plot' plot system
-   * is fully supported. Without default plot system, the graphic page
-   * can not be created.
-   */
-  defaultSystem = &kernel->plotSystems[GD_PLOT_DEFAULT];
-  if (defaultSystem->psIsSupported == FALSE) {
-
-    messageString = g_string_new((gchar*)NULL);
-    g_string_sprintf(messageString,
-		     "Default plot system not fully supported.");
-    kernel->outputFunc(kernel,messageString,GD_ERROR);
-
-    messageString = g_string_new((gchar*)NULL);
-    g_string_sprintf(messageString,
-		     "Aborting graphic page creation.");
-    kernel->outputFunc(kernel,messageString,GD_WARNING);
-
-    return;
-
-  }
+  Page_T *newPage = (Page_T*)NULL;
 
   /*
    * Allocate memory for this new graphic page.
@@ -1289,15 +1354,24 @@ gdisp_createGraphicPage (gpointer factoryData,
   newPage = (Page_T*)g_malloc0(sizeof(Page_T));
   assert(newPage);
 
-  newPage->pRows    = pageDimension;
-  newPage->pColumns = pageDimension;
+  newPage->pRows    = pageRows;
+  newPage->pColumns = pageColumns;
 
-  newPage->pName    = g_string_new("Graphic Page");
-  assert(newPage->pName);
+  if (pageTitle == (gchar*)NULL) {
 
-  g_string_sprintf(newPage->pName,
-		   "Graphic Page #%d",
-		   g_list_length(kernel->pageList) + 1);
+    newPage->pName = g_string_new("");
+    assert(newPage->pName);
+
+    g_string_sprintf(newPage->pName,
+		     "Graphic Page #%d",
+		     g_list_length(kernel->pageList) + 1);
+
+  }
+  else {
+
+    newPage->pName = g_string_new(pageTitle);
+
+  }
 
   /* --------------------- PLOT SYSTEMS --------------------- */
 
@@ -1310,21 +1384,43 @@ gdisp_createGraphicPage (gpointer factoryData,
 				 newPage->pColumns * sizeof(PlotSystemData_T));
   assert(newPage->pPlotSystemData);
 
-  plotSystemData = newPage->pPlotSystemData;
+  /*
+   * Now that all has been created within the graphic page,
+   * insert the graphic page into the kernel page list.
+   */
+  kernel->pageList = g_list_append(kernel->pageList,
+				   (gpointer)newPage);
+  assert(kernel->pageList);
 
-  while (plotSystemData <
-	 newPage->pPlotSystemData + (newPage->pRows * newPage->pColumns)) {
+  /*
+   * Return the created page.
+   */
+  return newPage;
 
-    plotSystemData->plotSystem = &kernel->plotSystems[GD_PLOT_DEFAULT];
-    plotSystemData->plotData   =
-                       (*plotSystemData->plotSystem->psCreate)(kernel);
-    plotSystemData->plotCycle  = G_MAXINT;
+}
 
-    plotSystemData++;
 
-  }
+/*
+ * Create GDISP+ graphic page (gtk graphic part).
+ */
+void
+gdisp_finalizeGraphicPageCreation (Kernel_T *kernel,
+				   Page_T   *newPage)
+{
 
-  /* ------------------------ MAIN WINDOW ------------------------ */
+  PlotSystemData_T *plotSystemData = (PlotSystemData_T*)NULL;
+  GtkWidget        *plotTopLevel   =        (GtkWidget*)NULL;
+  GdkGeometry       pWindowHints;
+#if defined(GD_PAGE_HAS_DND)
+  GtkTargetEntry    targetEntry;
+#endif
+  guint             plotWidth      = 0;
+  guint             plotHeight     = 0;
+  gint              screenWidth    = 0;
+  gint              screenHeight   = 0;
+  gint              row            = 0;
+  gint              column         = 0;
+
 
   /*
    * Now, deal with graphic page top-level window.
@@ -1339,18 +1435,18 @@ gdisp_createGraphicPage (gpointer factoryData,
 
   gtk_signal_connect(GTK_OBJECT(newPage->pWindow),
 		     "delete_event",
-		     GTK_SIGNAL_FUNC(gdispManageDeleteEventFromWM),
+		     GTK_SIGNAL_FUNC(gdisp_manageDeleteEventFromWM),
 		     (gpointer)kernel);
 
   gtk_signal_connect(GTK_OBJECT(newPage->pWindow),
 		     "destroy",
-		     GTK_SIGNAL_FUNC(gdispDestroySignalHandler),
+		     GTK_SIGNAL_FUNC(gdisp_destroySignalHandler),
 		     (gpointer)kernel);
 
 #if defined(GD_PAGE_TREAT_EXPOSE_EVENT)
   gtk_signal_connect (GTK_OBJECT(newPage->pWindow),
 		      "expose_event",
-		      (GtkSignalFunc)gdispHandlePageExpose,
+		      (GtkSignalFunc)gdisp_handlePageExpose,
 		      (gpointer)kernel); 
 #endif
 
@@ -1455,7 +1551,16 @@ gdisp_createGraphicPage (gpointer factoryData,
   gtk_container_add(GTK_CONTAINER(newPage->pWindow),
 		    newPage->pTable);
 
-  gtk_widget_show   (newPage->pTable);
+  gtk_widget_show(newPage->pTable);
+
+
+  /*
+   * Compute theorical plot dimensions.
+   */
+  gdisp_computeTheoricalPlotDimensions(newPage->pWindow,
+				       newPage,
+				       &plotWidth,
+				       &plotHeight);
 
 
   /*
@@ -1471,16 +1576,22 @@ gdisp_createGraphicPage (gpointer factoryData,
 						 plotSystemData->plotData,
 						 newPage->pWindow);
 
+      (*plotSystemData->plotSystem->psSetDimensions)(kernel,
+						     plotSystemData->plotData,
+						     plotWidth,
+						     plotHeight);
+
       plotTopLevel =
 	(*plotSystemData->plotSystem->psGetTopLevelWidget)
 	                                 (kernel,plotSystemData->plotData);
 
-      gtk_table_attach_defaults(GTK_TABLE(newPage->pTable),
-				plotTopLevel,
-				column,
-				column + 1,
-				row,
-				row    + 1);
+      gtk_table_attach_defaults(
+		   GTK_TABLE(newPage->pTable),
+		   plotTopLevel,
+		   plotSystemData->plotColumn,
+		   plotSystemData->plotColumn + plotSystemData->plotNbColumns,
+		   plotSystemData->plotRow,
+		   plotSystemData->plotRow + plotSystemData->plotNbRows);
 
       plotSystemData++;
 
@@ -1503,6 +1614,92 @@ gdisp_createGraphicPage (gpointer factoryData,
 
   }
 
+}
+
+
+/*
+ * Create GDISP+ graphic page (menu callback).
+ */
+void
+gdisp_createGraphicPage (gpointer factoryData,
+			 guint    pageDimension)
+{
+
+  Kernel_T         *kernel         =  (Kernel_T*)factoryData;
+  Page_T           *newPage        =           (Page_T*)NULL;
+  PlotSystem_T     *defaultSystem  =     (PlotSystem_T*)NULL;
+  GString          *messageString  =          (GString*)NULL;
+  PlotSystemData_T *plotSystemData = (PlotSystemData_T*)NULL;
+  gint              row            = 0;
+  gint              column         = 0;
+
+  /* --------------------- BEGIN --------------------- */
+
+  assert(kernel);
+
+  /*
+   * Custom dimension management is not done yet.
+   */
+  if (pageDimension == 0) {
+    return;
+  }
+
+  /*
+   * CAUTION.
+   * Before anything, we must check out whether 'default plot' plot system
+   * is fully supported. Without default plot system, the graphic page
+   * can not be created.
+   */
+  defaultSystem = &kernel->plotSystems[GD_PLOT_DEFAULT];
+  if (defaultSystem->psIsSupported == FALSE) {
+
+    messageString = g_string_new((gchar*)NULL);
+    g_string_sprintf(messageString,
+		     "Default plot system not fully supported.");
+    kernel->outputFunc(kernel,messageString,GD_ERROR);
+
+    messageString = g_string_new((gchar*)NULL);
+    g_string_sprintf(messageString,
+		     "Aborting graphic page creation.");
+    kernel->outputFunc(kernel,messageString,GD_WARNING);
+
+    return;
+
+  }
+
+  /*
+   * Allocate memory for this new graphic page.
+   * Insert the new graphic page into the kernel page list.
+   */
+  newPage = gdisp_allocateGraphicPage(kernel,
+				      (gchar*)NULL, /* title */
+				      pageDimension,
+				      pageDimension);
+				       
+  for (row=0; row<newPage->pRows; row++) {
+
+    for (column=0; column<newPage->pColumns; column++) {
+
+      plotSystemData = gdisp_addPlotToGraphicPage (kernel,
+						   newPage,
+						   GD_PLOT_DEFAULT,
+						   row,
+						   1, /* nb rows */
+						   column,
+						   1); /* nb columns */
+
+    }
+
+  }
+
+  /* ------------------------ MAIN WINDOW ------------------------ */
+
+  /*
+   * Create GTK stuffs.
+   */
+  gdisp_finalizeGraphicPageCreation(kernel,
+				    newPage);
+
   /*
    * Message.
    */
@@ -1511,14 +1708,6 @@ gdisp_createGraphicPage (gpointer factoryData,
 		   "Graphic page correctly created (%d).",
 		   g_list_length(kernel->pageList));
   kernel->outputFunc(kernel,messageString,GD_MESSAGE);
-
-  /*
-   * Now that all has been created within the graphic page,
-   * insert the graphic page into the kernel page list.
-   */
-  kernel->pageList = g_list_append(kernel->pageList,
-				   (gpointer)newPage);
-  assert(kernel->pageList);
 
 }
 
@@ -1544,3 +1733,36 @@ gdisp_getSymbolsInPages (Kernel_T *kernel)
 
 }
 
+
+/*
+ * Destroy all graphic pages.
+ */
+void
+gdisp_destroyAllGraphicPages ( Kernel_T *kernel )
+{
+
+  GList  *pageItem = (GList*)NULL;
+  Page_T *page     = (Page_T*)NULL;
+
+  /*
+   * Loop upon all graphic pages of the kernel.
+   */
+  do {
+
+    pageItem = g_list_first(kernel->pageList);
+
+    if (pageItem != (GList*)NULL) {
+
+      page = (Page_T*)pageItem->data;
+
+      /*
+       * Destroy the graphic page.
+       */
+      gdisp_destroyGraphicPage(kernel,
+			       page);
+
+    }
+
+  } while (pageItem != (GList*)NULL);
+
+}

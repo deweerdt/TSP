@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_providers.c,v 1.8 2004-10-22 20:17:34 esteban Exp $
+$Id: gdisp_providers.c,v 1.9 2005-10-05 19:21:01 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -63,6 +63,41 @@ File      : Information / Actions upon available providers.
 */
 
 
+/*
+ * Function in order to sort provider symbols alphabetically.
+ */
+/* no static here */ gint
+gdisp_sortProviderSymbolByName ( gconstpointer data1,
+				 gconstpointer data2 )
+{
+
+  Symbol_T *symbol1 = (Symbol_T*)data1,
+           *symbol2 = (Symbol_T*)data2;
+
+  return (strcmp(symbol1->sInfo.name,symbol2->sInfo.name));
+
+}
+
+
+/*
+ * Function in order to sort provider symbols according to their index.
+ */
+static gint
+gdisp_sortProviderSymbolByIndex ( gconstpointer data1,
+				  gconstpointer data2 )
+{
+
+  Symbol_T *symbol1 = (Symbol_T*)data1,
+           *symbol2 = (Symbol_T*)data2;
+
+  return (symbol1->sInfo.index - symbol2->sInfo.index);
+
+}
+
+
+/*
+ * Get provider status as a string.
+ */
 static gchar*
 gdisp_providerStatusToString ( ThreadStatus_T status,
 			       guint          *colorId )
@@ -488,5 +523,55 @@ gdisp_destroyProviderList ( Kernel_T *kernel )
   /*
    * Nothing by now.
    */
+
+}
+
+
+/*
+ * Sort provider symbols by name or index.
+ */
+void
+gdisp_sortProviderSymbols ( Kernel_T        *kernel,
+			    SortingMethod_T  sortingMethod )
+{
+
+  GList      *providerItem = (GList*)NULL;
+  Provider_T *provider     = (Provider_T*)NULL;
+
+  /*
+   * Loop upon all providers.
+   */
+  providerItem = g_list_first(kernel->providerList);
+  while (providerItem != (GList*)NULL) {
+
+    provider = (Provider_T*)providerItem->data;
+
+    switch (sortingMethod) {
+
+    case GD_SORT_BY_NAME :
+      qsort((void*)provider->pSymbolList,
+	    provider->pSymbolNumber,
+	    sizeof(Symbol_T),
+	    gdisp_sortProviderSymbolByName);
+      break;
+
+    case GD_SORT_BY_INDEX :
+      qsort((void*)provider->pSymbolList,
+	    provider->pSymbolNumber,
+	    sizeof(Symbol_T),
+	    gdisp_sortProviderSymbolByIndex);
+      break;
+
+    case GD_SORT_BY_NAME_REVERSE :
+    case GD_SORT_BY_PROVIDER     :
+    default                      :
+      /* not used here */
+      break;
+
+    }
+
+    providerItem = g_list_next(providerItem);
+
+  } /* while */
 
 }

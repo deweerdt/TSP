@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_symbols.c,v 1.5 2004-10-22 20:17:34 esteban Exp $
+$Id: gdisp_symbols.c,v 1.6 2005-10-05 19:21:01 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -1183,6 +1183,47 @@ gdisp_createSymbolList ( Kernel_T  *kernel,
 		       "All graphic plots of all graphic pages "
 		       "will receive the new symbols",
 		       "");
+
+
+  /*
+   * Take care of current DnD scope in the kernel.
+   */
+  switch (kernel->dndScope) {
+
+  case GD_DND_UNICAST :
+    radioStatuses[0 /* unicast   */] = TRUE;
+    radioStatuses[1 /* multicast */] = FALSE;
+    radioStatuses[2 /* broadcast */] = FALSE;
+    break;
+
+  case GD_DND_MULTICAST :
+    radioStatuses[0 /* unicast   */] = FALSE;
+    radioStatuses[1 /* multicast */] = TRUE;
+    radioStatuses[2 /* broadcast */] = FALSE;
+    break;
+
+  case GD_DND_BROADCAST :
+    radioStatuses[0 /* unicast   */] = FALSE;
+    radioStatuses[1 /* multicast */] = FALSE;
+    radioStatuses[2 /* broadcast */] = TRUE;
+    break;
+
+  default :
+    break;
+
+  }
+
+  gtk_toggle_button_set_active(
+                  GTK_TOGGLE_BUTTON(kernel->widgets.uRadioButton),
+		  radioStatuses[0 /* unicast */]);
+
+  gtk_toggle_button_set_active(
+                  GTK_TOGGLE_BUTTON(kernel->widgets.spRadioButton),
+		  radioStatuses[1 /* multicast */]);
+
+  gtk_toggle_button_set_active(
+                  GTK_TOGGLE_BUTTON(kernel->widgets.apRadioButton),
+		  radioStatuses[2 /* broadcast */]);
 
 
   /* ------------------------ LIST OF SYMBOLS  ------------------------ */

@@ -39,8 +39,6 @@
 
 5) At databook level.
 
-  - change the way a symbol is graphically affected to a provider.
-      replace the color by a pixmap representing the provider.
   - the databook can only be resized vertically.
 
 

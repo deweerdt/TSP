@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_sampledSymbols.c,v 1.6 2005-03-08 21:28:17 esteban Exp $
+$Id: gdisp_sampledSymbols.c,v 1.7 2005-10-05 19:21:01 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -669,6 +669,7 @@ gdisp_poolSampledSymbolList ( Kernel_T *kernel )
    * that has been destroyed.
    * Avoid that shame by temporarily blocking the signal emission.
    */
+  gtk_clist_freeze(GTK_CLIST(cTree));
   gtk_signal_handler_block_by_func(GTK_OBJECT(cTree),
 				   gdisp_treeUnselectRowCallback,
 				   (gpointer)kernel); 
@@ -777,6 +778,7 @@ gdisp_poolSampledSymbolList ( Kernel_T *kernel )
   gtk_signal_handler_unblock_by_func(GTK_OBJECT(cTree),
 				     gdisp_treeUnselectRowCallback,
 				     (gpointer)kernel);
+  gtk_clist_thaw(GTK_CLIST(cTree));
 
 }
 

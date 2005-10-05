@@ -31,14 +31,14 @@ dparray_newSampleArray (unsigned int maxSamples)
 
   DoublePointArray_T *pArray = (DoublePointArray_T*)NULL;
 
-  pArray = (DoublePointArray_T*)malloc(sizeof(DoublePointArray_T));
+  pArray = (DoublePointArray_T*)calloc(1,sizeof(DoublePointArray_T));
 
   pArray->nbSamples  = 0;
   pArray->current    = 0;
   pArray->marker     = 0;
   pArray->maxSamples = maxSamples;
   pArray->samples    = (DoublePoint_T*)
-                       malloc(maxSamples * sizeof(DoublePoint_T));
+                       calloc(maxSamples,sizeof(DoublePoint_T));
 
   return pArray;
 

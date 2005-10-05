@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_prototypes.h,v 1.10 2005-03-08 21:28:17 esteban Exp $
+$Id: gdisp_prototypes.h,v 1.11 2005-10-05 19:21:01 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -85,17 +85,22 @@ GtkWidget* gdisp_createPilotBoard (Kernel_T *kernel);
 /*
  * From gdisp_databook.c
  */
-void       gdisp_showDataBook (gpointer factoryData,
-			       guint    itemData);
+void       gdisp_showDataBook        (gpointer factoryData,
+				      guint    itemData);
+void       gdisp_closeDataBookWindow (Kernel_T *kernel);
 
 /*
  * From gdisp_providers.c
  */
-void       gdisp_createProviderList (Kernel_T  *kernel,
-				     GtkWidget *parent);
-void       gdisp_providerTimer      (Kernel_T  *kernel,
-				     gboolean   timerIsStarted);
-void       gdisp_destroyProviderList(Kernel_T  *kernel);
+void       gdisp_createProviderList       (Kernel_T        *kernel,
+					   GtkWidget       *parent);
+void       gdisp_providerTimer            (Kernel_T        *kernel,
+					   gboolean         timerIsStarted);
+void       gdisp_destroyProviderList      (Kernel_T        *kernel);
+void       gdisp_sortProviderSymbols      (Kernel_T        *kernel,
+					   SortingMethod_T  sortingMethod);
+gint       gdisp_sortProviderSymbolByName (gconstpointer data1,
+					   gconstpointer data2);
 
 
 /*
@@ -127,9 +132,12 @@ GdkColor  *gdisp_getProviderColor(Kernel_T *kernel,
 /*
  * From gdisp_consumers.c
  */
-void       gdisp_consumingInit     (Kernel_T *kernel);
-guint      gdisp_getProviderNumber (Kernel_T *kernel);
-void       gdisp_consumingEnd      (Kernel_T *kernel);
+void        gdisp_consumingInit            (Kernel_T *kernel);
+guint       gdisp_getProviderNumber        (Kernel_T *kernel);
+Provider_T *gdisp_getProviderByOriginalUrl (Kernel_T *kernel,
+					    gchar    *originalUrl);
+void        gdisp_consumingEnd             (Kernel_T *kernel);
+
 
 /*
  * From gdisp_symbols.c
@@ -140,12 +148,28 @@ void       gdisp_symbolApplyCallback (GtkWidget *applyButtonWidget,
 				      gpointer   data);
 void       gdisp_destroySymbolList   (Kernel_T  *kernel);
 
+
 /*
  * From gdisp_pages.c
  */
-void       gdisp_createGraphicPage (gpointer  factoryData,
-				    guint     pageDimension);
-GList*     gdisp_getSymbolsInPages (Kernel_T *kernel);
+Page_T           *gdisp_allocateGraphicPage         (Kernel_T   *kernel,
+						     gchar      *pageTitle,
+						     guint       pageRows,
+						     guint       pageColumns);
+PlotSystemData_T *gdisp_addPlotToGraphicPage        (Kernel_T   *kernel,
+						     Page_T     *page,
+						     PlotType_T  plotType,
+						     guint       plotRow,
+						     guint       plotNbRows,
+						     guint       plotColumn,
+						     guint     plotNbColumns);
+void              gdisp_finalizeGraphicPageCreation (Kernel_T *kernel,
+						     Page_T   *newPage);
+GList            *gdisp_getSymbolsInPages           (Kernel_T *kernel);
+void              gdisp_createGraphicPage           (gpointer  factoryData,
+						     guint     pageDimension);
+void              gdisp_destroyAllGraphicPages      (Kernel_T *kernel);
+
 
 /*
  * From gdisp_defaultPlot.c
@@ -183,6 +207,7 @@ Pixmap_T *gdisp_getPixmapByAddr ( Kernel_T   *kernel,
 				  GtkWidget  *pixmapParent );
 
 void      gdisp_destroyPixmaps  ( Kernel_T   *kernel       );
+
 
 /*
  * From gdisp_utils.c
@@ -232,5 +257,31 @@ guint      gdisp_computePgcd          (guint a,
 				       guint b);
 				    
 void       gdisp_dereferenceSymbolList (GList *symbolList);
+
+
+/*
+ * From gdisp_preferences.c
+ */
+void       gdisp_loadPreferenceFile (Kernel_T *kernel);
+void       gdisp_savePreferenceFile (Kernel_T *kernel);
+
+
+/*
+ * From gdisp_toString.c
+ */
+gchar*     gdisp_dndScopeToString          (Kernel_T *kernel);
+gchar*     gdisp_sortingMethodToString     (Kernel_T *kernel);
+void       gdisp_setUpPreferenceFromString (Kernel_T *kernel,
+					    gchar    *preference,
+					    gchar    *value);
+
+
+/*
+ * From gdisp_configuration.c
+ */
+gboolean   gdisp_saveConfigurationFile (Kernel_T *kernel,
+					gchar    *absConfigurationFilename);
+gboolean   gdisp_loadConfigurationFile (Kernel_T *kernel,
+					gchar    *absConfigurationFilename);
 
 #endif /* __PROTOTYPES_H__ */

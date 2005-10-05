@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_mainBoard.c,v 1.3 2004-10-22 20:17:34 esteban Exp $
+$Id: gdisp_mainBoard.c,v 1.4 2005-10-05 19:21:00 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -65,6 +65,31 @@ File      : Graphic Tool Main Board.
 
 
 /*
+ * Remember main board window position.
+ */
+static void
+gdisp_getMainBoardWindowPosition (Kernel_T *kernel)
+{
+
+  /*
+   * Remember window position.
+   */
+  gdk_window_get_position(GTK_WIDGET(kernel->widgets.mainBoardWindow)->window,
+			  &kernel->widgets.mainBoardWindowXPosition,
+			  &kernel->widgets.mainBoardWindowYPosition);
+
+  if (kernel->widgets.mainBoardWindowXPosition < 0) {
+    kernel->widgets.mainBoardWindowXPosition = 0;
+  }
+
+  if (kernel->widgets.mainBoardWindowYPosition < 0) {
+    kernel->widgets.mainBoardWindowYPosition = 0;
+  }
+
+}
+
+
+/*
  * The "delete_event" occurs when the window manager sens this event
  * to the application, usually by the "close" option, or on the titlebar.
  * Returning TRUE means that we do not want to have the "destroy" event 
@@ -76,6 +101,13 @@ gdispManageDeleteEventFromWM (GtkWidget *mainBoardWindow,
 			      GdkEvent  *event,
 			      gpointer   data)
 {
+
+  Kernel_T *kernel = (Kernel_T*)data;
+
+  /*
+   * Remember window position.
+   */
+  gdisp_getMainBoardWindowPosition(kernel);
 
   return FALSE;
 
@@ -91,6 +123,13 @@ static void
 gdispDestroySignalHandler (GtkWidget *mainBoardWindow,
 			   gpointer   data)
 {
+
+  Kernel_T *kernel = (Kernel_T*)data;
+
+  /*
+   * Close all other top level window.
+   */
+  gdisp_closeDataBookWindow(kernel);
 
   /*
    * Tells GTK+ that it has to exit from the GTK+ main processing loop.
@@ -109,14 +148,17 @@ gdispQuitItemHandler (gpointer factoryData,
 		      guint    itemData)
 {
 
-#if defined(NOT_TO_FORGET)
   Kernel_T *kernel = (Kernel_T*)factoryData;
-#endif
+
+  /*
+   * Remember window position.
+   */
+  gdisp_getMainBoardWindowPosition(kernel);
 
   /*
    * Tells GTK+ that it has to exit from the GTK+ main processing loop.
    */
-  gtk_main_quit();
+  gtk_widget_destroy(kernel->widgets.mainBoardWindow);
 
 }
 
@@ -390,7 +432,7 @@ gdisp_createMainBoard (Kernel_T *kernel)
 		       150 /* height */);
 
   gtk_window_set_title(GTK_WINDOW(kernel->widgets.mainBoardWindow),
-		       "GDISP+ Copyright (c) 2004.");
+		       "GDISP+ Copyright (c) 2005.");
 
   gtk_container_set_border_width(
 			   GTK_CONTAINER(kernel->widgets.mainBoardWindow),
@@ -465,6 +507,9 @@ gdisp_createMainBoard (Kernel_T *kernel)
    * Map top-level window.
    */
   gtk_widget_show(kernel->widgets.mainBoardWindow);
+  gdk_window_move(GTK_WIDGET(kernel->widgets.mainBoardWindow)->window,
+		  kernel->widgets.mainBoardWindowXPosition,
+		  kernel->widgets.mainBoardWindowYPosition);
 
 
   /* ------------------------ SEPARATOR ------------------------ */

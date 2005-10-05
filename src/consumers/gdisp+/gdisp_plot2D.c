@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_plot2D.c,v 1.12 2005-02-19 21:35:20 esteban Exp $
+$Id: gdisp_plot2D.c,v 1.13 2005-10-05 19:21:00 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -87,7 +87,7 @@ gdisp_manageSymbolNameWindow ( Kernel_T *kernel,
 			       Plot2D_T *plot,
 			       GList    *symbolList);
 static void
-gdisp_debugDumpData (char *txt, Plot2D_T       *plot);
+gdisp_debugDumpData (char *txt, Plot2D_T *plot);
 
 
 /*
@@ -340,7 +340,9 @@ gdisp_drawSymbolName ( Kernel_T *kernel,
  */
 
 static int
-gdisp_plot2DRecomputeMinMax (Plot2D_T       *plot, gboolean raw_update)
+gdisp_plot2DRecomputeMinMax ( Plot2D_T       *plot,
+			      gboolean        raw_update,
+			      KindOfRedraw_T  drawType )
 {
 
   guint               nbCurves   =                         0;
@@ -352,7 +354,9 @@ gdisp_plot2DRecomputeMinMax (Plot2D_T       *plot, gboolean raw_update)
   DoublePoint_T       newMax	 =	       	   {0.0, 0.0};
   guint               startIndex =                         0;
   guint               nbPoints   =                         0;
+#if defined(GD_OLD_INITIALISATION)
   KindOfRedraw_T      drawType   =     GD_2D_ADD_NEW_SAMPLES; /* Try to be optimist */
+#endif
   gdouble	      old_delta_x=			 0.0;
   gdouble	      new_delta_x=			 0.0;
 
@@ -398,9 +402,9 @@ gdisp_plot2DRecomputeMinMax (Plot2D_T       *plot, gboolean raw_update)
     } /* end for this curve */
   } /* end for all curves */
 
-
-  if (nbCurves==0)
+  if (nbCurves==0) {
     return drawType; /* to early to compute something */
+  }
 
   /* Add some margins to this min/max */
   if (plot->p2dSubType != GD_2D_F2T) {
@@ -449,8 +453,7 @@ gdisp_plot2DRecomputeMinMax (Plot2D_T       *plot, gboolean raw_update)
     plot->p2dPtSlope.y = plot->p2dAreaHeight / (plot->p2dPtMax.y - plot->p2dPtMin.y);
   else
     plot->p2dPtSlope.y = 1.0;
-    
-  
+
   return drawType;
 }
 
@@ -803,6 +806,9 @@ gdisp_manageSymbolNameWindow ( Kernel_T *kernel,
 
   GDISP_TRACE(3,"Creating or resizing symbol name window.\n");
 
+  if (plot->p2dArea->window == (GdkWindow*)NULL) {
+    return;
+  }
 
   /*
    * Which axis ?
@@ -1375,7 +1381,9 @@ gdisp_plot2DDrawBackBuffer (Kernel_T       *kernel,
   /* This might not be very fast, but should fix the growing min/max */
   if (drawType == GD_2D_FULL_REDRAW || plot->p2dIsDirty) {
 
-    drawType = gdisp_plot2DRecomputeMinMax (plot,plot->p2dIsDirty);
+    drawType = gdisp_plot2DRecomputeMinMax (plot,
+					    plot->p2dIsDirty,
+					    drawType);
 
   }
 
@@ -1517,12 +1525,14 @@ gdisp_plot2DConfigure (GtkWidget         *area,
 
 
   /*
-   * Take care of X symbol name window.
-   * No need to move/resize Y symbol list.
+   * Take care of symbol name windows.
    */
   gdisp_manageSymbolNameWindow(kernel,
 			       plot,
 			       plot->p2dXSymbolList);
+  gdisp_manageSymbolNameWindow(kernel,
+			       plot,
+			       plot->p2dYSymbolList);
 
   return TRUE;
 
@@ -2128,6 +2138,7 @@ gdisp_addSymbolsToPlot2D (Kernel_T *kernel,
      * are not already in the final list.
      */
     symbolItem = g_list_first(symbolList);
+
     while (symbolItem != (GList*)NULL) {
 
       if (g_list_find(plot->p2dYSymbolList,symbolItem->data) == (GList*)NULL) {
@@ -2140,7 +2151,6 @@ gdisp_addSymbolsToPlot2D (Kernel_T *kernel,
 	 */
 	symbol = (Symbol_T*)symbolItem->data;
 	symbol->sReference++;
-
 
 	/*
 	 * Allocate memory for receiving sampled values of the symbol.
@@ -2635,7 +2645,11 @@ gdisp_initPlot2DSystem (Kernel_T     *kernel,
    */
   trace = getenv("GDISP_STRACE");
   gdispVerbosity = (trace != (gchar*)NULL) ? atoi(trace) : 1;
+
+#if defined(DEBUG_2D)	
   printf ("GDISP trace level=%d\n", gdispVerbosity);
+#endif
+
 }
 
 

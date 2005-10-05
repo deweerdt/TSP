@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_kernel.h,v 1.13 2005-03-08 21:28:17 esteban Exp $
+$Id: gdisp_kernel.h,v 1.14 2005-10-05 19:21:00 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -154,6 +154,7 @@ typedef enum {
  *                  a graphic plot. It is up to graphic plots to increment
  *                  the 'sReference' variable, and to decrement it each time
  *                  the symbol is no longer requested by the plot.
+ *  - sConfIndex  : identity within the configuration.
  *  - sInfo       : structure coming from TSP core.
  *                  contains : name, index, period and phase.
  *  - sLastValue  : the double precision value of the symbol.
@@ -169,6 +170,7 @@ typedef enum {
 typedef struct Symbol_T_ {
 
   guchar                           sReference;
+  guint                            sConfIndex;
   TSP_consumer_symbol_requested_t  sInfo;
   guint                            sTimeTag;
   gdouble                          sLastValue;
@@ -191,7 +193,7 @@ typedef enum {
   GD_SORT_BY_NAME = 0,
   GD_SORT_BY_NAME_REVERSE,
   GD_SORT_BY_PROVIDER,
-  GD_SORT_BY_STRING
+  GD_SORT_BY_INDEX
 
 } SortingMethod_T;
 
@@ -251,6 +253,7 @@ typedef struct Provider_T_ {
   guint             pIdentity;
 
   ProviderStatus_T  pStatus;
+  GString          *pOriginalUrl;
   GString          *pUrl;
   gdouble           pBaseFrequency;
   gint              pMaxPeriod;
@@ -269,6 +272,12 @@ typedef struct Provider_T_ {
    */
   pthread_t         pSamplingThread;
   ThreadStatus_T    pSamplingThreadStatus;
+
+  /*
+   * Configuration temporarily data.
+   */
+  void             *pSymbolInConfiguration;
+  guint             pNbSymbolInConfiguration;
 
   /*
    * Graphic information.
@@ -403,9 +412,20 @@ typedef struct PlotSystem_T_ {
  */
 typedef struct PlotSystemData_T_ {
 
+  /*
+   * Core.
+   */
   PlotSystem_T *plotSystem;
   void         *plotData;
   guint         plotCycle;
+
+  /*
+   * Position within graphic page.
+   */
+  guint         plotRow;
+  guint         plotNbRows;
+  guint         plotColumn;
+  guint         plotNbColumns;
   
 } PlotSystemData_T;
 
@@ -426,6 +446,7 @@ typedef struct Page_T_ {
    * Plot system data (size is 'pRows' x 'pColumns').
    */
   PlotSystemData_T *pPlotSystemData;
+  guint             pCurrentNbPlotSystems;
 
   /*
    * Graphic widgets.
@@ -445,6 +466,8 @@ typedef struct Page_T_ {
 typedef struct KernelWidget_T_ {
 
   GtkWidget         *mainBoardWindow;
+  gint               mainBoardWindowXPosition;
+  gint               mainBoardWindowYPosition;
   GtkWidget         *mainBoardOkButton;
   GtkWidget         *mainBoardStopButton;
   GtkWidget         *mainBoardOutputList;
@@ -452,7 +475,11 @@ typedef struct KernelWidget_T_ {
   Pixmap_T          *pilotBoardDigitPixmap;
   GtkWidget         *pilotBoardTimeArea;
   GdkGC             *pilotBoardTimeContext;
+  GtkWidget         *pilotBoardElapsedTimeArea;
+  GdkGC             *pilotBoardElapsedTimeContext;
   GtkWidget         *dataBookWindow;
+  gint               dataBookWindowXPosition;
+  gint               dataBookWindowYPosition;
   GtkWidget         *dataBookWidget;
   GtkWidget         *dataBookApplyButton;
 #define _SYMBOL_CLIST_COLUMNS_NB_ 3
@@ -494,6 +521,8 @@ typedef struct Kernel_T_ {
 #define GD_TIMER_MIN_PERIOD 100
   guint              stepTimerPeriod;
   guint              stepGlobalCycle;
+  time_t             startSamplingTime;
+  time_t             stopSamplingTime;
   gint               kernelTimerIdentity;
   GPtrArray         *kernelRegisteredActions;
 
@@ -524,6 +553,7 @@ typedef struct Kernel_T_ {
   void             (*unRegisterAction)        (Kernel_T_Ptr,
 					       void(*action)(Kernel_T_Ptr));
   void             (*assignSymbolsToProviders)(Kernel_T_Ptr);
+  PlotType_T       (*getPlotTypeFromPlotName) (Kernel_T_Ptr,gchar*);
 
   /*
    * Host/URL management.

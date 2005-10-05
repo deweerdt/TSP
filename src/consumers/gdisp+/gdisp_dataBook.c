@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_dataBook.c,v 1.4 2004-10-22 20:17:34 esteban Exp $
+$Id: gdisp_dataBook.c,v 1.5 2005-10-05 19:21:00 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -64,6 +64,31 @@ File      : Notebook gathering symbols, providers, plots.
 
 
 /*
+ * Remember databook window position.
+ */
+static void
+gdisp_getDataBookWindowPosition (Kernel_T *kernel)
+{
+
+  /*
+   * Remember window position.
+   */
+  gdk_window_get_position(GTK_WIDGET(kernel->widgets.dataBookWindow)->window,
+			  &kernel->widgets.dataBookWindowXPosition,
+			  &kernel->widgets.dataBookWindowYPosition);
+
+  if (kernel->widgets.dataBookWindowXPosition < 0) {
+    kernel->widgets.dataBookWindowXPosition = 0;
+  }
+
+  if (kernel->widgets.dataBookWindowYPosition < 0) {
+    kernel->widgets.dataBookWindowYPosition = 0;
+  }
+
+}
+
+
+/*
  * The "delete_event" occurs when the window manager sens this event
  * to the application, usually by the "close" option, or on the titlebar.
  * Returning TRUE means that we do not want to have the "destroy" event 
@@ -75,6 +100,13 @@ gdispManageDeleteEventFromWM (GtkWidget *symbolWindow,
 			      GdkEvent  *event,
 			      gpointer   data)
 {
+
+  Kernel_T *kernel = (Kernel_T*)data;
+
+  /*
+   * Remember window position.
+   */
+  gdisp_getDataBookWindowPosition(kernel);
 
   return FALSE;
 
@@ -111,7 +143,7 @@ gdispDestroySignalHandler (GtkWidget *dataBookWindow,
    * Close and destroy data book.
    */
   gtk_widget_destroy(dataBookWindow);
-  kernel->widgets.dataBookWindow      = (GtkWidget*)NULL;
+  kernel->widgets.dataBookWindow = (GtkWidget*)NULL;
 
   /*
    * Reset all widgets.
@@ -127,6 +159,29 @@ gdispDestroySignalHandler (GtkWidget *dataBookWindow,
   kernel->widgets.spRadioButton       = (GtkWidget*)NULL;
   kernel->widgets.apRadioButton       = (GtkWidget*)NULL;
   kernel->widgets.filterEntry         = (GtkWidget*)NULL;
+
+}
+
+
+/*
+ * Close button callback.
+ */
+static void
+gdisp_closeCallback (GtkWidget *closeButtonWidget,
+		     gpointer   data )
+{
+
+  Kernel_T *kernel = (Kernel_T*)data;
+
+  /*
+   * Remember window position.
+   */
+  gdisp_getDataBookWindowPosition(kernel);
+
+  /*
+   * Tells GTK+ that it has to exit from the GTK+ main processing loop.
+   */
+  gtk_widget_destroy(kernel->widgets.dataBookWindow);
 
 }
 
@@ -321,10 +376,10 @@ gdisp_showDataBook (gpointer factoryData,
   /*
    * Map top-level window.
    */
-  gtk_widget_set_uposition(kernel->widgets.dataBookWindow,
-			   0,
-			   0); /* top left corner */
   gtk_widget_show(kernel->widgets.dataBookWindow);
+  gdk_window_move(GTK_WIDGET(kernel->widgets.dataBookWindow)->window,
+		  kernel->widgets.dataBookWindowXPosition,
+		  kernel->widgets.dataBookWindowYPosition);
 
 
   /* ------------------------ DATA BOOK ------------------------ */
@@ -454,10 +509,10 @@ gdisp_showDataBook (gpointer factoryData,
 		     GTK_SIGNAL_FUNC(gdisp_applyChangesCallback),
 		     (gpointer)kernel);
 
-  gtk_signal_connect_object(GTK_OBJECT(closeButton),
-			    "clicked",
-			    (GtkSignalFunc)gtk_widget_destroy,
-			    GTK_OBJECT(kernel->widgets.dataBookWindow));
+  gtk_signal_connect(GTK_OBJECT(closeButton),
+		     "clicked",
+		     GTK_SIGNAL_FUNC(gdisp_closeCallback),
+		     (gpointer)kernel);
 
   /*
    * This grabs this button to be the default button.
@@ -474,3 +529,22 @@ gdisp_showDataBook (gpointer factoryData,
 
 }
 
+
+/*
+ * Close data book window.
+ */
+void
+gdisp_closeDataBookWindow ( Kernel_T *kernel )
+{
+
+  /*
+   * Manually activate callback.
+   */
+  if (kernel->widgets.dataBookWindow != (GtkWidget*)NULL) {
+
+    gdisp_closeCallback((GtkWidget*)NULL,
+			(gpointer)kernel);
+
+  }
+
+}

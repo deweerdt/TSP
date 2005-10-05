@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_sampling.c,v 1.10 2004-11-17 09:29:36 dufy Exp $
+$Id: gdisp_sampling.c,v 1.11 2005-10-05 19:21:01 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -877,8 +877,10 @@ gdisp_startSamplingProcess (Kernel_T *kernel)
    * Each graphic plot is asked its own period, then the minimum
    * period is given to the GTK timer.
    */
-  kernel->stepTimerPeriod = G_MAXINT; /* will be overwritten */
-  kernel->stepGlobalCycle = 0;
+  kernel->stepTimerPeriod   = G_MAXINT; /* will be overwritten */
+  kernel->stepGlobalCycle   = 0;
+  kernel->startSamplingTime = (time_t)NULL;
+  kernel->stopSamplingTime  = (time_t)NULL;
 
   gdisp_loopOnGraphicPlots(kernel,
 			   gdisp_computeTimerPeriod,
@@ -996,6 +998,13 @@ gdisp_startSamplingProcess (Kernel_T *kernel)
 
   } /* test whether garbage collector thread already exists */
 
+
+  /*
+   * Record the time when the sampling process begins.
+   */
+  kernel->startSamplingTime = time((time_t*)NULL);
+  kernel->stopSamplingTime  = kernel->startSamplingTime;
+
   return TRUE;
 
 }
@@ -1017,6 +1026,12 @@ gdisp_stopSamplingProcess (Kernel_T *kernel)
     kernel->stepTimerIdentity = 0;
 
   }
+
+
+  /*
+   * Record the time when the sampling process stops.
+   */
+  kernel->stopSamplingTime = time((time_t*)NULL);
 
 
   /*

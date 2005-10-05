@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_kernel.c,v 1.10 2005-03-25 23:42:08 erk Exp $
+$Id: gdisp_kernel.c,v 1.11 2005-10-05 19:21:00 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -252,6 +252,39 @@ gdisp_activateRegisteredActions ( void *data )
 
 }
 
+/* --------------------------------------------------------------- */
+
+static PlotType_T
+gdisp_getPlotTypeFromPlotName ( Kernel_T *kernel,
+				gchar    *plotName )
+{
+
+  PlotSystemInfo_T  plotInformation;
+  PlotSystem_T     *plotSystem = (PlotSystem_T*)NULL;
+  PlotType_T        plotType   = GD_PLOT_DEFAULT;
+
+  for (plotType=GD_PLOT_DEFAULT; plotType<GD_MAX_PLOT; plotType++) {
+
+    plotSystem = &kernel->plotSystems[plotType];
+
+    if (plotSystem->psIsSupported == TRUE) {
+
+      (*plotSystem->psGetInformation)(kernel,
+				      &plotInformation);
+
+      if (plotInformation.psName != (gchar*)NULL &&
+	  strcmp(plotInformation.psName,plotName) == 0) {
+	return plotType; /* got you... */
+      }
+
+    }
+
+  } /* loop */
+
+  return GD_PLOT_DEFAULT;
+
+}
+
 
 /*
  --------------------------------------------------------------------
@@ -265,7 +298,7 @@ gdisp_activateRegisteredActions ( void *data )
  */
 Kernel_T*
 gdisp_createKernel (gint    argc,
-		   gchar **argv)
+		    gchar **argv)
 {
 
   Kernel_T        *kernel          =       (Kernel_T*)NULL;
@@ -297,6 +330,8 @@ gdisp_createKernel (gint    argc,
    * Try to know whether a multi-threaded environment is available ?
    */
 
+  /* ... later ... */
+
   /*
    * We must provide our own thread-safe system.
    */
@@ -321,7 +356,7 @@ gdisp_createKernel (gint    argc,
    * Initialise all plot systems.
    * Each plot system that is supported may provide several functions.
    */
-  kernel->currentPlotType = GD_PLOT_2D;
+  kernel->currentPlotType = GD_PLOT_DEFAULT;
 
   /* Remove size of 'psIsSupported' */
   functionSetSize = sizeof(PlotSystem_T) - sizeof(gboolean);
@@ -390,9 +425,17 @@ gdisp_createKernel (gint    argc,
 		    (void*)kernel);
 
   /*
-   * Remember how to assign symbols to providers for sampling purpose.
+   * Remember :
+   *  -  how to assign symbols to providers for sampling purpose.
+   *  -  how to get plot type from plot name.
    */
   kernel->assignSymbolsToProviders = gdisp_affectRequestedSymbolsToProvider;
+  kernel->getPlotTypeFromPlotName  = gdisp_getPlotTypeFromPlotName;
+
+  /*
+   * Read user preference file.
+   */
+  gdisp_loadPreferenceFile(kernel);
 
   /*
    * Return the kernel itself.
@@ -410,6 +453,11 @@ gdisp_destroyKernel (Kernel_T *kernel)
 {
 
   assert(kernel);
+
+  /*
+   * Try to save preference file.
+   */
+  gdisp_savePreferenceFile(kernel);
 
   /*
    * Destroy all fonts and pixmaps.

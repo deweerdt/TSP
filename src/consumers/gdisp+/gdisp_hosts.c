@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_hosts.c,v 1.4 2004-10-22 20:17:34 esteban Exp $
+$Id: gdisp_hosts.c,v 1.5 2005-10-05 19:21:00 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -110,6 +110,12 @@ gdisp_addHost ( Kernel_T *kernel,
 
   Host_T *host = (Host_T*)NULL;
 
+  /*
+   * Check.
+   */
+  if (hostName == (gchar*)NULL) {
+    return;
+  }
 
   /*
    * Add a new host into the host list, if this host does not already exist.
@@ -144,6 +150,13 @@ gdisp_addUrl ( Kernel_T *kernel,
 {
 
   gchar *url = (gchar*)NULL;
+
+  /*
+   * Check.
+   */
+  if (urlName == (gchar*)NULL) {
+    return;
+  }
 
   /*
    * Duplicate URL name

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_pilotBoard.c,v 1.2 2004-10-22 20:17:34 esteban Exp $
+$Id: gdisp_pilotBoard.c,v 1.3 2005-10-05 19:21:00 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -64,6 +64,8 @@ File      : Graphic Tool Pilot Board.
  --------------------------------------------------------------------
 */
 
+#define GD_ELAPSED_TIME 1
+#define GD_UTC_TIME     2
 
 /*
  * This callback is called whenever play / stop buttons are pressed.
@@ -109,7 +111,8 @@ gdisp_togglePlayModeCallback (GtkWidget *buttonWidget,
  * Graphically show the time. Callback of a GTK timer.
  */
 static void
-gdisp_showTime ( Kernel_T *kernel )
+gdisp_showTimeInformation ( Kernel_T *kernel,
+			    gchar     mode )
 {
 
 #define GD_DIGIT_WIDTH               16
@@ -117,44 +120,79 @@ gdisp_showTime ( Kernel_T *kernel )
 #define GD_2PTS_WIDTH                 9
 #define GD_DIGIT_HEIGHT              21
 
-  GdkPixmap      *digitPixmap  = (GdkPixmap*)NULL;
-  GtkWidget      *timeArea     = (GtkWidget*)NULL;
-  GdkGC          *timeContext  =     (GdkGC*)NULL;
+  GdkPixmap      *digitPixmap    = (GdkPixmap*)NULL;
+  GtkWidget      *graphicArea    = (GtkWidget*)NULL;
+  GdkGC          *graphicContext =     (GdkGC*)NULL;
 
-  time_t          nowTime      =     (time_t)NULL;
-  struct tm      *localNowTime = (struct tm*)NULL;
+  time_t          nowTime        =     (time_t)NULL;
+  struct tm      *localNowTime   = (struct tm*)NULL;
 
-  guint           seconds      = 0;
-  guint           minutes      = 0;
-  guint           hours        = 0;
-  guint           xPos         = 0;
-  guint           yPos         = 0;
+  guint           seconds        = 0;
+  guint           minutes        = 0;
+  guint           hours          = 0;
+  guint           xPos           = 0;
+  guint           yPos           = 0;
   
-
-  /*
-   * Get back current time.
-   */
-  nowTime      = time((time_t*)NULL);
-  localNowTime = localtime(&nowTime);
-
-  seconds      = localNowTime->tm_sec;
-  minutes      = localNowTime->tm_min;
-  hours        = localNowTime->tm_hour;
-
 
   /*
    * Init.
    */
-  digitPixmap = kernel->widgets.pilotBoardDigitPixmap->pixmap;
-  timeArea    = kernel->widgets.pilotBoardTimeArea;
-  timeContext = kernel->widgets.pilotBoardTimeContext;
+  digitPixmap    = kernel->widgets.pilotBoardDigitPixmap->pixmap;
 
+
+  /*
+   * Get back current time or current elapsed time.
+   */
+  switch (mode) {
+
+  case GD_UTC_TIME :
+
+    graphicArea    = kernel->widgets.pilotBoardTimeArea;
+    graphicContext = kernel->widgets.pilotBoardTimeContext;
+
+    nowTime        = time((time_t*)NULL);
+    localNowTime   = localtime(&nowTime);
+
+    seconds        = localNowTime->tm_sec;
+    minutes        = localNowTime->tm_min;
+    hours          = localNowTime->tm_hour;
+
+    break;
+
+  case GD_ELAPSED_TIME :
+
+    graphicArea    = kernel->widgets.pilotBoardElapsedTimeArea;
+    graphicContext = kernel->widgets.pilotBoardElapsedTimeContext;
+
+    if (kernel->stepTimerIdentity > 0) {
+      kernel->stopSamplingTime = time((time_t*)NULL);
+    }
+
+    nowTime      = kernel->stopSamplingTime - kernel->startSamplingTime;
+
+    hours        = nowTime / 3600;
+    nowTime     -=   hours * 3600;
+
+    minutes      = nowTime /   60;
+    nowTime     -= minutes *   60;
+
+    seconds      = nowTime;
+
+    break;
+
+  default :
+
+    /* should never happen */
+
+    break;
+
+  }
 
   /*
    * Draw hours.
    */
-  gdk_draw_pixmap(timeArea->window,
-		  timeContext,
+  gdk_draw_pixmap(graphicArea->window,
+		  graphicContext,
 		  digitPixmap,
 		  GD_DIGIT_START_X + (hours / 10) * GD_DIGIT_WIDTH,
 		  yPos,
@@ -165,8 +203,8 @@ gdisp_showTime ( Kernel_T *kernel )
 
   xPos += GD_DIGIT_WIDTH;
 
-  gdk_draw_pixmap(timeArea->window,
-		  timeContext,
+  gdk_draw_pixmap(graphicArea->window,
+		  graphicContext,
 		  digitPixmap,
 		  GD_DIGIT_START_X + (hours % 10) * GD_DIGIT_WIDTH,
 		  yPos,
@@ -180,8 +218,8 @@ gdisp_showTime ( Kernel_T *kernel )
   /*
    * Draw 2 points.
    */
-  gdk_draw_pixmap(timeArea->window,
-		  timeContext,
+  gdk_draw_pixmap(graphicArea->window,
+		  graphicContext,
 		  digitPixmap,
 		  GD_DIGIT_START_X + 12 * GD_DIGIT_WIDTH,
 		  yPos,
@@ -195,8 +233,8 @@ gdisp_showTime ( Kernel_T *kernel )
   /*
    * Draw minutes.
    */
-  gdk_draw_pixmap(timeArea->window,
-		  timeContext,
+  gdk_draw_pixmap(graphicArea->window,
+		  graphicContext,
 		  digitPixmap,
 		  GD_DIGIT_START_X + (minutes / 10) * GD_DIGIT_WIDTH,
 		  yPos,
@@ -207,8 +245,8 @@ gdisp_showTime ( Kernel_T *kernel )
 
   xPos += GD_DIGIT_WIDTH;
 
-  gdk_draw_pixmap(timeArea->window,
-		  timeContext,
+  gdk_draw_pixmap(graphicArea->window,
+		  graphicContext,
 		  digitPixmap,
 		  GD_DIGIT_START_X + (minutes % 10) * GD_DIGIT_WIDTH,
 		  yPos,
@@ -222,8 +260,8 @@ gdisp_showTime ( Kernel_T *kernel )
   /*
    * Draw 2 points.
    */
-  gdk_draw_pixmap(timeArea->window,
-		  timeContext,
+  gdk_draw_pixmap(graphicArea->window,
+		  graphicContext,
 		  digitPixmap,
 		  GD_DIGIT_START_X + 12 * GD_DIGIT_WIDTH,
 		  yPos,
@@ -237,8 +275,8 @@ gdisp_showTime ( Kernel_T *kernel )
   /*
    * Draw seconds.
    */
-  gdk_draw_pixmap(timeArea->window,
-		  timeContext,
+  gdk_draw_pixmap(graphicArea->window,
+		  graphicContext,
 		  digitPixmap,
 		  GD_DIGIT_START_X + (seconds / 10) * GD_DIGIT_WIDTH,
 		  yPos,
@@ -249,8 +287,8 @@ gdisp_showTime ( Kernel_T *kernel )
 
   xPos += GD_DIGIT_WIDTH;
 
-  gdk_draw_pixmap(timeArea->window,
-		  timeContext,
+  gdk_draw_pixmap(graphicArea->window,
+		  graphicContext,
 		  digitPixmap,
 		  GD_DIGIT_START_X + (seconds % 10) * GD_DIGIT_WIDTH,
 		  yPos,
@@ -265,8 +303,29 @@ gdisp_showTime ( Kernel_T *kernel )
 
 
 /*
+ * Registered action : show time.
+ */
+static void
+gdisp_showTime ( Kernel_T *kernel )
+{
+
+  /*
+   * Show universal UTC time.
+   */
+  gdisp_showTimeInformation(kernel,
+			    GD_UTC_TIME);
+
+  /*
+   * Show elapsed time since sampling process beginning.
+   */
+  gdisp_showTimeInformation(kernel,
+			    GD_ELAPSED_TIME);
+
+}
+
+/*
  * Treat 'expose' X event.
- * What shall I do when the area has to be refreshed ?
+ * What shall I do when the time area has to be refreshed ?
  */
 static gboolean
 gdisp_timeAreaExpose (GtkWidget       *area,
@@ -282,9 +341,39 @@ gdisp_timeAreaExpose (GtkWidget       *area,
   gdk_gc_set_clip_rectangle(kernel->widgets.pilotBoardTimeContext,
 			    &event->area);
 
-  gdisp_showTime(kernel);
+  gdisp_showTimeInformation(kernel,
+			    GD_UTC_TIME);
 
   gdk_gc_set_clip_rectangle(kernel->widgets.pilotBoardTimeContext,
+			    (GdkRectangle*)NULL);
+
+  return TRUE;
+
+}
+
+
+/*
+ * Treat 'expose' X event.
+ * What shall I do when the elapsedtime area has to be refreshed ?
+ */
+static gboolean
+gdisp_elapsedTimeAreaExpose (GtkWidget       *area,
+			     GdkEventExpose  *event,
+			     gpointer         data)
+{
+
+  Kernel_T *kernel = (Kernel_T*)data;
+
+  /*
+   * Graphic area has now to be repainted.
+   */
+  gdk_gc_set_clip_rectangle(kernel->widgets.pilotBoardElapsedTimeContext,
+			    &event->area);
+
+  gdisp_showTimeInformation(kernel,
+			    GD_ELAPSED_TIME);
+
+  gdk_gc_set_clip_rectangle(kernel->widgets.pilotBoardElapsedTimeContext,
 			    (GdkRectangle*)NULL);
 
   return TRUE;
@@ -306,12 +395,15 @@ GtkWidget*
 gdisp_createPilotBoard (Kernel_T *kernel)
 {
 
-  GtkWidget *pilotBox     = (GtkWidget*)NULL;
-  GtkWidget *timeFrame    = (GtkWidget*)NULL;
-  GtkWidget *pixmapWidget = (GtkWidget*)NULL;
-  Pixmap_T  *pixmap       =  (Pixmap_T*)NULL;
-  GtkWidget *timeArea     = (GtkWidget*)NULL;
-  GdkGC     *timeContext  =     (GdkGC*)NULL;
+  GtkWidget *pilotBox           = (GtkWidget*)NULL;
+  GtkWidget *timeFrame          = (GtkWidget*)NULL;
+  GtkWidget *elapsedTimeFrame   = (GtkWidget*)NULL;
+  GtkWidget *pixmapWidget       = (GtkWidget*)NULL;
+  Pixmap_T  *pixmap             =  (Pixmap_T*)NULL;
+  GtkWidget *timeArea           = (GtkWidget*)NULL;
+  GtkWidget *elapsedTimeArea    = (GtkWidget*)NULL;
+  GdkGC     *timeContext        =     (GdkGC*)NULL;
+  GdkGC     *elapsedTimeContext =     (GdkGC*)NULL;
 
   assert(kernel);
 
@@ -433,6 +525,40 @@ gdisp_createPilotBoard (Kernel_T *kernel)
 		     "clicked",
 		     GTK_SIGNAL_FUNC(gdisp_togglePlayModeCallback),
 		     (gpointer)kernel);
+
+
+  /* --------------------- ELAPSEDTIME GRAPHIC AREA --------------------- */
+
+  elapsedTimeFrame = gtk_frame_new((gchar*)NULL);
+  gtk_frame_set_shadow_type(GTK_FRAME(elapsedTimeFrame),GTK_SHADOW_ETCHED_OUT);
+  gtk_frame_set_shadow_type(GTK_FRAME(elapsedTimeFrame),GTK_SHADOW_IN);
+  gtk_box_pack_start(GTK_BOX(pilotBox),
+		     elapsedTimeFrame,
+		     FALSE, /* expand  */
+		     FALSE, /* fill    */
+		     0);    /* padding */
+  gtk_widget_show(elapsedTimeFrame);
+
+  elapsedTimeArea = gtk_drawing_area_new();
+  kernel->widgets.pilotBoardElapsedTimeArea = elapsedTimeArea;
+
+  gtk_drawing_area_size(GTK_DRAWING_AREA(elapsedTimeArea),
+			6 * GD_DIGIT_WIDTH + 2 * GD_2PTS_WIDTH  /* width  */,
+			GD_DIGIT_HEIGHT /* height */);
+
+  elapsedTimeContext =
+    gdk_gc_new(GTK_WIDGET(kernel->widgets.mainBoardWindow)->window);
+
+  kernel->widgets.pilotBoardElapsedTimeContext = elapsedTimeContext;
+
+  gtk_signal_connect(GTK_OBJECT(elapsedTimeArea),
+		     "expose_event",
+		     (GtkSignalFunc)gdisp_elapsedTimeAreaExpose,
+		     (gpointer)kernel);
+
+  gtk_container_add(GTK_CONTAINER(elapsedTimeFrame),elapsedTimeArea);
+
+  gtk_widget_show(elapsedTimeArea);
 
 
   /* --------------------- REGISTER ACTION ------------------- */
