@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: glue_res.c,v 1.7 2004-09-22 14:25:58 tractobob Exp $
+$Id: glue_res.c,v 1.8 2005-10-09 23:01:25 erk Exp $
 
 -----------------------------------------------------------------------
  
@@ -34,11 +34,13 @@ Purpose   : Implementation for the glue_server
 
 -----------------------------------------------------------------------
 */
+#include <string.h>
 
 #include "tsp_sys_headers.h"
 #include "glue_sserver.h"
 #include "tsp_ringbuf.h"
 #include "tsp_time.h"
+#include "tsp_datapool.h"
 
 
 #define _LIBUTIL_REENTRANT 1
@@ -50,6 +52,7 @@ Purpose   : Implementation for the glue_server
 
 static int _wait_eof=0;
 static int _started = FALSE;
+static GLU_handle_t* res_GLU = NULL;
 
 struct GLU_state_t
 {
@@ -67,7 +70,7 @@ typedef struct GLU_state_t GLU_state_t;
 GLU_state_t glu_handler;
 
 
-void GLU_loop()
+void RES_GLU_loop()
 {
   GLU_state_t* obj = &glu_handler;
   glu_item_t  item;
@@ -126,14 +129,14 @@ void GLU_loop()
   d_rclos_r(obj->h_res);
 }
 
-int GLU_start(void)
+int RES_GLU_start(GLU_handle_t* this)
 {
   _started = TRUE;
   return TRUE;
 }
 
 
-int GLU_init(int fallback_argc, char* fallback_argv[])
+int RES_GLU_init(GLU_handle_t* this, int fallback_argc, char* fallback_argv[])
 {
 
   int ret = TRUE;
@@ -212,8 +215,7 @@ int GLU_init(int fallback_argc, char* fallback_argv[])
 }
 
 
-
-int  GLU_get_sample_symbol_info_list(GLU_handle_t h_glu,TSP_sample_symbol_info_list_t* symbol_list)
+int  RES_GLU_get_sample_symbol_info_list(GLU_handle_t* h_glu,TSP_sample_symbol_info_list_t* symbol_list)
 {
   GLU_state_t* obj = &glu_handler;
 
@@ -224,31 +226,37 @@ int  GLU_get_sample_symbol_info_list(GLU_handle_t h_glu,TSP_sample_symbol_info_l
 }
 
 
-char* GLU_get_server_name(void)
-{
-  return "ResServer";
-}
-
-GLU_server_type_t GLU_get_server_type(void)
-{
-  return GLU_SERVER_TYPE_PASSIVE;
-}
-
-double GLU_get_base_frequency(void)
+double RES_GLU_get_base_frequency(GLU_handle_t* this)
 {
   GLU_state_t* obj = &glu_handler;
   /* Server is passive, frequency is computed in GLU_init */
   return obj->freq;
 }
 
-/* following functions are meaningless : do nothing */  
+GLU_handle_t* 
+RES_GLU_get_instance(GLU_handle_t* this,
+			 int custom_argc,
+			 char* custom_argv[],
+			 char** error_info) {
+  
 
-void GLU_forget_data(GLU_handle_t h_glu)
-{
+    return this;
+
+} /* end of GLU_get_instance_default */
+
+GLU_handle_t* GLU_resreader_create() {
+  
+  /* create a default GLU */
+  GLU_handle_create(&res_GLU,"ResServer",GLU_SERVER_TYPE_PASSIVE,1.0);
+  
+  res_GLU->initialize         = &RES_GLU_init;
+  /* res_GLU->run                = &RES_GLU_thread;  */
+  res_GLU->get_ssi_list       = &RES_GLU_get_sample_symbol_info_list;
+  /* override default method */
+  res_GLU->get_base_frequency = &RES_GLU_get_base_frequency;
+  res_GLU->start              = &RES_GLU_start;
+  /* FIXME seems that resreader should have been multi-instance but has never been? */
+  res_GLU->get_instance       = &RES_GLU_get_instance;
+
+  return res_GLU;
 }
-
-GLU_handle_t GLU_get_instance(int argc, char* argv[], char** error_info)
-{
-  return GLU_GLOBAL_HANDLE;
-}
-

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_data_receiver.c,v 1.17 2004-09-22 14:25:58 tractobob Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_data_receiver.c,v 1.18 2005-10-09 23:01:24 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -94,7 +94,6 @@ static int TSP_data_receiver_double_decoder(void* out_double,  char* in_buf)
 static void TSP_data_receiver_process_receiver_error(TSP_sample_ringbuf_t* sample_fifo)
 {
 
-  int ret = TRUE;
   TSP_sample_t* sample;
 
   STRACE_IO(("-->IN"));
@@ -232,7 +231,7 @@ int TSP_data_receiver_receive(TSP_data_receiver_t _receiver,
 
       if(ret && !receiver_stopped)
 	{
-	  int buf_len;
+	 /*  int buf_len; */
 	  time_stamp = TSP_DECODE_INT(buf_int[0]);
 	  group_index = TSP_DECODE_INT(buf_int[1]);
 

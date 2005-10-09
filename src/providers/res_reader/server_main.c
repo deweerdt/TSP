@@ -1,6 +1,6 @@
 #/*!  \file 
 
-$Id: server_main.c,v 1.3 2004-09-16 09:39:20 tractobob Exp $
+$Id: server_main.c,v 1.4 2005-10-09 23:01:25 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -40,7 +40,8 @@ Purpose   : Allow the output of a datapool of symbols from res file
 
 #include "tsp_provider_init.h"
 
-extern void GLU_loop(void);
+void RES_GLU_loop(void);
+GLU_handle_t* GLU_resreader_create();
 
 int main(int argc, char *argv[])
 {
@@ -62,10 +63,12 @@ int main(int argc, char *argv[])
     }
   my_argv[my_argc-1] = "--tsp-stream-init-stop";
 
-  if (TSP_provider_init(&my_argc, &my_argv))
+  GLU_handle_t* GLU_resreader = GLU_resreader_create();
+
+  if (TSP_provider_init(GLU_resreader,&my_argc, &my_argv))
     {
-      TSP_provider_run(FALSE);
-      GLU_loop();
+      TSP_provider_run(TSP_ASYNC_REQUEST_SIMPLE | TSP_ASYNC_REQUEST_NON_BLOCKING);
+      RES_GLU_loop();
      }
 
   return 0;

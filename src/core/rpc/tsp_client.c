@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_client.c,v 1.11 2004-11-09 22:33:01 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_client.c,v 1.12 2005-10-09 23:01:24 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -36,12 +36,12 @@ Purpose   :
  */
 
 #include "tsp_sys_headers.h"
-
 #include "tsp_client.h"
 
 #include "tsp_rpc.h"
 #include "tsp_rpc_confprogid.h"
 
+int tsp_wrap_rpc_clnt_set_timeout(CLIENT *client, int timeout);
 
 #define LOCAL_RPCCHECK_FALSE  	if( server == (TSP_server_t)0)  \
 				{ STRACE_ERROR(("RPCCHECK failed")) ; return FALSE ;} 
@@ -72,7 +72,7 @@ CLIENT* tsp_remote_open_progid(const char *target_name, int progid)
 {
 
   CLIENT* cl = (CLIENT *)0;
-  struct timeval timeout = { 1, 0 };
+  /* struct timeval timeout = { 1, 0 }; */
 
   STRACE_IO(("-->IN"));
 
@@ -97,7 +97,6 @@ CLIENT* tsp_remote_open_progid(const char *target_name, int progid)
    
 
   STRACE_IO(("-->OUT"));
-
   return cl;
 	
 }
@@ -236,7 +235,7 @@ int TSP_request_close(const TSP_request_close_t* req_close, TSP_server_t server)
   TSP_STRACE_RPC_ERROR(server, result);
   
   STRACE_IO(("-->OUT"));
-	
+  	
   return result;
 }	
 
@@ -251,6 +250,24 @@ TSP_answer_sample_t * TSP_request_information(const TSP_request_information_t* r
   LOCAL_RPCCHECK_0;
 	
   result = tsp_request_information_1(*req_info, server);
+  TSP_STRACE_RPC_ERROR(server, result);
+  
+  STRACE_IO(("-->OUT"));
+	
+  return result;
+}	
+
+TSP_answer_sample_t * TSP_request_filtered_information(const TSP_request_information_t* req_info, int filter_kind, char* filter_string, TSP_server_t server)
+{
+
+  TSP_answer_sample_t* result;
+	
+  STRACE_IO(("-->IN"));
+
+	
+  LOCAL_RPCCHECK_0;
+	
+  result = tsp_request_filtered_information_1(*req_info, filter_kind, filter_string, server);
   TSP_STRACE_RPC_ERROR(server, result);
   
   STRACE_IO(("-->OUT"));
@@ -319,4 +336,68 @@ TSP_request_sample_destroy(const TSP_request_sample_destroy_t* req_sample,
   return result;
 }
 
+int* TSP_request_async_sample_write(const TSP_async_sample_t* async_sample_write, TSP_server_t server)
+{
+  int* result;
+  
+  STRACE_IO(("-->IN"));
+  
+
+/*   switch (async_sample_write->data.data_len) { */
+/*   case 2:  */
+/*     TSP_UINT16_TO_BE(*(uint16_t*)async_sample_write->data.data_val);	 */
+/*     break; */
+/*   case 4:  */
+/*     TSP_UINT32_TO_BE(*(uint32_t*)async_sample_write->data.data_val);	 */
+/*     break; */
+/*   case 8:   */
+/*     TSP_UINT64_TO_BE(*(uint64_t*)async_sample_write->data.data_val); */
+/*     break; */
+/*   default: */
+/*     break; */
+/*   } */
+  
+  LOCAL_RPCCHECK_FALSE;
+  
+
+  result = tsp_request_async_sample_write_1(*async_sample_write, server);
 	
+  
+  TSP_STRACE_RPC_ERROR(server, result);
+	
+  STRACE_IO(("-->OUT"));
+  	
+ return result;
+}	
+
+TSP_async_sample_t* TSP_request_async_sample_read(const TSP_async_sample_t* async_sample_read, TSP_server_t server)
+{
+  TSP_async_sample_t* result;
+  
+  STRACE_IO(("-->IN"));
+  
+
+/*   switch (async_sample_read->data.data_len) { */
+/*   case 2:  */
+/*     TSP_UINT16_TO_BE(*(uint16_t*)async_sample_read->data.data_val);	 */
+/*     break; */
+/*   case 4:  */
+/*     TSP_UINT32_TO_BE(*(uint32_t*)async_sample_read->data.data_val);	 */
+/*     break; */
+/*   case 8:   */
+/*     TSP_UINT64_TO_BE(*(uint64_t*)async_sample_read->data.data_val); */
+/*     break; */
+/*   default: */
+/*     break; */
+/*   } */
+  
+  LOCAL_RPCCHECK_FALSE;
+  
+  result = tsp_request_async_sample_read_1(*async_sample_read, server);
+	
+  TSP_STRACE_RPC_ERROR(server, result);
+	
+  STRACE_IO(("-->OUT"));
+  	
+ return result;
+}	

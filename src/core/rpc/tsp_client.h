@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: tsp_client.h,v 1.8 2004-11-09 22:33:01 erk Exp $
+$Id: tsp_client.h,v 1.9 2005-10-09 23:01:24 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -88,6 +88,12 @@ int TSP_request_close(const TSP_request_close_t* req_close,
 TSP_answer_sample_t * TSP_request_information(
 					      const TSP_request_information_t* req_info,
 					      TSP_server_t server);
+
+TSP_answer_sample_t * TSP_request_filtered_information(
+						       const TSP_request_information_t* req_info,
+						       int filter_kind,
+						       char* filter_string,
+						       TSP_server_t server);
 	
 TSP_answer_sample_t * TSP_request_sample(
 					 const TSP_request_sample_t* req_sample,
@@ -99,6 +105,10 @@ TSP_answer_sample_init_t * TSP_request_sample_init(
 
 TSP_answer_sample_destroy_t * TSP_request_sample_destroy(const TSP_request_sample_destroy_t* req_sample,
 							 TSP_server_t server);
+							 
+int* TSP_request_async_sample_write(const TSP_async_sample_t* async_sample_write, TSP_server_t server);
+
+TSP_async_sample_t* TSP_request_async_sample_read(const TSP_async_sample_t* async_sample_read, TSP_server_t server);
 
 /** @} end group Client */ 
 

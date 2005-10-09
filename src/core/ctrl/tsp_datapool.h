@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_datapool.h,v 1.10 2004-10-07 09:00:30 tractobob Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_datapool.h,v 1.11 2005-10-09 23:01:23 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -73,7 +73,7 @@ int TSP_datapool_push_commit(time_stamp_t time_stamp, GLU_get_state_t state);
  * @param h_glu Handle for the GLU that mus be linked to this datapool
  * @return The datapool handle
  */ 
-TSP_datapool_t TSP_local_datapool_allocate(int symbols_number, GLU_handle_t h_glu );
+TSP_datapool_t TSP_local_datapool_allocate(int symbols_number, GLU_handle_t* h_glu );
 
 /**
  * Destroy a local datapool.
@@ -89,7 +89,7 @@ void TSP_local_datapool_destroy(TSP_datapool_t datapool);
  * does not exist or was destroyed, a new datapool is created.
  * @return The datapool handle
  */ 
-TSP_datapool_t TSP_global_datapool_get_instance(void);
+TSP_datapool_t TSP_global_datapool_get_instance(GLU_handle_t* glu);
 
 /**
  * Get the address of a value in the datapool

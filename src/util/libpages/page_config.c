@@ -339,6 +339,7 @@ PGC_handle_t PGC_open_file(char* filename)
 int PGC_get_global(PGC_handle_t h, PGC_global_t* global)
 {
   global->display_frequency = h->display_frequency;
+  return 0;
 }
 
 int PGC_get_page_nb_var(PGC_handle_t h, int page)

@@ -9,7 +9,7 @@ SOURCES = \
 BBSOURCES = \
 	bb_server_main.c
 
-ADD_LIB =  $(DIRLIB)/libtsp_provider.a $(DIRLIB)/libtsp_services.a  $(DIRLIB)/libtsp_calc.a
+ADD_LIB =  $(DIRLIB)/libtsp_provider.a $(DIRLIB)/libtsp_common.a $(DIRLIB)/libtsp_services.a  $(DIRLIB)/libtsp_calc.a
 
 ifeq (${TSP_TARGET},vxworks)
 VXTARGET=$(DIRBIN)/tsp_stub_server.o

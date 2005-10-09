@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl_init/tsp_provider_init.h,v 1.8 2004-10-04 08:56:07 tractobob Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl_init/tsp_provider_init.h,v 1.9 2005-10-09 23:01:24 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -40,16 +40,18 @@ Purpose   : Function calls to launch a TSP Provider program
 #define _TSP_PROVIDER_INIT_H
 
 #include "tsp_prjcfg.h"
+#include "glue_sserver.h"
 
 /**
  * Main initialisation function for a TSP provider.
  * Call this function at the start of your main function
  * with the received argc/argv. Then use the modified argc/argv.
+ * @param the GLU object to be used by this provider.
  * @param argc You must provide the real argc before using it
  * @param argv You must provide the real argv before using it
  * @return TRUE or FALSE. OK = TRUE.
  */
-int TSP_provider_init(int* argc, char** argv[]);
+int TSP_provider_init(GLU_handle_t* theGLU, int* argc, char** argv[]);
 void TSP_provider_end(void);
 
 /*@{*/ 

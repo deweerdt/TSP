@@ -8,7 +8,7 @@ SOURCES = \
 	bb_vars.c \
 	main_stub.c
 
-ADD_LIB =  $(DIRLIB)/libtsp_provider.a $(DIRLIB)/libtsp_services.a  $(DIRLIB)/libtsp_calc.a $(DIRLIB)/libtsp_histo.a $(DIRLIB)/libbb.a
+ADD_LIB =  $(DIRLIB)/libtsp_provider.a $(DIRLIB)/libtsp_common.a $(DIRLIB)/libtsp_services.a  $(DIRLIB)/libtsp_calc.a $(DIRLIB)/libtsp_histo.a $(DIRLIB)/libbb.a
 
 TARGET1=$(DIRBIN)/bb_rt_stub 
 TARGET2=$(DIRBIN)/tsp_rt_stub

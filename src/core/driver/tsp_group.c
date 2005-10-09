@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_group.c,v 1.6 2004-09-22 14:25:58 tractobob Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_group.c,v 1.7 2005-10-09 23:01:24 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -65,7 +65,7 @@ TSP_groups_t
 TSP_group_create_group_table(const TSP_sample_symbol_info_list_t* symbols, int group_number)
 {
     
-  int group_id, old_group_id;
+  int group_id;
   int i;
     
   TSP_group_table_t* table = 0;

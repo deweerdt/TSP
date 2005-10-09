@@ -1,7 +1,6 @@
 include $(DEVBASE)/make/Makeparams
 
-XINC = tsp_rpc.h tsp_datastruct.h  # FIXME : shoudl not need to export tsp_datastruct.h
-#XINC = tsp_rpc.h tsp_client.h tsp_datastruct.h tsp_server.h
+XINC = tsp_rpc.h tsp_datastruct.h
 
 RPC = tsp_rpc
 

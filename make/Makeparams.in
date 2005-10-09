@@ -61,7 +61,7 @@ exec_prefix	= @exec_prefix@
 
 # ----------------
 # TSP component list
-# can build java, provider or consumer part
+# can build provider or consumer part
 # ----------------
 BUILD_PROVIDER		= @TSPPROVIDER@
 BUILD_CONSUMER		= @TSPCONSUMER@

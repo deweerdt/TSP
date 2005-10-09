@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/providers/bb_provider/bb_tsp_provider.h,v 1.6 2004-10-26 23:46:54 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/providers/bb_provider/bb_tsp_provider.h,v 1.7 2005-10-09 23:01:25 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -80,4 +80,11 @@ bb_tsp_provider_initialise(int* argc, char** argv[],int TSPRunMode, const char* 
  */
 int32_t 
 bb_tsp_provider_finalize();
+
+int32_t 
+bb_tsp_provider_allow_write_symbol(int provider_global_index);
+
+int32_t 
+bb_tsp_provider_forbid_write_symbol(int provider_global_index);
+
 #endif /* _BB_TSP_PROVIDER_H_ */

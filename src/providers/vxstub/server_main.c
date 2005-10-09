@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: server_main.c,v 1.1 2004-07-28 13:09:44 mia Exp $
+$Id: server_main.c,v 1.2 2005-10-09 23:01:26 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -39,6 +39,8 @@ Purpose   : Implementation for the glue_server, for stub test
 #include <stdio.h>
 #include "tsp_provider_init.h"
 #include "tsp_sys_headers.h"
+
+GLU_handle_t* GLU_stub_create();
  
 int TSP_launcher () 
 {
@@ -49,10 +51,12 @@ char *tableau[] ={"TSP_launcher"} ;
   printf ("#===================================================================#\n");
   printf ("# Launching <StubbedServer> for generation of 1000 Symbols at 100Hz    #\n");
   printf ("#===================================================================#\n");
+
+  GLU_handle_t* GLU_stub = GLU_stub_create();
   /* Init server */
-  if(TSP_provider_init(&argc, &argv))
+  if(TSP_provider_init(GLU_stub,&argc, &argv))
     {
-      TSP_provider_run(FALSE );
+      TSP_provider_run(TSP_ASYNC_REQUEST_SIMPLE | TSP_ASYNC_REQUEST_NON_BLOCKING);
     }
 return (int)0 ;
 }

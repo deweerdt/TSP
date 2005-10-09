@@ -9,7 +9,7 @@ SOURCES = \
 
 OBJECTS=$(SOURCES:%.c=$(DIROBJ)/%.o) 
 
-ADD_LIB =  $(DIRLIB)/libtsp_provider.a $(DIRLIB)/libbb.a $(DIRLIB)/libtsp_services.a  $(DIRLIB)/libtsp_calc.a 
+ADD_LIB =  $(DIRLIB)/libtsp_provider.a $(DIRLIB)/libtsp_common.a $(DIRLIB)/libbb.a $(DIRLIB)/libtsp_services.a  $(DIRLIB)/libtsp_calc.a 
 
 ifeq (${TSP_TARGET},vxworks)
 ADD_LIB =  $(DIRLIB)/libtsp_provider.a $(DIRLIB)/libtsp_services.a  $(DIRLIB)/libtsp_calc.a  $(DIRLIB)/libbb.a $(DIRLIB)/libtsp_posix.a

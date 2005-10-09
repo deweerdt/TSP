@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/util/libcalc/calc_func.c,v 1.1 2003-01-31 18:32:56 tsp_admin Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libcalc/calc_func.c,v 1.2 2005-10-09 23:01:26 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -43,13 +43,13 @@ Purpose   : Implementation for demo purpose
 double calc_func (int index, double my_time)
 {
   double ret=0;
-  static double mem=0;
+  /* static double mem=0; */
   if ( index == 0)
     ret = index;
   else
     {
       int module = index % 10;
-      double tmp, t = (my_time + index)/100.0;
+      double t = (my_time + index)/100.0;
       int n = (int)t;
       double r = t-n;
 
@@ -62,7 +62,9 @@ double calc_func (int index, double my_time)
 	  ret = sin (t); 
 	  break;
 	case 2: 
-	  /* FIXME : the rand function is not MT-safe for SUN */
+	  /* FIXME : the rand function is not MT-safe for SUN
+	   * nor on other machine see rand_r
+	   */
 	  /*tmp = (double)rand()/65535;
 	  ret = 10*tmp+mem/10.0; 
 	  if (n%20>=10) mem += tmp/100.0; else mem -= tmp/100.0;

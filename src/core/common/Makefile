@@ -1,24 +1,12 @@
 include $(DEVBASE)/make/Makeparams
 
-XINC    = tsp_provider.h glue_sserver.h tsp_datapool.h
-#XINC    = tsp_provider.h tsp_session.h   glue_sserver.h tsp_datapool.h \
-          tsp_group_algo.h tsp_data_sender.h tsp_group_algo_data.h \
-          tsp_stream_sender.h tsp_request.h
-
+XINC    = tsp_common.h
 SOURCES = \
-	glue_sserver.c \
-	tsp_provider.c \
-	tsp_session.c \
-	tsp_datapool.c \
-	tsp_group_algo.c \
-	tsp_data_sender.c \
-	tsp_stream_sender.c \
-	tsp_request_handler.c
-
+	tsp_common.c 
 
 OBJECTS=$(SOURCES:%.c=$(DIROBJ)/%.o) 
 
-TARGET=$(DIRLIB)/libtsp_provider.a
+TARGET=$(DIRLIB)/libtsp_common.a
 
 CPPFLAGS += -I../rpc -I ../misc_utils
 

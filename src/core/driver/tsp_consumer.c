@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.32 2005-08-14 23:06:39 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.33 2005-10-09 23:01:24 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -34,7 +34,6 @@ Purpose   : Main implementation for the TSP consumer library
 
 -----------------------------------------------------------------------
 */
-
 #include "tsp_sys_headers.h"
 
 #include "tsp_consumer.h"
@@ -43,6 +42,7 @@ Purpose   : Main implementation for the TSP consumer library
 #include "tsp_data_receiver.h"
 #include "tsp_sample_ringbuf.h"
 #include "tsp_datastruct.h"
+#include "tsp_time.h"
 
 
 /* Pool time for network data read (µs) */
@@ -253,7 +253,7 @@ static void TSP_delete_object_tsp(TSP_otsp_t* o)
 
 }
 
-static  void TSP_print_object_tsp(TSP_otsp_t* o)
+void TSP_print_object_tsp(TSP_otsp_t* o)
 {
 	
   STRACE_IO(("-->IN"));
@@ -278,6 +278,7 @@ int TSP_consumer_init(int* argc, char** argv[])
   STRACE_IO(("-->IN"));
 
   X_argv = (char**)calloc(*argc, sizeof(char*));
+  X_argc = *argc;
   X_tsp_argv.TSP_argv_t_val = (char**)calloc(*argc, sizeof(char*));
   X_tsp_argv.TSP_argv_t_len = 0;
   TSP_CHECK_ALLOC(X_argv, FALSE);
@@ -760,7 +761,6 @@ int TSP_consumer_request_close(TSP_provider_t provider)
 }
 
 
-
 int TSP_consumer_request_information(TSP_provider_t provider)
 {
 	
@@ -836,6 +836,96 @@ int TSP_consumer_request_information(TSP_provider_t provider)
 	      TSP_CHECK_ALLOC(otsp->information.symbols.val[i].name, FALSE);			
 	    }
         }
+    }
+  else
+    {
+      STRACE_ERROR(("Unable to communicate with the provider"));
+
+    }
+		
+	
+  STRACE_IO(("-->OUT"));
+
+	
+  return ret;
+	
+}
+
+int TSP_consumer_request_filtered_information(TSP_provider_t provider, int filter_kind, char* filter_string)
+{
+	
+  TSP_otsp_t* otsp = (TSP_otsp_t*)provider;
+  TSP_request_information_t req_info;
+  TSP_answer_sample_t* ans_sample = 0;
+  int ret = FALSE;
+	
+  STRACE_IO(("-->IN"));
+
+	
+  TSP_CHECK_SESSION(otsp, FALSE);
+
+  /* Delete allocation of any previous call */
+  TSP_consumer_delete_information(otsp);
+	
+  req_info.version_id = TSP_VERSION;
+  req_info.channel_id = otsp->channel_id;
+	
+  /* Ask the provider for informations */
+  ans_sample = TSP_request_filtered_information(&req_info, filter_kind, filter_string, otsp->server);
+    
+  if( NULL != ans_sample)
+    {
+      
+      switch (ans_sample->status)
+	{
+	case TSP_STATUS_OK :
+	  ret = TRUE;
+	  break;
+	case TSP_STATUS_ERROR_UNKNOWN :
+	  STRACE_WARNING(("Provider unknown error"));
+	  break;
+	case TSP_STATUS_ERROR_VERSION :
+	  STRACE_WARNING(("Provider version error"));
+	  break;
+	default:
+	  STRACE_ERROR(("The provider sent an unreferenced error. It looks like a bug."));
+	  break;
+	}
+    }
+
+  /* Save all thoses sample data in memory */
+  if( TRUE == ret )
+    {
+      unsigned int symbols_number =
+	ans_sample->symbols.TSP_sample_symbol_info_list_t_len;
+      /*      unsigned int i; */
+	
+      otsp->information.base_frequency = ans_sample->base_frequency;
+      otsp->information.max_period = ans_sample->max_period;
+      otsp->information.max_client_number = ans_sample->max_client_number;
+      otsp->information.current_client_number = ans_sample->current_client_number;
+			
+      STRACE_DEBUG(("Total number of symbols found = %d",symbols_number));
+      STRACE_INFO(("Provider base frequency = %f Hz", ans_sample->base_frequency));
+
+      /* allocate memory to store those symbols */
+      /* FIXME  do it properly */
+/*       otsp->information.symbols.len = symbols_number; */
+/*       if(symbols_number > 0) */
+/* 	{ */
+/* 	  otsp->information.symbols.val =  */
+/* 	    (TSP_consumer_symbol_info_t* )calloc(symbols_number,sizeof(TSP_consumer_symbol_info_t)); */
+/* 	  TSP_CHECK_ALLOC(otsp->information.symbols.val, FALSE); */
+		
+/* 	  for(i = 0 ; i< symbols_number ; i++) */
+/* 	    {		 */
+/* 	      otsp->information.symbols.val[i].index = */
+/* 		ans_sample->symbols.TSP_sample_symbol_info_list_t_val[i].provider_global_index; */
+/* 	      otsp->information.symbols.val[i].name = */
+/* 		strdup(ans_sample->symbols.TSP_sample_symbol_info_list_t_val[i].name);				 */
+/* 	      TSP_CHECK_ALLOC(otsp->information.symbols.val[i].name, FALSE);			 */
+/* 	    } */
+/*         } */
     }
   else
     {
@@ -936,6 +1026,15 @@ int TSP_consumer_request_sample(TSP_provider_t provider, TSP_consumer_symbol_req
 	
   /* Get the computed ans_sample from the provider */
   ans_sample = TSP_request_sample(&req_sample, otsp->server);
+  
+  /* 
+   * now update provider global index in the requested symbols
+   * in case unknown symbols was found on provider side
+   */
+  for(i = 0 ; i <  symbols->len ; i++)
+    {
+      symbols->val[i].index = ans_sample->symbols.TSP_sample_symbol_info_list_t_val[i].provider_global_index;
+    }
 
   /*free allocated request sample symbol list */
   free(req_sample.symbols.TSP_sample_symbol_info_list_t_val);  
@@ -1023,7 +1122,7 @@ static void* TSP_request_provider_thread_receiver(void* arg)
   int is_fifo_full;  
                     
   STRACE_IO(("-->IN"));
-  STRACE_INFO(("Receiver thread started. Id=%u", pthread_self())); 
+  STRACE_INFO(("Receiver thread started. Id=%u", (uint32_t)pthread_self())); 
 
   while(TRUE)
     {
@@ -1237,3 +1336,67 @@ TSP_groups_t TSP_test_get_groups(TSP_provider_t provider)
   return otsp->groups;
 }
 
+
+int TSP_consumer_request_async_sample_write(TSP_provider_t provider,TSP_consumer_async_sample_t* async_sample_write)
+{
+ 
+  TSP_async_sample_t async_write;
+  int ret = 0;
+  TSP_otsp_t* otsp = (TSP_otsp_t*)provider;
+ 
+  /* As there are a two level structure for hidding all RPC stuff, we need to copy the struct fields */
+  
+  async_write.provider_global_index = async_sample_write->provider_global_index;
+  async_write.data.data_val = async_sample_write->value_ptr;
+  async_write.data.data_len = async_sample_write->value_size;
+  
+  /* verification of the structure*/
+  	
+  if(0 != otsp)
+    {
+    
+      ret = TSP_request_async_sample_write(&async_write,otsp->server);
+      
+    }
+  else
+    {
+      STRACE_ERROR(("This provider is not instanciate"));
+    }
+     
+  STRACE_IO(("-->OUT"));
+	
+  return ret;
+	
+}
+
+int TSP_consumer_request_async_sample_read(TSP_provider_t provider,TSP_consumer_async_sample_t* async_sample_read)
+{
+ 
+  TSP_async_sample_t async_read;
+  int ret = 0;
+  TSP_otsp_t* otsp = (TSP_otsp_t*)provider;
+ 
+  /* As there are a two level structure for hidding all RPC stuff, we need to copy the struct fields */
+  
+  async_read.provider_global_index = async_sample_read->provider_global_index;
+  async_read.data.data_val = async_sample_read->value_ptr;
+  async_read.data.data_len = async_sample_read->value_size;
+  
+  /* verification of the structure*/
+  	
+  if(0 != otsp)
+    {
+    
+      ret = TSP_request_async_sample_read(&async_read,otsp->server);
+      
+    }
+  else
+    {
+      STRACE_ERROR(("This provider is not instanciate"));
+    }
+     
+  STRACE_IO(("-->OUT"));
+	
+  return ret;
+	
+}

@@ -43,6 +43,8 @@
 #include "glue_sserver.h"
 
 
+GLU_handle_t* GLU_stub_create();
+
 /* TSP glue server defines */
 #define TSP_STUB_FREQ 128 /*Hz, must be a 2 power for RTC*/
 #define TSP_PERIOD_US (1000000/TSP_STUB_FREQ) /*given in µS, value 10ms*/
@@ -51,6 +53,7 @@
 
 
 /* Nasty static variables */
+static GLU_handle_t* stub_GLU = NULL;
 static TSP_sample_symbol_info_t *X_sample_symbol_info_list_val;
 
 // My Globals : Bouh
@@ -205,9 +208,10 @@ int set_real_time_priority(int pid, unsigned long mask)
 int main(int argc, char *argv[])
 {
   char myopt; /* Options */
+  GLU_handle_t* GLU_stub = GLU_stub_create();
 
   /* Init server */
-  if(!TSP_provider_init(&argc, &argv))
+  if(!TSP_provider_init(GLU_stub,&argc, &argv))
     {
       exit (-1);
     }
@@ -239,7 +243,7 @@ int main(int argc, char *argv[])
   /* Can use kill -2 for stopping prog */
   signal(SIGINT, signalled);
   
-  TSP_provider_run(TRUE);
+  TSP_provider_run(TSP_ASYNC_REQUEST_SIMPLE | TSP_ASYNC_REQUEST_BLOCKING);
   
   return 0;
 }
@@ -248,7 +252,7 @@ int main(int argc, char *argv[])
 
 /* ===================================== TSP PART ==================================== */
 
-char* GLU_get_server_name(void)
+char* STUB_GLU_get_name(GLU_handle_t* this)
 {
   if (rt_mode)
     return "LinuxRT";
@@ -256,7 +260,7 @@ char* GLU_get_server_name(void)
     return "LinuxNRT";
 }
  
-int  GLU_get_symbol_number(void)
+int  STUB_GLU_get_symbol_number(void)
 
 {
   int i = 0;
@@ -265,7 +269,7 @@ int  GLU_get_symbol_number(void)
   return i;
 }
 
-static void* GLU_thread(void* arg)
+void* STUB_GLU_thread(void* arg)
 {
   
   static int last_missed = 0;
@@ -281,7 +285,7 @@ static void* GLU_thread(void* arg)
     set_real_time_priority (0 /*myself*/, affinity_mask);
   }
 
-  symbols_nb  = GLU_get_symbol_number();
+  symbols_nb  = STUB_GLU_get_symbol_number();
 
   /* Must synchronise to first IT then RAZ  handler */
   rtc_wait_next_it();
@@ -374,7 +378,7 @@ static void* GLU_thread(void* arg)
 
 }
 
-int GLU_init(int fallback_argc, char* fallback_argv[])
+int STUB_GLU_init(GLU_handle_t* this, int fallback_argc, char* fallback_argv[])
 {
   int i;
   char symbol_buf[50];
@@ -402,35 +406,25 @@ int GLU_init(int fallback_argc, char* fallback_argv[])
   return TRUE;
 }
 
-int GLU_start(void)
+int  STUB_GLU_get_sample_symbol_info_list(GLU_handle_t* h_glu,TSP_sample_symbol_info_list_t* symbol_list)
 {
-  static pthread_t thread_id = 0;	
-  return pthread_create(&thread_id, NULL, GLU_thread, NULL);
-}
-
-GLU_handle_t GLU_get_instance(int argc, char* argv[], char** error_info)
-{
-  if(error_info)
-    *error_info = "";
-
-  return GLU_GLOBAL_HANDLE;
-}
-
-double GLU_get_base_frequency(void)
-{
-  /* Calculate base frequency */
-  return TSP_STUB_FREQ;
-}
-
-int  GLU_get_sample_symbol_info_list(GLU_handle_t h_glu,TSP_sample_symbol_info_list_t* symbol_list)
-{
-  symbol_list->TSP_sample_symbol_info_list_t_len = GLU_get_symbol_number();
+  symbol_list->TSP_sample_symbol_info_list_t_len = STUB_GLU_get_symbol_number();
   symbol_list->TSP_sample_symbol_info_list_t_val = X_sample_symbol_info_list_val;
   return TRUE;
 }
 
-GLU_server_type_t GLU_get_server_type(void)
-{
-  return GLU_SERVER_TYPE_ACTIVE;
-}
 
+/* create the GLU handle instance for STUB */
+GLU_handle_t* GLU_stub_create() {
+  
+  /* create a default GLU */
+  GLU_handle_create(&stub_GLU,"RTStubbed",GLU_SERVER_TYPE_ACTIVE,TSP_STUB_FREQ);
+  
+  stub_GLU->initialize     = &STUB_GLU_init;
+  stub_GLU->run            = &STUB_GLU_thread;
+  stub_GLU->get_ssi_list   = &STUB_GLU_get_sample_symbol_info_list;
+  /* override default methods */
+  stub_GLU->get_name       = &STUB_GLU_get_name;
+
+  return stub_GLU;
+}

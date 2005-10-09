@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: glue_stub.c,v 1.3 2004-09-22 14:25:58 tractobob Exp $
+$Id: glue_stub.c,v 1.4 2005-10-09 23:01:26 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -56,19 +56,12 @@ Purpose   : Implementation for the glue_server, for stub test
 
 /* Nasty static variables */
 static TSP_sample_symbol_info_t *X_sample_symbol_info_list_val;
-pthread_t thread_id = 0;
-static char* X_server_name = "StubbedServer";
 static time_stamp_t my_time = 0;
 
 /* protypes declarations */
-int  GLU_get_symbol_number(void) ;
+int  STUB_GLU_get_symbol_number(void) ;
 
-char* GLU_get_server_name(void)
-{
-  return X_server_name;
-}
-
-int  GLU_get_symbol_number(void)
+int  STUB_GLU_get_symbol_number(void)
 
 {
   int i = 0;
@@ -82,7 +75,7 @@ int  GLU_get_symbol_number(void)
   return i;
 }
 
-void* GLU_thread(void* arg)
+void* STUB_GLU_thread(GLU_handle_t* arg)
 {
   
   int i, symbols_nb, *ptr_index;
@@ -91,7 +84,7 @@ void* GLU_thread(void* arg)
   glu_item_t item;
   double memo_val[GLU_MAX_SYMBOLS]; /* for building calc_function % 10 */
 
-  symbols_nb  = GLU_get_symbol_number();
+  symbols_nb  = STUB_GLU_get_symbol_number();
   current_time = tsp_gethrtime();
 
   /* infinite loop for symbols generation */
@@ -138,7 +131,8 @@ void* GLU_thread(void* arg)
   return arg;
 
 }
-int GLU_init(int fallback_argc, char* fallback_argv[])
+
+int STUB_GLU_init(GLU_handle_t* this, int fallback_argc, char* fallback_argv[])
 {
   int i;
   char symbol_buf[50];
@@ -159,7 +153,7 @@ int GLU_init(int fallback_argc, char* fallback_argv[])
   return TRUE;
 }
 
-int  GLU_get_sample_symbol_info_list(GLU_handle_t h_glu,TSP_sample_symbol_info_list_t* symbol_list)
+int  STUB_GLU_get_sample_symbol_info_list(GLU_handle_t* h_glu,TSP_sample_symbol_info_list_t* symbol_list)
 {
 
   int i = 0;
@@ -176,35 +170,27 @@ int  GLU_get_sample_symbol_info_list(GLU_handle_t h_glu,TSP_sample_symbol_info_l
   return TRUE;
 }
 
-int GLU_start(void)
+int STUB_GLU_start(GLU_handle_t* this)
 {  /* At first consumer connection : start thread */
-  if(!thread_id)
+  if(!this->tid)
     {
-      TSP_CHECK_THREAD( (pthread_create(&thread_id, NULL, GLU_thread, NULL)), FALSE);
+      TSP_CHECK_THREAD( (pthread_create(&(this->tid), NULL, GLU_thread, NULL)), FALSE);
     }
-  return (thread_id != 0);
+  return ((this->tid) != 0);
 }
 
-GLU_server_type_t GLU_get_server_type(void)
-{
-  return GLU_SERVER_TYPE_ACTIVE;
+/* create the GLU handle instance for STUB */
+GLU_handle_t* GLU_stub_create() {
+  
+  /* create a default GLU */
+  GLU_handle_create(&stub_GLU,"StubbedServer",GLU_SERVER_TYPE_ACTIVE,TSP_STUB_FREQ);
+  
+  stub_GLU->initialize     = &STUB_GLU_init;
+  stub_GLU->run            = &STUB_GLU_thread;
+  stub_GLU->get_ssi_list   = &STUB_GLU_get_sample_symbol_info_list;
+  /* ovveride default method */
+  stub_GLU->start          = &STUB_GLU_start;
+
+  return stub_GLU;
 }
-
-GLU_handle_t GLU_get_instance(int argc, char* argv[], char** error_info)
-{
-
-  if(error_info)
-    *error_info = "";
-
-  return GLU_GLOBAL_HANDLE;
-}
-
-double GLU_get_base_frequency(void)
-{
-  /* Calculate base frequency */
-  return TSP_STUB_FREQ;
-}
-
-
-
 

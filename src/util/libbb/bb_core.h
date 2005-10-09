@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.h,v 1.13 2005-08-26 21:01:17 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.h,v 1.14 2005-10-09 23:01:26 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -246,6 +246,30 @@ bb_size(const int32_t n_data, const int32_t data_size);
  */
 int32_t 
 bb_find(volatile S_BB_T* bb, const char* var_name);
+
+/**
+ * Initialize the fast find string algorithm.
+ * The function will allocate a big string
+ * which is the concatenation of the name
+ * of the published BB element.
+ * @return fastfind string to be used for fast finding.
+ */
+/* char* */
+/* bb_fastfind_build(volatile S_BB_T* bb); */
+
+/**
+ * Search a variable within a BlackBoard using fastfind algorithm.
+ * @param bb IN BlackBoard pointer
+ * @param fastfind_string IN the fastfind string build with @ref bb_fastfind_build
+ * @param var_name IN the name of the searched variable
+ * @return index of the variable in the BB descriptor array
+ * @ingroup BlackBoard
+ */
+/* int32_t */
+/* bb_fastfind(volatile S_BB_T* bb, const char* fastfind_string, const char* var_name); */
+
+/* int32_t */
+/* bb_fastfind_destroy(volatile S_BB_T* bb, char* fastfindstring); */
 
 /**
  * Return a pointer to the beginning of the data 

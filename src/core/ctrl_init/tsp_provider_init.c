@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl_init/tsp_provider_init.c,v 1.11 2005-08-17 12:53:32 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl_init/tsp_provider_init.c,v 1.12 2005-10-09 23:01:23 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -35,11 +35,12 @@ Purpose   : Function calls to launch a TSP Provider program
 
 -----------------------------------------------------------------------
  */
+#include <string.h>
 
 #include "tsp_sys_headers.h"
 
 #include "tsp_provider.h"
-#include "tsp_request.h"
+#include "tsp_request_handler.h"
 #include "tsp_provider_init.h"
 
 #ifdef BUILD_XMLRPC
@@ -48,13 +49,13 @@ Purpose   : Function calls to launch a TSP Provider program
 #include "tsp_server.h"
 #endif
 
-int TSP_provider_init(int* argc, char** argv[])
+int TSP_provider_init(GLU_handle_t* theGLU, int* argc, char** argv[])
 {
 
   int ret;
   STRACE_IO(("-->IN"));
 
-  ret = TSP_provider_private_init(argc, argv);
+  ret = TSP_provider_private_init(theGLU,argc, argv);
   
   /* Initialize tsp request handlers structures */
   ret = TSP_provider_rqh_manager_init();

@@ -14,7 +14,7 @@ else
 TARGET=$(DIRBIN)/tsp_res_reader
 endif
 
-ADD_LIB =  $(DIRLIB)/libtsp_provider.a $(DIRLIB)/libtsp_services.a  $(DIRLIB)/libtsp_res.a
+ADD_LIB =  $(DIRLIB)/libtsp_provider.a $(DIRLIB)/libtsp_common.a $(DIRLIB)/libtsp_services.a  $(DIRLIB)/libtsp_res.a
 
 
 CPPFLAGS += -I../../util/libres

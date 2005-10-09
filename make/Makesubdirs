@@ -1,5 +1,5 @@
 # Makesubdirs
-#QUIET=-s
+#QUIET=-s -S
 
 build debug destroy print config::
 	@for dir in $(SUBDIRS); \

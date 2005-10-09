@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_server.c,v 1.22 2005-06-26 16:01:47 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_server.c,v 1.23 2005-10-09 23:01:24 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -46,10 +46,9 @@ Purpose   :
 #include <stdio.h>
 #include <unistd.h>
 
-
 /* FIXME RP : beurk, RPC is compiled before CTRL could export this include, how sould I call Request Manager and GLU then ? */
 #include "../ctrl/tsp_provider.h"
-#include "../ctrl/tsp_request.h"
+#include "../ctrl/tsp_request_handler.h"
 #include "../ctrl/glue_sserver.h"
 
 #include "tsp_server.h"
@@ -74,7 +73,7 @@ TSP_provider_info_t* tsp_provider_information_1_svc(struct svc_req *rqstp)
 {
   static TSP_provider_info_t server_info;	
   STRACE_IO(("-->IN"));    
-  server_info.info = GLU_get_server_name();    
+  server_info.info = TSP_provider_get_name();    
   STRACE_IO(("-->OUT"));
   return &server_info;
 }
@@ -94,7 +93,7 @@ TSP_answer_open_t* tsp_request_open_1_svc(TSP_request_open_t req_open, struct sv
 void *tsp_request_close_1_svc(TSP_request_close_t req_close, struct svc_req * rqstp)
 {
 
-  static char* dummy;
+  static char* dummy = NULL;
 	
   STRACE_IO(("-->IN"));
 
@@ -112,6 +111,18 @@ TSP_answer_sample_t* tsp_request_information_1_svc(TSP_request_information_t req
 	
   STRACE_IO(("-->IN"));	
   TSP_provider_request_information(&req_info, &ans_sample);
+  STRACE_IO(("-->OUT"));       
+  return &ans_sample;
+
+}
+
+TSP_answer_sample_t* tsp_request_filtered_information_1_svc(TSP_request_information_t req_info, int filter_kind, char* filter_string, struct svc_req * rqstp)
+{
+
+  static TSP_answer_sample_t ans_sample;
+	
+  STRACE_IO(("-->IN"));	
+  TSP_provider_request_filtered_information(&req_info, filter_kind, filter_string, &ans_sample);
   STRACE_IO(("-->OUT"));       
   return &ans_sample;
 
@@ -193,6 +204,75 @@ void* tsp_exec_feature_1_svc(TSP_exec_feature_t exec_feature, struct svc_req * r
   STRACE_IO(("-->OUT"));
 
   return (void*)NULL;
+}
+
+int * tsp_request_async_sample_write_1_svc(TSP_async_sample_t async_sample_write, struct svc_req * rqstp)
+{
+  static int ret = TRUE;
+  
+  STRACE_IO(("-->IN"));	
+
+  /* endianity managment*/
+/*   STRACE_DEBUG(("Len=%d,  pgi = %d value = %f et ret = %d", async_sample_write.data.data_len, async_sample_write.provider_global_index,(double*)(async_sample_write.data.data_val),ret)); */
+
+/*   switch (async_sample_write.data.data_len) { */
+/*   case 2:  */
+/*       TSP_UINT16_FROM_BE(*(uint16_t*)async_sample_write.data.data_val); */
+/*       break; */
+/*   case 4:  */
+/*       TSP_UINT32_FROM_BE(*(uint32_t*)async_sample_write.data.data_val); */
+/*       break; */
+/*   case 8:   */
+/*       TSP_UINT64_FROM_BE(*(uint64_t*)async_sample_write.data.data_val); */
+/*       break; */
+/*   default: */
+/*       break; */
+/*   } */
+	
+
+  STRACE_DEBUG(("TSP_SERVER Before async_write : pgi %d value %s return %d ",async_sample_write.provider_global_index,async_sample_write.data.data_val,ret ));
+  
+  ret = TSP_provider_request_async_sample_write(&async_sample_write);	
+  
+  STRACE_IO(("-->OUT"));
+  STRACE_DEBUG(("TSP_SERVER After async_write : pgi %d value %s return %d ",async_sample_write.provider_global_index,async_sample_write.data.data_val,ret ));
+
+  return &ret;
+  
+}
+
+TSP_async_sample_t * tsp_request_async_sample_read_1_svc(TSP_async_sample_t async_sample_read, struct svc_req * rqstp)
+{
+  static TSP_async_sample_t ret;
+  
+  STRACE_IO(("-->IN"));	
+
+  /* endianity managment*/
+/*   STRACE_DEBUG(("Len=%d,  pgi = %d value = %f et ret = %d", async_sample_read.data.data_len, async_sample_read.provider_global_index,(double*)(async_sample_read.data.data_val),ret)); */
+
+/*   switch (async_sample_read.data.data_len) { */
+/*   case 2:  */
+/*       TSP_UINT16_FROM_BE(*(uint16_t*)async_sample_read.data.data_val); */
+/*       break; */
+/*   case 4:  */
+/*       TSP_UINT32_FROM_BE(*(uint32_t*)async_sample_read.data.data_val); */
+/*       break; */
+/*   case 8:   */
+/*       TSP_UINT64_FROM_BE(*(uint64_t*)async_sample_read.data.data_val); */
+/*       break; */
+/*   default: */
+/*       break; */
+/*   } */
+	
+
+  
+  ret = async_sample_read;
+  TSP_provider_request_async_sample_read(&ret);	
+
+  STRACE_IO(("-->OUT"));
+
+  return &ret;
+  
 }
 
 
@@ -295,7 +375,7 @@ int TSP_rpc_request_config(TSP_provider_request_handler_t* this)
   else
     {
       gethostname(hostname, MAXHOSTNAMELEN);
-      servername = GLU_get_server_name();
+      servername = TSP_provider_get_name();
       
       sprintf(config->url, /* TSP_URL_MAXLENGTH, pour snprintf quand Solaris 2.5 sera mort */
 	       TSP_URL_FORMAT, TSP_RPC_PROTOCOL, hostname, servername, config->server_number);

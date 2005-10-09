@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_stream_receiver.c,v 1.9 2004-09-22 14:25:58 tractobob Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_stream_receiver.c,v 1.10 2005-10-09 23:01:24 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -64,8 +64,8 @@ TSP_stream_receiver_t TSP_stream_receiver_create(const  char* data_address)
   int status = 0;
   struct hostent* Host_p = NULL;
   int OptInt = 0;
-  int ret = TRUE;
-  int Len = 0;
+/*   int ret = TRUE; */
+/*   int Len = 0; */
   char* host;
   char* str_port;
   unsigned short port;

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: glue_stub.c,v 1.10 2004-10-18 21:24:53 erk Exp $
+$Id: glue_stub.c,v 1.11 2005-10-09 23:01:26 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -45,11 +45,6 @@ Purpose   : Implementation for the glue_server, for stub test
 #include "tsp_datapool.h"
 #include "calc_func.h"
 
-/*RINGBUF_DECLARE_TYPE_DYNAMIC(glu_ringbuf,glu_item_t);*/
-
-/* Glue server ringbuf size */
-#define GLU_RING_BUFSIZE (1000 * 100 * 10)
-
 /* TSP glue server defines */
 #define TSP_STUB_FREQ 100.0 /*Hz*/
 #define TSP_USLEEP_PERIOD_US (1000000/TSP_STUB_FREQ) /*given in µS, value 10ms*/
@@ -58,39 +53,16 @@ Purpose   : Implementation for the glue_server, for stub test
 /* Nasty static variables */
 static TSP_sample_symbol_info_t *X_sample_symbol_info_list_val;
 static tsp_hrtime_t X_lasttime;
-/*static glu_ringbuf* glu_ring = 0;*/
-pthread_t thread_id = 0;	
-static char* X_server_name = "StubbedServer";
 static time_stamp_t my_time = 0;
+static GLU_handle_t* stub_GLU = NULL;
 
-
-char* GLU_get_server_name(void)
-{
-  return X_server_name;
-}
-
-int  GLU_get_symbol_number(void)
-
-{
-  int i = 0;
-  TSP_sample_symbol_info_t* p  = X_sample_symbol_info_list_val;
-	
-  for( p=X_sample_symbol_info_list_val; p->name!=0 ; p++)
-    {
-      i++;
-    }
-
-  return i;
-}
-
-/*static int data_missed = FALSE;*/
-
-static void* GLU_thread(void* arg)
+void* STUB_GLU_thread(void* athis)
 {
   int i, symbols_nb, *ptr_index;
   tsp_hrtime_t current_time;
   glu_item_t item;
   double memo_val[GLU_MAX_SYMBOLS]; /*for debug informatin */
+  GLU_handle_t* this  = (GLU_handle_t*) athis;
 
   current_time = X_lasttime = tsp_gethrtime();  
 
@@ -113,7 +85,6 @@ static void* GLU_thread(void* arg)
 	      memo_val[index]=item.value;
 
 	      TSP_datapool_push_next_item(&item);
-	      /*RINGBUF_PTR_PUT(glu_ring, item);*/
 	    }
 	}
       /* Finalize the datapool state with new time : Ready to send */
@@ -143,11 +114,11 @@ static void* GLU_thread(void* arg)
 					));
     }
     
-  return arg;
+  return this;
 
 }
 
-int GLU_init(int fallback_argc, char* fallback_argv[])
+int STUB_GLU_init(GLU_handle_t* this, int fallback_argc, char* fallback_argv[])
 {
   int i;
   char symbol_buf[50];
@@ -163,23 +134,10 @@ int GLU_init(int fallback_argc, char* fallback_argv[])
   /*overide first name*/
   X_sample_symbol_info_list_val[0].name = strdup("t");
 
-  /*  RINGBUF_PTR_INIT(glu_ringbuf, glu_ring, glu_item_t,  0, RINGBUF_SZ(GLU_RING_BUFSIZE));
-      RINGBUF_PTR_RESET_CONSUMER (glu_ring);*/
   return TRUE;
 }
 
-int GLU_start(void)
-{
-  /* start GLU only if it was not already started. */
-  if (0==thread_id) {
-    return pthread_create(&thread_id, NULL, GLU_thread, NULL);  
-  } else {
-    return 1;
-  }
-}
-
-
-int  GLU_get_sample_symbol_info_list(GLU_handle_t h_glu,TSP_sample_symbol_info_list_t* symbol_list)
+int  STUB_GLU_get_sample_symbol_info_list(GLU_handle_t* h_glu,TSP_sample_symbol_info_list_t* symbol_list)
 {
   int i = 0;
   TSP_sample_symbol_info_t* p; 
@@ -196,24 +154,15 @@ int  GLU_get_sample_symbol_info_list(GLU_handle_t h_glu,TSP_sample_symbol_info_l
 }
 
 
-GLU_server_type_t GLU_get_server_type(void)
-{
-  return GLU_SERVER_TYPE_ACTIVE;
+/* create the GLU handle instance for STUB */
+GLU_handle_t* GLU_stub_create() {
+  
+  /* create a default GLU */
+  GLU_handle_create(&stub_GLU,"StubbedServer",GLU_SERVER_TYPE_ACTIVE,TSP_STUB_FREQ);
+  
+  stub_GLU->initialize     = &STUB_GLU_init;
+  stub_GLU->run            = &STUB_GLU_thread;
+  stub_GLU->get_ssi_list   = &STUB_GLU_get_sample_symbol_info_list;
+
+  return stub_GLU;
 }
-
-
-GLU_handle_t GLU_get_instance(int argc, char* argv[], char** error_info)
-{
-  if(error_info)
-    *error_info = "";
-
-  return GLU_GLOBAL_HANDLE;
-}
-
-double GLU_get_base_frequency(void)
-{
-  /* Calculate base frequency */
-  return TSP_STUB_FREQ;
-}
-
-

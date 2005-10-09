@@ -50,6 +50,7 @@ main (int argc, char ** argv) {
   S_BB_T* mybb;
   mytype_t* myvar;
   char*     astring;
+  /* char      c_opt; */
 
   /*
    * Analyse options de lancement
@@ -64,7 +65,7 @@ main (int argc, char ** argv) {
   /* Creation BB */
   /***************/
   n_data = 1000;
-  data_size = n_data*8 + 500*30*4 + 20000*8;
+  data_size = n_data*8 + 500*30*4 + 200000*8;
   if (E_NOK==bb_create(&mybb,basename(argv[0]),n_data,data_size)) {
     bb_attach(&mybb,basename(argv[0]));
 /*     bb_destroy(&mybb); */
@@ -113,6 +114,10 @@ main (int argc, char ** argv) {
 #define BIG_SIZE 10
 #endif
   HugeArray = (double*) bb_simple_publish(mybb,"HugeArray",basename(argv[0]),1, E_BB_DOUBLE, sizeof(double),BIG_SIZE);
+  if (NULL==HugeArray) {
+    printf("Cannot allocate HUGE array of size %d aborting...\n",BIG_SIZE);
+    return -1;
+  }
   for (i=0;i<BIG_SIZE;++i) {
     HugeArray[i] = cos(*Titi/(i+1));
   }

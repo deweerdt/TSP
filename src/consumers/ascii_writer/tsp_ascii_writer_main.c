@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer_main.c,v 1.5 2005-02-18 23:42:59 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer_main.c,v 1.6 2005-10-09 23:01:23 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -42,6 +42,7 @@ Purpose   : TSP ascii writer consumer (main)
 
 #include "tsp_ascii_writer.h"
 #include "tsp_consumer.h"
+
 
 static void 
 my_sighandler(int signum) {
@@ -114,11 +115,12 @@ main (int argc, char* argv[]) {
   }
 
   if (!opt_ok) {
-    printf("Usage: %s -x=<sample_config_file> [-o=<output_filename>] [-l=<nb sample>] [-u=<TSP provider URL>]\n", argv[0]);
+    printf("Usage: %s -x=<sample_config_file> [-o=<output_filename>] [-l=<nb sample>] [-u=<TSP_URL>]\n", argv[0]);
     printf("   -x   the file specifying the list of symbols to be sampled\n");
     printf("   -o   the name of the output file\n");
     printf("   -l   (optional) the maximum number of sample to be stored in file\n");
-    printf("   -u   (optional) the  TSP provider URL <PROTOCOL://HOST/SERVER:PORT> \n");  
+    printf("   -u   (optional) the  TSP provider URL <TSP_URL> \n");
+    printf("%s",TSP_URL_FORMAT_USAGE);
     exit(retcode);
   }
 
@@ -143,7 +145,7 @@ main (int argc, char* argv[]) {
     fprintf(stdout,"%s: Validate symbols against provider info...\n",argv[0]);
     fflush(stdout);
     retcode = tsp_ascii_writer_validate_symbols(mysymbols,nb_symbols,
-						provider_url,&symbol_list);
+						                                    provider_url,&symbol_list);
   }
 
   if (0==retcode) {

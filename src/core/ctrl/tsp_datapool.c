@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_datapool.c,v 1.20 2004-09-16 09:38:42 tractobob Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_datapool.c,v 1.21 2005-10-09 23:01:23 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -80,7 +80,7 @@ struct TSP_datapool_table_t
   int terminated;
   
   /** handle on GLU */
-  GLU_handle_t h_glu;
+  GLU_handle_t* h_glu;
 
   /** List of items in the datapool */
   TSP_datapool_item_t* items;
@@ -185,148 +185,20 @@ int TSP_datapool_push_commit(time_stamp_t time_stamp, GLU_get_state_t state)
   return 0;  
 }
 
-/* DON'T WANT ANYMORE this fucking thread passive callback f....cking philo */
-#define USE_DATA_POOL_THREAD 0 
-#if USE_DATA_POOL_THREAD
-/**
- * Thread created per session when the sample server is a pasive one.
- * @param datapool The datapool object instance that will be linked to the thread
- */ 
-void* TSP_datapool_thread(void* datapool)
-{
-
-  time_stamp_t time_stamp;
-  glu_item_t item;
-  int more_items;
-  TSP_datapool_table_t* obj_datapool = (TSP_datapool_table_t*)datapool;  
-  GLU_get_state_t state;
-  TSP_msg_ctrl_t msg_ctrl;  
-  int data_link_ok = TRUE; /**< Used to store the  data link state for a local thread (broken or ok) */
-
-  /* FIXME : The datapool might not be coherent when a client is already
-     connected and this thread starts after the connection
-     for the client */
-  STRACE_DEBUG(("Data Pool is GLOBAL (active GLU)"));
-
-  /* get first item */
-  STRACE_DEBUG(("Waiting for First Item from GLU..."));
-  while( ( GLU_GET_NEW_ITEM != (state=GLU_get_next_item(obj_datapool->h_glu, &item)))  )
-    {
-      tsp_usleep(TSP_DATAPOOL_POLL_PERIOD);
-    }
-
-  STRACE_DEBUG(("First Item from GLU received!"));
-
-  time_stamp = item.time;
-  /* Update datapool */
-  obj_datapool->items[item.provider_global_index].user_value = item.value;           
-  
-  while( ((GLU_GET_NEW_ITEM == state) || (GLU_GET_NO_ITEM == state)) && data_link_ok )
-    {
-      while( (GLU_GET_NEW_ITEM == (state=GLU_get_next_item(obj_datapool->h_glu, &item))) && data_link_ok )
-	{       
-	  /* is the datapool coherent ? */
-	  if( time_stamp != item.time )
-	    {
-	      /* Yep ! throw data to client */
-	      /* For a global datapool, the thread must not end, even if a client is disconnected, so
-		 we do not check any returned value from TSP_session_all_session_send_data */
-	      TSP_session_all_session_send_data(time_stamp);		  
-	      time_stamp = item.time;
-	    }
-	  /* Update datapool */
-	  obj_datapool->items[item.provider_global_index].user_value = item.value;     
-	}
-
-       tsp_usleep(TSP_DATAPOOL_POLL_PERIOD);
-    }      
-
-   /* Send end status message */
-  if(data_link_ok)
-    {
-      switch(state)
-	{
-	case   GLU_GET_EOF :
-	  msg_ctrl = TSP_MSG_CTRL_EOF;
-	  STRACE_INFO(("GLU sent EOF"));
-	  break;
-	case   GLU_GET_RECONF :
-	  msg_ctrl = TSP_MSG_CTRL_RECONF;
-	  STRACE_INFO(("GLU sent RECONF"));
-	  break;
-	case   GLU_GET_DATA_LOST :
-	  msg_ctrl = TSP_MSG_CTRL_GLU_DATA_LOST;
-	  STRACE_INFO(("GLU sent DATA_LOST"));
-	  break;
-	default:
-	  STRACE_ERROR(("?"));
-	  assert(0);
-	}
-
-      /* The lastest data were not sent coz we did not compare the latest timestamp. So, send them !*/
-      /* Send data to all clients  */	      
-      TSP_session_all_session_send_data(time_stamp);		  
-      TSP_session_all_session_send_msg_ctrl(msg_ctrl);		  
-    }
-
-  /* End of thread. Our datapool is dead */
-  obj_datapool->terminated = TRUE;
-}
-
-
-
-/**
- * Wait for the local datapool thread end per session.
- * Only used when the sample server is a pasive one
- * @param datapool The datapool instance linked to the thread
- */ 
-int TSP_local_datapool_wait_for_end_thread(TSP_datapool_t datapool)
-{
-  int status;
-  TSP_datapool_table_t* obj_datapool = (TSP_datapool_table_t*)datapool;
-
-  status = pthread_join(obj_datapool->worker_id, NULL);
-  TSP_CHECK_THREAD(status, FALSE);
-
-  return TRUE;
-}
-
-
-/**
- * Start local datapool thread be per session.
- * Only used when the sample server is a passive one
- * @param datapool The datapool instance that will be linked to the thread
- */ 
-int TSP_local_datapool_start_thread(TSP_datapool_t datapool)
-{
-  int status;
-  TSP_datapool_table_t* obj_datapool = (TSP_datapool_table_t*)datapool;
-
-  STRACE_ERROR(("Func is deprecated, use global datapool"));
-  return -1;
-
-  status = pthread_create(&(obj_datapool->worker_id), NULL, TSP_datapool_thread,  datapool);
-  TSP_CHECK_THREAD(status, FALSE);
-
-  return TRUE;
-
-}
-#endif
-
 /**
  * Start global datapool thread.
  * Only used when the sample server is an active one
  * @return TRUE = OK
  */ 
-static int TSP_global_datapool_init(void)
+static int TSP_global_datapool_init(GLU_handle_t* glu)
 {
 	 
   TSP_sample_symbol_info_list_t symbols;
 	
   /* Here the datapool is global */
-  X_global_datapool.h_glu = GLU_GLOBAL_HANDLE;   
+  X_global_datapool.h_glu = glu;   
 
-  GLU_get_sample_symbol_info_list(X_global_datapool.h_glu, &symbols);
+  glu->get_ssi_list(X_global_datapool.h_glu, &symbols);
 
   X_global_datapool.size = symbols.TSP_sample_symbol_info_list_t_len;
 
@@ -367,7 +239,7 @@ void TSP_local_datapool_destroy(TSP_datapool_t datapool)
 }
 
 
-TSP_datapool_t TSP_local_datapool_allocate(int symbols_number, GLU_handle_t h_glu )
+TSP_datapool_t TSP_local_datapool_allocate(int symbols_number, GLU_handle_t* h_glu )
 {
   TSP_datapool_table_t* datapool;
      
@@ -419,7 +291,7 @@ void* TSP_datapool_get_symbol_value(TSP_datapool_t datapool, int provider_global
 }
 
 
-TSP_datapool_t TSP_global_datapool_get_instance(void)
+TSP_datapool_t TSP_global_datapool_get_instance(GLU_handle_t* glu)
 {
   /* Act like a singleton. The first consumer that
  calls us, init us */
@@ -439,7 +311,7 @@ TSP_datapool_t TSP_global_datapool_get_instance(void)
   if(FALSE == X_global_datapool.initialized)
     {
       /* Now initialize */
-      TSP_global_datapool_init();
+      TSP_global_datapool_init(glu);
     }
 
   return &X_global_datapool;

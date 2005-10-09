@@ -18,9 +18,9 @@ rpcgen: $(RPC).h
 
 $(RPC).h : $(RPC).x 
 	@echo "@@@ Generating RPC stubs ..."
-	$(RPCGEN) $(RPCGENFLAGS) -h $(RPC).x >> $(RPC).h
-	$(RPCGEN) $(RPCGENFLAGS) -c $(RPC).x >> $(RPC)_xdr.c 
-	$(RPCGEN) $(RPCGENFLAGS) -l $(RPC).x >> $(RPC)_clnt.c 
+	$(RPCGEN) $(RPCGENFLAGS) -h $(RPC).x > $(RPC).h
+	$(RPCGEN) $(RPCGENFLAGS) -c $(RPC).x > $(RPC)_xdr.c 
+	$(RPCGEN) $(RPCGENFLAGS) -l $(RPC).x > $(RPC)_clnt.c 
 	@echo "#ifdef VXWORKS" > $(RPC)_svc.c
 	@echo "#define static extern" >> $(RPC)_svc.c
 	@echo "#endif /* !VXWORKS */" >> $(RPC)_svc.c

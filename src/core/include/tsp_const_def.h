@@ -1,6 +1,6 @@
 /*!  \file 
  
-$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_const_def.h,v 1.29 2005-08-17 12:54:24 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_const_def.h,v 1.30 2005-10-09 23:01:24 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -44,7 +44,7 @@ Purpose   : definitions and const that must have a program wide scope
  * versio in binary executable. We should find a way to 
  * automatically change this when tagging... FIXME: erk
  */
-#define TSP_SOURCE_VERSION "0.6.5"
+#define TSP_SOURCE_VERSION "0.7.0"
 
 /** TSP Version */
 #define TSP_VERSION 1
@@ -139,7 +139,6 @@ typedef enum TSP_msg_ctrl_t TSP_msg_ctrl_t;
  * the data stream. TSP protocol level. See TSP_msg_ctrl_t
  */
 
-
 #define TSP_RESERVED_GROUP_EOF        0xFFFFFFFF
 
 /** FIXME : reserved for futur implementation of async symbols */
@@ -150,6 +149,9 @@ typedef enum TSP_msg_ctrl_t TSP_msg_ctrl_t;
 #define TSP_RESERVED_GROUP_GLU_DATA_LOST     0xFFFFFFFC
 
 #define TSP_RESERVED_GROUP_CONSUMER_DATA_LOST     0xFFFFFFFB
+
+/*  SPECIAL (NEGATIVE) VALUE for Provider Global Index */
+#define TSP_PGI_UNKNOWN_SYMBOL -1
 
 /*-------- MISC --------*/
 
@@ -212,7 +214,7 @@ typedef int time_stamp_t;
 /*-------- SERVER INFORMATION --------*/
 
 /* URL format to connect to a provider :
- <protocol:\\host\server_name:server_number> */
+ <protocol://host/server_name:server_number> */
 #define TSP_URL_FORMAT "%s://%s/%s:%d"
 
 /* Size of the information string for the server */
@@ -318,9 +320,10 @@ typedef struct  TSP_otsp_server_info_t TSP_otsp_server_info_t;
  * FIXME : the default endianity used by the producer should be its
  * endianity so as to be CPU friendly for the producer. At least this
  * should be the default behaviour. Then, a lazy consumer should be able
- * to tell a producer that it wants to receive the data in the its endianity
+ * to tell a producer that he wants to receive the data in its native
+ * endianity.
  * FIXME: Erk: look at Corba CDR-encoding fashion to handle endianity.
- * FIXEM which may be instructive.
+ * FIXME:      which may be instructive.
  */
 #define TSP_ENCODE_DOUBLE_TO_UINT64(val) (TSP_UINT64_TO_BE (*(uint64_t*)val))
 #define TSP_DECODE_DOUBLE_TO_UINT64(val) (TSP_UINT64_FROM_BE (*(uint64_t*)val))

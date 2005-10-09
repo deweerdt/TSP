@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer.c,v 1.7 2004-10-25 20:41:23 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer.c,v 1.8 2005-10-09 23:01:23 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -128,6 +128,11 @@ tsp_ascii_writer_add_comment(char* comment) {
  * This is a brute force linear search
  * FIXME should be done another way on a hashed version of the tsp_symbols array.
  */
+ 
+/* Used to accelerate array search, we store the last symbol found*/
+static char    previous_symbol_found[128] = "this_string_might_not_be_a_symbol_name_14742572";
+static int32_t previous_symbol_found_dim = 0;
+
 int32_t
 tsp_ascii_writer_validate_symbol_info(char* symbol_name, 
 				      const TSP_consumer_symbol_info_list_t* tsp_symbols) {
@@ -135,6 +140,14 @@ tsp_ascii_writer_validate_symbol_info(char* symbol_name,
   int32_t retval;
   char*   searched_array_symbol;
 
+
+  
+  /* Compare this symbol with previous ( works for arrays ) */
+  if (strncmp(symbol_name,previous_symbol_found,strlen(previous_symbol_found)) == 0 ) {
+    STRACE_DEBUG(("Symbol [%s] matches with previous_symbol [%s]",symbol_name,previous_symbol_found));
+    return previous_symbol_found_dim;
+  }
+  
   assert(tsp_symbols);
   retval = 0;
   i = strlen(symbol_name);
@@ -160,6 +173,19 @@ tsp_ascii_writer_validate_symbol_info(char* symbol_name,
       ++retval;
     }
   }
+  
+  /* Store found symbol for later */
+  if ( retval > 0) {
+    /* Get the name of the symbol, without the brackets for an array */
+    for ( i=0 ; ( (symbol_name[i] != '\0') && (symbol_name[i] != '[') ) ; i++ ) {
+      previous_symbol_found[i]=symbol_name[i];
+    }
+    previous_symbol_found[i]='\0';
+    STRACE_DEBUG(("symbol=[%s], previous_symbol_found =[%s]",symbol_name,previous_symbol_found));
+    previous_symbol_found_dim=retval;
+  }
+  
+  
   return retval;
 } /* end of tsp_ascii_writer_validatesymbol_info */
 
@@ -229,6 +255,7 @@ tsp_ascii_writer_validate_symbols(TSP_consumer_symbol_requested_t*  tsp_symbols,
 				  int32_t nb_symbols,
 				  const char* tsp_provider_url,
 				  TSP_consumer_symbol_requested_list_t* tsp_symbol_list) {
+          
   int32_t retcode;
   const TSP_consumer_information_t* tsp_info=NULL;
   int32_t symbol_dim;
@@ -271,40 +298,44 @@ tsp_ascii_writer_validate_symbols(TSP_consumer_symbol_requested_t*  tsp_symbols,
     nb_scalar_symbol = 0;
     forced_period    = -1;
     for (i=0;i<nb_symbols;++i) {
+    
+      /* Do symbol validation */
       symbol_dim = tsp_ascii_writer_validate_symbol_info(tsp_symbols[i].name,&(tsp_info->symbols));
+            
       /* symbol not found */
       if (0==symbol_dim) {
-	fprintf(stderr,"Symbol <%s> not found on provider side.\n",tsp_symbols[i].name);
-	/* hack for ignoring unfound symbols */
-	tsp_symbols[i].phase  = -1;
+	      fprintf(stderr,"Symbol <%s> not found on provider side.\n",tsp_symbols[i].name);
+	      /* hack for ignoring unfound symbols */
+	      tsp_symbols[i].phase  = -1;
+        
       } else { /* symbol found */
-	fprintf(stdout,"Asking for symbol <%s> with period <%d>",
-		tsp_symbols[i].name,
-		tsp_symbols[i].period);
-	/* 
-	 * FIXME force period to be the same 
-	 * as the first valid symbol
-	 */
-	if (-1 == forced_period) {
-	  forced_period = tsp_symbols[i].period;
-	} else {
-	  if (tsp_symbols[i].period != forced_period) {
-	    tsp_symbols[i].period = forced_period;
-	    fprintf(stdout,"[period forced to <%d>]",tsp_symbols[i].period);
-	  }
-	}
-	if (symbol_dim>1) {
-	  fprintf(stdout," [array of size <%d>]\n",symbol_dim);
-	} else {
-	  fprintf(stdout,"\n");
-	}
-	/* 
-	 * It's not so nice 
-	 * but we use the phase to store symbol dim
-	 * FXIME waiting for tsp to handle arrays !!!
-	 */
-	tsp_symbols[i].phase  = symbol_dim;
-	nb_scalar_symbol     += symbol_dim;
+	      fprintf(stdout,"Asking for symbol <%s> with period <%d>",
+		      tsp_symbols[i].name,
+		      tsp_symbols[i].period);
+	      /* 
+	       * FIXME force period to be the same 
+	       * as the first valid symbol
+	       */
+	      if (-1 == forced_period) {
+	        forced_period = tsp_symbols[i].period;
+	      } else {
+	        if (tsp_symbols[i].period != forced_period) {
+	          tsp_symbols[i].period = forced_period;
+	          fprintf(stdout,"[period forced to <%d>]",tsp_symbols[i].period);
+	        }
+	      }
+	      if (symbol_dim>1) {
+	        fprintf(stdout," [array of size <%d>]\n",symbol_dim);
+	      } else {
+	        fprintf(stdout,"\n");
+	      }
+	      /* 
+	       * It's not so nice 
+	       * but we use the phase to store symbol dim
+	       * FXIME waiting for tsp to handle arrays !!!
+	       */
+	      tsp_symbols[i].phase  = symbol_dim;
+	      nb_scalar_symbol     += symbol_dim;
       } /* else symbol found */
     } /* loop over symbols coming from config file */
   } /* retcode is OK */
