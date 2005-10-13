@@ -12,7 +12,7 @@ SUBDIRS = \
 
 ifeq (${BUILD_GTK_BASED_CONSUMER},yes)
 ifeq (${BUILD_XML2_CONFIG_USER},yes)
-	SUBDIRS += gdisp gdisp+ 
+	SUBDIRS += gdisp gdisp+
 endif
 endif
 

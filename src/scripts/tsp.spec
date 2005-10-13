@@ -1,7 +1,7 @@
 Summary:        TSP : library for a generic Transport Sampling Protocol
 Name:           tsp
-Version:        0.6.5refactor
-Release:        3
+Version:        0.7.0pre1
+Release:        1
 Group:          Applications/Communications
 URL:            https://savannah.nongnu.org/projects/tsp
 License:        LGPL
@@ -48,6 +48,8 @@ rm -rf
 %attr(0644, root, root) %{prefix}/lib/lib*
 
 %changelog
+* Thu Oct 13 2005 Erk
+  - bump to 0.7.0pre1
 * Tue Sep 6  2005 Erk
   - use shell wildcard in order to select files as suggested
     by Fred. B.M. in order to avoid to try to install non generated
