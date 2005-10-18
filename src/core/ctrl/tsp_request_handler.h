@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: tsp_request_handler.h,v 1.2 2005-10-09 23:01:23 erk Exp $
+$Id: tsp_request_handler.h,v 1.3 2005-10-18 23:10:22 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -132,8 +132,12 @@ struct rqh_manager_data_t {
 
 typedef struct rqh_manager_data_t rqh_manager_data_t;
 
+#ifdef REQUEST_HANDLER_C
 /* Don't forget to statically initialize the structure */
 static rqh_manager_data_t rqh_manager_if;
+#else
+extern rqh_manager_data_t rqh_manager_if;
+#endif
 					  
 
 /**

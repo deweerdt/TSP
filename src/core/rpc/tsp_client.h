@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: tsp_client.h,v 1.9 2005-10-09 23:01:24 erk Exp $
+$Id: tsp_client.h,v 1.10 2005-10-18 23:10:22 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -80,9 +80,8 @@ TSP_answer_open_t* TSP_request_open(const TSP_request_open_t* req_open,
  * Close the session for a remote_opened provider.
  * @param req_close the informations tout close the session
  * @param server the server
- * @return The action result (TRUE or FALSE)
  */
-int TSP_request_close(const TSP_request_close_t* req_close,
+int* TSP_request_close(const TSP_request_close_t* req_close,
 		      TSP_server_t server);	
 		      
 TSP_answer_sample_t * TSP_request_information(

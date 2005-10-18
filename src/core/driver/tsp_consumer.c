@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.33 2005-10-09 23:01:24 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.34 2005-10-18 23:10:22 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -728,7 +728,7 @@ int TSP_consumer_request_close(TSP_provider_t provider)
 {
   TSP_otsp_t* otsp = (TSP_otsp_t*)provider;
   TSP_request_close_t req_close;
-  int ret = FALSE;
+  int ret = TRUE;
 	
   STRACE_IO(("-->IN"));
 
@@ -738,21 +738,10 @@ int TSP_consumer_request_close(TSP_provider_t provider)
   req_close.version_id = TSP_VERSION;
   req_close.channel_id = otsp->channel_id;
 	
-  STRACE_DEBUG(("Trying to close channel_id=%u", otsp->channel_id));
-
+  STRACE_DEBUG(("TSP_request_close(ing) channel_id=%u", otsp->channel_id));
 	
-  ret = TSP_request_close(&req_close, otsp->server);
-  if( FALSE == ret)
-    {
-      STRACE_DEBUG(("Unable to close channel_id=%u", otsp->channel_id));
-
-    }
-  else
-    {
-      STRACE_DEBUG(("channel_id=%u is closed", otsp->channel_id));
-
-    }
-
+  TSP_request_close(&req_close, otsp->server);
+ 
   STRACE_IO(("-->OUT"));
 
 	

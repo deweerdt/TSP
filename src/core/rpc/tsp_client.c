@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_client.c,v 1.12 2005-10-09 23:01:24 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_client.c,v 1.13 2005-10-18 23:10:22 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -42,6 +42,9 @@ Purpose   :
 #include "tsp_rpc_confprogid.h"
 
 int tsp_wrap_rpc_clnt_set_timeout(CLIENT *client, int timeout);
+
+#define LOCAL_RPCCHECK_NORETURN  	if( server == (TSP_server_t)0)  \
+                                        { STRACE_ERROR(("RPCCHECK failed")) ;} 
 
 #define LOCAL_RPCCHECK_FALSE  	if( server == (TSP_server_t)0)  \
 				{ STRACE_ERROR(("RPCCHECK failed")) ; return FALSE ;} 
@@ -222,21 +225,19 @@ TSP_answer_open_t * TSP_request_open(const TSP_request_open_t* req_open, TSP_ser
   return result;
 }	
 
-int TSP_request_close(const TSP_request_close_t* req_close, TSP_server_t server)
+int* TSP_request_close(const TSP_request_close_t* req_close, TSP_server_t server)
 {
+  int* retcode;
 
-  int result;
-	
   STRACE_IO(("-->IN"));
 	
-  LOCAL_RPCCHECK_FALSE;
+  LOCAL_RPCCHECK_0;
     
-  result = (int)tsp_request_close_1(*req_close, server);
-  TSP_STRACE_RPC_ERROR(server, result);
+  retcode = tsp_request_close_1(*req_close, server);
+  TSP_STRACE_RPC_ERROR(server, retcode);
   
   STRACE_IO(("-->OUT"));
-  	
-  return result;
+  return retcode;
 }	
 
 TSP_answer_sample_t * TSP_request_information(const TSP_request_information_t* req_info, TSP_server_t server)

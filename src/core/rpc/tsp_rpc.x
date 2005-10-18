@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_rpc.x,v 1.18 2005-10-09 23:01:24 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_rpc.x,v 1.19 2005-10-18 23:10:22 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -263,7 +263,7 @@ program TSP_RPC {
 
 	TSP_answer_open_t 		TSP_REQUEST_OPEN(TSP_request_open_t req_open) = 102;
 	
-	void 				TSP_REQUEST_CLOSE(TSP_request_close_t req_close) = 103;
+	int 				TSP_REQUEST_CLOSE(TSP_request_close_t req_close) = 103;
 	
 	TSP_answer_sample_t		TSP_REQUEST_INFORMATION(TSP_request_information_t req_info) = 104;
 	
@@ -275,7 +275,7 @@ program TSP_RPC {
 	
 	TSP_answer_sample_destroy_t	TSP_REQUEST_SAMPLE_DESTROY(TSP_request_sample_destroy_t req_destroy) = 108;
 	
-	void				TSP_EXEC_FEATURE(TSP_exec_feature_t exec_feature) = 109;
+	int				TSP_EXEC_FEATURE(TSP_exec_feature_t exec_feature) = 109;
 	
 	int 				TSP_REQUEST_ASYNC_SAMPLE_WRITE(TSP_async_sample_t async_sample_write) = 110;
 
