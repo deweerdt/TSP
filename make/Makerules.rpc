@@ -1,5 +1,5 @@
-# Makerules.rpc
 # -*- makefile -*-
+# Makerules.rpc
 
 #default RPCGEN is defined in Makeparams
 
@@ -7,10 +7,10 @@
 #       Files
 #---------------------------------------------------------------#
 RPC_FILES_SRC = $(RPC)_svc.c $(RPC)_clnt.c $(RPC)_xdr.c
- 
+
 RPC_CLNT_SRC =  $(RPC)_clnt.c $(RPC)_xdr.c
 RPC_SVC_SRC  =  $(RPC)_svc.c  $(RPC)_xdr.c
- 
+
 # Building rules section
 # ----------------------
 
@@ -28,11 +28,11 @@ $(RPC).h : $(RPC).x
 	$(RPCGEN) $(RPCGENFLAGS) -m $(RPC).x >> $(RPC)_svc.c 
 
 rpc.server.bin : $(RPC_SVC_SRC:%.c=$(DIROBJ)/%.o) $(RPC_SERVER_SRC:%.c=$(DIROBJ)/%.o)
- 
+
 rpc.server.lib : $(DIRLIB)/lib$(RPC_LIB_SUFFIX).a($(RPC_SVC_SRC:%.c=%.o) $(RPC_SERVER_SRC:%.c=%.o))
- 
+
 rpc.client.bin : $(RPC_CLNT_SRC:%.c=$(DIROBJ)/%.o) $(RPC_CLIENT_SRC:%.c=$(DIROBJ)/%.o)
- 
+
 rpc.client.lib : $(DIRLIB)/lib$(RPC_LIB_SUFFIX).a($(RPC_CLNT_SRC:%.c=%.o) $(RPC_CLIENT_SRC:%.c=%.o))
 
 rpc.clean:
