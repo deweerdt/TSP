@@ -20,7 +20,7 @@ RPC_CLEANUP = $(DIRBIN)/tsp_rpc_cleanup
 
 build:: export_include
 	$(MAKE) rpcgen
-	if [ "${BUILD_PROVIDER}" = "yes" ]; then \
+	@if [ "${BUILD_PROVIDER}" = "yes" ]; then \
 		$(MAKE) RPC_LIB_SUFFIX=tsp_provider rpc.server.lib ;  \
 		$(MAKE) "CFLAGS += -DTSP_RPC_CLEANUP" \
 			"LDLIBS += -ltsp_provider" main_cleanup ; \
