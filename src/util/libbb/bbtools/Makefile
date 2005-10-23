@@ -43,7 +43,6 @@ $(TARGET2): $(DIRLIB)/libbb.a $(DIROBJ)/bb_tools_main.o
 	@echo "@@@ Specific Linking  $(TARGET2) ..."
 	$(LINK.c) -o $(TARGET2) $(DIROBJ)/bb_tools_main.o -L$(DIRLIB) $(ADD_LIB) $(LDLIBS) 
 
-
 destroy ::
 	$(RM) $(TARGETS) $(DIROBJ)/bb_tools_main.o
 	$(MAKE) remove_script

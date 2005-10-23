@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.34 2005-10-18 23:10:22 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.35 2005-10-23 16:01:18 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -34,6 +34,8 @@ Purpose   : Main implementation for the TSP consumer library
 
 -----------------------------------------------------------------------
 */
+#include <string.h>
+
 #include "tsp_sys_headers.h"
 
 #include "tsp_consumer.h"
@@ -196,7 +198,7 @@ static void TSP_consumer_delete_requested_symbol(TSP_otsp_t* otsp)
 }
 
 
-/**
+/*
  * Allocate a consumer object.
  * @param server handle for the command canal (RPC) for the consumer
  * @param server_info information sent by the provider about itself
@@ -831,25 +833,24 @@ int TSP_consumer_request_information(TSP_provider_t provider)
       STRACE_ERROR(("Unable to communicate with the provider"));
 
     }
-		
-	
+			
   STRACE_IO(("-->OUT"));
-
 	
   return ret;
 	
 }
 
-int TSP_consumer_request_filtered_information(TSP_provider_t provider, int filter_kind, char* filter_string)
+int 
+TSP_consumer_request_filtered_information(TSP_provider_t provider, int filter_kind, char* filter_string)
 {
 	
   TSP_otsp_t* otsp = (TSP_otsp_t*)provider;
   TSP_request_information_t req_info;
   TSP_answer_sample_t* ans_sample = 0;
   int ret = FALSE;
+  int32_t i;
 	
   STRACE_IO(("-->IN"));
-
 	
   TSP_CHECK_SESSION(otsp, FALSE);
 
@@ -870,6 +871,12 @@ int TSP_consumer_request_filtered_information(TSP_provider_t provider, int filte
 	case TSP_STATUS_OK :
 	  ret = TRUE;
 	  break;
+	case TSP_STATUS_ERROR_SYMBOL_FILTER :
+	  STRACE_WARNING(("Symbol filter error"));
+	  break;
+        case TSP_STATUS_ERROR_SYMBOLS :	  
+	  STRACE_WARNING(("Symbols error"));
+	  break;
 	case TSP_STATUS_ERROR_UNKNOWN :
 	  STRACE_WARNING(("Provider unknown error"));
 	  break;
@@ -883,49 +890,36 @@ int TSP_consumer_request_filtered_information(TSP_provider_t provider, int filte
     }
 
   /* Save all thoses sample data in memory */
-  if( TRUE == ret )
-    {
-      unsigned int symbols_number =
-	ans_sample->symbols.TSP_sample_symbol_info_list_t_len;
-      /*      unsigned int i; */
-	
-      otsp->information.base_frequency = ans_sample->base_frequency;
-      otsp->information.max_period = ans_sample->max_period;
-      otsp->information.max_client_number = ans_sample->max_client_number;
+  if( TRUE == ret ) {
+      otsp->information.base_frequency        = ans_sample->base_frequency;
+      otsp->information.max_period            = ans_sample->max_period;
+      otsp->information.max_client_number     = ans_sample->max_client_number;
       otsp->information.current_client_number = ans_sample->current_client_number;
-			
-      STRACE_DEBUG(("Total number of symbols found = %d",symbols_number));
+      otsp->information.symbols.len           = ans_sample->symbols.TSP_sample_symbol_info_list_t_len;
       STRACE_INFO(("Provider base frequency = %f Hz", ans_sample->base_frequency));
 
-      /* allocate memory to store those symbols */
-      /* FIXME  do it properly */
-/*       otsp->information.symbols.len = symbols_number; */
-/*       if(symbols_number > 0) */
-/* 	{ */
-/* 	  otsp->information.symbols.val =  */
-/* 	    (TSP_consumer_symbol_info_t* )calloc(symbols_number,sizeof(TSP_consumer_symbol_info_t)); */
-/* 	  TSP_CHECK_ALLOC(otsp->information.symbols.val, FALSE); */
+      if (otsp->information.symbols.len > 0) {
+	/* allocate memory to store those symbols */
+	otsp->information.symbols.val = 
+	  (TSP_consumer_symbol_info_t* )calloc(otsp->information.symbols.len,sizeof(TSP_consumer_symbol_info_t));
+	TSP_CHECK_ALLOC(otsp->information.symbols.val, FALSE);
 		
-/* 	  for(i = 0 ; i< symbols_number ; i++) */
-/* 	    {		 */
-/* 	      otsp->information.symbols.val[i].index = */
-/* 		ans_sample->symbols.TSP_sample_symbol_info_list_t_val[i].provider_global_index; */
-/* 	      otsp->information.symbols.val[i].name = */
-/* 		strdup(ans_sample->symbols.TSP_sample_symbol_info_list_t_val[i].name);				 */
-/* 	      TSP_CHECK_ALLOC(otsp->information.symbols.val[i].name, FALSE);			 */
-/* 	    } */
-/*         } */
+	for(i = 0 ; i< otsp->information.symbols.len ; i++) {		
+	  otsp->information.symbols.val[i].index =
+	    ans_sample->symbols.TSP_sample_symbol_info_list_t_val[i].provider_global_index;
+	  otsp->information.symbols.val[i].name =
+	    strdup(ans_sample->symbols.TSP_sample_symbol_info_list_t_val[i].name);				
+	  TSP_CHECK_ALLOC(otsp->information.symbols.val[i].name, FALSE);			
+	}
+      } else {
+	otsp->information.symbols.val = NULL;
+      }
     }
-  else
-    {
-      STRACE_ERROR(("Unable to communicate with the provider"));
-
-    }
-		
-	
-  STRACE_IO(("-->OUT"));
-
-	
+  else {
+    STRACE_ERROR(("Unable to communicate with the provider"));    
+  }
+			
+  STRACE_IO(("-->OUT"));	
   return ret;
 	
 }

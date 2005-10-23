@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: tsp_common.h,v 1.3 2005-10-23 13:15:20 erk Exp $
+$Id: tsp_common.h,v 1.4 2005-10-23 16:01:17 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -97,6 +97,22 @@ typedef struct TSP_request {
   TSP_request_type_t    req_type;
   void*                 req_data;
 } TSP_request_t;
+
+/**
+ * The filter kind used in 
+ * TSP_request_filtered_information.
+ * 
+ */
+typedef enum TSP_filter_kind {
+  TSP_FILTER_NONE=0,
+  TSP_FILTER_MINIMAL,
+  TSP_FILTER_REGEX,
+  TSP_FILTER_XPATH,
+  TSP_FILTER_SQL,
+  TSP_FILTER_LAST
+} TSP_filter_kind_t;
+
+#define MINIMAL_STRING     "minimal"
 
 BEGIN_C_DECLS
 

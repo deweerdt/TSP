@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: tsp_consumer.h,v 1.21 2005-10-23 13:15:21 erk Exp $
+$Id: tsp_consumer.h,v 1.22 2005-10-23 16:01:18 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -39,6 +39,7 @@ Purpose   : Main interface for the TSP consumer library
 #define _TSP_CONSUMER_H
 
 #include <tsp_abs_types.h>
+#include <tsp_common.h>
 
 /**
  * @defgroup Consumer

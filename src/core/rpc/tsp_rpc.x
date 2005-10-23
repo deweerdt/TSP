@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_rpc.x,v 1.19 2005-10-18 23:10:22 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_rpc.x,v 1.20 2005-10-23 16:01:18 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -48,7 +48,21 @@ enum TSP_status_t
 	/**
          * Error with the symbols (asked or returned )
          */
-	TSP_STATUS_ERROR_SYMBOLS	
+
+	TSP_STATUS_ERROR_SYMBOLS,
+
+	/**
+	 * The requested symbols filter is ill-formed
+	 */
+	TSP_STATUS_ERROR_SYMBOL_FILTER,
+	/**
+         * The requested feature is not supported (by this particular consumer/provider)
+         */
+	TSP_STATUS_ERROR_NOT_SUPPORTED,
+	/**	
+         * The requested feature is not implemented
+         */
+	TSP_STATUS_ERROR_NOT_IMPLEMENTED
 	
 };
 

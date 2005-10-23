@@ -13,7 +13,8 @@ SOURCES = \
 	tsp_group_algo.c \
 	tsp_data_sender.c \
 	tsp_stream_sender.c \
-	tsp_request_handler.c
+	tsp_request_handler.c \
+	tsp_filter_symbol.c
 
 
 OBJECTS=$(SOURCES:%.c=$(DIROBJ)/%.o) 

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: tsp_provider.c,v 1.27 2005-10-23 13:15:21 erk Exp $
+$Id: tsp_provider.c,v 1.28 2005-10-23 16:01:17 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -35,14 +35,13 @@ Purpose   : Main implementation for the producer module
 -----------------------------------------------------------------------
  */
 
-#include "tsp_sys_headers.h"
-
-#include "tsp_provider.h"
-
-#include "tsp_session.h"
+#include <tsp_sys_headers.h>
+#include <tsp_provider.h>
+#include <tsp_filter_symbol.h>
+#include <tsp_session.h>
 #include <tsp_glu.h>	
-#include "tsp_time.h"	
-#include "tsp_common.h"
+#include <tsp_time.h>
+#include <tsp_common.h>
 
 /** modified argc and argv, will be returned to user code after init */
 static  char** X_argv = 0;
@@ -348,87 +347,67 @@ void TSP_provider_request_close(const TSP_request_close_t* req_close)
 } /* End of TSP_provider_request_close */
 
 void  TSP_provider_request_information(TSP_request_information_t* req_info, 
- 			      TSP_answer_sample_t* ans_sample)
+				       TSP_answer_sample_t* ans_sample)
 {
-  int ret;
-  TSP_LOCK_MUTEX(&X_tsp_request_mutex,);  
-  
-  ans_sample->version_id = TSP_VERSION;
-  ans_sample->channel_id = req_info->channel_id;
-  ans_sample->status = TSP_STATUS_ERROR_UNKNOWN;
-  ans_sample->provider_group_number = 0;
-  ans_sample->base_frequency = firstGLU->get_base_frequency(firstGLU);
-  ans_sample->max_client_number = TSP_MAX_CLIENT_NUMBER;
-  ans_sample->current_client_number = TSP_session_get_nb_session();
-  ans_sample->max_period = TSP_MAX_PERIOD;
-  ans_sample->symbols.TSP_sample_symbol_info_list_t_len = 0;
-  ans_sample->symbols.TSP_sample_symbol_info_list_t_val = 0;  
-  
-  if(req_info->version_id <= TSP_VERSION)
-    {
-      
-      ret = TSP_session_get_sample_symbol_info_list_by_channel(req_info->channel_id,&(ans_sample->symbols));
-      if(ret)
-	{
-	  ans_sample->status = TSP_STATUS_OK;
-	}
-      else
-	{
-	  STRACE_ERROR(("Function TSP_session_get_sample_symbol_info_list_by_channel failed"));
-	}
-    
-  }
-  else
-  {
-    STRACE_ERROR(("TSP version ERROR. Requested=%d Current=%d",req_info->version_id, TSP_VERSION ));
-    ans_sample->status = TSP_STATUS_ERROR_VERSION;
-  }
-  		
-  STRACE_IO(("-->OUT"));
-
-  TSP_UNLOCK_MUTEX(&X_tsp_request_mutex,);
+  TSP_provider_request_filtered_information(req_info,TSP_FILTER_NONE,NULL,ans_sample);  
+  STRACE_DEBUG(("Nb symbol = %d",ans_sample->symbols.TSP_sample_symbol_info_list_t_len));
+  STRACE_DEBUG(("Nb symbol = 0x%08x",ans_sample->symbols.TSP_sample_symbol_info_list_t_val));
 } /* End of TSP_provider_request_information */
+
+void TSP_provider_update_answer_with_minimalinfo(TSP_request_information_t* req_info,
+				      TSP_answer_sample_t* ans_sample) {
+
+  ans_sample->version_id            = TSP_VERSION;
+  ans_sample->channel_id            = req_info->channel_id;
+  ans_sample->status                = TSP_STATUS_ERROR_UNKNOWN;
+  ans_sample->provider_group_number = 0;
+  ans_sample->base_frequency        = firstGLU->get_base_frequency(firstGLU);
+  ans_sample->max_client_number     = TSP_MAX_CLIENT_NUMBER;
+  ans_sample->current_client_number = TSP_session_get_nb_session();
+  ans_sample->max_period            = TSP_MAX_PERIOD;
+  
+}
 
 void  TSP_provider_request_filtered_information(TSP_request_information_t* req_info, 
 						int filter_kind, char* filter_string,
 						TSP_answer_sample_t* ans_sample)
 {
-  int ret;
   TSP_LOCK_MUTEX(&X_tsp_request_mutex,);  
-  
-  ans_sample->version_id = TSP_VERSION;
-  ans_sample->channel_id = req_info->channel_id;
-  ans_sample->status = TSP_STATUS_ERROR_UNKNOWN;
-  ans_sample->provider_group_number = 0;
-  ans_sample->base_frequency = firstGLU->get_base_frequency(firstGLU);
-  ans_sample->max_client_number = TSP_MAX_CLIENT_NUMBER;
-  ans_sample->current_client_number = TSP_session_get_nb_session();
-  ans_sample->max_period = TSP_MAX_PERIOD;
+
+  /* fill-in minimal info in answer_sample */
+  TSP_provider_update_answer_with_minimalinfo(req_info,ans_sample);
+
   ans_sample->symbols.TSP_sample_symbol_info_list_t_len = 0;
-  ans_sample->symbols.TSP_sample_symbol_info_list_t_val = 0;  
-  
-  if(req_info->version_id <= TSP_VERSION)
-    {
-      
-      ret = TSP_session_get_sample_symbol_info_list_by_channel(req_info->channel_id,&(ans_sample->symbols));
-      if(ret)
-	{
-	  ans_sample->status = TSP_STATUS_OK;
-	}
-      else
-	{
-	  STRACE_ERROR(("Function TSP_session_get_sample_symbol_info_list_by_channel failed"));
-	}
-    
-  }
-  else
-  {
+  ans_sample->symbols.TSP_sample_symbol_info_list_t_val = NULL;  
+
+  /* check request TSP version */
+  if (req_info->version_id > TSP_VERSION) {
     STRACE_ERROR(("TSP version ERROR. Requested=%d Current=%d",req_info->version_id, TSP_VERSION ));
     ans_sample->status = TSP_STATUS_ERROR_VERSION;
+    TSP_UNLOCK_MUTEX(&X_tsp_request_mutex,);
+    return;
   }
-  		
-  STRACE_IO(("-->OUT"));
-
+  
+  /* switch case for filter_kind */
+  switch (filter_kind) {
+  case TSP_FILTER_NONE:
+    STRACE_INFO(("Requested filter NONE"));
+    TSP_filter_symbol_none(req_info,filter_string,ans_sample);
+    break;
+  case TSP_FILTER_MINIMAL:
+    STRACE_INFO(("Requested filter MINIMAL =%s",filter_string));
+    TSP_filter_symbol_minimal(req_info,filter_string,ans_sample);
+    break;
+  case TSP_FILTER_REGEX:
+  case TSP_FILTER_XPATH:
+  case TSP_FILTER_SQL:
+    ans_sample->status = TSP_STATUS_ERROR_NOT_IMPLEMENTED;
+    break;
+  default:
+    ans_sample->status = TSP_STATUS_ERROR_UNKNOWN;
+    break;
+  } /* end switch filter_kind */
+    
   TSP_UNLOCK_MUTEX(&X_tsp_request_mutex,);
 } /* End of TSP_provider_request_filtered_information */
 

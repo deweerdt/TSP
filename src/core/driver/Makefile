@@ -1,8 +1,6 @@
 include $(DEVBASE)/make/Makeparams
 
-XINC    = tsp_consumer.h  
-#XINC    = tsp_consumer.h  tsp_group.h tsp_group_data.h \
-          tsp_stream_receiver.h tsp_data_receiver.h tsp_sample_ringbuf.h 
+XINC    = tsp_consumer.h
 
 XSCRIPT = 
 

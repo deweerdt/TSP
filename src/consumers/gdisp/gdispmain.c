@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/consumers/gdisp/gdispmain.c,v 1.5 2004-10-05 13:06:17 tractobob Exp $
+$Header: /home/def/zae/tsp/tsp/src/consumers/gdisp/gdispmain.c,v 1.6 2005-10-23 16:01:17 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -20,6 +20,7 @@ Purpose   : main functions for GDISP program
 #include <assert.h>
 
 extern char *optarg;
+#include <tsp_consumer.h>
 
 #include "interface.h"
 #include "page.h"
@@ -196,7 +197,7 @@ static int main_window_start(char* conf_file, char* tsp_prov_url)
 	{
 	  if(TSP_consumer_request_open(tsp, 0, 0))
 	    {
-	      if(TSP_consumer_request_information(tsp))
+	      if(TSP_consumer_request_filtered_information(tsp,TSP_FILTER_MINIMAL,MINIMAL_STRING))
 		{
 		
 		  if(TSP_consumer_request_sample(tsp, &conf_data.tsp_requested))
@@ -283,4 +284,5 @@ main (int argc, char **argv)
     }
   
   gtk_main();
+  return 0;
 }
