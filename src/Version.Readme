@@ -154,4 +154,11 @@ V-0.7.0: Creation ??/??/05	tag TSP_0_7_0	Erk
         !!! BEWARE that GLU API has been through a big rewrite
         !!! which makes him incompatible (API level)
         !!! with TSP_0_6_X     
+	- Added TSP_request_filtered_informations               - Erk
+          This new API enables selective informations to
+          be retrieving in order to avoid flooding network
+          with full symbol list implied by the original
+          TSP_request_informations.
+        - Gdisp now using 'minimal' version of                  - Erk
+          TSP_request_filtered_informations
 
