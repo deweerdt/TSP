@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/providers/bb_provider/bb_tsp_provider.c,v 1.11 2005-10-09 23:01:25 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/providers/bb_provider/bb_tsp_provider.c,v 1.12 2005-10-23 13:15:23 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -56,7 +56,7 @@ int TSP_provider_rqh_manager_get_nb_running();
  * to be coded.
  */
 #include <tsp_sys_headers.h>
-#include <glue_sserver.h>
+#include <tsp_glu.h>
 #include <tsp_ringbuf.h>
 
 #include <signal.h>

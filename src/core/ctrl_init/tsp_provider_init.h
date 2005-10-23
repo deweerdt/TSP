@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl_init/tsp_provider_init.h,v 1.9 2005-10-09 23:01:24 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl_init/tsp_provider_init.h,v 1.10 2005-10-23 13:15:21 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -39,8 +39,10 @@ Purpose   : Function calls to launch a TSP Provider program
 #ifndef _TSP_PROVIDER_INIT_H
 #define _TSP_PROVIDER_INIT_H
 
-#include "tsp_prjcfg.h"
-#include "glue_sserver.h"
+#include <tsp_prjcfg.h>
+#include <tsp_glu.h>
+
+BEGIN_C_DECLS
 
 /**
  * Main initialisation function for a TSP provider.
@@ -110,5 +112,7 @@ char **TSP_provider_urls(int pub_mode);
 
 
 void TSP_provider_print_usage(void);
+
+END_C_DECLS
 
 #endif /* _TSP_PROVIDER_INIT_H */

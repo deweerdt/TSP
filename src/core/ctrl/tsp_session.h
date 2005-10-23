@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.h,v 1.12 2005-10-09 23:01:23 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.h,v 1.13 2005-10-23 13:15:21 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -42,7 +42,7 @@ opened session from a client
 #include "tsp_prjcfg.h"
 
 #include "tsp_datastruct.h"
-#include "glue_sserver.h"
+#include <tsp_glu.h>
 
 
 

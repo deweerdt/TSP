@@ -36,11 +36,10 @@
 #include "tsp_provider_init.h"
 #include "tsp_datapool.h"
 #include "tsp_sys_headers.h"
-#include "glue_sserver.h"
+#include <tsp_glu.h>
 #include "tsp_ringbuf.h"
 #include "tsp_time.h"
 #include "calc_func.h"
-#include "glue_sserver.h"
 
 
 GLU_handle_t* GLU_stub_create();

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: tsp_provider.c,v 1.26 2005-10-09 23:01:23 erk Exp $
+$Id: tsp_provider.c,v 1.27 2005-10-23 13:15:21 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -40,7 +40,7 @@ Purpose   : Main implementation for the producer module
 #include "tsp_provider.h"
 
 #include "tsp_session.h"
-#include "glue_sserver.h"	
+#include <tsp_glu.h>	
 #include "tsp_time.h"	
 #include "tsp_common.h"
 

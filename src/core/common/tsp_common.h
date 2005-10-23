@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: tsp_common.h,v 1.2 2005-10-09 23:01:23 erk Exp $
+$Id: tsp_common.h,v 1.3 2005-10-23 13:15:20 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -98,6 +98,7 @@ typedef struct TSP_request {
   void*                 req_data;
 } TSP_request_t;
 
+BEGIN_C_DECLS
 
 /**
  * Initialize a TSP request.
@@ -112,4 +113,7 @@ TSP_common_sample_symbol_info_list_copy(TSP_sample_symbol_info_list_t* dest_symb
 void
 TSP_common_sample_symbol_copy(TSP_sample_symbol_info_t* dest_symbol, 
 			      TSP_sample_symbol_info_t src_symbol);
+
+END_C_DECLS
+
 #endif /* _TSP_COMMON_H */

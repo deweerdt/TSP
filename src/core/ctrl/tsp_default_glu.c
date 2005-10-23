@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/Attic/glue_sserver.c,v 1.5 2005-10-09 23:01:23 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_default_glu.c,v 1.1 2005-10-23 13:15:21 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -41,7 +41,7 @@ Purpose   : Implementation for the object GLU_handle_t
 #include <stdlib.h>
 #include <pthread.h>
 
-#include <glue_sserver.h>
+#include <tsp_glu.h>
 
 
 int32_t GLU_handle_create(GLU_handle_t** glu, const char* name, const GLU_server_type_t type, const double base_frequency) {

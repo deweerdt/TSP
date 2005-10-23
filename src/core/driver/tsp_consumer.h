@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: tsp_consumer.h,v 1.20 2005-10-09 23:01:24 erk Exp $
+$Id: tsp_consumer.h,v 1.21 2005-10-23 13:15:21 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -37,6 +37,8 @@ Purpose   : Main interface for the TSP consumer library
 
 #ifndef _TSP_CONSUMER_H
 #define _TSP_CONSUMER_H
+
+#include <tsp_abs_types.h>
 
 /**
  * @defgroup Consumer
@@ -160,17 +162,19 @@ typedef  void* TSP_provider_t;
 
 /*--------------------------------- FUNCTIONS -------------------------------*/
 
+BEGIN_C_DECLS
+
 /**
-* Initialisation for TSP library.
-* Call this function before using main(argc, argv) function arguments. This function
-* removes the arguments it knows from the argument list, leaving anything
-* it does not recognize for your application to parse or ignore. 
-* This creates a set of standard arguments accepted by all TSP applications.
-* This function must be called once.
-* @param argc Use the argc main arg before using it
-* @param argv Use the argv main arg before using it
-* @return TRUE = OK
-*/
+ * Initialisation for TSP library.
+ * Call this function before using main(argc, argv) function arguments. This function
+ * removes the arguments it knows from the argument list, leaving anything
+ * it does not recognize for your application to parse or ignore. 
+ * This creates a set of standard arguments accepted by all TSP applications.
+ * This function must be called once.
+ * @param argc Use the argc main arg before using it
+ * @param argv Use the argv main arg before using it
+ * @return TRUE = OK
+ */
 int TSP_consumer_init(int* argc, char** argv[]);
 
 /**
@@ -381,7 +385,7 @@ int TSP_consumer_request_async_sample_write(TSP_provider_t provider,TSP_consumer
 
 int TSP_consumer_request_async_sample_read(TSP_provider_t provider,TSP_consumer_async_sample_t* async_sample_read);
 
-
+END_C_DECLS
 
 /** @} end group Consumer */ 
     

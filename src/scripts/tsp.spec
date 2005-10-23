@@ -1,7 +1,7 @@
 Summary:        TSP : library for a generic Transport Sampling Protocol
 Name:           tsp
-Version:        0.7.0pre1
-Release:        1
+Version:        0.7.0
+Release:        2
 Group:          Applications/Communications
 URL:            https://savannah.nongnu.org/projects/tsp
 License:        LGPL
@@ -40,6 +40,22 @@ make install
 %clean
 rm -rf 
 
+%post
+if [ -d  /etc/profile.d ]; then
+  cd /etc/profile.d
+  ln -s /opt/tsp/scripts/tsp_profile.sh
+  ln -s /opt/tsp/scripts/tsp_profile.csh
+fi
+
+
+%preun
+if [ -d  /etc/profile.d ]; then
+  cd /etc/profile.d
+  rm tsp_profile.sh
+  rm tsp_profile.csh
+fi
+
+
 %files
 %defattr(-,root,root,0644)
 %attr(0755, root, root) %{prefix}/bin/*
@@ -48,6 +64,9 @@ rm -rf
 %attr(0644, root, root) %{prefix}/lib/lib*
 
 %changelog
+* Fri Oct 14 2005 Erk
+  - add link to /etc/profile.d/ during post
+  - delete those link during preun
 * Thu Oct 13 2005 Erk
   - bump to 0.7.0pre1
 * Tue Sep 6  2005 Erk

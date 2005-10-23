@@ -26,6 +26,7 @@ SOURCES = \
 	gdisp_pixmaps.c
 
 OBJECTS = $(SOURCES:%.c=$(DIROBJ)/%.o) 
+SHOBJECTS = $(SOURCES:%.c=$(DIRSHOBJ)/%.o) 
 
 ADD_LIB =  $(DIRLIB)/libtsp_consumer.a $(DIRLIB)/libtsp_services.a
 

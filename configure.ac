@@ -4,7 +4,7 @@
 # THIS FILE NEED TO BE PROCESSED WITH AUTOCONF
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # 
-AC_INIT([the Transport Sampling Protocol], [0.7.0pre1], [tsp@astrium.eads.net], [tsp])
+AC_INIT([the Transport Sampling Protocol], [0.7.0], [tsp@astrium.eads.net], [tsp])
 
 echo "**********************************************************"
 echo "*  TSP: AC_PACKAGE_NAME, version AC_PACKAGE_VERSION       "
@@ -76,6 +76,20 @@ fi
 ##########################
 ### End of C Setup     ###
 ##########################
+
+####################################
+# PKG config generic config script.
+# is pkg-config present ?
+####################################
+AC_CHECK_PROG([PKG_CONFIG],[pkg-config],[`which pkg-config`],[notfound],[$PATH],[rej])
+AC_MSG_CHECKING([pkg-config setup verification...])
+if test "$PKG_CONFIG" = "notfound"; then
+  AC_MSG_RESULT([NOK: pkg-config script (generic pkg package) not found will use specific script (if any)])
+  PKG_CONFIG_USER="no"
+else
+  AC_MSG_RESULT([Ok])
+  PKG_CONFIG_USER="yes"
+fi
 
 ################################
 # XML config reader.

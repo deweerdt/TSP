@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/util/libcalc/calc_func.h,v 1.1 2003-01-31 18:32:56 tsp_admin Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libcalc/calc_func.h,v 1.2 2005-10-23 13:15:24 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -35,7 +35,16 @@ Purpose   : Implementation fotr demo purpose
 -----------------------------------------------------------------------
  */
 
+#ifndef CALC_FUNC_H
+#define CALC_FUNC_H
+
+
+BEGIN_C_DECLS
 
 /* return nice value for plotting */
 double calc_func (int index, double my_time);
+
+END_C_DECLS
+
+#endif
 

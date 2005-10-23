@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: main_stub.c,v 1.1 2005-07-05 14:55:11 tsp_admin Exp $
+$Id: main_stub.c,v 1.2 2005-10-23 13:15:23 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -55,7 +55,7 @@ Purpose   : Simple Black Board Stub, with S/C simulation & Real Time
 #include "tsp_provider_init.h"
 #include "tsp_datapool.h"
 #include "tsp_sys_headers.h"
-#include "glue_sserver.h"
+#include <tsp_glu.h>
 #include "tsp_ringbuf.h"
 #include "tsp_time.h"
 #include "calc_func.h"

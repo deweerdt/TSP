@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/misc_utils/tsp_ringbuf.h,v 1.5 2003-01-28 13:24:52 SyntDev1 Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/misc_utils/tsp_ringbuf.h,v 1.6 2005-10-23 13:15:22 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -41,11 +41,12 @@ Purpose   : fast Ring Buffer
 
 #include <stdlib.h>
 
-#include "tsp_prjcfg.h"
+#include <tsp_prjcfg.h>
+#include <tsp_abs_types.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+
+BEGIN_C_DECLS
+
 
 /*
 --
@@ -351,10 +352,7 @@ extern "C" {
 			(name)->get - (name)->put \
 	)
 
-
-#ifdef __cplusplus
-}
-#endif
+END_C_DECLS
 
 #endif /* _RINGBUF_H */
 

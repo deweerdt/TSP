@@ -1,6 +1,6 @@
 /*!  \file
 
-$Header: /home/def/zae/tsp/tsp/src/util/libres/libUTIL.h,v 1.4 2004-09-07 09:27:45 tractobob Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libres/libUTIL.h,v 1.5 2005-10-23 13:15:24 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -38,6 +38,31 @@ Purpose   :
 #ifndef _RES_INTERFACE_H
 #define _RES_INTERFACE_H
 
+
+/*-----------------------------------------------------*\
+|							|
+| Macros for endianity, taken from TSP			|
+|							|
+\*-----------------------------------------------------*/
+#include <tsp_abs_types.h>
+
+#if TSP_BYTE_ORDER == TSP_BIG_ENDIAN
+#define FLOAT_TO_BE(pval)   
+#define DOUBLE_TO_BE(pval)  
+#define FLOAT_FROM_BE(pval)   
+#define DOUBLE_FROM_BE(pval)  
+#endif
+
+#if TSP_BYTE_ORDER == TSP_LITTLE_ENDIAN
+#define FLOAT_TO_BE(pval) *(uint32_t*)(pval) = TSP_UINT32_TO_BE(*(uint32_t*)(pval))
+
+#define DOUBLE_TO_BE(pval) *(uint64_t*)(pval) = TSP_UINT64_TO_BE(*(uint64_t*)(pval))
+
+#define FLOAT_FROM_BE(pval)   FLOAT_TO_BE(pval)
+#define DOUBLE_FROM_BE(pval)  DOUBLE_TO_BE(pval)
+
+#endif
+
 extern int _use_dbl;
 
 #define RES_COM_NUM	20
@@ -50,7 +75,7 @@ extern int _use_dbl;
 typedef void* d_rhandle;
 typedef void* d_whandle;
 
-
+BEGIN_C_DECLS
 
 #if defined(_LIBUTIL_REENTRANT) || defined(_LIBUTIL_COMPIL)
 
@@ -90,28 +115,6 @@ void	d_clos(void);
 
 #endif
 
-/*-----------------------------------------------------*\
-|							|
-| Macros for endianity, taken from TSP			|
-|							|
-\*-----------------------------------------------------*/
-#include <tsp_abs_types.h>
-
-#if TSP_BYTE_ORDER == TSP_BIG_ENDIAN
-#define FLOAT_TO_BE(pval)   
-#define DOUBLE_TO_BE(pval)  
-#define FLOAT_FROM_BE(pval)   
-#define DOUBLE_FROM_BE(pval)  
-#endif
-
-#if TSP_BYTE_ORDER == TSP_LITTLE_ENDIAN
-#define FLOAT_TO_BE(pval) *(uint32_t*)(pval) = TSP_UINT32_TO_BE(*(uint32_t*)(pval))
-
-#define DOUBLE_TO_BE(pval) *(uint64_t*)(pval) = TSP_UINT64_TO_BE(*(uint64_t*)(pval))
-
-#define FLOAT_FROM_BE(pval)   FLOAT_TO_BE(pval)
-#define DOUBLE_FROM_BE(pval)  DOUBLE_TO_BE(pval)
-
-#endif
+END_C_DECLS
 
 #endif /* _RES_INTERFACE_H */

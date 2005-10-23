@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: glue_sserver.h,v 1.20 2005-10-09 23:01:23 erk Exp $
+$Id: tsp_glu.h,v 1.1 2005-10-23 13:15:22 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -35,8 +35,8 @@ Purpose   : Interface for the glue server : the data producer
 -----------------------------------------------------------------------
  */
 
-#ifndef _TSP_GLUESERVER_H
-#define _TSP_GLUESERVER_H
+#ifndef _TSP_GLU_H
+#define _TSP_GLU_H
 
 #include "tsp_prjcfg.h"
 #include "tsp_datastruct.h"  /* FIXME : just for TSP_sample_symbol_info_list_t, and shouldn't use generated rpc struct */
@@ -323,6 +323,8 @@ typedef struct GLU_handle_t {
   
 } GLU_handle_t;
 
+BEGIN_C_DECLS
+
 /**
  * Create a GLU_handle. 
  * This will provide some default implementation for member function.
@@ -405,10 +407,6 @@ GLU_async_sample_write_default(struct GLU_handle_t* this, int pgi, void* value_p
 
 /** @} */
 
-#endif /*_TSP_GLUESERVER_H*/
+END_C_DECLS
 
-/* Might be remove
-int GLU_add_block(GLU_handle_t h_glu,int provider_global_index, xdr_and_sync_type_t type);
-int GLU_commit_add_block(GLU_handle_t h_glu);
-*/
-
+#endif /*_TSP_GLU_H*/

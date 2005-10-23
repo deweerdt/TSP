@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: glue_stub.c,v 1.4 2005-10-09 23:01:26 erk Exp $
+$Id: glue_stub.c,v 1.5 2005-10-23 13:15:24 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -42,7 +42,7 @@ Purpose   : Implementation for the glue_server, for stub test
 #include <assert.h>
 
 #include "tsp_sys_headers.h"
-#include "glue_sserver.h"
+#include <tsp_glu.h>
 #include "tsp_ringbuf.h"
 #include "tsp_time.h"
 #include "tsp_datapool.h"

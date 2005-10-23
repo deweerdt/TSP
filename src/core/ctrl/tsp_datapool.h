@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_datapool.h,v 1.11 2005-10-09 23:01:23 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_datapool.h,v 1.12 2005-10-23 13:15:21 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -41,9 +41,11 @@ Purpose   : Datapool implementation
 #include "tsp_prjcfg.h"
 
 #include "tsp_datastruct.h"
-#include "glue_sserver.h"
+#include <tsp_glu.h>
 
 typedef  void* TSP_datapool_t;
+
+BEGIN_C_DECLS
 
 /**
  * Get the reverse list of global_index wanted by some consumers
@@ -120,6 +122,7 @@ int TSP_local_datapool_start_thread(TSP_datapool_t datapool);
  * @return TRUE or FALSE. TRUE = OK
  */ 
 int TSP_local_datapool_wait_for_end_thread(TSP_datapool_t datapool);
-
+ 
+END_C_DECLS
 
 #endif /* _TSP_DATAPOOL_H */

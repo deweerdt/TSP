@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: tsp_provider.h,v 1.13 2005-10-09 23:01:23 erk Exp $
+$Id: tsp_provider.h,v 1.14 2005-10-23 13:15:21 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -38,9 +38,10 @@ Purpose   : Main interface for the producer module
 #ifndef _TSP_PROVIDER_H
 #define _TSP_PROVIDER_H
 
-#include "tsp_prjcfg.h"
-#include "tsp_datastruct.h"
-#include "glue_sserver.h"
+#include <tsp_prjcfg.h>
+#include <tsp_abs_types.h>
+#include <tsp_datastruct.h>
+#include <tsp_glu.h>
 
 /**
  * @defgroup Provider
@@ -49,6 +50,8 @@ Purpose   : Main interface for the producer module
  * provider library interface.
  * @{
  */
+
+BEGIN_C_DECLS
 
 /**
  * Initialize TSP provider library.
@@ -93,7 +96,7 @@ int TSP_provider_request_async_sample_write(TSP_async_sample_t* async_sample_wri
 
 int TSP_provider_request_async_sample_read(TSP_async_sample_t* async_sample_read);
 
-
+END_C_DECLS
 /** @} end group Provider */ 
 
 #endif /* _TSP_PROVIDER_H */

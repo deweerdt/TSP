@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_server.c,v 1.24 2005-10-18 23:10:22 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_server.c,v 1.25 2005-10-23 13:15:23 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -43,11 +43,12 @@ Purpose   :
 #include <stdio.h>
 #include <unistd.h> 
 
-#include "tsp_sys_headers.h"
+#include <tsp_sys_headers.h>
+#include <tsp_glu.h>
 /* FIXME RP : beurk, RPC is compiled before CTRL could export this include, how sould I call Request Manager and GLU then ? */
 #include "../ctrl/tsp_provider.h"
 #include "../ctrl/tsp_request_handler.h"
-#include "../ctrl/glue_sserver.h"
+
 
 #include "tsp_server.h"
 #include "tsp_rpc.h"

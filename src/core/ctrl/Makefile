@@ -1,12 +1,12 @@
 include $(DEVBASE)/make/Makeparams
 
-XINC    = tsp_provider.h glue_sserver.h tsp_datapool.h
+XINC    = tsp_provider.h tsp_datapool.h
 #XINC    = tsp_provider.h tsp_session.h   glue_sserver.h tsp_datapool.h \
           tsp_group_algo.h tsp_data_sender.h tsp_group_algo_data.h \
           tsp_stream_sender.h tsp_request.h
 
 SOURCES = \
-	glue_sserver.c \
+	tsp_default_glu.c \
 	tsp_provider.c \
 	tsp_session.c \
 	tsp_datapool.c \
