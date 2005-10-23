@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.16 2005-08-26 21:01:17 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.17 2005-10-23 09:46:06 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -59,7 +59,7 @@ Purpose   : Blackboard Idiom implementation
 /**
  * Convert type to string for display use.
  */
-static const char* E_BB_2STRING[] = {"NoAType 0",
+static const char* E_BB_2STRING[] = {"DiscoverType",
 				     "double", 
 				     "float", 
 				     "int8_t",
@@ -94,7 +94,7 @@ static const size_t E_BB_TYPE_SIZE[] = {0,
 size_t 
 sizeof_bb_type(E_BB_TYPE_T bb_type) {
   size_t retval = 0;
-  if ((bb_type>=1) && (bb_type<=E_BB_USER)) {
+  if ((bb_type>=1) && (bb_type<E_BB_USER)) {
     retval = E_BB_TYPE_SIZE[bb_type];
   }
   return retval;
@@ -334,14 +334,18 @@ bb_value_write(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc,const char* value,
   char* data;
   int retval;
   int hexval;
+  int lenval;
   assert(bb);
   
   retval = E_OK;
 
+  lenval = strlen(value);
+
   if ((NULL != strstr(value,"0x")) | 
       (NULL != strstr(value,"0X"))
       ) {
-    hexval = 1;
+    hexval  = 1;
+    lenval -= 2;
   } else {
     hexval = 0;
   }
@@ -349,48 +353,57 @@ bb_value_write(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc,const char* value,
   /* on recupere l'adresse de la donnee dans le BB */
   data = (char*)bb_data(bb) + data_desc.data_offset;
   switch (data_desc.type) {
-    case E_BB_DOUBLE: 
-      ((double *)data)[idx] = atof(value);
-      break;
-    case E_BB_FLOAT:
-      ((float *)data)[idx] = atof(value);
-      break;
-    case E_BB_INT8:
-      ((int8_t*)data)[idx] = strtol(value,(char **)NULL,hexval ? 16 : 10);
-      break; 
-    case E_BB_INT16:
-      ((int16_t*)data)[idx] = strtol(value,(char **)NULL,hexval ? 16 : 10);
-      break; 
-    case E_BB_INT32:
-      ((int32_t*)data)[idx] = strtol(value,(char **)NULL,hexval ? 16 : 10);
-      break; 
-    case E_BB_INT64:
-      ((int64_t*)data)[idx] = strtoll(value,(char **)NULL,hexval ? 16 : 10);
-      break; 
-    case E_BB_UINT8:
-      ((uint8_t*)data)[idx] = strtol(value,(char **)NULL,hexval ? 16 : 10);
-      break; 
-    case E_BB_UINT16:
-      ((uint16_t*)data)[idx] = strtoul(value,(char **)NULL,hexval ? 16 : 10);
-      break;
-    case E_BB_UINT32:
-      ((uint32_t*)data)[idx] = strtoul(value,(char **)NULL,hexval ? 16 : 10);
-      break;	
-    case E_BB_UINT64:
-      ((uint64_t*)data)[idx] = strtoull(value,(char **)NULL,hexval ? 16 : 10);
-      break;	
-    case E_BB_CHAR:
-      retval = E_NOK;
-      break;
-    case E_BB_USER:
-      retval = E_NOK;
-      break; 
-    default:
-      retval = E_NOK;
-      break;
-    }
+  case E_BB_DOUBLE: 
+    ((double *)data)[idx] = atof(value);
+    break;
+  case E_BB_FLOAT:
+    ((float *)data)[idx] = atof(value);
+    break;
+  case E_BB_INT8:
+    ((int8_t*)data)[idx] = strtol(value,(char **)NULL,hexval ? 16 : 10);
+    break; 
+  case E_BB_INT16:
+    ((int16_t*)data)[idx] = strtol(value,(char **)NULL,hexval ? 16 : 10);
+    break; 
+  case E_BB_INT32:
+    ((int32_t*)data)[idx] = strtol(value,(char **)NULL,hexval ? 16 : 10);
+    break; 
+  case E_BB_INT64:
+    ((int64_t*)data)[idx] = strtoll(value,(char **)NULL,hexval ? 16 : 10);
+    break; 
+  case E_BB_UINT8:
+    ((uint8_t*)data)[idx] = strtol(value,(char **)NULL,hexval ? 16 : 10);
+    break; 
+  case E_BB_UINT16:
+    ((uint16_t*)data)[idx] = strtoul(value,(char **)NULL,hexval ? 16 : 10);
+    break;
+  case E_BB_UINT32:
+    ((uint32_t*)data)[idx] = strtoul(value,(char **)NULL,hexval ? 16 : 10);
+    break;	
+  case E_BB_UINT64:
+    ((uint64_t*)data)[idx] = strtoull(value,(char **)NULL,hexval ? 16 : 10);
+    break;	
+  case E_BB_CHAR:
+    memcpy(&((char*)data)[idx],value,sizeof(char));
+    break;
+  case E_BB_UCHAR:
+    memcpy(&((unsigned char*)data)[idx],value,sizeof(unsigned char));
+    break; 
+  case E_BB_USER:
+    
+    retval = bb_utils_convert_string2hexbuf(hexval ? value+2 : value,
+					    &((unsigned char*)data)[idx],
+					    data_desc.type_size, 
+					    hexval);
+    retval = E_NOK;
+    break; 
+  default:
+    retval = E_NOK;
+    break;
+  }
   return retval;
 }
+
 
 int32_t
 bb_data_header_print(S_BB_DATADESC_T data_desc, FILE* pf, int32_t idx) {
@@ -534,10 +547,8 @@ bb_create(S_BB_T** bb,
 
   /* open+create du segment SHM SysV */
   if (name_shm!=NULL) {
-    /* On dimensionne le segment shm a
-     * la taille d'une structure de BB +
-     * la taille du tableau descripteur de donnee +
-     * la taille de la zone de donnee
+    /* We size SHM segment using the size of a BB
+     * as returned by bb_size.
      */
     mmap_size = bb_size(n_data,data_size);    
     fd_shm = shmget(bb_utils_ntok(name_shm), mmap_size, IPC_CREAT|IPC_EXCL|BB_SHM_ACCESS_RIGHT);        
@@ -860,7 +871,8 @@ bb_publish(volatile S_BB_T *bb, S_BB_DATADESC_T* data_desc) {
   assert(data_desc);
   
   /* Verify that the published data is not already published
-   * (key unicity)
+   * (key unicity) and trigger automatic subscribe
+   * if key already exists.
    */
   bb_lock(bb);
   if (bb_find(bb,data_desc->name) != -1) {
@@ -870,31 +882,31 @@ bb_publish(volatile S_BB_T *bb, S_BB_DATADESC_T* data_desc) {
     retval = bb_subscribe(bb,data_desc);
     bb_lock(bb);
   } else {
-    /* calcul de la taille demandee */
+    /* compute required data size  */
     needed_size = data_desc->type_size*data_desc->dimension;    
-    /* verification espace disponible dans BB */
+    /* verify available space in BB data descriptor zone */
     if (bb->n_data >= bb->max_data_desc_size) {
       bb_logMsg(BB_LOG_SEVERE,"BlackBoard::bb_publish", 
 		"No more room in BB data descriptor!! [current n_data=%d]",
 		bb->n_data);
-      /* verification taille donnee allouable */
+      /* verify available space in BB data zone */
     } else if ((bb->max_data_size-bb->data_free_offset) < needed_size) {
       bb_logMsg(BB_LOG_SEVERE,"BlackBoard::bb_publish", 
 		"No more room in BB data zone!! [left <%d> byte(s) out of <%d> required]",
 		bb->max_data_size-bb->data_free_offset,needed_size);
     } else {     
-      /* Calcule de l'adresse libre */
+      /* Compute the free address */
       retval = (char*) bb_data(bb) + bb->data_free_offset;
-      /* Mise a jour descripteur en retour */
+      /* Update returned data descriptor */
       data_desc->data_offset = bb->data_free_offset;
-      /* Mise a jour prochaine @ libre */
+      /* Update next free address */
       bb->data_free_offset  = bb->data_free_offset + needed_size;
-      /* Mise a jour descripteur de donnee */
+      /* Update data descriptor zone */
       bb_data_desc(bb)[bb->n_data] = *data_desc;
-      /* On augmente le nombre de donnees */
+      /* Increment number of published data */
       bb->n_data++;
     }
-    /* initialisation à des valeurs par defaut */
+    /* initialize publish data zone with default value */
     bb_data_initialise(bb,data_desc,NULL);
   }    
   /* no init in case of automatic subscribe */  
@@ -914,17 +926,33 @@ bb_subscribe(volatile S_BB_T *bb,
   assert(bb);
   assert(data_desc);
   
-  /* on cherche la donnee publiee par sa clef */
+  /* We seek the data using its key (name) */
   bb_lock(bb);
   idx = bb_find(bb,data_desc->name);
   if (idx==-1) {
     retval = NULL;      
   } else {
-    data_desc->type            = (bb_data_desc(bb)[idx]).type;
-    data_desc->dimension       = (bb_data_desc(bb)[idx]).dimension;
-    data_desc->type_size       = (bb_data_desc(bb)[idx]).type_size;
+    if (E_BB_DISCOVER == data_desc->type) {
+      data_desc->type            = (bb_data_desc(bb)[idx]).type;
+    }
+
+    if (0 == data_desc->dimension) {
+      data_desc->dimension       = (bb_data_desc(bb)[idx]).dimension;
+    }
+
+    if (0 == data_desc->type_size) {
+      data_desc->type_size       = (bb_data_desc(bb)[idx]).type_size;
+    }
+
     data_desc->data_offset     = (bb_data_desc(bb)[idx]).data_offset;
-    retval = (char*) bb_data(bb) + data_desc->data_offset;
+    /* return NULL pointer if symbol signature does not match */
+    if ((data_desc->type      !=  (bb_data_desc(bb)[idx]).type)     ||
+	(data_desc->dimension != (bb_data_desc(bb)[idx]).dimension) ||
+	(data_desc->type_size != (bb_data_desc(bb)[idx]).type_size)) {
+      retval = NULL;
+    } else {
+      retval = (char*) bb_data(bb) + data_desc->data_offset;
+    }
   }
   bb_unlock(bb);
 

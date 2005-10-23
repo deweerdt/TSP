@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.h,v 1.14 2005-10-09 23:01:26 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.h,v 1.15 2005-10-23 09:46:06 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -88,7 +88,8 @@ union semun {
  * BlackBoard publishable data type.
  * @ingroup BlackBoard
  */
-typedef enum {E_BB_DOUBLE=1, 
+typedef enum {E_BB_DISCOVER=0,
+              E_BB_DOUBLE=1, 
 	      E_BB_FLOAT,
 	      E_BB_INT8, 
 	      E_BB_INT16, 
@@ -227,8 +228,9 @@ bb_check_version(volatile S_BB_T* bb);
 
 /**
  * Return the size of a blackboard with 
- * n_data publishable elements
- * with a data zone of size data_size byte.
+ * n_data publishable elements with a data zone of size data_size byte.
+ * This is the exact size of the SHM segment required
+ * to create a BB.
  * @param n_data IN the number of publishable data in blackboard
  * @param data_size IN the size (in byte) of the blackboard data zone.
  * @return the size (in byte) of this kind of blackboard.

@@ -1,7 +1,7 @@
 
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_tools.c,v 1.15 2005-10-09 23:01:26 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_tools.c,v 1.16 2005-10-23 09:46:06 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -461,6 +461,9 @@ bbtools_read(bbtools_request_t* req) {
      * Use low-level subscribe in order to discover the 
      * type of the variable
      */
+    sym_data_desc.type      = E_BB_DISCOVER;
+    sym_data_desc.type_size = 0;
+    sym_data_desc.dimension = 0;
     sym_value = bb_subscribe(req->theBB,&sym_data_desc);    
 
     if (NULL==sym_value) {
@@ -537,6 +540,9 @@ bbtools_write(bbtools_request_t* req) {
      * Use low-level subscribe in order to discover the 
      * type of the variable
      */
+    sym_data_desc.type      = E_BB_DISCOVER;
+    sym_data_desc.type_size = 0;
+    sym_data_desc.dimension = 0;
     sym_value = bb_subscribe(req->theBB,&sym_data_desc);
     if ((sym_data_desc.dimension>1) && (-1==array_index)) {
       if (req->verbose) {

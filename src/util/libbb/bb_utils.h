@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_utils.h,v 1.4 2005-02-23 17:28:11 dufy Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_utils.h,v 1.5 2005-10-23 09:46:06 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -144,6 +144,21 @@ bb_utils_ntok_user(const char* name, int32_t user_specific_value);
 key_t
 bb_utils_ntok(const char* name);
 
+
+/**
+ * Write the value represented as string in a buffer
+ * of unsigned char. The value is understood as
+ * decimal of hexadecimal value representation
+ * @param string IN, the value to be written to buf
+ * @param buf OUT, the buffer to be written to
+ * @param buflen IN, the buffer length
+ * @param hexval IN, 0 if string is to be interpreted as decimal value
+ *                   1 if string is to be interpreted as hexadecimal value
+ * @return 0 if success !=0 otherwise
+ * @ingroup BBUtils
+ */
+int32_t
+bb_utils_convert_string2hexbuf(const char* string, unsigned char* buf, size_t buflen, int hexval);
 
 /**
  * Log message for BB Error.

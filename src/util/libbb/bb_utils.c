@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_utils.c,v 1.6 2005-04-08 14:55:28 le_tche Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_utils.c,v 1.7 2005-10-23 09:46:06 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -147,6 +147,31 @@ bb_utils_ntok(const char* name) {
   return bb_utils_ntok_user(name,getuid());
 
 } /* end of bb_utils_ntok */
+
+int32_t
+bb_utils_convert_string2hexbuf(const char* string, unsigned char* buf, size_t buflen, int hexval) {
+
+  int32_t retval        = 0;
+  int32_t lenstr        = strlen(string);
+  int32_t remain        = lenstr; 
+  const char* current   = string;
+  int32_t  bufidx       = 0;
+  uint8_t  utmp8;
+  unsigned char toconvert[3];
+  
+  /* terminate string */
+  toconvert[2] = '\0';
+
+  while ((remain>0) && (bufidx<buflen)) {
+    memcpy(toconvert,current,2);
+    current += 2;
+    utmp8 = strtol(toconvert,(char **)NULL,hexval ? 16 : 10);
+    memcpy(buf+bufidx,&utmp8,1);
+    remain  -= 2;
+    bufidx  += 1;
+  }    
+  return retval;
+}
 
 int32_t 
 bb_logMsg(const BB_LOG_LEVEL_T level, const char* who, char* fmt, ...) {
