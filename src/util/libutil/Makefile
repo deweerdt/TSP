@@ -2,17 +2,19 @@ include $(DEVBASE)/make/Makeparams
 
 RPC=NONE
 
-XINC    = hash.h
+XINC    = tsp_hash.h
 
 
 SOURCES = \
-	hash.c
+	tsp_hash.c
 
-OBJECTS=$(SOURCES:%.c=%.o) 
+OBJECTS=$(SOURCES:%.c=$(DIROBJ)/%.o) 
 
-TARGET=$(DIRLIB)/libtsp_util.a
-EXETARGET=
+TARGET1=$(DIRLIB)/libtsp_util.a
+TARGET2=$(DIRBIN)/tsp_hash_dump
+TARGET3=$(DIRBIN)/tsp_check_host_and_ip
 
+TARGETS=$(TARGET2) $(TARGET3)
 
 # -----------------------------------------------------------
 # No label all:: because it's in Makeparams and calls build::	
@@ -20,13 +22,15 @@ EXETARGET=
 # -----------------------------------------------------------
 
 ifneq (${TSP_TARGET},vxworks)
-build:: $(TARGET)($(OBJECTS)) $(DIRBIN)/hash_dump export_include
+build:: $(TARGETS) $(TARGET1)($(OBJECTS))
+	$(MAKE) export_include
 
-$(DIRBIN)/hash_dump: hash.c
-	cc -DMAIN $< -o $@
+$(TARGET2): tsp_hash.c
+	@echo "@@@ Specific Linking  $(TARGET2) ..."
+	$(LINK.c) -DMAIN $< -o $(TARGET2)
 
 destroy:: remove_include
-	$(RM) 	 $(EXETARGET) $(TARGET) $(OBJECTS)
+	$(RM) $(TARGETS) $(OBJECTS)
 endif
 
 include $(DEVBASE)/make/Makerules

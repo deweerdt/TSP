@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/util/libutil/Attic/hash.c,v 1.1 2005-03-30 09:34:27 tractobob Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libutil/tsp_hash.c,v 1.1 2005-10-23 13:47:23 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -42,7 +42,7 @@ Purpose   : Hash Table implementation, performance oriented :
 #include <strings.h>
 #include <assert.h>
 
-#include "hash.h"
+#include <tsp_hash.h>
 
 #define HASH_INDEX(hash, ch)  ( \
           ((int)(ch) >= (hash)->first && (int)(ch) <= (hash)->last) ? \

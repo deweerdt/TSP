@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/util/libutil/Attic/hash.h,v 1.1 2005-03-30 09:34:27 tractobob Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libutil/tsp_hash.h,v 1.1 2005-10-23 13:47:23 erk Exp $
 
 -----------------------------------------------------------------------
 
