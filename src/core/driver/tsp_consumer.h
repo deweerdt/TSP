@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: tsp_consumer.h,v 1.22 2005-10-23 16:01:18 erk Exp $
+$Id: tsp_consumer.h,v 1.23 2005-10-23 16:18:05 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -37,6 +37,8 @@ Purpose   : Main interface for the TSP consumer library
 
 #ifndef _TSP_CONSUMER_H
 #define _TSP_CONSUMER_H
+
+#include <stdio.h>
 
 #include <tsp_abs_types.h>
 #include <tsp_common.h>
@@ -385,6 +387,8 @@ int TSP_consumer_read_sample(TSP_provider_t provider,
 int TSP_consumer_request_async_sample_write(TSP_provider_t provider,TSP_consumer_async_sample_t* async_sample_write);
 
 int TSP_consumer_request_async_sample_read(TSP_provider_t provider,TSP_consumer_async_sample_t* async_sample_read);
+
+void TSP_consumer_print_invalid_symbols(FILE*, TSP_consumer_symbol_requested_list_t* symbols, const char* tsp_provider_url);
 
 END_C_DECLS
 

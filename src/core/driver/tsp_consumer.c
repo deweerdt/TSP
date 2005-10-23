@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.35 2005-10-23 16:01:18 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.36 2005-10-23 16:18:05 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -1382,4 +1382,20 @@ int TSP_consumer_request_async_sample_read(TSP_provider_t provider,TSP_consumer_
 	
   return ret;
 	
+}
+
+void 
+TSP_consumer_print_invalid_symbols(FILE* stream, 
+				   TSP_consumer_symbol_requested_list_t* symbols,
+				   const char* provider_url) {
+
+  int i;
+  assert(symbols);
+  for (i=0;i<symbols->len;i++) {
+    if (symbols->val[i].index < 0) {
+      fprintf(stream,"Symbol <%s> is unknown on provider <%s>\n",
+	      symbols->val[i].name,
+	      provider_url);
+    }
+  }
 }

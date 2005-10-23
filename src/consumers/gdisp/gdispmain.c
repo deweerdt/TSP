@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/consumers/gdisp/gdispmain.c,v 1.6 2005-10-23 16:01:17 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/consumers/gdisp/gdispmain.c,v 1.7 2005-10-23 16:18:05 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -219,8 +219,10 @@ static int main_window_start(char* conf_file, char* tsp_prov_url)
 			}
 		    }
 		  else
-		    {
+		    {		      
 		      fprintf(stderr, "Error while asking for TSP symbols session on host '%s'\n", tsp_prov_url);
+		      TSP_consumer_print_invalid_symbols(stderr,&conf_data.tsp_requested,tsp_prov_url);
+		      fprintf(stderr, "Check your configuration file <%s>.\n", conf_file);
 		    }
 		}
 	      else
