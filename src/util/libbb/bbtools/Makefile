@@ -9,7 +9,8 @@ XSCRIPT = bb_findlabel bb_find \
 	bb_check_id bb_destroy \
 	bb_synchro_send bb_synchro_recv \
 	bb_memset bb_check_version \
-	bb_publish bb_create
+	bb_publish bb_create \
+	bb_help
 SOURCES = \
 	bb_simu.c \
 	bb_tools_main.c
