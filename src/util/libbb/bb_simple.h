@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_simple.h,v 1.3 2004-11-09 22:33:01 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_simple.h,v 1.4 2005-10-23 12:28:56 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -72,6 +72,8 @@ pthread_mutex_t bb_simple_stockage_mutex;
  * publish subscribe interface using simple synchronization
  * primitive.
  */
+
+BEGIN_C_DECLS
 
 /**
  * Publish data in a simple BB.
@@ -187,4 +189,7 @@ int32_t bb_simple_thread_synchro_go(int type_msg);
  * @ingroup SimpleBlackBoard
  */
 int32_t bb_simple_thread_synchro_wait(int type_msg);
+
+END_C_DECLS
+
 #endif /* _BB_SIMPLE_H_ */

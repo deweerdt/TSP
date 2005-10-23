@@ -62,6 +62,8 @@ typedef struct SHA1Context
     int Corrupted;             /* Is the message digest corrupted? */
 } SHA1Context;
 
+BEGIN_C_DECLS
+
 /*
  *  Function Prototypes
  */
@@ -72,5 +74,7 @@ int SHA1Input(  SHA1Context *,
                 unsigned int);
 int SHA1Result( SHA1Context *,
                 uint8_t Message_Digest[SHA1HashSize]);
+
+END_C_DECLS
 
 #endif

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_utils.h,v 1.5 2005-10-23 09:46:06 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_utils.h,v 1.6 2005-10-23 12:28:56 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -62,6 +62,7 @@ typedef enum BB_LOG_LEVEL {
   BB_LOG_FINER
 } BB_LOG_LEVEL_T;
 
+BEGIN_C_DECLS
 
 /**
  * Build the string name used for creating a shm segment
@@ -173,5 +174,7 @@ bb_utils_convert_string2hexbuf(const char* string, unsigned char* buf, size_t bu
  */
 int32_t 
 bb_logMsg(const BB_LOG_LEVEL_T level, const char* modname, char* fmt, ...);
+
+END_C_DECLS
 
 #endif /* _BB_UTILS_H_ */
