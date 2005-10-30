@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_client.c,v 1.13 2005-10-18 23:10:22 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_client.c,v 1.14 2005-10-30 17:18:18 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -400,5 +400,5 @@ TSP_async_sample_t* TSP_request_async_sample_read(const TSP_async_sample_t* asyn
 	
   STRACE_IO(("-->OUT"));
   	
- return result;
+  return result;
 }	

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_server.c,v 1.25 2005-10-23 13:15:23 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_server.c,v 1.26 2005-10-30 17:18:18 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -266,7 +266,9 @@ TSP_async_sample_t * tsp_request_async_sample_read_1_svc(TSP_async_sample_t asyn
 
   
   ret = async_sample_read;
-  TSP_provider_request_async_sample_read(&ret);	
+  if (FALSE==TSP_provider_request_async_sample_read(&ret)) {
+    ret.provider_global_index = -1;
+  }	
 
   STRACE_IO(("-->OUT"));
 

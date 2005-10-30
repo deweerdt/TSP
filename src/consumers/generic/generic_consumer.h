@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/consumers/generic/generic_consumer.h,v 1.2 2005-10-09 23:01:23 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/consumers/generic/generic_consumer.h,v 1.3 2005-10-30 17:18:17 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -57,6 +57,7 @@ Purpose   : A generic command line consumer
 typedef struct generic_consumer_request {
   int32_t          verbose;
   int32_t          silent;
+  int32_t          help;
   int32_t          nb_global_opt;
   int32_t          argc;
   char**           argv;

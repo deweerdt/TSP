@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: generic_consumer.c,v 1.3 2005-10-30 11:08:09 erk Exp $
+$Id: generic_consumer.c,v 1.4 2005-10-30 17:18:17 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -77,6 +77,7 @@ void
 generic_consumer_request_create(generic_consumer_request_t* req) {
   req->verbose       = 0;
   req->silent        = 0;
+  req->help          = 0;
   req->argc          = 0;
   req->argv          = NULL;
   req->nb_global_opt = 0;
@@ -222,7 +223,12 @@ generic_consumer(generic_consumer_request_t* req) {
     return -1;
     break;
   }
-
+  
+  /* be nice close the session */
+  if (NULL != req->the_provider) {
+    TSP_consumer_request_close(req->the_provider);
+  }
+  
   return retval;
 } /* end of generic_consumer */
 
@@ -245,7 +251,7 @@ generic_consumer_usage(generic_consumer_request_t* req) {
 	    "Usage: %s [generic_opts] <tsp_request> [request_opts]\n",
 	    tsp_reqname_tab[E_TSP_REQUEST_GENERIC]);
     fprintf(req->stream,"   generic_opts:\n");
-    fprintf(req->stream,"    -u TSP provider URL\n");
+    fprintf(req->stream,"    -u TSP provider URL (defaulted to localhost) \n");
     fprintf(req->stream,"    -s silent mode (may be used for silent scripting)\n");
     fprintf(req->stream,"    -v verbose mode\n");
     fprintf(req->stream,"    -n no newline read mode\n");
@@ -318,7 +324,7 @@ generic_consumer_close(generic_consumer_request_t* req) {
 }
 
 void generic_consumer_printinfo(generic_consumer_request_t* req) {
-  TSP_consumer_information_t* pinfo;
+  const TSP_consumer_information_t* pinfo;
   int32_t i;
   pinfo = TSP_consumer_get_information(req->the_provider);
   fprintf(req->stream,"Provider::base frequency      = %f\n",pinfo->base_frequency);
@@ -399,15 +405,25 @@ generic_consumer_async_read(generic_consumer_request_t* req) {
   async_sample.value_ptr  = &value;
   async_sample.value_size = sizeof(value);
   retval = TSP_consumer_request_async_sample_read(req->the_provider,&async_sample);
-  
-  if (req->verbose) {
+ 
+  if ((0 != retval) && (!(req->silent))) {
     generic_consumer_logMsg(req->stream,
-			    "%s: Trying to async read symbol <pgi=%d>, value read is <%f> on provider <%s>...\n",
-			    tsp_reqname_tab[E_TSP_REQUEST_ASYNC_SAMPLE_READ],
-			    async_sample.provider_global_index,
-			    *((double*)async_sample.value_ptr),
-			    req->provider_url);
-  }	       
+			    "%s: async read refused (or not handled) by provider\n",
+			    tsp_reqname_tab[E_TSP_REQUEST_ASYNC_SAMPLE_READ]);
+  } else {
+
+    fprintf(req->stream,"%f",*((double*)async_sample.value_ptr));
+    fprintf(req->stream,"%s",req->newline);
+    if (req->verbose) {
+      generic_consumer_logMsg(req->stream,
+			      "%s: Trying to async read symbol <pgi=%d>, value read is <%f> on provider <%s>...\n",
+			      tsp_reqname_tab[E_TSP_REQUEST_ASYNC_SAMPLE_READ],
+			      async_sample.provider_global_index,
+			      *((double*)async_sample.value_ptr),
+			      req->provider_url);
+    }	       
+  }
+
   return retval;
 
 } /* end of generic_consumer_async_read */

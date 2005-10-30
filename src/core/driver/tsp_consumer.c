@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.36 2005-10-23 16:18:05 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.37 2005-10-30 17:18:18 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -1335,16 +1335,12 @@ int TSP_consumer_request_async_sample_write(TSP_provider_t provider,TSP_consumer
   
   /* verification of the structure*/
   	
-  if(0 != otsp)
-    {
-    
-      ret = TSP_request_async_sample_write(&async_write,otsp->server);
-      
-    }
-  else
-    {
+  if(0 != otsp) {    
+    ret = *(TSP_request_async_sample_write(&async_write,otsp->server));      
+  }
+  else {
       STRACE_ERROR(("This provider is not instanciate"));
-    }
+  }
      
   STRACE_IO(("-->OUT"));
 	
@@ -1355,28 +1351,31 @@ int TSP_consumer_request_async_sample_write(TSP_provider_t provider,TSP_consumer
 int TSP_consumer_request_async_sample_read(TSP_provider_t provider,TSP_consumer_async_sample_t* async_sample_read)
 {
  
-  TSP_async_sample_t async_read;
+  TSP_async_sample_t* async_read_result;
+  TSP_async_sample_t async_read_param;
+
+  
   int ret = 0;
   TSP_otsp_t* otsp = (TSP_otsp_t*)provider;
  
-  /* As there are a two level structure for hidding all RPC stuff, we need to copy the struct fields */
+  /* update internal RPC structure */
+  async_read_param.provider_global_index  = async_sample_read->provider_global_index;
+  async_read_param.data.data_val = async_sample_read->value_ptr;
+  async_read_param.data.data_len = async_sample_read->value_size;
   
-  async_read.provider_global_index = async_sample_read->provider_global_index;
-  async_read.data.data_val = async_sample_read->value_ptr;
-  async_read.data.data_len = async_sample_read->value_size;
-  
-  /* verification of the structure*/
-  	
-  if(0 != otsp)
-    {
-    
-      ret = TSP_request_async_sample_read(&async_read,otsp->server);
-      
+  if(0 != otsp) {   
+    STRACE_DEBUG(("TSP consumer async read for pgi <%d>\n",async_sample_read->provider_global_index));
+    async_read_result = TSP_request_async_sample_read(&async_read_param,otsp->server);
+    if (-1 == async_read_result->provider_global_index) {
+      ret = 1;
+    } else {
+      /* should update value */
+      memcpy(async_sample_read->value_ptr,async_read_result->data.data_val,async_sample_read->value_size);
     }
-  else
-    {
-      STRACE_ERROR(("This provider is not instanciate"));
-    }
+  }
+  else{
+    STRACE_ERROR(("This provider is not instanciate"));
+  }
      
   STRACE_IO(("-->OUT"));
 	

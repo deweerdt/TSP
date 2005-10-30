@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_datapool.c,v 1.21 2005-10-09 23:01:23 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_datapool.c,v 1.22 2005-10-30 17:18:17 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -141,7 +141,10 @@ inline int TSP_datapool_push_next_item(glu_item_t* item)
  */ 
 int TSP_datapool_push_commit(time_stamp_t time_stamp, GLU_get_state_t state)
 {
-  STRACE_DEBUG(("Datapool push new item time %d",time_stamp)); 
+  /*
+    that's too much of trace here
+    STRACE_DEBUG(("Datapool push new item time %d",time_stamp)); 
+  */
 
    /* Send end status message */
   switch(state)

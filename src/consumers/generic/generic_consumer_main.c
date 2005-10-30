@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: generic_consumer_main.c,v 1.3 2005-10-30 11:08:09 erk Exp $
+$Id: generic_consumer_main.c,v 1.4 2005-10-30 17:18:17 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -85,7 +85,7 @@ main(int argc, char *argv[]){
   generic_consumer_request_create(&req);
 
   /* Analyse command line parameters */
-  while (opt_ok && (EOF != (c_opt = getopt(argc,argv,"u:h:n:v:")))) {    
+  while (opt_ok && (EOF != (c_opt = getopt(argc,argv,"u:hnv")))) {    
     switch (c_opt) {
     case 'u':
       opt_ok++;
@@ -94,7 +94,7 @@ main(int argc, char *argv[]){
       break;
     case 'n':
       opt_ok++;
-      req.newline[0] = '\0' ;
+      req.newline[0] = ' ' ;
       break; 
     case 'v':
       opt_ok++;
@@ -104,6 +104,9 @@ main(int argc, char *argv[]){
       opt_ok++;
       req.silent = 1;
       break;
+    case 'h':
+      opt_ok++;
+      req.help = 1;
     case '?':
       fprintf(stderr,"Invalid command line option(s), correct it and rerun\n");
       opt_ok = 0;

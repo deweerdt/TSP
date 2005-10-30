@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: tsp_provider.c,v 1.29 2005-10-30 11:05:07 erk Exp $
+$Id: tsp_provider.c,v 1.30 2005-10-30 17:18:18 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -624,6 +624,10 @@ int TSP_provider_request_async_sample_write(TSP_async_sample_t* async_sample_wri
 			      async_sample_write->provider_global_index,
   			      async_sample_write->data.data_val,async_sample_write->data.data_len);
 
+  if (0!=ret) {
+    ret = FALSE;
+  }
+
   STRACE_DEBUG(("TSP_PROVIDER After async_write: pgi %d value %s return %d ",async_sample_write->provider_global_index,async_sample_write->data.data_val,ret ));
   
   STRACE_IO(("-->OUT"));
@@ -644,7 +648,13 @@ int TSP_provider_request_async_sample_read(TSP_async_sample_t* async_sample_read
 			     (async_sample_read->data.data_val),
 			     &(async_sample_read->data.data_len));
 
-  STRACE_DEBUG(("TSP_PROVIDER After async_read: pgi %d value %s return %d ",async_sample_read->provider_global_index,async_sample_read->data.data_val,ret ));
+  if (0 != ret) {
+    ret = FALSE;
+  } else {
+    ret = TRUE;
+  }
+
+  STRACE_DEBUG(("TSP_PROVIDER After async_read: pgi %d value %f return %d ",async_sample_read->provider_global_index,(double*)(async_sample_read->data.data_val),ret ));
   
   STRACE_IO(("-->OUT"));
   return ret;

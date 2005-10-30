@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/providers/bb_provider/bb_tsp_provider.c,v 1.12 2005-10-23 13:15:23 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/providers/bb_provider/bb_tsp_provider.c,v 1.13 2005-10-30 17:18:18 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -119,10 +119,10 @@ BB_GLU_init(GLU_handle_t* this, int fallback_argc, char* fallback_argv[]) {
   int i_nb_item_scalaire;
 
   retcode = TRUE;
-  /* On n'a rien a faire des fallback pour l'instant */
+  /* We don't need fallback for now */
   /* 
-   * !!! On n'a besoin de s'attacher au BB seulement 
-   * !!! si on est un process separe de celui qui le crée
+   * !!! We need to attach to BB iff
+   * !!! we are in a separate process
    */
   if (bb_attach(&the_bb,the_bbname) != E_OK) {
     bb_logMsg(BB_LOG_SEVERE,
@@ -409,6 +409,7 @@ int BB_GLU_async_sample_write(GLU_handle_t* glu, int provider_global_index, void
 	  if (allow_to_write[provider_global_index]==TSP_ASYNC_WRITE_ALLOWED) { 
 	    data_desc = bbdatadesc_by_pgi[provider_global_index];
 	    STRACE_INFO(("About to write on symbol <%s> value <%f> (strvalue=%s)...",data_desc->name,value,strvalue));
+	     /* note that we should write to genuine BB not the shadow ... */
 	    if (bb_value_write(the_bb,*data_desc,strvalue,0)==E_OK) {
 	      retcode = E_OK;
 	    } 
@@ -420,6 +421,29 @@ int BB_GLU_async_sample_write(GLU_handle_t* glu, int provider_global_index, void
 	}
 	
 	STRACE_DEBUG(("BB_PROVIDER After AsyncWrite : value %f return :%d",*((double*)value_by_pgi[provider_global_index]), retcode));
+
+	return retcode;
+} /* end of BB_GLU_async_sample_write */
+
+int BB_GLU_async_sample_read(GLU_handle_t* glu, int provider_global_index, void* value_ptr, int* value_size)
+{
+	int retcode = E_NOK;       	
+	
+	STRACE_DEBUG(("BB_PROVIDER want to AsyncRead : pgi <%d> (value_size allowed=%d)",provider_global_index,*value_size));
+	
+	/* try to read */
+	if (provider_global_index>=0 && provider_global_index<nb_symbols) {		
+	    STRACE_INFO(("About to read from symbol <%s> value...",bbdatadesc_by_pgi[provider_global_index]->name));
+	    /* note that we should read from genuine BB not the shadow ... */
+	    *((double*)value_ptr) = bb_double_of(bb_subscribe(the_bb,bbdatadesc_by_pgi[provider_global_index]),
+						 bbdatadesc_by_pgi[provider_global_index]->type);
+	    STRACE_INFO(("AsyncRead value is <%f>.",*((double*)value_ptr)));
+	    retcode = E_OK;	
+	} else {
+	  STRACE_INFO(("BB_GLU : pgi = %d is not valid provider_global_index",provider_global_index));	
+	}
+	
+	STRACE_DEBUG(("BB_PROVIDER After AsyncRead : value %f return :%d",*((double*)value_ptr), retcode));
 
 	return retcode;
 } /* end of BB_GLU_async_sample_write */
@@ -467,6 +491,7 @@ bb_tsp_provider_initialise(int* argc, char** argv[],int TSPRunMode, const char* 
   bbGLU->get_nb_symbols = &BB_GLU_get_symbol_number;
   bbGLU->get_pgi        = &BB_GLU_get_pgi;
   bbGLU->async_write    = &BB_GLU_async_sample_write;
+  bbGLU->async_read     = &BB_GLU_async_sample_read;
 
   
   retcode = E_OK;
