@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: tsp_common.h,v 1.4 2005-10-23 16:01:17 erk Exp $
+$Id: tsp_common.h,v 1.5 2005-10-30 11:05:06 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -83,8 +83,8 @@ const char* tsp_reqhelp_tab[] = {"invalid tsp request",
 				 "tsp_request_sample",
 				 "tsp_request_sample_init",
 				 "tsp_request_sample_destroy",
-				 "tsp_async_sample_write",
-				 "tsp_async_sample_read",
+				 "tsp_request_async_sample_write",
+				 "tsp_request_async_sample_read",
 				 "TSP LAST REQUEST"
 };
 #else
@@ -106,13 +106,16 @@ typedef struct TSP_request {
 typedef enum TSP_filter_kind {
   TSP_FILTER_NONE=0,
   TSP_FILTER_MINIMAL,
+  TSP_FILTER_SIMPLE,
   TSP_FILTER_REGEX,
   TSP_FILTER_XPATH,
   TSP_FILTER_SQL,
   TSP_FILTER_LAST
 } TSP_filter_kind_t;
 
-#define MINIMAL_STRING     "minimal"
+#define MINIMAL_STRING           "minimal"
+#define SIMPLE_CASE_SENSITIVE    "simple_withcase"
+#define SIMPLE_CASE_INSENSITIVE  "simple_nocase"
 
 BEGIN_C_DECLS
 

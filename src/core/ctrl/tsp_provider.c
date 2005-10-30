@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: tsp_provider.c,v 1.28 2005-10-23 16:01:17 erk Exp $
+$Id: tsp_provider.c,v 1.29 2005-10-30 11:05:07 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -351,7 +351,7 @@ void  TSP_provider_request_information(TSP_request_information_t* req_info,
 {
   TSP_provider_request_filtered_information(req_info,TSP_FILTER_NONE,NULL,ans_sample);  
   STRACE_DEBUG(("Nb symbol = %d",ans_sample->symbols.TSP_sample_symbol_info_list_t_len));
-  STRACE_DEBUG(("Nb symbol = 0x%08x",ans_sample->symbols.TSP_sample_symbol_info_list_t_val));
+  STRACE_DEBUG(("Nb symbol = 0x%08x",(unsigned int)ans_sample->symbols.TSP_sample_symbol_info_list_t_val));
 } /* End of TSP_provider_request_information */
 
 void TSP_provider_update_answer_with_minimalinfo(TSP_request_information_t* req_info,
@@ -362,7 +362,7 @@ void TSP_provider_update_answer_with_minimalinfo(TSP_request_information_t* req_
   ans_sample->status                = TSP_STATUS_ERROR_UNKNOWN;
   ans_sample->provider_group_number = 0;
   ans_sample->base_frequency        = firstGLU->get_base_frequency(firstGLU);
-  ans_sample->max_client_number     = TSP_MAX_CLIENT_NUMBER;
+  ans_sample->max_client_number     = firstGLU->get_nb_max_consumer(firstGLU);
   ans_sample->current_client_number = TSP_session_get_nb_session();
   ans_sample->max_period            = TSP_MAX_PERIOD;
   
@@ -395,16 +395,18 @@ void  TSP_provider_request_filtered_information(TSP_request_information_t* req_i
     TSP_filter_symbol_none(req_info,filter_string,ans_sample);
     break;
   case TSP_FILTER_MINIMAL:
-    STRACE_INFO(("Requested filter MINIMAL =%s",filter_string));
+    STRACE_INFO(("Requested filter MINIMAL, filter string = <%s>",filter_string));
     TSP_filter_symbol_minimal(req_info,filter_string,ans_sample);
     break;
-  case TSP_FILTER_REGEX:
-  case TSP_FILTER_XPATH:
-  case TSP_FILTER_SQL:
-    ans_sample->status = TSP_STATUS_ERROR_NOT_IMPLEMENTED;
-    break;
   default:
-    ans_sample->status = TSP_STATUS_ERROR_UNKNOWN;
+    STRACE_INFO(("Requested filter kind <%d>, filter string = <%s>",filter_kind,filter_string));
+    /* 
+     * forward other filtered request directly to GLU 
+     * such that even non anticipated filtering method could
+     * be implemented by specialized consumer and provider pair
+     * default GLU will provider reasonnable default implementation.
+     */
+    firstGLU->get_filtered_ssi_list(firstGLU,filter_kind,filter_string,ans_sample);
     break;
   } /* end switch filter_kind */
     

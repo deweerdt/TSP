@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: tsp_filter_symbol.h,v 1.1 2005-10-23 19:08:53 erk Exp $
+$Id: tsp_filter_symbol.h,v 1.2 2005-10-30 11:05:07 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -41,6 +41,13 @@ Purpose   : Symbol filtering module
 #include <tsp_abs_types.h>
 #include <tsp_provider.h>
 
+/**
+ * Filter symbols function prototype
+ */
+typedef void  (* TSP_filter_symbol_ft   )(TSP_request_information_t* req_info,
+			                  char* filter_string,
+			                  TSP_answer_sample_t* ans_sample);
+
 BEGIN_C_DECLS
 void TSP_filter_symbol_none(TSP_request_information_t* req_info,
 			    char* filter_string,
@@ -48,6 +55,10 @@ void TSP_filter_symbol_none(TSP_request_information_t* req_info,
 
 
 void TSP_filter_symbol_minimal(TSP_request_information_t* req_info,
+			       char* filter_string,
+			       TSP_answer_sample_t* ans_sample);
+
+void TSP_filter_symbol_other(TSP_request_information_t* req_info,
 			       char* filter_string,
 			       TSP_answer_sample_t* ans_sample);
 

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: tsp_glu.h,v 1.1 2005-10-23 13:15:22 erk Exp $
+$Id: tsp_glu.h,v 1.2 2005-10-30 11:05:07 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -136,6 +136,11 @@ typedef GLU_server_type_t  (* GLU_get_server_type_ft   )(struct GLU_handle_t* th
  */
 typedef double             (* GLU_get_base_frequency_ft)(struct GLU_handle_t* this);
 /**
+ * The maximum number of consumer connection
+ * @return maximum number of consumer connection
+ */
+typedef int             (* GLU_get_nb_max_consumer_ft)(struct GLU_handle_t* this);
+/**
  * GLU instance creation.
  * This function will be called by the provider for each consumer
  * connection.
@@ -247,10 +252,10 @@ typedef int                (* GLU_get_ssi_list_ft  )(struct GLU_handle_t* this, 
  * @param this Handle for the GLU (when the GLU is ACTIVE, it is always equal to GLU_GLOBAL_HANDLE)
  * @param filter_kind the filter kind
  * @param filter_string the filter string
- * @param symbol_list List of symbols
+ * @param ans_sample the answer_sample to be filled-in by the GLU.
  * @return TRUE of FALSE. TRUE = OK;
  */
-typedef int                (* GLU_get_filtered_ssi_list_ft)(struct GLU_handle_t* this, int filter_kind, char* filter_string, TSP_sample_symbol_info_list_t* symbol_list);
+typedef int                (* GLU_get_filtered_ssi_list_ft)(struct GLU_handle_t* this, int filter_kind, char* filter_string, TSP_answer_sample_t* symbol_list);
 
 /**
  * Get the number of symbols managed by the GLU.
@@ -305,15 +310,16 @@ typedef struct GLU_handle_t {
   char*                     name;           /**< The GLU name */
   GLU_server_type_t         type;           /**< The GLU type */
   double                    base_frequency; /**< The provider base frequency */
-  
+  int                       nb_max_consumer; /**< The provider base frequency */
 
-  GLU_get_server_name_ft    get_name;           /**< name getter */
-  GLU_get_server_type_ft    get_type;           /**< type getter */
-  GLU_get_base_frequency_ft get_base_frequency; /**< base frequency getter */
-  GLU_get_instance_ft       get_instance;       /**< instance getter */
-  GLU_init_ft               initialize;
-  GLU_run_ft                run;
-  GLU_start_ft              start;
+  GLU_get_server_name_ft     get_name;            /**< name getter */
+  GLU_get_server_type_ft     get_type;            /**< type getter */
+  GLU_get_base_frequency_ft  get_base_frequency;  /**< base frequency getter */
+  GLU_get_nb_max_consumer_ft get_nb_max_consumer; /**< max consumer getter */
+  GLU_get_instance_ft        get_instance;        /**< instance getter */
+  GLU_init_ft                initialize;
+  GLU_run_ft                 run;
+  GLU_start_ft               start;
   GLU_get_pgi_ft                 get_pgi;
   GLU_get_ssi_list_ft            get_ssi_list;
   GLU_get_filtered_ssi_list_ft   get_filtered_ssi_list;
@@ -341,72 +347,8 @@ int32_t GLU_handle_create(GLU_handle_t** glu, const char* name, const GLU_server
  */
 int32_t GLU_handle_destroy(GLU_handle_t** glu);
 
-/* ====== You'll find hereafter some default implementation GLU methods ====== */
-
-/** 
- * Default GLU server name.
- * @param this the GLU structure
- * @return GLU name.
- */
-char* GLU_get_server_name_default(GLU_handle_t* this);
-
-/**
- * Default GLU server type.
- * @param this the GLU structure
- * @return GLU server type.
- */
-GLU_server_type_t GLU_get_server_type_default(GLU_handle_t* this);
-
-/**
- * Default GLU base frequency.
- * @param this the GLU structure
- * @return GLU base frequency (Hz)
- */
-double GLU_get_base_frequency_default(GLU_handle_t* this);
-
-/**
- * Default GLU start.
- * @param this the GLU structure
- * @return true or false
- */
-int GLU_start_default(GLU_handle_t* this);
-
-/** 
- * Default GLU_get_pgi.
- * The default implementation use the mandatory GLU_get_sample_symbol_info_list
- * and does a linear search in it.
- * @param this IN, 
- * @param symbol_list IN the symbol list to validate
- * @param pg_indexes OUT array containing corresponding provider global indexes or -1 if not found 
- * @return TRUE if all symbol found, else return FALSE 
- */
-int GLU_get_pgi_default(GLU_handle_t* this, TSP_sample_symbol_info_list_t* symbol_list, int* pg_indexes);
-
-/**
- * Default GLU_get_instance.
- * The default implementation is only valid for an ACTIVE GLU.
- * In this case this function always return this.
- * PASSIVE GLU should reimplement this function.
- */ 
-GLU_handle_t* GLU_get_instance_default(GLU_handle_t* this,
-                                       int custom_argc,
-	 		               char* custom_argv[],
-			               char** error_info);
-
-int  
-GLU_get_nb_symbols_default(GLU_handle_t* this);
-
-int 
-GLU_get_filtered_ssi_list_default(GLU_handle_t* this, int filter_kind, char* filter_string, TSP_sample_symbol_info_list_t* symbol_list);
-
-int 
-GLU_async_sample_read_default(struct GLU_handle_t* this, int pgi, void* value_ptr, int* value_size);
-
-int 
-GLU_async_sample_write_default(struct GLU_handle_t* this, int pgi, void* value_ptr, int value_size);
-
 /** @} */
 
 END_C_DECLS
 
-#endif /*_TSP_GLU_H*/
+#endif /* _TSP_GLU_H */

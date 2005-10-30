@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_default_glu.c,v 1.1 2005-10-23 13:15:21 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_default_glu.c,v 1.2 2005-10-30 11:05:07 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -42,6 +42,8 @@ Purpose   : Implementation for the object GLU_handle_t
 #include <pthread.h>
 
 #include <tsp_glu.h>
+#include <tsp_common.h>
+#include <tsp_default_glu.h>
 
 
 int32_t GLU_handle_create(GLU_handle_t** glu, const char* name, const GLU_server_type_t type, const double base_frequency) {
@@ -51,14 +53,16 @@ int32_t GLU_handle_create(GLU_handle_t** glu, const char* name, const GLU_server
   *glu = calloc(1,sizeof(GLU_handle_t));
   assert(*glu);
   /* set up field values */
-  (*glu)->tid            = 0;
-  (*glu)->name           = strdup(name);
-  (*glu)->type           = type;
-  (*glu)->base_frequency = base_frequency;
+  (*glu)->tid             = 0;
+  (*glu)->name            = strdup(name);
+  (*glu)->type            = type;
+  (*glu)->base_frequency  = base_frequency;
+  (*glu)->nb_max_consumer = TSP_MAX_CLIENT_NUMBER;
   /* provides default method implementation  and NULLIFY others */
-  (*glu)->get_name           = &GLU_get_server_name_default;
-  (*glu)->get_type           = &GLU_get_server_type_default;
-  (*glu)->get_base_frequency = &GLU_get_base_frequency_default;
+  (*glu)->get_name            = &GLU_get_server_name_default;
+  (*glu)->get_type            = &GLU_get_server_type_default;
+  (*glu)->get_base_frequency  = &GLU_get_base_frequency_default;
+  (*glu)->get_nb_max_consumer = &GLU_get_nb_max_consumer_default;
 
   if (GLU_SERVER_TYPE_ACTIVE==type) {
     (*glu)->get_instance = &GLU_get_instance_default;
@@ -78,12 +82,12 @@ int32_t GLU_handle_create(GLU_handle_t** glu, const char* name, const GLU_server
    * initialize, run and get_ssi_list do not have default
    * start and get_pgi does.
    */
-  (*glu)->start              = &GLU_start_default;
-  (*glu)->get_pgi            = &GLU_get_pgi_default;
+  (*glu)->start                 = &GLU_start_default;
+  (*glu)->get_pgi               = &GLU_get_pgi_default;
   (*glu)->get_filtered_ssi_list = &GLU_get_filtered_ssi_list_default;
-  (*glu)->get_nb_symbols     = &GLU_get_nb_symbols_default;
-  (*glu)->async_read         = &GLU_async_sample_read_default;
-  (*glu)->async_write        = &GLU_async_sample_write_default;
+  (*glu)->get_nb_symbols        = &GLU_get_nb_symbols_default;
+  (*glu)->async_read            = &GLU_async_sample_read_default;
+  (*glu)->async_write           = &GLU_async_sample_write_default;
   
   return retcode;
 } /* end if GLU_handle_create */
@@ -113,6 +117,11 @@ GLU_get_server_type_default(struct GLU_handle_t* this) {
 double 
 GLU_get_base_frequency_default(struct GLU_handle_t* this) {
   return this->base_frequency;
+}
+
+int 
+GLU_get_nb_max_consumer_default(struct GLU_handle_t* this) {
+  return this->nb_max_consumer;
 }
 
 GLU_handle_t* 
@@ -190,8 +199,60 @@ GLU_get_nb_symbols_default(GLU_handle_t* this)
   return retval;
 }
 
-int GLU_get_filtered_ssi_list_default(GLU_handle_t* this, int filter_kind, char* filter_string, TSP_sample_symbol_info_list_t* symbol_list) {
-  return this->get_ssi_list(this,symbol_list);
+int GLU_get_filtered_ssi_list_default(GLU_handle_t* this, int filter_kind, char* filter_string, TSP_answer_sample_t* answer_sample) {
+
+  TSP_sample_symbol_info_list_t complete_symbol_list;
+  int32_t nb_match;
+  int32_t i;
+  int32_t* matched_index;
+
+  /* 
+   * Get the complete list of symbols
+   * this is sub-optimal but this GLU-side operation
+   * should be made as a zero copy operation
+   * with NO network transfert.
+   * We will return a filtered list in answer_sample->symbols 
+   * that will be transmitted to provider lib and then to consumer
+   * side accross network.
+   */
+  this->get_ssi_list(this,&complete_symbol_list);
+
+  switch (filter_kind) {
+  case TSP_FILTER_SIMPLE:
+    STRACE_INFO(("Requested filter kind <%d>, filter string = <%s>",filter_kind,filter_string));
+    /* first loop to count matching symbols */
+    nb_match      = 0;
+    matched_index = calloc(complete_symbol_list.TSP_sample_symbol_info_list_t_len,sizeof(int32_t));
+    for (i=0;i<complete_symbol_list.TSP_sample_symbol_info_list_t_len;i++) {
+      if (NULL != strstr(complete_symbol_list.TSP_sample_symbol_info_list_t_val[i].name,filter_string)) {
+	matched_index[nb_match] = i; 
+	nb_match++;	
+      }
+    }
+    STRACE_INFO(("Nb Matche <%d>",nb_match));
+    /* second loop if nb_match > 0 */
+    if (nb_match>0) {
+      free(answer_sample->symbols.TSP_sample_symbol_info_list_t_val);
+      answer_sample->symbols.TSP_sample_symbol_info_list_t_val = calloc(nb_match,sizeof(TSP_sample_symbol_info_t));
+      answer_sample->symbols.TSP_sample_symbol_info_list_t_len = nb_match;
+      for (i=0;i<nb_match;i++) {
+	STRACE_DEBUG(("Adding <%s> to answer_sample..."));
+	TSP_common_sample_symbol_copy(&(answer_sample->symbols.TSP_sample_symbol_info_list_t_val[i]),
+				      complete_symbol_list.TSP_sample_symbol_info_list_t_val[matched_index[i]]);
+      }
+    }
+    free(matched_index);
+    answer_sample->status = TSP_STATUS_OK;
+    break;
+  case TSP_FILTER_REGEX:
+  case TSP_FILTER_XPATH:
+  case TSP_FILTER_SQL:
+    answer_sample->status = TSP_STATUS_ERROR_NOT_SUPPORTED;
+  default:
+    answer_sample->status = TSP_STATUS_ERROR_SYMBOL_FILTER;
+    break;
+  } /* end switch filter_kind */
+  return -1;
 }
 
 int 
