@@ -1,0 +1,2 @@
+#!/bin/sh
+tsp_request_generic `basename $0` $@
