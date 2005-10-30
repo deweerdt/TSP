@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_default_glu.c,v 1.2 2005-10-30 11:05:07 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_default_glu.c,v 1.3 2005-10-30 18:17:08 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -236,7 +236,7 @@ int GLU_get_filtered_ssi_list_default(GLU_handle_t* this, int filter_kind, char*
       answer_sample->symbols.TSP_sample_symbol_info_list_t_val = calloc(nb_match,sizeof(TSP_sample_symbol_info_t));
       answer_sample->symbols.TSP_sample_symbol_info_list_t_len = nb_match;
       for (i=0;i<nb_match;i++) {
-	STRACE_DEBUG(("Adding <%s> to answer_sample..."));
+	STRACE_DEBUG(("Adding <%s> to answer_sample...",complete_symbol_list.TSP_sample_symbol_info_list_t_val[matched_index[i]].name));
 	TSP_common_sample_symbol_copy(&(answer_sample->symbols.TSP_sample_symbol_info_list_t_val[i]),
 				      complete_symbol_list.TSP_sample_symbol_info_list_t_val[matched_index[i]]);
       }
