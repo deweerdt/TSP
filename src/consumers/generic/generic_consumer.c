@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: generic_consumer.c,v 1.2 2005-10-09 23:01:23 erk Exp $
+$Id: generic_consumer.c,v 1.3 2005-10-30 11:08:09 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -82,7 +82,7 @@ generic_consumer_request_create(generic_consumer_request_t* req) {
   req->nb_global_opt = 0;
   TSP_request_create(&(req->request),E_TSP_REQUEST_INVALID);
   req->stream        = stdout;
-  req->provider_url  = NULL;
+  req->provider_url  = "localhost";
   req->the_provider  = NULL;
   req->newline[1]    = '\0';
   req->newline[0]    = '\n';
@@ -245,6 +245,7 @@ generic_consumer_usage(generic_consumer_request_t* req) {
 	    "Usage: %s [generic_opts] <tsp_request> [request_opts]\n",
 	    tsp_reqname_tab[E_TSP_REQUEST_GENERIC]);
     fprintf(req->stream,"   generic_opts:\n");
+    fprintf(req->stream,"    -u TSP provider URL\n");
     fprintf(req->stream,"    -s silent mode (may be used for silent scripting)\n");
     fprintf(req->stream,"    -v verbose mode\n");
     fprintf(req->stream,"    -n no newline read mode\n");
@@ -265,15 +266,15 @@ generic_consumer_usage(generic_consumer_request_t* req) {
     break;    
   case E_TSP_REQUEST_FILTERED_INFORMATION:
     fprintf(req->stream,
-	    "Usage: %s <filter>\n",
+	    "Usage: %s <filter_kind> <filter_string>\n",
 	    tsp_reqname_tab[req->request.req_type]);    	    
     break;    
   case E_TSP_REQUEST_ASYNC_SAMPLE_READ:
-    fprintf(req->stream,"Usage : %s <bbname>\n",
+    fprintf(req->stream,"Usage : %s <symbol_name>\n",
 	    tsp_reqname_tab[req->request.req_type]);    	    
     break;
   case E_TSP_REQUEST_ASYNC_SAMPLE_WRITE:
-    fprintf(req->stream,"Usage : %s <bbname>\n",
+    fprintf(req->stream,"Usage : %s <symbol_name>\n",
 	    tsp_reqname_tab[req->request.req_type]);    	    
     break; 
   default:
@@ -316,17 +317,66 @@ generic_consumer_close(generic_consumer_request_t* req) {
   return retval;  
 }
 
+void generic_consumer_printinfo(generic_consumer_request_t* req) {
+  TSP_consumer_information_t* pinfo;
+  int32_t i;
+  pinfo = TSP_consumer_get_information(req->the_provider);
+  fprintf(req->stream,"Provider::base frequency      = %f\n",pinfo->base_frequency);
+  fprintf(req->stream,"Provider::max period          = %d\n",pinfo->max_period);
+  fprintf(req->stream,"Provider::max consumer        = %d\n",pinfo->max_client_number);
+  fprintf(req->stream,"Provider::current consumer nb = %d\n",pinfo->current_client_number);
+  fprintf(req->stream,"Provider <symbols list begin>\n");
+  for (i=0;i<pinfo->symbols.len;i++) {
+    fprintf(req->stream,"    pgi = %08d, %s \n",
+	    pinfo->symbols.val[i].index,
+	    pinfo->symbols.val[i].name);
+  }
+  fprintf(req->stream,"Provider <symbols list end>.\n");
+}
+
 int32_t 
 generic_consumer_information(generic_consumer_request_t* req) {
   int32_t retval  = -1;
-  retval = generic_consumer_unimplemented_cmd(req);
+  
+
+  if (req->argc<1) {
+    generic_consumer_logMsg(req->stream,"%s: <%d> argument(s) missing\n",
+		   tsp_reqname_tab[E_TSP_REQUEST_INFORMATION],
+		   1-req->argc);
+    generic_consumer_usage(req);
+    retval = -1;
+    return retval;
+  }
+  if (FALSE==TSP_consumer_request_information(req->the_provider)) {
+    generic_consumer_logMsg(req->stream,"%s: TSP request failed\n",
+			    tsp_reqname_tab[E_TSP_REQUEST_INFORMATION]);
+  } else {
+    generic_consumer_printinfo(req);
+    retval = 0;
+  }
   return retval;  
 }
 
 int32_t 
 generic_consumer_filtered_information(generic_consumer_request_t* req) {
   int32_t retval  = -1;
-  retval = generic_consumer_unimplemented_cmd(req);
+  if (req->argc<3) {
+    generic_consumer_logMsg(req->stream,"%s: <%d> argument(s) missing\n",
+		   tsp_reqname_tab[E_TSP_REQUEST_FILTERED_INFORMATION],
+		   3-req->argc);
+    generic_consumer_usage(req);
+    retval = -1;
+    return retval;
+  }
+
+  if (FALSE==TSP_consumer_request_filtered_information(req->the_provider,TSP_FILTER_SIMPLE,req->argv[2])) {
+    generic_consumer_logMsg(req->stream,"%s: TSP request failed\n",
+			    tsp_reqname_tab[E_TSP_REQUEST_FILTERED_INFORMATION]);
+			    
+  } else {
+    generic_consumer_printinfo(req);
+    retval = 0;
+  }
   return retval;  
 }
 

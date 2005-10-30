@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: generic_consumer_main.c,v 1.2 2005-10-09 23:01:23 erk Exp $
+$Id: generic_consumer_main.c,v 1.3 2005-10-30 11:08:09 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -82,10 +82,13 @@ main(int argc, char *argv[]){
       return -1;
   }
 
+  generic_consumer_request_create(&req);
+
   /* Analyse command line parameters */
-  while (opt_ok && (EOF != (c_opt = getopt(argc,argv,"u:h")))) {    
+  while (opt_ok && (EOF != (c_opt = getopt(argc,argv,"u:h:n:v:")))) {    
     switch (c_opt) {
     case 'u':
+      opt_ok++;
       req.provider_url = strdup(optarg);
       fprintf(stdout,"%s: TSP provider URL is <%s>\n",argv[0],req.provider_url);
       break;
@@ -93,6 +96,14 @@ main(int argc, char *argv[]){
       opt_ok++;
       req.newline[0] = '\0' ;
       break; 
+    case 'v':
+      opt_ok++;
+      req.verbose = 1;
+      break;
+    case 's':
+      opt_ok++;
+      req.silent = 1;
+      break;
     case '?':
       fprintf(stderr,"Invalid command line option(s), correct it and rerun\n");
       opt_ok = 0;
@@ -103,7 +114,6 @@ main(int argc, char *argv[]){
     } /* end of switch */
   } /* end of while */
      
-  generic_consumer_request_create(&req);
   /* indicates number of global options to skip */
   req.nb_global_opt = opt_ok-1;
   req.argv          = argv;
