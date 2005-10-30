@@ -73,7 +73,7 @@ main (int argc, char ** argv) {
       break;
     case 'n':
       opt_ok++;
-      the_request.newline[0] = '\0' ;
+      the_request.newline[0] = ' ' ;
       break;
     case '?':
       fprintf(stderr,"%s::Invalid command line option(s), correct it and rerun\n",argv[0]);

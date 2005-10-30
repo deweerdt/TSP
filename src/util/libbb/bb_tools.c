@@ -1,7 +1,7 @@
 
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_tools.c,v 1.17 2005-10-30 15:31:43 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_tools.c,v 1.18 2005-10-30 15:48:58 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -635,7 +635,7 @@ bbtools_find(bbtools_request_t* req) {
   for (i=0; i< req->theBB->n_data;++i) {
     if (NULL != strstr((bb_data_desc(req->theBB)[i]).name,varmatch)) {
       fprintf(req->stream,"%s",(bb_data_desc(req->theBB)[i]).name);
-      fprintf(req->stream," %s",req->newline);
+      fprintf(req->stream,"%s",req->newline);
       ++nmatch;
      } 
    } /* end for */
