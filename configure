@@ -311,7 +311,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS AWK INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA LN_S SET_MAKE RANLIB ac_ct_RANLIB AR CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT CPP EGREP LIBOBJS PKG_CONFIG XML2_CONFIG GTK_CONFIG LEX LEXLIB LEX_OUTPUT_ROOT YACC XMLRPC_CONFIG CXX CXXFLAGS ac_ct_CXX build build_cpu build_vendor build_os host host_cpu host_vendor host_os HOST_TARGET ARFLAGS LDLIBS TSP_BASE ENABLED_TSP_TARGET BB GL_OK GLUT_OK SCRIPT_BINDING TSPCONSUMER XML2_CONFIG_USER GTK_BASED_CONSUMER LEX_YACC_PARSER TSPPROVIDER BUILD_XMLRPC LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS AWK INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA LN_S SET_MAKE RANLIB ac_ct_RANLIB AR CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT CPP EGREP LIBOBJS PKG_CONFIG XML2_CONFIG GTK_CONFIG LEX LEXLIB LEX_OUTPUT_ROOT YACC XMLRPC_CONFIG CXX CXXFLAGS ac_ct_CXX build build_cpu build_vendor build_os host host_cpu host_vendor host_os HOST_TARGET ARFLAGS LDLIBS TSP_BASE ENABLED_TSP_TARGET BB SHAREDLIB_ENABLED GL_OK GLUT_OK SCRIPT_BINDING TSPCONSUMER XML2_CONFIG_USER GTK_BASED_CONSUMER LEX_YACC_PARSER TSPPROVIDER BUILD_XMLRPC LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -857,6 +857,7 @@ Optional Features:
   --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
   --enable-ctsp                enable C TSP library build
+  --enable-sharedlib           enable shared libraries (this feature is ALPHA)
   --enable-openGL              enable openGL use for TSP consumers  (this feature is ALPHA)
   --enable-xmlrpc              enable xmlrpc for TSP commands  (this feature is ALPHA and _disables_ RPC usage)
   --enable-blackboard          enable BlackBoard library and TSP BlackBoard Provider
@@ -4791,6 +4792,29 @@ fi
 ################################
 
 ######################################
+# shared library handling
+######################################
+# Check whether --enable-sharedlib or --disable-sharedlib was given.
+if test "${enable_sharedlib+set}" = set; then
+  enableval="$enable_sharedlib"
+  SHAREDLIB_ENABLED=$enableval
+else
+  SHAREDLIB_ENABLED="no"
+fi;
+echo "$as_me:$LINENO: checking enabling shared library use" >&5
+echo $ECHO_N "checking enabling shared library use... $ECHO_C" >&6
+if test "$SHAREDLIB_ENABLED" = "yes"; then
+  echo "$as_me:$LINENO: result: Enabled, will be configured" >&5
+echo "${ECHO_T}Enabled, will be configured" >&6
+else
+  echo "$as_me:$LINENO: result: Disabled, won't be configured" >&5
+echo "${ECHO_T}Disabled, won't be configured" >&6
+fi
+#######################################
+### End shared libraries
+#######################################
+
+######################################
 # OpenGL part for TSP consumers
 ######################################
 # Check whether --enable-openGL or --disable-openGL was given.
@@ -5948,6 +5972,7 @@ done
 
 
 
+
 # Config for outputed files
                                         ac_config_files="$ac_config_files src/scripts/tsp_dev.login src/scripts/tsp_dev.login.sh make/Makeparams src/doxy/Makefile:src/doxy/doc.mk"
 
@@ -6610,6 +6635,7 @@ s,@LDLIBS@,$LDLIBS,;t t
 s,@TSP_BASE@,$TSP_BASE,;t t
 s,@ENABLED_TSP_TARGET@,$ENABLED_TSP_TARGET,;t t
 s,@BB@,$BB,;t t
+s,@SHAREDLIB_ENABLED@,$SHAREDLIB_ENABLED,;t t
 s,@GL_OK@,$GL_OK,;t t
 s,@GLUT_OK@,$GLUT_OK,;t t
 s,@SCRIPT_BINDING@,$SCRIPT_BINDING,;t t

@@ -158,6 +158,22 @@ fi
 ################################
 
 ######################################
+# shared library handling
+######################################
+AC_ARG_ENABLE(sharedlib,[  --enable-sharedlib           enable shared libraries (this feature is ALPHA)],
+	      SHAREDLIB_ENABLED=$enableval,
+	      SHAREDLIB_ENABLED="no")
+AC_MSG_CHECKING([enabling shared library use])
+if test "$SHAREDLIB_ENABLED" = "yes"; then
+  AC_MSG_RESULT([Enabled, will be configured])
+else
+  AC_MSG_RESULT([Disabled, won't be configured])
+fi
+#######################################
+### End shared libraries
+#######################################
+
+######################################
 # OpenGL part for TSP consumers
 ######################################
 AC_ARG_ENABLE(openGL,   [  --enable-openGL              enable openGL use for TSP consumers  (this feature is ALPHA)],
@@ -452,6 +468,7 @@ AC_SUBST(LDLIBS)
 AC_SUBST(TSP_BASE)
 AC_SUBST(ENABLED_TSP_TARGET)
 AC_SUBST(BB)
+AC_SUBST(SHAREDLIB_ENABLED)
 AC_SUBST(GL_OK)
 AC_SUBST(GLUT_OK)
 AC_SUBST(SCRIPT_BINDING)

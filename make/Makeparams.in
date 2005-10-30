@@ -73,6 +73,7 @@ BUILD_SCRIPT_BINDING 	= @SCRIPT_BINDING@
 USABLE_OPENGL           = @GL_OK@
 USABLE_OPENGLUT         = @GLUT_OK@
 BUILD_XMLRPC 		= @BUILD_XMLRPC@
+SHAREDLIB_ENABLED	= @SHAREDLIB_ENABLED@
 
 # Setup xmlrpc-c environnement if needed
 ifeq ($(BUILD_XMLRPC), yes)

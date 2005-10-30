@@ -25,8 +25,24 @@ SOURCES = \
 	gdisp_pointArray.c     \
 	gdisp_pixmaps.c
 
+PLUGINS_SOURCES = \
+	gdisp_utils.c \
+	gdisp_toString.c \
+	gdisp_xml.c \
+	gdisp_plot2D.c \
+	gdisp_plotText.c 
+ifeq (${USABLE_OPENGL},yes)
+PLUGINS_SOURCES += \
+	gdisp_plotOrbital.c \
+	gdisp_openglUtils.c
+endif
+
 OBJECTS = $(SOURCES:%.c=$(DIROBJ)/%.o) 
+ifeq (${SHAREDLIB_ENABLED},yes)
 SHOBJECTS = $(SOURCES:%.c=$(DIRSHOBJ)/%.o) 
+else
+OBJECTS += $(PLUGINS_SOURCES:%.c=$(DIROBJ)/%.o) 
+endif
 
 ADD_LIB =  $(DIRLIB)/libtsp_consumer.a $(DIRLIB)/libtsp_services.a
 
@@ -37,6 +53,8 @@ CPPFLAGS += `xml2-config --cflags`
 LDFLAGS  += `gtk-config --libs ` 
 LDFLAGS  += `xml2-config --libs ` 
 
+ifeq (${SHAREDLIB_ENABLED},yes)
+
 # ---------------------------------------------------------
 # How to build utility shared library.
 # ---------------------------------------------------------
@@ -44,10 +62,10 @@ LDFLAGS  += `xml2-config --libs `
 UTIL_TARGET = $(DIRLIB)/libtsp_gdispUtils.so
 
 $(UTIL_TARGET): gdisp_utils.c
-	$(COMPILE.c) -fPIC -o gdisp_utils.o gdisp_utils.c
-	$(COMPILE.c) -fPIC -o gdisp_toString.o gdisp_toString.c
-	$(COMPILE.c) -fPIC -o gdisp_xml.o gdisp_xml.c
-	$(LINK.c) -shared -o $@ gdisp_utils.o gdisp_toString.o gdisp_xml.o
+	$(COMPILE.c) -fPIC -o $(DIRSHOBJ)/gdisp_utils.o gdisp_utils.c
+	$(COMPILE.c) -fPIC -o $(DIRSHOBJ)/gdisp_toString.o gdisp_toString.c
+	$(COMPILE.c) -fPIC -o $(DIRSHOBJ)/gdisp_xml.o gdisp_xml.c
+	$(LINK.c) -shared -o $@ $(DIRSHOBJ)/gdisp_utils.o $(DIRSHOBJ)/gdisp_toString.o $(DIRSHOBJ)/gdisp_xml.o
 
 # ---------------------------------------------------------
 # How to build plot 2D shared library.
@@ -66,8 +84,8 @@ $(PLOT2D_TARGET): gdisp_plot2D.c
 PLOTTEXT_TARGET = $(DIRLIB)/libtsp_gdispPlotText.so
 
 $(PLOTTEXT_TARGET): gdisp_plotText.c
-	$(COMPILE.c) -fPIC -o gdisp_plotText.o gdisp_plotText.c
-	$(LINK.c) -shared -o $@ gdisp_plotText.o
+	$(COMPILE.c) -fPIC -o $(DIRSHOBJ)/gdisp_plotText.o gdisp_plotText.c
+	$(LINK.c) -shared -o $@ $(DIRSHOBJ)/gdisp_plotText.o
 
 # ---------------------------------------------------------
 # How to build orbital plot shared library.
@@ -78,9 +96,9 @@ PLOTORBITAL_TARGET = $(DIRLIB)/libtsp_gdispPlotOrbital.so
 OGL = -lGL -lGLU
 
 $(PLOTORBITAL_TARGET): gdisp_plotOrbital.c gdisp_openglUtils.c
-	$(COMPILE.c) -fPIC -o gdisp_plotOrbital.o gdisp_plotOrbital.c
-	$(COMPILE.c) -fPIC -o gdisp_openglUtils.o gdisp_openglUtils.c
-	$(LINK.c) -shared -o $@ gdisp_plotOrbital.o gdisp_openglUtils.o $(OGL)
+	$(COMPILE.c) -fPIC -o $(DIRSHOBJ)/gdisp_plotOrbital.o gdisp_plotOrbital.c
+	$(COMPILE.c) -fPIC -o $(DIRSHOBJ)/gdisp_openglUtils.o gdisp_openglUtils.c
+	$(LINK.c) -shared -o $@ $(DIRSHOBJ)/gdisp_plotOrbital.o gdisp_openglUtils.o $(OGL)
 
 # ---------------------------------------------------------
 # How to build main program.
@@ -91,10 +109,17 @@ ifeq (${USABLE_OPENGL},yes)
 SECONDARY_TARGETS += $(PLOTORBITAL_TARGET)
 endif
 
+endif
+
 build::$(TARGET)
 
+ifeq (${SHAREDLIB_ENABLED},yes)
 $(TARGET): $(SECONDARY_TARGETS) $(OBJECTS)
 	$(LINK.c) -o $@ $(OBJECTS) $(SECONDARY_TARGETS) $(ADD_LIB) $(LDLIBS)
+else
+$(TARGET): $(OBJECTS)
+	$(LINK.c) -o $@ $(OBJECTS) $(ADD_LIB) $(LDLIBS)
+endif
 
 destroy ::
 	$(RM) $(TARGET) $(OBJECTS) $(SECONDARY_TARGETS) *.o *~
