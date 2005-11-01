@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: tsp_consumer.h,v 1.23 2005-10-23 16:18:05 erk Exp $
+$Id: tsp_consumer.h,v 1.24 2005-11-01 10:37:12 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -165,7 +165,14 @@ typedef  void* TSP_provider_t;
 
 /*--------------------------------- FUNCTIONS -------------------------------*/
 
+/** @} */
+
 BEGIN_C_DECLS
+
+/**
+ * @addtogroup Consumer
+ * @{
+ */
 
 /**
  * Initialisation for TSP library.
@@ -390,8 +397,8 @@ int TSP_consumer_request_async_sample_read(TSP_provider_t provider,TSP_consumer_
 
 void TSP_consumer_print_invalid_symbols(FILE*, TSP_consumer_symbol_requested_list_t* symbols, const char* tsp_provider_url);
 
-END_C_DECLS
-
 /** @} end group Consumer */ 
+
+END_C_DECLS
     
 #endif /* _TSP_CONSUMER_H */

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_rpc.x,v 1.20 2005-10-23 16:01:18 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_rpc.x,v 1.21 2005-11-01 10:37:12 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -22,8 +22,6 @@ Purpose   :
  * @ingroup Core
  * @{
  */
-
-
 
 /** Status for all functions */
 enum TSP_status_t 
@@ -72,9 +70,9 @@ enum TSP_status_t
  */
 struct TSP_answer_open_t
 {
-        /** The Version of TSP protocol */
+        /** The version of TSP protocol */
         int version_id;            
-        /** The Session id used to send forthcoming request,
+        /** The channel identifier used to send forthcoming request,
 	    which is a session identifier stored by the
 	    TSP provider in order to handle provider-side
 	    consumer state or data */
@@ -92,19 +90,25 @@ typedef TSP_argv_item_t TSP_argv_t<>;
 
 /**  
  * The TSP request open is the first TSP request
- * a TSP consumer may send to obtain a TSP channel id
+ * a TSP consumer may send a TSP provider 
+ * to obtain a TSP channel id
  * in order to be able to send other TSP request.
  */
 struct TSP_request_open_t
 {
-  int version_id;        /**< 
+ 	/** The version of the TSP protocol */	
+	int version_id;       
 /*	string stream_init<>;
 	int use_stream_init;*/
-
+        /** The arguments which me be transmitted from
+            consumer-side to provider-side in order
+            to transmit initialization option  */
 	TSP_argv_t argv;	
-
 };
 
+/**
+ * 
+ */
 struct TSP_request_close_t
 {
 	int version_id;
