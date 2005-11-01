@@ -3,6 +3,7 @@
 ##ccc
 ##ddd 
 bb_simu_1_Titi		1
+bb_simu_display_level   3
 #unknown_var1            15
 # tiot
 #bb_simu_1_Toto		1
@@ -11,4 +12,4 @@ bb_simu_1_Tata[1]    	2
 unknown_var2            1
 bb_simu_1_Titi		1
 bb_simu_display_level   3
-bb_simu_display_level   3
+bb_simu_1_Toto		1
