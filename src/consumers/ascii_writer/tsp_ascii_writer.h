@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer.h,v 1.4 2004-11-09 22:33:01 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer.h,v 1.5 2005-11-01 10:40:49 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -37,10 +37,11 @@ Purpose   : TSP ascii writer consumer
 #ifndef _TSP_ASCII_WRITER_H_
 #define _TSP_ASCII_WRITER_H_
 
-#include "tsp_abs_types.h"
-#include "tsp_consumer.h"
 #include <pthread.h>
 #include <stdio.h>
+
+#include <tsp_abs_types.h>
+#include <tsp_consumer.h>
 
 /**
  * @defgroup Ascii_Writer
