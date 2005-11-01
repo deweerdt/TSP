@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/providers/bb_provider/bb_tsp_provider.c,v 1.13 2005-10-30 17:18:18 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/providers/bb_provider/bb_tsp_provider.c,v 1.14 2005-11-01 17:05:03 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -298,6 +298,7 @@ BB_GLU_get_pgi(GLU_handle_t* this, TSP_sample_symbol_info_list_t* symbol_list, i
            name,
            index));
 
+
     /* symbol not found skip to next symname */
     if (-1==bbidx) {
       pg_indexes[i] = -1;
@@ -315,9 +316,20 @@ BB_GLU_get_pgi(GLU_handle_t* this, TSP_sample_symbol_info_list_t* symbol_list, i
 	STRACE_INFO(("Symbol=%s, found but index=%d out of range",symbol_list->TSP_sample_symbol_info_list_t_val[i].name,index));
 	continue;
       } else {
-	/* magic formula for fast rebuild of PGI from bbindex */
-	pg_indexes[i] = bbindex_to_pgi[bbidx] + index;
-	STRACE_INFO(("Symbol=%s, found index=%d",symbol_list->TSP_sample_symbol_info_list_t_val[i].name,pg_indexes[i]));
+
+	/* do not validate array name as first element of array
+	 * consumer should ask for precise element array until
+	 * TSP support array type.
+	 */
+	if ((NULL==strstr(symbol_list->TSP_sample_symbol_info_list_t_val[i].name,"[")) &&
+	    (bb_data_desc(shadow_bb)[bbidx].dimension > 1)) {
+	  pg_indexes[i] = -1;
+	  STRACE_INFO(("Symbol=%s, found but array index wasn't given",symbol_list->TSP_sample_symbol_info_list_t_val[i].name));
+	} else {
+	  /* magic formula for fast rebuild of PGI from bbindex */
+	  pg_indexes[i] = bbindex_to_pgi[bbidx] + index;
+	  STRACE_INFO(("Symbol=%s, found index=%d",symbol_list->TSP_sample_symbol_info_list_t_val[i].name,pg_indexes[i]));
+	}
       }
     }
   }
