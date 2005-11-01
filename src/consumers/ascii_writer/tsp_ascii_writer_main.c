@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer_main.c,v 1.6 2005-10-09 23:01:23 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer_main.c,v 1.7 2005-11-01 12:15:05 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -65,6 +65,7 @@ main (int argc, char* argv[]) {
   FILE*   output_stream   = NULL;
   int32_t output_limit    = 0;
   char*   provider_url   = "rpc://localhost/";
+  int32_t no_duplicate;
 
   /* Main options handling */
   char*         errorString;
@@ -80,7 +81,7 @@ main (int argc, char* argv[]) {
   }
 
   /* Analyse command line parameters */
-  while (opt_ok && (EOF != (c_opt = getopt(argc,argv,"x:u:o:l:h")))) {    
+  while (opt_ok && (EOF != (c_opt = getopt(argc,argv,"x:u:o:l:hn")))) {    
     switch (c_opt) {
     case 'x':
       input_filename = strdup(optarg);
@@ -104,6 +105,10 @@ main (int argc, char* argv[]) {
       provider_url = strdup(optarg);
       fprintf(stdout,"%s: TSP provider URL is <%s>\n",argv[0],provider_url);
       break;
+    case 'n':
+      no_duplicate = 1;
+      fprintf(stdout,"%s: will enforce no duplicate symbol\n",argv[0]);
+      break;
     case '?':
       fprintf(stderr,"Invalid command line option(s), correct it and rerun\n");
       opt_ok = 0;
@@ -115,7 +120,8 @@ main (int argc, char* argv[]) {
   }
 
   if (!opt_ok) {
-    printf("Usage: %s -x=<sample_config_file> [-o=<output_filename>] [-l=<nb sample>] [-u=<TSP_URL>]\n", argv[0]);
+    printf("Usage: %s [-n] -x=<sample_config_file> [-o=<output_filename>] [-l=<nb sample>] [-u=<TSP_URL>]\n", argv[0]);
+    printf("   -n   will check and enforce no duplicate symbols\n");
     printf("   -x   the file specifying the list of symbols to be sampled\n");
     printf("   -o   the name of the output file\n");
     printf("   -l   (optional) the maximum number of sample to be stored in file\n");
@@ -141,11 +147,21 @@ main (int argc, char* argv[]) {
     tsp_ascii_writer_stop();
   }
 
+  if (no_duplicate) {
+    retcode = tsp_ascii_writer_make_unique(&mysymbols,&nb_symbols);
+
+    if (0!=retcode) {
+      fprintf(stderr,"<%s>: configuration file contains duplicate symbols with different period, please correct and re-run.\n",
+	      input_filename);
+      fprintf(stderr,"Seems to be symbol <%s>\n",mysymbols[retcode].name);
+      tsp_ascii_writer_stop();
+    }
+  }
+
   if (0==retcode) {
     fprintf(stdout,"%s: Validate symbols against provider info...\n",argv[0]);
     fflush(stdout);
-    retcode = tsp_ascii_writer_validate_symbols(mysymbols,nb_symbols,
-						                                    provider_url,&symbol_list);
+    retcode = tsp_ascii_writer_validate_symbols(mysymbols,nb_symbols,provider_url,&symbol_list);
   }
 
   if (0==retcode) {

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer.h,v 1.5 2005-11-01 10:40:49 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer.h,v 1.6 2005-11-01 12:15:05 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -97,6 +97,19 @@ int32_t
 tsp_ascii_writer_load_config(const char* conffilename, 
 			     TSP_consumer_symbol_requested_t**  tsp_symbols,
 			     int32_t* nb_symbols);
+
+/**
+ * Make the requested symbol unique in the provided list.
+ * @param tsp_symbols INOUT, pointer to the array of symbols found in config file.
+ *                         the array is allocated by the function.
+ * @param nb_symbols INOUT, the number of symbols found in file
+ * @return 0 if uniticy may be enforced -1 otherwise.
+ * @ingroup Ascii_Writer
+ */
+int32_t 
+tsp_ascii_writer_make_unique(TSP_consumer_symbol_requested_t**  tsp_symbols,
+			     int32_t* nb_symbols);
+
 /**
  * Validate the requested symbol against the TSP provider 
  * located on tsp_provider_hostname.

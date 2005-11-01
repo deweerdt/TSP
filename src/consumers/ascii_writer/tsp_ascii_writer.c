@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer.c,v 1.8 2005-10-09 23:01:23 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer.c,v 1.9 2005-11-01 12:15:04 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -249,6 +249,65 @@ tsp_ascii_writer_load_config(const char* conffilename,
   }  
   return retcode;
 } /* tsp_ascii_writer_load_config */
+
+int32_t 
+tsp_ascii_writer_make_unique(TSP_consumer_symbol_requested_t**  tsp_symbols,
+			     int32_t* nb_symbols) {
+  int i;
+  int j;
+  int nbsym_in;
+  int nbsym_out;
+  TSP_consumer_symbol_requested_t* symbols;
+  
+  nbsym_in  = *nb_symbols;
+  nbsym_out = nbsym_in;
+  symbols = *tsp_symbols;
+  /* quick return if less than 2 symbols */
+  if (nbsym_in<2) {
+    return 0;
+  }
+
+  /* loop over the symbols */
+  i = 1;
+  while (i<nbsym_out) {
+    /* loop in order to find */
+    j = 0;
+    while (j<i) {
+      /* verify the to be accepted symbols is not already there */
+      if (0==strcmp(symbols[i].name,symbols[j].name)) {
+	/* remove duplicate iff period and phase are the same */
+	if ((symbols[i].period == symbols[j].period) &&
+	    (symbols[i].phase == symbols[j].phase)) {
+	  /* copy remaining symbols */
+	  if ((i+1)<nbsym_out) {
+	    memmove(&symbols[i],&symbols[i+1],(nbsym_out-i)*sizeof(TSP_consumer_symbol_requested_t));
+	  } else {
+	    /* special case for last symbol remove */
+	    --nbsym_out;
+	    *nb_symbols = nbsym_out;
+	    return 0;
+	  }
+	  /* remove one */
+	  --nbsym_out;
+	  /* start over the check */
+	  j=0;
+	} else {
+	  return i;
+	}
+      } else {	
+	++j;
+      }
+    } /* while (j<i) */
+    ++i;
+  } /* while (i<nbsym_out) */
+
+  /* zero out duplicate at the end */
+  if (nbsym_in>nbsym_out) {
+    memset(&symbols[nbsym_out],0,(nbsym_in-nbsym_out)*sizeof(TSP_consumer_symbol_requested_t));
+    *nb_symbols = nbsym_out;
+  }
+  return 0;
+}
 
 int32_t 
 tsp_ascii_writer_validate_symbols(TSP_consumer_symbol_requested_t*  tsp_symbols,
