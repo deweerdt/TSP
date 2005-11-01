@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: tsp_provider.c,v 1.30 2005-10-30 17:18:18 erk Exp $
+$Id: tsp_provider.c,v 1.31 2005-11-01 10:37:56 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -430,7 +430,7 @@ void  TSP_provider_request_sample(TSP_request_sample_t* req_sample,
   ans_sample->status                = TSP_STATUS_ERROR_UNKNOWN;
   ans_sample->provider_group_number = 0;
   ans_sample->base_frequency        = firstGLU->get_base_frequency(firstGLU);
-  ans_sample->max_client_number     = TSP_MAX_CLIENT_NUMBER;
+  ans_sample->max_client_number     = firstGLU->get_nb_max_consumer(firstGLU);
   ans_sample->current_client_number = TSP_session_get_nb_session();
   ans_sample->max_period            = TSP_MAX_PERIOD;
   ans_sample->symbols.TSP_sample_symbol_info_list_t_len = 0;
