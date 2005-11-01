@@ -161,4 +161,6 @@ V-0.7.0: Creation ??/??/05	tag TSP_0_7_0	Erk
           TSP_request_informations.
         - Gdisp now using 'minimal' version of                  - Erk
           TSP_request_filtered_informations
+	- Updated ascii_writer for using provider-side
+ 	  validation and TSP_request_filtered_informations      - Erk
 

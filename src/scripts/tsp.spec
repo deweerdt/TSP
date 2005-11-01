@@ -64,6 +64,8 @@ fi
 %attr(0644, root, root) %{prefix}/lib/lib*
 
 %changelog
+* Fri Nov 1 2005 Erk
+  - TSP 0.7.0
 * Fri Oct 14 2005 Erk
   - add link to /etc/profile.d/ during post
   - delete those link during preun
