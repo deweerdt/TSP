@@ -113,6 +113,10 @@ endif
 
 build::$(TARGET)
 
+ifeq (${USABLE_OPENGL},yes)
+LDLIBS += -lGL -lGLU
+endif
+
 ifeq (${SHAREDLIB_ENABLED},yes)
 $(TARGET): $(SECONDARY_TARGETS) $(OBJECTS)
 	$(LINK.c) -o $@ $(OBJECTS) $(SECONDARY_TARGETS) $(ADD_LIB) $(LDLIBS)
