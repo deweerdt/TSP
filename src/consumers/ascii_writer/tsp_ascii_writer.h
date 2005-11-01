@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer.h,v 1.6 2005-11-01 12:15:05 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer.h,v 1.7 2005-11-01 17:07:48 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -38,10 +38,13 @@ Purpose   : TSP ascii writer consumer
 #define _TSP_ASCII_WRITER_H_
 
 #include <pthread.h>
-#include <stdio.h>
+#include <stdio.h> 
 
 #include <tsp_abs_types.h>
 #include <tsp_consumer.h>
+
+
+typedef int32_t  (* tsp_ascii_writer_logMsg_ft)(char* fmt, ...);
 
 /**
  * @defgroup Ascii_Writer
@@ -56,6 +59,10 @@ extern int tsp_ascii_writer_lineno;
 extern int tsp_ascii_writer_colno;
 extern int tsp_ascii_writer_nb_var;
 extern int tsp_ascii_writer_current_var;
+
+void tsp_ascii_writer_set_logMsgCB(tsp_ascii_writer_logMsg_ft logMsgCB);
+
+int32_t tsp_ascii_writer_logMsg_stdout(char* fmt, ...);
 
 /**
  * Initialise ascii TSP consumer.
@@ -100,10 +107,16 @@ tsp_ascii_writer_load_config(const char* conffilename,
 
 /**
  * Make the requested symbol unique in the provided list.
- * @param tsp_symbols INOUT, pointer to the array of symbols found in config file.
- *                         the array is allocated by the function.
- * @param nb_symbols INOUT, the number of symbols found in file
- * @return 0 if uniticy may be enforced -1 otherwise.
+ * The unicity may be enforced by reducing the number 
+ * of requested symbols if ever duplicate symbols have
+ * same name, period and phase.
+ * @param tsp_symbols INOUT, pointer to the array of symbols 
+ *                           to be checked for unicity on entry,
+ *                           the array of unique symbols on return.
+ * @param nb_symbols INOUT, the number of symbols in the provided array on entry
+ *                          the number of remaining (unique) symbols on return.
+ * @return 0 if uniticy may be enforced or the rank of non-unique
+ *           symbol otherwise.
  * @ingroup Ascii_Writer
  */
 int32_t 
