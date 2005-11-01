@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_default_glu.c,v 1.3 2005-10-30 18:17:08 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_default_glu.c,v 1.4 2005-11-01 17:03:40 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -229,7 +229,7 @@ int GLU_get_filtered_ssi_list_default(GLU_handle_t* this, int filter_kind, char*
 	nb_match++;	
       }
     }
-    STRACE_INFO(("Nb Matche <%d>",nb_match));
+    STRACE_INFO(("Nb Match(es) is <%d>",nb_match));
     /* second loop if nb_match > 0 */
     if (nb_match>0) {
       free(answer_sample->symbols.TSP_sample_symbol_info_list_t_val);
