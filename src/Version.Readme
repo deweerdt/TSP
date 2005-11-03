@@ -140,7 +140,7 @@ V-0.6.5: Creation ??/??/05	tag TSP_0_6_5	Erk
         - Add version check (API and bb_tools) in SHM BB 
           descriptor in order to avoid version mismatch         - Erk
         - XLM-RPC command path [Part 1]                         - FredD
-V-0.7.0: Creation ??/??/05	tag TSP_0_7_0	Erk
+V-0.7.0: Creation 04/11/05	tag TSP_0_7_0	Erk
         - XLM-RPC command path [Part 2]                         - FredD
         
         - TSP refactoring                                       - Erk
