@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_server.c,v 1.26 2005-10-30 17:18:18 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_server.c,v 1.27 2005-11-27 11:50:19 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -357,9 +357,17 @@ int TSP_rpc_request(TSP_provider_request_handler_t* this)
 int TSP_rpc_request_config(TSP_provider_request_handler_t* this)
 {
   TSP_rpc_request_config_t *config = (TSP_rpc_request_config_t *)(this->config_param);
-  char  hostname[MAXHOSTNAMELEN];
+  char  hostname[MAXHOSTNAMELEN+1];
   char* servername;
   int  hostnameOk;
+#undef NUMERIC_HOST
+#if NUMERIC_HOST
+  struct hostent*  myhost;
+  union {
+    uint32_t    addr;
+    uint8_t     parts[4];
+  } myu;
+#endif
 
   config->server_number = TSP_provider_get_server_base_number();
   /* do not buffer overflow */
@@ -374,6 +382,21 @@ int TSP_rpc_request_config(TSP_provider_request_handler_t* this)
   }
   else {
     hostnameOk = gethostname(hostname, MAXHOSTNAMELEN);
+#if NUMERIC_HOST
+    myhost = gethostbyname(hostname);
+    if (myhost == NULL) {
+      STRACE_ERROR(("Cannot gethostbyname '(hostname --> @IP)' for host <%s> check your /etc/hosts file.\n",hostname));
+      /* be tolerant we keep going with hostname but... consumer may not handle this properly */    
+    } else {
+     /* 
+      * Now translate hostname to @IP in order
+      * to avoid name -> IP resolution on consumer side 
+      */
+      memset(hostname,0,sizeof(hostname));
+      myu.addr = (uint32_t)ntohl(*((uint32_t*)myhost->h_addr_list[0]));
+      sprintf(hostname,"%d.%d.%d.%d",myu.parts[3], myu.parts[2], myu.parts[1], myu.parts[0]);
+    }
+#endif
     servername = (char*)TSP_provider_get_name();
     
     sprintf(config->url, /* TSP_URL_MAXLENGTH, pour snprintf quand Solaris 2.5 sera mort */

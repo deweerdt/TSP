@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_stream_sender.c,v 1.15 2004-09-22 14:25:58 tractobob Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_stream_sender.c,v 1.16 2005-11-27 11:50:19 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -283,7 +283,12 @@ TSP_stream_sender_t TSP_stream_sender_create(int fifo_size, int buffer_size)
   char host[TSP_MAXHOSTNAMELEN+1];
   TSP_socket_t* sock;
   pthread_t thread_connect_id;
-  
+  struct hostent*  myhost;
+  union {
+    uint32_t    addr;
+    uint8_t     parts[4];
+  } myu;
+
   STRACE_IO(("-->IN"));
 
   /*First disable SIGPIPE signal to avoir being crashed by a disconnected client*/
@@ -299,7 +304,20 @@ TSP_stream_sender_t TSP_stream_sender_create(int fifo_size, int buffer_size)
 
       return 0;
     }
-  
+  myhost = gethostbyname(host);
+  if (myhost == NULL) {
+    STRACE_ERROR(("Cannot gethostbyname '(hostname --> @IP)' for host <%s> check your /etc/hosts file.\n",host));
+    /* be tolerant we keep going with hostname but... consumer may not handle this properly */    
+  } else {
+     /* 
+      * Now translate hostname to @IP in order
+      * to avoid name -> IP resolution on consumer side 
+      */
+    memset(host,0,sizeof(host));
+    myu.addr = (uint32_t)ntohl(*((uint32_t*)myhost->h_addr_list[0]));
+    sprintf(host,"%d.%d.%d.%d",myu.parts[3], myu.parts[2], myu.parts[1], myu.parts[0]);
+  }
+     
   sock = (TSP_socket_t*)calloc(1, sizeof(TSP_socket_t));
   TSP_CHECK_ALLOC(sock, 0);
 
