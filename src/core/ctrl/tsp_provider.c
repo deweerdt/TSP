@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: tsp_provider.c,v 1.31 2005-11-01 10:37:56 erk Exp $
+$Id: tsp_provider.c,v 1.32 2005-11-27 01:09:01 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -424,7 +424,9 @@ void  TSP_provider_request_sample(TSP_request_sample_t* req_sample,
 {
   TSP_LOCK_MUTEX(&X_tsp_request_mutex,);	
   STRACE_IO(("-->IN"));
-
+  int32_t i;
+  int32_t invalid_period;
+  int32_t invalid_phase;
   ans_sample->version_id            = TSP_VERSION;
   ans_sample->channel_id            = req_sample->channel_id;
   ans_sample->status                = TSP_STATUS_ERROR_UNKNOWN;
@@ -440,18 +442,39 @@ void  TSP_provider_request_sample(TSP_request_sample_t* req_sample,
   
   if(req_sample->version_id <= TSP_VERSION)
     {
+      
       if(TSP_session_get_symbols_global_index_by_channel(req_sample->channel_id, &(req_sample->symbols) ))
-	{     
-	  /* The datapool will be created here (if it does not already exist) */
-	  if(TSP_session_create_symbols_table_by_channel(req_sample, ans_sample)) 
-	    {
-	      ans_sample->status = TSP_STATUS_OK;
-	      firstGLU->start(firstGLU); /* FIXME Y.D : Why start now the thread */
+	{  
+	  invalid_period = 0;
+	  invalid_phase  = 0;
+	  /* validate period and phase range */
+	  for (i=0;i<req_sample->symbols.TSP_sample_symbol_info_list_t_len;++i) {	    
+	    if(req_sample->symbols.TSP_sample_symbol_info_list_t_val[i].period < 1) {
+	      req_sample->symbols.TSP_sample_symbol_info_list_t_val[i].provider_global_index = -1;
+	      invalid_period++;
 	    }
-	  else  
-	    {
-	      STRACE_ERROR(("Function TSP_session_create_symbols_table_by_channel failed"));
-	    }        
+	    if(req_sample->symbols.TSP_sample_symbol_info_list_t_val[i].phase < 0) {
+	      req_sample->symbols.TSP_sample_symbol_info_list_t_val[i].provider_global_index = -1;
+	      invalid_phase++;
+	    }
+	  }
+	  if ((invalid_phase>0) || (invalid_period>0)) {
+	    ans_sample->status = TSP_STATUS_ERROR_UNKNOWN;
+	    TSP_common_sample_symbol_info_list_copy(&(ans_sample->symbols), req_sample->symbols);
+	    STRACE_DEBUG(("Invalid phase or period"));
+	  } else {
+
+	    /* The datapool will be created here (if it does not already exist) */
+	    if(TSP_session_create_symbols_table_by_channel(req_sample, ans_sample)) 
+	      {
+		ans_sample->status = TSP_STATUS_OK;
+		firstGLU->start(firstGLU); /* FIXME Y.D : Why start now the thread */
+	      }
+	    else  
+	      {
+		STRACE_ERROR(("Function TSP_session_create_symbols_table_by_channel failed"));
+	      }    
+	  }    
 	}
       else
 	{
