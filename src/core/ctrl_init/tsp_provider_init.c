@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl_init/tsp_provider_init.c,v 1.12 2005-10-09 23:01:23 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl_init/tsp_provider_init.c,v 1.13 2005-11-29 22:41:26 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -96,8 +96,8 @@ int TSP_provider_run(int spawn_mode)
       }
 
       ret = TSP_provider_rqh_manager_refresh();
-
-
+      
+      ret &= TSP_provider_private_run();
       /* If we are launched in a blocking mode 
        * Wait for every request handler thread to terminate
        * !!! Thread MUST NOT DETACHED themslevs though !!!

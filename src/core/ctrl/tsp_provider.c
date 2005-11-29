@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: tsp_provider.c,v 1.33 2005-11-29 22:08:53 erk Exp $
+$Id: tsp_provider.c,v 1.34 2005-11-29 22:41:26 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -223,8 +223,6 @@ static int TSP_cmd_line_parser(int* argc, char** argv[])
   STRACE_IO(("-->OUT"));
   
   return ret;
-
-
 }
 
 int TSP_provider_is_initialized(void)
@@ -467,8 +465,10 @@ void  TSP_provider_request_sample(TSP_request_sample_t* req_sample,
 	    /* The datapool will be created here (if it does not already exist) */
 	    if(TSP_session_create_symbols_table_by_channel(req_sample, ans_sample)) 
 	      {
+		/* FIXME do we need to start glu here for PASSIVE glu 
+		 * instead of TSP_provider_private_run
+		 */
 		ans_sample->status = TSP_STATUS_OK;
-		firstGLU->start(firstGLU); /* FIXME Y.D : Why start now the thread */
 	      }
 	    else  
 	      {
@@ -634,6 +634,20 @@ int TSP_provider_private_init(GLU_handle_t* theGLU, int* argc, char** argv[])
   
   return ret;
 } /* End of TSP_provider_private_init */
+
+int TSP_provider_private_run() {
+  /* instantiate datapool */
+  TSP_global_datapool_get_instance(firstGLU);
+  /* Launch GLU now 
+   */
+  /* FIXME do we need to differentiate 
+   * PASSIVE and ACTIVE GLU ?
+   */
+  /*  if (GLU_SERVER_TYPE_ACTIVE == firstGLU->type) { */
+    firstGLU->start(firstGLU);
+    /* } */
+  return 0;
+}
 
 
 int TSP_provider_request_async_sample_write(TSP_async_sample_t* async_sample_write)
