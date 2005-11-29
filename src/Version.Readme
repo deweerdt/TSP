@@ -163,4 +163,10 @@ V-0.7.0: Creation 04/11/05	tag TSP_0_7_0	Erk
           TSP_request_filtered_informations
 	- Updated ascii_writer for using provider-side
  	  validation and TSP_request_filtered_informations      - Erk
+V-0.7.1: Creation JJxx/MM/2005	tag TSP_0_7_1
+	- Gdisp+ save/restore feature				- Euskadi
+	- Bug Corrections
+		* bug #14783  use numeric @IP  
+                * bug #14770  direct DNS resolv necessary
+        - 
 
