@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer.c,v 1.10 2005-11-01 17:07:48 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer.c,v 1.11 2005-11-29 22:06:49 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -460,7 +460,7 @@ tsp_ascii_writer_new_validate_symbols(TSP_consumer_symbol_requested_t*  tsp_symb
 	} /* loop over array var index */
       } else {
 	/* ignore symbols with negative phase */
-	if (tsp_symbols[i].phase >0) {
+	if (tsp_symbols[i].phase >= 0) {
 	  tsp_symbol_list->val[var_index].name   = strdup(tsp_symbols[i].name);
 	  STRACE_DEBUG(("Asking for TSP var = <%s>",tsp_symbol_list->val[var_index].name));
 	  tsp_symbol_list->val[var_index].period = tsp_symbols[i].period;
