@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_default_glu.c,v 1.4 2005-11-01 17:03:40 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_default_glu.c,v 1.5 2005-11-29 22:08:53 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -256,13 +256,13 @@ int GLU_get_filtered_ssi_list_default(GLU_handle_t* this, int filter_kind, char*
 }
 
 int 
-GLU_async_sample_read_default(struct GLU_handle_t* this, int pgi, void* value_ptr, int* value_size) {
+GLU_async_sample_read_default(struct GLU_handle_t* this, int pgi, void* value_ptr, uint32_t* value_size) {
   /* default GLU does not authorize async read for any symbol */
   return -1;
 }
 
 int 
-GLU_async_sample_write_default(struct GLU_handle_t* this, int pgi, void* value_ptr, int value_size) {
+GLU_async_sample_write_default(struct GLU_handle_t* this, int pgi, void* value_ptr, uint32_t value_size) {
   /* default GLU does not authorize async write for any symbol */
   return -1;
 }

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: tsp_request_handler.h,v 1.3 2005-10-18 23:10:22 erk Exp $
+$Id: tsp_request_handler.h,v 1.4 2005-11-29 22:08:53 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -198,6 +198,8 @@ int TSP_provider_rqh_manager_refresh(void);
  * iff no more request handlers thread are running.
  */
 void TSP_provider_rqh_manager_waitend(void);
+
+int TSP_provider_rqh_manager_end(void);
 
 /** @} end group Request */ 
 

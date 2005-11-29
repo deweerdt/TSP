@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: tsp_glu.h,v 1.2 2005-10-30 11:05:07 erk Exp $
+$Id: tsp_glu.h,v 1.3 2005-11-29 22:08:53 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -276,7 +276,7 @@ typedef int                (* GLU_get_nb_symbols_ft  )(struct GLU_handle_t* this
  * @param value_size IN, the size of the value.
  * @return >0 on success <=0 on failure
  */
-typedef int                (* GLU_async_sample_write_ft)(struct GLU_handle_t* this, int pgi, void* value_ptr, int value_size);
+typedef int                (* GLU_async_sample_write_ft)(struct GLU_handle_t* this, int pgi, void* value_ptr, uint32_t value_size);
 
 /**
  * GLU asynchronous sample read.
@@ -290,7 +290,7 @@ typedef int                (* GLU_async_sample_write_ft)(struct GLU_handle_t* th
  * @param value_size INOUT, the size of the value.
  * @return >0 on success <=0 on failure
  */
-typedef int                (* GLU_async_sample_read_ft)(struct GLU_handle_t* this, int pgi, void* value_ptr, int* value_size);
+typedef int                (* GLU_async_sample_read_ft)(struct GLU_handle_t* this, int pgi, void* value_ptr, uint32_t* value_size);
 
                 
 /** 

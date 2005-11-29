@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/util/libutil/tsp_hash.c,v 1.1 2005-10-23 13:47:23 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libutil/tsp_hash.c,v 1.2 2005-11-29 22:08:53 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -39,8 +39,10 @@ Purpose   : Hash Table implementation, performance oriented :
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <strings.h>
 #include <assert.h>
+#include <unistd.h>
 
 #include <tsp_hash.h>
 
@@ -340,8 +342,8 @@ int strcmp_get(char *string)
   return 0;
 }
 
-void main (int argc, char** argv)
-{
+int
+main (int argc, char** argv) {
   extern char*           optarg;
   int                  opt;
   int                  opterr = FALSE;
@@ -446,7 +448,7 @@ void main (int argc, char** argv)
 	}
       fclose(fp);
     }
-
+  return 0;
 }
 
 #endif

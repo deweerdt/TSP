@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: tsp_common.c,v 1.2 2005-10-09 23:01:23 erk Exp $
+$Id: tsp_common.c,v 1.3 2005-11-29 22:08:53 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -34,6 +34,7 @@ Purpose   : Main implementation for the producer module
 
 -----------------------------------------------------------------------
  */
+#include <string.h>
 
 #include "tsp_sys_headers.h"
 #include "tsp_abs_types.h"

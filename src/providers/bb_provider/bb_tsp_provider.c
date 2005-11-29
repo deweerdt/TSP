@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/providers/bb_provider/bb_tsp_provider.c,v 1.14 2005-11-01 17:05:03 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/providers/bb_provider/bb_tsp_provider.c,v 1.15 2005-11-29 22:08:53 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -401,7 +401,7 @@ void* BB_GLU_thread(void* arg) {
   
 } /* end of BB_GLU_thread */
 
-int BB_GLU_async_sample_write(GLU_handle_t* glu, int provider_global_index, void* value_ptr, int value_size)
+int BB_GLU_async_sample_write(GLU_handle_t* glu, int provider_global_index, void* value_ptr, uint32_t value_size)
 {
 	S_BB_DATADESC_T* data_desc;
 	int retcode = E_NOK;       	
@@ -437,7 +437,7 @@ int BB_GLU_async_sample_write(GLU_handle_t* glu, int provider_global_index, void
 	return retcode;
 } /* end of BB_GLU_async_sample_write */
 
-int BB_GLU_async_sample_read(GLU_handle_t* glu, int provider_global_index, void* value_ptr, int* value_size)
+int BB_GLU_async_sample_read(GLU_handle_t* glu, int provider_global_index, void* value_ptr, uint32_t* value_size)
 {
 	int retcode = E_NOK;       	
 	

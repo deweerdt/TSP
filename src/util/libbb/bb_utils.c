@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_utils.c,v 1.7 2005-10-23 09:46:06 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_utils.c,v 1.8 2005-11-29 22:08:53 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -157,7 +157,7 @@ bb_utils_convert_string2hexbuf(const char* string, unsigned char* buf, size_t bu
   const char* current   = string;
   int32_t  bufidx       = 0;
   uint8_t  utmp8;
-  unsigned char toconvert[3];
+  char toconvert[3];
   
   /* terminate string */
   toconvert[2] = '\0';

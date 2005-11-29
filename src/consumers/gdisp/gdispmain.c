@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/consumers/gdisp/gdispmain.c,v 1.7 2005-10-23 16:18:05 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/consumers/gdisp/gdispmain.c,v 1.8 2005-11-29 22:08:53 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -76,7 +76,7 @@ void init_tsp_index(void)
 }
 
 /**
- * @param a provider global index
+ * @param index a provider global index
  * @return total number of vars for the given provider global index
  */ 
 int get_nbvars_per_index(int index)

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_group_algo.c,v 1.12 2004-09-22 14:25:58 tractobob Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_group_algo.c,v 1.13 2005-11-29 22:08:53 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -35,6 +35,8 @@ and use groups
 
 -----------------------------------------------------------------------
  */
+
+#include <string.h>
 
 #include "tsp_sys_headers.h"
 

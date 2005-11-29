@@ -51,6 +51,6 @@ int main(int argc, char* argv[]) {
 #ifdef LINUX
   fdIPV4 = socket(PF_INET, SOCK_DGRAM, IPPROTO_IP);
   ioctl(fdIPV4, SIOCGIFADDR, &myifrq);
-#endif LINUX
+#endif
   return 0;
 }

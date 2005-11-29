@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_stream_sender.c,v 1.16 2005-11-27 11:50:19 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_stream_sender.c,v 1.17 2005-11-29 22:08:53 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -35,8 +35,8 @@ stream  to the consumers.
 -----------------------------------------------------------------------
  */
  
-#include "tsp_sys_headers.h"
-  
+
+#include <unistd.h>  
 #include <netdb.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
@@ -52,6 +52,7 @@ stream  to the consumers.
 #define SHUT_RDWR 2
 #endif
 
+#include "tsp_sys_headers.h"
 #include "tsp_stream_sender.h"
 #include "tsp_time.h"
 
@@ -239,7 +240,7 @@ static void* TSP_streamer_sender_connector(void* arg)
      this function badly leaks */
     
   TSP_socket_t* sock = (TSP_socket_t*)arg;
-  int Len = 0;
+  socklen_t Len = 0;
     
   pthread_detach(pthread_self());
     
@@ -401,7 +402,7 @@ TSP_stream_sender_t TSP_stream_sender_create(int fifo_size, int buffer_size)
 	  {
 	    /* Find the chosen port*/
 	    struct sockaddr_in buf_addr;
-	    int len = sizeof(buf_addr);
+	    socklen_t len = sizeof(buf_addr);
 	    if( 0 ==  getsockname(sock->socketId, (struct sockaddr*) &buf_addr, &len) )
 	      {
 		/* Save the address in the tsp_socket struct */

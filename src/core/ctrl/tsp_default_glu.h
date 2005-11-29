@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: tsp_default_glu.h,v 1.1 2005-10-30 11:05:07 erk Exp $
+$Id: tsp_default_glu.h,v 1.2 2005-11-29 22:08:53 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -109,10 +109,10 @@ int
 GLU_get_filtered_ssi_list_default(GLU_handle_t* this, int filter_kind, char* filter_string, TSP_answer_sample_t* answer_sample);
 
 int 
-GLU_async_sample_read_default(struct GLU_handle_t* this, int pgi, void* value_ptr, int* value_size);
+GLU_async_sample_read_default(struct GLU_handle_t* this, int pgi, void* value_ptr, uint32_t* value_size);
 
 int 
-GLU_async_sample_write_default(struct GLU_handle_t* this, int pgi, void* value_ptr, int value_size);
+GLU_async_sample_write_default(struct GLU_handle_t* this, int pgi, void* value_ptr, uint32_t value_size);
 
 /** @} */
 

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: tsp_provider.c,v 1.32 2005-11-27 01:09:01 erk Exp $
+$Id: tsp_provider.c,v 1.33 2005-11-29 22:08:53 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -677,7 +677,7 @@ int TSP_provider_request_async_sample_read(TSP_async_sample_t* async_sample_read
     ret = TRUE;
   }
 
-  STRACE_DEBUG(("TSP_PROVIDER After async_read: pgi %d value %f return %d ",async_sample_read->provider_global_index,(double*)(async_sample_read->data.data_val),ret ));
+  STRACE_DEBUG(("TSP_PROVIDER After async_read: pgi %d value %f return %d ",async_sample_read->provider_global_index,*((double*)(async_sample_read->data.data_val)),ret ));
   
   STRACE_IO(("-->OUT"));
   return ret;
