@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.37 2005-10-30 17:18:18 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.38 2005-11-29 19:13:09 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -398,8 +398,8 @@ void TSP_consumer_end(void)
   STRACE_IO(("-->OUT"));
 }
 
-TSP_provider_t* TSP_consumer_connect_url(const char*  url)
-{	
+TSP_provider_t* 
+TSP_consumer_connect_url(const char*  url) {	
   TSP_provider_t *provider = NULL;
   TSP_server_t server;
   TSP_server_info_string_t server_info;
@@ -422,67 +422,55 @@ TSP_provider_t* TSP_consumer_connect_url(const char*  url)
     
   protocol = url_tok;
   p = strstr(url_tok, "://");
-  if(!p)
-    {
-      /* set p to hostname field, if any */
-      p = strstr(url_tok, "//");
-      if(p) p += 2;
-      else p = url_tok; /* may start of string be the hostname ?! */
-
-      /* no protocol specified, use default */
-      protocol = strdup(TSP_PROTOCOL);
-   }
-  else
-    {
-      /* protocol should be OK (start of URL), set p to hostname field */
-      if(p == url_tok) protocol = strdup(TSP_PROTOCOL);
-      *p = '\0';
-      p += 3;
-    }
+  if(!p) {
+    /* set p to hostname field, if any */
+    p = strstr(url_tok, "//");
+    if(p) p += 2;
+    else p = url_tok; /* may start of string be the hostname ?! */
+    
+    /* no protocol specified, use default */
+    protocol = strdup(TSP_DEFAULT_PROTOCOL);
+  } else {
+    /* protocol should be OK (start of URL), set p to hostname field */
+    if(p == url_tok) protocol = strdup(TSP_DEFAULT_PROTOCOL);
+    *p = '\0';
+    p += 3;
+  }
 
   hostname = p;
   p = strstr(hostname, "/");
-  if(p == hostname)
-    {
-      /* no hostname provided, use default & set p to server name field */
-      hostname = strdup("localhost");
-      p += 1;
-    }
-  else if(!p)
-    {
-      /* end of string ... hostname should be OK, set p to the end */
-      p = hostname + strlen(hostname);
-    }
-  else
-    {
-      /* hostname is OK, set p to server name field */
-      *p = '\0';
-      p += 1;
-    }
+  if(p == hostname) {
+    /* no hostname provided, use default & set p to server name field */
+    hostname = strdup("localhost");
+    p += 1;
+  } else if(!p) {
+    /* end of string ... hostname should be OK, set p to the end */
+    p = hostname + strlen(hostname);
+  } else {
+    /* hostname is OK, set p to server name field */
+    *p = '\0';
+    p += 1;
+  }
 
   servername = p;
   p = strstr(servername, ":");
-  if(!p)
-    {
-      /* servername should be OK (or 0 length), set p to number field */
-      p = servername + strlen(servername);
-    }
-  else
-    {
-      /* servername is OK, set p to number field */
-      *p = '\0';
-      p += 1;
-    }
+  if(!p) {
+    /* servername should be OK (or 0 length), set p to number field */
+    p = servername + strlen(servername);
+  } else {
+    /* servername is OK, set p to number field */
+    *p = '\0';
+    p += 1;
+  }
 
-  if(*p)
-    {
-      servernumber = atoi(p);
-      if(errno == EINVAL)
-	servernumber = -1;
-    }
+  if(*p) {
+    /* strtol should set errno which is not the case of atoi */
+    servernumber = strtol(p,NULL,10);
+    if(errno == EINVAL)
+      servernumber = -1;
+  }
 
-
-  /** Full URL, or without server name : try to connect to server number **/
+  /* Full URL, or without server name : try to connect to server number */
   if( servernumber >= 0 )
     {
       sprintf(url_lkup, TSP_URL_FORMAT, protocol, hostname, servername, servernumber);
@@ -504,26 +492,23 @@ TSP_provider_t* TSP_consumer_connect_url(const char*  url)
       STRACE_INFO(("No TSP provider on URL <%s>", url_lkup));
       return NULL;
     }
-else
-    {
-      /** Partial URL, without server number : try to find one, by recursion **/
-      int server_max_number = TSP_get_server_max_number();
-       
-      for(i = 0; i < server_max_number; i++)
-	{
-	  sprintf(url_lkup, TSP_URL_FORMAT, protocol, hostname, servername, i);
-	  provider = TSP_consumer_connect_url(url_lkup);
-	  if(provider)
-	    return provider;
-	}
-      STRACE_INFO(("No TSP provider based on URL <%s>", url));
-      return NULL;
-      
+  else {
+    /** Partial URL, without server number : try to find one, by recursion **/
+    int server_max_number = TSP_get_server_max_number();
+    
+    for(i = 0; i < server_max_number; i++) {
+      sprintf(url_lkup, TSP_URL_FORMAT, protocol, hostname, servername, i);
+      provider = TSP_consumer_connect_url(url_lkup);
+      if(provider)
+	return provider;
     }
-
+    STRACE_INFO(("No TSP provider based on URL <%s>", url));
+    return NULL;    
+  }
+  
   STRACE_ERROR(("Cannot parse such URL %s", url));
   return NULL;
-}
+} /* end of TSP_consumer_connect_url */
 
 void TSP_consumer_disconnect_one(TSP_provider_t provider)
 {	
@@ -570,7 +555,7 @@ void TSP_consumer_connect_all(const char*  host_name, TSP_provider_t** providers
 	  STRACE_DEBUG(("Trying to open server No %d", i));
 
 	  /* Is server number 'i' alive ?*/ 
-	  if(TSP_remote_open_server(  TSP_PROTOCOL,
+	  if(TSP_remote_open_server(  TSP_DEFAULT_PROTOCOL,
 				      host_name,
 				      "",
 				      i, 

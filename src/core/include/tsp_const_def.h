@@ -1,6 +1,6 @@
 /*!  \file 
  
-$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_const_def.h,v 1.32 2005-10-23 13:15:22 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_const_def.h,v 1.33 2005-11-29 19:13:09 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -234,12 +234,13 @@ struct TSP_otsp_server_info_t
 typedef struct  TSP_otsp_server_info_t TSP_otsp_server_info_t;
 
 /*-------- RPC --------*/
+#define TSP_RPC_PROTOCOL "rpc"
+#define TSP_XMLRPC_PROTOCOL "xmlrpc"
 
 #ifdef BUILD_XMLRPC
-#define TSP_PROTOCOL "xmlrpc"
+#define TSP_DEFAULT_PROTOCOL TSP_XMLRPC_PROTOCOL
 #else
-#define TSP_PROTOCOL "rpc"
-#define TSP_RPC_PROTOCOL "rpc"
+#define TSP_DEFAULT_PROTOCOL TSP_RPC_PROTOCOL
 #endif
 /**
  * base RPC PROG_ID that will be used 

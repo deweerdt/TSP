@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/xmlrpc/Attic/tsp_xmlrpc_client.c,v 1.1 2005-04-24 10:58:06 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/xmlrpc/Attic/tsp_xmlrpc_client.c,v 1.2 2005-11-29 19:13:09 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -95,8 +95,8 @@ int TSP_remote_open_server( const char *protocol,
   (*server)->url = (char *)malloc(TSP_MAX_URL_LENGTH);
   sprintf((*server)->url, "http://%s/RPC2", target_name);
 
-  if(strcmp(protocol, TSP_PROTOCOL) != 0) {
-		  STRACE_ERROR(("Protocol %s not handled, use %s", protocol, TSP_PROTOCOL));
+  if(strcmp(protocol, TSP_XMLRPC_PROTOCOL) != 0) {
+		  STRACE_ERROR(("Protocol %s not handled, use %s", protocol, TSP_XMLRPC_PROTOCOL));
 		  return FALSE;
   } 
 
