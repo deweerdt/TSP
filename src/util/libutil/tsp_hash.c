@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/util/libutil/tsp_hash.c,v 1.2 2005-11-29 22:08:53 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libutil/tsp_hash.c,v 1.3 2005-12-03 12:45:07 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -221,6 +221,8 @@ int hash_close(hash_t *hash)
   hash->last = -1;
 
   hash->table = 0;
+
+  free(hash);
 
   return 0;
 }
