@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_dataBook.c,v 1.5 2005-10-05 19:21:00 esteban Exp $
+$Id: gdisp_dataBook.c,v 1.6 2005-12-03 15:46:20 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -96,9 +96,9 @@ gdisp_getDataBookWindowPosition (Kernel_T *kernel)
  * be emitted, which in turn will call the "destroy" signal handler.
  */
 static gint
-gdispManageDeleteEventFromWM (GtkWidget *symbolWindow,
-			      GdkEvent  *event,
-			      gpointer   data)
+gdisp_manageDeleteEventFromWM (GtkWidget *symbolWindow,
+			       GdkEvent  *event,
+			       gpointer   data)
 {
 
   Kernel_T *kernel = (Kernel_T*)data;
@@ -119,8 +119,8 @@ gdispManageDeleteEventFromWM (GtkWidget *symbolWindow,
  * callback (see above).
  */
 static void
-gdispDestroySignalHandler (GtkWidget *dataBookWindow,
-			   gpointer   data)
+gdisp_destroySignalHandler (GtkWidget *dataBookWindow,
+			    gpointer   data)
 {
 
   Kernel_T *kernel = (Kernel_T*)data;
@@ -140,14 +140,9 @@ gdispDestroySignalHandler (GtkWidget *dataBookWindow,
   gdisp_destroyGraphicList      (kernel);
 
   /*
-   * Close and destroy data book.
-   */
-  gtk_widget_destroy(dataBookWindow);
-  kernel->widgets.dataBookWindow = (GtkWidget*)NULL;
-
-  /*
    * Reset all widgets.
    */
+  kernel->widgets.dataBookWindow      = (GtkWidget*)NULL;
   kernel->widgets.dataBookWidget      = (GtkWidget*)NULL;
   kernel->widgets.dataBookApplyButton = (GtkWidget*)NULL;
   kernel->widgets.symbolCList         = (GtkWidget*)NULL;
@@ -341,12 +336,12 @@ gdisp_showDataBook (gpointer factoryData,
 
   gtk_signal_connect(GTK_OBJECT(kernel->widgets.dataBookWindow),
 		     "delete_event",
-		     GTK_SIGNAL_FUNC(gdispManageDeleteEventFromWM),
+		     GTK_SIGNAL_FUNC(gdisp_manageDeleteEventFromWM),
 		     (gpointer)kernel);
 
   gtk_signal_connect(GTK_OBJECT(kernel->widgets.dataBookWindow),
 		     "destroy",
-		     GTK_SIGNAL_FUNC(gdispDestroySignalHandler),
+		     GTK_SIGNAL_FUNC(gdisp_destroySignalHandler),
 		     (gpointer)kernel);
 
   /*
@@ -544,6 +539,34 @@ gdisp_closeDataBookWindow ( Kernel_T *kernel )
 
     gdisp_closeCallback((GtkWidget*)NULL,
 			(gpointer)kernel);
+
+  }
+
+}
+
+
+/*
+ * Refresh all data book content.
+ */
+void
+gdisp_refreshDataBookWindow ( Kernel_T *kernel )
+{
+
+  /*
+   * Manually activate callback.
+   */
+  if (kernel->widgets.dataBookWindow != (GtkWidget*)NULL) {
+
+#if defined(GD_THESE_TWO_PIECES_OF_CODE_ARE_VALIDATED)
+
+    gdisp_refreshSymbolList  (kernel);
+    gdisp_refreshProviderList(kernel);
+
+#else
+
+    gdisp_closeDataBookWindow(kernel);
+
+#endif
 
   }
 

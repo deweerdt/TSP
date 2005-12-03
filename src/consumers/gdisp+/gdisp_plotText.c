@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_plotText.c,v 1.6 2005-02-19 21:35:20 esteban Exp $
+$Id: gdisp_plotText.c,v 1.7 2005-12-03 15:46:20 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -175,6 +175,7 @@ gdisp_createPlotText (Kernel_T *kernel)
    * GTK Style from default style.
    */
   plot->pttStyle = gtk_style_copy(gtk_widget_get_default_style());
+  plot->pttStyle = gtk_style_ref(plot->pttStyle);
 
   plot->pttStyle->base[GTK_STATE_NORMAL]   = kernel->colors[_BLACK_ ];
   plot->pttStyle->fg  [GTK_STATE_NORMAL]   = kernel->colors[_WHITE_];
@@ -218,7 +219,9 @@ gdisp_destroyPlotText(Kernel_T *kernel,
    * Now destroy everything.
    */
   if (plot->pttStyle != (GtkStyle*)NULL) {
+#if defined(GD_UNREF_THINGS)
     gtk_style_unref(plot->pttStyle);
+#endif
   }
   gtk_widget_destroy(plot->pttCList);
 
@@ -498,31 +501,27 @@ gdisp_stepOnPlotText (Kernel_T *kernel,
 
     symbol = (Symbol_T*)symbolItem->data;
 
-    if (symbol->sHasChanged == TRUE) {
+    /*
+     * Insert symbol into the graphic list.
+     */
+    sprintf(sValue,"%g ",symbol->sLastValue);
 
-      /*
-       * Insert symbol into the graphic list.
-       */
-      sprintf(sValue,"%g ",symbol->sLastValue);
-
-      gtk_clist_set_text(GTK_CLIST(plot->pttCList),
-			 rowNumber,
-			 GD_SYMBOL_VALUE_COLUMN,
-			 sValue);
+    gtk_clist_set_text(GTK_CLIST(plot->pttCList),
+		       rowNumber,
+		       GD_SYMBOL_VALUE_COLUMN,
+		       sValue);
 
 #if defined(TRY_PIXMAP)
 
-      gtk_clist_set_pixtext(GTK_CLIST(plot->pttCList),
-			    rowNumber,
-			    GD_SYMBOL_NAME_COLUMN,
-			    symbol->sInfo.name,
-			    10, /* spacing */
-			    pixmap,
-			    mask);
+    gtk_clist_set_pixtext(GTK_CLIST(plot->pttCList),
+			  rowNumber,
+			  GD_SYMBOL_NAME_COLUMN,
+			  symbol->sInfo.name,
+			  10, /* spacing */
+			  pixmap,
+			  mask);
 
 #endif
-
-    }
 
     rowNumber++;
 

@@ -19,6 +19,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <glib.h>
 #include "gdisp_pointArray.h"
 
 /*
@@ -31,14 +32,14 @@ dparray_newSampleArray (unsigned int maxSamples)
 
   DoublePointArray_T *pArray = (DoublePointArray_T*)NULL;
 
-  pArray = (DoublePointArray_T*)calloc(1,sizeof(DoublePointArray_T));
+  pArray = (DoublePointArray_T*)g_malloc0(sizeof(DoublePointArray_T));
 
   pArray->nbSamples  = 0;
   pArray->current    = 0;
   pArray->marker     = 0;
   pArray->maxSamples = maxSamples;
   pArray->samples    = (DoublePoint_T*)
-                       calloc(maxSamples,sizeof(DoublePoint_T));
+                       g_malloc0(maxSamples * sizeof(DoublePoint_T));
 
   return pArray;
 
@@ -52,8 +53,8 @@ void
 dparray_freeSampleArray (DoublePointArray_T* pArray)
 {
 
-  free (pArray->samples);
-  free (pArray);
+  g_free (pArray->samples);
+  g_free (pArray);
 
 }
 

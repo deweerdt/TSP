@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_sampledSymbols.c,v 1.7 2005-10-05 19:21:01 esteban Exp $
+$Id: gdisp_sampledSymbols.c,v 1.8 2005-12-03 15:46:20 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -714,46 +714,50 @@ gdisp_poolSampledSymbolList ( Kernel_T *kernel )
 	/*
 	 * Get in touch with the symbol through the global index.
 	 */
-	symbol = &provider->pSymbolList[pSampleList->val[pSampleCpt].index];
+	if (pSampleList->val[pSampleCpt].index >= 0) {
 
-	/*
-	 * If referenced... ie, used by graphic plots...
-	 */
-	if (symbol->sReference > 0) {
+	  symbol = &provider->pSymbolList[pSampleList->val[pSampleCpt].index];
 
 	  /*
-	   * Create the hierarchy for that symbol, if not already done.
+	   * If referenced... ie, used by graphic plots...
 	   */
-	  if (symbol->sNode == (GtkCTreeNode*)NULL) {
+	  if (symbol->sReference > 0) {
 
-	    gdisp_createSymbolNode(kernel,
-				   cTree,
-				   pSymbolAnchor,
-				   symbol);
+	    /*
+	     * Create the hierarchy for that symbol, if not already done.
+	     */
+	    if (symbol->sNode == (GtkCTreeNode*)NULL) {
 
-	  }
+	      gdisp_createSymbolNode(kernel,
+				     cTree,
+				     pSymbolAnchor,
+				     symbol);
+
+	    }
+	    else {
+
+	      gdisp_updateSymbolNode(kernel,
+				     cTree,
+				     symbol);
+
+	    }
+
+	  } /* sReference > 0 */
+
 	  else {
 
-	    gdisp_updateSymbolNode(kernel,
-				   cTree,
-				   symbol);
+	    if (symbol->sNode != (GtkCTreeNode*)NULL) {
 
-	  }
+	      gtk_ctree_remove_node(GTK_CTREE(cTree),
+				    symbol->sNode);
 
-	} /* sReference > 0 */
+	      symbol->sNode = (GtkCTreeNode*)NULL;
 
-	else {
+	    }
 
-	  if (symbol->sNode != (GtkCTreeNode*)NULL) {
+	  } /* sReference == 0 */
 
-	    gtk_ctree_remove_node(GTK_CTREE(cTree),
-				  symbol->sNode);
-
-	    symbol->sNode = (GtkCTreeNode*)NULL;
-
-	  }
-
-	} /* sReference == 0 */
+	} /* if (index >= 0) */
 
       } /* loop over sampled symbols */
 
@@ -962,6 +966,9 @@ gdisp_createSampledSymbolList ( Kernel_T  *kernel,
 
     kernel->widgets.selectedNodeStyle =
       gtk_style_copy(gtk_widget_get_default_style());
+    
+    kernel->widgets.selectedNodeStyle =
+      gtk_style_ref(kernel->widgets.selectedNodeStyle);
 
     kernel->widgets.selectedNodeStyle->font = selectedFont;
 #if defined(GD_TREE_WITH_COLOR)
@@ -971,6 +978,9 @@ gdisp_createSampledSymbolList ( Kernel_T  *kernel,
 
     kernel->widgets.unselectedNodeStyle =
       gtk_style_copy(gtk_widget_get_default_style());
+
+    kernel->widgets.unselectedNodeStyle =
+      gtk_style_ref(kernel->widgets.unselectedNodeStyle);
 
     kernel->widgets.unselectedNodeStyle->font = unselectedFont;
 #if defined(GD_TREE_WITH_COLOR)
@@ -1004,10 +1014,14 @@ gdisp_destroySampledSymbolList ( Kernel_T *kernel )
   /*
    * Destroy tree specific styles.
    */
+#if defined(GD_UNREF_THINGS)
   gtk_style_unref(kernel->widgets.selectedNodeStyle);
+#endif
   kernel->widgets.selectedNodeStyle = (GtkStyle*)NULL;
 
+#if defined(GD_UNREF_THINGS)
   gtk_style_unref(kernel->widgets.unselectedNodeStyle);
+#endif
   kernel->widgets.unselectedNodeStyle = (GtkStyle*)NULL;
 
   /*

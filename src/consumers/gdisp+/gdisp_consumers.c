@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_consumers.c,v 1.10 2005-10-05 19:21:00 esteban Exp $
+$Id: gdisp_consumers.c,v 1.11 2005-12-03 15:46:20 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -94,7 +94,6 @@ gdisp_insertProvider ( Kernel_T *kernel,
 
   GString        *messageString    = (GString*)NULL;
 
-  static guint    providerIdentity = 0;
   TSP_provider_t *provider         = NULL;
   gint            symbolCpt        = 0;
 
@@ -132,7 +131,7 @@ gdisp_insertProvider ( Kernel_T *kernel,
      */
     newProvider->pOriginalUrl = g_string_new(url);
     newProvider->pHandle      = provider;
-    newProvider->pIdentity    = providerIdentity++;
+    newProvider->pIdentity    = kernel->providerId++ % GD_MAX_PROVIDER_NUMBER;
     newProvider->pUrl         =
       g_string_new(TSP_consumer_get_connected_name(newProvider->pHandle));
     assert(newProvider->pUrl);
@@ -152,13 +151,24 @@ gdisp_insertProvider ( Kernel_T *kernel,
     requestStatus = TSP_consumer_request_open(newProvider->pHandle,
 					      (gint)NULL,
 					      (gchar**)NULL);
+
     if (requestStatus == TRUE) {
       
       /*
        * Now the session is opened, get back all available information.
        * Keep the current status, since symbols are not requested here.
        */
-      requestStatus = TSP_consumer_request_information(newProvider->pHandle);
+      if (kernel->retreiveAllSymbols == TRUE) {
+	requestStatus =
+	  TSP_consumer_request_information(newProvider->pHandle);
+      }
+      else {
+	requestStatus =
+	  TSP_consumer_request_filtered_information(newProvider->pHandle,
+						    TSP_FILTER_MINIMAL,
+						    MINIMAL_STRING);
+      }
+
       if (requestStatus == TRUE) {
 	
 	/* Do not free 'providerInfo' structure */
@@ -172,33 +182,51 @@ gdisp_insertProvider ( Kernel_T *kernel,
 	                                providerInfo->current_client_number;
 	newProvider->pSymbolNumber        = providerInfo->symbols.len;
 
-	if (newProvider->pSymbolNumber > 0) {
+	/*
+	 * Shall I retreive all symbols ?? It depends on the action.
+	 */
+	if (kernel->retreiveAllSymbols == TRUE) {
 
-	  newProvider->pSymbolList = (Symbol_T*)
-	    g_malloc0(newProvider->pSymbolNumber * sizeof(Symbol_T));
-	  assert(newProvider->pSymbolList);
+	  if (newProvider->pSymbolNumber > 0) {
 
-	}
+	    /*
+	     * Allocate symbol table.
+	     */
+	    newProvider->pSymbolList = (Symbol_T*)
+	      g_malloc0(newProvider->pSymbolNumber * sizeof(Symbol_T));
+	    assert(newProvider->pSymbolList);
 
-	for (symbolCpt=0; symbolCpt<newProvider->pSymbolNumber; symbolCpt++) {
+	    /*
+	     * Allocate symbol hash table for extra-boosted search.
+	     */
+	    newProvider->pSymbolHashTable = hash_open('.','z');
+	    assert(newProvider->pSymbolHashTable);
+
+	  }
 
 	  /*
-	   * I do not duplicate the name, because I want to save up memory.
-	   * So what I do is good if I do not call
-	   * 'TSP_consumer_request_information' again, because this routine
-	   * releases (via "free") the "name" variable.
+	   * Loop over all symbols.
 	   */
-	  newProvider->pSymbolList[symbolCpt].sInfo.name   =
-                                  providerInfo->symbols.val[symbolCpt].name;
-	  newProvider->pSymbolList[symbolCpt].sInfo.index  =
+	  for (symbolCpt=0;
+	       symbolCpt<newProvider->pSymbolNumber; symbolCpt++) {
+
+	    newProvider->pSymbolList[symbolCpt].sInfo.name   =
+                     gdisp_strDup(providerInfo->symbols.val[symbolCpt].name);
+	    newProvider->pSymbolList[symbolCpt].sInfo.index  =
                                   providerInfo->symbols.val[symbolCpt].index;
 
-	  /* Default is : at maximum frequency without offset */
-	  newProvider->pSymbolList[symbolCpt].sInfo.period = 1;
-	  newProvider->pSymbolList[symbolCpt].sInfo.phase  = 0;
-	  newProvider->pSymbolList[symbolCpt].sHasChanged  = FALSE;
+	    /* Default is : at maximum frequency without offset */
+	    newProvider->pSymbolList[symbolCpt].sInfo.period = 1;
+	    newProvider->pSymbolList[symbolCpt].sInfo.phase  = 0;
+	    newProvider->pSymbolList[symbolCpt].sHasChanged  = FALSE;
 
-	} /* symbolCpt */
+	    hash_append(newProvider->pSymbolHashTable,
+			newProvider->pSymbolList[symbolCpt].sInfo.name,
+			(void*)&newProvider->pSymbolList[symbolCpt]);
+
+	  } /* symbolCpt */
+
+	} /* retreiveAllSymbols == TRUE */
 
 	/*
 	 * Session is now opened towards provider.
@@ -323,11 +351,11 @@ gdisp_consumingInit (Kernel_T *kernel)
 
 #define _HOST_NAME_MAX_LEN_ 256
   gchar           localHostName[_HOST_NAME_MAX_LEN_];
-  gint            hostStatus       = 0;
-  GList          *hostList         = (GList*)NULL;
-  GList          *urlList          = (GList*)NULL;
-  gint            urlsFound        = 0;
-  GString        *messageString    = (GString*)NULL;
+  gint            hostStatus         = 0;
+  GList          *hostList           = (GList*)NULL;
+  GList          *urlList            = (GList*)NULL;
+  gint            urlsFound          = 0;
+  GString        *messageString      = (GString*)NULL;
 
   /*
    * Few checking...
@@ -481,8 +509,9 @@ void
 gdisp_consumingEnd (Kernel_T *kernel)
 {
 
-  GList      *providerItem =      (GList*)NULL;
+  GList      *providerItem = (GList*)NULL;
   Provider_T *provider     = (Provider_T*)NULL;
+  guint       symbolCpt    = 0;
 
   assert(kernel);
 
@@ -495,22 +524,45 @@ gdisp_consumingEnd (Kernel_T *kernel)
 
     provider = (Provider_T*)providerItem->data;
 
-    g_free(provider->pSymbolList);
+    for (symbolCpt=0; symbolCpt<provider->pSymbolNumber; symbolCpt++) {
+      g_free(provider->pSymbolList[symbolCpt].sInfo.name);
+      provider->pSymbolList[symbolCpt].sInfo.name = (gchar*)NULL;
+    }
 
-    if (provider->pSampleList.len != 0)
-      free(provider->pSampleList.val);
+    if (provider->pSymbolList != (Symbol_T*)NULL) {
+      g_free(provider->pSymbolList);
+      provider->pSymbolList = (Symbol_T*)NULL;
+    }
+
+    if (provider->pSymbolHashTable != (hash_t*)NULL) {
+      hash_close(provider->pSymbolHashTable);
+      provider->pSymbolHashTable = (hash_t*)NULL;
+    }
+
+    if (provider->pSymbolHashTablePGI != (hash_t*)NULL) {
+      hash_close(provider->pSymbolHashTablePGI);
+      provider->pSymbolHashTablePGI = (hash_t*)NULL;
+    }
+
+    if (provider->pSampleList.len != NULL) {
+      g_free(provider->pSampleList.val);
+      provider->pSampleList.val = (TSP_consumer_symbol_requested_t*)NULL;
+    }
 
     g_string_free(provider->pUrl        ,TRUE);
     g_string_free(provider->pOriginalUrl,TRUE);
 
     g_free(provider);
+    provider = (Provider_T*)NULL;
 
     providerItem = g_list_next(providerItem);
 
   }
 
-  g_list_free(kernel->providerList);
-  kernel->providerList = (GList*)NULL;
+  if (kernel->providerList != (GList*)NULL) {
+    g_list_free(kernel->providerList);
+    kernel->providerList = (GList*)NULL;
+  }
 
 
   /*

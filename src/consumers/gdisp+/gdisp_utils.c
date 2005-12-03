@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_utils.c,v 1.7 2005-02-19 21:35:20 esteban Exp $
+$Id: gdisp_utils.c,v 1.8 2005-12-03 15:46:20 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -767,4 +767,57 @@ gdisp_dereferenceSymbolList ( GList *symbolList )
 
 }
 
+/*
+ * String duplication.
+ */
+gchar*
+gdisp_strDup ( gchar *string )
+{
 
+  if (string == (gchar*)NULL) {
+
+    return (gchar*)NULL;
+
+  }
+  else {
+
+    return g_memdup(string,strlen(string)+1);
+
+  }
+
+}
+
+/*
+ * CDDL HEADER START
+ *
+ * The contents of this file are subject to the terms of the
+ * Common Development and Distribution License, Version 1.0 only
+ * (the "License").  You may not use this file except in compliance
+ * with the License.
+ *
+ * You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+ * or http://www.opensolaris.org/os/licensing.
+ * See the License for the specific language governing permissions
+ * and limitations under the License.
+ *
+ * When distributing Covered Code, include this CDDL HEADER in each
+ * file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+ * If applicable, add the following below this CDDL HEADER, with the
+ * fields enclosed by brackets "[]" replaced with your own identifying
+ * information: Portions Copyright [yyyy] [name of copyright owner]
+ *
+ * CDDL HEADER END
+ */
+gchar*
+gdisp_uIntToStr ( guint value, gchar *ptr )
+{
+
+  guint t = 0;
+ 
+  do {
+    *--ptr = (gchar)('0' + value - 10 * (t = value / 10));
+  } while ((value = t) != 0);
+ 
+  return (ptr);
+
+}

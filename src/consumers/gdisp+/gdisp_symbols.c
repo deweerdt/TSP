@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_symbols.c,v 1.6 2005-10-05 19:21:01 esteban Exp $
+$Id: gdisp_symbols.c,v 1.7 2005-12-03 15:46:20 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -68,9 +68,9 @@ File      : Information / Actions upon available symbols.
  * Take care of requested sorting method.
  */
 static gint
-gdispInsertAndSortSymbols (Kernel_T  *kernel,
-			   gchar    **stringFilter,
-			   guint      stringFilterSize)
+gdisp_insertAndSortSymbols (Kernel_T  *kernel,
+			    gchar    **stringFilter,
+			    guint      stringFilterSize)
 {
 
 #define GD_MAKE_DIFFERENCE_WITH_PIXMAP
@@ -79,6 +79,7 @@ gdispInsertAndSortSymbols (Kernel_T  *kernel,
   Symbol_T   *symbolPtr      =   (Symbol_T*)NULL;
   Provider_T *provider       = (Provider_T*)NULL;
   gint        symbolCpt      =                 0,
+              nbSymbols      =                 0,
               rowNumber      =                 0;
   gchar      *symbolInfos[_SYMBOL_CLIST_COLUMNS_NB_] =
                                                     { (gchar*)NULL,
@@ -126,6 +127,23 @@ gdispInsertAndSortSymbols (Kernel_T  *kernel,
 	    rowNumber =
 	      gtk_clist_append(GTK_CLIST(kernel->widgets.symbolCList),
 			       symbolInfos);
+
+	    nbSymbols++;
+
+	    /*
+	     * If symbol is not available, use special color.
+	     */
+	    if (symbolPtr->sInfo.index < 0) {
+
+	      gtk_clist_set_foreground(GTK_CLIST(kernel->widgets.symbolCList),
+				       rowNumber, /* row */
+				       &kernel->colors[_GREY_]);
+
+	      gtk_clist_set_selectable(GTK_CLIST(kernel->widgets.symbolCList),
+				       rowNumber, /* row */
+				       FALSE);
+
+	    }
 
 	    /*
 	     * If there are several providers, show symbol appartenance.
@@ -214,7 +232,7 @@ gdispInsertAndSortSymbols (Kernel_T  *kernel,
    */
   gtk_clist_thaw(GTK_CLIST(kernel->widgets.symbolCList));
 
-  return (rowNumber + 1);
+  return nbSymbols;
 
 }
 
@@ -606,9 +624,9 @@ gdisp_symbolApplyCallback (GtkWidget *applyButtonWidget,
   /*
    * Apply changes, with a possible filter.
    */
-  symbolCount = gdispInsertAndSortSymbols(kernel,
-					  stringTable,
-					  stringTableSize);
+  symbolCount = gdisp_insertAndSortSymbols(kernel,
+					   stringTable,
+					   stringTableSize);
 
 
   /*
@@ -1232,14 +1250,14 @@ gdisp_createSymbolList ( Kernel_T  *kernel,
    * Insert symbols into the corresponding CList.
    * ...according to the default sorting method in the kernel...
    */
-  symbolCount = gdispInsertAndSortSymbols(kernel,
-					  (gchar**)NULL /* no filter */,
-					  (guint)0      /* no filter */);
+  symbolCount = gdisp_insertAndSortSymbols(kernel,
+					   (gchar**)NULL /* no filter */,
+					   (guint)0      /* no filter */);
 
 
   /*
    * Keep in mind that the GString is released into the
-   * 'gdispOutputWrite' function.
+   * 'gdisp_outputWrite' function.
    * Do not 'g_string_free' it.
    */
   messageString = g_string_new((gchar*)NULL);
@@ -1260,6 +1278,26 @@ gdisp_createSymbolList ( Kernel_T  *kernel,
   gtk_frame_set_label(GTK_FRAME(kernel->widgets.symbolFrame),
 		      messageString->str);
   g_string_free(messageString,TRUE);
+
+}
+
+
+/*
+ * Refresh symbol list.
+ */
+void
+gdisp_refreshSymbolList ( Kernel_T *kernel )
+{
+
+  /*
+   * Just simulate a mouse-click on 'apply' button.
+   */
+  if (kernel->widgets.dataBookApplyButton != (GtkWidget*)NULL) {
+
+    gdisp_symbolApplyCallback(kernel->widgets.dataBookApplyButton,
+			      (gpointer)kernel);
+
+  }
 
 }
 

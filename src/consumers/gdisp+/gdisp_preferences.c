@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_preferences.c,v 1.1 2005-10-05 19:21:01 esteban Exp $
+$Id: gdisp_preferences.c,v 1.2 2005-12-03 15:46:20 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -145,7 +145,7 @@ gdisp_loadPreferenceFile ( Kernel_T *kernel )
     return;
   }
   sprintf(completeFilename,
-	  "%s/.gdisp+",
+	  "%s/.gdpp",
 	  getenv("HOME"));
 
   /*
@@ -205,7 +205,7 @@ gdisp_savePreferenceFile ( Kernel_T *kernel )
     return;
   }
   sprintf(completeFilename,
-	  "%s/.gdisp+",
+	  "%s/.gdpp",
 	  getenv("HOME"));
 
   /*

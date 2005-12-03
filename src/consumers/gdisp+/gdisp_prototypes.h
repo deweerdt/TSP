@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_prototypes.h,v 1.11 2005-10-05 19:21:01 esteban Exp $
+$Id: gdisp_prototypes.h,v 1.12 2005-12-03 15:46:20 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -85,9 +85,10 @@ GtkWidget* gdisp_createPilotBoard (Kernel_T *kernel);
 /*
  * From gdisp_databook.c
  */
-void       gdisp_showDataBook        (gpointer factoryData,
-				      guint    itemData);
-void       gdisp_closeDataBookWindow (Kernel_T *kernel);
+void       gdisp_showDataBook          (gpointer factoryData,
+					guint    itemData);
+void       gdisp_closeDataBookWindow   (Kernel_T *kernel);
+void       gdisp_refreshDataBookWindow (Kernel_T *kernel);
 
 /*
  * From gdisp_providers.c
@@ -99,9 +100,7 @@ void       gdisp_providerTimer            (Kernel_T        *kernel,
 void       gdisp_destroyProviderList      (Kernel_T        *kernel);
 void       gdisp_sortProviderSymbols      (Kernel_T        *kernel,
 					   SortingMethod_T  sortingMethod);
-gint       gdisp_sortProviderSymbolByName (gconstpointer data1,
-					   gconstpointer data2);
-
+void       gdisp_refreshProviderList      (Kernel_T        *kernel);
 
 /*
  * From gdisp_sampledSymbols.c
@@ -147,6 +146,7 @@ void       gdisp_createSymbolList    (Kernel_T  *kernel,
 void       gdisp_symbolApplyCallback (GtkWidget *applyButtonWidget,
 				      gpointer   data);
 void       gdisp_destroySymbolList   (Kernel_T  *kernel);
+void       gdisp_refreshSymbolList   (Kernel_T  *kernel);
 
 
 /*
@@ -258,6 +258,9 @@ guint      gdisp_computePgcd          (guint a,
 				    
 void       gdisp_dereferenceSymbolList (GList *symbolList);
 
+gchar     *gdisp_strDup (gchar *string);
+gchar     *gdisp_uIntToStr (guint value, gchar *ptr);
+
 
 /*
  * From gdisp_preferences.c
@@ -279,9 +282,9 @@ void       gdisp_setUpPreferenceFromString (Kernel_T *kernel,
 /*
  * From gdisp_configuration.c
  */
-gboolean   gdisp_saveConfigurationFile (Kernel_T *kernel,
-					gchar    *absConfigurationFilename);
-gboolean   gdisp_loadConfigurationFile (Kernel_T *kernel,
-					gchar    *absConfigurationFilename);
+gboolean   gdisp_newConfiguration      (Kernel_T *kernel);
+gboolean   gdisp_closeConfiguration    (Kernel_T *kernel);
+gboolean   gdisp_saveConfigurationFile (Kernel_T *kernel);
+gboolean   gdisp_openConfigurationFile (Kernel_T *kernel);
 
 #endif /* __PROTOTYPES_H__ */

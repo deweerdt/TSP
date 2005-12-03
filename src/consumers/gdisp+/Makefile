@@ -44,7 +44,7 @@ else
 OBJECTS += $(PLUGINS_SOURCES:%.c=$(DIROBJ)/%.o) 
 endif
 
-ADD_LIB =  $(DIRLIB)/libtsp_consumer.a $(DIRLIB)/libtsp_services.a
+ADD_LIB =  $(DIRLIB)/libtsp_consumer.a $(DIRLIB)/libtsp_services.a $(DIRLIB)/libtsp_util.a
 
 TARGET=$(DIRBIN)/tsp_gdisp+
 

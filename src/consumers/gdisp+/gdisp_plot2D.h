@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_plot2D.h,v 1.8 2004-11-19 13:50:15 dufy Exp $
+$Id: gdisp_plot2D.h,v 1.9 2005-12-03 15:46:20 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -51,9 +51,9 @@ File      : Definition of 'F2T 2D plot' private structures.
  */
 typedef enum {
 
-  GD_2D_ADD_NEW_SAMPLES = 0, // Still in X range => draw new added samples
-  GD_2D_SCROLL_X_AXIS,       // time increase outside limit => scroll X_AXIS
-  GD_2D_FULL_REDRAW          // Everything has changed => need to plot all
+  GD_2D_ADD_NEW_SAMPLES = 0, /* Still in X range => draw new added samples   */
+  GD_2D_SCROLL_X_AXIS,       /* time increase outside limit => scroll X_AXIS */
+  GD_2D_FULL_REDRAW          /* Everything has changed => need to plot all   */
 
 } KindOfRedraw_T;
 

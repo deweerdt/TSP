@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_sampling.c,v 1.11 2005-10-05 19:21:01 esteban Exp $
+$Id: gdisp_sampling.c,v 1.12 2005-12-03 15:46:20 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -57,8 +57,8 @@ File      : Graphic Tool Sampling Core Process.
  */
 #include "gdisp_sampling.h"
 
-#undef THREAD_DEBUG
-#undef SAMPLING_DEBUG
+#undef GD_THREAD_DEBUG
+#undef GD_SAMPLING_DEBUG
 
 /*
  --------------------------------------------------------------------
@@ -289,7 +289,7 @@ gdisp_stepOnOneGraphicPlot ( Kernel_T         *kernel,
  * The prototype of this routine ensures that it may be used
  * as a callback given to the 'gtk_timeout_add' action.
  */
-#undef BENCHMARK
+#undef GD_BENCHMARK
 
 static gint
 gdisp_stepsOnGraphicPlots ( void *data )
@@ -297,7 +297,7 @@ gdisp_stepsOnGraphicPlots ( void *data )
 
   Kernel_T        *kernel    = (Kernel_T*)data;
 
-#if defined(BENCHMARK)
+#if defined(GD_BENCHMARK)
 
   HRTime_T         startMark = (HRTime_T)0;
   HRTime_T         stopMark  = (HRTime_T)0;
@@ -309,7 +309,7 @@ gdisp_stepsOnGraphicPlots ( void *data )
   /*
    * Check GTK timer.
    */
-#if defined(BENCHMARK)
+#if defined(GD_BENCHMARK)
 
   if (lastMark > 0) {
 
@@ -326,7 +326,7 @@ gdisp_stepsOnGraphicPlots ( void *data )
   /*
    * Do the plot step.
    */
-#if defined(BENCHMARK)
+#if defined(GD_BENCHMARK)
 
   startMark = gdisp_getHRTime();
 
@@ -350,7 +350,7 @@ gdisp_stepsOnGraphicPlots ( void *data )
    *
    * ************************************************************/
 
-#if defined(BENCHMARK)
+#if defined(GD_BENCHMARK)
 
   stopMark = gdisp_getHRTime();
 
@@ -457,7 +457,7 @@ gdisp_garbageCollectorThread ( void *data )
   Provider_T *provider     = (Provider_T*)NULL;
   gint        symbolCpt    =                 0;
 
-#if defined(THREAD_DEBUG)
+#if defined(GD_THREAD_DEBUG)
   fprintf(stdout,"Beginning of garbage collector thread.\n");
   fflush (stdout);
 #endif
@@ -518,7 +518,7 @@ gdisp_garbageCollectorThread ( void *data )
    */
   kernel->garbageCollectorThread = (pthread_t)NULL;
 
-#if defined(THREAD_DEBUG)
+#if defined(GD_THREAD_DEBUG)
   fprintf(stdout,"End of garbage collector thread.\n");
   fflush (stdout);
 #endif
@@ -536,6 +536,7 @@ gdisp_samplingThread (void *data )
 {
 
   Kernel_T     *kernel           =   (Kernel_T*)data;
+  const SampleList_T *sampleList = (const SampleList_T*)NULL;
   Provider_T   *provider         = (Provider_T*)NULL;
   Symbol_T     *symbol           =   (Symbol_T*)NULL;
   GList        *providerItem     =      (GList*)NULL;
@@ -544,9 +545,13 @@ gdisp_samplingThread (void *data )
   gint          requestStatus    =                 0;
   gboolean      sampleHasArrived =             FALSE;
   guint         sampleRefTimeTag =                 0;
+  guint         sampleCpt        =                 0;
   TSP_sample_t  sampleValue;
+#define GD_SAMPLE_PGI_AS_STRING_LENGTH 10
+  gchar         samplePGIasStringBuffer[GD_SAMPLE_PGI_AS_STRING_LENGTH];
+  gchar        *samplePGIasString;
 
-#if defined(THREAD_DEBUG)
+#if defined(GD_THREAD_DEBUG)
   fprintf(stdout,"Beginning of provider sampling thread.\n");
   fflush (stdout);
 #endif
@@ -603,6 +608,46 @@ gdisp_samplingThread (void *data )
 
     provider->pSamplingThreadStatus = GD_THREAD_REQUEST_SAMPLE_ERROR;
     pthread_exit((void*)FALSE);
+
+  }
+
+
+  /*
+   * Manage output PGI of each symbol.
+   */
+  sampleList = TSP_consumer_get_requested_sample(provider->pHandle);
+
+  if (sampleList == (SampleList_T*)NULL) {
+
+    provider->pSamplingThreadStatus = GD_THREAD_REQUEST_SAMPLE_ERROR;
+    pthread_exit((void*)FALSE);
+
+  }
+
+  if (provider->pSymbolHashTablePGI != (hash_t*)NULL) {
+
+    hash_close(provider->pSymbolHashTablePGI);
+    provider->pSymbolHashTablePGI = (hash_t*)NULL;
+
+  }
+
+  provider->pSymbolHashTablePGI = hash_open('.','z');
+
+  for (sampleCpt=0; sampleCpt<sampleList->len; sampleCpt++) {
+
+    symbol = (Symbol_T*)hash_get(provider->pSymbolHashTable,
+				 sampleList->val[sampleCpt].name);
+
+    symbol->sPgi = sampleList->val[sampleCpt].index;
+
+    /* I can use 'sprintf' because sampling has not started yet */
+    sprintf(samplePGIasStringBuffer,
+	    "%d",
+	    symbol->sPgi);
+    
+    hash_append(provider->pSymbolHashTablePGI,
+		samplePGIasStringBuffer,
+		(void*)symbol);
 
   }
 
@@ -668,7 +713,7 @@ gdisp_samplingThread (void *data )
       if (sampleRefTimeTag != 0 &&
 	  sampleRefTimeTag != (guint)sampleValue.time) {
 
-#if defined(SAMPLING_DEBUG)
+#if defined(GD_SAMPLING_DEBUG)
 
 	printf("------------------------ FRAME ------------------------\n");
 
@@ -684,17 +729,37 @@ gdisp_samplingThread (void *data )
       /*
        * Treat symbol.
        */
-#if defined(SAMPLING_DEBUG)
+#if defined(GD_LOAD_CONFIGURATION_WITH_ALL_SYMBOLS)
+
+      symbol = &provider->pSymbolList[sampleValue.provider_global_index];
+
+#else
+
+      /*
+       * Convert PGI as an unsigned integer to a string.
+       */
+      samplePGIasStringBuffer[GD_SAMPLE_PGI_AS_STRING_LENGTH-1] = '\0';
+      samplePGIasString =
+	gdisp_uIntToStr(sampleValue.provider_global_index,
+               &samplePGIasStringBuffer[GD_SAMPLE_PGI_AS_STRING_LENGTH-1]);
+
+      /*
+       * Retreive target symbol.
+       */
+      symbol =
+	(Symbol_T*)hash_get(provider->pSymbolHashTablePGI,samplePGIasString);
+
+#endif
+
+#if defined(GD_SAMPLING_DEBUG)
 
       printf("Time [%d] - Index [%d] - Name [%s] - Value [%f]\n",
 	 sampleValue.time,
 	 sampleValue.provider_global_index,
-	 provider->pSymbolList[sampleValue.provider_global_index].sInfo.name,
+	 symbol->sInfo.name,
 	 (float)sampleValue.user_value);
 
 #endif
-
-      symbol = &provider->pSymbolList[sampleValue.provider_global_index];
 
       symbol->sTimeTag    = (guint)sampleValue.time;
 
@@ -741,8 +806,12 @@ gdisp_samplingThread (void *data )
    * Bye bye.
    */
   provider->pSamplingThread = (pthread_t)NULL;
+  if (provider->pSymbolHashTablePGI != (hash_t*)NULL) {
+    hash_close(provider->pSymbolHashTablePGI);
+    provider->pSymbolHashTablePGI = (hash_t*)NULL;
+  }
 
-#if defined(THREAD_DEBUG)
+#if defined(GD_THREAD_DEBUG)
   fprintf(stdout,"End of provider sampling thread.\n");
   fflush (stdout);
 #endif
@@ -766,7 +835,7 @@ gdisp_preSamplingThread (void *data )
   ThreadStatus_T  threadStatus      =   GD_THREAD_ERROR;
 
 
-#if defined(THREAD_DEBUG)
+#if defined(GD_THREAD_DEBUG)
   fprintf(stdout,"Beginning of pre-sampling thread.\n");
   fflush (stdout);
 #endif
@@ -841,7 +910,7 @@ gdisp_preSamplingThread (void *data )
   /*
    * No matter the returned value, because 'preSamplingThread' is detached.
    */
-#if defined(THREAD_DEBUG)
+#if defined(GD_THREAD_DEBUG)
   fprintf(stdout,"End of pre-sampling thread.\n");
   fflush (stdout);
 #endif
@@ -1092,7 +1161,7 @@ gdisp_affectRequestedSymbolsToProvider ( Kernel_T *kernel )
        */
       provider->pSampleList.len = 0;
       if (provider->pSampleList.val != (TSP_consumer_symbol_requested_t*)NULL)
-	free(provider->pSampleList.val);
+	g_free(provider->pSampleList.val);
       provider->pSampleList.val = (TSP_consumer_symbol_requested_t*)NULL;
 
 

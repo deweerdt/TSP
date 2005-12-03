@@ -37,31 +37,30 @@ extern "C" {
 typedef struct _DoublePoint
 {
 
-  double x,y;    // Use for storage of physical values.
+  double x,y;    /* Use for storage of physical values. */
 
 } DoublePoint_T;
 
 typedef struct _ShortPoint
 {
 
-  short x,y;	// Use for storage of pixel values.
+  short x,y;	/* Use for storage of pixel values. */
 
 } ShortPoint_T;
   
 typedef struct _DoublePointArray
 {
 
-  DoublePoint_T *samples;     // pointer on samples,
-  unsigned int          nbSamples;   // number of samples currently in array,
-  unsigned int          current;     // index on current position,
-  unsigned int       	 marker;      // index on a position used by upper level,
-  unsigned int          maxSamples;  // maximum samples possible to be added.
+  DoublePoint_T *samples;     /* pointer on samples,                     */
+  unsigned int   nbSamples;   /* number of samples currently in array,   */
+  unsigned int   current;     /* index on current position,              */
+  unsigned int   marker;      /* index on a position used by upper level,*/
+  unsigned int   maxSamples;  /* maximum samples possible to be added.   */
 
 } DoublePointArray_T;
 
 /*
  * Return a DoublePoint sample element form an Array and an index.
- 
 #define DP_ARRAY_GET_SAMPLE_FROM_FIRST(pArray,i) \
         ((pArray)->samples[ (i + (pArray)->first) % (pArray)->nbSamples ])
 */

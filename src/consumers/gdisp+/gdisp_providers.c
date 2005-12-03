@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_providers.c,v 1.9 2005-10-05 19:21:01 esteban Exp $
+$Id: gdisp_providers.c,v 1.10 2005-12-03 15:46:20 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -66,7 +66,7 @@ File      : Information / Actions upon available providers.
 /*
  * Function in order to sort provider symbols alphabetically.
  */
-/* no static here */ gint
+static gint
 gdisp_sortProviderSymbolByName ( gconstpointer data1,
 				 gconstpointer data2 )
 {
@@ -193,7 +193,7 @@ gdisp_poolProviderThreadStatus ( Kernel_T *kernel )
 
     sprintf(rowBuffer,"%d",provider->pSampleList.len);
     gtk_clist_set_text(GTK_CLIST(provider->pCList),
-		       4 /* sample symbol row */,
+		       6 /* sample symbol row */,
 		       1 /* information       */,
 		       rowBuffer);
 
@@ -220,7 +220,7 @@ gdisp_poolProviderThreadStatus ( Kernel_T *kernel )
 	    '%');
 
     gtk_clist_set_text(GTK_CLIST(provider->pCList),
-		       5 /* provider load row */,
+		       7 /* provider load row */,
 		       1 /* information       */,
 		       rowBuffer);
 
@@ -229,6 +229,204 @@ gdisp_poolProviderThreadStatus ( Kernel_T *kernel )
     providerItem = g_list_next(providerItem);
 
   } /* while (providerItem != (GList*)NULL) */
+
+}
+
+
+/*
+ * Insert all providers into the vertical container box.
+ */
+static void
+gdisp_insertAllProviders ( Kernel_T *kernel )
+{
+
+  GtkWidget  *frame            =  (GtkWidget*)NULL;
+  GtkWidget  *hBox             =  (GtkWidget*)NULL;
+  GtkWidget  *pixmapWidget     =  (GtkWidget*)NULL;
+  Pixmap_T   *pixmap           =   (Pixmap_T*)NULL;
+
+  GList      *providerItem     =      (GList*)NULL;
+  Provider_T *provider         = (Provider_T*)NULL;
+
+  gchar      *rowInfo  [  2];
+  guint       rowNumber        = 0;
+  gchar       rowBuffer[128];
+  guint       bgColorId        = _WHITE_;
+
+
+  /* ---------------- PER PROVIDER ------------- PER PROVIDER --------- */
+
+  providerItem = g_list_first(kernel->providerList);
+  while (providerItem != (GList*)NULL) {
+
+    provider = (Provider_T*)providerItem->data;
+
+    provider->pColor = gdisp_getProviderColor(kernel,
+					      provider->pIdentity);
+
+
+    /* ------------------------ FRAME WITH LABEL ------------------------ */
+
+    /*
+     * Create a Frame that will contain all provider information.
+     * Align the label at the left of the frame.
+     * Set the style of the frame.
+     */
+    sprintf(rowBuffer," %d ",provider->pIdentity + 1);
+    frame = gtk_frame_new((gchar*)NULL /* rowBuffer */);
+
+    gtk_frame_set_label_align(GTK_FRAME(frame),0.1,0.0);
+    gtk_frame_set_shadow_type(GTK_FRAME(frame),GTK_SHADOW_ETCHED_IN);
+    gtk_box_pack_start(GTK_BOX(kernel->widgets.providerVBox),
+		       frame,
+		       FALSE, /* expand  */
+		       FALSE, /* fill    */
+		       0);    /* padding */
+    gtk_widget_show(frame);
+
+    /* ------------------------ HORIZONTAL BOX  ------------------------ */
+
+    /*
+     * Create a horizontal packing box.
+     */
+    hBox = gtk_hbox_new(FALSE, /* homogeneous */
+			5      /* spacing     */ );
+    gtk_container_border_width(GTK_CONTAINER(hBox),10);
+    gtk_container_add(GTK_CONTAINER(frame),hBox); 
+    gtk_widget_show(hBox);
+
+
+    /* ---------------------- PROVIDER LOGO ---------------------- */
+
+    /*
+     * Use GDK services to create provider Logo (XPM format).
+     */
+    pixmap = gdisp_getPixmapById(kernel,
+				 GD_PIX_stubProvider,
+				 kernel->widgets.dataBookWindow);
+
+    pixmapWidget = gtk_pixmap_new(pixmap->pixmap,
+				  pixmap->mask);
+
+    gtk_box_pack_start(GTK_BOX(hBox),
+		       pixmapWidget,
+		       FALSE, /* expand  */
+		       FALSE, /* fill    */
+		       0);    /* padding */
+    gtk_widget_show(pixmapWidget);
+
+
+    /* -------------------------- CLIST --------------------------- */
+
+    /*
+     * A CList for containing all information.
+     */
+    provider->pCList = gtk_clist_new(2 /* columns */);
+
+    gtk_clist_set_shadow_type(GTK_CLIST(provider->pCList),
+			      GTK_SHADOW_ETCHED_IN);
+
+    gtk_clist_set_button_actions(GTK_CLIST(provider->pCList),
+				 0, /* left button */
+				 GTK_BUTTON_IGNORED);
+
+    gtk_clist_set_column_auto_resize(GTK_CLIST(provider->pCList),
+				     0, /* first column */
+				     TRUE);
+
+    /* ------------------ LABELS WITH INFORMATION ------------------- */
+
+    rowInfo[0] = "URL";
+    rowInfo[1] = provider->pUrl->str;
+
+    rowNumber  = gtk_clist_append(GTK_CLIST(provider->pCList),
+				  rowInfo);
+
+    if (gdisp_getProviderNumber(kernel) > 1) {
+
+      pixmap = gdisp_getProviderIdPixmap(kernel,
+					 provider->pCList,
+					 provider->pIdentity);
+
+      gtk_clist_set_pixtext(GTK_CLIST(provider->pCList),
+			    rowNumber,
+			    1, /* second column */
+			    provider->pUrl->str,
+			    5, /* spacing */
+			    pixmap->pixmap,
+			    pixmap->mask);
+
+    }
+
+    rowInfo[0] = "Status";
+    rowInfo[1] = gdisp_providerStatusToString(provider->pSamplingThreadStatus,
+					      &bgColorId);
+
+    rowNumber  = gtk_clist_append(GTK_CLIST(provider->pCList),
+				  rowInfo);
+
+    rowInfo[1] = rowBuffer;
+
+    rowInfo[0] = "Base Frequency";
+    sprintf(rowInfo[1],"%3.0f Hz",provider->pBaseFrequency);
+
+    rowNumber  = gtk_clist_append(GTK_CLIST(provider->pCList),
+				  rowInfo);
+
+    rowInfo[0] = "Maximum Period";
+    sprintf(rowInfo[1],"%d ms",provider->pMaxPeriod);
+
+    rowNumber  = gtk_clist_append(GTK_CLIST(provider->pCList),
+				  rowInfo);
+
+    rowInfo[0] = "Client Number";
+    sprintf(rowInfo[1],
+	    "%d (maximum %d)",
+	    provider->pCurrentClientNumber,
+	    provider->pMaxClientNumber);
+
+    rowNumber  = gtk_clist_append(GTK_CLIST(provider->pCList),
+				  rowInfo);
+
+    rowInfo[0] = "Total Symbols";
+    sprintf(rowInfo[1],"%d",provider->pSymbolNumber);
+
+    rowNumber  = gtk_clist_append(GTK_CLIST(provider->pCList),
+				  rowInfo);
+
+    rowInfo[0] = "Sampled Symbols";
+    sprintf(rowInfo[1],"%d",provider->pSampleList.len);
+
+    rowNumber  = gtk_clist_append(GTK_CLIST(provider->pCList),
+				  rowInfo);
+
+    /* ----------------------------------------------------------- */
+
+    rowInfo[0] = "Detected Flow";
+    sprintf(rowInfo[1],"0 Bytes/s, 0 %c",'%');
+
+    rowNumber  = gtk_clist_append(GTK_CLIST(provider->pCList),
+				  rowInfo);
+
+    /* FIXME : be careful with 'rowNumber' value */
+
+    /* ----------------------------------------------------------- */
+
+    gtk_box_pack_start(GTK_BOX(hBox),
+		       provider->pCList,
+		       TRUE, /* expand  */
+		       TRUE, /* fill    */
+		       0);   /* padding */
+
+    gtk_widget_show(provider->pCList);
+
+
+    /*
+     * Next provider.
+     */
+    providerItem = g_list_next(providerItem);
+
+  }
 
 }
 
@@ -294,20 +492,8 @@ gdisp_createProviderList ( Kernel_T  *kernel,
 			   GtkWidget *parent )
 {
 
-  GtkWidget        *frame            =  (GtkWidget*)NULL;
-  GtkWidget        *vBox             =  (GtkWidget*)NULL;
-  GtkWidget        *hBox             =  (GtkWidget*)NULL;
-  GtkWidget        *scrolledWindow   =  (GtkWidget*)NULL;
-  GtkWidget        *pixmapWidget     =  (GtkWidget*)NULL;
-  Pixmap_T         *pixmap           =   (Pixmap_T*)NULL;
-
-  GList            *providerItem     =      (GList*)NULL;
-  Provider_T       *provider         = (Provider_T*)NULL;
-
-  gchar            *rowInfo  [  2];
-  guint             rowNumber        = 0;
-  gchar             rowBuffer[128];
-  guint             bgColorId        = _WHITE_;
+  GtkWidget *frame          = (GtkWidget*)NULL;
+  GtkWidget *scrolledWindow = (GtkWidget*)NULL;
 
 
   /* ------------------------ FRAME WITH LABEL ------------------------ */
@@ -324,7 +510,6 @@ gdisp_createProviderList ( Kernel_T  *kernel,
   gtk_container_add(GTK_CONTAINER(parent),frame);
   gtk_widget_show(frame);
 
-
   /* ----------- SCROLLED WINDOW FOR THE LIST OF PROVIDERS  ----------- */
 
   /*
@@ -336,179 +521,21 @@ gdisp_createProviderList ( Kernel_T  *kernel,
   gtk_container_add(GTK_CONTAINER(frame),scrolledWindow); 
   gtk_widget_show(scrolledWindow);
 
-
   /* ----------- VERTICAL BOX FOR HANDLING ALL PROVIDERS  ----------- */
 
   /*
    * We need a vertical packing box for managing all providers.
    */
-  vBox = gtk_vbox_new(FALSE, /* homogeneous */
-		      5      /* spacing     */ );
-  gtk_container_border_width(GTK_CONTAINER(vBox),10);
+  kernel->widgets.providerVBox = gtk_vbox_new(FALSE, /* homogeneous */
+		                              5      /* spacing     */ );
+  gtk_container_border_width(GTK_CONTAINER(kernel->widgets.providerVBox),10);
   gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(scrolledWindow),
-					vBox);
-  gtk_widget_show(vBox);
+					kernel->widgets.providerVBox);
+  gtk_widget_show(kernel->widgets.providerVBox);
 
+  /* ---------------------- INSERT ALL PROVIDERS ---------------------- */
 
-  /* ---------------- PER PROVIDER ------------- PER PROVIDER --------- */
-
-  providerItem = g_list_first(kernel->providerList);
-  while (providerItem != (GList*)NULL) {
-
-    provider = (Provider_T*)providerItem->data;
-
-    provider->pColor = gdisp_getProviderColor(kernel,
-					      provider->pIdentity);
-
-
-    /* ------------------------ FRAME WITH LABEL ------------------------ */
-
-    /*
-     * Create a Frame that will contain all provider information.
-     * Align the label at the left of the frame.
-     * Set the style of the frame.
-     */
-    sprintf(rowBuffer," %d ",provider->pIdentity + 1);
-    frame = gtk_frame_new((gchar*)NULL /* rowBuffer */);
-
-    gtk_frame_set_label_align(GTK_FRAME(frame),0.1,0.0);
-    gtk_frame_set_shadow_type(GTK_FRAME(frame),GTK_SHADOW_ETCHED_IN);
-    gtk_box_pack_start(GTK_BOX(vBox),
-		       frame,
-		       FALSE, /* expand  */
-		       FALSE, /* fill    */
-		       0);    /* padding */
-    gtk_widget_show(frame);
-
-
-    /* ------------------------ HORIZONTAL BOX  ------------------------ */
-
-    /*
-     * Create a horizontal packing box.
-     */
-    hBox = gtk_hbox_new(FALSE, /* homogeneous */
-			5      /* spacing     */ );
-    gtk_container_border_width(GTK_CONTAINER(hBox),10);
-    gtk_container_add(GTK_CONTAINER(frame),hBox); 
-    gtk_widget_show(hBox);
-
-
-    /* ---------------------- PROVIDER LOGO ---------------------- */
-
-    /*
-     * Use GDK services to create provider Logo (XPM format).
-     */
-    pixmap = gdisp_getPixmapById(kernel,
-				 GD_PIX_stubProvider,
-				 scrolledWindow);
-
-    pixmapWidget = gtk_pixmap_new(pixmap->pixmap,
-				  pixmap->mask);
-
-    gtk_box_pack_start(GTK_BOX(hBox),
-		       pixmapWidget,
-		       FALSE, /* expand  */
-		       FALSE, /* fill    */
-		       0);    /* padding */
-    gtk_widget_show(pixmapWidget);
-
-
-    /* -------------------------- CLIST --------------------------- */
-
-    /*
-     * A CList for containing all information.
-     */
-    provider->pCList = gtk_clist_new(2 /* columns */);
-
-    gtk_clist_set_shadow_type(GTK_CLIST(provider->pCList),
-			      GTK_SHADOW_ETCHED_IN);
-
-    gtk_clist_set_button_actions(GTK_CLIST(provider->pCList),
-				 0, /* left button */
-				 GTK_BUTTON_IGNORED);
-
-    gtk_clist_set_column_auto_resize(GTK_CLIST(provider->pCList),
-				     0, /* first column */
-				     TRUE);
-
-    /* ------------------ LABELS WITH INFORMATION ------------------- */
-
-    rowInfo[0] = "URL";
-    rowInfo[1] = provider->pUrl->str;
-
-    rowNumber  = gtk_clist_append(GTK_CLIST(provider->pCList),
-				  rowInfo);
-
-    if (gdisp_getProviderNumber(kernel) > 1) {
-
-      pixmap = gdisp_getProviderIdPixmap(kernel,
-					 provider->pCList,
-					 provider->pIdentity);
-
-      gtk_clist_set_pixtext(GTK_CLIST(provider->pCList),
-			    rowNumber,
-			    1, /* second column */
-			    provider->pUrl->str,
-			    5, /* spacing */
-			    pixmap->pixmap,
-			    pixmap->mask);
-
-    }
-
-    rowInfo[0] = "Status";
-    rowInfo[1] = gdisp_providerStatusToString(provider->pSamplingThreadStatus,
-					      &bgColorId);
-
-    rowNumber  = gtk_clist_append(GTK_CLIST(provider->pCList),
-				  rowInfo);
-
-    rowInfo[1] = rowBuffer;
-
-    rowInfo[0] = "Base Frequency";
-    sprintf(rowInfo[1],"%3.0f",provider->pBaseFrequency);
-
-    rowNumber  = gtk_clist_append(GTK_CLIST(provider->pCList),
-				  rowInfo);
-
-    rowInfo[0] = "Total Symbols";
-    sprintf(rowInfo[1],"%d",provider->pSymbolNumber);
-
-    rowNumber  = gtk_clist_append(GTK_CLIST(provider->pCList),
-				  rowInfo);
-
-    rowInfo[0] = "Sampled Symbols";
-    sprintf(rowInfo[1],"%d",provider->pSampleList.len);
-
-    rowNumber  = gtk_clist_append(GTK_CLIST(provider->pCList),
-				  rowInfo);
-
-    /* ----------------------------------------------------------- */
-
-    rowInfo[0] = "Detected Flow";
-    sprintf(rowInfo[1],"0 Bytes/s, 0 %c",'%');
-
-    rowNumber  = gtk_clist_append(GTK_CLIST(provider->pCList),
-				  rowInfo);
-
-    /* FIXME : be careful with 'rowNumber' value */
-
-    /* ----------------------------------------------------------- */
-
-    gtk_box_pack_start(GTK_BOX(hBox),
-		       provider->pCList,
-		       TRUE, /* expand  */
-		       TRUE, /* fill    */
-		       0);   /* padding */
-
-    gtk_widget_show(provider->pCList);
-
-
-    /*
-     * Next provider.
-     */
-    providerItem = g_list_next(providerItem);
-
-  }
+  gdisp_insertAllProviders(kernel);
 
 }
 
@@ -523,6 +550,37 @@ gdisp_destroyProviderList ( Kernel_T *kernel )
   /*
    * Nothing by now.
    */
+
+}
+
+
+/*
+ * Refresh provider graphic list.
+ */
+void
+gdisp_refreshProviderList ( Kernel_T *kernel )
+{
+
+  GList *childrenList = (GList*)NULL;
+  GList *frameList    = (GList*)NULL;
+
+  /* -------------------- REMOVE PREVIOUS PROVIDERS ------------------- */
+
+  childrenList =
+    gtk_container_children(GTK_CONTAINER(kernel->widgets.providerVBox));
+
+  frameList = g_list_first(childrenList);
+
+  while (frameList != (GList*)NULL) {
+
+    gtk_widget_destroy((GtkWidget*)frameList->data);
+    frameList = g_list_next(frameList);
+
+  }
+
+  /* ---------------------- INSERT ALL PROVIDERS ---------------------- */
+
+  gdisp_insertAllProviders(kernel);
 
 }
 

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_kernel.h,v 1.14 2005-10-05 19:21:00 esteban Exp $
+$Id: gdisp_kernel.h,v 1.15 2005-12-03 15:46:20 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -53,6 +53,7 @@ File      : Graphic Tool Kernel Interface.
  */
 #include "tsp_const_def.h"
 #include "tsp_consumer.h"
+#include "tsp_hash.h"
 #include "gdisp_doubleArray.h"
 
 
@@ -60,6 +61,7 @@ File      : Graphic Tool Kernel Interface.
  * Define this to enable Drag And Drop debug.
  */
 #undef _DND_DEBUG_
+#undef GD_LOAD_CONFIGURATION_WITH_ALL_SYMBOLS
 
 
 /*
@@ -170,7 +172,7 @@ typedef enum {
 typedef struct Symbol_T_ {
 
   guchar                           sReference;
-  guint                            sConfIndex;
+  guint                            sPgi;
   TSP_consumer_symbol_requested_t  sInfo;
   guint                            sTimeTag;
   gdouble                          sLastValue;
@@ -262,6 +264,8 @@ typedef struct Provider_T_ {
 
   gint              pSymbolNumber;
   Symbol_T         *pSymbolList;
+  hash_t           *pSymbolHashTable;    /* name -> pointer */
+  hash_t           *pSymbolHashTablePGI; /* pgi  -> pointer */
 
   SampleList_T      pSampleList;
   guint             pLoad;
@@ -276,8 +280,10 @@ typedef struct Provider_T_ {
   /*
    * Configuration temporarily data.
    */
+#if defined(GD_LOAD_CONFIGURATION_WITH_ALL_SYMBOLS)
   void             *pSymbolInConfiguration;
   guint             pNbSymbolInConfiguration;
+#endif
 
   /*
    * Graphic information.
@@ -472,6 +478,7 @@ typedef struct KernelWidget_T_ {
   GtkWidget         *mainBoardStopButton;
   GtkWidget         *mainBoardOutputList;
   guint              mainBoardOutputListSize;
+  GtkWidget         *mainBoardMenuBar;
   Pixmap_T          *pilotBoardDigitPixmap;
   GtkWidget         *pilotBoardTimeArea;
   GdkGC             *pilotBoardTimeContext;
@@ -485,6 +492,7 @@ typedef struct KernelWidget_T_ {
 #define _SYMBOL_CLIST_COLUMNS_NB_ 3
   GtkWidget         *symbolCList;
   GtkWidget         *symbolFrame;
+  GtkWidget         *providerVBox;
   GtkWidget         *pRadioButton;
   GtkWidget         *naRadioButton;
   GtkWidget         *ndRadioButton;
@@ -497,6 +505,7 @@ typedef struct KernelWidget_T_ {
   Pixmap_T          *expandedNodePixmap;
   Pixmap_T          *collapsedNodePixmap;
   GtkWidget         *sampledSymbolHTree;
+  GtkWidget         *fileSelector;
 
   GList             *pixmapTable;
 
@@ -566,7 +575,15 @@ typedef struct Kernel_T_ {
    */
   GList             *providerList;
   SortingMethod_T    sortingMethod;
+  guint              providerId;
 
+  /*
+   * IO management.
+   */
+  gchar             *ioFilename;
+  gboolean         (*factoryAction)(Kernel_T_Ptr);
+  guint              factoryActionId;
+  gboolean           retreiveAllSymbols;
 
   /*
    * -------------------- Graphic part --------------------

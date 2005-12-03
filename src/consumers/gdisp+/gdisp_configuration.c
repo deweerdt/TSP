@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_configuration.c,v 1.1 2005-10-05 19:21:00 esteban Exp $
+$Id: gdisp_configuration.c,v 1.2 2005-12-03 15:46:20 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -86,6 +86,23 @@ typedef struct SymbolInConf_T_ {
  --------------------------------------------------------------------
 */
 
+#if defined(GD_LOAD_CONFIGURATION_WITH_ALL_SYMBOLS)
+
+/*
+ * Function in order to sort provider symbol pointers alphabetically.
+ */
+static gint
+gdisp_sortProviderSymbolPtrByName ( gconstpointer data1,
+				    gconstpointer data2 )
+{
+
+  Symbol_T **symbol1 = (Symbol_T**)data1,
+           **symbol2 = (Symbol_T**)data2;
+
+  return (strcmp((*symbol1)->sInfo.name,(*symbol2)->sInfo.name));
+
+}
+
 
 /*
  * Check sampling symbol references.
@@ -94,17 +111,21 @@ static void
 gdisp_checkSamplingSymbolReferences ( Kernel_T *kernel )
 {
 
-  Symbol_T        targetSymbol;
   SymbolInConf_T *symbolInConf     = (SymbolInConf_T*)NULL;
   GList          *providerItem     = (GList*)NULL;
   Provider_T     *provider         = (Provider_T*)NULL;
   guint           cptSic           = 0;
 
-  /*
-   * Sort provider symbols by name.
-   */
-  gdisp_sortProviderSymbols(kernel,
-			    GD_SORT_BY_NAME);
+  Symbol_T        targetSymbol;
+  Symbol_T       *targetSymbolPtr  = &targetSymbol;
+
+  guint           searchCpt        = 0;
+  guint           searchTableSize  = 0;
+  Symbol_T      **searchTable      = (Symbol_T**)NULL;
+  Symbol_T      **searchTablePtr   = (Symbol_T**)NULL;
+  Symbol_T       *searchSymbol     = (Symbol_T*)NULL;
+
+  Symbol_T      **foundSymbol      = (Symbol_T**)NULL;
 
   /*
    * Loop upon all providers.
@@ -115,7 +136,53 @@ gdisp_checkSamplingSymbolReferences ( Kernel_T *kernel )
     provider = (Provider_T*)providerItem->data;
 
     if (provider->pSymbolInConfiguration != (void*)NULL) {
+ 
+      /*
+       * Memory allocation for temporarily search table.
+       */
+      if (searchTableSize == 0) {
 
+	searchTableSize = provider->pSymbolNumber;
+	searchTable     = (Symbol_T**)g_malloc0(searchTableSize *
+						sizeof(Symbol_T*));
+
+      }
+      else if (searchTableSize < provider->pSymbolNumber) {
+
+	searchTableSize = provider->pSymbolNumber;
+	searchTable     = (Symbol_T**)g_realloc(searchTable,
+						searchTableSize *
+						sizeof(Symbol_T*));
+
+      }
+
+      if (searchTable == (Symbol_T**)NULL) {
+	/* FIXME : memory allocation error management */
+	return;
+      }
+
+      searchTablePtr = searchTable;
+      searchSymbol   = provider->pSymbolList;
+
+      for (searchCpt=0;
+	   searchCpt<searchTableSize;
+	   searchCpt++) {
+
+	*searchTablePtr++ = searchSymbol++;
+
+      }
+
+      /*
+       * Sort provider symbols by name.
+       */
+      qsort((void*)searchTable,
+	    searchTableSize,
+	    sizeof(Symbol_T*),
+	    gdisp_sortProviderSymbolPtrByName);
+
+      /*
+       * Look for symbol in configuration.
+       */
       symbolInConf = (SymbolInConf_T*)provider->pSymbolInConfiguration;
 
       for (cptSic = 0;
@@ -124,18 +191,13 @@ gdisp_checkSamplingSymbolReferences ( Kernel_T *kernel )
 
 	targetSymbol.sInfo.name = symbolInConf->sicName;
 
-	symbolInConf->sicReference =
-	  (Symbol_T*)bsearch(&targetSymbol,
-			     (void*)provider->pSymbolList,
-			     provider->pSymbolNumber,
-			     (size_t)sizeof(Symbol_T),
-			     gdisp_sortProviderSymbolByName);
+	foundSymbol = (Symbol_T**)bsearch(&targetSymbolPtr,
+					  (void*)searchTable,
+					  searchTableSize,
+					  (size_t)sizeof(Symbol_T*),
+					  gdisp_sortProviderSymbolPtrByName);
 
-	printf("checkSampling : %s is %s/%d\n",
-	       symbolInConf->sicName,
-	       symbolInConf->sicReference->sInfo.name,
-	       symbolInConf->sicReference->sInfo.index);
-
+	symbolInConf->sicReference = *foundSymbol;
 	symbolInConf++;
 
       } /* for */
@@ -147,16 +209,19 @@ gdisp_checkSamplingSymbolReferences ( Kernel_T *kernel )
   } /* while */
 
   /*
-   * Sort provider symbols by index (default sorting method).
+   * Free temporarily search table.
    */
-  gdisp_sortProviderSymbols(kernel,
-			    GD_SORT_BY_INDEX);
+  if (searchTableSize > 0) {
+
+    g_free(searchTable);
+
+  }
 
 }
 
 
 /*
- * Get back configuration symbol by index.
+ * Get back a symbol thanks to its index in the configuration.
  */
 static Symbol_T*
 gdisp_getSymbolInConfByIndex ( Kernel_T *kernel,
@@ -193,10 +258,6 @@ gdisp_getSymbolInConfByIndex ( Kernel_T *kernel,
 	     cptSic++) {
 
 	  if (symbolInConf->sicIndex == index) {
-	    printf("symbolByIndex : %s is %s/%d\n",
-		   symbolInConf->sicName,
-		   symbolInConf->sicReference->sInfo.name,
-		   symbolInConf->sicReference->sInfo.index);
 	    return symbolInConf->sicReference;
 	  }
 
@@ -216,6 +277,65 @@ gdisp_getSymbolInConfByIndex ( Kernel_T *kernel,
 
 }
 
+#else
+
+/*
+ * Get back configuration symbol by index.
+ */
+static Symbol_T*
+gdisp_getSymbolInConfByIndex ( Kernel_T *kernel,
+			       guint     index )
+{
+
+  GList          *providerItem     = (GList*)NULL;
+  Provider_T     *provider         = (Provider_T*)NULL;
+  Symbol_T       *symbol           = (Symbol_T*)NULL;
+  guint           cptSymbol        = 0;
+  guint           startSicIndex    = 0;
+  guint           endSicIndex      = 0;
+
+  /*
+   * Loop upon all providers.
+   */
+  providerItem = g_list_first(kernel->providerList);
+  while (providerItem != (GList*)NULL) {
+
+    provider = (Provider_T*)providerItem->data;
+
+    if (provider->pSymbolNumber != 0) {
+
+      symbol = provider->pSymbolList;
+
+      startSicIndex = symbol->sPgi;
+      endSicIndex   = symbol->sPgi + provider->pSymbolNumber - 1;
+
+      if (startSicIndex <= index && index <= endSicIndex) {
+
+	for (cptSymbol = 0;
+	     cptSymbol < provider->pSymbolNumber;
+	     cptSymbol++) {
+
+	  if (symbol->sPgi == index) {
+	    return symbol;
+	  }
+
+	  symbol++;
+
+	} /* for */
+
+      } /* if */
+
+    } /* if */
+
+    providerItem = g_list_next(providerItem);
+
+  } /* while */
+
+  return (Symbol_T*)NULL;
+
+}
+
+#endif
 
 /*
  * Save all symbols of a graphic plot.
@@ -246,7 +366,7 @@ gdisp_saveGraphicPlotSymbolList ( Kernel_T         *kernel,
     /*
      * Sampled symbol index and name.
      */
-    sprintf(indexBuffer,"%d",symbol->sConfIndex);
+    sprintf(indexBuffer,"%d",symbol->sPgi);
     sprintf(zoneBuffer ,"%c",zoneId);
 
     errorCode =
@@ -579,7 +699,7 @@ gdisp_saveProviderSampledSymbols ( Kernel_T         *kernel,
   gint          pSampleCpt     = 0;
   SampleList_T *pSampleList    = (SampleList_T*)NULL;
   guint         pSampleMax     = 0;
-  guint         sConfIndex     = 1;
+  guint         sPgi           = 1;
   xmlChar       indexBuffer     [256];
 
 
@@ -639,38 +759,42 @@ gdisp_saveProviderSampledSymbols ( Kernel_T         *kernel,
       /*
        * Get in touch with the symbol through the global index.
        */
-      symbol = &provider->pSymbolList[pSampleList->val[pSampleCpt].index];
+      if (pSampleList->val[pSampleCpt].index >= 0) {
 
-      /*
-       * If referenced... ie, used by graphic plots...
-       */
-      if (symbol->sReference > 0) {
+	symbol = &provider->pSymbolList[pSampleList->val[pSampleCpt].index];
 
 	/*
-	 * Sampled symbol index and name.
+	 * If referenced... ie, used by graphic plots...
 	 */
-	symbol->sConfIndex = sConfIndex++;
-	sprintf(indexBuffer,"%d",symbol->sConfIndex);
+	if (symbol->sReference > 0) {
 
-	errorCode =
-	  gdisp_xmlWriteAttributes(writer,
-				   pSampleCpt == 0 ?
-				   GD_INCREASE_INDENTATION :
-				   GD_DO_NOT_CHANGE_INDENTATION,
-				   indentBuffer,
-				   (xmlChar*)"sampledSymbol",
-				   TRUE, /* end up element */
-				   (xmlChar*)"index",
-				   (xmlChar*)indexBuffer,
-				   (xmlChar*)"name",
-				   (xmlChar*)symbol->sInfo.name,
-				   (xmlChar*)NULL);
+	  /*
+	   * Sampled symbol index and name.
+	   */
+	  symbol->sPgi = sPgi++;
+	  sprintf(indexBuffer,"%d",symbol->sPgi);
 
-	if (errorCode < 0) {
-	  return errorCode;
-	}
+	  errorCode =
+	    gdisp_xmlWriteAttributes(writer,
+				     pSampleCpt == 0 ?
+				     GD_INCREASE_INDENTATION :
+				     GD_DO_NOT_CHANGE_INDENTATION,
+				     indentBuffer,
+				     (xmlChar*)"sampledSymbol",
+				     TRUE, /* end up element */
+				     (xmlChar*)"index",
+				     (xmlChar*)indexBuffer,
+				     (xmlChar*)"name",
+				     (xmlChar*)symbol->sInfo.name,
+				     (xmlChar*)NULL);
 
-      } /* sReference == 0 */
+	  if (errorCode < 0) {
+	    return errorCode;
+	  }
+
+	} /* sReference == 0 */
+
+      } /* index >= 0 */
 
     } /* loop over sampled symbols */
 
@@ -717,6 +841,8 @@ gdisp_saveProviderSampledSymbols ( Kernel_T         *kernel,
 /*
  * Get back provider symbols for sampling.
  */
+#if defined(GD_LOAD_CONFIGURATION_WITH_ALL_SYMBOLS)
+
 static void
 gdisp_loadProviderSymbolsForSampling ( Kernel_T   *kernel,
 				       xmlDoc     *document,
@@ -763,10 +889,6 @@ gdisp_loadProviderSymbolsForSampling ( Kernel_T   *kernel,
 
 	symbolInConf->sicIndex = atoi(symbolIndex);
 	symbolInConf->sicName  = strdup(symbolName);
-
-	printf("loading name=%s index=%d\n",
-	       symbolInConf->sicName,
-	       symbolInConf->sicIndex);
 
 	symbolInConf++;
 	provider->pNbSymbolInConfiguration++;
@@ -820,14 +942,14 @@ gdisp_freeProviderSymbolInConfiguration ( Kernel_T *kernel )
 	   cptSic < provider->pNbSymbolInConfiguration;
 	   cptSic++) {
 
-	free(symbolInConf->sicName);
+	g_free(symbolInConf->sicName);
 	/* do not free 'sicReference' field */
 
 	symbolInConf++;
 
       }
 
-      free(provider->pSymbolInConfiguration);
+      g_free(provider->pSymbolInConfiguration);
 
     }
 
@@ -840,6 +962,93 @@ gdisp_freeProviderSymbolInConfiguration ( Kernel_T *kernel )
 
 }
 
+#else
+
+static void
+gdisp_loadProviderSymbolsForSampling ( Kernel_T   *kernel,
+				       xmlDoc     *document,
+				       Provider_T *provider,
+				       xmlNode    *providerNode )
+{
+
+  xmlNodeSet   *symbolTableNode = (xmlNodeSet*)NULL;
+  xmlNode      *symbolNode      = (xmlNode*)NULL;
+  xmlChar      *symbolIndex     = (xmlChar*)NULL;
+  xmlChar      *symbolName      = (xmlChar*)NULL;
+  unsigned int  cptSymbol       = 0;
+  unsigned int  newSymbol       = 0;
+
+
+  /*
+   * Get back target symbols.
+   */
+  symbolTableNode = gdisp_xmlGetChildren(document,
+					 providerNode,
+					 "SampledSymbols/sampledSymbol");
+
+  if (symbolTableNode->nodeNr > 0) {
+
+    /*
+     * Allocate memory for storing those requested symbols at provider level.
+     * Temporarily allocation.
+     */
+    provider->pSymbolNumber = 0;
+    provider->pSymbolList   =
+      (Symbol_T*)g_malloc0(symbolTableNode->nodeNr * sizeof(Symbol_T));
+    assert(provider->pSymbolList);
+
+    /*
+     * Allocate symbol hash table for extra-boosted search.
+     */
+    provider->pSymbolHashTable = hash_open('.','z');
+    assert(provider->pSymbolHashTable);
+
+    /*
+     * Loop over all symbols.
+     */
+    for (cptSymbol=0;
+	 cptSymbol<symbolTableNode->nodeNr;
+	 cptSymbol++) {
+
+      symbolNode  = symbolTableNode->nodeTab[cptSymbol];
+      symbolIndex = xmlGetProp(symbolNode,"index");
+      symbolName  = xmlGetProp(symbolNode,"name");
+
+      if (symbolIndex != (xmlChar*)NULL && symbolName != (xmlChar*)NULL) {
+
+	provider->pSymbolList[newSymbol].sPgi       = atoi(symbolIndex);
+	provider->pSymbolList[newSymbol].sInfo.name = gdisp_strDup(symbolName);
+	provider->pSymbolList[newSymbol].sInfo.period = 1;
+
+	hash_append(provider->pSymbolHashTable,
+		    provider->pSymbolList[newSymbol].sInfo.name,
+		    (void*)&provider->pSymbolList[newSymbol]);
+
+	newSymbol++;
+
+      }
+
+      if (symbolIndex != (xmlChar*)NULL) {
+	xmlFree(symbolIndex);
+      }
+      if (symbolName != (xmlChar*)NULL) {
+	xmlFree(symbolName);
+      }
+
+    } /* for */
+
+    provider->pSymbolNumber = newSymbol;
+
+  } /* if */
+
+  /*
+   * Free node set.
+   */
+  xmlXPathFreeNodeSet(symbolTableNode);
+
+}
+
+#endif
 
 /*
  * Get back all target providers.
@@ -963,9 +1172,6 @@ gdisp_addSampledSymbolToPlot ( Kernel_T         *kernel,
 					      atoi(symbolIndex));
 
 	if (symbol != (Symbol_T*)NULL) {
-
-	  printf("addSymbol : name=%s index=%d\n",
-		 symbol->sInfo.name,atoi(symbolIndex));
 
 	  symbolList = g_list_append(symbolList,
 				     (gpointer)symbol);
@@ -1198,11 +1404,6 @@ gdisp_loadConfiguration ( Kernel_T *kernel,
 {
 
   /*
-   * End up any previous consuming process.
-   */
-  gdisp_consumingEnd(kernel);
-
-  /*
    * Get back target providers : URL only.
    */
   gdisp_loadTargetProviders(kernel,
@@ -1212,6 +1413,7 @@ gdisp_loadConfiguration ( Kernel_T *kernel,
   /*
    * Now that all providers have been stored, start a new consuming process.
    */
+  kernel->retreiveAllSymbols = FALSE;
   gdisp_consumingInit(kernel);
 
   /*
@@ -1224,22 +1426,21 @@ gdisp_loadConfiguration ( Kernel_T *kernel,
   /*
    * Check sampling symbol references.
    */
+#if defined(GD_LOAD_CONFIGURATION_WITH_ALL_SYMBOLS)
   gdisp_checkSamplingSymbolReferences(kernel);
-
-  /*
-   * Destroy all previous graphic pages.
-   */
-  gdisp_destroyAllGraphicPages(kernel);
+#endif
 
   /*
    * Create all graphic pages and internal graphic plots.
    */
-  gdisp_loadTargetPages(kernel,document);
+  /* gdisp_loadTargetPages(kernel,document);*/
 
   /*
    * Free temporarily memory allocation for configuration purpose.
    */
+#if defined(GD_LOAD_CONFIGURATION_WITH_ALL_SYMBOLS)
   gdisp_freeProviderSymbolInConfiguration(kernel);
+#endif
 
   /*
    * Do not forget to update symbols <-> providers assignments.
@@ -1255,17 +1456,92 @@ gdisp_loadConfiguration ( Kernel_T *kernel,
  --------------------------------------------------------------------
 */
 
+/*
+ * New configuration.
+ */
+gboolean
+gdisp_newConfiguration ( Kernel_T *kernel )
+{
+
+  /*
+   * End up any previous consuming process.
+   */
+  gdisp_consumingEnd(kernel);
+
+  /*
+   * Destroy all previous graphic pages.
+   */
+  gdisp_destroyAllGraphicPages(kernel);
+
+  /*
+   * Start a new consuming process.
+   */
+  kernel->retreiveAllSymbols = TRUE;
+  gdisp_consumingInit(kernel);
+
+  /*
+   * Refresh data book content.
+   */
+  gdisp_refreshDataBookWindow(kernel);
+
+  /*
+   * Everything went ok.
+   */
+  return TRUE;
+
+}
+
+
+/*
+ * Close configuration.
+ */
+gboolean
+gdisp_closeConfiguration ( Kernel_T *kernel )
+{
+
+  /*
+   * End up any previous consuming process.
+   */
+  gdisp_consumingEnd(kernel);
+
+  /*
+   * Destroy all previous graphic pages.
+   */
+  gdisp_destroyAllGraphicPages(kernel);
+
+  /*
+   * Refresh data book content.
+   */
+  gdisp_refreshDataBookWindow(kernel);
+
+  /*
+   * Everything went ok.
+   */
+  return TRUE;
+
+}
+
 
 /*
  * Configuration Management : load configuration from an XML file.
  * FALSE is returned in case of errors. TRUE otherwise.
  */
 gboolean
-gdisp_loadConfigurationFile ( Kernel_T *kernel,
-			      gchar    *absoluteConfigurationFilename)
+gdisp_openConfigurationFile ( Kernel_T *kernel )
 {
 
   xmlDoc *document = (xmlDoc*)NULL;
+
+  /*
+   * Check IO Filename.
+   * We really need a filename and NOT a path.
+   */
+  if (kernel->ioFilename == (gchar*)NULL ||
+      kernel->ioFilename[strlen(kernel->ioFilename)-1] == '/') {
+
+    return FALSE;
+
+  }
 
   /*
    * This initialize the library and check potential ABI mismatches
@@ -1274,15 +1550,18 @@ gdisp_loadConfigurationFile ( Kernel_T *kernel,
    */
   LIBXML_TEST_VERSION
 
-
   /*
    * Parse and validate document.
    */
-  document = gdisp_xmlParseAndValidate(absoluteConfigurationFilename);
+  document = gdisp_xmlParseAndValidate(kernel->ioFilename);
   if (document == (xmlDoc*)NULL) {
     return FALSE;
   }
 
+  /*
+   * Close previous configuration.
+   */
+  gdisp_closeConfiguration(kernel);
 
   /*
    * Load configuration.
@@ -1290,12 +1569,15 @@ gdisp_loadConfigurationFile ( Kernel_T *kernel,
   gdisp_loadConfiguration(kernel,
 			  document);
 
+  /*
+   * Refresh data book content.
+   */
+  gdisp_refreshDataBookWindow(kernel);
 
   /*
    * Free document.
    */
   xmlFreeDoc(document);
-
 
   /*
    * No error.
@@ -1310,14 +1592,24 @@ gdisp_loadConfigurationFile ( Kernel_T *kernel,
  * FALSE is returned in case of errors. TRUE otherwise.
  */
 gboolean
-gdisp_saveConfigurationFile ( Kernel_T *kernel,
-			      gchar    *absoluteConfigurationFilename)
+gdisp_saveConfigurationFile ( Kernel_T *kernel )
 {
 
   gint              errorCode = 0;
   xmlTextWriterPtr  writer    = (xmlTextWriterPtr)NULL;
   xmlChar          *tmp       = (xmlChar*)NULL;
   xmlChar           indentBuffer[256];
+
+  /*
+   * Check IO Filename.
+   * We really need a filename and NOT a path.
+   */
+  if (kernel->ioFilename == (gchar*)NULL ||
+      kernel->ioFilename[strlen(kernel->ioFilename)-1] == '/') {
+
+    return FALSE;
+
+  }
 
   /*
    * Caution.
@@ -1334,7 +1626,7 @@ gdisp_saveConfigurationFile ( Kernel_T *kernel,
   /*
    * Create a new XmlWriter for '.gdisp+', with no compression.
    */
-  writer = xmlNewTextWriterFilename(absoluteConfigurationFilename,
+  writer = xmlNewTextWriterFilename(kernel->ioFilename,
 				    GD_NO_COMPRESSION);
 
   if (writer == (xmlTextWriterPtr)NULL) {
@@ -1359,8 +1651,14 @@ gdisp_saveConfigurationFile ( Kernel_T *kernel,
    * Since thist is the first element, this will be the root element
    * of the document.
    */
-  errorCode = xmlTextWriterStartElement(writer,
-					(xmlChar*)"GDispConfiguration");
+  errorCode = gdisp_xmlWriteAttributes(writer,
+				       GD_DO_NOT_CHANGE_INDENTATION,
+				       indentBuffer,
+				       (xmlChar*)"GDispConfiguration",
+				       FALSE, /* do not end up element */
+				       (xmlChar*)"version",
+				       (xmlChar*)"1.0",
+				       (xmlChar*)NULL);
 
   if (errorCode < 0) {
     return FALSE;

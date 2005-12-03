@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_mainBoard.c,v 1.4 2005-10-05 19:21:00 esteban Exp $
+$Id: gdisp_mainBoard.c,v 1.5 2005-12-03 15:46:20 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -97,9 +97,9 @@ gdisp_getMainBoardWindowPosition (Kernel_T *kernel)
  * be emitted, which in turn will call the "destroy" signal handler.
  */
 static gint
-gdispManageDeleteEventFromWM (GtkWidget *mainBoardWindow,
-			      GdkEvent  *event,
-			      gpointer   data)
+gdisp_manageDeleteEventFromWM (GtkWidget *mainBoardWindow,
+			       GdkEvent  *event,
+			       gpointer   data)
 {
 
   Kernel_T *kernel = (Kernel_T*)data;
@@ -120,8 +120,8 @@ gdispManageDeleteEventFromWM (GtkWidget *mainBoardWindow,
  * callback (see above).
  */
 static void
-gdispDestroySignalHandler (GtkWidget *mainBoardWindow,
-			   gpointer   data)
+gdisp_destroySignalHandler (GtkWidget *mainBoardWindow,
+			    gpointer   data)
 {
 
   Kernel_T *kernel = (Kernel_T*)data;
@@ -144,8 +144,8 @@ gdispDestroySignalHandler (GtkWidget *mainBoardWindow,
  * Quit handler : tell GTK+ we have to leave...
  */
 static void
-gdispQuitItemHandler (gpointer factoryData,
-		      guint    itemData)
+gdisp_quitItemHandler (gpointer factoryData,
+		       guint    itemData)
 {
 
   Kernel_T *kernel = (Kernel_T*)factoryData;
@@ -169,9 +169,9 @@ gdispQuitItemHandler (gpointer factoryData,
  * 'string' parameter is released after being used.
  */
 static void
-gdispOutputWrite(Kernel_T  *kernel,
-		 GString   *string,
-		 Message_T  messageType)
+gdisp_outputWrite(Kernel_T  *kernel,
+		  GString   *string,
+		  Message_T  messageType)
 {
 
 #define _TIME_STRING_MAX_LEN_ 80
@@ -215,7 +215,7 @@ gdispOutputWrite(Kernel_T  *kernel,
   gtk_widget_show(listItem);
 
   gtk_list_scroll_vertical(GTK_LIST(kernel->widgets.mainBoardOutputList),
-			   GTK_SCROLL_PAGE_FORWARD /* GTK_SCROLL_JUMP */,
+			   GTK_SCROLL_JUMP,
 			   (gfloat)1 /* bottom of the list */);
 
   kernel->widgets.mainBoardOutputListSize++;
@@ -300,6 +300,240 @@ gdisp_outputListEvent (GtkWidget *widget,
 
 
 /*
+ * Manage (set/get) file name through the standart Gtk+ file selection widget.
+ */
+#define GD_NO_ACTION      0
+#define GD_NEW_CONF       1
+#define GD_OPEN_CONF      2
+#define GD_SAVE_CONF      3
+#define GD_SAVE_AS_CONF   4
+#define GD_CLOSE_CONF     5
+
+#define GD_NEED_FILE    256
+
+static void
+gdisp_launchAction ( GtkObject *siblingButton,
+		     gpointer   userData )
+{
+
+  Kernel_T         *kernel         = (Kernel_T*)userData;
+  gboolean          hasCompleted   = FALSE;
+  GtkFileSelection *fileSelection  = (GtkFileSelection*)NULL;
+  GString          *messageString  = (GString*)NULL;
+  gchar            *messageHeader  = (gchar*)NULL;
+  gchar            *messageFooter  = (gchar*)NULL;
+  Message_T         messageType    = GD_ERROR;
+  gboolean          freeIoFilename = FALSE;
+
+  /*
+   * Get back selected filename.
+   */
+  if (kernel->widgets.fileSelector != (GtkWidget*)NULL) {
+
+    fileSelection = GTK_FILE_SELECTION(kernel->widgets.fileSelector);
+
+    if (kernel->ioFilename != (gchar*)NULL) {
+      g_free(kernel->ioFilename);
+    }
+
+    kernel->ioFilename =
+      gdisp_strDup(gtk_file_selection_get_filename(fileSelection));
+
+  }
+
+  /*
+   * Launch action.
+   */
+  hasCompleted = (*kernel->factoryAction)(kernel);
+
+  /*
+   * Keep in mind that the GString is released into the
+   * 'gdispOutputWrite' function.
+   * Do not 'g_string_free' it.
+   */
+  switch (kernel->factoryActionId) {
+
+  case GD_NEW_CONF :
+    messageHeader  = "New configuration";
+    freeIoFilename = TRUE;
+    break;
+
+  case GD_OPEN_CONF :
+    messageHeader = "Open configuration";
+    break;
+
+  case GD_SAVE_CONF :
+  case GD_SAVE_AS_CONF :
+    messageHeader = "Save configuration";
+    break;
+
+  case GD_CLOSE_CONF :
+    messageHeader  = "Close configuration";
+    freeIoFilename = TRUE;
+    break;
+
+  default :
+    messageHeader = "Invalid action";
+    break;
+
+  }
+
+  messageType   = hasCompleted == TRUE ? GD_MESSAGE : GD_ERROR;
+  messageFooter = hasCompleted == TRUE ?
+    "correctly performed." : "has raised an error.";
+
+  if (kernel->ioFilename != (gchar*)NULL) {
+
+    messageString = g_string_new((gchar*)NULL);
+    g_string_sprintf(messageString,
+		     "IO file [ %s ].",
+		     kernel->ioFilename);
+    kernel->outputFunc(kernel,messageString,messageType);
+
+  }
+
+  messageString = g_string_new((gchar*)NULL);
+  g_string_sprintf(messageString,
+		   "%s %s",
+		   messageHeader,
+		   messageFooter);
+  kernel->outputFunc(kernel,messageString,messageType);
+
+  /*
+   * Reset file selector address.
+   */
+  kernel->widgets.fileSelector = (GtkWidget*)NULL;
+  kernel->factoryAction        = (gboolean(*)(Kernel_T*))NULL;
+  kernel->factoryActionId      = GD_NO_ACTION;
+  if (freeIoFilename == TRUE) {
+    if (kernel->ioFilename != (gchar*)NULL) {
+      g_free(kernel->ioFilename);
+      kernel->ioFilename = (gchar*)NULL;
+    }
+  }
+
+}
+
+static void
+gdisp_chooseFilename ( Kernel_T *kernel )
+{
+
+  GtkFileSelection *fileSelection = (GtkFileSelection*)NULL;
+
+
+  /*
+   * Create the file selector.
+   */
+  kernel->widgets.fileSelector =
+    gtk_file_selection_new("Please select a configuration file.");
+
+  fileSelection = GTK_FILE_SELECTION(kernel->widgets.fileSelector);
+
+  gtk_signal_connect(GTK_OBJECT(fileSelection->ok_button),
+		     "clicked",
+		     GTK_SIGNAL_FUNC(gdisp_launchAction),
+		     (gpointer)kernel);
+
+  /*
+   * Interesting files are those that have the ".gdpc" extension.
+   */
+#if defined(GD_FILTER_ON_EXTENSION)
+  gtk_file_selection_complete(fileSelection,
+			      ".xml");
+#endif
+
+  /*
+   * Ensure that the dialog box is destroyed when the user clicks a button.
+   */
+  gtk_signal_connect_object(GTK_OBJECT(fileSelection->ok_button),
+			    "clicked",
+			    GTK_SIGNAL_FUNC(gtk_widget_destroy),
+			    (gpointer)kernel->widgets.fileSelector);
+
+  gtk_signal_connect_object(GTK_OBJECT(fileSelection->cancel_button),
+			    "clicked",
+			    GTK_SIGNAL_FUNC(gtk_widget_destroy),
+			    (gpointer)kernel->widgets.fileSelector);
+
+  /*
+   * Display that dialog box.
+   */
+  gtk_widget_show(kernel->widgets.fileSelector);
+
+}
+
+
+static void
+gdisp_manageAction ( gpointer factoryData,
+		     guint    factoryActionId )
+{
+
+  Kernel_T *kernel       = (Kernel_T*)factoryData;
+  gboolean  needFilename = FALSE;
+
+  /*
+   * The action needs a filename in order to run.
+   */
+  if (factoryActionId & GD_NEED_FILE) {
+    needFilename = TRUE;
+  }
+  factoryActionId &= ~GD_NEED_FILE;
+
+  /*
+   * Reset IO information.
+   */
+  kernel->factoryAction   = (gboolean(*)(Kernel_T*))NULL;
+  kernel->factoryActionId = factoryActionId;
+
+  /*
+   * Look at the action to be performed.
+   */
+  switch (factoryActionId) {
+
+  case GD_NEW_CONF :
+    kernel->factoryAction = gdisp_newConfiguration;
+    break;
+
+  case GD_OPEN_CONF :
+    kernel->factoryAction = gdisp_openConfigurationFile;
+    break;
+
+  case GD_SAVE_CONF :
+    kernel->factoryAction = gdisp_saveConfigurationFile;
+    if (kernel->ioFilename != (gchar*)NULL) {
+      needFilename = FALSE;
+    }
+    break;
+
+  case GD_SAVE_AS_CONF :
+    kernel->factoryAction = gdisp_saveConfigurationFile;
+    break;
+
+  case GD_CLOSE_CONF :
+    kernel->factoryAction = gdisp_closeConfiguration;
+    break;
+
+  default :
+    return; /* action not implemented */
+    break;
+
+  }
+
+  /*
+   * Proceed.
+   */
+  if (needFilename == TRUE) {
+    gdisp_chooseFilename(kernel);
+  }
+  else {
+    gdisp_launchAction((GtkObject*)NULL,
+		       (gpointer)kernel);
+  }
+
+}
+
+
+/*
  * This is the 'GtkItemFactoryEntry' structure used to generate new menus.
  *
  * Item 1 : The menu path.
@@ -330,45 +564,47 @@ static GtkItemFactoryEntry
 gdispMainBoardMenuDefinitions[] = {
 
  { "/_File",                    NULL,
-                                NULL,                   0, "<Branch>"     },
+   NULL,                        0,                           "<Branch>"      },
  { "/_File/_New",               "<control>N",
-                                NULL,                   0, NULL           },
+   gdisp_manageAction,          GD_NEW_CONF,                 NULL            },
  { "/_File/_Open",              "<control>O",
-                                NULL,                   0, NULL           },
+   gdisp_manageAction,          GD_OPEN_CONF | GD_NEED_FILE, NULL            },
  { "/_File/_Save",              "<control>S",
-                                NULL,                   0, NULL           },
- { "/_File/Save _As",           NULL,
-                                NULL,                   0, NULL           },
+   gdisp_manageAction,          GD_SAVE_CONF | GD_NEED_FILE, NULL            },
+ { "/_File/Save _As",           "<control>A",
+   gdisp_manageAction,          GD_SAVE_AS_CONF | GD_NEED_FILE, NULL         },
+ { "/_File/_Close",             "<control>C",
+   gdisp_manageAction,          GD_CLOSE_CONF,               NULL            },
  { "/_File/Sep1",               NULL,
-                                NULL,                   0, "<Separator>"  },
+   NULL,                        0,                           "<Separator>"   },
  { "/_File/Quit",               "<control>Q",
-                                gdispQuitItemHandler,   0, NULL           },
+   gdisp_quitItemHandler,       0,                           NULL            },
  { "/_Data",                    NULL,
-                                NULL,                   0, "<Branch>"     },
+   NULL,                        0,                           "<Branch>"      },
  { "/_Data/_All Data",          "<control>A",
-                                gdisp_showDataBook,     0, NULL           },
+   gdisp_showDataBook,          0,                           NULL            },
  { "/_Plots",                   NULL,
-                                NULL,                   0, "<Branch>"     },
+   NULL,                        0,                           "<Branch>"      },
  { "/_Plots/New page",          NULL,
-                                NULL,                   0, "<Branch>"     },
+   NULL,                        0,                           "<Branch>"      },
  { "/_Plots/New page/_Custom",  "<control>C",
-                                gdisp_createGraphicPage,0, NULL           },
+   gdisp_createGraphicPage,     0,                           NULL            },
  { "/_Plots/New page/Sep3",     NULL,
-                                NULL,                   0, "<Separator>"  },
+   NULL,                        0,                           "<Separator>"   },
  { "/_Plots/New page/_1 x 1",   "<control>1",
-                                gdisp_createGraphicPage,1, NULL           },
+   gdisp_createGraphicPage,     1,                           NULL            },
  { "/_Plots/New page/_2 x 2",   "<control>2",
-                                gdisp_createGraphicPage,2, NULL           },
+   gdisp_createGraphicPage,     2,                           NULL            },
  { "/_Plots/New page/_3 x 3",   "<control>3",
-                                gdisp_createGraphicPage,3, NULL           },
+   gdisp_createGraphicPage,     3,                           NULL            },
  { "/_Plots/New page/_4 x 4",   "<control>4",
-                                gdisp_createGraphicPage,4, NULL           },
+   gdisp_createGraphicPage,     4,                           NULL            },
  { "/_Plots/New page/_5 x 5",   "<control>5",
-                                gdisp_createGraphicPage,5, NULL           },
+   gdisp_createGraphicPage,     5,                           NULL            },
  { "/_Help",                    NULL,
-                                NULL,                   0, "<LastBranch>" },
+   NULL,                        0,                           "<LastBranch>"  },
  { "/_Help/About",              NULL,
-                                NULL,                   0, NULL           },
+   NULL,                        0,                           NULL            },
 
 };
 
@@ -416,12 +652,12 @@ gdisp_createMainBoard (Kernel_T *kernel)
 
   gtk_signal_connect(GTK_OBJECT(kernel->widgets.mainBoardWindow),
 		     "delete_event",
-		     GTK_SIGNAL_FUNC(gdispManageDeleteEventFromWM),
+		     GTK_SIGNAL_FUNC(gdisp_manageDeleteEventFromWM),
 		     (gpointer)kernel);
 
   gtk_signal_connect(GTK_OBJECT(kernel->widgets.mainBoardWindow),
 		     "destroy",
-		     GTK_SIGNAL_FUNC(gdispDestroySignalHandler),
+		     GTK_SIGNAL_FUNC(gdisp_destroySignalHandler),
 		     (gpointer)kernel);
 
   /*
@@ -499,7 +735,7 @@ gdisp_createMainBoard (Kernel_T *kernel)
 		     TRUE  /* fill    */,
 		     0     /* padding */);
   gtk_widget_show(menuBar);
-
+  kernel->widgets.mainBoardMenuBar = menuBar;
 
   /* ------------------------ MAIN WINDOW ------------------------ */
 
@@ -671,7 +907,7 @@ gdisp_createMainBoard (Kernel_T *kernel)
    * Tell the kernel that the output list has been created.
    * It is now ready to be used.
    */
-  kernel->outputFunc = gdispOutputWrite;
+  kernel->outputFunc = gdisp_outputWrite;
 
 }
 

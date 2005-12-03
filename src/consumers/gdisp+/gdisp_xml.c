@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_xml.c,v 1.1 2005-10-05 19:21:01 esteban Exp $
+$Id: gdisp_xml.c,v 1.2 2005-12-03 15:46:20 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -264,7 +264,7 @@ gdisp_xmlParseAndValidate ( const char *filename )
   /*
    * Allocate memory for DTD validation.
    */
-  validationContext = (xmlValidCtxt*)calloc(1,sizeof(xmlValidCtxt));
+  validationContext = (xmlValidCtxt*)g_malloc0(sizeof(xmlValidCtxt));
 
   if (validationContext == (xmlValidCtxt*)NULL) {
     return (xmlDoc*)NULL;
@@ -298,7 +298,7 @@ gdisp_xmlParseAndValidate ( const char *filename )
   /*
    * Free memory.
    */
-  free(validationContext);
+  g_free(validationContext);
 
   /*
    * Return to calling process.

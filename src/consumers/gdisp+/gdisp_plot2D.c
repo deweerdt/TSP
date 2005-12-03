@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_plot2D.c,v 1.13 2005-10-05 19:21:00 esteban Exp $
+$Id: gdisp_plot2D.c,v 1.14 2005-12-03 15:46:20 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -1496,7 +1496,9 @@ gdisp_plot2DConfigure (GtkWidget         *area,
    */
   if (plot->p2dBackBuffer != (GdkPixmap*)NULL) {
 
+#if defined(GD_UNREF_THINGS)
     gdk_pixmap_unref(plot->p2dBackBuffer);
+#endif
 
   }
 
@@ -1937,7 +1939,9 @@ gdisp_destroyPlot2D(Kernel_T *kernel,
   if (plot->p2dYSymbolWindow != (GdkWindow*)NULL)
     gdk_window_destroy(plot->p2dYSymbolWindow      );
   gdk_gc_destroy    (plot->p2dGContext             );
+#if defined(GD_UNREF_THINGS)
   gdk_pixmap_unref  (plot->p2dBackBuffer           );
+#endif
   gtk_widget_destroy(plot->p2dArea                 );
   gtk_widget_destroy(plot->p2dHRuler               );
   gtk_widget_destroy(plot->p2dVRuler               );

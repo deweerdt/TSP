@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_pixmaps.c,v 1.3 2005-02-19 21:35:20 esteban Exp $
+$Id: gdisp_pixmaps.c,v 1.4 2005-12-03 15:46:20 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -315,8 +315,10 @@ gdisp_destroyPixmaps ( Kernel_T *kernel )
 
     pixmap = (Pixmap_T*)pixmapItem->data;
 
+#if defined(GD_UNREF_THINGS)
     gdk_pixmap_unref(pixmap->pixmap);
     gdk_bitmap_unref(pixmap->mask  );
+#endif
 
     pixmapItem = g_list_next(pixmapItem);
 

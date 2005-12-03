@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_kernel.c,v 1.11 2005-10-05 19:21:00 esteban Exp $
+$Id: gdisp_kernel.c,v 1.12 2005-12-03 15:46:20 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -325,6 +325,7 @@ gdisp_createKernel (gint    argc,
   kernel->argTable               = argv;
   kernel->stepTimerPeriod        = GD_TIMER_MIN_PERIOD; /* milli-seconds */
   kernel->samplingThreadMustExit = TRUE;
+  kernel->retreiveAllSymbols     = FALSE;
 
   /*
    * Try to know whether a multi-threaded environment is available ?
@@ -356,7 +357,7 @@ gdisp_createKernel (gint    argc,
    * Initialise all plot systems.
    * Each plot system that is supported may provide several functions.
    */
-  kernel->currentPlotType = GD_PLOT_DEFAULT;
+  kernel->currentPlotType = GD_PLOT_TEXT;
 
   /* Remove size of 'psIsSupported' */
   functionSetSize = sizeof(PlotSystem_T) - sizeof(gboolean);
@@ -468,7 +469,12 @@ gdisp_destroyKernel (Kernel_T *kernel)
   /*
    * Free Kernel.
    */
+  if (kernel->ioFilename != (gchar*)NULL) {
+    g_free(kernel->ioFilename);
+  }
+
   gtk_timeout_remove(kernel->kernelTimerIdentity);
+
   g_ptr_array_free(kernel->kernelRegisteredActions,FALSE);
 
   memset(kernel,0,sizeof(Kernel_T));
