@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_consumers.c,v 1.11 2005-12-03 15:46:20 esteban Exp $
+$Id: gdisp_consumers.c,v 1.12 2005-12-03 20:20:27 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -544,7 +544,7 @@ gdisp_consumingEnd (Kernel_T *kernel)
       provider->pSymbolHashTablePGI = (hash_t*)NULL;
     }
 
-    if (provider->pSampleList.len != NULL) {
+    if (provider->pSampleList.len != 0) {
       g_free(provider->pSampleList.val);
       provider->pSampleList.val = (TSP_consumer_symbol_requested_t*)NULL;
     }

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_configuration.c,v 1.2 2005-12-03 15:46:20 esteban Exp $
+$Id: gdisp_configuration.c,v 1.3 2005-12-03 20:20:27 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -1433,7 +1433,7 @@ gdisp_loadConfiguration ( Kernel_T *kernel,
   /*
    * Create all graphic pages and internal graphic plots.
    */
-  /* gdisp_loadTargetPages(kernel,document);*/
+  gdisp_loadTargetPages(kernel,document);
 
   /*
    * Free temporarily memory allocation for configuration purpose.
