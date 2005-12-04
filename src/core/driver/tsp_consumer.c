@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.38 2005-11-29 19:13:09 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.39 2005-12-04 21:53:44 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -407,6 +407,7 @@ TSP_consumer_connect_url(const char*  url) {
   int i, servernumber;
   char url_tok[2*MAXHOSTNAMELEN], url_lkup[2*MAXHOSTNAMELEN];
   char *protocol, *hostname, *servername, *p;
+  char *endptr;
 
   /** Parse (simply ...) URL **/ 
   protocol = NULL;
@@ -465,9 +466,12 @@ TSP_consumer_connect_url(const char*  url) {
 
   if(*p) {
     /* strtol should set errno which is not the case of atoi */
-    servernumber = strtol(p,NULL,10);
-    if(errno == EINVAL)
+    endptr = NULL;
+    servernumber = strtol(p,&endptr,10);
+    /* in case we did not convert anything at all */
+    if (endptr == p) {
       servernumber = -1;
+    }
   }
 
   /* Full URL, or without server name : try to connect to server number */
