@@ -1,7 +1,7 @@
 Summary:        TSP : library for a generic Transport Sampling Protocol
 Name:           tsp
-Version:        0.7.0
-Release:        2
+Version:        0.7.1cvs
+Release:        1
 Group:          Applications/Communications
 URL:            https://savannah.nongnu.org/projects/tsp
 License:        LGPL
@@ -64,6 +64,10 @@ fi
 %attr(0644, root, root) %{prefix}/lib/lib*
 
 %changelog
+* Fri Dec 1 2005 Erk
+  - TSP 0.7.1cvs
+    We should change the version as soon as preceding version
+    released in order to avoid CVS and real version mismatch
 * Fri Nov 1 2005 Erk
   - TSP 0.7.0
 * Fri Oct 14 2005 Erk
