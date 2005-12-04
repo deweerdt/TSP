@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_mainBoard.c,v 1.5 2005-12-03 15:46:20 esteban Exp $
+$Id: gdisp_mainBoard.c,v 1.6 2005-12-04 15:00:32 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -109,7 +109,11 @@ gdisp_manageDeleteEventFromWM (GtkWidget *mainBoardWindow,
    */
   gdisp_getMainBoardWindowPosition(kernel);
 
-  return FALSE;
+  /*
+   * Allow the window manager to close graphic page windows
+   * only if sampling is off.
+   */
+  return (kernel->samplingThreadMustExit == FALSE ? TRUE : FALSE);
 
 }
 
@@ -130,6 +134,7 @@ gdisp_destroySignalHandler (GtkWidget *mainBoardWindow,
    * Close all other top level window.
    */
   gdisp_closeDataBookWindow(kernel);
+  gdisp_closeConfiguration (kernel);
 
   /*
    * Tells GTK+ that it has to exit from the GTK+ main processing loop.

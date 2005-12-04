@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_configuration.c,v 1.3 2005-12-03 20:20:27 esteban Exp $
+$Id: gdisp_configuration.c,v 1.4 2005-12-04 15:00:32 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -1464,14 +1464,14 @@ gdisp_newConfiguration ( Kernel_T *kernel )
 {
 
   /*
-   * End up any previous consuming process.
-   */
-  gdisp_consumingEnd(kernel);
-
-  /*
    * Destroy all previous graphic pages.
    */
   gdisp_destroyAllGraphicPages(kernel);
+
+  /*
+   * End up any previous consuming process.
+   */
+  gdisp_consumingEnd(kernel);
 
   /*
    * Start a new consuming process.
@@ -1500,11 +1500,6 @@ gdisp_closeConfiguration ( Kernel_T *kernel )
 {
 
   /*
-   * End up any previous consuming process.
-   */
-  gdisp_consumingEnd(kernel);
-
-  /*
    * Destroy all previous graphic pages.
    */
   gdisp_destroyAllGraphicPages(kernel);
@@ -1513,6 +1508,11 @@ gdisp_closeConfiguration ( Kernel_T *kernel )
    * Refresh data book content.
    */
   gdisp_refreshDataBookWindow(kernel);
+
+  /*
+   * End up any previous consuming process.
+   */
+  gdisp_consumingEnd(kernel);
 
   /*
    * Everything went ok.
