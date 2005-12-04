@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_kernel.h,v 1.15 2005-12-03 15:46:20 esteban Exp $
+$Id: gdisp_kernel.h,v 1.16 2005-12-04 22:13:58 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -61,8 +61,12 @@ File      : Graphic Tool Kernel Interface.
  * Define this to enable Drag And Drop debug.
  */
 #undef _DND_DEBUG_
-#undef GD_LOAD_CONFIGURATION_WITH_ALL_SYMBOLS
 
+/*
+ * Few defines.
+ */
+#undef GD_LOAD_CONFIGURATION_WITH_ALL_SYMBOLS
+#define GD_UNREF_THINGS
 
 /*
  * 10 out of 170 colors.
@@ -478,6 +482,12 @@ typedef struct KernelWidget_T_ {
   GtkWidget         *mainBoardStopButton;
   GtkWidget         *mainBoardOutputList;
   guint              mainBoardOutputListSize;
+  GtkWidget         *mainBoardLogoArea;
+  GdkGC             *mainBoardLogoContext;
+#define GD_ANIMATED_LOGO_NB 11
+  Pixmap_T          *mainBoardLogoTable[GD_ANIMATED_LOGO_NB];
+  Pixmap_T         **mainBoardCurrentLogo;
+  Pixmap_T          *mainBoardLargeLogo;
   GtkWidget         *mainBoardMenuBar;
   Pixmap_T          *pilotBoardDigitPixmap;
   GtkWidget         *pilotBoardTimeArea;
@@ -526,6 +536,7 @@ typedef struct Kernel_T_ {
   /*
    * GTK timer identity and period in milli-seconds.
    */
+  gint               logoTimerIdentity;
   gint               stepTimerIdentity;
 #define GD_TIMER_MIN_PERIOD 100
   guint              stepTimerPeriod;

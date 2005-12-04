@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_pixmaps.h,v 1.1 2004-10-28 19:15:05 esteban Exp $
+$Id: gdisp_pixmaps.h,v 1.2 2005-12-04 22:13:58 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -69,6 +69,18 @@ typedef enum {
   GD_PIX_blueBall,
   GD_PIX_greenBall,
   GD_PIX_redBall,
+  GD_PIX_animLogo1,
+  GD_PIX_animLogo2,
+  GD_PIX_animLogo3,
+  GD_PIX_animLogo4,
+  GD_PIX_animLogo5,
+  GD_PIX_animLogo6,
+  GD_PIX_animLogo7,
+  GD_PIX_animLogo8,
+  GD_PIX_animLogo9,
+  GD_PIX_animLogo10,
+  GD_PIX_animLogo11,
+  GD_PIX_largeLogo,
   GD_PIX_NbPixmaps /* Pixmap total number */
 
 } Pixmap_ID;

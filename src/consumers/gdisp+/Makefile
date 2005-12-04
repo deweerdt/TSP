@@ -11,6 +11,7 @@ SOURCES = \
 	gdisp_configuration.c  \
 	gdisp_mainBoard.c      \
 	gdisp_pilotBoard.c     \
+	gdisp_animatedLogo.c   \
 	gdisp_dataBook.c       \
 	gdisp_hosts.c          \
 	gdisp_providers.c      \

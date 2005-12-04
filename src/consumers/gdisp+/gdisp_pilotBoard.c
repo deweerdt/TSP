@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_pilotBoard.c,v 1.4 2005-12-03 15:46:20 esteban Exp $
+$Id: gdisp_pilotBoard.c,v 1.5 2005-12-04 22:13:58 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -96,6 +96,8 @@ gdisp_togglePlayModeCallback (GtkWidget *buttonWidget,
 	gtk_widget_set_sensitive(kernel->widgets.dataBookWidget,FALSE);
       }
 
+      gdisp_startLogoAnimation(kernel);
+
     }
 
   }
@@ -110,6 +112,8 @@ gdisp_togglePlayModeCallback (GtkWidget *buttonWidget,
     if (kernel->widgets.dataBookWidget != (GtkWidget*)NULL) {
       gtk_widget_set_sensitive(kernel->widgets.dataBookWidget,TRUE);
     }
+
+    gdisp_stopLogoAnimation(kernel);
 
   }
 

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_kernel.c,v 1.12 2005-12-03 15:46:20 esteban Exp $
+$Id: gdisp_kernel.c,v 1.13 2005-12-04 22:13:58 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -473,6 +473,10 @@ gdisp_destroyKernel (Kernel_T *kernel)
     g_free(kernel->ioFilename);
   }
 
+  /*
+   * Stop all timers.
+   */
+  gdisp_stopLogoAnimation(kernel);
   gtk_timeout_remove(kernel->kernelTimerIdentity);
 
   g_ptr_array_free(kernel->kernelRegisteredActions,FALSE);

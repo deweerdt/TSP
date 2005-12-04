@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_mainBoard.c,v 1.6 2005-12-04 15:00:32 esteban Exp $
+$Id: gdisp_mainBoard.c,v 1.7 2005-12-04 22:13:58 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -631,6 +631,7 @@ gdisp_createMainBoard (Kernel_T *kernel)
   GtkWidget      *mainVBox        =      (GtkWidget*)NULL;
   GtkWidget      *mainHBox        =      (GtkWidget*)NULL;
   GtkWidget      *pilotBox        =      (GtkWidget*)NULL;
+  GtkWidget      *logoFrame       =      (GtkWidget*)NULL;
   GtkWidget      *menuBar         =      (GtkWidget*)NULL;
   GtkWidget      *scrolledWindow  =      (GtkWidget*)NULL;
   GtkWidget      *hSeparator      =      (GtkWidget*)NULL;
@@ -886,6 +887,8 @@ gdisp_createMainBoard (Kernel_T *kernel)
 
   /* ------------------------ GDISP+ LOGO  ------------------------ */
 
+#if defined(GD_STATIC_LOGO)
+
   /*
    * Use GDK services to create GDISP+ Logo (XPM format).
    */
@@ -905,6 +908,22 @@ gdisp_createMainBoard (Kernel_T *kernel)
 		     0     /* padding */);
   gtk_widget_show(pixmapWidget);
 
+#else
+
+  /*
+   * Create a drawing area that will receive the animated logo.
+   */
+  logoFrame = gdisp_createAnimatedLogo(kernel);
+
+  gtk_box_pack_start(GTK_BOX(mainHBox),
+		     logoFrame,
+		     FALSE /* expand  */,
+		     TRUE  /* fill    */,
+		     0     /* padding */);
+
+  gtk_widget_show(logoFrame);
+
+#endif
 
   /* ------------------------ END MAIN BOARD  ------------------------ */
 

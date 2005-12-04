@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_pixmaps.c,v 1.4 2005-12-03 15:46:20 esteban Exp $
+$Id: gdisp_pixmaps.c,v 1.5 2005-12-04 22:13:58 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -83,7 +83,18 @@ File      : Pixmap utilities.
 #include "pixmaps/gdisp_blueBall.xpm"
 #include "pixmaps/gdisp_greenBall.xpm"
 #include "pixmaps/gdisp_redBall.xpm"
-
+#include "pixmaps/gdisp_gdispAnimLogo1.xpm"
+#include "pixmaps/gdisp_gdispAnimLogo2.xpm"
+#include "pixmaps/gdisp_gdispAnimLogo3.xpm"
+#include "pixmaps/gdisp_gdispAnimLogo4.xpm"
+#include "pixmaps/gdisp_gdispAnimLogo5.xpm"
+#include "pixmaps/gdisp_gdispAnimLogo6.xpm"
+#include "pixmaps/gdisp_gdispAnimLogo7.xpm"
+#include "pixmaps/gdisp_gdispAnimLogo8.xpm"
+#include "pixmaps/gdisp_gdispAnimLogo9.xpm"
+#include "pixmaps/gdisp_gdispAnimLogo10.xpm"
+#include "pixmaps/gdisp_gdispAnimLogo11.xpm"
+#include "pixmaps/gdisp_gdispLargeLogo.xpm"
 
 
 /*
@@ -152,7 +163,19 @@ gdisp_createPixmap ( Kernel_T   *kernel,
 						  gdisp_yellowBall,
 						  gdisp_blueBall,
 						  gdisp_greenBall,
-						  gdisp_redBall };
+						  gdisp_redBall,
+						  gdisp_gdispAnimLogo1,
+						  gdisp_gdispAnimLogo2,
+						  gdisp_gdispAnimLogo3,
+						  gdisp_gdispAnimLogo4,
+						  gdisp_gdispAnimLogo5,
+						  gdisp_gdispAnimLogo6,
+						  gdisp_gdispAnimLogo7,
+						  gdisp_gdispAnimLogo8,
+						  gdisp_gdispAnimLogo9,
+						  gdisp_gdispAnimLogo10,
+						  gdisp_gdispAnimLogo11,
+						  gdisp_gdispLargeLogo };
 
 
   /*
