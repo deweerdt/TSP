@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/providers/bb_provider/bb_tsp_provider.c,v 1.15 2005-11-29 22:08:53 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/providers/bb_provider/bb_tsp_provider.c,v 1.16 2005-12-05 21:51:14 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -378,7 +378,12 @@ void* BB_GLU_thread(void* arg) {
      * Must be call at each step in case of new samples wanted 
      */
     TSP_datapool_get_reverse_list (&nb_consumed_symbols, &ptr_consumed_index); 
-    /*  bb_simple_synchro_go(BB_SIMPLE_MSGID_SYNCHRO_COPY_ACK); */
+
+    GLU_handle_t* gh = (GLU_handle_t*)arg;
+    /* acknowledge copy end if bb_provider was telled to do so */
+    if ( *((int*)(gh->private_data)) ) {
+      bb_simple_synchro_go(the_bb,BB_SIMPLE_MSGID_SYNCHRO_COPY_ACK); 
+    }
 
     /* PUSH des valeurs directement dans le datapool */
     for(i = 0 ; i <  nb_consumed_symbols ; ++i) {
@@ -489,12 +494,13 @@ bb_tsp_provider_forbid_write_symbol(int provider_global_index){
 }
 
 int32_t 
-bb_tsp_provider_initialise(int* argc, char** argv[],int TSPRunMode, const char* bbname) {
+bb_tsp_provider_initialise(int* argc, char** argv[],int TSPRunMode, const char* bbname,
+			   double frequency, int32_t acknowledgeCopy) {
   
   int32_t retcode;
 
   /* create a default GLU */
-  GLU_handle_create(&bbGLU,"BB-TSP-V0_4",GLU_SERVER_TYPE_ACTIVE,64.0);
+  GLU_handle_create(&bbGLU,bbname,GLU_SERVER_TYPE_ACTIVE,frequency);
 
   /* now override default methods with more efficient BB specific methods */
   bbGLU->initialize     = &BB_GLU_init;
@@ -507,7 +513,13 @@ bb_tsp_provider_initialise(int* argc, char** argv[],int TSPRunMode, const char* 
 
   
   retcode = E_OK;
-  the_bbname = strdup(bbname);
+  the_bbname                     = strdup(bbname);
+  /* Update private data with acknowlegdeCopy flag 
+   * (will be used by BB_GLU_thread)
+   */
+  bbGLU->private_data            = malloc(sizeof(int));
+  * ((int*)bbGLU->private_data)  = acknowledgeCopy;
+
   /* Init LibTSP provider */
   TSP_provider_init(bbGLU,argc, argv);  
   /* demarrage provider */

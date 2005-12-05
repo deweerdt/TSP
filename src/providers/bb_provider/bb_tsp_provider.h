@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/providers/bb_provider/bb_tsp_provider.h,v 1.7 2005-10-09 23:01:25 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/providers/bb_provider/bb_tsp_provider.h,v 1.8 2005-12-05 21:51:14 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -48,35 +48,31 @@ extern pthread_t glu_thread_id;
 #endif
 
 /**
- * Indique la frequence de base du provider TSP
- * @param d_frequence_provider la frequence de base en Hz
- * @return toujours 0, cette fonction n'échoue jamais.
- * @ingroup BlackBoard
- */
-int 
-GLU_set_base_frequency(double d_frequence_provider);
-
-/**
  * Initialisation du fournisseur de donnée TSP pour un BlackBoard TSP.
  * On doit passer à cette fonction d'initialisation les 
  * argument en provenance d'un main car la lib TSP peut
  * de cette manière gérer des paramètres spécifiques à TSP.
  * Les paramètres qui ne concernent pas TSP seront inchangés.
  * 
- * @param argc Le parametre argc d'un main avant que le main
- *             ne l'utilise.
- * @param argv Le parametre argc d'un main avant que le main
- *             ne l'utilise.
- * @param TSPRunMode mode de démarrage 0 = non bloquant, 1 = bloquant.
- * @param bbname le nom du blackboard auquel s'attacher
- * @return E_OK si initialisation réalisée E_NOK sinon.
+ * @param argc argc coming from main (before the main use it)
+ * @param argv argv coming from main (before the main use it)
+ * @param TSPRunMode running mode, 0 = non blocking, 1 = blocking (never return).
+ * @param bbname the blackboard name we should attach to.
+ * @param frequency the frequency advertised by the bb_provider 
+ * @param acknowledgeCopy 0 if no acknowledgment is to be sent
+ *                        by the provider to the simulation driving
+ *                        sample, otherwise acknowledgment is sent.
+ * @return E_OK if initialization is successfull  E_NOK otherwise.
  * @ingroup BlackBoard
  */
 int32_t
-bb_tsp_provider_initialise(int* argc, char** argv[],int TSPRunMode, const char* bbname);
+bb_tsp_provider_initialise(int* argc, char** argv[],int TSPRunMode, 
+			   const char* bbname,
+			   double frequency, 
+			   int32_t acknowledgeCopy);
 
 /**
- *
+ * Terminate bb_provider nicely.
  */
 int32_t 
 bb_tsp_provider_finalize();

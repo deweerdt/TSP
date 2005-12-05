@@ -59,17 +59,17 @@ main (int argc, char ** argv) {
   sigaddset(&allsigs, SIGINT);
   sigprocmask(SIG_BLOCK, &allsigs, NULL);
 
-  if (argc<2) {
+  if (argc<3) {
     fprintf(stderr, 
 	    "TSP bb_provider v%s (%s)\n",TSP_SOURCE_VERSION,TSP_PROJECT_URL);
     fprintf(stderr,"%s : argument missing\n",argv[0]);
-    fprintf(stderr,"Usage: %s <bbname>\n",argv[0]);
+    fprintf(stderr,"Usage: %s <bbname> <frequency>\n",argv[0]);
     exit(-1);
   }
   
   bb_tsp_provider_initialise(&argc,&argv,
 			     TSP_ASYNC_REQUEST_SIMPLE | TSP_ASYNC_REQUEST_NON_BLOCKING,
-			     argv[1]);
+			     argv[1],atof(argv[2]), 0);
   sigwait(&allsigs, &whatsig);
   bb_tsp_provider_finalize();
   
@@ -98,7 +98,7 @@ int launch_bb_vx_provider (char * bb_name)
 
   bb_tsp_provider_initialise(&argc,&argv,
 			     TSP_ASYNC_REQUEST_SIMPLE | TSP_ASYNC_REQUEST_NON_BLOCKING,
-			     argv[1]);
+			     argv[1],atof(argv[2]), 0);
   return 0;
 }
 

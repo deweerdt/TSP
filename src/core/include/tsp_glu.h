@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: tsp_glu.h,v 1.3 2005-11-29 22:08:53 erk Exp $
+$Id: tsp_glu.h,v 1.4 2005-12-05 21:51:15 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -306,11 +306,12 @@ typedef int                (* GLU_async_sample_read_ft)(struct GLU_handle_t* thi
  */
 typedef struct GLU_handle_t {
 
-  pthread_t                 tid;            /**< The GLU thread Id */
-  char*                     name;           /**< The GLU name */
-  GLU_server_type_t         type;           /**< The GLU type */
-  double                    base_frequency; /**< The provider base frequency */
+  pthread_t                 tid;             /**< The GLU thread Id */
+  char*                     name;            /**< The GLU name */
+  GLU_server_type_t         type;            /**< The GLU type */
+  double                    base_frequency;  /**< The provider base frequency */
   int                       nb_max_consumer; /**< The provider base frequency */
+  void*                     private_data;    /**< The opaque pointer extensibility point */
 
   GLU_get_server_name_ft     get_name;            /**< name getter */
   GLU_get_server_type_ft     get_type;            /**< type getter */
