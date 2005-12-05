@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: generic_consumer_main.c,v 1.4 2005-10-30 17:18:17 erk Exp $
+$Id: generic_consumer_main.c,v 1.5 2005-12-05 21:02:10 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -88,7 +88,7 @@ main(int argc, char *argv[]){
   while (opt_ok && (EOF != (c_opt = getopt(argc,argv,"u:hnv")))) {    
     switch (c_opt) {
     case 'u':
-      opt_ok++;
+      opt_ok+=2;
       req.provider_url = strdup(optarg);
       fprintf(stdout,"%s: TSP provider URL is <%s>\n",argv[0],req.provider_url);
       break;
