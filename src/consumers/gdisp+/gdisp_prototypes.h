@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_prototypes.h,v 1.13 2005-12-04 22:13:58 esteban Exp $
+$Id: gdisp_prototypes.h,v 1.14 2005-12-05 22:01:30 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -293,6 +293,6 @@ gboolean   gdisp_openConfigurationFile (Kernel_T *kernel);
  */
 GtkWidget *gdisp_createAnimatedLogo (Kernel_T *kernel);
 void       gdisp_startLogoAnimation (Kernel_T *kernel);
-void       gdisp_stopLogoAnimation  (Kernel_T *kernel);
+void       gdisp_stopLogoAnimation  (Kernel_T *kernel, gboolean stopAll);
 
 #endif /* __PROTOTYPES_H__ */

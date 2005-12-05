@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_pages.c,v 1.7 2005-10-05 19:21:00 esteban Exp $
+$Id: gdisp_pages.c,v 1.8 2005-12-05 22:01:30 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -1532,9 +1532,12 @@ gdisp_finalizeGraphicPageCreation (Kernel_T *kernel,
 
   gtk_widget_show(newPage->pWindow);
 
+#if defined(GD_KEEP_ASPECT_RATIO)
+  /* FIXME : should be a user preference */
   gdk_window_set_geometry_hints(GTK_WIDGET(newPage->pWindow)->window,
 				&pWindowHints,
 				GDK_HINT_ASPECT);
+#endif
 
   /*
    * Create a table with the correct dimensions.

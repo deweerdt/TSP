@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_kernel.h,v 1.16 2005-12-04 22:13:58 esteban Exp $
+$Id: gdisp_kernel.h,v 1.17 2005-12-05 22:01:30 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -475,6 +475,8 @@ typedef struct Page_T_ {
 
 typedef struct KernelWidget_T_ {
 
+  /* -------------------- MAIN BOARD WIDGETS -------------------- */
+
   GtkWidget         *mainBoardWindow;
   gint               mainBoardWindowXPosition;
   gint               mainBoardWindowYPosition;
@@ -488,17 +490,28 @@ typedef struct KernelWidget_T_ {
   Pixmap_T          *mainBoardLogoTable[GD_ANIMATED_LOGO_NB];
   Pixmap_T         **mainBoardCurrentLogo;
   Pixmap_T          *mainBoardLargeLogo;
+  gint               mainBoardLargeLogoX;
+  gboolean           mainBoardLargeLogoGoesLeft;
   GtkWidget         *mainBoardMenuBar;
+
+  /* -------------------- PILOT BOARD WIDGETS -------------------- */
+
   Pixmap_T          *pilotBoardDigitPixmap;
   GtkWidget         *pilotBoardTimeArea;
   GdkGC             *pilotBoardTimeContext;
   GtkWidget         *pilotBoardElapsedTimeArea;
   GdkGC             *pilotBoardElapsedTimeContext;
+
+  /* -------------------- DATA BOOK WIDGETS ---------------------- */
+
   GtkWidget         *dataBookWindow;
   gint               dataBookWindowXPosition;
   gint               dataBookWindowYPosition;
   GtkWidget         *dataBookWidget;
   GtkWidget         *dataBookApplyButton;
+
+  /* ----------------- WIDGETS IN DATA BOOK PAGES ----------------- */
+
 #define _SYMBOL_CLIST_COLUMNS_NB_ 3
   GtkWidget         *symbolCList;
   GtkWidget         *symbolFrame;
@@ -516,6 +529,8 @@ typedef struct KernelWidget_T_ {
   Pixmap_T          *collapsedNodePixmap;
   GtkWidget         *sampledSymbolHTree;
   GtkWidget         *fileSelector;
+
+  /* ------------------------ PIXMAP TABLE ------------------------ */
 
   GList             *pixmapTable;
 
@@ -537,6 +552,7 @@ typedef struct Kernel_T_ {
    * GTK timer identity and period in milli-seconds.
    */
   gint               logoTimerIdentity;
+  gint               logoHighSpeedTimerIdentity;
   gint               stepTimerIdentity;
 #define GD_TIMER_MIN_PERIOD 100
   guint              stepTimerPeriod;

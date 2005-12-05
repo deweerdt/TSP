@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_kernel.c,v 1.13 2005-12-04 22:13:58 esteban Exp $
+$Id: gdisp_kernel.c,v 1.14 2005-12-05 22:01:30 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -425,6 +425,7 @@ gdisp_createKernel (gint    argc,
 		    gdisp_activateRegisteredActions,
 		    (void*)kernel);
 
+
   /*
    * Remember :
    *  -  how to assign symbols to providers for sampling purpose.
@@ -461,6 +462,12 @@ gdisp_destroyKernel (Kernel_T *kernel)
   gdisp_savePreferenceFile(kernel);
 
   /*
+   * Stop all timers.
+   */
+  gdisp_stopLogoAnimation(kernel,TRUE /* stop all */);
+  gtk_timeout_remove(kernel->kernelTimerIdentity);
+
+  /*
    * Destroy all fonts and pixmaps.
    */
   gdisp_destroyFonts  (kernel->fonts);
@@ -472,12 +479,6 @@ gdisp_destroyKernel (Kernel_T *kernel)
   if (kernel->ioFilename != (gchar*)NULL) {
     g_free(kernel->ioFilename);
   }
-
-  /*
-   * Stop all timers.
-   */
-  gdisp_stopLogoAnimation(kernel);
-  gtk_timeout_remove(kernel->kernelTimerIdentity);
 
   g_ptr_array_free(kernel->kernelRegisteredActions,FALSE);
 

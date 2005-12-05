@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_animatedLogo.c,v 1.1 2005-12-04 22:13:58 esteban Exp $
+$Id: gdisp_animatedLogo.c,v 1.2 2005-12-05 22:01:30 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -63,26 +63,34 @@ File      : Animated Logo.
 */
 
 /*
- * Draw the current logo into the graphic area.
+ * Clear logo drawing area.
  */
-static gint
-gdisp_animateLogo ( void *data )
+static void
+gdisp_clearLogoArea ( Kernel_T *kernel )
 {
 
-  Kernel_T *kernel     = (Kernel_T*)data;
+  if (kernel->widgets.mainBoardLogoArea->window != (GdkWindow*)NULL) {
+    gdk_window_clear(kernel->widgets.mainBoardLogoArea->window);
+  }
+
+}
+
+
+/*
+ * Draw the current logo into the graphic area.
+ */
+static gboolean
+gdisp_animateSmallLogo ( Kernel_T *kernel )
+{
+
   Pixmap_T *pixmap     = (Pixmap_T*)NULL;
   guint     areaWidth  = kernel->widgets.mainBoardLogoArea->allocation.width;
   guint     areaHeight = kernel->widgets.mainBoardLogoArea->allocation.height;
 
   /*
-   * Pixmap to be drawn depends on sampling state.
+   * Pixmap to be drawn.
    */
-  if (kernel->samplingThreadMustExit == FALSE /* samling on */) {
-    pixmap = *kernel->widgets.mainBoardCurrentLogo;
-  }
-  else /* sampling off */ {
-    pixmap = kernel->widgets.mainBoardLogoTable[0];
-  }
+  pixmap = *kernel->widgets.mainBoardCurrentLogo;
 
   gdk_draw_pixmap(kernel->widgets.mainBoardLogoArea->window,
 		  kernel->widgets.mainBoardLogoContext,
@@ -94,20 +102,101 @@ gdisp_animateLogo ( void *data )
 		  pixmap->width,
 		  pixmap->height);
 
-  if (kernel->samplingThreadMustExit == FALSE /* samplig on */) {
+  kernel->widgets.mainBoardCurrentLogo++;
 
-    kernel->widgets.mainBoardCurrentLogo++;
+  if (kernel->widgets.mainBoardCurrentLogo ==
+      kernel->widgets.mainBoardLogoTable + GD_ANIMATED_LOGO_NB) {
 
-    if (kernel->widgets.mainBoardCurrentLogo >
-	kernel->widgets.mainBoardLogoTable + GD_ANIMATED_LOGO_NB) {
+    kernel->widgets.mainBoardCurrentLogo = kernel->widgets.mainBoardLogoTable;
 
-      kernel->widgets.mainBoardCurrentLogo = kernel->widgets.mainBoardLogoTable;
+  }
 
+  return TRUE; /* keep on */
+
+}
+
+
+/*
+ * Animate large logo while sampling is off.
+ */
+static gboolean
+gdisp_animateLargeLogo ( Kernel_T *kernel)
+{
+
+#define GD_LOGO_X_OFFSET 4
+  guint     areaWidth  = kernel->widgets.mainBoardLogoArea->allocation.width;
+  guint     areaHeight = kernel->widgets.mainBoardLogoArea->allocation.height;
+  Pixmap_T *pixmap     = kernel->widgets.mainBoardLargeLogo;
+  gboolean  keepOn     = TRUE;
+
+  /*
+   * Draw large pixmap on graphic area.
+   */
+  gdk_draw_pixmap(kernel->widgets.mainBoardLogoArea->window,
+		  kernel->widgets.mainBoardLogoContext,
+		  pixmap->pixmap,
+		  kernel->widgets.mainBoardLargeLogoX,
+		  0,
+		  0,
+		  0,
+		  areaWidth,
+		  areaHeight);
+
+  /*
+   * Logo is going to the right.
+   */
+  if (kernel->widgets.mainBoardLargeLogoGoesLeft == FALSE) {
+
+    kernel->widgets.mainBoardLargeLogoX += GD_LOGO_X_OFFSET;
+
+    if (kernel->widgets.mainBoardLargeLogoX >= (pixmap->width - areaWidth)) {
+      kernel->widgets.mainBoardLargeLogoX        = pixmap->width - areaWidth;
+      kernel->widgets.mainBoardLargeLogoGoesLeft = TRUE;
+      /* stop animation for a while */
+      keepOn = FALSE;
     }
 
   }
 
-  return TRUE; /* keep on running */
+  /*
+   * Logo is going to the left.
+   */
+  if (kernel->widgets.mainBoardLargeLogoGoesLeft == TRUE) {
+
+    kernel->widgets.mainBoardLargeLogoX -= GD_LOGO_X_OFFSET;
+
+    if (kernel->widgets.mainBoardLargeLogoX <= 0) {
+      kernel->widgets.mainBoardLargeLogoX        = 0;
+      kernel->widgets.mainBoardLargeLogoGoesLeft = FALSE;
+    }
+
+  }
+
+  return keepOn;
+
+}
+
+
+/*
+ * Main animation routine.
+ */
+static gint
+gdisp_animateLogo ( void *data )
+{
+
+  Kernel_T *kernel = (Kernel_T*)data;
+  gint      keepOn = 1;
+
+  /* sampling on */
+  if (kernel->samplingThreadMustExit == FALSE) {
+    keepOn = (gint)gdisp_animateSmallLogo(kernel);
+  }
+  /* sampling off */
+  else {
+    keepOn = (gint)gdisp_animateLargeLogo(kernel);
+  }
+
+  return keepOn;
 
 }
 
@@ -117,9 +206,9 @@ gdisp_animateLogo ( void *data )
  * What shall I do when the time area has to be refreshed ?
  */
 static gboolean
-gdisp_logoAreaExpose (GtkWidget       *area,
-		      GdkEventExpose  *event,
-		      gpointer         data)
+gdisp_logoAreaExpose ( GtkWidget       *area,
+		       GdkEventExpose  *event,
+		       gpointer         data )
 {
 
   Kernel_T *kernel = (Kernel_T*)data;
@@ -137,6 +226,27 @@ gdisp_logoAreaExpose (GtkWidget       *area,
 			    (GdkRectangle*)NULL);
 
   return TRUE;
+
+}
+
+
+/*
+ * High Speed Logo Management.
+ */
+static gint
+gdisp_manageHighSpeedLogo ( void *data )
+{
+
+  Kernel_T *kernel = (Kernel_T*)data;
+
+  /*
+   * Start high speed logo animation.
+   */
+  kernel->logoHighSpeedTimerIdentity  = gtk_timeout_add(50, /* milli-seconds */
+							gdisp_animateLogo,
+							(void*)kernel);
+
+  return TRUE; /* keep on */
 
 }
 
@@ -160,8 +270,8 @@ gdisp_createAnimatedLogo (Kernel_T *kernel)
   guint      logoAreaHeight = 0;
   GtkWidget *logoFrame      = (GtkWidget*)NULL;
   GtkWidget *logoBox        = (GtkWidget*)NULL;
-  GdkGC     *logoContext    =     (GdkGC*)NULL;
-  guint      logoCpt        =                0;
+  GdkGC     *logoContext    = (GdkGC*)NULL;
+  guint      logoCpt        = 0;
   guint      logoId[]       = { GD_PIX_animLogo1,
 				GD_PIX_animLogo2,
 				GD_PIX_animLogo3,
@@ -199,7 +309,7 @@ gdisp_createAnimatedLogo (Kernel_T *kernel)
 			GD_PIX_largeLogo,
 			kernel->widgets.mainBoardWindow);
 
-  /* use first large logo to deduce graphic area height */
+  /* use large logo to deduce graphic area height */
   logoAreaHeight = kernel->widgets.mainBoardLargeLogo->height;
 
   for (logoCpt=0; logoCpt<GD_ANIMATED_LOGO_NB; logoCpt++) {
@@ -211,7 +321,7 @@ gdisp_createAnimatedLogo (Kernel_T *kernel)
 
   }
 
-  /* use first logo to deduce graphic area width */
+  /* use small logo to deduce graphic area width */
   logoAreaWidth  = kernel->widgets.mainBoardLogoTable[0]->width;
 
   kernel->widgets.mainBoardCurrentLogo = kernel->widgets.mainBoardLogoTable;
@@ -245,6 +355,11 @@ gdisp_createAnimatedLogo (Kernel_T *kernel)
 
   kernel->widgets.mainBoardLogoContext = logoContext;
 
+  /* ---------------------- INITIALISATIONS ---------------------- */
+
+  kernel->widgets.mainBoardLargeLogoX        = 0;
+  kernel->widgets.mainBoardLargeLogoGoesLeft = FALSE;
+
   /*
    * Return.
    */
@@ -260,10 +375,35 @@ void
 gdisp_startLogoAnimation ( Kernel_T *kernel )
 {
 
+  /* --------------------- UNREGISTER ACTION ------------------- */
+
+  /*
+   * Remove LARGE logo animation from timeout management.
+   */
+  if (kernel->logoTimerIdentity != 0) {
+
+    gtk_timeout_remove(kernel->logoTimerIdentity);
+    kernel->logoTimerIdentity = 0;
+
+  }
+  if (kernel->logoHighSpeedTimerIdentity != 0) {
+
+    gtk_timeout_remove(kernel->logoHighSpeedTimerIdentity);
+    kernel->logoHighSpeedTimerIdentity = 0;
+
+  }
+
   /* --------------------- REGISTER ACTION ------------------- */
 
   /*
-   * This procedure will be called every 100 milliseconds.
+   * Initialisations
+   */
+  gdisp_clearLogoArea(kernel);
+
+  gdisp_animateLogo((void*)kernel); /* refresh once */
+
+  /*
+   * Start SMALL logo animation
    */
   kernel->logoTimerIdentity = gtk_timeout_add(100, /* milli-seconds */
 					      gdisp_animateLogo,
@@ -276,18 +416,44 @@ gdisp_startLogoAnimation ( Kernel_T *kernel )
  * Stop logo animation.
  */
 void
-gdisp_stopLogoAnimation ( Kernel_T *kernel )
+gdisp_stopLogoAnimation ( Kernel_T *kernel,
+			  gboolean  stopAll )
 {
+
+  gint keepOn = 1;
 
   /* --------------------- UNREGISTER ACTION ------------------- */
 
   /*
-   * This procedure will be called every 100 milliseconds.
+   * Remove SMALL logo animation from timeout management.
    */
   if (kernel->logoTimerIdentity != 0) {
 
     gtk_timeout_remove(kernel->logoTimerIdentity);
     kernel->logoTimerIdentity = 0;
+
+  }
+
+  /* --------------------- REGISTER ACTION ------------------- */
+
+  if (stopAll == FALSE) {
+
+    /*
+     * Initialisations
+     */
+    kernel->widgets.mainBoardLargeLogoX        = 0;
+    kernel->widgets.mainBoardLargeLogoGoesLeft = FALSE;
+
+    gdisp_clearLogoArea(kernel);
+
+    keepOn = gdisp_manageHighSpeedLogo((void*)kernel);
+
+    /*
+     * Start LARGE logo animation
+     */
+    kernel->logoTimerIdentity = gtk_timeout_add(20000, /* milli-seconds */
+						gdisp_manageHighSpeedLogo,
+						(void*)kernel);
 
   }
 
