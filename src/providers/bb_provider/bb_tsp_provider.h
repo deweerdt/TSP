@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/providers/bb_provider/bb_tsp_provider.h,v 1.8 2005-12-05 21:51:14 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/providers/bb_provider/bb_tsp_provider.h,v 1.9 2005-12-06 20:40:02 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -40,12 +40,6 @@ Purpose   : Blackboard TSP Provider
 #include "tsp_abs_types.h"
 
 #include <pthread.h>
-
-#ifdef BB_TSP_PROVIDER_C
-pthread_t glu_thread_id=0;
-#else
-extern pthread_t glu_thread_id;
-#endif
 
 /**
  * Initialisation du fournisseur de donnée TSP pour un BlackBoard TSP.
