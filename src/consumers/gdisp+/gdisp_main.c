@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_main.c,v 1.6 2004-10-15 10:07:33 tractobob Exp $
+$Id: gdisp_main.c,v 1.7 2006-01-08 14:19:59 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -112,7 +112,7 @@ gdisp_analyseUserArguments ( Kernel_T *kernel )
    */
   while ((opt = getopt(kernel->argCounter,
 		       kernel->argTable,
-		       "h:u:")) != EOF) {
+		       "h:u:x:")) != EOF) {
 
     switch (opt) {
 
@@ -122,6 +122,12 @@ gdisp_analyseUserArguments ( Kernel_T *kernel )
 
     case 'u' :
       gdisp_addUrl(kernel,optarg);
+      break;
+    case 'x' :
+      if (kernel->ioFilename != (gchar*)NULL) {
+	g_free(kernel->ioFilename);
+      }
+      kernel->ioFilename = gdisp_strDup(optarg);
       break;
 
     default :
@@ -150,7 +156,7 @@ gdisp_analyseUserArguments ( Kernel_T *kernel )
 gint
 main (int argc, char **argv) 
 {
-
+  gint      retval      = 0;
   Kernel_T *gdispKernel = (Kernel_T*)NULL;
   gboolean  mustStop    = FALSE;
 
@@ -186,7 +192,8 @@ main (int argc, char **argv)
      * Destroy kernel, and exit.
      */
     gdisp_destroyKernel(gdispKernel);
-    return -1;
+    retval = -1;
+    return retval;
 
   }
 
@@ -215,14 +222,28 @@ main (int argc, char **argv)
    */
   gdisp_consumingInit(gdispKernel);
 
-
   /*
-   * Enter GTK main processing loop.
-   * Sleep waiting for X events (such as button or key presses), timeouts,
-   * file IO notifications to occur.
+   * Restore configuration if a configurationit
+   * file was provided on command line
+   * We may not restore it before GUI is built.
    */
-  gtk_main();
+  if ((gdispKernel->ioFilename != NULL) &&
+      (!gdisp_openConfigurationFile(gdispKernel))
+      ) {
+    /*
+     * Write the usage.
+     */
+    gdisp_usage(gdispKernel,argv[0]);
 
+  } else {
+  
+    /*
+     * Enter GTK main processing loop.
+     * Sleep waiting for X events (such as button or key presses), timeouts,
+     * file IO notifications to occur.
+     */
+    gtk_main();
+  }
 
   /*
    * Close consuming environment.
@@ -241,6 +262,6 @@ main (int argc, char **argv)
    */
   gdisp_destroyKernel(gdispKernel);
 
-  return 0;
+  return retval;
 
 }
