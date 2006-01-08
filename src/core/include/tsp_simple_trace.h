@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/include/Attic/tsp_simple_trace.h,v 1.15 2005-04-08 14:51:44 le_tche Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/Attic/tsp_simple_trace.h,v 1.16 2006-01-08 19:12:50 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -50,7 +50,7 @@ Purpose   : Some trace macro
         } else {\
             _strace_debug_level = 0; }\
     }\
-    if (_strace_debug_level & level ) { \
+    if ((0==level) || (_strace_debug_level & level) ) {		       \
            printf("%7s||%s##%s##%d: ", src, __FILE__, func, __LINE__); \
            printf text; printf("\n"); fflush(stdout);\
     }\
