@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_plot2D.c,v 1.14 2005-12-03 15:46:20 esteban Exp $
+$Id: gdisp_plot2D.c,v 1.15 2006-01-20 21:59:14 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -2521,6 +2521,14 @@ gdisp_treatPlot2DSymbolValues (Kernel_T *kernel,
   guint           cptCurve   = 0;
   guint           nbCurves   = 0;
   DoublePoint_T   aPoint;
+
+  /*
+   * Check symbol lists have been created.
+   */
+  if (plot->p2dXSymbolList == (GList*)NULL ||
+      plot->p2dYSymbolList == (GList*)NULL    ) {
+    return;
+  }
 
   /*
    * Get X (or T) last value.

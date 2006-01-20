@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_configuration.c,v 1.4 2005-12-04 15:00:32 esteban Exp $
+$Id: gdisp_configuration.c,v 1.5 2006-01-20 21:59:14 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -702,6 +702,9 @@ gdisp_saveProviderSampledSymbols ( Kernel_T         *kernel,
   guint         sPgi           = 1;
   xmlChar       indexBuffer     [256];
 
+#define GD_SAMPLE_PGI_AS_STRING_LENGTH 10
+  gchar         samplePGIasStringBuffer[GD_SAMPLE_PGI_AS_STRING_LENGTH];
+  gchar        *samplePGIasString =        (gchar*)NULL;
 
   /*
    * Loop over all providers and save all sampled symbols.
@@ -761,12 +764,42 @@ gdisp_saveProviderSampledSymbols ( Kernel_T         *kernel,
        */
       if (pSampleList->val[pSampleCpt].index >= 0) {
 
-	symbol = &provider->pSymbolList[pSampleList->val[pSampleCpt].index];
+#if defined(GD_LOAD_CONFIGURATION_WITH_ALL_SYMBOLS)
+
+	symbol =
+	  &provider->pSymbolList[pSampleList->val[pSampleCpt].index];
+
+#else
+
+	/*
+	 * Convert PGI as an unsigned integer to a string.
+	 */
+	samplePGIasStringBuffer[GD_SAMPLE_PGI_AS_STRING_LENGTH-1] = '\0';
+	samplePGIasString =
+	  gdisp_uIntToStr(pSampleList->val[pSampleCpt].index,
+		  &samplePGIasStringBuffer[GD_SAMPLE_PGI_AS_STRING_LENGTH-1]);
+
+	/*
+	 * Retreive target symbol.
+	 */
+	if (provider->pSymbolHashTablePGI == (hash_t*)NULL) {
+
+	  symbol = (Symbol_T*)NULL;
+
+	}
+	else {
+
+	  symbol = (Symbol_T*)
+	    hash_get(provider->pSymbolHashTablePGI,samplePGIasString);
+
+	}
+
+#endif
 
 	/*
 	 * If referenced... ie, used by graphic plots...
 	 */
-	if (symbol->sReference > 0) {
+	if (symbol != (Symbol_T*)NULL && symbol->sReference > 0) {
 
 	  /*
 	   * Sampled symbol index and name.
@@ -865,7 +898,7 @@ gdisp_loadProviderSymbolsForSampling ( Kernel_T   *kernel,
 					 providerNode,
 					 "SampledSymbols/sampledSymbol");
 
-  if (symbolTableNode->nodeNr > 0) {
+  if (symbolTableNode != (xmlNodeSet*)NULL && symbolTableNode->nodeNr > 0) {
 
     /*
      * Allocate memory for storing those requested symbols at provider level.
@@ -986,7 +1019,7 @@ gdisp_loadProviderSymbolsForSampling ( Kernel_T   *kernel,
 					 providerNode,
 					 "SampledSymbols/sampledSymbol");
 
-  if (symbolTableNode->nodeNr > 0) {
+  if (symbolTableNode != (xmlNodeSet*)NULL && symbolTableNode->nodeNr > 0) {
 
     /*
      * Allocate memory for storing those requested symbols at provider level.
@@ -1052,8 +1085,9 @@ gdisp_loadProviderSymbolsForSampling ( Kernel_T   *kernel,
 
 /*
  * Get back all target providers.
+ * Returns FALSE in case of errors. TRUE otherwise.
  */
-static void
+static gboolean
 gdisp_loadTargetProviders ( Kernel_T *kernel,
 			    xmlDoc   *document,
 			    guchar    infoType )
@@ -1064,6 +1098,7 @@ gdisp_loadTargetProviders ( Kernel_T *kernel,
   xmlNode      *providerNode      = (xmlNode*)NULL;
   xmlChar      *propertyValue     = (xmlChar*)NULL;
   unsigned int  cptProvider       = 0;
+  gboolean      loadIsOk          = TRUE;
 
 
   /*
@@ -1073,7 +1108,8 @@ gdisp_loadTargetProviders ( Kernel_T *kernel,
 					   (xmlNode*)NULL,
 					   "//Kernel/Provider");
 
-  if (providerTableNode->nodeNr > 0) {
+  if (providerTableNode != (xmlNodeSet*)NULL &&
+                                    providerTableNode->nodeNr > 0) {
 
     for (cptProvider=0;
 	 cptProvider<providerTableNode->nodeNr;
@@ -1119,10 +1155,21 @@ gdisp_loadTargetProviders ( Kernel_T *kernel,
 
   } /* if */
 
+  else {
+
+    /*
+     * No provider.
+     */
+    loadIsOk = FALSE;
+
+  }
+
   /*
    * Free node set.
    */
   xmlXPathFreeNodeSet(providerTableNode);
+
+  return loadIsOk;
 
 }
 
@@ -1152,7 +1199,7 @@ gdisp_addSampledSymbolToPlot ( Kernel_T         *kernel,
 					 plotNode,
 					 "sampledSymbol");
 
-  if (symbolTableNode->nodeNr > 0) {
+  if (symbolTableNode != (xmlNodeSet*)NULL && symbolTableNode->nodeNr > 0) {
 
     for (cptSymbol=0;
 	 cptSymbol<symbolTableNode->nodeNr;
@@ -1239,7 +1286,7 @@ gdisp_loadTargetPlots ( Kernel_T *kernel,
 				       pageNode,
 				       "Plot");
 
-  if (plotTableNode->nodeNr > 0) {
+  if (plotTableNode != (xmlNodeSet*)NULL && plotTableNode->nodeNr > 0) {
 
     for (cptPlot=0;
 	 cptPlot<plotTableNode->nodeNr;
@@ -1334,7 +1381,7 @@ gdisp_loadTargetPages ( Kernel_T *kernel,
 				       (xmlNode*)NULL,
 				       "//Graphics/Page");
 
-  if (pageTableNode->nodeNr > 0) {
+  if (pageTableNode != (xmlNodeSet*)NULL && pageTableNode->nodeNr > 0) {
 
     for (cptPage=0;
 	 cptPage<pageTableNode->nodeNr;
@@ -1397,18 +1444,25 @@ gdisp_loadTargetPages ( Kernel_T *kernel,
 
 /*
  * Load preferences.
+ * Returns FALSE in case of errors. TRUE otherwise.
  */
-static void
+static gboolean
 gdisp_loadConfiguration ( Kernel_T *kernel,
 			  xmlDoc   *document )
 {
 
+  gboolean loadIsOk = TRUE;
+
   /*
    * Get back target providers : URL only.
    */
-  gdisp_loadTargetProviders(kernel,
-			    document,
-			    GD_PROVIDER_URL);
+  loadIsOk = gdisp_loadTargetProviders(kernel,
+				       document,
+				       GD_PROVIDER_URL);
+
+  if (loadIsOk == FALSE) {
+    return loadIsOk;
+  }
 
   /*
    * Now that all providers have been stored, start a new consuming process.
@@ -1419,9 +1473,13 @@ gdisp_loadConfiguration ( Kernel_T *kernel,
   /*
    * Get back target providers : SYMBOLS only.
    */
-  gdisp_loadTargetProviders(kernel,
-			    document,
-			    GD_PROVIDER_SYMBOLS);
+  loadIsOk = gdisp_loadTargetProviders(kernel,
+				       document,
+				       GD_PROVIDER_SYMBOLS);
+
+  if (loadIsOk == FALSE) {
+    return loadIsOk;
+  }
 
   /*
    * Check sampling symbol references.
@@ -1447,6 +1505,8 @@ gdisp_loadConfiguration ( Kernel_T *kernel,
    */
   (*kernel->assignSymbolsToProviders)(kernel);
 
+  return loadIsOk;
+
 }
 
 
@@ -1462,6 +1522,11 @@ gdisp_loadConfiguration ( Kernel_T *kernel,
 gboolean
 gdisp_newConfiguration ( Kernel_T *kernel )
 {
+
+  /*
+   * Manually stop sampling process.
+   */
+  (*kernel->stopSamplingProcess)(kernel);
 
   /*
    * Destroy all previous graphic pages.
@@ -1500,19 +1565,24 @@ gdisp_closeConfiguration ( Kernel_T *kernel )
 {
 
   /*
+   * Manually stop sampling process.
+   */
+  (*kernel->stopSamplingProcess)(kernel);
+
+  /*
    * Destroy all previous graphic pages.
    */
   gdisp_destroyAllGraphicPages(kernel);
 
   /*
-   * Refresh data book content.
-   */
-  gdisp_refreshDataBookWindow(kernel);
-
-  /*
    * End up any previous consuming process.
    */
   gdisp_consumingEnd(kernel);
+
+  /*
+   * Refresh data book content.
+   */
+  gdisp_refreshDataBookWindow(kernel);
 
   /*
    * Everything went ok.
@@ -1559,9 +1629,19 @@ gdisp_openConfigurationFile ( Kernel_T *kernel )
   }
 
   /*
-   * Close previous configuration.
+   * Manually stop sampling process.
    */
-  gdisp_closeConfiguration(kernel);
+  (*kernel->stopSamplingProcess)(kernel);
+
+  /*
+   * Destroy all previous graphic pages.
+   */
+  gdisp_destroyAllGraphicPages(kernel);
+
+  /*
+   * End up any previous consuming process.
+   */
+  gdisp_consumingEnd(kernel);
 
   /*
    * Load configuration.

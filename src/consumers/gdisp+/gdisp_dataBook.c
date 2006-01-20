@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_dataBook.c,v 1.6 2005-12-03 15:46:20 esteban Exp $
+$Id: gdisp_dataBook.c,v 1.7 2006-01-20 21:59:14 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -557,16 +557,9 @@ gdisp_refreshDataBookWindow ( Kernel_T *kernel )
    */
   if (kernel->widgets.dataBookWindow != (GtkWidget*)NULL) {
 
-#if defined(GD_THESE_TWO_PIECES_OF_CODE_ARE_VALIDATED)
-
-    gdisp_refreshSymbolList  (kernel);
-    gdisp_refreshProviderList(kernel);
-
-#else
-
-    gdisp_closeDataBookWindow(kernel);
-
-#endif
+    gdisp_refreshSymbolList       (kernel);
+    gdisp_refreshProviderList     (kernel);
+    gdisp_refreshSampledSymbolList(kernel);
 
   }
 

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_sampledSymbols.c,v 1.8 2005-12-03 15:46:20 esteban Exp $
+$Id: gdisp_sampledSymbols.c,v 1.9 2006-01-20 21:59:14 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -375,7 +375,7 @@ gdisp_createProviderNode(Kernel_T      *kernel,
 				pPixmap->mask,
 				pPixmap->pixmap,
 				pPixmap->mask,
-				FALSE, /* is a leave  */
+  /* FIXME for the moment */    TRUE, /* is a leave  */
 				FALSE); /* is expanded */
 
   gtk_ctree_node_set_selectable(GTK_CTREE(tree),
@@ -647,17 +647,22 @@ static void
 gdisp_poolSampledSymbolList ( Kernel_T *kernel )
 {
 
-  GtkWidget        *cTree            =    (GtkWidget*)NULL;
-  GString          *messageString    =      (GString*)NULL;
-  GList            *providerItem     =        (GList*)NULL;
-  Provider_T       *provider         =   (Provider_T*)NULL;
-  Symbol_T         *symbol           =     (Symbol_T*)NULL;
-  GtkCTreeNode     *pSymbolAnchor    = (GtkCTreeNode*)NULL;
+  GtkWidget        *cTree             =    (GtkWidget*)NULL;
+  GString          *messageString     =      (GString*)NULL;
+  GList            *providerItem      =        (GList*)NULL;
+  Provider_T       *provider          =   (Provider_T*)NULL;
+  Symbol_T         *symbol            =     (Symbol_T*)NULL;
+  GtkCTreeNode     *pSymbolAnchor     = (GtkCTreeNode*)NULL;
+  GtkCTreeNode     *pNode             = (GtkCTreeNode*)NULL;
+  GtkCTreeNode     *sNode             = (GtkCTreeNode*)NULL;
 
-  gint              pSampleCpt       =                   0;
-  SampleList_T     *pSampleList      = (SampleList_T*)NULL;
-  guint             pSampleMax       =                   0;
+  gint              pSampleCpt        =                   0;
+  SampleList_T     *pSampleList       = (SampleList_T*)NULL;
+  guint             pSampleMax        =                   0;
 
+#define GD_SAMPLE_PGI_AS_STRING_LENGTH 10
+  gchar             samplePGIasStringBuffer[GD_SAMPLE_PGI_AS_STRING_LENGTH];
+  gchar            *samplePGIasString =        (gchar*)NULL;
 
   /* ------------------------ PER PROVIDER ---------------------- */
 
@@ -685,83 +690,135 @@ gdisp_poolSampledSymbolList ( Kernel_T *kernel )
     /*
      * Look for symbol anchor.
      */
-    pSymbolAnchor = gdisp_getChildAccordingToItsName(kernel,
-						     provider->pNode,
-						     "sAnchor");
+    if (provider->pNode != (GtkCTreeNode*)NULL) {
 
-    if (pSymbolAnchor == (GtkCTreeNode*)NULL) {
+      pSymbolAnchor = gdisp_getChildAccordingToItsName(kernel,
+						       provider->pNode,
+						       "sAnchor");
 
-      /* should never happen, because I did create this node !! */
-      messageString = g_string_new((gchar*)NULL);
-      g_string_sprintf(messageString,
-		       "%s provider has no anchor for symbols.",
-		       provider->pUrl->str);
-      kernel->outputFunc(kernel,messageString,GD_ERROR);
+      if (pSymbolAnchor == (GtkCTreeNode*)NULL) {
 
-    }
-    else {
+	/* should never happen, because I did create this node !! */
+	messageString = g_string_new((gchar*)NULL);
+	g_string_sprintf(messageString,
+			 "%s provider has no anchor for symbols.",
+			 provider->pUrl->str);
+	kernel->outputFunc(kernel,messageString,GD_ERROR);
 
-      /* --------------------- PER SAMPLED SYMBOLS ---------------- */
+      }
+      else {
 
-      /*
-       * Loop over all sampled symbol of the current provider.
-       */
-      pSampleList = &provider->pSampleList;
-      pSampleMax  = pSampleList->len;
-
-      for (pSampleCpt=0; pSampleCpt<pSampleMax; pSampleCpt++) {
+	/* --------------------- PER SAMPLED SYMBOLS ---------------- */
 
 	/*
-	 * Get in touch with the symbol through the global index.
+	 * Loop over all sampled symbol of the current provider.
 	 */
-	if (pSampleList->val[pSampleCpt].index >= 0) {
+	pSampleList = &provider->pSampleList;
+	pSampleMax  = pSampleList->len;
 
-	  symbol = &provider->pSymbolList[pSampleList->val[pSampleCpt].index];
+	for (pSampleCpt=0; pSampleCpt<pSampleMax; pSampleCpt++) {
 
 	  /*
-	   * If referenced... ie, used by graphic plots...
+	   * Get in touch with the symbol through the global index.
 	   */
-	  if (symbol->sReference > 0) {
+	  if (pSampleList->val[pSampleCpt].index >= 0) {
+
+#if defined(GD_LOAD_CONFIGURATION_WITH_ALL_SYMBOLS)
+
+	    symbol =
+	      &provider->pSymbolList[pSampleList->val[pSampleCpt].index];
+
+#else
 
 	    /*
-	     * Create the hierarchy for that symbol, if not already done.
+	     * Convert PGI as an unsigned integer to a string.
 	     */
-	    if (symbol->sNode == (GtkCTreeNode*)NULL) {
+	    samplePGIasStringBuffer[GD_SAMPLE_PGI_AS_STRING_LENGTH-1] = '\0';
+	    samplePGIasString =
+	      gdisp_uIntToStr(pSampleList->val[pSampleCpt].index,
+		  &samplePGIasStringBuffer[GD_SAMPLE_PGI_AS_STRING_LENGTH-1]);
 
-	      gdisp_createSymbolNode(kernel,
-				     cTree,
-				     pSymbolAnchor,
-				     symbol);
+	    /*
+	     * Retreive target symbol.
+	     */
+	    if (provider->pSymbolHashTablePGI == (hash_t*)NULL) {
+
+	      symbol = (Symbol_T*)NULL;
 
 	    }
 	    else {
 
-	      gdisp_updateSymbolNode(kernel,
-				     cTree,
-				     symbol);
+	      symbol = (Symbol_T*)
+		hash_get(provider->pSymbolHashTablePGI,samplePGIasString);
 
 	    }
 
-	  } /* sReference > 0 */
+#endif
 
-	  else {
+	    /*
+	     * If referenced... ie, used by graphic plots...
+	     */
+	    if (symbol != (Symbol_T*)NULL) {
 
-	    if (symbol->sNode != (GtkCTreeNode*)NULL) {
+	      if (symbol->sReference > 0) {
 
-	      gtk_ctree_remove_node(GTK_CTREE(cTree),
-				    symbol->sNode);
+		/*
+		 * Create the hierarchy for that symbol, if not already done.
+		 */
+		if (symbol->sNode == (GtkCTreeNode*)NULL) {
 
-	      symbol->sNode = (GtkCTreeNode*)NULL;
+		  gdisp_createSymbolNode(kernel,
+					 cTree,
+					 pSymbolAnchor,
+					 symbol);
 
-	    }
+		}
+		else {
 
-	  } /* sReference == 0 */
+		  gdisp_updateSymbolNode(kernel,
+					 cTree,
+					 symbol);
 
-	} /* if (index >= 0) */
+		}
 
-      } /* loop over sampled symbols */
+	      } /* sReference > 0 */
 
-    } /* found sAnchor */
+	      else {
+
+		if (symbol->sNode != (GtkCTreeNode*)NULL) {
+
+		  gtk_ctree_remove_node(GTK_CTREE(cTree),
+					symbol->sNode);
+
+		  symbol->sNode = (GtkCTreeNode*)NULL;
+
+		}
+
+	      } /* sReference == 0 */
+
+	    } /* symbol not null */
+
+	  } /* if (index >= 0) */
+
+	} /* loop over sampled symbols */
+
+      } /* found sAnchor */
+
+    } /* pNode is not null */
+
+    else {
+
+      /*
+       * Create a node that will contain all provider information.
+       */
+      gdisp_createProviderNode(kernel,
+			       kernel->widgets.sampledSymbolScrolledWindow,
+			       cTree,
+			       provider,
+			       &pNode,
+			       &sNode);
+
+    }
 
     /*
      * Next provider.
@@ -888,6 +945,8 @@ gdisp_createSampledSymbolList ( Kernel_T  *kernel,
   gtk_container_add(GTK_CONTAINER(sFrame),scrolledWindow); 
   gtk_widget_show(scrolledWindow);
 
+  kernel->widgets.sampledSymbolScrolledWindow = scrolledWindow;
+
 
   /* --------- HIERARCHICAL TREE FOR HANDLING ALL PROVIDERS --------- */
 
@@ -995,6 +1054,89 @@ gdisp_createSampledSymbolList ( Kernel_T  *kernel,
    */
   gdisp_finaliseHierarchicalTree(kernel,
 				 cTree);
+
+}
+
+
+/*
+ * Refresh provider graphic list.
+ */
+void
+gdisp_refreshSampledSymbolList ( Kernel_T *kernel )
+{
+
+  GtkWidget    *cTree        = (GtkWidget*)NULL;
+  GList        *cTreeList    = (GList*)NULL;
+  GtkCTreeRow  *cTreeRow     = (GtkCTreeRow*)NULL;
+  GtkCTreeNode *cTreeNode    = (GtkCTreeNode*)NULL;
+  guint         cTreeLength  = 0;
+  guint         cTreeCpt     = 0;
+
+  /* ------------------------ PER PROVIDER ---------------------- */
+
+  cTree = kernel->widgets.sampledSymbolHTree;
+
+  /*
+   * When removing a node, GTK main loop activate the "unselect"
+   * callback, that performs a post recursive action on a node
+   * that has been destroyed.
+   * Avoid that shame by temporarily blocking the signal emission.
+   */
+  gtk_clist_freeze(GTK_CLIST(cTree));
+  gtk_signal_handler_block_by_func(GTK_OBJECT(cTree),
+				   gdisp_treeUnselectRowCallback,
+				   (gpointer)kernel); 
+
+  /*
+   * Remove all top-level node, those that have no parent.
+   * First step : build top-level list.
+   */
+  cTreeLength = g_list_length(GTK_CTREE(cTree)->clist.row_list);
+
+  for (cTreeCpt=0; cTreeCpt<cTreeLength; cTreeCpt++) {
+
+    cTreeNode = gtk_ctree_node_nth(GTK_CTREE(cTree),cTreeCpt);
+
+    if (cTreeNode != (GtkCTreeNode*)NULL) {
+
+      cTreeRow = GTK_CTREE_ROW(cTreeNode);
+
+      if (cTreeRow->parent == (GtkCTreeNode*)NULL) {
+
+	cTreeList = g_list_append(cTreeList,(gpointer)cTreeNode);
+
+      } /* node is top-level, ie without parent */
+
+    } /* node exists */
+
+  } /* loop over all rows */
+
+  /*
+   * Second step : remove all top_level nodes.
+   */
+  cTreeList = g_list_first(cTreeList);
+  while (cTreeList != (GList*)NULL) {
+
+    gtk_ctree_remove_node(GTK_CTREE(cTree),
+			  (GtkCTreeNode*)cTreeList->data);
+
+    cTreeList = g_list_next(cTreeList);
+
+  }
+
+  /*
+   * Finalise.
+   */
+  gdisp_finaliseHierarchicalTree(kernel,
+				 cTree);
+
+  /*
+   * Activate again the unselect handler.
+   */
+  gtk_signal_handler_unblock_by_func(GTK_OBJECT(cTree),
+				     gdisp_treeUnselectRowCallback,
+				     (gpointer)kernel);
+  gtk_clist_thaw(GTK_CLIST(cTree));
 
 }
 

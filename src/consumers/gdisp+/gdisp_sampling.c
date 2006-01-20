@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_sampling.c,v 1.12 2005-12-03 15:46:20 esteban Exp $
+$Id: gdisp_sampling.c,v 1.13 2006-01-20 21:59:14 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -535,21 +535,22 @@ static void*
 gdisp_samplingThread (void *data )
 {
 
-  Kernel_T     *kernel           =   (Kernel_T*)data;
-  const SampleList_T *sampleList = (const SampleList_T*)NULL;
-  Provider_T   *provider         = (Provider_T*)NULL;
-  Symbol_T     *symbol           =   (Symbol_T*)NULL;
-  GList        *providerItem     =      (GList*)NULL;
-  gboolean      providerIsFound  =             FALSE;
-  guchar        watchDog         =                10;
-  gint          requestStatus    =                 0;
-  gboolean      sampleHasArrived =             FALSE;
-  guint         sampleRefTimeTag =                 0;
-  guint         sampleCpt        =                 0;
+  Kernel_T     *kernel            = (Kernel_T*)data;
+  hash_t       *tmpHashTable      = (hash_t*)NULL;
+  const SampleList_T *sampleList  = (const SampleList_T*)NULL;
+  Provider_T   *provider          = (Provider_T*)NULL;
+  Symbol_T     *symbol            = (Symbol_T*)NULL;
+  GList        *providerItem      = (GList*)NULL;
+  gboolean      providerIsFound   = FALSE;
+  guchar        watchDog          = 10;
+  gint          requestStatus     = 0;
+  gboolean      sampleHasArrived  = FALSE;
+  guint         sampleRefTimeTag  = 0;
+  guint         sampleCpt         = 0;
   TSP_sample_t  sampleValue;
 #define GD_SAMPLE_PGI_AS_STRING_LENGTH 10
   gchar         samplePGIasStringBuffer[GD_SAMPLE_PGI_AS_STRING_LENGTH];
-  gchar        *samplePGIasString;
+  gchar        *samplePGIasString =      (gchar*)NULL;
 
 #if defined(GD_THREAD_DEBUG)
   fprintf(stdout,"Beginning of provider sampling thread.\n");
@@ -626,12 +627,13 @@ gdisp_samplingThread (void *data )
 
   if (provider->pSymbolHashTablePGI != (hash_t*)NULL) {
 
-    hash_close(provider->pSymbolHashTablePGI);
+    tmpHashTable = provider->pSymbolHashTablePGI;
     provider->pSymbolHashTablePGI = (hash_t*)NULL;
+    hash_close(tmpHashTable);
 
   }
 
-  provider->pSymbolHashTablePGI = hash_open('.','z');
+  tmpHashTable = hash_open('.','z');
 
   for (sampleCpt=0; sampleCpt<sampleList->len; sampleCpt++) {
 
@@ -645,12 +647,13 @@ gdisp_samplingThread (void *data )
 	    "%d",
 	    symbol->sPgi);
     
-    hash_append(provider->pSymbolHashTablePGI,
+    hash_append(tmpHashTable,
 		samplePGIasStringBuffer,
 		(void*)symbol);
 
   }
 
+  provider->pSymbolHashTablePGI = tmpHashTable;
 
   /*
    * Tell TSP core to start sampling process.
@@ -806,10 +809,6 @@ gdisp_samplingThread (void *data )
    * Bye bye.
    */
   provider->pSamplingThread = (pthread_t)NULL;
-  if (provider->pSymbolHashTablePGI != (hash_t*)NULL) {
-    hash_close(provider->pSymbolHashTablePGI);
-    provider->pSymbolHashTablePGI = (hash_t*)NULL;
-  }
 
 #if defined(GD_THREAD_DEBUG)
   fprintf(stdout,"End of provider sampling thread.\n");

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_main.c,v 1.7 2006-01-08 14:19:59 erk Exp $
+$Id: gdisp_main.c,v 1.8 2006-01-20 21:59:14 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -123,6 +123,7 @@ gdisp_analyseUserArguments ( Kernel_T *kernel )
     case 'u' :
       gdisp_addUrl(kernel,optarg);
       break;
+
     case 'x' :
       if (kernel->ioFilename != (gchar*)NULL) {
 	g_free(kernel->ioFilename);
@@ -156,7 +157,8 @@ gdisp_analyseUserArguments ( Kernel_T *kernel )
 gint
 main (int argc, char **argv) 
 {
-  gint      retval      = 0;
+
+  gint      retVal      = 0;
   Kernel_T *gdispKernel = (Kernel_T*)NULL;
   gboolean  mustStop    = FALSE;
 
@@ -192,8 +194,9 @@ main (int argc, char **argv)
      * Destroy kernel, and exit.
      */
     gdisp_destroyKernel(gdispKernel);
-    retval = -1;
-    return retval;
+
+    retVal = -1;
+    return retVal;
 
   }
 
@@ -223,13 +226,13 @@ main (int argc, char **argv)
   gdisp_consumingInit(gdispKernel);
 
   /*
-   * Restore configuration if a configurationit
-   * file was provided on command line
+   * Restore configuration if a configuration in
+   * file was provided on command line.
    * We may not restore it before GUI is built.
    */
-  if ((gdispKernel->ioFilename != NULL) &&
-      (!gdisp_openConfigurationFile(gdispKernel))
-      ) {
+  if ((gdispKernel->ioFilename != (gchar*)NULL) &&
+      (gdisp_openConfigurationFile(gdispKernel) == FALSE)) {
+
     /*
      * Write the usage.
      */
@@ -243,6 +246,7 @@ main (int argc, char **argv)
      * file IO notifications to occur.
      */
     gtk_main();
+
   }
 
   /*
@@ -262,6 +266,6 @@ main (int argc, char **argv)
    */
   gdisp_destroyKernel(gdispKernel);
 
-  return retval;
+  return retVal;
 
 }

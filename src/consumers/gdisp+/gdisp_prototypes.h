@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_prototypes.h,v 1.14 2005-12-05 22:01:30 esteban Exp $
+$Id: gdisp_prototypes.h,v 1.15 2006-01-20 21:59:14 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -110,6 +110,7 @@ void       gdisp_createSampledSymbolList  (Kernel_T  *kernel,
 void       gdisp_sampledSymbolTimer       (Kernel_T  *kernel,
 					   gboolean   timerIsStarted);
 void       gdisp_destroySampledSymbolList (Kernel_T  *kernel);
+void       gdisp_refreshSampledSymbolList (Kernel_T  *kernel);
 
 
 /*

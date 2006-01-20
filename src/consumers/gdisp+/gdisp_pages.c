@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_pages.c,v 1.9 2006-01-08 14:21:52 erk Exp $
+$Id: gdisp_pages.c,v 1.10 2006-01-20 21:59:14 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -1519,9 +1519,10 @@ gdisp_finalizeGraphicPageCreation (Kernel_T *kernel,
    */
 #define GD_WINDOW_MAX_INITIAL_WIDTH  400
 #define GD_WINDOW_MAX_INITIAL_HEIGHT 300
+
   gtk_widget_set_usize(GTK_WIDGET(newPage->pWindow),
-		       MIN(3 * screenWidth  / 4,GD_WINDOW_MAX_INITIAL_WIDTH),  /* width  */
-		       MIN(3 * screenHeight / 4,GD_WINDOW_MAX_INITIAL_HEIGHT)); /* height */
+		       MIN(3 * screenWidth  / 4,GD_WINDOW_MAX_INITIAL_WIDTH),
+		       MIN(3 * screenHeight / 4,GD_WINDOW_MAX_INITIAL_HEIGHT));
 
   gtk_window_set_title(GTK_WINDOW(newPage->pWindow),
 		       newPage->pName->str);

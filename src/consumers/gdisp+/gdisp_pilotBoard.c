@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_pilotBoard.c,v 1.6 2005-12-05 22:01:30 esteban Exp $
+$Id: gdisp_pilotBoard.c,v 1.7 2006-01-20 21:59:14 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -68,6 +68,67 @@ File      : Graphic Tool Pilot Board.
 #define GD_UTC_TIME     2
 
 /*
+ * Start sampling process.
+ */
+static void
+gdisp_startSampling ( Kernel_T *kernel )
+{
+
+  gboolean hasStarted = FALSE;
+
+  /*
+   * Try to start sampling process.
+   */
+  hasStarted = gdisp_startSamplingProcess(kernel);
+
+  /*
+   * If sampling process has started, swap colored buttons.
+   */
+  if (hasStarted == TRUE) {
+
+    /*
+     * Swap again colored buttons.
+     */
+    gtk_widget_hide(kernel->widgets.mainBoardOkButton  );
+    gtk_widget_show(kernel->widgets.mainBoardStopButton);
+
+    /*
+     * Start sampling logo animation.
+     */
+    gdisp_startLogoAnimation(kernel);
+
+  }
+
+}
+
+
+/*
+ * Stop sampling process.
+ */
+static void
+gdisp_stopSampling ( Kernel_T *kernel )
+{
+
+  /*
+   * Stop sampling process.
+   */
+  gdisp_stopSamplingProcess(kernel);
+
+  /*
+   * Swap again colored buttons.
+   */
+  gtk_widget_hide(kernel->widgets.mainBoardStopButton);
+  gtk_widget_show(kernel->widgets.mainBoardOkButton  );
+
+  /*
+   * Stop sampling logo animation.
+   */
+  gdisp_stopLogoAnimation(kernel,FALSE /* stop all */);
+
+}
+
+
+/*
  * This callback is called whenever play / stop buttons are pressed.
  * The argument "data" is the kernel itself.
  * The only way to determine which button has been pressed, is to
@@ -80,40 +141,15 @@ gdisp_togglePlayModeCallback (GtkWidget *buttonWidget,
 {
 
   Kernel_T *kernel     = (Kernel_T*)data;
-  gboolean  hasStarted = FALSE;
 
   if (buttonWidget == kernel->widgets.mainBoardOkButton) {
 
-    hasStarted = gdisp_startSamplingProcess(kernel);
-
-    if (hasStarted == TRUE) {
-
-      gtk_widget_hide(kernel->widgets.mainBoardOkButton  );
-      gtk_widget_show(kernel->widgets.mainBoardStopButton);
-
-      gtk_widget_set_sensitive(kernel->widgets.mainBoardMenuBar,FALSE);
-      if (kernel->widgets.dataBookWidget != (GtkWidget*)NULL) {
-	gtk_widget_set_sensitive(kernel->widgets.dataBookWidget,FALSE);
-      }
-
-      gdisp_startLogoAnimation(kernel);
-
-    }
+    gdisp_startSampling(kernel);
 
   }
   else if (buttonWidget == kernel->widgets.mainBoardStopButton) {
 
-    gdisp_stopSamplingProcess(kernel);
-
-    gtk_widget_hide(kernel->widgets.mainBoardStopButton);
-    gtk_widget_show(kernel->widgets.mainBoardOkButton  );
-
-    gtk_widget_set_sensitive(kernel->widgets.mainBoardMenuBar,TRUE);
-    if (kernel->widgets.dataBookWidget != (GtkWidget*)NULL) {
-      gtk_widget_set_sensitive(kernel->widgets.dataBookWidget,TRUE);
-    }
-
-    gdisp_stopLogoAnimation(kernel,FALSE /* stop all */);
+    gdisp_stopSampling(kernel);
 
   }
 
@@ -574,6 +610,11 @@ gdisp_createPilotBoard (Kernel_T *kernel)
 
   gtk_widget_show(elapsedTimeArea);
 
+
+  /* -------------------- RECORD PROCEDURES ------------------ */
+
+  kernel->startSamplingProcess = gdisp_startSampling;
+  kernel->stopSamplingProcess  = gdisp_stopSampling;
 
   /* --------------------- REGISTER ACTION ------------------- */
 

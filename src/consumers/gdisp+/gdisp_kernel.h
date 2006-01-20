@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_kernel.h,v 1.17 2005-12-05 22:01:30 esteban Exp $
+$Id: gdisp_kernel.h,v 1.18 2006-01-20 21:59:14 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -528,6 +528,7 @@ typedef struct KernelWidget_T_ {
   Pixmap_T          *expandedNodePixmap;
   Pixmap_T          *collapsedNodePixmap;
   GtkWidget         *sampledSymbolHTree;
+  GtkWidget         *sampledSymbolScrolledWindow;
   GtkWidget         *fileSelector;
 
   /* ------------------------ PIXMAP TABLE ------------------------ */
@@ -590,6 +591,8 @@ typedef struct Kernel_T_ {
 					       void(*action)(Kernel_T_Ptr));
   void             (*assignSymbolsToProviders)(Kernel_T_Ptr);
   PlotType_T       (*getPlotTypeFromPlotName) (Kernel_T_Ptr,gchar*);
+  void             (*startSamplingProcess)    (Kernel_T_Ptr);
+  void             (*stopSamplingProcess)     (Kernel_T_Ptr);
 
   /*
    * Host/URL management.
