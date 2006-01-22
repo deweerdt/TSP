@@ -16,7 +16,7 @@
           </condition>  
         </target>
 
-        <target name="info" depends="init">
+        <target name="info" depends="init" description="o Informations about build options">
 
             <echo>
 This is a ANT build file for the TSP which 
@@ -52,7 +52,7 @@ date, time and user name.
                <delete dir="${dist.dir}" />
 	</target>		
 
-        <target name="tar" depends="prepare-dist">
+        <target name="tar" depends="prepare-dist" description="o Build a tar file containing the TSP source">
               <tar destfile="${dist.dir}/tsp-${tsp.version}.tar">
                  <tarfileset mode="755" defaultexcludes="yes" dir="${tsp.home.dir}" prefix="tsp/">
                       <include name="config*" />
@@ -82,11 +82,18 @@ date, time and user name.
                      <exclude name="${tests.dir}/**/*~"/>
                  </tarfileset>
               </tar>
-              <gzip zipfile="${dist.dir}/tsp-${tsp.version}.tar.gz" src="${dist.dir}/tsp-${tsp.version}.tar" />
-              <delete file="${dist.dir}/tsp-${tsp.version}.tar" />
+
+        </target>
+        <target name="targz" depends="tar" description="o Build a tar+gz file containing the TSP source">
+             <gzip zipfile="${dist.dir}/tsp-${tsp.version}.tar.gz" src="${dist.dir}/tsp-${tsp.version}.tar" />
+             <delete file="${dist.dir}/tsp-${tsp.version}.tar" />
+        </target>
+        <target name="tarbz2" depends="tar" description="o Build a tar+bzip2 file containing the TSP source">
+             <bzip2 zipfile="${dist.dir}/tsp-${tsp.version}.tar.bz2" src="${dist.dir}/tsp-${tsp.version}.tar" />
+             <delete file="${dist.dir}/tsp-${tsp.version}.tar" />
         </target>
 
-        <target name="zip" depends="prepare-dist">
+        <target name="zip" depends="prepare-dist" description="o Build a zip file containing the TSP source">
               <zip destfile="${dist.dir}/tsp-${tsp.version}.zip">
                  <zipfileset defaultexcludes="yes" dir="${tsp.home.dir}" prefix="tsp/">
                       <include name="config*" />
@@ -139,7 +146,7 @@ date, time and user name.
             <copy file="${dist.dir}/tsp-${tsp.version}.tar.gz" todir="${rpm.topdir}/SOURCES/"/>
             <copy file="${src.dir}/scripts/tsp.spec" todir="${rpm.topdir}/SPECS/"/>
         </target>
-        <target name="rpm" depends="rpm-common,rpm-ant-1.6,rpm-ant-1.5">
+        <target name="rpm" depends="rpm-common,rpm-ant-1.6,rpm-ant-1.5" description="o Build TSP RPM package (source and binary)">
         </target>
         <target name="rpm-ant-1.6" unless="ant-1.5">
             <rpm specFile="tsp.spec" topDir="${rpm.topdir}" command="-bb -vv --buildroot=${dist.dir}/tmp"/>
