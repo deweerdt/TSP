@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.39 2005-12-04 21:53:44 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.40 2006-01-22 09:35:15 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -570,7 +570,7 @@ void TSP_consumer_connect_all(const char*  host_name, TSP_provider_t** providers
 	      (*providers)[*nb_providers] = TSP_new_object_tsp(server, server_info);
 	      if( 0 == (*providers)[*nb_providers])
 		{
-		  STRACE_ERROR(("TSP_new_object_tsp failedfor No=%d", i));
+		  STRACE_ERROR(("TSP_new_object_tsp failed for No=%d", i));
 		  (*nb_providers) = 0;
 		  return;
 
@@ -1311,7 +1311,7 @@ TSP_groups_t TSP_test_get_groups(TSP_provider_t provider)
 
 int TSP_consumer_request_async_sample_write(TSP_provider_t provider,TSP_consumer_async_sample_t* async_sample_write)
 {
- 
+  int *result;
   TSP_async_sample_t async_write;
   int ret = 0;
   TSP_otsp_t* otsp = (TSP_otsp_t*)provider;
@@ -1324,8 +1324,12 @@ int TSP_consumer_request_async_sample_write(TSP_provider_t provider,TSP_consumer
   
   /* verification of the structure*/
   	
-  if(0 != otsp) {    
-    ret = *(TSP_request_async_sample_write(&async_write,otsp->server));      
+  if(0 != otsp) { 
+    result = TSP_request_async_sample_write(&async_write,otsp->server);
+      if (result)
+        ret = *result; 
+      else
+        STRACE_DEBUG(("result is <0x%X>\n", result));      
   }
   else {
       STRACE_ERROR(("This provider is not instanciate"));
@@ -1342,7 +1346,6 @@ int TSP_consumer_request_async_sample_read(TSP_provider_t provider,TSP_consumer_
  
   TSP_async_sample_t* async_read_result;
   TSP_async_sample_t async_read_param;
-
   
   int ret = 0;
   TSP_otsp_t* otsp = (TSP_otsp_t*)provider;
@@ -1351,15 +1354,26 @@ int TSP_consumer_request_async_sample_read(TSP_provider_t provider,TSP_consumer_
   async_read_param.provider_global_index  = async_sample_read->provider_global_index;
   async_read_param.data.data_val = async_sample_read->value_ptr;
   async_read_param.data.data_len = async_sample_read->value_size;
+
   
   if(0 != otsp) {   
     STRACE_DEBUG(("TSP consumer async read for pgi <%d>\n",async_sample_read->provider_global_index));
+
     async_read_result = TSP_request_async_sample_read(&async_read_param,otsp->server);
-    if (-1 == async_read_result->provider_global_index) {
-      ret = 1;
-    } else {
-      /* should update value */
-      memcpy(async_sample_read->value_ptr,async_read_result->data.data_val,async_sample_read->value_size);
+    STRACE_DEBUG(("async_read_result is <0x%X>\n", async_read_result));
+
+    /* Provider has probably died */
+    if (async_read_result == NULL)
+      ret=0;
+
+    else{
+      if (-1 == async_read_result->provider_global_index) {
+	ret = 1;
+      } else {
+	/* should update value */
+	memcpy(async_sample_read->value_ptr,async_read_result->data.data_val,async_sample_read->value_size);
+	ret = 2;
+      }
     }
   }
   else{

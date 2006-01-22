@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/providers/bb_provider/bb_tsp_provider.c,v 1.16 2005-12-05 21:51:14 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/providers/bb_provider/bb_tsp_provider.c,v 1.17 2006-01-22 09:35:15 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -21,7 +21,6 @@ Lesser General Public License for more details.
 You should have received a copy of the GNU Lesser General Public
 License along with this library; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-
 -----------------------------------------------------------------------
 
 Project   : TSP
@@ -35,13 +34,15 @@ Purpose   : Blackboard TSP Provider
 -----------------------------------------------------------------------
  */
 #include <tsp_abs_types.h>
-#include "bb_core.h"
-#include "bb_simple.h"
+#include <bb_core.h>
+#include <bb_utils.h>
+#include <bb_alias.h>
+#include <bb_simple.h>
 #define BB_TSP_PROVIDER_C
-#include "bb_tsp_provider.h"
+#include <bb_tsp_provider.h>
 
-#include "tsp_provider_init.h"
-#include "tsp_datapool.h"
+#include <tsp_provider_init.h>
+#include <tsp_datapool.h>
 
 /*
  * Ugly declare for smooth TSP startup
@@ -117,6 +118,14 @@ BB_GLU_init(GLU_handle_t* this, int fallback_argc, char* fallback_argv[]) {
   int i_temp;
   int i_pg_index;
   int i_nb_item_scalaire;
+  int dimension_globale_element;
+  int32_t          aliasstack_size = MAX_ALIAS_LEVEL;
+  S_BB_DATADESC_T  aliasstack[MAX_ALIAS_LEVEL];
+  int32_t indexstack[MAX_ALIAS_LEVEL];
+  int32_t indexstack_len;
+  
+
+  
 
   retcode = TRUE;
   /* We don't need fallback for now */
@@ -129,6 +138,7 @@ BB_GLU_init(GLU_handle_t* this, int fallback_argc, char* fallback_argv[]) {
 	      "bb_tsp_provider::GLU_init","Cannot attach to BlackBoard <%s>!!",
 	      the_bbname);
     retcode = FALSE;
+    return;
   } 
   
   /* 
@@ -165,9 +175,16 @@ BB_GLU_init(GLU_handle_t* this, int fallback_argc, char* fallback_argv[]) {
      * We skip unhandled BB_TYPE 
      * because TSP does not handle other type than double FIXME.
      */
-    if (bb_data_desc(shadow_bb)[i].type < E_BB_CHAR) {
-      i_nb_item_scalaire += bb_data_desc(shadow_bb)[i].dimension;
-    }
+	 if (bb_data_desc(shadow_bb)[i].type < E_BB_CHAR) {
+		aliasstack[0]=bb_data_desc(shadow_bb)[i];
+		aliasstack_size = MAX_ALIAS_LEVEL;
+		bb_find_aliastack(shadow_bb, aliasstack, &aliasstack_size);
+		dimension_globale_element = 1;
+		for (j=0; j<aliasstack_size; j++) {
+			dimension_globale_element *= aliasstack[j].dimension;
+		}
+		i_nb_item_scalaire += dimension_globale_element;
+	 }
   }
   nb_symbols = i_nb_item_scalaire;
 
@@ -194,6 +211,8 @@ BB_GLU_init(GLU_handle_t* this, int fallback_argc, char* fallback_argv[]) {
   assert(bbdatadesc_by_pgi);	
   assert(bbindex_to_pgi);
   assert(allow_to_write);
+  
+  
   /* initialize the provider global index to 0 */
   i_pg_index = 0;
   for (i=0; i<bb_get_nb_item(shadow_bb);++i) {
@@ -205,37 +224,93 @@ BB_GLU_init(GLU_handle_t* this, int fallback_argc, char* fallback_argv[]) {
     if (bb_data_desc(shadow_bb)[i].type < E_BB_CHAR) {
       /* memorize the first PGI used for this bbindex */
       bbindex_to_pgi[i] = i_pg_index;
-      if (bb_data_desc(shadow_bb)[i].dimension > 1) {
-	for (j=0;j<bb_data_desc(shadow_bb)[i].dimension; ++j) {
-	  /* FIXME calculer la taille exacte j*log10 */
-	  i_temp = strlen(bb_data_desc(shadow_bb)[i].name)+10;
-	  X_sample_symbol_info_list_val[i_pg_index].name = malloc(i_temp);
-	  assert(X_sample_symbol_info_list_val[i_pg_index].name);
-	  snprintf(X_sample_symbol_info_list_val[i_pg_index].name, 
-		   i_temp,
-		   "%s[%0d]",
-		   bb_data_desc(shadow_bb)[i].name,
-		   j);
-	  X_sample_symbol_info_list_val[i_pg_index].provider_global_index = i_pg_index;
-	  X_sample_symbol_info_list_val[i_pg_index].period = 1;
-	  /* update data pointer with appropriate value */
-	  value_by_pgi[i_pg_index]  = ((void*) ((char*)bb_data(shadow_bb) + bb_data_desc(shadow_bb)[i].data_offset)) + j*bb_data_desc(shadow_bb)[i].type_size;
-	  bbdatadesc_by_pgi[i_pg_index] = &bb_data_desc(shadow_bb)[i];
-	  allow_to_write[i_pg_index]    = TSP_ASYNC_WRITE_ALLOWED;
-	  ++i_pg_index;
-	}
+		
+		/* alias case */
+		if (bb_isalias(&bb_data_desc(shadow_bb)[i])) {
+			aliasstack[0]=bb_data_desc(shadow_bb)[i];
+			aliasstack_size = MAX_ALIAS_LEVEL;
+			bb_find_aliastack(shadow_bb, aliasstack, &aliasstack_size);
+			memset(indexstack,0,MAX_ALIAS_LEVEL*sizeof(int32_t));
+			indexstack_len = 0;
+			for (j=0; j<aliasstack_size; j++) {
+				if (aliasstack[aliasstack_size-1-j].dimension > 1) {
+					indexstack[indexstack_len]=0;
+					++indexstack_len;
+				}
+			}
+						
+			/** alisa array */
+			if (indexstack_len){
+				i_temp = strlen(bb_data_desc(shadow_bb)[i].name) + 10*indexstack_len;
+				do {
+					X_sample_symbol_info_list_val[i_pg_index].name = malloc(i_temp);
+					assert(X_sample_symbol_info_list_val[i_pg_index].name);
+					memset(X_sample_symbol_info_list_val[i_pg_index].name, 0, i_temp);
+					get_array_name(X_sample_symbol_info_list_val[i_pg_index].name,
+										i_temp,
+										aliasstack, aliasstack_size,
+										indexstack, indexstack_len);
+					X_sample_symbol_info_list_val[i_pg_index].provider_global_index = i_pg_index;
+					X_sample_symbol_info_list_val[i_pg_index].period = 1;
+					/* update data pointer with appropriate value */
+					value_by_pgi[i_pg_index] = bb_item_offset(shadow_bb, &bb_data_desc(shadow_bb)[i], indexstack, indexstack_len);
+					bbdatadesc_by_pgi[i_pg_index] = &bb_data_desc(shadow_bb)[i];
+					allow_to_write[i_pg_index]    = TSP_ASYNC_WRITE_ALLOWED;
+					++i_pg_index;
+				}
+				while (E_OK == bb_alias_increment_idxstack(aliasstack, aliasstack_size, indexstack, indexstack_len));
+			}
+			
+			
+			/* simple alias */
+			else {
+				X_sample_symbol_info_list_val[i_pg_index].name = strdup(bb_data_desc(shadow_bb)[i].name);
+				X_sample_symbol_info_list_val[i_pg_index].provider_global_index = i_pg_index;
+				X_sample_symbol_info_list_val[i_pg_index].period = 1;
+				value_by_pgi[i_pg_index] = bb_item_offset(shadow_bb, &bb_data_desc(shadow_bb)[i], indexstack, indexstack_len);
+				bbdatadesc_by_pgi[i_pg_index] = &bb_data_desc(shadow_bb)[i];
+				allow_to_write[i_pg_index]    = TSP_ASYNC_WRITE_ALLOWED;
+				++i_pg_index;
+				
+			}
+		}
+		
+		
+		
+		
+		/* non alias array */
+      else if (bb_data_desc(shadow_bb)[i].dimension > 1) {
+			for (j=0;j<bb_data_desc(shadow_bb)[i].dimension; ++j) {
+			/* FIXME calculer la taille exacte j*log10 */
+			i_temp = strlen(bb_data_desc(shadow_bb)[i].name)+10;
+			X_sample_symbol_info_list_val[i_pg_index].name = malloc(i_temp);
+			assert(X_sample_symbol_info_list_val[i_pg_index].name);
+			snprintf(X_sample_symbol_info_list_val[i_pg_index].name, 
+					i_temp,
+					"%s[%0d]",
+					bb_data_desc(shadow_bb)[i].name,
+					j);
+			X_sample_symbol_info_list_val[i_pg_index].provider_global_index = i_pg_index;
+			X_sample_symbol_info_list_val[i_pg_index].period = 1;
+			/* update data pointer with appropriate value */
+			value_by_pgi[i_pg_index]  = ((void*) ((char*)bb_data(shadow_bb) + bb_data_desc(shadow_bb)[i].data_offset)) + j*bb_data_desc(shadow_bb)[i].type_size;
+			bbdatadesc_by_pgi[i_pg_index] = &bb_data_desc(shadow_bb)[i];
+			allow_to_write[i_pg_index]    = TSP_ASYNC_WRITE_ALLOWED;
+			++i_pg_index;
+			}
       } 
       /* creation simple pour les scalaires */
       else {
-	X_sample_symbol_info_list_val[i_pg_index].name = strdup(bb_data_desc(shadow_bb)[i].name);
-	X_sample_symbol_info_list_val[i_pg_index].provider_global_index = i_pg_index;
-	X_sample_symbol_info_list_val[i_pg_index].period = 1;
-	value_by_pgi[i_pg_index] = ((void*) ((char*)bb_data(shadow_bb) + bb_data_desc(shadow_bb)[i].data_offset));
-	bbdatadesc_by_pgi[i_pg_index] = &bb_data_desc(shadow_bb)[i];
-	allow_to_write[i_pg_index]    = TSP_ASYNC_WRITE_ALLOWED;
-	++i_pg_index;
+			X_sample_symbol_info_list_val[i_pg_index].name = strdup(bb_data_desc(shadow_bb)[i].name);
+			X_sample_symbol_info_list_val[i_pg_index].provider_global_index = i_pg_index;
+			X_sample_symbol_info_list_val[i_pg_index].period = 1;
+			value_by_pgi[i_pg_index] = ((void*) ((char*)bb_data(shadow_bb) + bb_data_desc(shadow_bb)[i].data_offset));
+			bbdatadesc_by_pgi[i_pg_index] = &bb_data_desc(shadow_bb)[i];
+			allow_to_write[i_pg_index]    = TSP_ASYNC_WRITE_ALLOWED;
+			++i_pg_index;
       }
-    } else  { /* skip unhandled BB type */ 
+    }
+	 else  { /* skip unhandled BB type */ 
       STRACE_INFO(("Skipping unhandled symbol type <%d> name <%s>",bb_data_desc(shadow_bb)[i].type,bb_data_desc(shadow_bb)[i].name));
     }
   } /* loop over bb items */
@@ -264,74 +339,124 @@ int
 BB_GLU_get_pgi(GLU_handle_t* this, TSP_sample_symbol_info_list_t* symbol_list, int* pg_indexes) {
   
   int     i=0;
+  int 	 j=0;
   int     ret=TRUE;
-  
-  int     name_index=0;
-  char    name[VARNAME_MAX_SIZE+1];
+
   int     index=0;
   int32_t bbidx;
+  S_BB_DATADESC_T sym_data_desc;
+  int32_t array_index[MAX_ALIAS_LEVEL];
+  int32_t array_index_len;
+  int32_t array_index_ptr;
+  int32_t          aliasstack_size = MAX_ALIAS_LEVEL;
+  S_BB_DATADESC_T  aliasstack[MAX_ALIAS_LEVEL];
+  int32_t previous_array_ptr;
+  void *sym_value;
+
+
   
   STRACE_INFO(("Starting symbol Valid nb_symbol=%u",symbol_list->TSP_sample_symbol_info_list_t_len));
   /* For each requested symbols, check by name, and find the provider global index */
   for( i = 0 ; i < symbol_list->TSP_sample_symbol_info_list_t_len ; i++) {
   
-    /* Get short name (without [XXX], for array) */                                
-    for ( name_index=0 ;
-          ( (symbol_list->TSP_sample_symbol_info_list_t_val[i].name[name_index] != '\0') && 
-            (symbol_list->TSP_sample_symbol_info_list_t_val[i].name[name_index] != '[')        ) ;
-          name_index++ ) {
-    
-      name[name_index]=symbol_list->TSP_sample_symbol_info_list_t_val[i].name[name_index];
-    }
-    name[name_index]='\0';
-    
-    /* Get index for arrays */
-    index=0;
-    if (symbol_list->TSP_sample_symbol_info_list_t_val[i].name[name_index] == '[') {
-      index=atoi(&symbol_list->TSP_sample_symbol_info_list_t_val[i].name[name_index+1]);
-    }
-    
-    bbidx = bb_find(shadow_bb,name);
-
-    STRACE_DEBUG(("Validate symbol: orig_name=<%s>, short=<%s> index=%d\n",
-           symbol_list->TSP_sample_symbol_info_list_t_val[i].name,
-           name,
-           index));
-
-
-    /* symbol not found skip to next symname */
-    if (-1==bbidx) {
-      pg_indexes[i] = -1;
-      ret=FALSE;
-      STRACE_INFO(("Symbol=%s, not found",symbol_list->TSP_sample_symbol_info_list_t_val[i].name));
-      continue;
-    } else {
-      /* 
-       * examine whether symbol is of array type or not
-       * and validate index range if it is of array type.
-       */
-      if (index > bb_data_desc(shadow_bb)[bbidx].dimension) {
-	pg_indexes[i] = -1;
-	ret=FALSE;
-	STRACE_INFO(("Symbol=%s, found but index=%d out of range",symbol_list->TSP_sample_symbol_info_list_t_val[i].name,index));
-	continue;
-      } else {
-
-	/* do not validate array name as first element of array
-	 * consumer should ask for precise element array until
-	 * TSP support array type.
-	 */
-	if ((NULL==strstr(symbol_list->TSP_sample_symbol_info_list_t_val[i].name,"[")) &&
-	    (bb_data_desc(shadow_bb)[bbidx].dimension > 1)) {
-	  pg_indexes[i] = -1;
-	  STRACE_INFO(("Symbol=%s, found but array index wasn't given",symbol_list->TSP_sample_symbol_info_list_t_val[i].name));
-	} else {
-	  /* magic formula for fast rebuild of PGI from bbindex */
-	  pg_indexes[i] = bbindex_to_pgi[bbidx] + index;
-	  STRACE_INFO(("Symbol=%s, found index=%d",symbol_list->TSP_sample_symbol_info_list_t_val[i].name,pg_indexes[i]));
-	}
-      }
-    }
+    /* Get short name (without [XXX], for array) and indexstack and its length */                                
+	 memset(&sym_data_desc,0,sizeof(S_BB_DATADESC_T));
+	 if (bb_utils_parsearrayname(symbol_list->TSP_sample_symbol_info_list_t_val[i].name, 
+				    sym_data_desc.name,
+				    VARNAME_MAX_SIZE,
+				    array_index, &array_index_len)) {
+	   STRACE_INFO  (("%s: cannot parse symname <%s>",
+			  "B_GLU_get_pgi",
+			  symbol_list->TSP_sample_symbol_info_list_t_val[i].name));
+	   ret = FALSE;
+	   continue;
+	 } 	 
+	 else {
+	   /* search if the symbol is published in the blackboard */
+	   sym_data_desc.type      = E_BB_DISCOVER;
+	   sym_data_desc.type_size = 0;
+	   sym_data_desc.dimension = 0;
+	   sym_value = bb_alias_subscribe(shadow_bb,&sym_data_desc,array_index,array_index_len);    	
+	   
+	   if (NULL==sym_value) {
+	     STRACE_INFO  (("symbol <%s> not found in BB <%s>",
+			    sym_data_desc.name,
+			    shadow_bb->name));
+	     ret = FALSE;
+	     continue;
+	   }
+	   else { 		
+	     /* find the index of the symbol in the BB */
+	     bbidx = bb_find(shadow_bb, sym_data_desc.name);
+	     
+	     STRACE_DEBUG(("Validate symbol: orig_name=<%s>, short=<%s>",
+			   symbol_list->TSP_sample_symbol_info_list_t_val[i].name,
+			   sym_data_desc.name));
+	     /* Initialise aliasstack */
+	     array_index_ptr = array_index_len-1;
+	     aliasstack_size = MAX_ALIAS_LEVEL;
+	     aliasstack[0]=sym_data_desc;
+	     bb_find_aliastack(shadow_bb, aliasstack, &aliasstack_size);
+	     
+	     
+	     /* symbol not found skip to next symname */
+	     if (-1==bbidx) {
+	       pg_indexes[i] = -1;
+	       ret=FALSE;
+	       STRACE_INFO(("Symbol=%s, not found",symbol_list->TSP_sample_symbol_info_list_t_val[i].name));
+	       continue;
+	     } else {
+	       /* 
+		* examine whether symbol is of array type or not
+		* and validate index range (vs dimension specified in aliasstack) if it is of array type.
+		*/
+	       for (j=0; j<aliasstack_size; j++) {
+		 if ((aliasstack[j].dimension > 1) && (aliasstack[j].dimension < array_index[array_index_ptr])) {
+		   STRACE_INFO(("Symbol=%s, found but index=%d out of range for element <%s>",
+				symbol_list->TSP_sample_symbol_info_list_t_val[i].name,
+				array_index[array_index_ptr],
+				aliasstack[j].name));
+		   ret = FALSE;
+		 }
+		 else if (aliasstack[j].dimension > 1){
+		   --array_index_ptr;
+		 }
+	       }
+	       if (ret == FALSE) {continue;}
+	       else {
+		 
+		 /* do not validate array name as first element of array
+		  * consumer should ask for precise element array until
+		  * TSP support array type.
+		  */
+		 if ((NULL==strstr(symbol_list->TSP_sample_symbol_info_list_t_val[i].name,"[")) &&
+		     (bb_data_desc(shadow_bb)[bbidx].dimension > 1)) {
+		   pg_indexes[i] = -1;
+		   STRACE_INFO(("Symbol=%s, found but array index wasn't given",symbol_list->TSP_sample_symbol_info_list_t_val[i].name));
+		 } else {
+		   /* magic formula for fast rebuild of PGI from indexstack and aliasstack */
+		   array_index_ptr = array_index_len-1;
+		   index = 0;
+		   for (j=0; j<aliasstack_size; j++) {
+		     if (aliasstack[j].dimension > 1) {
+		       if (array_index_ptr == array_index_len-1) {
+			 index += array_index[array_index_ptr];
+		       }
+		       else {
+			 index += array_index[array_index_ptr] * aliasstack[previous_array_ptr].dimension;
+		       }
+		       previous_array_ptr = j;
+		       --array_index_ptr;
+		     }
+		   }
+		   
+		   pg_indexes[i] = bbindex_to_pgi[bbidx] + index;
+		   STRACE_INFO(("Symbol=%s, found index=%d",symbol_list->TSP_sample_symbol_info_list_t_val[i].name,pg_indexes[i]));
+		 }
+	       }
+	     }
+	   }
+	 }
   }
   
   STRACE_INFO(("End of symbol Valid")); 
@@ -363,7 +488,7 @@ void* BB_GLU_thread(void* arg) {
   glu_time      = 0;
 
   /* boucle infinie tant que le blackboard n'est pas detruit */
-  while(1 != the_bb->destroyed) {
+  while(BB_STATUS_DESTROYED != the_bb->status) {
     /* On attend le déblocage du PE */
     if (E_NOK == bb_simple_synchro_wait(the_bb,BB_SIMPLE_MSGID_SYNCHRO_COPY)) {
       /* on sort car le BB a été détruit */
@@ -412,6 +537,7 @@ int BB_GLU_async_sample_write(GLU_handle_t* glu, int provider_global_index, void
 	int retcode = E_NOK;       	
 	double value;
 	char   strvalue[256];
+	int    idx = 0;
 	
 	
 	STRACE_INFO(("BB_PROVIDER want to AsyncWrite : pgi <%d> with value : 0x%X (value_size=%d)",provider_global_index, (uint32_t)value_ptr,value_size));
@@ -427,9 +553,11 @@ int BB_GLU_async_sample_write(GLU_handle_t* glu, int provider_global_index, void
 	    data_desc = bbdatadesc_by_pgi[provider_global_index];
 	    STRACE_INFO(("About to write on symbol <%s> value <%f> (strvalue=%s)...",data_desc->name,value,strvalue));
 	     /* note that we should write to genuine BB not the shadow ... */
+		  /* FIXME UPDATEFOR ALIAS PENDING
 	    if (bb_value_write(the_bb,*data_desc,strvalue,0)==E_OK) {
 	      retcode = E_OK;
 	    } 
+		 */
 	  } else {
 	    STRACE_INFO(("BB_GLU : pgi = %d is not allowed to be written",provider_global_index));
 	  }
@@ -444,15 +572,30 @@ int BB_GLU_async_sample_write(GLU_handle_t* glu, int provider_global_index, void
 
 int BB_GLU_async_sample_read(GLU_handle_t* glu, int provider_global_index, void* value_ptr, uint32_t* value_size)
 {
-	int retcode = E_NOK;       	
+	S_BB_DATADESC_T* data_desc;
+	int retcode = E_NOK; 
+	int idx=0;
 	
 	STRACE_DEBUG(("BB_PROVIDER want to AsyncRead : pgi <%d> (value_size allowed=%d)",provider_global_index,*value_size));
 	
 	/* try to read */
-	if (provider_global_index>=0 && provider_global_index<nb_symbols) {		
+	if (provider_global_index>=0 && provider_global_index<nb_symbols) {
+
+	    data_desc = bbdatadesc_by_pgi[provider_global_index];
+	
 	    STRACE_INFO(("About to read from symbol <%s> value...",bbdatadesc_by_pgi[provider_global_index]->name));
 	    /* note that we should read from genuine BB not the shadow ... */
-	    *((double*)value_ptr) = bb_double_of(bb_subscribe(the_bb,bbdatadesc_by_pgi[provider_global_index]),
+
+	    /* found index of array corresponding to provided PGI */
+	    if ((data_desc->dimension >1) && (provider_global_index!=0)) {
+	      while (((provider_global_index-(idx+1))>0) && 
+		     (data_desc == bbdatadesc_by_pgi[provider_global_index-(idx+1)])) {
+		++idx;
+	      }
+	    }
+	    *((double*)value_ptr) = bb_double_of(bb_subscribe(the_bb,
+							      bbdatadesc_by_pgi[provider_global_index])
+						 +idx*bbdatadesc_by_pgi[provider_global_index]->type_size,
 						 bbdatadesc_by_pgi[provider_global_index]->type);
 	    STRACE_INFO(("AsyncRead value is <%f>.",*((double*)value_ptr)));
 	    retcode = E_OK;	
@@ -510,18 +653,19 @@ bb_tsp_provider_initialise(int* argc, char** argv[],int TSPRunMode, const char* 
   bbGLU->get_pgi        = &BB_GLU_get_pgi;
   bbGLU->async_write    = &BB_GLU_async_sample_write;
   bbGLU->async_read     = &BB_GLU_async_sample_read;
-
-  
-  retcode = E_OK;
   the_bbname                     = strdup(bbname);
   /* Update private data with acknowlegdeCopy flag 
    * (will be used by BB_GLU_thread)
    */
   bbGLU->private_data            = malloc(sizeof(int));
   * ((int*)bbGLU->private_data)  = acknowledgeCopy;
+  retcode = E_OK;
 
   /* Init LibTSP provider */
-  TSP_provider_init(bbGLU,argc, argv);  
+  if (FALSE==TSP_provider_init(bbGLU,argc, argv)) {
+    retcode = E_NOK;
+    return retcode;
+  }
   /* demarrage provider */
   TSP_provider_run(TSPRunMode);
   /* 

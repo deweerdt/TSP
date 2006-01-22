@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_simple.h,v 1.4 2005-10-23 12:28:56 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_simple.h,v 1.5 2006-01-22 09:35:15 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -189,6 +189,46 @@ int32_t bb_simple_thread_synchro_go(int type_msg);
  * @ingroup SimpleBlackBoard
  */
 int32_t bb_simple_thread_synchro_wait(int type_msg);
+
+/**
+ * Publish an alias in a simple BB.
+ * This is a normal BB publish operation with an
+ * added automatic subscribe facility. If the to 
+ * be published data already exists in BB then the publish operation
+ * automatically triggers the corresponding subscribe operation.
+ * If first publish, the data is initialized to 0 if automatically
+ * subscribed the data is not initialized by the call and one
+ * obtain the previously set value.
+ * The name of the variable to be published is mangled using
+ * 3 field:
+ *   - variable name
+ *   - the module name whose variable belongs to
+ *   - the module instance in case there may be
+ *     several instance of the same moule.
+ * @param bb_simple INOUT, a pointer to a valid BB.
+ * @param var_name IN, the name of the data
+ * @param module_name IN, the module name
+ * @param module_instance IN, the module instance, -1 signify no instance.
+ * @param bb_type IN, BlackBoard data type.
+ * @param type_size IN, the data type size in byte (correspond to the size
+ *        of an element of this type to be allocated).
+ * @param dimension IN, dimension of the variable
+ *                    - 1 for scalar
+ *                    - > 1 for array var.
+ * @param offset IN, offset relative of the alias from the target 
+ * @return address of the allocated data on success, NULL if allocation failed.
+ * @ingroup SimpleBlackBoard
+ */
+void* bb_simple_alias_publish(S_BB_T* bb_simple,
+			      const char* var_name,
+			      const char* target_var_name, 
+			      const char* module_name,
+			      const int module_instance,
+			      E_BB_TYPE_T bb_type,
+			      int type_size,
+			      int dimension,
+			      unsigned long offset);
+
 
 END_C_DECLS
 

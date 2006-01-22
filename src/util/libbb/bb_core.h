@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.h,v 1.15 2005-10-23 09:46:06 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.h,v 1.16 2006-01-22 09:35:15 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -79,7 +79,7 @@ union semun {
 #define BB_SHM_ACCESS_RIGHT 0770
 #define BB_SEM_ACCESS_RIGHT 0770
 #define BB_MSG_ACCESS_RIGHT 0770
-#define BB_VERSION_ID       0x0001000
+#define BB_VERSION_ID       0x0002000
 
 #define E_OK    0
 #define E_NOK  -1
@@ -102,6 +102,12 @@ typedef enum {E_BB_DISCOVER=0,
 	      E_BB_CHAR,
 	      E_BB_UCHAR,
               E_BB_USER} E_BB_TYPE_T;
+
+typedef enum {BB_STATUS_UNKNOWN=0,
+	      BB_STATUS_GENUINE,
+	      BB_STATUS_DIRTY,
+	      BB_STATUS_DESTROYED,
+	      BB_STATUS_SHADOW} BB_STATUS_T;
 	      
 /**
  * BlackBoard data descriptor.
@@ -127,6 +133,14 @@ typedef struct S_BB_DATADESC {
    * Data offset (in bytes) in the data array section.
    */
   unsigned long data_offset;
+  
+  /**
+   * the index of the aliases published
+   * data in the BB data descriptor array
+   * -1 if genuine published data.
+   */
+  int  alias_target;
+  
 } S_BB_DATADESC_T;
 
 /**
@@ -200,11 +214,15 @@ typedef struct S_BB {
    */
   unsigned long data_free_offset;
   /**
-   * Destroyed state of a BB.
+   * State of a BB.
+   * May be:
+   *      BB_GENUINE
+   *      BB_DESTROYED
+   *      BB_SHADOW
    * Should be used by processes to detach/re-attach
-   * to a destroyed BB.
+   * to a destroyed BB and avoid some operation on shadowed BB.
    */
-  int destroyed;
+  BB_STATUS_T status;
 } S_BB_T;
 
 BEGIN_C_DECLS
@@ -321,16 +339,18 @@ int32_t
 bb_data_initialise(volatile S_BB_T* bb, S_BB_DATADESC_T* data_desc,void* default_value);
 
 int32_t
-bb_value_write(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc,const char* value, int32_t idx);
+bb_value_write(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc,const char* value, int32_t* idxstack, int32_t idxstack_len);
 
 int32_t
-bb_data_header_print(S_BB_DATADESC_T data_desc, FILE* pf, int32_t idx);
+bb_data_header_print(S_BB_DATADESC_T data_desc, FILE* pf, int32_t idx, int32_t aliastack);
 
 int32_t
-bb_data_footer_print(S_BB_DATADESC_T data_desc, FILE* pf, int32_t idx);
+bb_data_footer_print(S_BB_DATADESC_T data_desc, FILE* pf, int32_t idx, int32_t aliastack);
 
 int32_t 
-bb_value_print(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc, FILE* pf, int32_t idx);
+bb_value_print(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc, FILE* pf,
+               int32_t* idxstack, int32_t idxstack_len);
+
 
 /**
  * Print the content of a data descriptor.
@@ -341,7 +361,8 @@ bb_value_print(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc, FILE* pf, int32_t
  * @ingroup BlackBoard
  */
 int32_t 
-bb_data_print(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc, FILE* pf);
+bb_data_print(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc, FILE* pf,
+              int32_t* idxstack, int32_t idxstack_len);
 
 /**
  * Create a blackboard.
@@ -450,6 +471,12 @@ bb_detach(S_BB_T** bb);
  */
 void* 
 bb_publish(volatile S_BB_T *bb, S_BB_DATADESC_T* data_desc);
+
+void* 
+bb_item_offset(volatile S_BB_T *bb, 
+	       S_BB_DATADESC_T* data_desc,
+	       const int32_t* indexstack,
+	       const int32_t indexstack_len);
 
 /**
  * Subscribe to blackboard data.
@@ -573,6 +600,20 @@ bb_snd_msg(volatile S_BB_T *bb, S_BB_MSG_T* msg);
  */
 int32_t 
 bb_rcv_msg(volatile S_BB_T *bb, S_BB_MSG_T* msg);
+
+
+/**
+ * write in array_name the name of the array given in parameter
+ * 
+ * @return E_OK on success, E_NOK otherwise
+ * @ingroup BlackBoard
+ */
+int32_t
+get_array_name(char * array_name,
+	       int array_name_size_max,
+	       S_BB_DATADESC_T * aliasstack, int32_t aliasstack_size,
+	       int32_t * indexstack, int32_t indexstack_len);
+
 
 END_C_DECLS
 #endif /* _BB_H_ */

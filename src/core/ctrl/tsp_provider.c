@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: tsp_provider.c,v 1.34 2005-11-29 22:41:26 erk Exp $
+$Id: tsp_provider.c,v 1.35 2006-01-22 09:35:15 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -42,6 +42,7 @@ Purpose   : Main implementation for the producer module
 #include <tsp_glu.h>	
 #include <tsp_time.h>
 #include <tsp_common.h>
+#include "tsp_datapool.h"
 
 /** modified argc and argv, will be returned to user code after init */
 static  char** X_argv = 0;
@@ -597,7 +598,6 @@ void* TSP_provider_garbage_collector_thread(void* dummy)
    /* never reached */
    return (void*)NULL;
 }
-
 
 int TSP_provider_private_init(GLU_handle_t* theGLU, int* argc, char** argv[])
 {

@@ -1,6 +1,8 @@
+
+
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.17 2005-10-23 09:46:06 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.18 2006-01-22 09:35:15 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -52,9 +54,10 @@ Purpose   : Blackboard Idiom implementation
 
 #include <tsp_abs_types.h>
 #include <bb_core.h>
+#include <bb_alias.h>
 #include <bb_utils.h>
-#include "tsp_abs_types.h"
-#include "tsp_sys_headers.h"
+#include <tsp_abs_types.h>
+#include <tsp_sys_headers.h>
 
 /**
  * Convert type to string for display use.
@@ -180,13 +183,14 @@ bb_find(volatile S_BB_T* bb, const char* var_name) {
     
   retval = -1;
   assert(bb);
+
   for (i=0; i< bb->n_data;++i) {
     if (!strncmp(var_name,(bb_data_desc(bb)[i]).name,VARNAME_MAX_SIZE+1)) {
       retval = i;
       break;
     }
   } /* end for */
-  
+
   return retval;
 } /* end of  bb_find */
 
@@ -212,7 +216,7 @@ bb_data(volatile S_BB_T* bb) {
   retval = (char*)(bb) + bb->data_offset;
   
   return retval;
-} /* end of bb_data_desc */
+} /* end of bb_data */
 
 double
 bb_double_of(void* value, E_BB_TYPE_T bbtype) {
@@ -272,10 +276,18 @@ bb_data_initialise(volatile S_BB_T* bb, S_BB_DATADESC_T* data_desc,void* default
   int32_t retval;  
   char* data;
   int32_t i;
+  int32_t idxstack[1];
+  int32_t idxstack_len = 1;
+  
+  idxstack[0] = 0;
   
   assert(data_desc);
   /* on recupere l'adresse de la donnee dans le BB */
-  data = (char*)bb_data(bb) + data_desc->data_offset;
+  /** FIXME a modifier peut etre */
+  //data = (char*)bb_data(bb) + data_desc.data_offset;
+  data = bb_item_offset(bb,data_desc,idxstack, idxstack_len);
+  
+  
   retval = E_OK;
   for (i=0; i< data_desc->dimension; ++i) {
     switch (data_desc->type) {
@@ -329,12 +341,13 @@ bb_data_initialise(volatile S_BB_T* bb, S_BB_DATADESC_T* data_desc,void* default
 } /* end of bb_data_initialise */
 
 int32_t
-bb_value_write(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc,const char* value, int32_t idx) {
+bb_value_write(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc,const char* value, int32_t* idxstack, int32_t idxstack_len) {
 
   char* data;
   int retval;
   int hexval;
   int lenval;
+  int32_t idx;
   assert(bb);
   
   retval = E_OK;
@@ -350,8 +363,10 @@ bb_value_write(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc,const char* value,
     hexval = 0;
   }
 
-  /* on recupere l'adresse de la donnee dans le BB */
-  data = (char*)bb_data(bb) + data_desc.data_offset;
+  /* Get address of the data in BB */
+  data = bb_item_offset(bb, &data_desc,idxstack,idxstack_len);
+  idx = 0;
+
   switch (data_desc.type) {
   case E_BB_DOUBLE: 
     ((double *)data)[idx] = atof(value);
@@ -392,7 +407,7 @@ bb_value_write(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc,const char* value,
   case E_BB_USER:
     
     retval = bb_utils_convert_string2hexbuf(hexval ? value+2 : value,
-					    &((unsigned char*)data)[idx],
+					    &((unsigned char*)data)[idx*data_desc.type_size],
 					    data_desc.type_size, 
 					    hexval);
     retval = E_NOK;
@@ -406,55 +421,90 @@ bb_value_write(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc,const char* value,
 
 
 int32_t
-bb_data_header_print(S_BB_DATADESC_T data_desc, FILE* pf, int32_t idx) {
+bb_data_header_print(S_BB_DATADESC_T data_desc, FILE* pf, int32_t idx, int32_t aliastack) {
+	const char une_tab[] = "    ";
 
-  fprintf(pf,"---------- < %s > ----------\n",data_desc.name);
-  fprintf(pf,"  type        = %d  (%s)\n",data_desc.type,E_BB_2STRING[data_desc.type]);
-  fprintf(pf,"  dimension   = %d  \n",data_desc.dimension);
-  fprintf(pf,"  type_size   = %d  \n",data_desc.type_size);
-  fprintf(pf,"  data_offset = %ld \n",data_desc.data_offset);
-  if (idx>=0) {
-    fprintf(pf,"  value[%d] = ",idx);
-  } else {
-    fprintf(pf,"  value = ");
-  }
-  if (data_desc.dimension > 1) {
-    fprintf(pf," [ ");
-  } 
-  if (idx>=0) {
-    fprintf(pf,"... ");
-  }
-  return 0;
+	char decallage[MAX_ALIAS_LEVEL*5]="";
+	
+	int i;
+	
+	for (i=0; i<(aliastack-1); i++)
+	{
+		strncat(decallage, une_tab, strlen(une_tab));
+	}
+
+	fprintf(pf,"%s---------- < %s > ----------\n", decallage,data_desc.name);
+	fprintf(pf,"%s  alias-target = %d\n", decallage, data_desc.alias_target);
+	fprintf(pf,"%s  type         = %d  (%s)\n",decallage,data_desc.type,E_BB_2STRING[data_desc.type]);
+	fprintf(pf,"%s  dimension    = %d  \n",decallage,data_desc.dimension);
+	fprintf(pf,"%s  type_size    = %d  \n",decallage,data_desc.type_size);
+	fprintf(pf,"%s  data_offset  = %ld \n",decallage,data_desc.data_offset);
+	if (idx>=0) {
+	fprintf(pf,"%s  value[%d]    = ",decallage,idx);
+	} else {
+	fprintf(pf,"%s  value        = ",decallage);
+	}
+	if (data_desc.dimension > 1) {
+	fprintf(pf," [ ");
+	} 
+	if (idx>=0) {
+	fprintf(pf,"... ");
+	}
+	return 0;
 } /* end of bb_data_header_print */
 
+
+
 int32_t
-bb_data_footer_print(S_BB_DATADESC_T data_desc, FILE* pf, int32_t idx) {
+bb_data_footer_print(S_BB_DATADESC_T data_desc, FILE* pf, int32_t idx, int32_t aliastack) {
+	const char une_tab[] = "    ";
 
-  if (idx>=0) {
-    fprintf(pf,"... ");
-  }  
-  if (data_desc.dimension > 1) {
-    fprintf(pf,"]");
-  }  
-  fprintf(pf,"\n");    
-  fprintf(pf,"---------- ---------- ----------\n");
 
-  return 0;
+	char decallage[MAX_ALIAS_LEVEL*5]="";
+
+	int i;
+
+	for (i=0; i<(aliastack-1); i++)
+	{
+		strncat(decallage, une_tab, strlen(une_tab));
+	}
+
+
+	if (idx>=0) {
+		fprintf(pf,"... ");
+	}  
+	if (data_desc.dimension > 1) {
+		fprintf(pf,"]");
+	}  
+	fprintf(pf,"\n");    
+	fprintf(pf,"%s---------- ---------- ----------\n", decallage);
+
+	return 0;
 } /* end of bb_data_footer_print */
 
 int32_t 
-bb_value_print(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc, FILE* pf, int32_t idx) {
+bb_value_print(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc, FILE* pf, 
+               int32_t* idxstack, int32_t idxstack_len) {
   
   int32_t i,j,ibeg,iend;
   char* data;
+  int32_t idx;
   assert(bb);
-  /* on recupere l'adresse de la donnee dans le BB */
-  data = (char*)bb_data(bb) + data_desc.data_offset;
+  /* We get BB data address  */
+  data = bb_item_offset(bb, &data_desc,idxstack,idxstack_len);
   
-  if (idx>=0) {
-    ibeg=idx;
-    iend=idx+1;
+  /* check index stack to handle index */
+  if ((idxstack_len>0) && (data_desc.dimension > 1)){
+    idx = idxstack[idxstack_len-1];
+    if (idx>=0) {
+      ibeg=0;
+      iend=1;
+    } else {
+      ibeg=0;
+      iend=data_desc.dimension;
+    }
   } else {
+    idx = 0;
     ibeg=0;
     iend=data_desc.dimension;
   }
@@ -499,6 +549,7 @@ bb_value_print(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc, FILE* pf, int32_t
     case E_BB_USER:
       for (j=0; j<data_desc.type_size; ++j) {
 	fprintf(pf,"0x%02x ",((uint8_t*) data)[i*data_desc.type_size+j]);
+        //bb_data_print(bb, *(&data_desc+1), pf);  
       }
       break; 
     default:
@@ -509,14 +560,32 @@ bb_value_print(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc, FILE* pf, int32_t
   return 0;
 } /* end of bb_value_print */
 
-int32_t 
-bb_data_print(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc, FILE* pf) {
 
-  bb_data_header_print(data_desc,pf,-1);
-  bb_value_print(bb,data_desc,pf,-1);
-  bb_data_footer_print(data_desc,pf,-1);
-  return E_OK;
+
+/*int32_t 
+bb_data_print(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc, FILE* pf) {
+	
+	bb_data_header_print(data_desc,pf,-1);
+	bb_value_print(bb,data_desc,pf,-1);
+	bb_data_footer_print(data_desc,pf,-1);
+	return E_OK;
+
+}*/ /* end of bb_data_print */
+
+int32_t 
+bb_data_print(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc, FILE* pf,
+              int32_t* idxstack, int32_t idxstack_len) {
+   int32_t          aliasstack_size = MAX_ALIAS_LEVEL;
+   S_BB_DATADESC_T  aliasstack[MAX_ALIAS_LEVEL];
+   
+   aliasstack[0]=data_desc;		
+   bb_find_aliastack(bb, aliasstack, &aliasstack_size);
+   bb_data_header_print(data_desc,pf,-1,aliasstack_size);
+   bb_value_print(bb,data_desc,pf,idxstack,idxstack_len);
+   bb_data_footer_print(data_desc,pf,-1,aliasstack_size);
+   return E_OK;
 } /* end of bb_data_print */
+
 
 int32_t 
 bb_create(S_BB_T** bb, 
@@ -598,7 +667,7 @@ bb_create(S_BB_T** bb,
     (*bb)->data_offset = (*bb)->data_desc_offset + 
                             ((*bb)->max_data_desc_size)*sizeof(S_BB_DATADESC_T);    
     (*bb)->data_free_offset = 0;  
-    (*bb)->destroyed = 0;
+    (*bb)->status = BB_STATUS_GENUINE;
   }
   /* On initialise la structure comme il se doit */
 
@@ -667,6 +736,7 @@ bb_destroy(S_BB_T** bb) {
   int32_t fd_shm;
   int32_t local_semid;
   int32_t local_msgid;
+  S_BB_MSG_T bb_msg;
   
   retcode = E_OK;
   assert(bb);
@@ -678,7 +748,12 @@ bb_destroy(S_BB_T** bb) {
    * On signale la destruction en cours pour les processes qui
    * resteraient attachés
    */
-  (*bb)->destroyed = 1;
+  (*bb)->status = BB_STATUS_DESTROYED;
+
+  /* FIXME should reserve a message type for signaling destroy */
+  /*   bb_msg.mtype = 1; */
+  /*   bb_snd_msg(*bb,&bb_msg); */
+  /*   sleep(1); */
 
   /* On mémorise les IDs
    * des semaphore et autres queue de message
@@ -733,6 +808,14 @@ bb_lock(volatile S_BB_T* bb) {
   struct sembuf s_semop;
   
   assert(bb);
+
+  /* shadow do not honor locking
+   * they have neither semaphore nor msgqueue attached
+   */
+  if (BB_STATUS_SHADOW == bb->status) {
+    return E_OK;
+  }
+
   s_semop.sem_num = 0; 
   s_semop.sem_op  = -1; 
   s_semop.sem_flg = SEM_UNDO;   
@@ -760,7 +843,14 @@ bb_unlock(volatile S_BB_T* bb) {
   int32_t retcode;
   char syserr[MAX_SYSMSG_SIZE];
   struct sembuf s_semop;
-    
+
+  /* shadow do not honor locking
+   * they have neither semaphore nor msgqueue attached
+   */
+  if (BB_STATUS_SHADOW == bb->status) {
+    return E_OK;
+  }
+
   s_semop.sem_num = 0; 
   s_semop.sem_op  = 1; 
   s_semop.sem_flg = SEM_UNDO;   
@@ -768,7 +858,7 @@ bb_unlock(volatile S_BB_T* bb) {
     strncpy(syserr,strerror(errno),MAX_SYSMSG_SIZE);
     if (EINVAL == errno) {
       bb_logMsg(BB_LOG_WARNING, "BlackBoard::bb_unlock",
-		  "Semaphore du BB detruit");
+		  "Is BB semaphore destroyed?");
     }
     bb_logMsg(BB_LOG_SEVERE,"BlackBoard::bb_unlock", 
 		"semop failed (%s)", syserr);
@@ -899,6 +989,8 @@ bb_publish(volatile S_BB_T *bb, S_BB_DATADESC_T* data_desc) {
       retval = (char*) bb_data(bb) + bb->data_free_offset;
       /* Update returned data descriptor */
       data_desc->data_offset = bb->data_free_offset;
+      /* this is not an alias */
+      data_desc->alias_target = -1;
       /* Update next free address */
       bb->data_free_offset  = bb->data_free_offset + needed_size;
       /* Update data descriptor zone */
@@ -914,58 +1006,88 @@ bb_publish(volatile S_BB_T *bb, S_BB_DATADESC_T* data_desc) {
   return retval;
 } /* end of bb_publish */
 
-
 void* 
 bb_subscribe(volatile S_BB_T *bb, 
 	     S_BB_DATADESC_T* data_desc) {
+				 
+	int32_t          indexstack[MAX_ALIAS_LEVEL];
+  	/* zero out indexstack */
+	memset(indexstack,0,MAX_ALIAS_LEVEL*sizeof(int32_t));
+	
+	return bb_alias_subscribe(bb,data_desc, indexstack,MAX_ALIAS_LEVEL);
+} /* end of bb_subscribe */
+
+void* 
+bb_item_offset(volatile S_BB_T *bb, 
+	       S_BB_DATADESC_T* data_desc,
+	       const int32_t* indexstack,
+	       const int32_t indexstack_len) {
   
   void* retval;
-  int32_t  idx;
+  S_BB_DATADESC_T  aliasstack[MAX_ALIAS_LEVEL];
+  int32_t          aliasstack_size = MAX_ALIAS_LEVEL;
+  int32_t          myIndexstack[MAX_ALIAS_LEVEL];
+  int32_t          i,j;
   
   retval = NULL;
   assert(bb);
   assert(data_desc);
-  
+
+  /* zero out indexstack */
+  memset(myIndexstack,0,MAX_ALIAS_LEVEL*sizeof(int32_t));
   /* We seek the data using its key (name) */
-  bb_lock(bb);
-  idx = bb_find(bb,data_desc->name);
-  if (idx==-1) {
-    retval = NULL;      
-  } else {
-    if (E_BB_DISCOVER == data_desc->type) {
-      data_desc->type            = (bb_data_desc(bb)[idx]).type;
-    }
 
-    if (0 == data_desc->dimension) {
-      data_desc->dimension       = (bb_data_desc(bb)[idx]).dimension;
-    }
+  /* ********** ALIAS publish case **************** */
+  if (bb_isalias(data_desc)) {
 
-    if (0 == data_desc->type_size) {
-      data_desc->type_size       = (bb_data_desc(bb)[idx]).type_size;
-    }
-
-    data_desc->data_offset     = (bb_data_desc(bb)[idx]).data_offset;
-    /* return NULL pointer if symbol signature does not match */
-    if ((data_desc->type      !=  (bb_data_desc(bb)[idx]).type)     ||
-	(data_desc->dimension != (bb_data_desc(bb)[idx]).dimension) ||
-	(data_desc->type_size != (bb_data_desc(bb)[idx]).type_size)) {
-      retval = NULL;
+    /* rebuild alias stack beginning with current symbol */
+    aliasstack[0] = *data_desc;
+    if (!bb_find_aliastack(bb,aliasstack,&aliasstack_size)) {
+      /* fill index stack with missing 0 (scalar case) */
+      /* provided stack index is inverted */
+      for (i=0,j=indexstack_len-1;i<aliasstack_size;++i) {
+	if (1==aliasstack[i].dimension) {
+	  myIndexstack[i] = 0;
+	} else {
+	  /* *** FIXME check provided indexstack length 
+	     *** in order to avoid buffer overflow 
+	     *** */
+	  myIndexstack[i] = indexstack[j];
+	  --j;
+	}		
+      }
+      /* force last index (first on stack) to zero */
+      if (data_desc->type == E_BB_USER){
+	myIndexstack[0] = 0;
+      }
+      retval = (char*) bb_data(bb) + 
+	bb_aliasstack_offset(aliasstack,myIndexstack,aliasstack_size);	    
     } else {
-      retval = (char*) bb_data(bb) + data_desc->data_offset;
+      retval = NULL;
     }
   }
-  bb_unlock(bb);
-
+  /* ********** GENUINE publish case **************** */ 
+  else {
+    retval = (char*) bb_data(bb) + 
+      data_desc->data_offset + 
+      indexstack[0] * (data_desc->type_size);
+  }
   return retval;
-} /* end of bb_subscribe */
+} /* end of bb_item_offset */
 
 
 int32_t 
-bb_dump(volatile S_BB_T *bb,FILE* p_filedesc) {  
+bb_dump(volatile S_BB_T *bb, FILE* p_filedesc) {  
   
   int32_t retcode;
   /* char syserr[MAX_SYSMSG_SIZE]; */
   int32_t i;
+  int32_t j;
+  int32_t indexstack[MAX_ALIAS_LEVEL];
+  int32_t indexstack_len;
+  int32_t          aliasstack_size = MAX_ALIAS_LEVEL;
+  S_BB_DATADESC_T  aliasstack[MAX_ALIAS_LEVEL];
+  int32_t array_in_aliasstack;
 
   
   retcode = E_OK;
@@ -985,7 +1107,49 @@ bb_dump(volatile S_BB_T *bb,FILE* p_filedesc) {
 	  (unsigned int) (bb_data(bb)));
   fprintf(p_filedesc,"================ < [begin] Data [begin] > ==================\n");
   for (i=0;i<bb->n_data;++i) {
-    bb_data_print(bb,bb_data_desc(bb)[i],p_filedesc);
+    /* NON ALIAS CASE */
+    if ((bb_data_desc(bb)[i]).alias_target == -1) {
+      if ((bb_data_desc(bb)[i]).dimension >1){
+	indexstack[0] = -1;
+	indexstack_len = 1;
+	bb_data_print(bb,bb_data_desc(bb)[i],p_filedesc,indexstack, indexstack_len);
+      }
+      if ((bb_data_desc(bb)[i]).dimension == 1){
+	indexstack[0]  = 0;
+	indexstack_len = 0;
+	bb_data_print(bb,bb_data_desc(bb)[i],p_filedesc,indexstack, indexstack_len);
+      }
+    }
+    /* ALIAS CASE */
+    else {
+      array_in_aliasstack = 0;
+      aliasstack[0]=bb_data_desc(bb)[i];
+      aliasstack_size = MAX_ALIAS_LEVEL;
+      bb_find_aliastack(bb, aliasstack, &aliasstack_size);
+      /*		for (j=0; j<aliasstack_size; j++){
+	if (aliasstack[j].dimension>1){
+	array_in_aliasstack = 1;
+	}
+	}
+	if (!array_in_aliasstack)*/
+      if ((aliasstack[aliasstack_size-1].dimension) <= 1) {
+	for (j=0; j<bb_data_desc(bb)[i].dimension; j++){
+	  indexstack[0] = j;
+	  indexstack_len = 1;
+	  bb_data_print(bb, bb_data_desc(bb)[i], p_filedesc,indexstack, indexstack_len);
+	  
+	}
+      }
+      
+      else {
+	for (j=0; j<aliasstack[aliasstack_size-1].dimension; j++){
+	  indexstack[0] = j;
+	  indexstack_len = 1;
+	  bb_data_print(bb, bb_data_desc(bb)[i], p_filedesc,indexstack, indexstack_len);
+	  
+	}			
+      }             
+    }
   }
   fprintf(p_filedesc,"================== < [end] Data [end] > ====================\n");
   fprintf(p_filedesc,"============== < [end] BlackBoard [%s] [end] > ================\n",
@@ -1041,23 +1205,22 @@ bb_get_mem_size(volatile S_BB_T *bb) {
 
 int32_t 
 bb_shadow_get(S_BB_T *bb_shadow,
-		   volatile S_BB_T *bb_src) {
+	      volatile S_BB_T *bb_src) {
   
   int32_t retcode;
 
-  bb_lock(bb_src);
-
-  
+  bb_lock(bb_src);  
   assert(bb_src);
   assert(bb_shadow);
   retcode = E_OK;
-  /* copie brutale du BB */
+  /* raw copy of BB */
   memcpy(bb_shadow,
 	 (void*)bb_src,
 	 bb_get_mem_size(bb_src));
   /* On degage ce qui est inutilisable dans le shadow bb */
-  bb_shadow->semid    = -1;
-  
+  bb_shadow->semid  = -1;  
+  bb_shadow->msgid  = -1;
+  bb_shadow->status = BB_STATUS_SHADOW;
   bb_unlock(bb_src);
   
   return retcode;
@@ -1072,8 +1235,9 @@ bb_shadow_update_data(S_BB_T *bb_shadow,
   assert(bb_shadow);
   retcode = E_OK;
   bb_lock(bb_src);
-  /* copie brutale du contenu la zone de donnée 
-   * (utile, on ne copie pas la zone non utilisée) */
+  /* raw copy of BlackBoard data zone content
+   * (in fact only used part of the data zone, 
+   *  we do not copy unused part) */
   memcpy(bb_data(bb_shadow),
 	 bb_data(bb_src),
 	 bb_shadow->data_free_offset);
@@ -1091,7 +1255,7 @@ bb_msg_id(volatile S_BB_T *bb) {
   assert(bb);
   retval = bb->msgid;  
   return retval;
-}
+} 
 
 int32_t 
 bb_snd_msg(volatile S_BB_T *bb,
@@ -1172,3 +1336,50 @@ bb_rcv_msg(volatile S_BB_T *bb,
   
   return retcode;
 } /* end of bb_rcv_msg */
+
+
+int32_t
+get_array_name(char * array_name,
+	       int array_name_size_max,
+	       S_BB_DATADESC_T * aliasstack, int32_t aliasstack_size,
+	       int32_t * indexstack, int32_t indexstack_len) {
+  char * part_of_name;
+  int32_t indexstack_curr;
+  int j;
+    
+  part_of_name = malloc(array_name_size_max);
+  indexstack_curr = 0;
+  for (j=aliasstack_size-1; j>=0; j--){
+    /* If this alias is an array */
+    if (aliasstack[j].dimension > 1){
+      if (j==aliasstack_size-1){
+	snprintf(part_of_name, array_name_size_max, "%s[%0d]",
+		 aliasstack[j].name,
+		 indexstack[indexstack_curr]);
+      } else {
+	snprintf(part_of_name, array_name_size_max, "%s[%0d]",
+		 strstr(aliasstack[j].name,
+			aliasstack[j+1].name)+strlen(aliasstack[j+1].name),
+		 indexstack[indexstack_curr]);
+      }      
+      strncat(array_name, part_of_name, array_name_size_max);
+      /* go to next index in the index stack */
+      indexstack_curr++;
+    }
+    /* The current alias is a scalar */
+    else {
+      if (j==aliasstack_size-1){
+	snprintf(part_of_name, array_name_size_max, "%s", aliasstack[j].name);
+      } else {
+	snprintf(part_of_name, array_name_size_max, "%s", 
+		 strstr(aliasstack[j].name, aliasstack[j+1].name) +
+		 strlen(aliasstack[j+1].name)
+		 );
+      }
+      strncat(array_name, part_of_name, array_name_size_max);
+    }
+  }
+  free (part_of_name);
+  return E_OK;
+
+} /* end of get_array_name */

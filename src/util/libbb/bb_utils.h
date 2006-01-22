@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_utils.h,v 1.6 2005-10-23 12:28:56 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_utils.h,v 1.7 2006-01-22 09:35:15 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -174,6 +174,20 @@ bb_utils_convert_string2hexbuf(const char* string, unsigned char* buf, size_t bu
  */
 int32_t 
 bb_logMsg(const BB_LOG_LEVEL_T level, const char* modname, char* fmt, ...);
+
+
+int32_t 
+bb_utils_parseone_array(const char* provided_symname, 
+			char* symname_part, int32_t symname_part_maxlen,
+			int32_t* array_index,
+			char** remaining_symname, int32_t remaining_symname_len);
+
+int32_t
+bb_untils_parsearrayname(const char* provided_symname, 
+			 char* parsed_symname,
+			 const int32_t parsed_symname_maxlen,
+			 int32_t* array_index, 
+			 int32_t* array_index_len);
 
 END_C_DECLS
 

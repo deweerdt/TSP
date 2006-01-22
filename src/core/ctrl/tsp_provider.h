@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: tsp_provider.h,v 1.15 2005-11-29 22:41:26 erk Exp $
+$Id: tsp_provider.h,v 1.16 2006-01-22 09:35:15 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -61,6 +61,9 @@ BEGIN_C_DECLS
  * @param argv INOUT, array of argument of size argc.
  */
 int TSP_provider_private_init(GLU_handle_t* theGLU, int* argc, char** argv[]);
+int TSP_provider_private_run();
+
+
 int TSP_provider_private_run();
 
 const char* TSP_provider_get_name();

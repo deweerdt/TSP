@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/providers/bb_provider/bb_tsp_provider.h,v 1.9 2005-12-06 20:40:02 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/providers/bb_provider/bb_tsp_provider.h,v 1.10 2006-01-22 09:35:15 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -42,7 +42,7 @@ Purpose   : Blackboard TSP Provider
 #include <pthread.h>
 
 /**
- * Initialisation du fournisseur de donnée TSP pour un BlackBoard TSP.
+ * Initialize Blackboard TSP provider.
  * On doit passer à cette fonction d'initialisation les 
  * argument en provenance d'un main car la lib TSP peut
  * de cette manière gérer des paramètres spécifiques à TSP.
@@ -71,9 +71,17 @@ bb_tsp_provider_initialise(int* argc, char** argv[],int TSPRunMode,
 int32_t 
 bb_tsp_provider_finalize();
 
+/**
+ * Authorize asynchronous write for BB symbols
+ * specified by its PGI.
+ */
 int32_t 
 bb_tsp_provider_allow_write_symbol(int provider_global_index);
 
+/**
+ * Forbid asynchronous write for BB symbols
+ * specified by its PGI.
+ */
 int32_t 
 bb_tsp_provider_forbid_write_symbol(int provider_global_index);
 

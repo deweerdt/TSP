@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_simple.c,v 1.6 2005-03-17 22:33:42 dufy Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_simple.c,v 1.7 2006-01-22 09:35:15 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -59,9 +59,7 @@ void* bb_simple_publish(S_BB_T* bb_simple,
   
   void* retval;
   S_BB_DATADESC_T s_data_desc;
-
-  memset(s_data_desc.name,0,VARNAME_MAX_SIZE);
-  
+  memset(s_data_desc.name,0,VARNAME_MAX_SIZE); 
   if (strcmp(module_name,"")==0) {
     snprintf(s_data_desc.name,VARNAME_MAX_SIZE,
 	     "%s",
@@ -75,17 +73,16 @@ void* bb_simple_publish(S_BB_T* bb_simple,
 	     "%s_%s",
 	     module_name,var_name);
   }
-
   s_data_desc.type        = type;
   s_data_desc.type_size   = type_size;
   s_data_desc.dimension   = dimension;
   retval = bb_publish(bb_simple,&s_data_desc);
+
   if (retval == NULL) {
     bb_logMsg(BB_LOG_SEVERE,"BlackBoard::bb_simple_publish", 
 		"Cannot publish data <%s> instance <%d> module <%s>",
 		var_name,module_instance,module_name);
   }  
-  
   return retval;
 } /* end of bb_simple_publish */
 
@@ -118,6 +115,75 @@ void* bb_simple_subscribe(S_BB_T* bb_simple,
   *dimension = s_data_desc.dimension;
   return retval;
 } /* end of bb_simple_subscribe */
+
+
+void* bb_simple_alias_publish(S_BB_T* bb_simple,
+			      const char* var_name,
+			      const char* target_name, 
+			      const char* module_name,
+			      const int module_instance,
+			      E_BB_TYPE_T type,
+			      int type_size,
+			      int dimension,
+			      unsigned long offset) {
+  
+  void* retval=NULL;
+  int32_t idx;
+  char new_target_name[VARNAME_MAX_SIZE];
+  S_BB_DATADESC_T alias;
+  S_BB_DATADESC_T target;
+  
+  /* build the target name with the module and instance of module if present */  
+  memset(alias.name,0,VARNAME_MAX_SIZE); 
+  if (strcmp(module_name,"")==0) {
+    snprintf(new_target_name, VARNAME_MAX_SIZE,
+	     "%s",
+		  target_name);
+  } else if (-1!=module_instance) {
+    snprintf(new_target_name,VARNAME_MAX_SIZE,
+	     "%s_%d_%s",
+	     module_name, module_instance, target_name);
+  } else {
+    snprintf(new_target_name,VARNAME_MAX_SIZE,
+	     "%s_%s",
+	     module_name, target_name);
+  }
+  snprintf(alias.name, VARNAME_MAX_SIZE,
+	     "%s_%s",
+		  new_target_name,
+	     var_name);
+
+  alias.type        = type;
+  alias.type_size   = type_size;
+  alias.dimension   = dimension;
+  alias.data_offset = offset;
+  
+  /* find the index of the target (it is the target for the aliases we want to publish) */                                                                                                                          
+  idx = bb_find( bb_simple, new_target_name);
+  if (idx ==-1) {
+    bb_logMsg(BB_LOG_SEVERE,"BlackBoard::bb_simple_alias_publish", 
+		"Cannot find the target <%s> of the alias <%s>",
+		target_name, var_name);
+  }  
+  else {
+  		target = bb_data_desc(bb_simple)[idx];
+
+  		memset(alias.name,0,VARNAME_MAX_SIZE); 
+ 		snprintf(alias.name,VARNAME_MAX_SIZE,
+	    		 	"%s.%s",
+     		  		target.name,
+	  		   	var_name);
+		  
+  		retval=bb_alias_publish( bb_simple,&alias,&target);
+  
+  		if (retval == NULL) {
+    		bb_logMsg(BB_LOG_SEVERE,"BlackBoard::bb_simple_alias_publish", 
+						"Cannot publish data <%s> instance <%d> module <%s>",
+						var_name,module_instance,module_name);
+  		}
+  } 
+  return retval;
+} /* end of bb_simple_alias_publish */
 
 
 
@@ -254,3 +320,5 @@ bb_simple_thread_synchro_wait(int msg_type) {
   
   return retcode;
 } /* end of bb_simple_synchro_wait */
+
+

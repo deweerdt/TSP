@@ -1,7 +1,7 @@
 
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_tools.c,v 1.18 2005-10-30 15:48:58 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_tools.c,v 1.19 2006-01-22 09:35:15 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -47,6 +47,7 @@ Purpose   : BlackBoard Idiom implementation
 #include <tsp_abs_types.h>
 #include <tsp_const_def.h>
 #include <bb_core.h>
+#include <bb_alias.h>
 #include <bb_utils.h>
 #define BB_TOOLS_C
 #include <bb_tools.h>
@@ -159,34 +160,6 @@ bbtools_checkbbname(const char* bbname) {
 } /* end of bbtools_checkbbname */
 
 
-int32_t
-bbtools_parsearrayname(const char* provided_symname, S_BB_DATADESC_T* sym_data_desc, int32_t* array_index) {
-  char*    array_name;
-  char*    symname;
-  int32_t  retcode = 0;
-  assert(sym_data_desc);
-
-  symname = strdup(provided_symname);
-
-  array_name = strstr(symname,"[");
-  if (array_name) {
-    char* temp = "%d";
-    char* temp2;
-    temp2  = strdup(symname);
-    array_name  = strtok(temp2,"[");
-    strncpy(sym_data_desc->name,array_name,VARNAME_MAX_SIZE);
-    array_name = strtok(NULL,"]");
-    if (sscanf(array_name,temp,array_index)<1) {
-      retcode = -1;
-    }
-    free(temp2);
-  } else {
-    *array_index = -1;
-    strncpy(sym_data_desc->name,provided_symname,VARNAME_MAX_SIZE);  
-  }
-  free(symname);
-  return retcode;
-} /* end bbtools_parsearrayname */
 
 
 int32_t
@@ -421,8 +394,17 @@ int32_t
 bbtools_read(bbtools_request_t* req) {
   int32_t retval  = 0;
   S_BB_DATADESC_T sym_data_desc;
-  int32_t array_index;
+  int32_t array_index[MAX_ALIAS_LEVEL];
+  int32_t array_index_len;
+  int32_t          aliasstack_size = MAX_ALIAS_LEVEL;
+  S_BB_DATADESC_T  aliasstack[MAX_ALIAS_LEVEL];
   void *sym_value;
+#define MSG_SIZE 1024
+  char msg[MSG_SIZE];
+  int32_t nbcar;
+  int32_t i;
+  int32_t j;
+  int32_t idx;
   
   if (req->argc<2) {
     bbtools_logMsg(req->stream,"%s: <%d> argument(s) missing\n",
@@ -432,39 +414,45 @@ bbtools_read(bbtools_request_t* req) {
     retval = -1;
     return retval;
   }
-  if (bbtools_parsearrayname(req->argv[1],&sym_data_desc,&array_index)) {
+  memset(&sym_data_desc,0,sizeof(S_BB_DATADESC_T));
+  if (bb_utils_parsearrayname(req->argv[1],
+			      sym_data_desc.name,
+			      VARNAME_MAX_SIZE,
+			      array_index,&array_index_len)) {
     bbtools_logMsg(req->stream,"%s: cannot parse symname <%s>",
 		   bbtools_cmdname_tab[E_BBTOOLS_READ],
 		   req->argv[1]);
     retval = -1;
-  } else {
-    /* scalar read case */
-    if (-1 == array_index) {
+  } else {    
       if (req->verbose) {
 	bbtools_logMsg(req->stream,
 		       "%s: Trying to read symbol <%s> on blackboard <%s>...\n",
 		       bbtools_cmdname_tab[E_BBTOOLS_READ],
 		       sym_data_desc.name,
 		       req->bbname);
-      }
-    } else { /* single array element case */
-      if (req->verbose) {
+	nbcar =0;
+	nbcar += snprintf(&msg[nbcar],MSG_SIZE-nbcar,"%s","[");			 
+	for (i=0;i<array_index_len;++i) {
+		nbcar += snprintf(&msg[nbcar],MSG_SIZE-nbcar,"%d ",array_index[i]);
+	}			 
+	nbcar += snprintf(&msg[nbcar],MSG_SIZE-nbcar," %s","]");			 
+	msg[nbcar] = '\0';
 	bbtools_logMsg(req->stream,
-		       "%s: Trying to read index <%d> of array symbol <%s> on blackboard <%s>...\n",
+		       "%s: array_index_len = <%d> indexes = %s...\n",
 		       bbtools_cmdname_tab[E_BBTOOLS_READ],
-		       array_index,
-		       sym_data_desc.name,
-		       req->bbname);
-      }		       
+		       array_index_len,
+				 msg);				 
+
+      }
     }
-    /* 
+	  /* 
      * Use low-level subscribe in order to discover the 
      * type of the variable
      */
     sym_data_desc.type      = E_BB_DISCOVER;
     sym_data_desc.type_size = 0;
     sym_data_desc.dimension = 0;
-    sym_value = bb_subscribe(req->theBB,&sym_data_desc);    
+    sym_value = bb_alias_subscribe(req->theBB,&sym_data_desc,array_index,array_index_len);    	
 
     if (NULL==sym_value) {
       bbtools_logMsg(req->stream,"%s: symbol <%s> not found in BB <%s>\n",
@@ -472,23 +460,40 @@ bbtools_read(bbtools_request_t* req) {
 		     sym_data_desc.name,
 		     req->bbname);
     } else {
-      if ((array_index!=-1) && (sym_data_desc.dimension <= array_index)) {
-	bbtools_logMsg(req->stream,"%s: index <%d> exceeding symbol array dimension <%d>\n",
-		       bbtools_cmdname_tab[E_BBTOOLS_READ],
-		       array_index,
-		       sym_data_desc.dimension);
-      } else {
-	if (req->verbose) {
-	  bb_data_header_print(sym_data_desc,req->stream,array_index);
-	  bb_value_print(req->theBB,sym_data_desc,req->stream,array_index);
-	  bb_data_footer_print(sym_data_desc,req->stream,array_index);
-	} else {
-	  bb_value_print(req->theBB,sym_data_desc,req->stream,array_index);
-	  fprintf(req->stream,"%s",req->newline);
-	}
-      }
-    }	       
-  }
+	 /** the test to determine exeeding array dimension */
+     if (array_index_len>0) {
+			aliasstack[0]=sym_data_desc;
+			bb_find_aliastack(req->theBB, aliasstack, &aliasstack_size);
+			j=aliasstack_size;
+			while ( (aliasstack[j-1].dimension<=1) && (j>0) ){
+				--j;
+			}
+		}
+		if ( (array_index_len>0) && (j==0)) {
+			bbtools_logMsg(req->stream,"%s: no array found in aliasstack\n",
+		   				    bbtools_cmdname_tab[E_BBTOOLS_READ]);
+		}
+		else if ( (array_index_len>0) && (aliasstack[j-1].dimension <= array_index[array_index_len-1]) ) {
+			bbtools_logMsg(req->stream,"%s: index <%d> exceeding symbol array dimension <%d>\n",
+		   				   bbtools_cmdname_tab[E_BBTOOLS_READ],
+		       				array_index[array_index_len-1],
+		                	aliasstack[j-1].dimension);
+		} else {
+		  	if (array_index_len>0) {
+		    	 idx = array_index[array_index_len-1];
+		  	} else {
+		    	idx = 0;
+		  	}
+	  		if (req->verbose) {
+	 			bb_data_header_print(sym_data_desc,req->stream,idx,1);
+	  			bb_value_print(req->theBB,sym_data_desc,req->stream,array_index,array_index_len);
+	      	bb_data_footer_print(sym_data_desc,req->stream,idx,1);
+	   	} else {
+	      	bb_value_print(req->theBB,sym_data_desc,req->stream,array_index,array_index_len);
+	      	fprintf(req->stream,"%s",req->newline);
+	   	}
+		}    
+    }
 
   return retval;
 
@@ -498,8 +503,17 @@ int32_t
 bbtools_write(bbtools_request_t* req) {
   int32_t retval = 0;
   S_BB_DATADESC_T sym_data_desc;
-  int32_t array_index;
+  int32_t array_index[MAX_ALIAS_LEVEL];
+  int32_t array_index_len;
+  int32_t          aliasstack_size = MAX_ALIAS_LEVEL;
+  S_BB_DATADESC_T  aliasstack[MAX_ALIAS_LEVEL];
   void *sym_value;
+  int32_t nbcar;
+  char msg[MSG_SIZE];
+  int32_t i;
+  int32_t j;
+  int32_t idx;
+
 
   if (req->argc<3) {
     bbtools_logMsg(req->stream,"%s: <%d> argument(s) missing\n",
@@ -509,32 +523,36 @@ bbtools_write(bbtools_request_t* req) {
     retval = -1;
     return retval;
   }
-
-  if (bbtools_parsearrayname(req->argv[1],&sym_data_desc,&array_index)) {
+  memset(&sym_data_desc,0,sizeof(S_BB_DATADESC_T));
+  if (bb_utils_parsearrayname(req->argv[1],
+			      sym_data_desc.name,
+			      VARNAME_MAX_SIZE,
+			      array_index,&array_index_len)) {
     bbtools_logMsg(req->stream,"%s: cannot parse symname <%s>",
 		   bbtools_cmdname_tab[E_BBTOOLS_WRITE],
 		   req->argv[1]);
     retval = -1;
   } else {
-    /* scalar write case */
-    if (-1 == array_index) {
       if (req->verbose) {
 	bbtools_logMsg(req->stream,
 		       "%s: Trying to write symbol <%s> on blackboard <%s>...\n",
-		       bbtools_cmdname_tab[E_BBTOOLS_WRITE],
+		       bbtools_cmdname_tab[E_BBTOOLS_READ],
 		       sym_data_desc.name,
 		       req->bbname);
-      }
-      array_index = 0;
-    } else { /* single array element case */      
-      if (req->verbose) {
+	nbcar =0;
+	nbcar += snprintf(&msg[nbcar],MSG_SIZE-nbcar,"%s","[");			 
+	for (i=0;i<array_index_len;++i) {
+		nbcar += snprintf(&msg[nbcar],MSG_SIZE-nbcar,"%d ",array_index[i]);
+	}			 
+	nbcar += snprintf(&msg[nbcar],MSG_SIZE-nbcar," %s","]");			 
+	msg[nbcar] = '\0';
 	bbtools_logMsg(req->stream,
-		       "%s: Trying to write index <%d> of array symbol <%s> on blackboard <%s>...\n",
-		       bbtools_cmdname_tab[E_BBTOOLS_WRITE],
-		       array_index,
-		       sym_data_desc.name,
-		       req->bbname);
-      }		       
+		       "%s: array_index_len = <%d> indexes = %s...\n",
+		       bbtools_cmdname_tab[E_BBTOOLS_READ],
+		       array_index_len,
+				 msg);				 
+
+      }
     }
     /* 
      * Use low-level subscribe in order to discover the 
@@ -543,44 +561,63 @@ bbtools_write(bbtools_request_t* req) {
     sym_data_desc.type      = E_BB_DISCOVER;
     sym_data_desc.type_size = 0;
     sym_data_desc.dimension = 0;
-    sym_value = bb_subscribe(req->theBB,&sym_data_desc);
-    if ((sym_data_desc.dimension>1) && (-1==array_index)) {
+	 sym_value = bb_alias_subscribe(req->theBB,&sym_data_desc,array_index,array_index_len);    	
+    
+    if ((sym_data_desc.dimension>1) && (0==array_index_len)) {
       if (req->verbose) {
 	  bbtools_logMsg(req->stream,"%s: Implicit first array element write\n",
 			 bbtools_cmdname_tab[E_BBTOOLS_WRITE]);
 
       }
-      array_index = 0;
+      array_index[0] = 0;
       if (req->verbose) {
 	bbtools_logMsg(req->stream,
 		       "%s: Trying to write index <%d> of array symbol <%s> on blackboard <%s>...\n",
 		       bbtools_cmdname_tab[E_BBTOOLS_WRITE],
-		       array_index,
+		       array_index[0],
 		       sym_data_desc.name,
 		       req->bbname);
       }
     }
 
-    if (NULL==sym_value) {
+   if (NULL==sym_value) {
       bbtools_logMsg(req->stream,"%s: symbol <%s> not found in BB <%s>\n",
 		     bbtools_cmdname_tab[E_BBTOOLS_WRITE],
 		     sym_data_desc.name,
 		     req->bbname);
     } else {
-      if ((array_index!=-1) && (sym_data_desc.dimension <= array_index)) {
-	bbtools_logMsg(req->stream,"%s: index <%d> exceeding symbol array dimension <%d>\n",
-		       bbtools_cmdname_tab[E_BBTOOLS_WRITE],
-		       array_index,
-		       sym_data_desc.dimension);
-      } else {
-	if (req->verbose) {
-	  bbtools_logMsg(req->stream,"Writing <%s> (index=%d)\n",
-			 req->argv[2],array_index);
-	}
-	bb_value_write(req->theBB,sym_data_desc,req->argv[2],array_index);
-      }
-    }	       
-  }
+		if (array_index_len>0)
+		{
+			aliasstack[0]=sym_data_desc;
+			bb_find_aliastack(req->theBB, aliasstack, &aliasstack_size);
+			j=aliasstack_size;
+			while ( (aliasstack[j-1].dimension<=1) && (j>0) ){
+				--j;
+			}
+		}
+		if ( (array_index_len>0) && (j==0)) {
+			bbtools_logMsg(req->stream,"%s: no array found in aliasstack\n",
+		   				    bbtools_cmdname_tab[E_BBTOOLS_WRITE]);
+		}
+		else if ( (array_index_len>0) && (aliasstack[j-1].dimension <= array_index[array_index_len-1]) ) {
+			bbtools_logMsg(req->stream,"%s: index <%d> exceeding symbol array dimension <%d>\n",
+		   				   bbtools_cmdname_tab[E_BBTOOLS_WRITE],
+		       				array_index[array_index_len-1],
+		                	aliasstack[j-1].dimension);
+		} else {
+		  	if (array_index_len>0) {
+		    	 idx = array_index[array_index_len-1];
+		  	} else {
+		    	idx = 0;
+		  	}
+	     	if (req->verbose) {
+		   	 bbtools_logMsg(req->stream,"Writing <%s> (index=%d)\n",
+				 req->argv[2],idx);	 		 
+	    	}
+	    	bb_value_write(req->theBB,sym_data_desc,req->argv[2],array_index,array_index_len);
+		} 
+    }
+	         
   return retval;
 }  /* end of bbtools_write */
 
@@ -770,7 +807,8 @@ bbtools_publish(bbtools_request_t* req) {
   int32_t retcode = 0;
   char* symbol_type_str;
   S_BB_DATADESC_T  symbol_desc;
-  int32_t dimension;
+  int32_t dimension[MAX_ALIAS_LEVEL];
+  int32_t dimension_len;
 
   memset(&symbol_desc,0,sizeof(S_BB_DATADESC_T));
   if (req->argc<2) {
@@ -782,8 +820,6 @@ bbtools_publish(bbtools_request_t* req) {
     return retcode;
   }
   
-
-
   if (req->argc>2) {
     symbol_type_str = req->argv[2];
   } else {
@@ -791,12 +827,15 @@ bbtools_publish(bbtools_request_t* req) {
   }
 
   /* guess if we have an array type or not using parse array... */
-  bbtools_parsearrayname(symbol_type_str,&symbol_desc,&dimension);
-  if (dimension==-1) {
+  bb_utils_parsearrayname(symbol_type_str,
+			  symbol_desc.name,
+			  VARNAME_MAX_SIZE,
+			  dimension,&dimension_len);
+  if (dimension[0]==-1) {
     /* default dimension is 1 (scalar) */
     symbol_desc.dimension = 1;
   } else {
-    symbol_desc.dimension = dimension;
+    symbol_desc.dimension = dimension[0];
   }
   /* copy symbol name */
   strncpy(symbol_desc.name,req->argv[1],VARNAME_MAX_SIZE);    
@@ -818,11 +857,12 @@ bbtools_publish(bbtools_request_t* req) {
       symbol_desc.type_size = sizeof_bb_type(symbol_desc.type);
     } else {
       /* FIXME the user case is not supported */
+      /** @todo */
+      printf("\ntaille d'un alias?\n");
       symbol_desc.type_size = 1;
     }
     /* do we have dimension (array type) */
-    
-    
+        
     bb_publish(req->theBB,&symbol_desc);
   } else {
     bbtools_logMsg(req->stream,

@@ -11,6 +11,7 @@ XINC    = bb_utils.h bb_core.h bb_simple.h bb_sha1.h \
 
 SOURCES = \
 	bb_utils.c \
+	bb_alias.c \
 	bb_core.c \
 	bb_simple.c \
 	bb_sha1.c \

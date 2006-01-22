@@ -2,18 +2,25 @@
 #include <stdio.h>
 #include <malloc.h>
 #include <unistd.h>
+#include <stddef.h>
 #include <math.h>
 #include <libgen.h>
 #include <string.h>
 #include <bb_core.h>
 #include <bb_simple.h>
-#include "tsp_abs_types.h"
+#include <tsp_abs_types.h>
 
-typedef struct mytype {
-  int     a;
-  double  d;
-  uint8_t byte;
-} mytype_t;
+typedef struct MyInsiderType {
+  int32_t       ai[2];
+  double        f;
+} MyInsiderType_t;
+
+typedef struct MyType {
+  int32_t         a;
+  double          d;
+  uint8_t         byte;
+  MyInsiderType_t insider;
+} MyType_t;
 
 double *DYN_0_d_qsat;		/* 4 elems */
 double *ORBT_0_d_possat_m;	/* 4 elems */
@@ -48,12 +55,15 @@ main (int argc, char ** argv) {
   int i;
   int synchro;
   S_BB_T* mybb;
-  mytype_t* myvar;
+  MyType_t* myvar;
   char*     astring;
   /* char      c_opt; */
 
   /*
-   * Analyse options de lancement
+   * Analyse cmd line option
+   * FIXME we should add 
+   *   a option for acknowledged BB mode
+   *   d option for "destroy on exists"
    */
   if (EOF != getopt(argc,argv,"s")) {
     synchro = 1;
@@ -81,7 +91,29 @@ main (int argc, char ** argv) {
   aint8 = (int8_t*) bb_simple_publish(mybb,"int8",basename(argv[0]),-1, E_BB_INT8, sizeof(int8_t),2);
   auint8 = (uint8_t*) bb_simple_publish(mybb,"uint8",basename(argv[0]),-1, E_BB_UINT8, sizeof(uint8_t),2);
   
-  myvar = (mytype_t*) bb_simple_publish(mybb,"mytype_t_var",basename(argv[0]),-1, E_BB_USER, sizeof(mytype_t),1);
+  myvar = (MyType_t*) bb_simple_publish(mybb,"MyType_t_var",basename(argv[0]),-1, E_BB_USER, sizeof(MyType_t),1);
+
+  /* Now we may alias publish the structure in order to be able 
+   * to distribute the component of the structure using TSP
+   * Note that most of the time we may ignore the return value
+   * since the variable is usable trough the structure itself
+   */
+  bb_simple_alias_publish(mybb,"a","MyType_t_var",basename(argv[0]),-1,E_BB_INT32,
+			  sizeof(int32_t),1,offsetof(MyType_t,a));
+  bb_simple_alias_publish(mybb,"d","MyType_t_var",basename(argv[0]),-1,E_BB_DOUBLE,
+			  sizeof(double),1,offsetof(MyType_t,d));
+  bb_simple_alias_publish(mybb,"byte","MyType_t_var",basename(argv[0]),-1,E_BB_UINT8,
+			  sizeof(uint8_t),1,offsetof(MyType_t,byte));
+  /* you may even specify USER type in USER type */
+  bb_simple_alias_publish(mybb,"insider","MyType_t_var",basename(argv[0]),-1,E_BB_USER,
+			  sizeof(MyInsiderType_t),1,offsetof(MyType_t,insider));
+  /* Now the (in)famous structure in structure i.e. alias of alias example */
+  bb_simple_alias_publish(mybb,"ai","MyType_t_var.insider",basename(argv[0]),-1,E_BB_INT32,
+			  sizeof(int32_t),2,offsetof(MyInsiderType_t,ai));
+
+  bb_simple_alias_publish(mybb,"f","MyType_t_var.insider",basename(argv[0]),-1,E_BB_DOUBLE,
+			  sizeof(double),1,offsetof(MyInsiderType_t,f));
+
   myvar->a = 1;
   myvar->d = 3.14159;
   myvar->byte = 0xFF;

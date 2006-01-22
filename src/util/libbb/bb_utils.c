@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_utils.c,v 1.8 2005-11-29 22:08:53 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_utils.c,v 1.9 2006-01-22 09:35:15 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -202,6 +202,94 @@ bb_logMsg(const BB_LOG_LEVEL_T level, const char* who, char* fmt, ...) {
 
   }
   return 0;
-}
+} /* end of bb_logMsg */
 
+int32_t 
+bb_utils_parseone_array(const char* provided_symname, 
+			char* symname_part,
+			int32_t symname_part_maxlen,
+			int32_t* array_index,
+			char** remaining_symname, 
+			int32_t remaining_symname_len) {
+										 
+  char*    array_name;
+  char*    symname;
+  int32_t  retcode = 0;
+  int32_t  symlen = 0;
+  assert(provided_symname);
 
+  symname = strdup(provided_symname);
+  symlen  = strlen(symname);
+
+  array_name = strstr(symname,"[");
+  if (array_name) {
+    char* temp = "%d";
+    char* temp2;
+    temp2  = strdup(symname);
+    array_name  = strtok(temp2,"[");
+    strncpy(symname_part,array_name,symname_part_maxlen);
+    array_name = strtok(NULL,"]");
+    if (sscanf(array_name,temp,array_index)<1) {
+      retcode = -1;
+    }
+	 
+	 array_name = strtok(NULL,"\0");
+	 if (NULL != array_name) {
+	 	strncpy(*remaining_symname,array_name,remaining_symname_len);
+	 } else {
+	 	*remaining_symname=NULL;
+	 }
+	 
+    free(temp2);
+  } else {
+    *array_index = -1;
+    strncpy(symname_part,provided_symname,symname_part_maxlen);
+	 *remaining_symname=NULL;
+  }
+  free(symname); 
+  return retcode;
+  
+} /* end of bb_utils_parseone_array */
+
+int32_t
+bb_utils_parsearrayname(const char*    provided_symname, 
+			char*          parsed_symname,
+			const int32_t  parsed_symname_maxlen,
+			int32_t*       array_index, 
+			int32_t*       array_index_len) {
+
+  char current_symname[parsed_symname_maxlen];
+  char remaining_symname[parsed_symname_maxlen];
+  char symname_part[parsed_symname_maxlen];
+  char* remain;
+  int i = 0;
+  int symname_current_index = 0;
+  int32_t retcode = 0;
+  
+  strncpy(current_symname,provided_symname,parsed_symname_maxlen-1);
+  strncpy(remaining_symname,provided_symname,parsed_symname_maxlen-1);
+  remain = remaining_symname;
+  *array_index_len=0;
+  
+  
+  while ((NULL != remain) && (0 == retcode)) {
+    retcode &= bb_utils_parseone_array(current_symname,
+				      symname_part,parsed_symname_maxlen,
+				      &array_index[i],
+				      &remain,parsed_symname_maxlen);
+    if (0 == retcode) {
+      strncat(&(parsed_symname[symname_current_index]),symname_part,
+	      parsed_symname_maxlen-symname_current_index);
+      symname_current_index += strlen(symname_part);
+      if (NULL != remain) {
+	strncpy(current_symname,remain,parsed_symname_maxlen);
+      }
+      if (-1 != array_index[i])  {
+	*array_index_len += 1;
+      }
+      i++;
+    }
+  }
+  
+  return retcode;	
+} /* end bb_utils_parsearrayname */
