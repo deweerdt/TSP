@@ -168,5 +168,11 @@ V-0.7.1: Creation JJxx/MM/2005	tag TSP_0_7_1
 	- Bug Corrections
 		* bug #14783  use numeric @IP  
                 * bug #14770  direct DNS resolv necessary
-        - 
+        - Blackboard Alias System this is a contribution
+          from Thomas Testassecca and Miguel based on 
+          original design by Thomas, Miguel and Erk		- TT+MG->Erk
+        - Correct async read/write issue on bb_tsp_provider     
+          this is a contribution from Julien BRUTUS 
+          merged and lightly updated by Erk because of the
+          Blackboard alias machinery				- JB->Erk
 
