@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/providers/bb_provider/bb_tsp_provider.c,v 1.17 2006-01-22 09:35:15 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/providers/bb_provider/bb_tsp_provider.c,v 1.18 2006-01-27 17:24:42 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -199,9 +199,9 @@ BB_GLU_init(GLU_handle_t* this, int fallback_argc, char* fallback_argv[]) {
   /* 
    * Allocate array of pointer to data
    */
-  value_by_pgi = (void **) calloc(i_nb_item_scalaire,sizeof(void*));
+  value_by_pgi      = (void **) calloc(i_nb_item_scalaire,sizeof(void*));
   bbdatadesc_by_pgi = (S_BB_DATADESC_T **) calloc(i_nb_item_scalaire,sizeof(S_BB_DATADESC_T*));
-  bbindex_to_pgi = (int32_t *) calloc(bb_get_nb_item(shadow_bb),sizeof(int32_t));  
+  bbindex_to_pgi    = (int32_t *) calloc(bb_get_nb_item(shadow_bb),sizeof(int32_t));  
   /*
    * Allocate write 'right' management array
    */
@@ -531,14 +531,14 @@ void* BB_GLU_thread(void* arg) {
   
 } /* end of BB_GLU_thread */
 
-int BB_GLU_async_sample_write(GLU_handle_t* glu, int provider_global_index, void* value_ptr, uint32_t value_size)
+int 
+BB_GLU_async_sample_write(GLU_handle_t* glu, int provider_global_index, void* value_ptr, uint32_t value_size)
 {
 	S_BB_DATADESC_T* data_desc;
 	int retcode = E_NOK;       	
 	double value;
 	char   strvalue[256];
-	int    idx = 0;
-	
+	void*  genuineBBdata;
 	
 	STRACE_INFO(("BB_PROVIDER want to AsyncWrite : pgi <%d> with value : 0x%X (value_size=%d)",provider_global_index, (uint32_t)value_ptr,value_size));
 	
@@ -551,13 +551,16 @@ int BB_GLU_async_sample_write(GLU_handle_t* glu, int provider_global_index, void
 	if (provider_global_index>=0 && provider_global_index<nb_symbols) {		
 	  if (allow_to_write[provider_global_index]==TSP_ASYNC_WRITE_ALLOWED) { 
 	    data_desc = bbdatadesc_by_pgi[provider_global_index];
-	    STRACE_INFO(("About to write on symbol <%s> value <%f> (strvalue=%s)...",data_desc->name,value,strvalue));
-	     /* note that we should write to genuine BB not the shadow ... */
-		  /* FIXME UPDATEFOR ALIAS PENDING
-	    if (bb_value_write(the_bb,*data_desc,strvalue,0)==E_OK) {
-	      retcode = E_OK;
-	    } 
-		 */
+	    STRACE_INFO(("About to write on symbol <%s> value <%f> (strvalue=%s)...",data_desc->name,value,strvalue));	    
+	    /* 
+	     * Note that we should write to genuine BB not the shadow ... 
+	     * since the shadow may be overwritten immediatly on next update cycle
+	     * We recompute genuine bb offset from the one store on shadow BB
+	     * since they MUST be the same.
+	     */
+	    genuineBBdata = bb_data(the_bb) + 
+	                   (value_by_pgi[provider_global_index] - bb_data(shadow_bb));
+	    retcode = bb_value_direct_write(genuineBBdata,*data_desc,strvalue,0);
 	  } else {
 	    STRACE_INFO(("BB_GLU : pgi = %d is not allowed to be written",provider_global_index));
 	  }
@@ -570,11 +573,12 @@ int BB_GLU_async_sample_write(GLU_handle_t* glu, int provider_global_index, void
 	return retcode;
 } /* end of BB_GLU_async_sample_write */
 
-int BB_GLU_async_sample_read(GLU_handle_t* glu, int provider_global_index, void* value_ptr, uint32_t* value_size)
+int 
+BB_GLU_async_sample_read(GLU_handle_t* glu, int provider_global_index, void* value_ptr, uint32_t* value_size)
 {
 	S_BB_DATADESC_T* data_desc;
 	int retcode = E_NOK; 
-	int idx=0;
+	void*  genuineBBdata;
 	
 	STRACE_DEBUG(("BB_PROVIDER want to AsyncRead : pgi <%d> (value_size allowed=%d)",provider_global_index,*value_size));
 	
@@ -584,18 +588,16 @@ int BB_GLU_async_sample_read(GLU_handle_t* glu, int provider_global_index, void*
 	    data_desc = bbdatadesc_by_pgi[provider_global_index];
 	
 	    STRACE_INFO(("About to read from symbol <%s> value...",bbdatadesc_by_pgi[provider_global_index]->name));
-	    /* note that we should read from genuine BB not the shadow ... */
-
-	    /* found index of array corresponding to provided PGI */
-	    if ((data_desc->dimension >1) && (provider_global_index!=0)) {
-	      while (((provider_global_index-(idx+1))>0) && 
-		     (data_desc == bbdatadesc_by_pgi[provider_global_index-(idx+1)])) {
-		++idx;
-	      }
-	    }
-	    *((double*)value_ptr) = bb_double_of(bb_subscribe(the_bb,
-							      bbdatadesc_by_pgi[provider_global_index])
-						 +idx*bbdatadesc_by_pgi[provider_global_index]->type_size,
+	    /* 
+	     * Note that we should read from genuine BB not the shadow ... 
+	     * since the shadow may be overwritten immediatly on next update cycle
+	     * We recompute genuine bb offset from the one store on shadow BB
+	     * since they MUST be the same.
+	     */
+	    genuineBBdata = bb_data(the_bb) + 
+	                   (value_by_pgi[provider_global_index] - bb_data(shadow_bb));
+	    
+	    *((double*)value_ptr) = bb_double_of(genuineBBdata,
 						 bbdatadesc_by_pgi[provider_global_index]->type);
 	    STRACE_INFO(("AsyncRead value is <%f>.",*((double*)value_ptr)));
 	    retcode = E_OK;	
@@ -606,7 +608,7 @@ int BB_GLU_async_sample_read(GLU_handle_t* glu, int provider_global_index, void*
 	STRACE_DEBUG(("BB_PROVIDER After AsyncRead : value %f return :%d",*((double*)value_ptr), retcode));
 
 	return retcode;
-} /* end of BB_GLU_async_sample_write */
+} /* end of BB_GLU_async_sample_read */
 
 
 int32_t  

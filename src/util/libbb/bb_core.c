@@ -2,7 +2,7 @@
 
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.18 2006-01-22 09:35:15 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.19 2006-01-27 17:24:42 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -341,13 +341,77 @@ bb_data_initialise(volatile S_BB_T* bb, S_BB_DATADESC_T* data_desc,void* default
 } /* end of bb_data_initialise */
 
 int32_t
+bb_value_direct_rawwrite(void* data, S_BB_DATADESC_T data_desc, void* value) {  
+  memcpy(data,value,data_desc.type_size);
+  return E_OK;
+}
+
+int32_t
+bb_value_direct_write(void* data, S_BB_DATADESC_T data_desc, const char* value, int hexval) {
+
+  int retval;
+
+  retval = E_OK;
+
+  switch (data_desc.type) {
+  case E_BB_DOUBLE: 
+    ((double *)data)[0] = atof(value);
+    break;
+  case E_BB_FLOAT:
+    ((float *)data)[0] = atof(value);
+    break;
+  case E_BB_INT8:
+    ((int8_t*)data)[0] = strtol(value,(char **)NULL,hexval ? 16 : 10);
+    break; 
+  case E_BB_INT16:
+    ((int16_t*)data)[0] = strtol(value,(char **)NULL,hexval ? 16 : 10);
+    break; 
+  case E_BB_INT32:
+    ((int32_t*)data)[0] = strtol(value,(char **)NULL,hexval ? 16 : 10);
+    break; 
+  case E_BB_INT64:
+    ((int64_t*)data)[0] = strtoll(value,(char **)NULL,hexval ? 16 : 10);
+    break; 
+  case E_BB_UINT8:
+    ((uint8_t*)data)[0] = strtol(value,(char **)NULL,hexval ? 16 : 10);
+    break; 
+  case E_BB_UINT16:
+    ((uint16_t*)data)[0] = strtoul(value,(char **)NULL,hexval ? 16 : 10);
+    break;
+  case E_BB_UINT32:
+    ((uint32_t*)data)[0] = strtoul(value,(char **)NULL,hexval ? 16 : 10);
+    break;	
+  case E_BB_UINT64:
+    ((uint64_t*)data)[0] = strtoull(value,(char **)NULL,hexval ? 16 : 10);
+    break;	
+  case E_BB_CHAR:
+    memcpy(&((char*)data)[0],value,sizeof(char));
+    break;
+  case E_BB_UCHAR:
+    memcpy(&((unsigned char*)data)[0],value,sizeof(unsigned char));
+    break; 
+  case E_BB_USER:
+    
+    retval = bb_utils_convert_string2hexbuf(hexval ? value+2 : value,
+					    &((unsigned char*)data)[0*data_desc.type_size],
+					    data_desc.type_size, 
+					    hexval);
+    retval = E_NOK;
+    break; 
+  default:
+    retval = E_NOK;
+    break;
+  }
+  return retval;
+} /* bb_value_direct_write */
+
+int32_t
 bb_value_write(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc,const char* value, int32_t* idxstack, int32_t idxstack_len) {
 
   char* data;
   int retval;
   int hexval;
   int lenval;
-  int32_t idx;
   assert(bb);
   
   retval = E_OK;
@@ -365,59 +429,11 @@ bb_value_write(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc,const char* value,
 
   /* Get address of the data in BB */
   data = bb_item_offset(bb, &data_desc,idxstack,idxstack_len);
-  idx = 0;
+  /* Now write the value at obtained offset */
+  retval = bb_value_direct_write(data,data_desc,value,hexval);
 
-  switch (data_desc.type) {
-  case E_BB_DOUBLE: 
-    ((double *)data)[idx] = atof(value);
-    break;
-  case E_BB_FLOAT:
-    ((float *)data)[idx] = atof(value);
-    break;
-  case E_BB_INT8:
-    ((int8_t*)data)[idx] = strtol(value,(char **)NULL,hexval ? 16 : 10);
-    break; 
-  case E_BB_INT16:
-    ((int16_t*)data)[idx] = strtol(value,(char **)NULL,hexval ? 16 : 10);
-    break; 
-  case E_BB_INT32:
-    ((int32_t*)data)[idx] = strtol(value,(char **)NULL,hexval ? 16 : 10);
-    break; 
-  case E_BB_INT64:
-    ((int64_t*)data)[idx] = strtoll(value,(char **)NULL,hexval ? 16 : 10);
-    break; 
-  case E_BB_UINT8:
-    ((uint8_t*)data)[idx] = strtol(value,(char **)NULL,hexval ? 16 : 10);
-    break; 
-  case E_BB_UINT16:
-    ((uint16_t*)data)[idx] = strtoul(value,(char **)NULL,hexval ? 16 : 10);
-    break;
-  case E_BB_UINT32:
-    ((uint32_t*)data)[idx] = strtoul(value,(char **)NULL,hexval ? 16 : 10);
-    break;	
-  case E_BB_UINT64:
-    ((uint64_t*)data)[idx] = strtoull(value,(char **)NULL,hexval ? 16 : 10);
-    break;	
-  case E_BB_CHAR:
-    memcpy(&((char*)data)[idx],value,sizeof(char));
-    break;
-  case E_BB_UCHAR:
-    memcpy(&((unsigned char*)data)[idx],value,sizeof(unsigned char));
-    break; 
-  case E_BB_USER:
-    
-    retval = bb_utils_convert_string2hexbuf(hexval ? value+2 : value,
-					    &((unsigned char*)data)[idx*data_desc.type_size],
-					    data_desc.type_size, 
-					    hexval);
-    retval = E_NOK;
-    break; 
-  default:
-    retval = E_NOK;
-    break;
-  }
   return retval;
-}
+} /* bb_value_write */
 
 
 int32_t
@@ -1052,8 +1068,12 @@ bb_item_offset(volatile S_BB_T *bb,
 	  /* *** FIXME check provided indexstack length 
 	     *** in order to avoid buffer overflow 
 	     *** */
-	  myIndexstack[i] = indexstack[j];
-	  --j;
+	  if (j>=0) {
+	    myIndexstack[i] = indexstack[j];
+	    --j;
+	  } else {
+	    myIndexstack[i] = 0;
+	  }
 	}		
       }
       /* force last index (first on stack) to zero */
@@ -1063,6 +1083,9 @@ bb_item_offset(volatile S_BB_T *bb,
       retval = (char*) bb_data(bb) + 
 	bb_aliasstack_offset(aliasstack,myIndexstack,aliasstack_size);	    
     } else {
+      bb_logMsg(BB_LOG_SEVERE,
+		"Blackboard::bb_item_offset",
+		"Cannot resolve alias stack!!");
       retval = NULL;
     }
   }
