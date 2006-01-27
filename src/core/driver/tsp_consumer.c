@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.40 2006-01-22 09:35:15 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.41 2006-01-27 17:23:59 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -1301,15 +1301,15 @@ int TSP_consumer_read_sample(TSP_provider_t provider, TSP_sample_t* sample, int*
   return ret;
 }
 
-TSP_groups_t TSP_test_get_groups(TSP_provider_t provider)
-{
+TSP_groups_t TSP_test_get_groups(TSP_provider_t provider) {
   TSP_otsp_t* otsp = (TSP_otsp_t*)provider;
   
   return otsp->groups;
 }
 
 
-int TSP_consumer_request_async_sample_write(TSP_provider_t provider,TSP_consumer_async_sample_t* async_sample_write)
+int 
+TSP_consumer_request_async_sample_write(TSP_provider_t provider,TSP_consumer_async_sample_t* async_sample_write)
 {
   int *result;
   TSP_async_sample_t async_write;
@@ -1319,35 +1319,36 @@ int TSP_consumer_request_async_sample_write(TSP_provider_t provider,TSP_consumer
   /* As there are a two level structure for hidding all RPC stuff, we need to copy the struct fields */
   
   async_write.provider_global_index = async_sample_write->provider_global_index;
-  async_write.data.data_val = async_sample_write->value_ptr;
-  async_write.data.data_len = async_sample_write->value_size;
+  async_write.data.data_val         = async_sample_write->value_ptr;
+  async_write.data.data_len         = async_sample_write->value_size;
   
   /* verification of the structure*/
   	
   if(0 != otsp) { 
     result = TSP_request_async_sample_write(&async_write,otsp->server);
-      if (result)
-        ret = *result; 
-      else
-        STRACE_DEBUG(("result is <0x%X>\n", result));      
-  }
-  else {
-      STRACE_ERROR(("This provider is not instanciate"));
+    if (result) {
+      ret = *result; 
+    } else {
+      STRACE_DEBUG(("result is <0x%X>\n", result));      
+    }
+  } else {
+    STRACE_ERROR(("This provider is not instanciate"));
   }
      
   STRACE_IO(("-->OUT"));
 	
   return ret;
 	
-}
+} /* TSP_consumer_request_async_sample_write */
 
-int TSP_consumer_request_async_sample_read(TSP_provider_t provider,TSP_consumer_async_sample_t* async_sample_read)
+int 
+TSP_consumer_request_async_sample_read(TSP_provider_t provider,TSP_consumer_async_sample_t* async_sample_read)
 {
  
   TSP_async_sample_t* async_read_result;
   TSP_async_sample_t async_read_param;
   
-  int ret = 0;
+  int ret = TSP_STATUS_ERROR_UNKNOWN;
   TSP_otsp_t* otsp = (TSP_otsp_t*)provider;
  
   /* update internal RPC structure */
@@ -1363,16 +1364,18 @@ int TSP_consumer_request_async_sample_read(TSP_provider_t provider,TSP_consumer_
     STRACE_DEBUG(("async_read_result is <0x%X>\n", async_read_result));
 
     /* Provider has probably died */
-    if (async_read_result == NULL)
-      ret=0;
-
-    else{
+    if (async_read_result == NULL) {
+      ret=TSP_STATUS_ERROR_UNKNOWN;
+    } else {
+      STRACE_DEBUG(("async_read_result->pgi=%d\n", async_read_result->provider_global_index));
+      STRACE_DEBUG(("async_read_result->value_size=%d\n", async_sample_read->value_size));
+      STRACE_DEBUG(("async_read_result->data.data_val = 0x%X\n", async_read_result->data.data_val));
       if (-1 == async_read_result->provider_global_index) {
-	ret = 1;
+	ret = TSP_STATUS_ERROR_PGI_UNKNOWN;
       } else {
 	/* should update value */
 	memcpy(async_sample_read->value_ptr,async_read_result->data.data_val,async_sample_read->value_size);
-	ret = 2;
+	ret = TSP_STATUS_OK;
       }
     }
   }
@@ -1384,7 +1387,7 @@ int TSP_consumer_request_async_sample_read(TSP_provider_t provider,TSP_consumer_
 	
   return ret;
 	
-}
+} /* TSP_consumer_request_async_sample_read */
 
 void 
 TSP_consumer_print_invalid_symbols(FILE* stream, 

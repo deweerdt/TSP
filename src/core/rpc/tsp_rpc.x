@@ -1,6 +1,7 @@
+/* -*- idl -*- */
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_rpc.x,v 1.21 2005-11-01 10:37:12 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_rpc.x,v 1.22 2006-01-27 17:23:59 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -60,8 +61,18 @@ enum TSP_status_t
 	/**	
          * The requested feature is not implemented
          */
-	TSP_STATUS_ERROR_NOT_IMPLEMENTED
-	
+	TSP_STATUS_ERROR_NOT_IMPLEMENTED,
+	/*
+         * The requested PGI (provider global index is unknown)
+         */
+	TSP_STATUS_ERROR_PGI_UNKNOWN,
+	/*
+         * Asynchronous read/write return status.
+         */
+ 	TSP_STATUS_ERROR_ASYNC_READ_NOT_ALLOWED,
+ 	TSP_STATUS_ERROR_ASYNC_WRITE_NOT_ALLOWED,       
+	TSP_STATUS_ERROR_ASYNC_READ_NOT_SUPPORTED,	
+ 	TSP_STATUS_ERROR_ASYNC_WRITE_NOT_SUPPORTED       	
 };
 
 /** 

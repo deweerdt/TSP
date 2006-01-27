@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: generic_consumer.c,v 1.4 2005-10-30 17:18:17 erk Exp $
+$Id: generic_consumer.c,v 1.5 2006-01-27 17:23:59 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -406,7 +406,7 @@ generic_consumer_async_read(generic_consumer_request_t* req) {
   async_sample.value_size = sizeof(value);
   retval = TSP_consumer_request_async_sample_read(req->the_provider,&async_sample);
  
-  if ((0 != retval) && (!(req->silent))) {
+  if ((TSP_STATUS_OK != retval) && (!(req->silent))) {
     generic_consumer_logMsg(req->stream,
 			    "%s: async read refused (or not handled) by provider\n",
 			    tsp_reqname_tab[E_TSP_REQUEST_ASYNC_SAMPLE_READ]);
