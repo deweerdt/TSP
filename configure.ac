@@ -483,7 +483,7 @@ AC_SUBST(BUILD_XMLRPC)
 AC_CONFIG_FILES([src/scripts/tsp_dev.login
 		src/scripts/tsp_dev.login.sh
 		make/Makeparams
-		src/doxy/Makefile:src/doxy/doc.mk])
+		src/doxy/Makefile])
 
 AC_OUTPUT
 

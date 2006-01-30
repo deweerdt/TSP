@@ -9,6 +9,7 @@
 	<property name="tests.dir" value="${tsp.home.dir}/tests" />
 	<property name="dist.dir" value="${tsp.home.dir}/dist" />          
         <property name="rpm.topdir" value="${dist.dir}/RPM" />
+        <property name="doc.outputdir" value="${dist.dir}/doc" />
                
         <target name="init">
           <condition property="ant-1.5">
@@ -82,7 +83,6 @@ date, time and user name.
                      <exclude name="${tests.dir}/**/*~"/>
                  </tarfileset>
               </tar>
-
         </target>
         <target name="targz" depends="tar" description="o Build a tar+gz file containing the TSP source">
              <gzip zipfile="${dist.dir}/tsp-${tsp.version}.tar.gz" src="${dist.dir}/tsp-${tsp.version}.tar" />
@@ -155,5 +155,11 @@ date, time and user name.
         <target name="rpm-ant-1.5" if="ant-1.5">
             <rpm specFile="tsp.spec" topDir="${rpm.topdir}" command="-bb -vv"/> 
 	    <rpm specFile="tsp.spec" topDir="${rpm.topdir}" command="-bs -vv"/>
+        </target>
+
+        <target name="apidoc" depends="init"  description="o Generate API documentation using doxygen">           
+            <mkdir dir="${doc.outputdir}" />  
+            <exec executable="make" dir="${src.dir}/doxy">
+            </exec>
         </target>
 </project>

@@ -5,9 +5,9 @@
 doxygen_input = tsp
 static_pages = footer/footer.html header/header.html
 
-htmldir = $(DEVBASE)/doc/html
-rtfdir = $(DEVBASE)/doc/rtf
-pdfdir = $(DEVBASE)/doc/pdf
+htmldir = $(DEVBASE)/dist/doc/api/html
+rtfdir = $(DEVBASE)/dist/doc/api/rtf
+pdfdir = $(DEVBASE)/dist/doc/api/pdf
 
 all::
 	@echo "------TSP--Documentation Generation BEGIN----------"; \

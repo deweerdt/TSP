@@ -5974,7 +5974,7 @@ done
 
 
 # Config for outputed files
-                                        ac_config_files="$ac_config_files src/scripts/tsp_dev.login src/scripts/tsp_dev.login.sh make/Makeparams src/doxy/Makefile:src/doxy/doc.mk"
+                                        ac_config_files="$ac_config_files src/scripts/tsp_dev.login src/scripts/tsp_dev.login.sh make/Makeparams src/doxy/Makefile"
 
 
 cat >confcache <<\_ACEOF
@@ -6505,7 +6505,7 @@ do
   "src/scripts/tsp_dev.login" ) CONFIG_FILES="$CONFIG_FILES src/scripts/tsp_dev.login" ;;
   "src/scripts/tsp_dev.login.sh" ) CONFIG_FILES="$CONFIG_FILES src/scripts/tsp_dev.login.sh" ;;
   "make/Makeparams" ) CONFIG_FILES="$CONFIG_FILES make/Makeparams" ;;
-  "src/doxy/Makefile" ) CONFIG_FILES="$CONFIG_FILES src/doxy/Makefile:src/doxy/doc.mk" ;;
+  "src/doxy/Makefile" ) CONFIG_FILES="$CONFIG_FILES src/doxy/Makefile" ;;
   "src/core/include/tsp_prjcfg.h" ) CONFIG_HEADERS="$CONFIG_HEADERS src/core/include/tsp_prjcfg.h" ;;
   *) { { echo "$as_me:$LINENO: error: invalid argument: $ac_config_target" >&5
 echo "$as_me: error: invalid argument: $ac_config_target" >&2;}
