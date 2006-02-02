@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_plotText.c,v 1.7 2005-12-03 15:46:20 esteban Exp $
+$Id: gdisp_plotText.c,v 1.8 2006-02-02 21:03:32 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -55,6 +55,8 @@ File      : Text plot system.
 #include "gdisp_kernel.h"
 #include "gdisp_prototypes.h"
 
+#include "gdisp_format.h"
+#include "gdisp_popupMenu.h"
 #include "gdisp_plotText.h"
 
 
@@ -64,7 +66,7 @@ File      : Text plot system.
  --------------------------------------------------------------------
 */
 
-#undef DEBUG_TEXT
+#undef GD_DEBUG_TEXT
 
 
 /*
@@ -88,17 +90,171 @@ gdisp_sortSymbolByName(gconstpointer data1,
  * Callback when a row is selected into the list.
  */
 static void
-gdisp_selectPlotTextRow (GtkCList       *clist,
+gdisp_selectPlotTextRow (GtkCList       *cList,
 			 gint            row,
 			 gint            column,
 			 GdkEventButton *event,
-			 gpointer        data)
+			 gpointer        userData /* kernel */)
 {
 
   /*
-   * Nothing by now.
-   * Info : Kernel_T *kernel = (Kernel_T*)data;
+   * Info : Kernel_T *kernel = (Kernel_T*)userData;
    */
+  PlotText_T *plot = (PlotText_T*)NULL;
+  
+  /*
+   * Get back the plot instance.
+   */
+  plot = gtk_object_get_data(GTK_OBJECT(cList),
+			     "plotPointer");
+
+  /*
+   * Only line number is interesting.
+   */
+   plot->pttSelectedRow = row;
+
+}
+
+
+/*
+ * Callback when a row is deselected in the list.
+ */
+static void
+gdisp_unselectPlotTextRow ( GtkCList       *cList,
+			    gint            row,
+			    gint            column,
+			    GdkEventButton *event,
+			    gpointer        userData)
+{
+
+  /*
+   * Info : Kernel_T *kernel = (Kernel_T*)userData;
+   */
+
+  /* nothing by now */
+
+}
+
+
+/*
+ * Callback when a row moves in the list.
+ */
+static void
+gdisp_movePlotTextRow ( GtkCList *clist,
+			gint      sourcePosition,
+			gint      destinationPosition,
+			gpointer  userData)
+{
+
+  /*
+   * Info : Kernel_T *kernel = (Kernel_T*)userData;
+   */
+
+  /* nothing by now */
+
+}
+
+
+/*
+ * Size allocate management.
+ */
+static void
+gdisp_sizeAllocate (GtkWidget     *widget,
+		    GtkAllocation *allocation,
+		    gpointer       userData /* kernel */)
+{
+
+  /*
+   * For information :
+   * Kernel_T   *kernel   = (Kernel_T*)userData;
+   */
+  PlotText_T *plot     = (PlotText_T*)NULL;
+  gfloat      newWidth = (gfloat)0;
+
+  /*
+   * Get back the plot instance.
+   */
+  plot = gtk_object_get_data(GTK_OBJECT(widget),
+			     "plotPointer");
+
+  /*
+   * Check for recursive calls to that handler.
+   */
+  if (plot->pttIsSizeAllocating == 1) {
+    plot->pttIsSizeAllocating = 0;
+    return;
+  }
+
+  /*
+   * Remember my initial width and height.
+   */
+  plot->pttCListWidth  = allocation->width;
+  plot->pttCListHeight = allocation->height;
+
+  if (plot->pttCList != (GtkWidget*)NULL) {
+
+    /*
+     * What however is important, is that we set the column widths as
+     * they will never be right otherwise.
+     * Note that the columns are numbered from 0 and up (to 2 in our case).
+     */
+    newWidth = plot->pttColumnRatio * allocation->width;
+
+    gtk_clist_set_column_width(GTK_CLIST(plot->pttCList),
+			       GD_SYMBOL_NAME_COLUMN, /* first column */
+			       (gint)newWidth);
+
+    /*
+     * In order to avoid recursive calls to that handler.
+     */
+    plot->pttIsSizeAllocating = 1;
+
+  }
+
+}
+
+
+/*
+ * Resize column handler.
+ */
+static void
+gdisp_resizeColumn (GtkCList *cList,
+		    gint      column,
+		    gint      width,
+		    gpointer  userData)
+{
+
+  /*
+   * For information :
+   * Kernel_T   *kernel = (Kernel_T*)userData;
+   */
+  PlotText_T *plot   = (PlotText_T*)NULL;
+
+  /*
+   * Get back the plot instance.
+   */
+  plot = gtk_object_get_data(GTK_OBJECT(cList),
+			     "plotPointer");
+
+  /*
+   * Check for internal GTK initialisations.
+   */
+  if (plot->pttCList->allocation.width == 1) {
+    return;
+  }
+
+  /*
+   * Handle only first column.
+   */
+  if (column != GD_SYMBOL_NAME_COLUMN) {
+    return;
+  }
+
+  /*
+   * Compute first column width ratio.
+   */
+  plot->pttColumnRatio = (gfloat)width /
+                         (gfloat)plot->pttCList->allocation.width;
 
 }
 
@@ -124,8 +280,8 @@ gdisp_createPlotText (Kernel_T *kernel)
   /*
    * Few initialisations.
    */
-  plot->pttType = GD_PLOT_TEXT;
-
+  plot->pttType        = GD_PLOT_TEXT;
+  plot->pttColumnRatio = (gfloat)0.66;
 
   /*
    * Create a CList with 2 columns.
@@ -161,9 +317,34 @@ gdisp_createPlotText (Kernel_T *kernel)
 
   gtk_clist_column_titles_show(GTK_CLIST(plot->pttCList));
 
+
+  /*
+   * Connect signals.
+   */
   gtk_signal_connect(GTK_OBJECT(plot->pttCList),
 		     "select-row",
 		     gdisp_selectPlotTextRow,
+		     (gpointer)kernel);
+
+
+  gtk_signal_connect(GTK_OBJECT(plot->pttCList),
+		     "unselect-row",
+		     gdisp_unselectPlotTextRow,
+		     (gpointer)kernel);
+
+  gtk_signal_connect(GTK_OBJECT(plot->pttCList),
+		     "row-move",
+		     gdisp_movePlotTextRow,
+		     (gpointer)kernel);
+
+  gtk_signal_connect(GTK_OBJECT(plot->pttCList),
+		     "size-allocate",
+		     gdisp_sizeAllocate,
+		     (gpointer)kernel);
+
+  gtk_signal_connect(GTK_OBJECT(plot->pttCList),
+		     "resize-column",
+		     gdisp_resizeColumn,
 		     (gpointer)kernel);
 
   gtk_object_set_data(GTK_OBJECT(plot->pttCList),
@@ -190,6 +371,7 @@ gdisp_createPlotText (Kernel_T *kernel)
   gtk_widget_set_style(plot->pttCList,
 		       plot->pttStyle);
 
+
   /*
    * Return the opaque structure.
    */
@@ -206,7 +388,9 @@ gdisp_destroyPlotText(Kernel_T *kernel,
 		      void     *data)
 {
 
-  PlotText_T *plot = (PlotText_T*)data;
+  PlotText_T        *plot    = (PlotText_T*)data;
+  PlotTextRowData_T *rowData = (PlotTextRowData_T*)NULL;
+  guint              row     = 0;
 
 
   /*
@@ -223,7 +407,31 @@ gdisp_destroyPlotText(Kernel_T *kernel,
     gtk_style_unref(plot->pttStyle);
 #endif
   }
+
+  /*
+   * Loop over all rows.
+   */
+  for (row=0; row<GTK_CLIST(plot->pttCList)->rows; row++) {
+
+    rowData = gtk_clist_get_row_data(GTK_CLIST(plot->pttCList),
+				     row);
+
+    if (rowData != (PlotTextRowData_T*)NULL) {
+      g_free(rowData);
+    }
+
+  }
+
+  /*
+   * Destroy the list.
+   */
   gtk_widget_destroy(plot->pttCList);
+
+
+  /*
+   * Destroy Menu.
+   */
+  gdisp_destroyMenu(plot->pttMenu);
 
 
   /*
@@ -304,12 +512,41 @@ gdisp_getPlotTextTopLevelWidget (Kernel_T  *kernel,
 
   PlotText_T *plot = (PlotText_T*)data;
 
-#if defined(DEBUG_TEXT)
+#if defined(GD_DEBUG_TEXT)
   fprintf(stdout,"Getting back text plot top level widget.\n");
   fflush (stdout);
 #endif
 
   return (GtkWidget*)plot->pttCList;
+
+}
+
+
+/*
+ * Popup Menu Handler.
+ * Change the format of the selected symbol.
+ */
+static void
+gdisp_popupMenuHandler ( Kernel_T    *kernel,
+			 PopupMenu_T *menu,
+			 gpointer     menuData,
+			 gpointer     itemData )
+{
+
+  PlotText_T        *plot    = (PlotText_T*)menuData;
+  Format_T           format  = (Format_T)itemData;
+  PlotTextRowData_T *rowData = (PlotTextRowData_T*)NULL;
+
+  /*
+   * Look for the current selected row and change its display format.
+   */
+  rowData =
+    (PlotTextRowData_T*)gtk_clist_get_row_data(GTK_CLIST(plot->pttCList),
+					       plot->pttSelectedRow);
+
+  if (rowData != (PlotTextRowData_T*)NULL) {
+    rowData->format = format;
+  }
 
 }
 
@@ -325,7 +562,7 @@ gdisp_showPlotText (Kernel_T  *kernel,
 
   PlotText_T *plot = (PlotText_T*)data;
 
-#if defined(DEBUG_TEXT)
+#if defined(GD_DEBUG_TEXT)
   fprintf(stdout,"Showing text plot.\n");
   fflush (stdout);
 #endif
@@ -334,6 +571,55 @@ gdisp_showPlotText (Kernel_T  *kernel,
    * Now show everything.
    */
   gtk_widget_show(plot->pttCList);
+
+  /*
+   * Create the dynamic menu.
+   * Menu cannot be created before because the parent list is not shown yet.
+   */
+  plot->pttMenu = gdisp_createMenu(kernel,
+				   plot->pttCList,
+				   "          Format" /* title */,
+				   gdisp_popupMenuHandler,
+				   (gpointer)plot);
+
+  /*
+   * Choose useful formats among all available.
+   */
+  gdisp_addMenuItem(plot->pttMenu,
+		    gdisp_getFormatLabel(GD_DEFAULT_FORMAT),
+		    (gpointer)GUINT_TO_POINTER(GD_DEFAULT_FORMAT));
+
+  gdisp_addMenuItem(plot->pttMenu,
+		    gdisp_getFormatLabel(GD_HEXADECIMAL_1),
+		    (gpointer)GUINT_TO_POINTER(GD_HEXADECIMAL_1));
+
+  gdisp_addMenuItem(plot->pttMenu,
+		    gdisp_getFormatLabel(GD_HEXADECIMAL_2),
+		    (gpointer)GUINT_TO_POINTER(GD_HEXADECIMAL_2));
+
+  gdisp_addMenuItem(plot->pttMenu,
+		    gdisp_getFormatLabel(GD_HEXADECIMAL_4),
+		    (gpointer)GUINT_TO_POINTER(GD_HEXADECIMAL_4));
+
+  gdisp_addMenuItem(plot->pttMenu,
+		    gdisp_getFormatLabel(GD_HEXADECIMAL_8),
+		    (gpointer)GUINT_TO_POINTER(GD_HEXADECIMAL_8));
+
+  gdisp_addMenuItem(plot->pttMenu,
+		    gdisp_getFormatLabel(GD_BINARY),
+		    (gpointer)GUINT_TO_POINTER(GD_BINARY));
+
+  gdisp_addMenuItem(plot->pttMenu,
+		    gdisp_getFormatLabel(GD_FLOATING_FIXED),
+		    (gpointer)GUINT_TO_POINTER(GD_FLOATING_FIXED));
+
+  gdisp_addMenuItem(plot->pttMenu,
+		    gdisp_getFormatLabel(GD_SCIENTIFIC),
+		    (gpointer)GUINT_TO_POINTER(GD_SCIENTIFIC));
+
+  gdisp_addMenuItem(plot->pttMenu,
+		    gdisp_getFormatLabel(GD_ASCII),
+		    (gpointer)GUINT_TO_POINTER(GD_ASCII));
 
 }
 
@@ -348,7 +634,7 @@ gdisp_getPlotTextType (Kernel_T *kernel,
 
   PlotText_T *plot = (PlotText_T*)data;
 
-#if defined(DEBUG_TEXT)
+#if defined(GD_DEBUG_TEXT)
   fprintf(stdout,"Getting back text plot type.\n");
 #endif
 
@@ -370,14 +656,15 @@ gdisp_addSymbolsToPlotText (Kernel_T *kernel,
 			    guchar    zoneId)
 {
 
-  PlotText_T *plot       = (PlotText_T*)data;
-  GList      *symbolItem =      (GList*)NULL;
-  Symbol_T   *symbol     =   (Symbol_T*)NULL;
-  gint        rowNumber  = 0;
-  gchar       sValue [128];
-  gchar      *rowInfo[GD_SYMBOL_MAX_COLUMNS];
+  PlotText_T        *plot       = (PlotText_T*)data;
+  GList             *symbolItem = (GList*)NULL;
+  Symbol_T          *symbol     = (Symbol_T*)NULL;
+  PlotTextRowData_T *rowData    = (PlotTextRowData_T*)NULL;
+  gint               rowNumber  = 0;
+  gchar              sValue [256];
+  gchar             *rowInfo[GD_SYMBOL_MAX_COLUMNS];
 
-#if defined(DEBUG_TEXT)
+#if defined(GD_DEBUG_TEXT)
   fprintf(stdout,"Adding symbols to text plot.\n");
   fflush (stdout);
 #endif
@@ -410,14 +697,29 @@ gdisp_addSymbolsToPlotText (Kernel_T *kernel,
        * Insert symbol into the graphic list.
        */
       rowInfo[0] = symbol->sInfo.name;
-      sprintf(rowInfo[1],"%f ",symbol->sLastValue);
+
+      gdisp_formatDoubleValue(symbol->sLastValue,
+			      GD_DEFAULT_FORMAT,
+			      rowInfo[1]);
 
       rowNumber = gtk_clist_append(GTK_CLIST(plot->pttCList),
 				   rowInfo);
 
-      gtk_clist_set_row_data(GTK_CLIST(plot->pttCList),
-			     rowNumber,
-			     (gpointer)symbol);
+      /*
+       * Attach characteristics to the row.
+       */
+      rowData = (PlotTextRowData_T*)g_malloc0(sizeof(PlotTextRowData_T));
+
+      if (rowData != (PlotTextRowData_T*)NULL) {
+
+	rowData->symbol = symbol;
+	rowData->format = GD_DEFAULT_FORMAT;
+
+	gtk_clist_set_row_data(GTK_CLIST(plot->pttCList),
+			       rowNumber,
+			       (gpointer)rowData);
+
+      }
 
     }
 
@@ -447,7 +749,7 @@ gdisp_getSymbolsFromPlotText (Kernel_T *kernel,
 
   PlotText_T *plot = (PlotText_T*)data;
 
-#if defined(DEBUG_TEXT)
+#if defined(GD_DEBUG_TEXT)
   fprintf(stdout,"Give back the list of symbols handled by the text plot.\n");
   fflush (stdout);
 #endif
@@ -486,11 +788,12 @@ gdisp_stepOnPlotText (Kernel_T *kernel,
 		      void     *data)
 {
 
-  PlotText_T *plot = (PlotText_T*)data;
-  gchar       sValue [128];
-  GList      *symbolItem =      (GList*)NULL;
-  Symbol_T   *symbol     =   (Symbol_T*)NULL;
-  gint        rowNumber  = 0;
+  PlotText_T        *plot       = (PlotText_T*)data;
+  PlotTextRowData_T *rowData    = (PlotTextRowData_T*)NULL;
+  GList             *symbolItem =      (GList*)NULL;
+  Symbol_T          *symbol     =   (Symbol_T*)NULL;
+  gint               rowNumber  = 0;
+  gchar              sValue [256];
 
 
   /*
@@ -502,10 +805,30 @@ gdisp_stepOnPlotText (Kernel_T *kernel,
     symbol = (Symbol_T*)symbolItem->data;
 
     /*
-     * Insert symbol into the graphic list.
+     * Get back requested format.
      */
-    sprintf(sValue,"%g ",symbol->sLastValue);
+    rowData =
+      (PlotTextRowData_T*)gtk_clist_get_row_data(GTK_CLIST(plot->pttCList),
+						 rowNumber);
 
+    if (rowData != (PlotTextRowData_T*)NULL) {
+
+      gdisp_formatDoubleValue(symbol->sLastValue,
+			      rowData->format,
+			      sValue);
+
+    }
+    else {
+
+      gdisp_formatDoubleValue(symbol->sLastValue,
+			      GD_DEFAULT_FORMAT,
+			      sValue);
+
+    }
+
+    /*
+     * Update symbol into the graphic list.
+     */
     gtk_clist_set_text(GTK_CLIST(plot->pttCList),
 		       rowNumber,
 		       GD_SYMBOL_VALUE_COLUMN,

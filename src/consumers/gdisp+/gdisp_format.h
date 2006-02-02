@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_plotText.h,v 1.2 2006-02-02 21:03:32 esteban Exp $
+$Id: gdisp_format.h,v 1.1 2006-02-02 21:03:32 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -34,71 +34,65 @@ Component : Graphic Tool
 Purpose   : Graphic Tool based on GTK+ that provide several kinds of
             plot. This tool is to be used with the generic TSP protocol.
 
-File      : Definition of 'text plot' private structures.
+File      : Definition of all formats.
 
 -----------------------------------------------------------------------
 */
 
-#ifndef __TEXT_PLOT_H__
-#define __TEXT_PLOT_H__
+#ifndef __FORMAT_H__
+#define __FORMAT_H__
+
+#include <glib.h>
+
+/*
+ * Available Formats.
+ *
+ * 1) hexadecimal (with packets of 1 / 2 / 4 / 8 bytes), for example
+ *           FF AA BB 34 11 22 22 66
+ *     or    FFAA BB34 1122 2266
+ *     or    FFAABB34 11222266
+ *     or    FFAABB3411222266
+ *
+ * 2) binary
+ *           10111001 10011011
+ *
+ * 3) floating fixed decimal
+ *           3.1234 (with fixed decimal number)
+ *
+ * 4) scientific
+ *           3.1234E-5
+ *
+ * 5) ASCII
+ *    convert each byte to ASCII mode
+ *    see : #include <ctype.h>
+ *          int toascii (int c);
+ *          int isascii (int c);
+ *          ...etc... 
+ *
+ */
+typedef enum {
+
+  GD_DEFAULT_FORMAT,
+  GD_HEXADECIMAL_1,
+  GD_HEXADECIMAL_2,
+  GD_HEXADECIMAL_4,
+  GD_HEXADECIMAL_8,
+  GD_BINARY,
+  GD_FLOATING_FIXED,
+  GD_SCIENTIFIC,
+  GD_ASCII,
+  GD_MAX_FORMATS
+
+} Format_T;
 
 
 /*
- * Private structure of a 'text plot'.
+ * Prototypes.
  */
-enum {
+gchar *gdisp_getFormatLabel    ( Format_T  format );
 
-  GD_SYMBOL_NAME_COLUMN  = 0,
-  GD_SYMBOL_VALUE_COLUMN = 1,
-  GD_SYMBOL_MAX_COLUMNS  = 2
+void   gdisp_formatDoubleValue ( gdouble   inputValue,
+				 Format_T  format,
+				 gchar    *outputBuffer );
 
-};
-
-
-/*
- * Characteristics of a row.
- */
-typedef struct PlotTextRowData_T_ {
-
-  Symbol_T *symbol;
-  Format_T  format;
-
-} PlotTextRowData_T;
-
-
-/*
- * Main plot structure.
- */
-typedef struct PlotText_T_ {
-
-  /*
-   * Attributes.
-   */
-  PlotType_T           pttType;
-
-  /*
-   * List of pointer on TSP_Symbol_T.
-   */
-  GList               *pttSymbolList;
-
-  /*
-   * Graphic widget.
-   */
-  GtkStyle            *pttStyle;
-  GtkWidget           *pttCList;
-  PopupMenu_T         *pttMenu;
-  guint                pttCListWidth;
-  guint                pttCListHeight;
-  gfloat               pttColumnRatio;
-  guchar               pttIsSizeAllocating;
-  guint                pttSelectedRow;
-
-  /*
-   * Parent widget.
-   */
-  GtkWidget           *pttParent;
-
-} PlotText_T;
-
-
-#endif /* __TEXT_PLOT_H__ */
+#endif /* __FORMAT_H__ */

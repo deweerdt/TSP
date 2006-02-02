@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_pages.c,v 1.10 2006-01-20 21:59:14 esteban Exp $
+$Id: gdisp_pages.c,v 1.11 2006-02-02 21:03:32 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -1551,6 +1551,7 @@ gdisp_finalizeGraphicPageCreation (Kernel_T *kernel,
 
   gtk_table_set_row_spacings(GTK_TABLE(newPage->pTable),
 			     GD_PAGE_ROW_SPACINGS);
+
   gtk_table_set_col_spacings(GTK_TABLE(newPage->pTable),
 			     GD_PAGE_COL_SPACINGS);
 

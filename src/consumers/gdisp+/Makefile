@@ -30,6 +30,8 @@ PLUGINS_SOURCES = \
 	gdisp_utils.c \
 	gdisp_toString.c \
 	gdisp_xml.c \
+	gdisp_format.c \
+	gdisp_popupMenu.c \
 	gdisp_plot2D.c \
 	gdisp_plotText.c 
 ifeq (${USABLE_OPENGL},yes)
@@ -66,7 +68,8 @@ $(UTIL_TARGET): gdisp_utils.c
 	$(COMPILE.c) -fPIC -o $(DIRSHOBJ)/gdisp_utils.o gdisp_utils.c
 	$(COMPILE.c) -fPIC -o $(DIRSHOBJ)/gdisp_toString.o gdisp_toString.c
 	$(COMPILE.c) -fPIC -o $(DIRSHOBJ)/gdisp_xml.o gdisp_xml.c
-	$(LINK.c) -shared -o $@ $(DIRSHOBJ)/gdisp_utils.o $(DIRSHOBJ)/gdisp_toString.o $(DIRSHOBJ)/gdisp_xml.o
+	$(COMPILE.c) -fPIC -o $(DIRSHOBJ)/gdisp_format.o gdisp_format.c
+	$(LINK.c) -shared -o $@ $(DIRSHOBJ)/gdisp_utils.o $(DIRSHOBJ)/gdisp_toString.o $(DIRSHOBJ)/gdisp_xml.o $(DIRSHOBJ)/gdisp_format.o
 
 # ---------------------------------------------------------
 # How to build plot 2D shared library.

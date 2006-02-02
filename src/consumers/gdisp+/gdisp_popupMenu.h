@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_plotText.h,v 1.2 2006-02-02 21:03:32 esteban Exp $
+$Id: gdisp_popupMenu.h,v 1.1 2006-02-02 21:03:32 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -34,71 +34,64 @@ Component : Graphic Tool
 Purpose   : Graphic Tool based on GTK+ that provide several kinds of
             plot. This tool is to be used with the generic TSP protocol.
 
-File      : Definition of 'text plot' private structures.
+File      : Dynamic popup menu management.
 
 -----------------------------------------------------------------------
 */
 
-#ifndef __TEXT_PLOT_H__
-#define __TEXT_PLOT_H__
+#ifndef __POPUP_MENU_H__
+#define __POPUP_MENU_H__
+
+#include "gdisp_kernel.h"
+
+/*
+ * Popup Menu Handler.
+ */
+typedef struct PopupMenu_T_ *PopupMenu_T_Ptr;
+
+typedef void (*PopupMenuHandler_T)(Kernel_T*,
+				   PopupMenu_T_Ptr,
+				   gpointer,
+				   gpointer);
+
+/*
+ * Dynamic PopupMenu.
+ */
+typedef struct PopupMenu_T_ {
+
+  /*
+   * Kernel.
+   */
+  Kernel_T  *kernel;
+
+  /*
+   * Popup menu widget, parent widget.
+   */
+  GtkWidget *menu;
+  GtkWidget *parent;
+
+  /*
+   * User handler and data.
+   */
+  PopupMenuHandler_T userHandler;
+  gpointer           userData;
+
+} PopupMenu_T;
 
 
 /*
- * Private structure of a 'text plot'.
+ * Prototypes.
  */
-enum {
+void         gdisp_addMenuItem ( PopupMenu_T        *menu,
+				 gchar              *itemLabel,
+				 gpointer            itemData );
 
-  GD_SYMBOL_NAME_COLUMN  = 0,
-  GD_SYMBOL_VALUE_COLUMN = 1,
-  GD_SYMBOL_MAX_COLUMNS  = 2
+void         gdisp_destroyMenu ( PopupMenu_T        *menu );
 
-};
+PopupMenu_T *gdisp_createMenu  ( Kernel_T           *kernel,
+				 GtkWidget          *parentWidget,
+				 gchar              *title,
+				 PopupMenuHandler_T  userHandler,
+				 gpointer            userData );
 
-
-/*
- * Characteristics of a row.
- */
-typedef struct PlotTextRowData_T_ {
-
-  Symbol_T *symbol;
-  Format_T  format;
-
-} PlotTextRowData_T;
-
-
-/*
- * Main plot structure.
- */
-typedef struct PlotText_T_ {
-
-  /*
-   * Attributes.
-   */
-  PlotType_T           pttType;
-
-  /*
-   * List of pointer on TSP_Symbol_T.
-   */
-  GList               *pttSymbolList;
-
-  /*
-   * Graphic widget.
-   */
-  GtkStyle            *pttStyle;
-  GtkWidget           *pttCList;
-  PopupMenu_T         *pttMenu;
-  guint                pttCListWidth;
-  guint                pttCListHeight;
-  gfloat               pttColumnRatio;
-  guchar               pttIsSizeAllocating;
-  guint                pttSelectedRow;
-
-  /*
-   * Parent widget.
-   */
-  GtkWidget           *pttParent;
-
-} PlotText_T;
-
-
-#endif /* __TEXT_PLOT_H__ */
+#endif /* __POPUP_MENU_H__ */
