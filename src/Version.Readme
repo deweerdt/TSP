@@ -145,7 +145,7 @@ V-0.7.0: Creation 04/11/05	tag TSP_0_7_0	Erk
         
         - TSP refactoring                                       - Erk
           * make GLU I/F more Object-Oriented
-          * merge patch from Thomas Testassecca
+          * merge patch from Thomas Testasecca
             for huge number of symbol handling in bb_provider   - TT->Erk
           * merge patch from Mathias Choquet for 
             TSP_request_async_write                             - MC->Erk
@@ -168,9 +168,12 @@ V-0.7.1: Creation JJxx/MM/2005	tag TSP_0_7_1
 	- Bug Corrections
 		* bug #14783  use numeric @IP  
                 * bug #14770  direct DNS resolv necessary
-        - Blackboard Alias System this is a contribution
-          from Thomas Testassecca and Miguel based on 
-          original design by Thomas, Miguel and Erk		- TT+MG->Erk
+        - Blackboard Alias System 
+          Now you can publish user data structure in BB 
+          AND distribute simple part of the structure by
+          declaring alias in BB. This is a contribution
+          from Thomas Testasecca and Miguel Sennoun based on 
+          original design by Thomas, Miguel and Erk		- TT+MS->Erk
         - Correct async read/write issue on bb_tsp_provider     
           this is a contribution from Julien BRUTUS 
           merged and lightly updated by Erk because of the
