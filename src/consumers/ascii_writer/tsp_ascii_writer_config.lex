@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer_config.lex,v 1.3 2005-02-18 19:24:00 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer_config.lex,v 1.4 2006-02-03 19:19:11 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -49,7 +49,7 @@ int yyerror(char *msg) {
   return 0;
 }
 %}
-T_SAMPLE_SYMBOL   [[:alpha:]][[:alnum:]_\[\]]*
+T_SAMPLE_SYMBOL   [[:alpha:]][[:alnum:]_\%\.\[\]]*
 T_PERIOD          [[:digit:]]*
 T_SPACE           [[:blank:]]*
 T_NEWLINE         \t*\n
