@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl_init/tsp_provider_init.h,v 1.10 2005-10-23 13:15:21 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl_init/tsp_provider_init.h,v 1.11 2006-02-03 20:46:22 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -44,11 +44,13 @@ Purpose   : Function calls to launch a TSP Provider program
 
 BEGIN_C_DECLS
 
+/** @defgroup Provider { */
+
 /**
  * Main initialisation function for a TSP provider.
  * Call this function at the start of your main function
  * with the received argc/argv. Then use the modified argc/argv.
- * @param the GLU object to be used by this provider.
+ * @param theGLU the GLU object to be used by this provider.
  * @param argc You must provide the real argc before using it
  * @param argv You must provide the real argv before using it
  * @return TRUE or FALSE. OK = TRUE.
@@ -112,6 +114,8 @@ char **TSP_provider_urls(int pub_mode);
 
 
 void TSP_provider_print_usage(void);
+
+/**  } */
 
 END_C_DECLS
 

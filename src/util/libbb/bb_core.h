@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.h,v 1.16 2006-01-22 09:35:15 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.h,v 1.17 2006-02-03 20:46:22 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -357,6 +357,8 @@ bb_value_print(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc, FILE* pf,
  * @param bb IN pointer to BB where the data reside
  * @param data_desc INOUT pointer to data descriptor.
  * @param pf INOUT stream file pointer to be used for printing.
+ * @param idxstack IN, the index stack 
+ * @param idxstack_len IN, the size of the index stack
  * @return always return E_OK unless pf is NULL.
  * @ingroup BlackBoard
  */

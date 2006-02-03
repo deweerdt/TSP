@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_tools.h,v 1.6 2005-08-14 22:39:36 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_tools.h,v 1.7 2006-02-03 20:46:22 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -51,44 +51,6 @@ Purpose   : BlackBoard Idiom implementation
  * @defgroup BBTools_API
  * The BlackBoard tools.
  * @ingroup BBTools
- */
-
-/**
- * @defgroup BBTools_Command
- * The BB Tools command line interface.
- * Those tools may be launch without argument and will provide
- * a command line option summary (if needed).
- *
- * \par \c bb_findlabel \c \<bbname\> \c \<labelmatch\>
- * A command line tool used to find a label
- * in the specified BlackBoard.\n
- * \arg \c bbname the blackboard name
- * \arg \c labelmatch the part to find
- * The command will list the name of
- * all symbols found in blackboard
- * that match \c labelmatch.
- *
- * \par \c bb_dump \c \<bbname\>
- * Dump the specified BlackBoard.\n
- * \arg \c bbname the blackboard name
- * The command will dump all symbols and associated value
- * output may be huge if not filtered.
- *
- * \par \c bb_read \c \<bbname\> \c \<symname\>
- * Read the value of a specified symbol in specified Blackboard.\n
- * \arg \c bbname the blackboard name
- * \arg \c symname the exact name of the Blackboard symbol to read
- * Value of the symbols is printed iff it is printable, non-printable
- * value will gives '?'.
- *
- * \par \c bb_write \c \<bbname\> \c \<symname\> \c \<value\>
- * Write to a BlackBoard symbol variable.
- * \arg \c bbname the blackboard name
- * \arg \c symname the blackboard symbol name
- * \arg \c value the value to be written
- *
- * @ingroup BBTools
- * @ingroup TSP_Applications
  */
 
 /**
@@ -199,9 +161,8 @@ E_BBTOOLS_CMD_T
 bbtools_checkargs(bbtools_request_t* req);
 
 /**
- * Print usage of the specified bbtools command.
- * @param stream IN, the stream to print on
- * @param bbtools_cmd IN, the bbtools command.
+ * Print usage of the specified bbtools request.
+ * @param req IN, the bbtools request.
  * @ingroup BBTools_API
  */
 void 

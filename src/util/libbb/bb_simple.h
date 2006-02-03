@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_simple.h,v 1.5 2006-01-22 09:35:15 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_simple.h,v 1.6 2006-02-03 20:46:22 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -207,6 +207,7 @@ int32_t bb_simple_thread_synchro_wait(int type_msg);
  *     several instance of the same moule.
  * @param bb_simple INOUT, a pointer to a valid BB.
  * @param var_name IN, the name of the data
+ * @param target_var_name IN, the name of the target of the alias currently being defined
  * @param module_name IN, the module name
  * @param module_instance IN, the module instance, -1 signify no instance.
  * @param bb_type IN, BlackBoard data type.

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_group_algo.c,v 1.13 2005-11-29 22:08:53 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_group_algo.c,v 1.14 2006-02-03 20:46:22 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -75,7 +75,7 @@ number group_number */
 
 /**
 * Get the total number of groups.
-* @symbols list of symbols on which the number of groups must be calculated
+* @param symbols list of symbols on which the number of groups must be calculated
 * @return Total Number of groups for the list
 */
 int TSP_group_algo_get_nb_groups(const TSP_sample_symbol_info_list_t* symbols)

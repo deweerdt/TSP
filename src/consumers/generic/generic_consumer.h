@@ -1,6 +1,6 @@
-/*!  \file 
+/*
 
-$Header: /home/def/zae/tsp/tsp/src/consumers/generic/generic_consumer.h,v 1.3 2005-10-30 17:18:17 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/consumers/generic/generic_consumer.h,v 1.4 2006-02-03 20:46:22 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -87,7 +87,7 @@ generic_consumer(generic_consumer_request_t* req);
 /**
  * Return the BB Tools command type
  * from the string passed as parameter
- * @param generic_consumer_string the name of the generic_consumer command
+ * @param generic_consumer_request_string the name of the generic_consumer command
  * @ingroup Generic_Consumer_API
  */
 TSP_request_type_t
@@ -101,9 +101,8 @@ TSP_request_type_t
 generic_consumer_checkargs(generic_consumer_request_t* req);
 
 /**
- * Print usage of the specified generic_consumer command.
- * @param stream IN, the stream to print on
- * @param generic_consumer_cmd IN, the generic_consumer command.
+ * Print usage of the specified generic_consumer request.
+ * @param req IN, the generic_consumer request.
  * @ingroup Generic_Consumer_API
  */
 void 

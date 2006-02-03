@@ -1,6 +1,6 @@
-/*!  \file 
+/*
 
-$Id: tsp_default_glu.h,v 1.2 2005-11-29 22:08:53 erk Exp $
+$Id: tsp_default_glu.h,v 1.3 2006-02-03 20:46:22 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -41,7 +41,7 @@ Purpose   : Interface for the glue server : the data producer
 #include <tsp_glu.h>
 /**
  * @defgroup DefaultGLU
- * @ingroup GLUServer
+ * @ingroup GLU
  * The default GLU API implements
  * default function that are suitable for a 'simple'
  * @{

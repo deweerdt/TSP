@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_group_algo.h,v 1.6 2002-12-24 14:14:18 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_group_algo.h,v 1.7 2006-02-03 20:46:22 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -68,7 +68,7 @@ void TSP_group_algo_create_symbols_table_free_call(TSP_sample_symbol_info_list_t
 
 /**
  * Destroy the group table
- * @param old_out_symbols List allocated by TSP_group_algo_create_symbols_table
+ * @param groups List allocated by TSP_group_algo_create_symbols_table
  */
 void TSP_group_algo_destroy_symbols_table(TSP_groups_t* groups);
 

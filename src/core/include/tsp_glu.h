@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: tsp_glu.h,v 1.4 2005-12-05 21:51:15 erk Exp $
+$Id: tsp_glu.h,v 1.5 2006-02-03 20:46:22 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -43,12 +43,12 @@ Purpose   : Interface for the glue server : the data producer
 
 
 /**
- * @defgroup GLUServer
+ * @defgroup GLU
  * @ingroup Provider
- * The GLU server is the part of the TSP provider that should be
+ * The GLU is the part of the TSP provider that should be
  * coded each time the underlying 'real' sampled system 
  * (hardware card, simulator, ...) change.
- * The GLU interface should be implemented in order to combine
+ * The GLU object interface should be implemented in order to combine
  * the TSP provider lib in a real TSP provider.
  * @{
  */
@@ -336,6 +336,9 @@ BEGIN_C_DECLS
  * Create a GLU_handle. 
  * This will provide some default implementation for member function.
  * @param glu OUT, pointer to a GLU_handle pointer that will be allocated
+ * @param name IN, the name of the GLU that will be advertised by the TSP provider.
+ * @param type IN, the type of the GLU @see GLU_server_type_t
+ * @param base_frequency IN, the base frequency that will be advertised by the TSP provider
  * @return TRUE if ok FALSE otherwise
  */
 int32_t GLU_handle_create(GLU_handle_t** glu, const char* name, const GLU_server_type_t type, const double base_frequency);

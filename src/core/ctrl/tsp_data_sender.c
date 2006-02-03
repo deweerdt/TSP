@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_data_sender.c,v 1.16 2004-09-22 14:25:58 tractobob Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_data_sender.c,v 1.17 2006-02-03 20:46:22 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -335,7 +335,7 @@ int TSP_data_sender_send_msg_ctrl(TSP_data_sender_t sender, TSP_msg_ctrl_t msg_c
  * For a given time stamp, send data to a client.
  * @param _sender sender used to send the data
  * @param _groups groups used to calculate the data
- * @param t time stamp sent with the data
+ * @param time_stamp sent with the data
  * @return TRUE = OK
  */
 int TSP_data_sender_send(TSP_data_sender_t _sender, TSP_groups_t _groups, time_stamp_t time_stamp) 

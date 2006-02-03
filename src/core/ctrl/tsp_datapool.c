@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_datapool.c,v 1.22 2005-10-30 17:18:17 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_datapool.c,v 1.23 2006-02-03 20:46:22 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -136,8 +136,8 @@ inline int TSP_datapool_push_next_item(glu_item_t* item)
 
 /**
  * End of push, we commit the whole
- * @param time : date of datapool items
- * @param state: ok or error (reconf,eof, ...)
+ * @param time_stamp date of datapool items
+ * @param state ok or error (reconf,eof, ...)
  */ 
 int TSP_datapool_push_commit(time_stamp_t time_stamp, GLU_get_state_t state)
 {

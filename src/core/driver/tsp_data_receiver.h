@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_data_receiver.h,v 1.7 2003-12-27 13:31:01 uid67973 Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_data_receiver.h,v 1.8 2006-02-03 20:46:22 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -50,6 +50,7 @@ typedef int(*TSP_data_decoder_t)(void* v, char* in_buf);
 
 /**
  * Receive the data coming from the provider.
+ * @param _receiver the data reciever object handle
  * @param _groups The group object handle
  * @param sample_fifo The ringbuf in which the incoming data must be put
  * @param fifo_full (*fifo_full) is set to TRUE when the ringbuf is full
@@ -71,19 +72,19 @@ TSP_data_receiver_t TSP_data_receiver_create(const char* data_address, TSP_sampl
  * Prepare the receiver to stop.
  * This function set the receiver in a state, where the it does not
  * complain if the data stream is broken by the provider stream sender.
- * @param receiver handle
+ * @param _receiver handle
  */
 void TSP_data_receiver_prepare_stop(TSP_data_receiver_t _receiver);
 
 /**
  * Stop receiving data.
- * @param receiver handle
+ * @param _receiver handle
  */
 void TSP_data_receiver_stop(TSP_data_receiver_t _receiver);
 
 /**
  * Destroy a data receiver object.
- * @param receiver handle that must be destroyed
+ * @param _receiver handle that must be destroyed
  */
 void TSP_data_receiver_destroy(TSP_data_receiver_t _receiver);
 

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_group.h,v 1.4 2005-10-09 23:01:24 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_group.h,v 1.5 2006-02-03 20:46:22 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -47,7 +47,7 @@ typedef  void* TSP_groups_t;
 
 /**
  * Creation of the group object.
- * @param The symbol list that will be used to create the groups.
+ * @param symbols The symbol list that will be used to create the groups.
  * @param group_number The total number of groups
  * @return The group object handle
  */

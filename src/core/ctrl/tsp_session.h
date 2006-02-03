@@ -1,6 +1,6 @@
-/*!  \file 
+/*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.h,v 1.13 2005-10-23 13:15:21 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.h,v 1.14 2006-02-03 20:46:22 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -61,7 +61,7 @@ void TSP_session_init(void);
 
 /**
  * Close a session.
- * @param channed_id The channel id that must be close
+ * @param channel_id The channel id that must be close
  */
 void TSP_session_close_session_by_channel(channel_id_t channel_id);
 
@@ -86,7 +86,7 @@ void TSP_session_create_symbols_table_by_channel_free_call(TSP_answer_sample_t* 
 
 /**
  * destroy a session.
- * @param channed_id The channel id that must be destroyed
+ * @param channel_id The channel id that must be destroyed
  */
 void TSP_session_destroy_symbols_table_by_channel(channel_id_t channel_id);
 

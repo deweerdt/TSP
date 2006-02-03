@@ -1,7 +1,6 @@
+/*
 
-/*!  \file 
-
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_tools.c,v 1.19 2006-01-22 09:35:15 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_tools.c,v 1.20 2006-02-03 20:46:22 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -296,15 +295,15 @@ bbtools_usage(bbtools_request_t* req) {
   case E_BBTOOLS_GENERIC:
   case E_BBTOOLS_HELP:
     fprintf(req->stream, 
-	    "TSP bbtools v%s (%s)\n",TSP_SOURCE_VERSION,TSP_PROJECT_URL);
+	    "TSP bb_tools v%s (%s)\n",TSP_SOURCE_VERSION,TSP_PROJECT_URL);
     fprintf(req->stream, 
-	    "Usage: %s [bbtools_opts] <bbtools_cmd> [cmd_opts]\n",
+	    "Usage: %s [bb_tools_opts] <bb_tools_cmd> [cmd_opts]\n",
 	    bbtools_cmdname_tab[E_BBTOOLS_GENERIC]);
-    fprintf(req->stream,"   bbtools_opts:\n");
+    fprintf(req->stream,"   bb_tools_opts:\n");
     fprintf(req->stream,"    -s silent mode (may be used for silent scripting)\n");
     fprintf(req->stream,"    -v verbose mode\n");
     fprintf(req->stream,"    -n no newline read mode\n");
-    fprintf(req->stream,"   supported <bbtools_cmd> are: \n");
+    fprintf(req->stream,"   supported <bb_tools_cmd> are: \n");
     for (i=E_BBTOOLS_GENERIC+1;i<E_BBTOOLS_LASTCMD;++i) {
       fprintf(req->stream,
 	      "    %s%s: %s\n",
