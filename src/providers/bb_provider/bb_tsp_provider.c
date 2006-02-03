@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/providers/bb_provider/bb_tsp_provider.c,v 1.18 2006-01-27 17:24:42 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/providers/bb_provider/bb_tsp_provider.c,v 1.19 2006-02-03 19:22:27 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -382,6 +382,7 @@ BB_GLU_get_pgi(GLU_handle_t* this, TSP_sample_symbol_info_list_t* symbol_list, i
 	     STRACE_INFO  (("symbol <%s> not found in BB <%s>",
 			    sym_data_desc.name,
 			    shadow_bb->name));
+	     pg_indexes[i] = -1;
 	     ret = FALSE;
 	     continue;
 	   }
