@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer.c,v 1.11 2005-11-29 22:06:49 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer.c,v 1.12 2006-02-03 19:20:36 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -142,13 +142,7 @@ tsp_ascii_writer_add_comment(char* comment) {
 } /* tsp_ascii_writer_add_var_period */
 
 
-/*
- * This is an internal TSP ascii writer function which validate
- * a symbol against a tsp symbols list obtained from a TSP 
- * request info.
- * This is a brute force linear search
- * FIXME should be done another way on a hashed version of the tsp_symbols array.
- */
+
  
 /* Used to accelerate array search, we store the last symbol found */
 static char    previous_symbol_found[128] = "this_string_might_not_be_a_symbol_name_14742572";
@@ -161,8 +155,9 @@ tsp_ascii_writer_validate_symbol_info(char* symbol_name,
   int32_t retval;
   char*   searched_array_symbol;
   
-  /* Compare this symbol with previous ( works for arrays ) */
-  if (strncmp(symbol_name,previous_symbol_found,strlen(previous_symbol_found)) == 0 ) {
+  /* Compare this symbol with previous (accelerate array match) */
+  if ((previous_symbol_found_dim != 0) &&
+      (strncmp(symbol_name,previous_symbol_found,strlen(previous_symbol_found)) == 0 )) {
     STRACE_DEBUG(("Symbol [%s] matches with previous_symbol [%s]",symbol_name,previous_symbol_found));
     return previous_symbol_found_dim;
   }
@@ -376,7 +371,7 @@ tsp_ascii_writer_new_validate_symbols(TSP_consumer_symbol_requested_t*  tsp_symb
       STRACE_INFO(("Examining symbol <%s> of pgi <%d>",current_requested_symbols_list.val[i].name,current_requested_symbols_list.val[i].index));
       if (current_requested_symbols_list.val[i].index == -1) {
 	my_logMsg("Checking for symbol like <%s> on provider side.\n",current_requested_symbols_list.val[i].name);
-	/* ask for filtered information using the name of invalid symbols */
+	/* Ask for filtered information using the name of the currently invalid symbol */
 	TSP_consumer_request_filtered_information(myproviders[0],TSP_FILTER_SIMPLE,current_requested_symbols_list.val[i].name);
 	current_tsp_info = TSP_consumer_get_information(myproviders[0]);
 	symbol_dim = tsp_ascii_writer_validate_symbol_info(current_requested_symbols_list.val[i].name,&(current_tsp_info->symbols));
@@ -474,6 +469,7 @@ tsp_ascii_writer_new_validate_symbols(TSP_consumer_symbol_requested_t*  tsp_symb
   /* Now send request sample */
   if (0==retcode) {
     if (!TSP_consumer_request_sample(myproviders[0],tsp_symbol_list)) {
+      TSP_consumer_print_invalid_symbols(stderr,&tsp_symbol_list,tsp_provider_url);
       STRACE_ERROR(("TSP request sample refused by the provider?huh?..."));
       retcode = -1;
     }
@@ -482,145 +478,6 @@ tsp_ascii_writer_new_validate_symbols(TSP_consumer_symbol_requested_t*  tsp_symb
   return retcode;
   
 }
-#if 0
-int32_t 
-tsp_ascii_writer_old_validate_symbols(TSP_consumer_symbol_requested_t*  tsp_symbols,
-				      int32_t nb_symbols,
-				      const char* tsp_provider_url,
-				      TSP_consumer_symbol_requested_list_t* tsp_symbol_list) {
-          
-  int32_t retcode;
-  const TSP_consumer_information_t* tsp_info=NULL;
-  int32_t symbol_dim;
-  int32_t nb_scalar_symbol; 
-  int32_t i;
-  int32_t j;
-  int32_t var_index;
-  int32_t forced_period;
-  
-  retcode = 0;
-  /* 
-   * Connect to the provider.
-   */
-  if (NULL == myproviders) {
-    myproviders = calloc(1,sizeof(TSP_provider_t));
-    myproviders[0] = TSP_consumer_connect_url(tsp_provider_url);
-    /* Verify if there is at least one provider */
-    if (0==myproviders[0]) {
-      STRACE_ERROR(("No provider found?!?"));
-      retcode = -1;
-    } else if (!TSP_consumer_request_open(myproviders[0], 0, 0 )) {
-      STRACE_ERROR(("Cannot connect to provider <%s> (TSP_request_open failed.)",TSP_consumer_get_connected_name(myproviders[0])));
-      retcode = -1;
-    }
-  }
-
-  if (0==retcode) {
-    /* send request info for getting symbols list */
-    if(!TSP_consumer_request_information(myproviders[0])) {
-      STRACE_ERROR(("TSP_request_information failed"));
-      retcode = -1;
-    }
-  }
-
-  if (0==retcode) {
-    tsp_info = TSP_consumer_get_information(myproviders[0]);	
-    /* We now validate symbols from config file against
-     * the list provided by the TSP provider
-     * (we discover array var too)
-     */
-    nb_scalar_symbol = 0;
-    forced_period    = -1;
-    for (i=0;i<nb_symbols;++i) {
-    
-      /* Do symbol validation */
-      symbol_dim = tsp_ascii_writer_validate_symbol_info(tsp_symbols[i].name,&(tsp_info->symbols));
-            
-      /* symbol not found */
-      if (0==symbol_dim) {
-	      my_logMsg("Symbol <%s> not found on provider side.\n",tsp_symbols[i].name);
-	      /* hack for ignoring unfound symbols */
-	      tsp_symbols[i].phase  = -1;
-        
-      } else { /* symbol found */
-	      my_logMsg("Asking for symbol <%s> with period <%d>\n",
-		      tsp_symbols[i].name,
-		      tsp_symbols[i].period);
-	      /* 
-	       * FIXME force period to be the same 
-	       * as the first valid symbol
-	       */
-	      if (-1 == forced_period) {
-	        forced_period = tsp_symbols[i].period;
-	      } else {
-	        if (tsp_symbols[i].period != forced_period) {
-	          tsp_symbols[i].period = forced_period;
-	          my_logMsg("[period forced to <%d>]",tsp_symbols[i].period);
-	        }
-	      }
-	      if (symbol_dim>1) {
-	        my_logMsg(" [array of size <%d>]\n",symbol_dim);
-	      } else {
-	        my_logMsg("\n");
-	      }
-	      /* 
-	       * It's not so nice 
-	       * but we use the phase to store symbol dim
-	       * FXIME waiting for tsp to handle arrays !!!
-	       */
-	      tsp_symbols[i].phase  = symbol_dim;
-	      nb_scalar_symbol     += symbol_dim;
-      } /* else symbol found */
-    } /* loop over symbols coming from config file */
-  } /* retcode is OK */
-  
-  /* Now build request sample */
-  if (0==retcode) {
-    tsp_symbol_list->val = (TSP_consumer_symbol_requested_t*)calloc(nb_scalar_symbol, sizeof(TSP_consumer_symbol_requested_t));
-    tsp_symbol_list->len = nb_scalar_symbol;
-    var_index = 0;
-    for (i=0;i<nb_symbols; ++i) {
-      /* 
-       * Generate symbol name for array var specified without index.
-       */
-      if (tsp_symbols[i].phase > 1) {
-	for (j=0;j<tsp_symbols[i].phase;++j) {	    
-	  tsp_symbol_list->val[var_index].name = malloc(MAX_VAR_NAME_SIZE*sizeof(char));
-	  snprintf(tsp_symbol_list->val[var_index].name,
-		   MAX_VAR_NAME_SIZE,		     
-		   "%s[%0d]",
-		   tsp_symbols[i].name,
-		   j);
-	  STRACE_DEBUG(("Asking for TSP var = <%s>",tsp_symbol_list->val[var_index].name));
-	  tsp_symbol_list->val[var_index].period = tsp_symbols[i].period;
-	  tsp_symbol_list->val[var_index].phase  = 0;
-	  ++var_index;
-	} /* loop over array var index */
-      } else {
-	/* ignore symbols with negative phase */
-	if (tsp_symbols[i].phase >0) {
-	  tsp_symbol_list->val[var_index].name   = strdup(tsp_symbols[i].name);
-	  STRACE_DEBUG(("Asking for TSP var = <%s>",tsp_symbol_list->val[var_index].name));
-	  tsp_symbol_list->val[var_index].period = tsp_symbols[i].period;
-	  tsp_symbol_list->val[var_index].phase  = 0;
-	  ++var_index;
-	}
-      } /* end if tsp_symbols[i].phase > 1 */
-    } /* loop over nb_symbols */
-  } /* end of build request_sample */
-  
-  /* Now send request sample */
-  if (0==retcode) {
-    if (!TSP_consumer_request_sample(myproviders[0],tsp_symbol_list)) {
-      STRACE_ERROR(("TSP request sample refused by the provider?huh?..."));
-      retcode = -1;
-    }
-  }
-  
-  return retcode;
-} /* tsp_ascii_writer_old_validate_symbols */
-
-#endif
 
 int32_t 
 tsp_ascii_writer_validate_symbols(TSP_consumer_symbol_requested_t*  tsp_symbols,
