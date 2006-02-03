@@ -163,11 +163,15 @@ V-0.7.0: Creation 04/11/05	tag TSP_0_7_0	Erk
           TSP_request_filtered_informations
 	- Updated ascii_writer for using provider-side
  	  validation and TSP_request_filtered_informations      - Erk
-V-0.7.1: Creation JJxx/MM/2005	tag TSP_0_7_1
+V-0.7.1: Creation 03/02/2006	tag TSP_0_7_1
 	- Gdisp+ save/restore feature				- Euskadi
+	- Gdisp+ textview with value rendering 
+          (hexa, binary, scientific,...)                        - Euskadi
 	- Bug Corrections
 		* bug #14783  use numeric @IP  
                 * bug #14770  direct DNS resolv necessary
+                * bug #14992  GLU thread start IFF one consumer has connected
+                * bug #15249  Bad Value in async read for array name
         - Blackboard Alias System 
           Now you can publish user data structure in BB 
           AND distribute simple part of the structure by
