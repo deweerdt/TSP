@@ -125,7 +125,7 @@ date, time and user name.
               </zip>
         </target>
         <!-- RPM task requires ant-nodeps jpackage -->
-        <target name="rpm-common" depends="tar">
+        <target name="rpm-common" depends="targz">
             <mkdir dir="${dist.dir}/tmp"/> 
             <mkdir dir="${rpm.topdir}"/> 
             <mkdir dir="${rpm.topdir}/BUILD"/> 
