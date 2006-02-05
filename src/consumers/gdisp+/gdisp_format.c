@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_format.c,v 1.1 2006-02-02 21:03:32 esteban Exp $
+$Id: gdisp_format.c,v 1.2 2006-02-05 18:02:36 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -127,7 +127,9 @@ gdisp_formatInteger64toBinary ( guint64   uInteger64,
   /*
    * Terminate the string.
    */
-  *outputBuffer = '\0';
+  *outputBuffer++ = ' ';
+  *outputBuffer++ = 'b';
+  *outputBuffer   = '\0';
 
 }
 
@@ -147,7 +149,7 @@ gdisp_formatInteger64toHexadecimal ( guint64   uInteger64,
   if (format == GD_HEXADECIMAL_1) {
 
     sprintf(outputBuffer,
-	    "%08X%08X ",
+	    "0x %08X%08X ",
 	    (guint32)((uInteger64 >> 32) & 0xFFFFFFFF),
 	    (guint32)((uInteger64      ) & 0xFFFFFFFF));
 
@@ -155,7 +157,7 @@ gdisp_formatInteger64toHexadecimal ( guint64   uInteger64,
   else if (format == GD_HEXADECIMAL_2) {
 
     sprintf(outputBuffer,
-	    "%08X %08X ",
+	    "0x %08X %08X ",
 	    (guint32)((uInteger64 >> 32) & 0xFFFFFFFF),
 	    (guint32)((uInteger64      ) & 0xFFFFFFFF));
 
@@ -163,7 +165,7 @@ gdisp_formatInteger64toHexadecimal ( guint64   uInteger64,
   else if (format == GD_HEXADECIMAL_4) {
 
     sprintf(outputBuffer,
-	    "%04X %04X %04X %04X",
+	    "0x %04X %04X %04X %04X",
 	    (guint32)((uInteger64 >> 48) & 0xFFFF),
 	    (guint32)((uInteger64 >> 32) & 0xFFFF),
 	    (guint32)((uInteger64 >> 16) & 0xFFFF),
@@ -173,7 +175,7 @@ gdisp_formatInteger64toHexadecimal ( guint64   uInteger64,
   else if (format == GD_HEXADECIMAL_8) {
 
     sprintf(outputBuffer,
-	    "%02X %02X %02X %02X %02X %02X %02X %02X ",
+	    "0x %02X %02X %02X %02X %02X %02X %02X %02X ",
 	    (guint32)((uInteger64 >> 56) & 0xFF),
 	    (guint32)((uInteger64 >> 48) & 0xFF),
 	    (guint32)((uInteger64 >> 40) & 0xFF),
@@ -198,22 +200,95 @@ gdisp_formatInteger64toHexadecimal ( guint64   uInteger64,
 
 /*
  * Get back the label of a given format.
+ * Long labels to be put onto the GTK GUI.
  */
 gchar*
 gdisp_getFormatLabel ( Format_T format )
 {
 
   char *labelTable[GD_MAX_FORMATS] = { "Default",
-				       "Hexadecimal",
-				       "Hexadecimal (2 blocks)",
-				       "Hexadecimal (4 blocks)",
-				       "Hexadecimal (8 blocks)",
+				       "Hex. 1 block",
+				       "Hex. 2 blocks",
+				       "Hex. 4 blocks",
+				       "Hex. 8 blocks",
 				       "Binary",
-				       "Floating Fixed Decimal",
+				       "0.0",
+				       "0.00",
+				       "0.000",
+				       "0.0000",
+				       "0.00000",
+				       "0.000000",
+				       "0.0000000",
+				       "0.00000000",
+				       "0.000000000",
+				       "0.0000000000",
 				       "Scientific",
 				       "Printable Ascii Code" };
 
   return (format < GD_MAX_FORMATS ? labelTable[format] : "<<<error>>>");
+
+}
+
+
+/*
+ * Get back the label of a given format.
+ * Small label to be put into the configuration.
+ */
+gchar*
+gdisp_getFormatSmallLabel ( Format_T *format,
+			    gchar    *formatAsString )
+{
+
+  char *labelTable[GD_MAX_FORMATS] = { "Default",
+				       "Hex.1",
+				       "Hex.2",
+				       "Hex.4",
+				       "Hex.8",
+				       "Binary",
+				       "Ffd.1",
+				       "Ffd.2",
+				       "Ffd.3",
+				       "Ffd.4",
+				       "Ffd.5",
+				       "Ffd.6",
+				       "Ffd.7",
+				       "Ffd.8",
+				       "Ffd.9",
+				       "Ffd.10",
+				       "Scientific",
+				       "Ascii" };
+
+  if (formatAsString == (gchar*)NULL) {
+
+    /*
+     * Conversion Format_T --> format as a string.
+     */
+    return (*format < GD_MAX_FORMATS ? labelTable[*format] : "<<<error>>>");
+
+  }
+  else {
+
+    /*
+     * conversion format as a string --> Format_T.
+     */
+    for ((*format) = GD_DEFAULT_FORMAT;
+	 (*format) < GD_MAX_FORMATS;
+	 (*format)++) {
+
+      if (strcmp(labelTable[*format],formatAsString) == 0) {
+	return (gchar*)NULL;
+      }
+
+    } /* for */
+
+    /*
+     * Fallback.
+     */
+    *format = GD_DEFAULT_FORMAT;
+
+  } /* else */
+
+  return (gchar*)NULL;
 
 }
 
@@ -227,6 +302,8 @@ gdisp_formatDoubleValue ( gdouble   inputValue,
 			  gchar    *outputBuffer )
 {
 
+  gchar ffFormat[12];
+
   /*
    * Format input double precision real according to requested format.
    */
@@ -236,8 +313,18 @@ gdisp_formatDoubleValue ( gdouble   inputValue,
     sprintf(outputBuffer,"%g ",inputValue);
     break;
 
-  case GD_FLOATING_FIXED :
-    sprintf(outputBuffer,"%f ",inputValue);
+  case GD_FLOATING_FIXED_1 :
+  case GD_FLOATING_FIXED_2 :
+  case GD_FLOATING_FIXED_3 :
+  case GD_FLOATING_FIXED_4 :
+  case GD_FLOATING_FIXED_5 :
+  case GD_FLOATING_FIXED_6 :
+  case GD_FLOATING_FIXED_7 :
+  case GD_FLOATING_FIXED_8 :
+  case GD_FLOATING_FIXED_9 :
+  case GD_FLOATING_FIXED_10 :
+    sprintf(ffFormat,"%c.%df ",'%',format - GD_FLOATING_FIXED_1 + 1);
+    sprintf(outputBuffer,ffFormat,inputValue);
     break;
 
   case GD_HEXADECIMAL_1 :

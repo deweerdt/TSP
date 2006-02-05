@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_xml.c,v 1.2 2005-12-03 15:46:20 esteban Exp $
+$Id: gdisp_xml.c,v 1.3 2006-02-05 18:02:36 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -364,7 +364,7 @@ gdisp_xmlIndent( xmlTextWriterPtr  writer,
 /*
  * Write an element and its attributes.
  */
-int
+gint
 gdisp_xmlWriteAttributes( xmlTextWriterPtr  writer,
 			  gchar             indentationMode,
 			  xmlChar          *indentBuffer,
@@ -373,7 +373,7 @@ gdisp_xmlWriteAttributes( xmlTextWriterPtr  writer,
 			  ... )
 {
 
-  int     errorCode       = 0;
+  gint     errorCode       = 0;
   xmlChar *attributeName  = (xmlChar*)NULL;
   xmlChar *attributeValue = (xmlChar*)NULL;
   va_list  argList;
@@ -445,6 +445,113 @@ gdisp_xmlWriteAttributes( xmlTextWriterPtr  writer,
 
 
 /*
+ * Write an element and its attributes.
+ */
+gint
+gdisp_xmlWriteAttributeList ( xmlTextWriterPtr  writer,
+			      gchar             indentationMode,
+			      xmlChar          *indentBuffer,
+			      xmlChar          *elementName,
+			      gboolean          endUpElement,
+			      GList            *attributeList )
+{
+
+  gint     errorCode       = 0;
+  xmlChar *attributeName  = (xmlChar*)NULL;
+  xmlChar *attributeValue = (xmlChar*)NULL;
+
+  /*
+   * Goto line and ident.
+   */
+  gdisp_xmlGotoLine(writer);
+  gdisp_xmlIndent  (writer,
+		    indentBuffer,
+		    indentationMode);
+
+  errorCode = xmlTextWriterStartElement(writer,
+					elementName);
+
+  if (errorCode < 0) {
+    /* No need to print any error message, because gdisp+ is exiting */
+    return errorCode;
+  }
+
+
+  /*
+   * Loop until the end of the list.
+   * It is assumed that the list is a list of pairs.
+   */
+  attributeList = g_list_first(attributeList);
+  while (attributeList != (GList*)NULL) {
+
+    /*
+     * Retreive attribute name and value.
+     */
+    attributeName  = (gchar*)attributeList->data;
+
+    attributeList  = g_list_next(attributeList);
+    attributeValue = (gchar*)attributeList->data;
+
+    errorCode = xmlTextWriterWriteAttribute(writer,
+					    attributeName,
+					    attributeValue);
+
+    if (errorCode < 0) {
+      /* No need to print any error message, because gdisp+ is exiting */
+      return errorCode;
+    }
+
+    attributeList = g_list_next(attributeList);
+
+  }
+
+
+  /*
+   * End up element if requested.
+   */
+  if (endUpElement == TRUE) {
+
+    errorCode = xmlTextWriterEndElement(writer);
+
+  }
+
+  return errorCode;
+
+}
+
+
+/*
+ * Get back the attribute list of a node.
+ * Return this list into a GList object.
+ */
+void
+gdisp_xmlGetAttributeList ( xmlNode  *node,
+			    GList   **attributeList )
+{
+
+  xmlAttr *nodeProperties = (xmlAttr*)NULL;
+
+  /*
+   * Loop over all properties.
+   */
+  nodeProperties = node->properties;
+
+  while (nodeProperties != (xmlAttr*)NULL) {
+
+    *attributeList = g_list_append(*attributeList,
+				   (gpointer)nodeProperties->name);
+
+    *attributeList = g_list_append(*attributeList,
+				   (gpointer)nodeProperties->children->content);
+
+    nodeProperties = nodeProperties->next;
+
+  }
+
+}
+
+
+/*
  * Get integer property.
  */
 guint
@@ -463,8 +570,4 @@ gdisp_getIntegerProperty ( xmlChar *property,
   }
 
 }
-
-
-
-
 

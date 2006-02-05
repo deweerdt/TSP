@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_defaultPlot.c,v 1.4 2004-10-22 20:17:34 esteban Exp $
+$Id: gdisp_defaultPlot.c,v 1.5 2006-02-05 18:02:36 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -783,6 +783,48 @@ gdisp_getSymbolsFromDefaultPlot (Kernel_T *kernel,
 
 
 /*
+ * Get symbol attributes in order to be saved into the configuration.
+ */
+static void
+gdisp_getSymbolAttributesDefaultPlot (Kernel_T *kernel,
+				      void     *data,
+				      Symbol_T *symbol,
+				      GList    *attributeList)
+{
+
+  /* DefaultPlot_T *plot = (DefaultPlot_T*)data; */
+
+  /*
+   * Return all attributes of a symbol.
+   */
+
+  /* nothing by now */
+
+}
+
+
+/*
+ * Set symbol attributes from the configuration.
+ */
+static void
+gdisp_setSymbolAttributesDefaultPlot (Kernel_T *kernel,
+				      void     *data,
+				      Symbol_T *symbol,
+				      GList    *attributeList)
+{
+
+  /* DefaultPlot_T *plot = (DefaultPlot_T*)data; */
+
+  /*
+   * Store all attributes of a symbol.
+   */
+
+  /* nothing by now */
+
+}
+
+
+/*
  * Real time Starting Step Action.
  */
 static gboolean
@@ -924,22 +966,24 @@ gdisp_initDefaultPlotSystem (Kernel_T     *kernel,
    * that remain 'static' here, but accessible from everywhere
    * via the kernel.
    */
-  plotSystem->psCreate            = gdisp_createDefaultPlot;
-  plotSystem->psDestroy           = gdisp_destroyDefaultPlot;
-  plotSystem->psSetParent         = gdisp_setParentWidget;
-  plotSystem->psGetTopLevelWidget = gdisp_getDefaultPlotTopLevelWidget;
-  plotSystem->psShow              = gdisp_showDefaultPlot;
-  plotSystem->psGetType           = gdisp_getDefaultPlotType;
-  plotSystem->psAddSymbols        = gdisp_addSymbolsToDefaultPlot;
-  plotSystem->psSetDimensions     = gdisp_setDefaultPlotInitialDimensions;
-  plotSystem->psGetSymbols        = gdisp_getSymbolsFromDefaultPlot;
-  plotSystem->psStartStep         = gdisp_startStepOnDefaultPlot;
-  plotSystem->psStep              = gdisp_stepOnDefaultPlot;
-  plotSystem->psStopStep          = gdisp_stopStepOnDefaultPlot;
-  plotSystem->psGetInformation    = gdisp_getDefaultPlotInformation;
-  plotSystem->psTreatSymbolValues = gdisp_treatDefaultPlotSymbolValues;
-  plotSystem->psGetPeriod         = gdisp_getDefaultPlotPeriod;
-  plotSystem->psGetDropZones      = gdisp_getDefaultPlotDropZones;
+  plotSystem->psCreate              = gdisp_createDefaultPlot;
+  plotSystem->psDestroy             = gdisp_destroyDefaultPlot;
+  plotSystem->psSetParent           = gdisp_setParentWidget;
+  plotSystem->psGetTopLevelWidget   = gdisp_getDefaultPlotTopLevelWidget;
+  plotSystem->psShow                = gdisp_showDefaultPlot;
+  plotSystem->psGetType             = gdisp_getDefaultPlotType;
+  plotSystem->psAddSymbols          = gdisp_addSymbolsToDefaultPlot;
+  plotSystem->psSetDimensions       = gdisp_setDefaultPlotInitialDimensions;
+  plotSystem->psGetSymbols          = gdisp_getSymbolsFromDefaultPlot;
+  plotSystem->psGetSymbolAttributes = gdisp_getSymbolAttributesDefaultPlot;
+  plotSystem->psSetSymbolAttributes = gdisp_setSymbolAttributesDefaultPlot;
+  plotSystem->psStartStep           = gdisp_startStepOnDefaultPlot;
+  plotSystem->psStep                = gdisp_stepOnDefaultPlot;
+  plotSystem->psStopStep            = gdisp_stopStepOnDefaultPlot;
+  plotSystem->psGetInformation      = gdisp_getDefaultPlotInformation;
+  plotSystem->psTreatSymbolValues   = gdisp_treatDefaultPlotSymbolValues;
+  plotSystem->psGetPeriod           = gdisp_getDefaultPlotPeriod;
+  plotSystem->psGetDropZones        = gdisp_getDefaultPlotDropZones;
 
 }
 

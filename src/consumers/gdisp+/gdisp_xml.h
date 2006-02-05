@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_xml.h,v 1.1 2005-10-05 19:21:01 esteban Exp $
+$Id: gdisp_xml.h,v 1.2 2006-02-05 18:02:36 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -99,14 +99,24 @@ void        gdisp_xmlIndent           ( xmlTextWriterPtr  writer,
 					xmlChar          *indentBuffer,
 					char              mode );
 
-int         gdisp_xmlWriteAttributes ( xmlTextWriterPtr  writer,
-				       gchar             indentationMode,
-				       xmlChar          *indentBuffer,
-				       xmlChar          *elementName,
-				       gboolean          endUpElement,
-				       ... );
+gint        gdisp_xmlWriteAttributes  ( xmlTextWriterPtr  writer,
+					gchar             indentationMode,
+					xmlChar          *indentBuffer,
+					xmlChar          *elementName,
+					gboolean          endUpElement,
+					... );
 
-guint       gdisp_getIntegerProperty ( xmlChar *property,
-				       guint    defaultValue );
+gint        gdisp_xmlWriteAttributeList ( xmlTextWriterPtr  writer,
+					  gchar             indentationMode,
+					  xmlChar          *indentBuffer,
+					  xmlChar          *elementName,
+					  gboolean          endUpElement,
+					  GList            *attributeList );
+
+void        gdisp_xmlGetAttributeList   ( xmlNode  *node,
+					  GList   **attributeList );
+
+guint       gdisp_getIntegerProperty    ( xmlChar *property,
+					  guint    defaultValue );
 
 #endif /* __XML_H__ */

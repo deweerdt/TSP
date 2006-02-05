@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_format.h,v 1.1 2006-02-02 21:03:32 esteban Exp $
+$Id: gdisp_format.h,v 1.2 2006-02-05 18:02:36 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -78,7 +78,16 @@ typedef enum {
   GD_HEXADECIMAL_4,
   GD_HEXADECIMAL_8,
   GD_BINARY,
-  GD_FLOATING_FIXED,
+  GD_FLOATING_FIXED_1,
+  GD_FLOATING_FIXED_2,
+  GD_FLOATING_FIXED_3,
+  GD_FLOATING_FIXED_4,
+  GD_FLOATING_FIXED_5,
+  GD_FLOATING_FIXED_6,
+  GD_FLOATING_FIXED_7,
+  GD_FLOATING_FIXED_8,
+  GD_FLOATING_FIXED_9,
+  GD_FLOATING_FIXED_10,
   GD_SCIENTIFIC,
   GD_ASCII,
   GD_MAX_FORMATS
@@ -89,10 +98,13 @@ typedef enum {
 /*
  * Prototypes.
  */
-gchar *gdisp_getFormatLabel    ( Format_T  format );
+gchar *gdisp_getFormatLabel      ( Format_T  format );
 
-void   gdisp_formatDoubleValue ( gdouble   inputValue,
-				 Format_T  format,
-				 gchar    *outputBuffer );
+gchar *gdisp_getFormatSmallLabel ( Format_T *format,
+				   gchar    *formatAsString );
+
+void   gdisp_formatDoubleValue   ( gdouble   inputValue,
+				   Format_T  format,
+				   gchar    *outputBuffer );
 
 #endif /* __FORMAT_H__ */

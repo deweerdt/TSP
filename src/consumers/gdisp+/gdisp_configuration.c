@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_configuration.c,v 1.5 2006-01-20 21:59:14 esteban Exp $
+$Id: gdisp_configuration.c,v 1.6 2006-02-05 18:02:36 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -342,6 +342,7 @@ gdisp_getSymbolInConfByIndex ( Kernel_T *kernel,
  */
 static gint
 gdisp_saveGraphicPlotSymbolList ( Kernel_T         *kernel,
+				  PlotSystemData_T *plotSystemData,
 				  xmlTextWriterPtr  writer,
 				  xmlChar          *indentBuffer,
 				  gboolean         *isFirstSymbol,
@@ -349,8 +350,9 @@ gdisp_saveGraphicPlotSymbolList ( Kernel_T         *kernel,
 				  guchar            zoneId )
 {
 
-  gint      errorCode = 0;
-  Symbol_T *symbol    = (Symbol_T*)NULL;
+  gint      errorCode     = 0;
+  Symbol_T *symbol        = (Symbol_T*)NULL;
+  GList    *attributeList = (GList*)NULL;
   gchar     indexBuffer [128];
   gchar     zoneBuffer  [128];
 
@@ -369,19 +371,42 @@ gdisp_saveGraphicPlotSymbolList ( Kernel_T         *kernel,
     sprintf(indexBuffer,"%d",symbol->sPgi);
     sprintf(zoneBuffer ,"%c",zoneId);
 
+    attributeList = g_list_append(attributeList,
+				  (gpointer)"index");
+    attributeList = g_list_append(attributeList,
+				  (gpointer)indexBuffer);
+
+    if (zoneId != 0) {
+
+      attributeList = g_list_append(attributeList,
+				    (gpointer)"zone");
+      attributeList = g_list_append(attributeList,
+				    (gpointer)zoneBuffer);
+
+    }
+
+    /*
+     * The symbol may have specific attributes
+     * relative to the plot it belongs to. Get them back.
+     */
+    (*plotSystemData->plotSystem->psGetSymbolAttributes)
+                                               (kernel,
+						plotSystemData->plotData,
+						symbol,
+						attributeList);
+
+    /*
+     * Write all that down.
+     */
     errorCode =
-      gdisp_xmlWriteAttributes(writer,
-			       *isFirstSymbol == TRUE ?
-			       GD_INCREASE_INDENTATION :
-			       GD_DO_NOT_CHANGE_INDENTATION,
-			       indentBuffer,
-			       (xmlChar*)"sampledSymbol",
-			       TRUE, /* end up element */
-			       (xmlChar*)"index",
-			       (xmlChar*)indexBuffer,
-			       (xmlChar*)(zoneId != 0 ? "zone"     : NULL),
-			       (xmlChar*)(zoneId != 0 ? zoneBuffer : NULL),
-			       (xmlChar*)NULL);
+      gdisp_xmlWriteAttributeList(writer,
+				  *isFirstSymbol == TRUE ?
+				  GD_INCREASE_INDENTATION :
+				  GD_DO_NOT_CHANGE_INDENTATION,
+				  indentBuffer,
+				  (xmlChar*)"sampledSymbol",
+				  TRUE, /* end up element */
+				  attributeList);
 
     if (errorCode < 0) {
       return errorCode;
@@ -389,6 +414,9 @@ gdisp_saveGraphicPlotSymbolList ( Kernel_T         *kernel,
 
     *isFirstSymbol = FALSE;
     symbolList     = g_list_next(symbolList);
+
+    g_list_free(attributeList);
+    attributeList = (GList*)NULL;
 
   } /* symbolList != (GList*)NULL */
 
@@ -494,6 +522,7 @@ gdisp_saveOneGraphicPlot ( Kernel_T         *kernel,
 						      currentZone->pszId);
 
 	errorCode = gdisp_saveGraphicPlotSymbolList(kernel,
+						    plotSystemData,
 						    writer,
 						    indentBuffer,
 						    &isFirstSymbol,
@@ -518,6 +547,7 @@ gdisp_saveOneGraphicPlot ( Kernel_T         *kernel,
 						    0 /* dummy zone id */);
 
       errorCode = gdisp_saveGraphicPlotSymbolList(kernel,
+						  plotSystemData,
 						  writer,
 						  indentBuffer,
 						  &isFirstSymbol,
@@ -1191,6 +1221,7 @@ gdisp_addSampledSymbolToPlot ( Kernel_T         *kernel,
   unsigned int  cptSymbol        = 0;
   Symbol_T     *symbol           = (Symbol_T*)NULL;
   GList        *symbolList       = (GList*)NULL;
+  GList        *attributeList    = (GList*)NULL;
 
   /*
    * Get back target symbols.
@@ -1229,6 +1260,24 @@ gdisp_addSampledSymbolToPlot ( Kernel_T         *kernel,
 						      symbolZone ?
 						      symbolZone[0] : (gchar)0);
 	  /* zone identity is a 'guchar' --------------------^-----------^ */
+
+	  /*
+	   * Get back the list of plot specific attributes.
+	   */
+	  gdisp_xmlGetAttributeList(symbolNode,
+				    &attributeList);
+
+	  (*plotSystemData->plotSystem->psSetSymbolAttributes)
+                                                  (kernel,
+						   plotSystemData->plotData,
+						   symbol,
+						   attributeList);
+
+	  /*
+	   * Free memory allocated to the lists.
+	   */
+	  g_list_free(attributeList);
+	  attributeList = (GList*)NULL;
 
 	  g_list_free(symbolList);
 	  symbolList = (GList*)NULL;

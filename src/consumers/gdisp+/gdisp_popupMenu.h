@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_popupMenu.h,v 1.1 2006-02-02 21:03:32 esteban Exp $
+$Id: gdisp_popupMenu.h,v 1.2 2006-02-05 18:02:36 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -82,7 +82,7 @@ typedef struct PopupMenu_T_ {
 /*
  * Prototypes.
  */
-void         gdisp_addMenuItem ( PopupMenu_T        *menu,
+void*        gdisp_addMenuItem ( PopupMenu_T        *menu,
 				 gchar              *itemLabel,
 				 gpointer            itemData );
 

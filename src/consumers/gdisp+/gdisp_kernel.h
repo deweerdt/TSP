@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_kernel.h,v 1.18 2006-01-20 21:59:14 esteban Exp $
+$Id: gdisp_kernel.h,v 1.19 2006-02-05 18:02:36 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -390,24 +390,26 @@ typedef struct PlotSystem_T_ {
    */
 
   /* FIRST TYPE : Kernel only.                  */
-  void       (*psGetInformation)   (Kernel_T_Ptr,PlotSystemInfo_T*  );
-  void      *(*psCreate )          (Kernel_T_Ptr                    );
-  GArray    *(*psGetDropZones)     (Kernel_T_Ptr                    );
+  void       (*psGetInformation)     (Kernel_T_Ptr,PlotSystemInfo_T*     );
+  void      *(*psCreate )            (Kernel_T_Ptr                       );
+  GArray    *(*psGetDropZones)       (Kernel_T_Ptr                       );
 
   /* SECOND TYPE : Kernel and opaque structure. */
-  void       (*psDestroy)          (Kernel_T_Ptr,void*              );
-  void       (*psSetParent)        (Kernel_T_Ptr,void*,GtkWidget*   );
-  GtkWidget *(*psGetTopLevelWidget)(Kernel_T_Ptr,void*              );
-  void       (*psShow)             (Kernel_T_Ptr,void*              );
-  PlotType_T (*psGetType)          (Kernel_T_Ptr,void*              );
-  void       (*psSetDimensions)    (Kernel_T_Ptr,void*,guint,guint  );
-  void       (*psAddSymbols)       (Kernel_T_Ptr,void*,GList*,guchar);
-  GList     *(*psGetSymbols)       (Kernel_T_Ptr,void*,gchar        );
-  gboolean   (*psStartStep)        (Kernel_T_Ptr,void*              );
-  void       (*psStep)             (Kernel_T_Ptr,void*              );
-  void       (*psStopStep)         (Kernel_T_Ptr,void*              );
-  void       (*psTreatSymbolValues)(Kernel_T_Ptr,void*              );
-  guint      (*psGetPeriod)        (Kernel_T_Ptr,void*              );
+  void       (*psDestroy)            (Kernel_T_Ptr,void*                 );
+  void       (*psSetParent)          (Kernel_T_Ptr,void*,GtkWidget*      );
+  GtkWidget *(*psGetTopLevelWidget)  (Kernel_T_Ptr,void*                 );
+  void       (*psShow)               (Kernel_T_Ptr,void*                 );
+  PlotType_T (*psGetType)            (Kernel_T_Ptr,void*                 );
+  void       (*psSetDimensions)      (Kernel_T_Ptr,void*,guint,guint     );
+  void       (*psAddSymbols)         (Kernel_T_Ptr,void*,GList*,guchar   );
+  GList     *(*psGetSymbols)         (Kernel_T_Ptr,void*,gchar           );
+  void       (*psGetSymbolAttributes)(Kernel_T_Ptr,void*,Symbol_T*,GList*);
+  void       (*psSetSymbolAttributes)(Kernel_T_Ptr,void*,Symbol_T*,GList*);
+  gboolean   (*psStartStep)          (Kernel_T_Ptr,void*                 );
+  void       (*psStep)               (Kernel_T_Ptr,void*                 );
+  void       (*psStopStep)           (Kernel_T_Ptr,void*                 );
+  void       (*psTreatSymbolValues)  (Kernel_T_Ptr,void*                 );
+  guint      (*psGetPeriod)          (Kernel_T_Ptr,void*                 );
 
   /*
    * Kernel verification.

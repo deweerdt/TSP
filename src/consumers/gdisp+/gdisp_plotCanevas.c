@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_plotCanevas.c,v 1.4 2005-03-08 21:28:17 esteban Exp $
+$Id: gdisp_plotCanevas.c,v 1.5 2006-02-05 18:02:36 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -241,6 +241,42 @@ gdisp_getSymbolsFrom<<<-canevas->>> (Kernel_T *kernel,
 
 
 /*
+ * Get symbol attributes in order to be saved into the configuration.
+ */
+static void
+gdisp_getSymbolAttributes<<<-canevas--->>> (Kernel_T *kernel,
+					    void     *data,
+					    Symbol_T *symbol,
+					    GList    *attributeList)
+{
+
+  <<<-canevas->>>_T *plot = (<<<-canevas->>>_T*)data;
+
+  /*
+   * Return all attributes of a symbol.
+   */
+
+}
+
+/*
+ * Set symbol attributes from the configuration.
+ */
+static void
+gdisp_setSymbolAttributes<<<-canevas--->>> (Kernel_T *kernel,
+					    void     *data,
+					    Symbol_T *symbol,
+					    GList    *attributeList)
+{
+
+  <<<-canevas->>>_T *plot = (<<<-canevas->>>_T*)data;
+
+  /*
+   * Store all attributes of a symbol.
+   */
+
+}
+
+/*
  * Real time Starting Step Action.
  */
 static gboolean
@@ -384,22 +420,24 @@ gdisp_init<<<-canevas->>>System (Kernel_T     *kernel,
    * We must here provide all plot private functions that remain
    * 'static' here, but accessible from everywhere via the kernel.
    */
-  plotSystem->psCreate            = gdisp_create<<<-canevas->>>;
-  plotSystem->psDestroy           = gdisp_destroy<<<-canevas->>>;
-  plotSystem->psSetParent         = gdisp_set<<<-canevas->>>Parent;
-  plotSystem->psGetTopLevelWidget = gdisp_get<<<-canevas->>>TopLevelWidget;
-  plotSystem->psSetDimensions     = gdisp_set<<<-canevas->>>InitialDimensions;
-  plotSystem->psShow              = gdisp_show<<<-canevas->>>;
-  plotSystem->psGetType           = gdisp_get<<<-canevas->>>Type;
-  plotSystem->psAddSymbols        = gdisp_addSymbolsTo<<<-canevas->>>;
-  plotSystem->psGetSymbols        = gdisp_getSymbolsFrom<<<-canevas->>>;
-  plotSystem->psStartStep         = gdisp_startStepOn<<<-canevas->>>;
-  plotSystem->psStep              = gdisp_stepOn<<<-canevas->>>;
-  plotSystem->psStopStep          = gdisp_stopStepOn<<<-canevas->>>;
-  plotSystem->psGetInformation    = gdisp_get<<<-canevas->>>Information;
-  plotSystem->psTreatSymbolValues = gdisp_treat<<<-canevas->>>SymbolValues;
-  plotSystem->psGetPeriod         = gdisp_get<<<-canevas->>>Period;
-  plotSystem->psGetDropZones      = gdisp_get<<<-canevas->>>DropZones;
+  plotSystem->psCreate              = gdisp_create<<-canevas->>;
+  plotSystem->psDestroy             = gdisp_destroy<<-canevas->>;
+  plotSystem->psSetParent           = gdisp_set<<-canevas->>Parent;
+  plotSystem->psGetTopLevelWidget   = gdisp_get<<-canevas->>TopLevelWidget;
+  plotSystem->psSetDimensions       = gdisp_set<<-canevas->>InitialDimensions;
+  plotSystem->psShow                = gdisp_show<<-canevas->>;
+  plotSystem->psGetType             = gdisp_get<<-canevas->>Type;
+  plotSystem->psAddSymbols          = gdisp_addSymbolsTo<<-canevas->>;
+  plotSystem->psGetSymbols          = gdisp_getSymbolsFrom<<-canevas->>;
+  plotSystem->psGetSymbolAttributes = gdisp_getSymbolAttributes<<-canevas-->>;
+  plotSystem->psSetSymbolAttributes = gdisp_setSymbolAttributes<<-canevas-->>;
+  plotSystem->psStartStep           = gdisp_startStepOn<<-canevas->>;
+  plotSystem->psStep                = gdisp_stepOn<<-canevas->>;
+  plotSystem->psStopStep            = gdisp_stopStepOn<<-canevas->>;
+  plotSystem->psGetInformation      = gdisp_get<<-canevas->>Information;
+  plotSystem->psTreatSymbolValues   = gdisp_treat<<-canevas->>SymbolValues;
+  plotSystem->psGetPeriod           = gdisp_get<<-canevas->>Period;
+  plotSystem->psGetDropZones        = gdisp_get<<-canevas->>DropZones;
 
 }
 

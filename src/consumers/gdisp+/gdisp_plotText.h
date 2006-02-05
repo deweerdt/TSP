@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_plotText.h,v 1.2 2006-02-02 21:03:32 esteban Exp $
+$Id: gdisp_plotText.h,v 1.3 2006-02-05 18:02:36 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -86,12 +86,18 @@ typedef struct PlotText_T_ {
    */
   GtkStyle            *pttStyle;
   GtkWidget           *pttCList;
-  PopupMenu_T         *pttMenu;
   guint                pttCListWidth;
   guint                pttCListHeight;
   gfloat               pttColumnRatio;
   guchar               pttIsSizeAllocating;
   guint                pttSelectedRow;
+
+  /*
+   * Popup menus.
+   */
+  PopupMenu_T         *pttMainMenu;
+  PopupMenu_T         *pttHexadecimalMenu;
+  PopupMenu_T         *pttFloatingFixedMenu;
 
   /*
    * Parent widget.

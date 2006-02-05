@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_plotText.c,v 1.8 2006-02-02 21:03:32 esteban Exp $
+$Id: gdisp_plotText.c,v 1.9 2006-02-05 18:02:36 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -431,7 +431,7 @@ gdisp_destroyPlotText(Kernel_T *kernel,
   /*
    * Destroy Menu.
    */
-  gdisp_destroyMenu(plot->pttMenu);
+  gdisp_destroyMenu(plot->pttMainMenu);
 
 
   /*
@@ -534,7 +534,7 @@ gdisp_popupMenuHandler ( Kernel_T    *kernel,
 {
 
   PlotText_T        *plot    = (PlotText_T*)menuData;
-  Format_T           format  = (Format_T)itemData;
+  Format_T           format  = (Format_T)GPOINTER_TO_UINT(itemData);
   PlotTextRowData_T *rowData = (PlotTextRowData_T*)NULL;
 
   /*
@@ -560,7 +560,9 @@ gdisp_showPlotText (Kernel_T  *kernel,
 		    void      *data)
 {
 
-  PlotText_T *plot = (PlotText_T*)data;
+  PlotText_T  *plot      = (PlotText_T*)data;
+  void        *menuItem  = (void*)NULL;
+  Format_T     cptFormat = GD_FLOATING_FIXED_1;
 
 #if defined(GD_DEBUG_TEXT)
   fprintf(stdout,"Showing text plot.\n");
@@ -576,48 +578,89 @@ gdisp_showPlotText (Kernel_T  *kernel,
    * Create the dynamic menu.
    * Menu cannot be created before because the parent list is not shown yet.
    */
-  plot->pttMenu = gdisp_createMenu(kernel,
-				   plot->pttCList,
-				   "          Format" /* title */,
-				   gdisp_popupMenuHandler,
-				   (gpointer)plot);
+  plot->pttMainMenu = gdisp_createMenu(kernel,
+				       plot->pttCList,
+				       "             Format" /* title */,
+				       gdisp_popupMenuHandler,
+				       (gpointer)plot);
 
   /*
    * Choose useful formats among all available.
    */
-  gdisp_addMenuItem(plot->pttMenu,
+  gdisp_addMenuItem(plot->pttMainMenu,
 		    gdisp_getFormatLabel(GD_DEFAULT_FORMAT),
 		    (gpointer)GUINT_TO_POINTER(GD_DEFAULT_FORMAT));
 
-  gdisp_addMenuItem(plot->pttMenu,
-		    gdisp_getFormatLabel(GD_HEXADECIMAL_1),
-		    (gpointer)GUINT_TO_POINTER(GD_HEXADECIMAL_1));
+  /*
+   * Create the sub-menu specific to floating fixed decimal format.
+   */
+  menuItem = gdisp_addMenuItem(plot->pttMainMenu,
+			       "Floating Fixed Decimal",
+			       (gpointer)NULL);
 
-  gdisp_addMenuItem(plot->pttMenu,
-		    gdisp_getFormatLabel(GD_HEXADECIMAL_2),
-		    (gpointer)GUINT_TO_POINTER(GD_HEXADECIMAL_2));
+  plot->pttFloatingFixedMenu = gdisp_createMenu(kernel,
+						menuItem,
+						"Floating Fixed Decimal",
+						gdisp_popupMenuHandler,
+						(gpointer)plot);
 
-  gdisp_addMenuItem(plot->pttMenu,
-		    gdisp_getFormatLabel(GD_HEXADECIMAL_4),
-		    (gpointer)GUINT_TO_POINTER(GD_HEXADECIMAL_4));
+  for (cptFormat = GD_FLOATING_FIXED_1;
+       cptFormat <= GD_FLOATING_FIXED_10;
+       cptFormat++) {
 
-  gdisp_addMenuItem(plot->pttMenu,
-		    gdisp_getFormatLabel(GD_HEXADECIMAL_8),
-		    (gpointer)GUINT_TO_POINTER(GD_HEXADECIMAL_8));
+    gdisp_addMenuItem(plot->pttFloatingFixedMenu,
+		      gdisp_getFormatLabel(cptFormat),
+		      (gpointer)GUINT_TO_POINTER(cptFormat));
 
-  gdisp_addMenuItem(plot->pttMenu,
-		    gdisp_getFormatLabel(GD_BINARY),
-		    (gpointer)GUINT_TO_POINTER(GD_BINARY));
+  }
 
-  gdisp_addMenuItem(plot->pttMenu,
-		    gdisp_getFormatLabel(GD_FLOATING_FIXED),
-		    (gpointer)GUINT_TO_POINTER(GD_FLOATING_FIXED));
-
-  gdisp_addMenuItem(plot->pttMenu,
+  /*
+   * Create the item for scientif format.
+   */
+  gdisp_addMenuItem(plot->pttMainMenu,
 		    gdisp_getFormatLabel(GD_SCIENTIFIC),
 		    (gpointer)GUINT_TO_POINTER(GD_SCIENTIFIC));
 
-  gdisp_addMenuItem(plot->pttMenu,
+  /*
+   * Create the item for binary format.
+   */
+  gdisp_addMenuItem(plot->pttMainMenu,
+		    gdisp_getFormatLabel(GD_BINARY),
+		    (gpointer)GUINT_TO_POINTER(GD_BINARY));
+
+  /*
+   * Create the sub-menu specific to hexadecimal format.
+   */
+  menuItem = gdisp_addMenuItem(plot->pttMainMenu,
+			       "Hexadecimal",
+			       (gpointer)NULL);
+
+  plot->pttHexadecimalMenu = gdisp_createMenu(kernel,
+					      menuItem,
+					      "Hexadecimal" /* title */,
+					      gdisp_popupMenuHandler,
+					      (gpointer)plot);
+
+  gdisp_addMenuItem(plot->pttHexadecimalMenu,
+		    gdisp_getFormatLabel(GD_HEXADECIMAL_1),
+		    (gpointer)GUINT_TO_POINTER(GD_HEXADECIMAL_1));
+
+  gdisp_addMenuItem(plot->pttHexadecimalMenu,
+		    gdisp_getFormatLabel(GD_HEXADECIMAL_2),
+		    (gpointer)GUINT_TO_POINTER(GD_HEXADECIMAL_2));
+
+  gdisp_addMenuItem(plot->pttHexadecimalMenu,
+		    gdisp_getFormatLabel(GD_HEXADECIMAL_4),
+		    (gpointer)GUINT_TO_POINTER(GD_HEXADECIMAL_4));
+
+  gdisp_addMenuItem(plot->pttHexadecimalMenu,
+		    gdisp_getFormatLabel(GD_HEXADECIMAL_8),
+		    (gpointer)GUINT_TO_POINTER(GD_HEXADECIMAL_8));
+
+  /*
+   * End up with Ascii format.
+   */
+  gdisp_addMenuItem(plot->pttMainMenu,
 		    gdisp_getFormatLabel(GD_ASCII),
 		    (gpointer)GUINT_TO_POINTER(GD_ASCII));
 
@@ -755,6 +798,135 @@ gdisp_getSymbolsFromPlotText (Kernel_T *kernel,
 #endif
 
   return plot->pttSymbolList;
+
+}
+
+
+/*
+ * Get symbol attributes in order to be saved into the configuration.
+ */
+static void
+gdisp_getSymbolAttributesPlotText (Kernel_T *kernel,
+				   void     *data,
+				   Symbol_T *symbol,
+				   GList    *attributeList)
+{
+
+  PlotText_T        *plot        = (PlotText_T*)data;
+  PlotTextRowData_T *rowData     = (PlotTextRowData_T*)NULL;
+  GList             *symbolItem  = (GList*)NULL;
+  gint               rowNumber   = 0;
+  gchar             *formatLabel = (gchar*)NULL;
+
+
+  /*
+   * Loop over all symbols.
+   */
+  symbolItem = g_list_first(plot->pttSymbolList);
+  while (symbolItem != (GList*)NULL) {
+
+    if (symbol == (Symbol_T*)symbolItem->data) {
+
+      /*
+       * Return all attributes of the symbol.
+       */
+      rowData =
+	(PlotTextRowData_T*)gtk_clist_get_row_data(GTK_CLIST(plot->pttCList),
+						   rowNumber);
+
+      if (rowData         != (PlotTextRowData_T*)NULL &&
+	  rowData->format != GD_DEFAULT_FORMAT            ) {
+
+	attributeList = g_list_append(attributeList,
+				      (gpointer)"format");
+
+	formatLabel   = gdisp_getFormatSmallLabel(&rowData->format,
+						  (gchar*)NULL);
+
+	attributeList = g_list_append(attributeList,
+				      (gpointer)formatLabel);
+
+
+      }
+
+      return;
+
+    }
+
+    rowNumber++;
+
+    symbolItem = g_list_next(symbolItem);
+
+  }
+
+}
+
+
+/*
+ * Set symbol attributes from the configuration.
+ */
+static void
+gdisp_setSymbolAttributesPlotText (Kernel_T *kernel,
+				   void     *data,
+				   Symbol_T *symbol,
+				   GList    *attributeList)
+{
+
+  PlotText_T        *plot       = (PlotText_T*)data;
+  PlotTextRowData_T *rowData    = (PlotTextRowData_T*)NULL;
+  GList             *symbolItem = (GList*)NULL;
+  gint               rowNumber  = 0;
+  gchar             *value      = (gchar*)NULL;
+  gchar             *keyword    = (gchar*)NULL;
+
+
+  /*
+   * Loop over all symbols.
+   */
+  symbolItem = g_list_first(plot->pttSymbolList);
+  while (symbolItem != (GList*)NULL) {
+
+    if (symbol == (Symbol_T*)symbolItem->data) {
+
+      /*
+       * Return all attributes of the symbol.
+       */
+      rowData =
+	(PlotTextRowData_T*)gtk_clist_get_row_data(GTK_CLIST(plot->pttCList),
+						   rowNumber);
+
+      if (rowData != (PlotTextRowData_T*)NULL) {
+
+	attributeList = g_list_first(attributeList);
+	while (attributeList != (GList*)NULL) {
+
+	  keyword = (gchar*)attributeList->data;
+
+	  attributeList = g_list_next(attributeList);
+	  value = (gchar*)attributeList->data;
+
+	  if (strcmp(keyword,"format") == 0) {
+
+	    gdisp_getFormatSmallLabel(&rowData->format,
+				      value);
+
+	  }
+
+	  attributeList = g_list_next(attributeList);
+
+	} /* while (attributeList != (GList*)NULL) */
+
+      } /* rowData != (PlotTextRowData_T*)NULL */
+
+      return;
+
+    } /* symbol == (Symbol_T*)symbolItem->data */
+
+    rowNumber++;
+
+    symbolItem = g_list_next(symbolItem);
+
+  }
 
 }
 
@@ -967,22 +1139,24 @@ gdisp_initPlotTextSystem (Kernel_T     *kernel,
    * that remain 'static' here, but accessible from everywhere
    * via the kernel.
    */
-  plotSystem->psCreate            = gdisp_createPlotText;
-  plotSystem->psDestroy           = gdisp_destroyPlotText;
-  plotSystem->psSetParent         = gdisp_setPlotTextParent;
-  plotSystem->psGetTopLevelWidget = gdisp_getPlotTextTopLevelWidget;
-  plotSystem->psShow              = gdisp_showPlotText;
-  plotSystem->psGetType           = gdisp_getPlotTextType;
-  plotSystem->psAddSymbols        = gdisp_addSymbolsToPlotText;
-  plotSystem->psGetSymbols        = gdisp_getSymbolsFromPlotText;
-  plotSystem->psSetDimensions     = gdisp_setPlotTextInitialDimensions;
-  plotSystem->psStartStep         = gdisp_startStepOnPlotText;
-  plotSystem->psStep              = gdisp_stepOnPlotText;
-  plotSystem->psStopStep          = gdisp_stopStepOnPlotText;
-  plotSystem->psGetInformation    = gdisp_getPlotTextInformation;
-  plotSystem->psTreatSymbolValues = gdisp_treatPlotTextSymbolValues;
-  plotSystem->psGetPeriod         = gdisp_getPlotTextPeriod;
-  plotSystem->psGetDropZones      = gdisp_getPlotTextDropZones;
+  plotSystem->psCreate              = gdisp_createPlotText;
+  plotSystem->psDestroy             = gdisp_destroyPlotText;
+  plotSystem->psSetParent           = gdisp_setPlotTextParent;
+  plotSystem->psGetTopLevelWidget   = gdisp_getPlotTextTopLevelWidget;
+  plotSystem->psShow                = gdisp_showPlotText;
+  plotSystem->psGetType             = gdisp_getPlotTextType;
+  plotSystem->psAddSymbols          = gdisp_addSymbolsToPlotText;
+  plotSystem->psGetSymbols          = gdisp_getSymbolsFromPlotText;
+  plotSystem->psGetSymbolAttributes = gdisp_getSymbolAttributesPlotText;
+  plotSystem->psSetSymbolAttributes = gdisp_setSymbolAttributesPlotText;
+  plotSystem->psSetDimensions       = gdisp_setPlotTextInitialDimensions;
+  plotSystem->psStartStep           = gdisp_startStepOnPlotText;
+  plotSystem->psStep                = gdisp_stepOnPlotText;
+  plotSystem->psStopStep            = gdisp_stopStepOnPlotText;
+  plotSystem->psGetInformation      = gdisp_getPlotTextInformation;
+  plotSystem->psTreatSymbolValues   = gdisp_treatPlotTextSymbolValues;
+  plotSystem->psGetPeriod           = gdisp_getPlotTextPeriod;
+  plotSystem->psGetDropZones        = gdisp_getPlotTextDropZones;
 
 }
 

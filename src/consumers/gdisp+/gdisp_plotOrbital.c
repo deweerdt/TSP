@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_plotOrbital.c,v 1.2 2005-03-10 21:38:36 esteban Exp $
+$Id: gdisp_plotOrbital.c,v 1.3 2006-02-05 18:02:36 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -428,6 +428,48 @@ gdisp_getSymbolsFromPlotOrbital (Kernel_T *kernel,
 
 
 /*
+ * Get symbol attributes in order to be saved into the configuration.
+ */
+static void
+gdisp_getSymbolAttributesPlotOrbital (Kernel_T *kernel,
+				      void     *data,
+				      Symbol_T *symbol,
+				      GList    *attributeList)
+{
+
+  /* PlotOrbital_T *plot = (PlotOrbital_T*)data; */
+
+  /*
+   * Return all attributes of a symbol.
+   */
+
+  /* nothing by now */
+
+}
+
+
+/*
+ * Set symbol attributes from the configuration.
+ */
+static void
+gdisp_setSymbolAttributesPlotOrbital (Kernel_T *kernel,
+				      void     *data,
+				      Symbol_T *symbol,
+				      GList    *attributeList)
+{
+
+  /* PlotOrbital_T *plot = (PlotOrbital_T*)data; */
+
+  /*
+   * Store all attributes of a symbol.
+   */
+
+  /* nothing by now */
+
+}
+
+
+/*
  * Real time Starting Step Action.
  */
 static gboolean
@@ -571,22 +613,24 @@ gdisp_initOrbitalPlotSystem (Kernel_T     *kernel,
    * We must here provide all plot private functions that remain
    * 'static' here, but accessible from everywhere via the kernel.
    */
-  plotSystem->psCreate            = gdisp_createPlotOrbital;
-  plotSystem->psDestroy           = gdisp_destroyPlotOrbital;
-  plotSystem->psSetParent         = gdisp_setPlotOrbitalParent;
-  plotSystem->psGetTopLevelWidget = gdisp_getPlotOrbitalTopLevelWidget;
-  plotSystem->psSetDimensions     = gdisp_setPlotOrbitalInitialDimensions;
-  plotSystem->psShow              = gdisp_showPlotOrbital;
-  plotSystem->psGetType           = gdisp_getPlotOrbitalType;
-  plotSystem->psAddSymbols        = gdisp_addSymbolsToPlotOrbital;
-  plotSystem->psGetSymbols        = gdisp_getSymbolsFromPlotOrbital;
-  plotSystem->psStartStep         = gdisp_startStepOnPlotOrbital;
-  plotSystem->psStep              = gdisp_stepOnPlotOrbital;
-  plotSystem->psStopStep          = gdisp_stopStepOnPlotOrbital;
-  plotSystem->psGetInformation    = gdisp_getPlotOrbitalInformation;
-  plotSystem->psTreatSymbolValues = gdisp_treatPlotOrbitalSymbolValues;
-  plotSystem->psGetPeriod         = gdisp_getPlotOrbitalPeriod;
-  /* plotSystem->psGetDropZones      = gdisp_getPlotOrbitalDropZones; */
+  plotSystem->psCreate              = gdisp_createPlotOrbital;
+  plotSystem->psDestroy             = gdisp_destroyPlotOrbital;
+  plotSystem->psSetParent           = gdisp_setPlotOrbitalParent;
+  plotSystem->psGetTopLevelWidget   = gdisp_getPlotOrbitalTopLevelWidget;
+  plotSystem->psSetDimensions       = gdisp_setPlotOrbitalInitialDimensions;
+  plotSystem->psShow                = gdisp_showPlotOrbital;
+  plotSystem->psGetType             = gdisp_getPlotOrbitalType;
+  plotSystem->psAddSymbols          = gdisp_addSymbolsToPlotOrbital;
+  plotSystem->psGetSymbols          = gdisp_getSymbolsFromPlotOrbital;
+  plotSystem->psGetSymbolAttributes = gdisp_getSymbolAttributesPlotOrbital;
+  plotSystem->psSetSymbolAttributes = gdisp_setSymbolAttributesPlotOrbital;
+  plotSystem->psStartStep           = gdisp_startStepOnPlotOrbital;
+  plotSystem->psStep                = gdisp_stepOnPlotOrbital;
+  plotSystem->psStopStep            = gdisp_stopStepOnPlotOrbital;
+  plotSystem->psGetInformation      = gdisp_getPlotOrbitalInformation;
+  plotSystem->psTreatSymbolValues   = gdisp_treatPlotOrbitalSymbolValues;
+  plotSystem->psGetPeriod           = gdisp_getPlotOrbitalPeriod;
+  /* plotSystem->psGetDropZones        = gdisp_getPlotOrbitalDropZones; */
 
 
 }

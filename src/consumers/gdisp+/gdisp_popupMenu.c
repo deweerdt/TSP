@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_popupMenu.c,v 1.1 2006-02-02 21:03:32 esteban Exp $
+$Id: gdisp_popupMenu.c,v 1.2 2006-02-05 18:02:36 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -63,23 +63,36 @@ gdisp_menuHandler ( GtkMenuItem *menuItem,
 		    gpointer     userData )
 {
 
-  PopupMenu_T *menu         = (PopupMenu_T*)userData;
-  gpointer     menuItemData = (gpointer)NULL;
+  PopupMenu_T *menu            = (PopupMenu_T*)userData;
+  gpointer     menuItemData    = (gpointer)NULL;
+  gboolean     itemHasAsubMenu = FALSE;
 
   /*
-   * Use output list size to remove all list items.
+   * Do nothing if the item has a sub-menu.
    */
-  if (menu->userHandler != (PopupMenuHandler_T)NULL) {
+  menuItemData = gtk_object_get_data(GTK_OBJECT(menuItem),
+				     "itemHasAsubMenu");
 
-    menuItemData = gtk_object_get_data(GTK_OBJECT(menuItem),
-				       "menuItemData");
+  itemHasAsubMenu = (gboolean)GPOINTER_TO_UINT(menuItemData);
 
-    (*menu->userHandler)(menu->kernel,
-			 menu,
-			 menu->userData,
-			 menuItemData);
+  if (itemHasAsubMenu == FALSE) {
 
-  }
+    /*
+     * Activate user handler is exists.
+     */
+    if (menu->userHandler != (PopupMenuHandler_T)NULL) {
+
+      menuItemData = gtk_object_get_data(GTK_OBJECT(menuItem),
+					 "menuItemData");
+
+      (*menu->userHandler)(menu->kernel,
+			   menu,
+			   menu->userData,
+			   menuItemData);
+
+    } /* user handler is defined */
+
+  } /* itemHasAsubMenu == FALSE */
 
 }
 
@@ -109,10 +122,10 @@ gdisp_menuGeneralHandler ( GtkWidget *widget,
     if (bEvent->button == 3 /* right-click */) {
 
       gtk_menu_popup(GTK_MENU(menu->menu),
-		     NULL /* parent menu shell      */,
-		     NULL /* parent menu item       */,
-		     NULL /* user position function */,
-		     NULL /* user private data      */,
+		     NULL           /* parent menu shell      */,
+		     NULL           /* parent menu item       */,
+		     NULL           /* user position function */,
+		     NULL           /* user private data      */,
 		     bEvent->button,
 		     bEvent->time);
 
@@ -145,7 +158,7 @@ gdisp_menuGeneralHandler ( GtkWidget *widget,
 /*
  * Add an item to a popup menu.
  */
-void
+void*
 gdisp_addMenuItem ( PopupMenu_T *menu,
 		    gchar       *itemLabel,
 		    gpointer     itemData )
@@ -172,6 +185,8 @@ gdisp_addMenuItem ( PopupMenu_T *menu,
 		      itemData);
 
   gtk_widget_show(menuItem);
+
+  return (void*)menuItem;
 
 }
 
@@ -247,14 +262,37 @@ gdisp_createMenu ( Kernel_T           *kernel,
   }
 
   /*
+   * If parent widget is a menu item, connect the new menu
+   * as a sub-menu of the given item.
+   */
+  if (GTK_IS_MENU_ITEM(menu->parent)) {
+
+    gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu->parent),
+			      menu->menu);
+
+    gtk_menu_item_configure(GTK_MENU_ITEM(menu->parent),
+			    0 /* show toggle indicator */,
+			    1 /* show submenu indicator */ );
+
+    gtk_object_set_data(GTK_OBJECT(menu->parent),
+			"itemHasAsubMenu",
+			(gpointer)GUINT_TO_POINTER(TRUE));
+
+  }
+
+  /*
    * Connect signals for handling dynamic menu.
    * This makes the dynamic menu appear when the user right clicks on the
    * parent widget.
    */
-  gtk_signal_connect(GTK_OBJECT(menu->parent),
-		     "event",
-		     GTK_SIGNAL_FUNC(gdisp_menuGeneralHandler),
-		     (gpointer)menu);
+  else {
+
+    gtk_signal_connect(GTK_OBJECT(menu->parent),
+		       "event",
+		       GTK_SIGNAL_FUNC(gdisp_menuGeneralHandler),
+		       (gpointer)menu);
+
+  }
 
   return menu;
 

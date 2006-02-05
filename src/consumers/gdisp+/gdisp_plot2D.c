@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_plot2D.c,v 1.15 2006-01-20 21:59:14 esteban Exp $
+$Id: gdisp_plot2D.c,v 1.16 2006-02-05 18:02:36 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -2227,6 +2227,48 @@ gdisp_getSymbolsFromPlot2D (Kernel_T *kernel,
 
 
 /*
+ * Get symbol attributes in order to be saved into the configuration.
+ */
+static void
+gdisp_getSymbolAttributesPlot2D (Kernel_T *kernel,
+				 void     *data,
+				 Symbol_T *symbol,
+				 GList    *attributeList)
+{
+
+  /* Plot2D_T *plot = (Plot2D_T*)data; */
+
+  /*
+   * Return all attributes of a symbol.
+   */
+
+  /* nothing by now */
+
+}
+
+
+/*
+ * Set symbol attributes from the configuration.
+ */
+static void
+gdisp_setSymbolAttributesPlot2D (Kernel_T *kernel,
+				 void     *data,
+				 Symbol_T *symbol,
+				 GList    *attributeList)
+{
+
+  /* Plot2D_T *plot = (Plot2D_T*)data; */
+
+  /*
+   * Store all attributes of a symbol.
+   */
+
+  /* nothing by now */
+
+}
+
+
+/*
  * Real time Starting Step Action.
  */
 static gboolean
@@ -2635,22 +2677,24 @@ gdisp_initPlot2DSystem (Kernel_T     *kernel,
    * that remain 'static' here, but accessible from everywhere
    * via the kernel.
    */
-  plotSystem->psCreate            = gdisp_createPlot2D;
-  plotSystem->psDestroy           = gdisp_destroyPlot2D;
-  plotSystem->psSetParent         = gdisp_setPlot2DParent;
-  plotSystem->psGetTopLevelWidget = gdisp_getPlot2DTopLevelWidget;
-  plotSystem->psShow              = gdisp_showPlot2D;
-  plotSystem->psGetType           = gdisp_getPlot2DType;
-  plotSystem->psAddSymbols        = gdisp_addSymbolsToPlot2D;
-  plotSystem->psGetSymbols        = gdisp_getSymbolsFromPlot2D;
-  plotSystem->psSetDimensions     = gdisp_setPlot2DInitialDimensions;
-  plotSystem->psStartStep         = gdisp_startStepOnPlot2D;
-  plotSystem->psStep              = gdisp_stepOnPlot2D;
-  plotSystem->psStopStep          = gdisp_stopStepOnPlot2D;
-  plotSystem->psGetInformation    = gdisp_getPlot2DInformation;
-  plotSystem->psTreatSymbolValues = gdisp_treatPlot2DSymbolValues;
-  plotSystem->psGetPeriod         = gdisp_getPlot2DPeriod;
-  plotSystem->psGetDropZones      = gdisp_getPlot2DDropZones;
+  plotSystem->psCreate              = gdisp_createPlot2D;
+  plotSystem->psDestroy             = gdisp_destroyPlot2D;
+  plotSystem->psSetParent           = gdisp_setPlot2DParent;
+  plotSystem->psGetTopLevelWidget   = gdisp_getPlot2DTopLevelWidget;
+  plotSystem->psShow                = gdisp_showPlot2D;
+  plotSystem->psGetType             = gdisp_getPlot2DType;
+  plotSystem->psAddSymbols          = gdisp_addSymbolsToPlot2D;
+  plotSystem->psGetSymbols          = gdisp_getSymbolsFromPlot2D;
+  plotSystem->psGetSymbolAttributes = gdisp_getSymbolAttributesPlot2D;
+  plotSystem->psSetSymbolAttributes = gdisp_setSymbolAttributesPlot2D;
+  plotSystem->psSetDimensions       = gdisp_setPlot2DInitialDimensions;
+  plotSystem->psStartStep           = gdisp_startStepOnPlot2D;
+  plotSystem->psStep                = gdisp_stepOnPlot2D;
+  plotSystem->psStopStep            = gdisp_stopStepOnPlot2D;
+  plotSystem->psGetInformation      = gdisp_getPlot2DInformation;
+  plotSystem->psTreatSymbolValues   = gdisp_treatPlot2DSymbolValues;
+  plotSystem->psGetPeriod           = gdisp_getPlot2DPeriod;
+  plotSystem->psGetDropZones        = gdisp_getPlot2DDropZones;
 
   /*
    * Manage debug traces.
