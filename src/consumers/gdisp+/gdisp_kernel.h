@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_kernel.h,v 1.19 2006-02-05 18:02:36 esteban Exp $
+$Id: gdisp_kernel.h,v 1.20 2006-02-06 13:59:04 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -485,6 +485,7 @@ typedef struct KernelWidget_T_ {
   GtkWidget         *mainBoardOkButton;
   GtkWidget         *mainBoardStopButton;
   GtkWidget         *mainBoardOutputList;
+  GtkWidget         *mainBoardOutputScrolledWindow;
   guint              mainBoardOutputListSize;
   GtkWidget         *mainBoardLogoArea;
   GdkGC             *mainBoardLogoContext;

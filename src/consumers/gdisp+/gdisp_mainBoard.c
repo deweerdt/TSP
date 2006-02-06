@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_mainBoard.c,v 1.8 2005-12-05 22:01:30 esteban Exp $
+$Id: gdisp_mainBoard.c,v 1.9 2006-02-06 13:59:04 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -181,10 +181,12 @@ gdisp_outputWrite(Kernel_T  *kernel,
 
 #define _TIME_STRING_MAX_LEN_ 80
 
-  gchar      timeString[_TIME_STRING_MAX_LEN_];
-  GtkWidget *listItem = (GtkWidget*)NULL;
-  GtkWidget *hBox     = (GtkWidget*)NULL;
-  time_t     nowTime;
+  gchar          timeString[_TIME_STRING_MAX_LEN_];
+  GtkWidget     *listItem       = (GtkWidget*)NULL;
+  GtkWidget     *hBox           = (GtkWidget*)NULL;
+  GtkWidget     *scrolledWindow = (GtkWidget*)NULL;
+  GtkAdjustment *vAdj           = (GtkAdjustment*)NULL;
+  time_t         nowTime;
 
   assert(kernel);
   assert(kernel->widgets.mainBoardWindow);
@@ -219,10 +221,19 @@ gdisp_outputWrite(Kernel_T  *kernel,
 
   gtk_widget_show(listItem);
 
-  gtk_list_scroll_vertical(GTK_LIST(kernel->widgets.mainBoardOutputList),
-			   GTK_SCROLL_JUMP,
-			   (gfloat)1 /* bottom of the list */);
+  /*
+   * Makes the scrollbar go down.
+   */
+  scrolledWindow = kernel->widgets.mainBoardOutputScrolledWindow;
+  vAdj =
+    gtk_scrolled_window_get_vadjustment(GTK_SCROLLED_WINDOW(scrolledWindow));
 
+  gtk_adjustment_set_value(vAdj,vAdj->upper /* maximum, thus bottom */);
+  /* gtk_adjustment_value_changed(vAdj); */
+
+  /*
+   * Increment output list size.
+   */
   kernel->widgets.mainBoardOutputListSize++;
 
   g_string_free(string,TRUE);
@@ -822,6 +833,8 @@ gdisp_createMainBoard (Kernel_T *kernel)
 		     TRUE  /* fill    */,
 		     0     /* padding */);
   gtk_widget_show(scrolledWindow);
+
+  kernel->widgets.mainBoardOutputScrolledWindow = scrolledWindow;
 
   /*
    * Create the List widget.

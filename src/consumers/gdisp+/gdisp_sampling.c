@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_sampling.c,v 1.13 2006-01-20 21:59:14 esteban Exp $
+$Id: gdisp_sampling.c,v 1.14 2006-02-06 13:59:04 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -1099,7 +1099,9 @@ gdisp_stopSamplingProcess (Kernel_T *kernel)
   /*
    * Record the time when the sampling process stops.
    */
-  kernel->stopSamplingTime = time((time_t*)NULL);
+  if (kernel->startSamplingTime != (time_t)NULL) {
+    kernel->stopSamplingTime = time((time_t)NULL);
+  }
 
 
   /*
