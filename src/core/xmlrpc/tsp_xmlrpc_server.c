@@ -1,6 +1,6 @@
-/*!  \file 
+/*
 
-$Header: /home/def/zae/tsp/tsp/src/core/xmlrpc/tsp_xmlrpc_server.c,v 1.3 2005-10-23 13:15:23 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/xmlrpc/tsp_xmlrpc_server.c,v 1.4 2006-02-07 21:10:41 deweerdt Exp $
 
 -----------------------------------------------------------------------
 

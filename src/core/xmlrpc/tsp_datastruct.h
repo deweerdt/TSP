@@ -1,6 +1,6 @@
-/*!  \file 
+/*
 
-$Header: /home/def/zae/tsp/tsp/src/core/xmlrpc/tsp_datastruct.h,v 1.1 2005-04-24 10:58:06 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/xmlrpc/tsp_datastruct.h,v 1.2 2006-02-07 21:10:41 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
