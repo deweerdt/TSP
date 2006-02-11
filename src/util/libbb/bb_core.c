@@ -2,7 +2,7 @@
 
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.19 2006-01-27 17:24:42 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.20 2006-02-11 15:40:40 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -1093,7 +1093,8 @@ bb_item_offset(volatile S_BB_T *bb,
   else {
     retval = (char*) bb_data(bb) + 
       data_desc->data_offset + 
-      indexstack[0] * (data_desc->type_size);
+      /* if indexstack_len is not greater than 0 then indexstack[0] have no sense */ 
+      (indexstack_len>0 ? (indexstack[0])*(data_desc->type_size) :  0 ) ;
   }
   return retval;
 } /* end of bb_item_offset */

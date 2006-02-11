@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_tools.c,v 1.20 2006-02-03 20:46:22 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_tools.c,v 1.21 2006-02-11 15:40:40 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -394,7 +394,7 @@ bbtools_read(bbtools_request_t* req) {
   int32_t retval  = 0;
   S_BB_DATADESC_T sym_data_desc;
   int32_t array_index[MAX_ALIAS_LEVEL];
-  int32_t array_index_len;
+  int32_t array_index_len=MAX_ALIAS_LEVEL;
   int32_t          aliasstack_size = MAX_ALIAS_LEVEL;
   S_BB_DATADESC_T  aliasstack[MAX_ALIAS_LEVEL];
   void *sym_value;
@@ -503,7 +503,7 @@ bbtools_write(bbtools_request_t* req) {
   int32_t retval = 0;
   S_BB_DATADESC_T sym_data_desc;
   int32_t array_index[MAX_ALIAS_LEVEL];
-  int32_t array_index_len;
+  int32_t array_index_len=MAX_ALIAS_LEVEL;
   int32_t          aliasstack_size = MAX_ALIAS_LEVEL;
   S_BB_DATADESC_T  aliasstack[MAX_ALIAS_LEVEL];
   void *sym_value;
@@ -807,7 +807,7 @@ bbtools_publish(bbtools_request_t* req) {
   char* symbol_type_str;
   S_BB_DATADESC_T  symbol_desc;
   int32_t dimension[MAX_ALIAS_LEVEL];
-  int32_t dimension_len;
+  int32_t dimension_len=MAX_ALIAS_LEVEL;
 
   memset(&symbol_desc,0,sizeof(S_BB_DATADESC_T));
   if (req->argc<2) {

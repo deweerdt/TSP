@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/providers/bb_provider/bb_tsp_provider.c,v 1.19 2006-02-03 19:22:27 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/providers/bb_provider/bb_tsp_provider.c,v 1.20 2006-02-11 15:40:40 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -346,7 +346,7 @@ BB_GLU_get_pgi(GLU_handle_t* this, TSP_sample_symbol_info_list_t* symbol_list, i
   int32_t bbidx;
   S_BB_DATADESC_T sym_data_desc;
   int32_t array_index[MAX_ALIAS_LEVEL];
-  int32_t array_index_len;
+  int32_t array_index_len=MAX_ALIAS_LEVEL;
   int32_t array_index_ptr;
   int32_t          aliasstack_size = MAX_ALIAS_LEVEL;
   S_BB_DATADESC_T  aliasstack[MAX_ALIAS_LEVEL];

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_utils.c,v 1.9 2006-01-22 09:35:15 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_utils.c,v 1.10 2006-02-11 15:40:40 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -265,12 +265,14 @@ bb_utils_parsearrayname(const char*    provided_symname,
   int i = 0;
   int symname_current_index = 0;
   int32_t retcode = 0;
-  
+
+  /* RAZ the array index */
+  memset(array_index,0,(*array_index_len)*sizeof(int32_t));
+  *array_index_len=0;
+
   strncpy(current_symname,provided_symname,parsed_symname_maxlen-1);
   strncpy(remaining_symname,provided_symname,parsed_symname_maxlen-1);
   remain = remaining_symname;
-  *array_index_len=0;
-  
   
   while ((NULL != remain) && (0 == retcode)) {
     retcode &= bb_utils_parseone_array(current_symname,
