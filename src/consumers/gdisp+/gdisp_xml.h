@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_xml.h,v 1.2 2006-02-05 18:02:36 esteban Exp $
+$Id: gdisp_xml.h,v 1.3 2006-02-12 00:13:56 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -47,7 +47,11 @@ File      : Gdisp XML header file.
  * XML includes.
  */
 #include <libxml/encoding.h>
-#include <libxml/xmlwriter.h>
+#ifdef XMLWRITER_SUPPORTED
+  #include <libxml/xmlwriter.h>
+#else
+  typedef void* xmlTextWriterPtr; 
+#endif
 #include <libxml/tree.h>
 #include <libxml/valid.h>
 #include <libxml/xpath.h>

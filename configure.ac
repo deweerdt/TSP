@@ -94,16 +94,77 @@ fi
 ################################
 # XML config reader.
 # is xml2-config present ?
+# moreover
+# is xmlwriter supported ?
 ################################
+
+verify_version()
+{
+    X=`echo $1 | awk -F . '{print $1}'`
+    Y=`echo $1 | awk -F . '{print $2}'`
+    Z=`echo $1 | awk -F . '{print $3}'`
+    Xr=`echo $2 | awk -F . '{print $1}'`
+    Yr=`echo $2 | awk -F . '{print $2}'`
+    Zr=`echo $2 | awk -F . '{print $3}'`
+    if test $X -lt $Xr ;
+    then
+       echo "NOK"
+       return
+    else
+       if test $X -gt  $Xr ;
+       then
+         echo "OK"
+         return
+       fi
+    fi
+    # Now $X == $r
+    if test $Y -lt $Yr ;
+    then
+      echo "NOK"
+      return
+    else
+      if test $Y -gt  $Yr ;
+       then
+         echo "OK"
+         return
+       fi
+    fi
+    # Now $X == $XR and $Y == $Yr
+    if test $Z -ge $Zr ;
+    then
+      echo "OK"
+    else
+      echo "NOK"
+      return
+    fi
+} # end of verify_version
+
+
 AC_CHECK_PROG([XML2_CONFIG],[xml2-config],[`which xml2-config`],[notfound],[$PATH],[rej])
 AC_MSG_CHECKING([lib XML2 setup verification...])
 if test "$XML2_CONFIG" = "notfound"; then
   AC_MSG_RESULT([NOK: xml2-config script (xml2-devel package) not found TSP consumer using XML config files are DISABLED])
   XML2_CONFIG_USER="no"
-else
+else	
   AC_MSG_RESULT([Ok])
   XML2_CONFIG_USER="yes"
+  # Now check for XMLWRITER API
+  AC_MSG_CHECKING([libxml2 version])
+  XML2_VERSION=[`xml2-config --version`]
+  AC_MSG_RESULT([$XML2_VERSION])
+  AC_MSG_CHECKING([xmlwriter API support])
+  XML2_VERSION_REQUIRED="2.6.0"
+  XMLWRITER_OK=`verify_version $XML2_VERSION $XML2_VERSION_REQUIRED `
+  if test "$XMLWRITER_OK" = "OK"; then
+     XMLWRITER_SUPPORTED="yes"
+     AC_MSG_RESULT([OK ($XML2_VERSION > $XML2_VERSION_REQUIRED)])
+  else 
+     XMLWRITER_SUPPORTED="no"
+     AC_MSG_RESULT([NOK ($XML2_VERSION < $XML2_VERSION_REQUIRED), save config for gdisp+ DISABLED])
+     AC_MSG_WARN([Upgrade your libxml2 (version >= $XML2_VERSION_REQUIRED) if you want save config for gdisp+ to be enabled])
+  fi
 fi
+
 ################################
 ### End of XML2 devel check  ###
 ################################
@@ -474,6 +535,7 @@ AC_SUBST(GLUT_OK)
 AC_SUBST(SCRIPT_BINDING)
 AC_SUBST(TSPCONSUMER)
 AC_SUBST(XML2_CONFIG_USER)
+AC_SUBST(XMLWRITER_SUPPORTED)
 AC_SUBST(GTK_BASED_CONSUMER)
 AC_SUBST(LEX_YACC_PARSER)
 AC_SUBST(TSPPROVIDER)
