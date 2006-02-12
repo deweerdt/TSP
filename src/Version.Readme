@@ -183,4 +183,7 @@ V-0.7.1: Creation 03/02/2006	tag TSP_0_7_1
           merged and lightly updated by Erk because of the
           Blackboard alias machinery				- JB->Erk
         - Improve doxygen documentation (first step)            - Erk
-
+V-0.7.2: Creation ??/02/2006	tag TSP_0_7_2
+	- Bug Corrections
+              	* bug #15675 bb_write buggy on TSP 0.7.1
+		* bug #15643 XMLWriter API not available in libxml2 v2.5.x
