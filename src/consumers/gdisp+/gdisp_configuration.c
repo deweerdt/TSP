@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_configuration.c,v 1.6 2006-02-05 18:02:36 esteban Exp $
+$Id: gdisp_configuration.c,v 1.7 2006-02-12 00:08:32 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -47,13 +47,6 @@ File      : Graphic Tool Configuration Management.
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-
-/*
- * XML includes.
- */
-#include <libxml/encoding.h>
-#include <libxml/xmlwriter.h>
-
 
 /*
  * GDISP+ includes.

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_preferences.c,v 1.2 2005-12-03 15:46:20 esteban Exp $
+$Id: gdisp_preferences.c,v 1.3 2006-02-12 00:08:32 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -46,13 +46,6 @@ File      : Graphic Tool Preference management.
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-/*
- * XML includes.
- */
-#include <libxml/encoding.h>
-#include <libxml/xmlwriter.h>
-
 
 /*
  * GDISP+ includes.
