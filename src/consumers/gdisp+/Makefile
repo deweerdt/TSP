@@ -50,8 +50,8 @@ endif
 
 ADD_LIB =  $(DIRLIB)/libtsp_consumer.a \
 	   $(DIRLIB)/libtsp_services.a \
-	   $(DIRLIB)/libtsp_util.a \
-	   $(DIRLIB)/libgtk_1.2_utils.a
+	   $(DIRLIB)/libtsp_util.a 
+#	   $(DIRLIB)/libgtk_1.2_utils.a
 
 TARGET=$(DIRBIN)/tsp_gdisp+
 
