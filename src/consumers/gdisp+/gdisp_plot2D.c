@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_plot2D.c,v 1.16 2006-02-05 18:02:36 esteban Exp $
+$Id: gdisp_plot2D.c,v 1.17 2006-02-15 21:39:07 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -50,6 +50,13 @@ File      : 2D plot system.
 #include <errno.h>
 #include <math.h>
 
+
+/*
+ * GTK add-ons.
+ */
+/*
+#include <gtk/gtkdatabox.h>
+*/
 
 /*
  * For key manipulation.
@@ -1626,8 +1633,8 @@ gdisp_plot2DButtonPress (GtkWidget      *area,
   }
 
   /*
-   * 'button3' removes the selected symbol from the list.
-   * 'shift' + 'button3' removes all symbols.
+   * 'button3'
+   * 'shift' + 'button3'
    */
   if (event->state & GDK_SHIFT_MASK) {
 

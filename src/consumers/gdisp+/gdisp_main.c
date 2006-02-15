@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_main.c,v 1.8 2006-01-20 21:59:14 esteban Exp $
+$Id: gdisp_main.c,v 1.9 2006-02-15 21:39:07 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -169,6 +169,12 @@ main (int argc, char **argv)
    * checks the arguments passed to the application on the command line.
    */
   gtk_init(&argc, &argv);
+
+
+  /*
+   * Show splash screen.
+   */
+  gdisp_showSplashScreen();
 
 
   /*

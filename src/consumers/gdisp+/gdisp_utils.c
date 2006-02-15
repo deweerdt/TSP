@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_utils.c,v 1.8 2005-12-03 15:46:20 esteban Exp $
+$Id: gdisp_utils.c,v 1.9 2006-02-15 21:39:07 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -819,5 +819,22 @@ gdisp_uIntToStr ( guint value, gchar *ptr )
   } while ((value = t) != 0);
  
   return (ptr);
+
+}
+
+
+/*
+ * Update the whole Gdisp+ GUI.
+ */
+void
+gdisp_updateWholeGui ( void )
+{
+
+  /*
+   * If X events are pending, treat them.
+   */
+  while (gtk_events_pending()) {
+    gtk_main_iteration();
+  }
 
 }

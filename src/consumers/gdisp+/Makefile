@@ -24,6 +24,7 @@ SOURCES = \
 	gdisp_colormap.c       \
 	gdisp_defaultPlot.c    \
 	gdisp_pointArray.c     \
+	gdisp_splashScreen.c   \
 	gdisp_pixmaps.c
 
 PLUGINS_SOURCES = \
@@ -47,12 +48,20 @@ else
 OBJECTS += $(PLUGINS_SOURCES:%.c=$(DIROBJ)/%.o) 
 endif
 
-ADD_LIB =  $(DIRLIB)/libtsp_consumer.a $(DIRLIB)/libtsp_services.a $(DIRLIB)/libtsp_util.a
+ADD_LIB =  $(DIRLIB)/libtsp_consumer.a \
+	   $(DIRLIB)/libtsp_services.a \
+	   $(DIRLIB)/libtsp_util.a \
+	   $(DIRLIB)/libgtk_1.2_utils.a
 
 TARGET=$(DIRBIN)/tsp_gdisp+
 
 CPPFLAGS += `gtk-config --cflags gtk`  
 CPPFLAGS += `xml2-config --cflags`
+
+# in order to avoid having GTK stuffs in ${HOME_EXEC_CURRENT)/include.
+CPPFLAGS += -I$(DEVBASE)/external/gtk-1.2
+#
+
 LDFLAGS  += `gtk-config --libs ` 
 LDFLAGS  += `xml2-config --libs ` 
 

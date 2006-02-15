@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_mainBoard.c,v 1.9 2006-02-06 13:59:04 esteban Exp $
+$Id: gdisp_mainBoard.c,v 1.10 2006-02-15 21:39:07 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -156,6 +156,11 @@ gdisp_quitItemHandler (gpointer factoryData,
   Kernel_T *kernel = (Kernel_T*)factoryData;
 
   /*
+   * Update whole GUI.
+   */
+  gdisp_updateWholeGui();
+
+  /*
    * Remember window position.
    */
   gdisp_getMainBoardWindowPosition(kernel);
@@ -202,7 +207,6 @@ gdisp_outputWrite(Kernel_T  *kernel,
 	   "%H:%M : ",
 	   localtime(&nowTime));
   g_string_prepend(string,timeString);
-
 
   /*
    * Create a 'list item' containing a 'label' and 'pixmap'.
@@ -340,6 +344,11 @@ gdisp_launchAction ( GtkObject *siblingButton,
   gchar            *messageFooter  = (gchar*)NULL;
   Message_T         messageType    = GD_ERROR;
   gboolean          freeIoFilename = FALSE;
+
+  /*
+   * Update GUI.
+   */
+  gdisp_updateWholeGui();
 
   /*
    * Get back selected filename.

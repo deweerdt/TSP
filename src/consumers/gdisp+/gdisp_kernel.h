@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_kernel.h,v 1.20 2006-02-06 13:59:04 esteban Exp $
+$Id: gdisp_kernel.h,v 1.21 2006-02-15 21:39:07 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -65,11 +65,13 @@ File      : Graphic Tool Kernel Interface.
 /*
  * Few defines.
  */
-#undef GD_LOAD_CONFIGURATION_WITH_ALL_SYMBOLS
+#undef  GD_LOAD_CONFIGURATION_WITH_ALL_SYMBOLS
 #define GD_UNREF_THINGS
+
 
 /*
  * 10 out of 170 colors.
+ * FIXME : allocate only these 10 colors, and not the entire colormap.
  */
 #define _RED_       3
 #define _GREEN_    10

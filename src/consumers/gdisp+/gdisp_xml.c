@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_xml.c,v 1.4 2006-02-12 00:13:56 erk Exp $
+$Id: gdisp_xml.c,v 1.5 2006-02-15 21:39:07 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -374,11 +374,13 @@ gdisp_xmlWriteAttributes( xmlTextWriterPtr  writer,
 {
 
   gint     errorCode       = 0;
+
+#ifdef XMLWRITER_SUPPORTED 
+
   xmlChar *attributeName  = (xmlChar*)NULL;
   xmlChar *attributeValue = (xmlChar*)NULL;
   va_list  argList;
 
-#ifdef XMLWRITER_SUPPORTED
   /*
    * Goto line and ident.
    */
@@ -438,8 +440,11 @@ gdisp_xmlWriteAttributes( xmlTextWriterPtr  writer,
     errorCode = xmlTextWriterEndElement(writer);
 
   }
+
 #else 
+
   errorCode = 1;
+
 #endif
 
   return errorCode;

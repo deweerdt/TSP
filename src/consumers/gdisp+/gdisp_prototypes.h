@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_prototypes.h,v 1.15 2006-01-20 21:59:14 esteban Exp $
+$Id: gdisp_prototypes.h,v 1.16 2006-02-15 21:39:07 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -261,6 +261,7 @@ void       gdisp_dereferenceSymbolList (GList *symbolList);
 
 gchar     *gdisp_strDup (gchar *string);
 gchar     *gdisp_uIntToStr (guint value, gchar *ptr);
+void       gdisp_updateWholeGui (void);
 
 
 /*
@@ -295,5 +296,11 @@ gboolean   gdisp_openConfigurationFile (Kernel_T *kernel);
 GtkWidget *gdisp_createAnimatedLogo (Kernel_T *kernel);
 void       gdisp_startLogoAnimation (Kernel_T *kernel);
 void       gdisp_stopLogoAnimation  (Kernel_T *kernel, gboolean stopAll);
+
+
+/*
+ * From gdisp_splashScreen.c
+ */
+void       gdisp_showSplashScreen (void);
 
 #endif /* __PROTOTYPES_H__ */
