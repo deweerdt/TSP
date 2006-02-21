@@ -14,5 +14,7 @@ ifeq (${TSP_TARGET},dec)
 SUBDIRS = RpcGen
 endif
 
+SUBDIRS += gtk-1.2
+
 include $(DEVBASE)/make/Makesubdirs
 
