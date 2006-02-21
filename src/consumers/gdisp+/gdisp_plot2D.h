@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_plot2D.h,v 1.9 2005-12-03 15:46:20 esteban Exp $
+$Id: gdisp_plot2D.h,v 1.10 2006-02-21 22:11:00 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -61,9 +61,19 @@ typedef enum {
 
   GD_2D_F2T = 0,
   GD_2D_F2X,
-  GD_2D_OTHER,
+  GD_2D_OTHER
 
 } KindOfPlot_T;
+
+/*
+ * Dynamic actions.
+ */
+typedef enum {
+
+  GD_2D_CLEAR = 0,
+  GD_2D_SNAPSHOT
+
+} Action_T;
 
 /*
  * Private structure of a '2D plot'.
@@ -135,6 +145,11 @@ typedef struct Plot2D_T_ {
   DoublePoint_T        p2dPtScroll;
   ShortPoint_T         p2dPtRedrawMin;
   ShortPoint_T         p2dPtRedrawMax;
+
+  /*
+   * Popup menus.
+   */
+  PopupMenu_T         *p2dMainMenu;
 
 } Plot2D_T;
 

@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_preferences.c,v 1.3 2006-02-12 00:08:32 erk Exp $
+$Id: gdisp_preferences.c,v 1.4 2006-02-21 22:11:00 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -81,7 +81,8 @@ gdisp_loadPreferences ( Kernel_T *kernel,
   preferenceTableNode =
     gdisp_xmlGetChildren(document,(xmlNode*)NULL,"//Preferences/preference");
 
-  if (preferenceTableNode->nodeNr > 0) {
+  if (preferenceTableNode != (xmlNodeSet*)NULL &&
+      preferenceTableNode->nodeNr > 0) {
 
     for (cptPreference=0;
 	 cptPreference<preferenceTableNode->nodeNr;
@@ -126,8 +127,9 @@ void
 gdisp_loadPreferenceFile ( Kernel_T *kernel )
 {
 
-  xmlChar  completeFilename[256];
+  FILE    *stream   = (FILE*)NULL;
   xmlDoc  *document = (xmlDoc*)NULL;
+  xmlChar  completeFilename[256];
 
 
   /*
@@ -140,6 +142,17 @@ gdisp_loadPreferenceFile ( Kernel_T *kernel )
   sprintf(completeFilename,
 	  "%s/.gdpp",
 	  getenv("HOME"));
+
+  /*
+   * Check file disponibility.
+   */
+  stream = fopen(completeFilename,"r");
+  if (stream == (FILE*)NULL) {
+    return;
+  }
+  else {
+    fclose(stream);
+  }
 
   /*
    * This initialize the library and check potential ABI mismatches
@@ -180,6 +193,8 @@ gdisp_loadPreferenceFile ( Kernel_T *kernel )
 void
 gdisp_savePreferenceFile ( Kernel_T *kernel )
 {
+
+#if defined(XMLWRITER_SUPPORTED)
 
   int               errorCode      = 0;
   xmlTextWriterPtr  writer         = (xmlTextWriterPtr)NULL;
@@ -455,6 +470,8 @@ gdisp_savePreferenceFile ( Kernel_T *kernel )
    * Cleanup function for the XML library.
    */
   xmlCleanupParser();
+
+#endif
 
 }
 

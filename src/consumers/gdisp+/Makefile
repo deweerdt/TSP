@@ -32,6 +32,7 @@ PLUGINS_SOURCES = \
 	gdisp_toString.c \
 	gdisp_xml.c \
 	gdisp_format.c \
+	gdisp_dataBox.c \
 	gdisp_popupMenu.c \
 	gdisp_plot2D.c \
 	gdisp_plotText.c 
@@ -50,8 +51,8 @@ endif
 
 ADD_LIB =  $(DIRLIB)/libtsp_consumer.a \
 	   $(DIRLIB)/libtsp_services.a \
-	   $(DIRLIB)/libtsp_util.a 
-#	   $(DIRLIB)/libgtk_1.2_utils.a
+	   $(DIRLIB)/libtsp_util.a  \
+	   $(DIRLIB)/libgtk_1.2_utils.a
 
 TARGET=$(DIRBIN)/tsp_gdisp+
 

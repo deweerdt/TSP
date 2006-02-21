@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_prototypes.h,v 1.16 2006-02-15 21:39:07 esteban Exp $
+$Id: gdisp_prototypes.h,v 1.17 2006-02-21 22:11:00 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -302,5 +302,28 @@ void       gdisp_stopLogoAnimation  (Kernel_T *kernel, gboolean stopAll);
  * From gdisp_splashScreen.c
  */
 void       gdisp_showSplashScreen (void);
+
+
+/*
+ * From gdisp_dataBox.c
+ */
+gpointer   gdisp_createDataBox        (Kernel_T  *kernel,
+				       GtkWidget *dbParent);
+void       gdisp_setDataBoxTitle      (gpointer   dataBoxVoid,
+				       gchar     *dataBoxTitle);
+void       gdisp_setDataBoxDimensions (gpointer   dataBoxVoid,
+				       guint      dataBoxWidth,
+				       guint      dataBoxHeight);
+void       gdisp_destroyDataBox       (gpointer   dataBoxVoid);
+void       gdisp_setDataBoxNbValues   (gpointer   dataBoxVoid,
+				       guint      nbValues);
+void       gdisp_setDataBoxXData      (gpointer   dataBoxVoid,
+				       gchar     *xName,
+				       gfloat    *xData);
+guint      gdisp_addDataBoxYData      (gpointer   dataBoxVoid,
+				       gchar     *yName,
+				       gfloat    *yData,
+				       GdkColor   yColor);
+void       gdisp_rescaleDataBox       (gpointer   dataBoxVoid);
 
 #endif /* __PROTOTYPES_H__ */

@@ -106,6 +106,12 @@ unsigned int dparray_getLeftSamplesFromPos (DoublePointArray_T *pArray, unsigned
  */
 void dparray_printFields (DoublePointArray_T *pArray);
 
+/*
+ * Get back sample values as an array, instead of a structure.
+ */
+unsigned int dparray_getFloatTables (DoublePointArray_T  *pArray,
+				     gfloat             **pXtable,
+				     gfloat             **pYtable);
 
 #ifdef __cplusplus
 }

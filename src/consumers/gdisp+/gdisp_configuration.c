@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_configuration.c,v 1.7 2006-02-12 00:08:32 erk Exp $
+$Id: gdisp_configuration.c,v 1.8 2006-02-21 22:11:00 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -1717,6 +1717,8 @@ gboolean
 gdisp_saveConfigurationFile ( Kernel_T *kernel )
 {
 
+#if defined(XMLWRITER_SUPPORTED)
+
   gint              errorCode = 0;
   xmlTextWriterPtr  writer    = (xmlTextWriterPtr)NULL;
   xmlChar          *tmp       = (xmlChar*)NULL;
@@ -1930,10 +1932,20 @@ gdisp_saveConfigurationFile ( Kernel_T *kernel )
    */
   xmlCleanupParser();
 
+
   /*
    * No error.
    */
   return TRUE;
+
+#else
+
+  /*
+   * Error.
+   */
+  return FALSE;
+
+#endif
 
 }
 

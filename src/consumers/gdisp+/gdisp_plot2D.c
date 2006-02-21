@@ -1,6 +1,6 @@
 /*!  \file 
 
-$Id: gdisp_plot2D.c,v 1.17 2006-02-15 21:39:07 esteban Exp $
+$Id: gdisp_plot2D.c,v 1.18 2006-02-21 22:11:00 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -52,13 +52,6 @@ File      : 2D plot system.
 
 
 /*
- * GTK add-ons.
- */
-/*
-#include <gtk/gtkdatabox.h>
-*/
-
-/*
  * For key manipulation.
  */
 #include <gdk/gdkkeysyms.h>
@@ -71,6 +64,7 @@ File      : 2D plot system.
 #include "gdisp_kernel.h"
 #include "gdisp_prototypes.h"
 
+#include "gdisp_popupMenu.h"
 #include "gdisp_plot2D.h"
 
 /*
@@ -82,6 +76,8 @@ File      : 2D plot system.
 #define GDISP_2D_MAX_TITLE     50   /* Nb char in title  */
 
 #define GDISP_2D_BACK_COLOR _BLACK_
+
+#define GD_FROZEN_RULERSE
 
 /*
  --------------------------------------------------------------------
@@ -140,11 +136,15 @@ static int gdispVerbosity = 2;
 #define Y_PLOT_TO_SAMPLE(plot,yy) \
         ( ((double)(yy) / (plot)->p2dPtSlope.y) + (plot)->p2dPtMin.y )
 
-#define X_SAMPLE_TO_WIN(plot,x) (X_PLOT_TO_WIN(plot,X_SAMPLE_TO_PLOT(plot,x)))
-#define Y_SAMPLE_TO_WIN(plot,y) (Y_PLOT_TO_WIN(plot,Y_SAMPLE_TO_PLOT(plot,y)))
+#define X_SAMPLE_TO_WIN(plot,x) \
+        (X_PLOT_TO_WIN(plot,X_SAMPLE_TO_PLOT(plot,x)))
+#define Y_SAMPLE_TO_WIN(plot,y) \
+        (Y_PLOT_TO_WIN(plot,Y_SAMPLE_TO_PLOT(plot,y)))
 
-#define X_SAMPLE_ROUND_TO_PIXEL(plot,x) (X_PLOT_TO_SAMPLE(plot,X_SAMPLE_TO_PLOT(plot,x)))
-#define Y_SAMPLE_ROUND_TO_PIXEL(plot,y) (Y_PLOT_TO_SAMPLE(plot,Y_SAMPLE_TO_PLOT(plot,y)))
+#define X_SAMPLE_ROUND_TO_PIXEL(plot,x) \
+        (X_PLOT_TO_SAMPLE(plot,X_SAMPLE_TO_PLOT(plot,x)))
+#define Y_SAMPLE_ROUND_TO_PIXEL(plot,y) \
+        (Y_PLOT_TO_SAMPLE(plot,Y_SAMPLE_TO_PLOT(plot,y)))
 
 
 /*
@@ -204,13 +204,13 @@ gdisp_drawSymbolName ( Kernel_T *kernel,
   gint      windowWidth  =               0;
   gint      windowHeight =               0;
   gint      windowDepth  =               0;
-
+  guint     symbolNumber =               0;
 
   /*
    * Clear window content.
    */
   gdk_gc_set_foreground(plot->p2dGContext,
-			&kernel->colors[_GREY_]);
+			&kernel->colors[_BLACK_]);
 
   gdk_window_get_geometry(xAxis == TRUE ?
 			  plot->p2dXSymbolWindow : plot->p2dYSymbolWindow,
@@ -240,7 +240,7 @@ gdisp_drawSymbolName ( Kernel_T *kernel,
     symbol = (Symbol_T*)plot->p2dXSymbolList->data;
 
     gdk_gc_set_foreground(plot->p2dGContext,
-			  &kernel->colors[_BLACK_]);
+			  &kernel->colors[_WHITE_]);
 
     gdk_draw_string(plot->p2dXSymbolWindow,
 		    plot->p2dFont,
@@ -276,13 +276,13 @@ gdisp_drawSymbolName ( Kernel_T *kernel,
     xPosition = X_SYMBOL_OFFSET;
     yPosition = Y_SYMBOL_OFFSET;
 
-    gdk_gc_set_foreground(plot->p2dGContext,
-			  &kernel->colors[_BLACK_]);
-
     symbolItem = g_list_first(plot->p2dYSymbolList);
     while (symbolItem != (GList*)NULL) {
 
       symbol = (Symbol_T*)symbolItem->data;
+
+      gdk_gc_set_foreground(plot->p2dGContext,
+			    &kernel->colors[_YELLOW_ + symbolNumber++ ]);
 
       gdk_draw_string(plot->p2dYSymbolWindow,
 		      plot->p2dFont,
@@ -303,6 +303,9 @@ gdisp_drawSymbolName ( Kernel_T *kernel,
 			   &width,
 			   &ascent,
 			   &descent);
+
+	gdk_gc_set_foreground(plot->p2dGContext,
+			      &kernel->colors[_WHITE_]);
 
 	gdk_draw_line(plot->p2dYSymbolWindow,
 		      plot->p2dGContext,
@@ -767,6 +770,9 @@ gdisp_symbolNameWindowEvent ( GdkXEvent *xevent,
 				       xEvent->xbutton.y,
 				       (xEvent->xbutton.state & ShiftMask) ?
 				       TRUE : FALSE /* isShifted */);
+
+      }
+      else if (xEvent->xbutton.button == Button1) {
 
       }
 
@@ -1256,10 +1262,6 @@ gdisp_plot2DDrawBackBufferCurves (Kernel_T       *kernel,
   ShortPoint_T        lastPixel;
   ShortPoint_T        currentPixel;
   /* Sorry, I didn't want to allocate memory on each refresh */
-  /*
-   * From esteban : you are foregiven, duf. It is now more your
-   *                algorithm than mine.
-   */
   static GdkPoint     pixelList[MAX_PIXEL_ON_CURVE]; 
   guint		      nbPixels;
 
@@ -1306,7 +1308,7 @@ gdisp_plot2DDrawBackBufferCurves (Kernel_T       *kernel,
      * TODO: A color per draw ?
      */
     gdk_gc_set_foreground(plot->p2dGContext,
-			  &kernel->colors[_YELLOW_ + cptCurve +drawType]);
+			  &kernel->colors[_YELLOW_ + cptCurve /* + drawType */]);
 
     nbPixels = 0;      
 
@@ -1722,8 +1724,6 @@ static void*
 gdisp_createPlot2D (Kernel_T *kernel)
 {
 
-#define FROZEN_RULER
-
   Plot2D_T *plot     = (Plot2D_T*)NULL;
   guint     signalID = 0;
 
@@ -1767,13 +1767,22 @@ gdisp_createPlot2D (Kernel_T *kernel)
 		   0,
 		   0 );
 
-#if defined(GD_AREA_WANT_EXTRA_EVENTS)
+#if defined(GD_AREA_WANT_ALL_EXTRA_EVENTS)
 
   gtk_widget_set_events(plot->p2dArea,
 			GDK_POINTER_MOTION_MASK      |
 			GDK_POINTER_MOTION_HINT_MASK |
 			GDK_ENTER_NOTIFY_MASK        |
 			GDK_LEAVE_NOTIFY_MASK        |
+			GDK_BUTTON_PRESS_MASK          );
+
+#else
+
+  /*
+   * Must be allowed for popup menu purpose and rulers.
+   */
+  gtk_widget_set_events(plot->p2dArea,
+			GDK_POINTER_MOTION_MASK      |
 			GDK_BUTTON_PRESS_MASK          );
 
 #endif
@@ -1835,7 +1844,7 @@ gdisp_createPlot2D (Kernel_T *kernel)
 		      0,
 		      10);
 
-#if !defined(FROZEN_RULER)
+#if !defined(GD_FROZEN_RULERS)
   gtk_signal_connect_object(GTK_OBJECT(plot->p2dArea),
 			    "motion_notify_event",
 			    (GtkSignalFunc)EVENT_METHOD(plot->p2dHRuler,
@@ -1843,7 +1852,7 @@ gdisp_createPlot2D (Kernel_T *kernel)
 			    GTK_OBJECT(plot->p2dHRuler));
 #endif
 
-#if defined(FROZEN_RULER)
+#if defined(GD_FROZEN_RULERS)
   gtk_widget_set_sensitive(plot->p2dHRuler,
 			   FALSE /* no sensitive */);
 #endif
@@ -1875,7 +1884,7 @@ gdisp_createPlot2D (Kernel_T *kernel)
 		      0,
 		      10);
 
-#if !defined(FROZEN_RULER)
+#if !defined(GD_FROZEN_RULERS)
   gtk_signal_connect_object(GTK_OBJECT(plot->p2dArea),
 			    "motion_notify_event",
 			    (GtkSignalFunc)EVENT_METHOD(plot->p2dVRuler,
@@ -1883,7 +1892,7 @@ gdisp_createPlot2D (Kernel_T *kernel)
 			    GTK_OBJECT(plot->p2dVRuler));
 #endif
 
-#if defined(FROZEN_RULER)
+#if defined(GD_FROZEN_RULERS)
   gtk_widget_set_sensitive(plot->p2dVRuler,
 			   FALSE /* no sensitive */);
 #endif
@@ -1961,6 +1970,11 @@ gdisp_destroyPlot2D(Kernel_T *kernel,
   gdisp_freeSampledPointTables(kernel,plot,TRUE /* freeAll */);
 
   /*
+   * Destroy Menu.
+   */
+  gdisp_destroyMenu(plot->p2dMainMenu);
+
+  /*
    * Free opaque structure.
    */
   memset(plot,0,sizeof(Plot2D_T));
@@ -2029,6 +2043,103 @@ gdisp_getPlot2DTopLevelWidget (Kernel_T  *kernel,
 
 
 /*
+ * Popup Menu Handler.
+ */
+static void
+gdisp_popupMenuHandler ( Kernel_T    *kernel,
+			 PopupMenu_T *menu,
+			 gpointer     menuData,
+			 gpointer     itemData )
+{
+
+  Plot2D_T           *plot     = (Plot2D_T*)menuData;
+  Action_T            action   = (Action_T)GPOINTER_TO_UINT(itemData);
+
+  /*
+   * For snapshot.
+   */
+  gpointer            dataBox    = (gpointer)NULL;
+  DoublePointArray_T *pArray     = (DoublePointArray_T*)NULL;
+  gfloat             *xTable     = (gfloat*)NULL;
+  gfloat             *yTable     = (gfloat*)NULL;
+  guint               nbValues   = 0;
+  guint               cptCurve   = 0;
+  GList              *symbolList = (GList*)NULL;
+  gchar              *xName      = (gchar*)NULL;
+  gchar              *yName      = (gchar*)NULL;
+
+  /*
+   * Treat action.
+   */
+  switch (action) {
+
+  case GD_2D_CLEAR :
+
+    /*
+     * FIXME-DUF-CLEAR
+     * Implementer un 'clear' total du plot 2D.
+     * Cela doit passer par un vidage complet des pArray, un re-init des
+     * min et des max, des startIndex,...Etc...
+     */
+
+    break;
+
+  case GD_2D_SNAPSHOT :
+
+    dataBox = gdisp_createDataBox(kernel,(GtkWidget*)NULL);
+
+    gdisp_setDataBoxTitle(dataBox,"Plot 2D Snapshot");
+
+    symbolList = g_list_first(plot->p2dXSymbolList);
+    xName      = ((Symbol_T*)symbolList->data)->sInfo.name;
+
+    symbolList = g_list_first(plot->p2dYSymbolList);
+
+    for (cptCurve=0; cptCurve<plot->p2dSampleArray->len; cptCurve++) {
+
+      pArray = plot->p2dSampleArray->pdata[cptCurve]; 
+
+      nbValues =
+	dparray_getFloatTables(pArray,
+			       cptCurve == 0 ? &xTable : (gfloat**)NULL,
+			       &yTable);
+
+      if (cptCurve == 0) {
+
+	gdisp_setDataBoxNbValues(dataBox,nbValues);
+
+	gdisp_setDataBoxXData(dataBox,
+			      xName,
+			      xTable);
+
+      }
+
+      yName = ((Symbol_T*)symbolList->data)->sInfo.name;
+
+      gdisp_addDataBoxYData(dataBox,
+			    yName,
+			    yTable,
+			    kernel->colors[_YELLOW_ + cptCurve]);
+
+      yTable = (gfloat*)NULL; /* important, do not remove */
+
+      symbolList = g_list_next(symbolList);
+
+    }
+
+    gdisp_rescaleDataBox(dataBox);
+
+    break;
+
+  default :
+    break;
+
+  }
+
+}
+
+
+/*
  * By now, the '2D plot' widgets are created, but not shown yet.
  * Show them here.
  */
@@ -2050,8 +2161,27 @@ gdisp_showPlot2D (Kernel_T  *kernel,
   gtk_widget_show(plot->p2dTable );
 
   /*
-   * These 'show' operations generate 'configure' events. Strange.
+   * Create the dynamic menu.
+   * Menu cannot be created before because the parent widget is not shown yet.
    */
+  plot->p2dMainMenu = gdisp_createMenu(kernel,
+				       plot->p2dArea,
+				       (gchar*)NULL /* no title */,
+				       gdisp_popupMenuHandler,
+				       (gpointer)plot);
+
+    /*
+     * FIXME-DUF-CLEAR
+     */
+  /*
+  gdisp_addMenuItem(plot->p2dMainMenu,
+		    "clear",
+		    (gpointer)GUINT_TO_POINTER(GD_2D_CLEAR));
+  */
+
+  gdisp_addMenuItem(plot->p2dMainMenu,
+		    "snapshot",
+		    (gpointer)GUINT_TO_POINTER(GD_2D_SNAPSHOT));
 
 }
 

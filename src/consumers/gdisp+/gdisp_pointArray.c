@@ -66,6 +66,7 @@ void
 dparray_addSample (DoublePointArray_T *pArray,
 		   DoublePoint_T      *point)
 {
+
   pArray->samples[pArray->current] = *point;
   pArray->current = (pArray->current + 1) % pArray->maxSamples;
 
@@ -73,7 +74,6 @@ dparray_addSample (DoublePointArray_T *pArray,
    * Check end of ring buffer.
    */
   if (pArray->nbSamples < pArray->maxSamples) {
-
     pArray->nbSamples++;      
   }
 
@@ -86,10 +86,13 @@ dparray_addSample (DoublePointArray_T *pArray,
 unsigned int
 dparray_getFirstIndex (DoublePointArray_T *pArray)
 {
-  if (pArray->nbSamples != 0)
+
+  if (pArray->nbSamples != 0) {
     return (pArray->current)%pArray->nbSamples;      
-  else
+  }
+  else {
     return -1;
+  }
  
 }
 
@@ -125,8 +128,10 @@ void
 dparray_setMarkerIndex (DoublePointArray_T *pArray,
 			unsigned int               index)
 {
-  if (pArray->nbSamples != 0)
+
+  if (pArray->nbSamples != 0) {
     pArray->marker = index % pArray->maxSamples;
+  }
 
 }
 
@@ -134,15 +139,12 @@ DoublePoint_T
 dparray_getSample (DoublePointArray_T *pArray,
 		   int                 index)
 {
+
   if ( (pArray->nbSamples != 0) && (index >= 0) ) {
-
     return pArray->samples[ index % pArray->nbSamples ]; 
-
   }
   else {
-
     return pArray->samples[0]; 
-
   }
 
 }
@@ -153,14 +155,10 @@ dparray_getSamplePtr (DoublePointArray_T *pArray,
 {
 
   if ( (pArray->nbSamples != 0) && (index >= 0) ) {
-
     return &pArray->samples[ index % pArray->nbSamples ]; 
-
   }
   else {
-
     return &pArray->samples[0]; 
-
   }
 
 }
@@ -176,14 +174,10 @@ dparray_getLeftSamplesFromPos (DoublePointArray_T *pArray,
 {
 
   if (index < pArray->current) {
-
     return pArray->current - index;
-
   }
   if (index > pArray->current) {
-
     return pArray->current + pArray->maxSamples - index;
-
   }
 
   return pArray->nbSamples;
@@ -208,6 +202,77 @@ dparray_printFields (DoublePointArray_T *pArray)
 }
 
 
+/*
+ * Get back sample values as an array, instead of a structure.
+ */
+unsigned int
+dparray_getFloatTables (DoublePointArray_T  *pArray,
+			gfloat             **pXtable,
+			gfloat             **pYtable)
+{
+
+  unsigned int   startIndex = 0;
+  unsigned int   nbPoints   = 0;
+  unsigned int   cptPoint   = 0;
+  gfloat        *xFloatPtr  = (gfloat*)NULL;
+  gfloat        *yFloatPtr  = (gfloat*)NULL;
+  DoublePoint_T *pSample    = (DoublePoint_T*)NULL;
+
+  /*
+   * Init.
+   */
+  nbPoints   = dparray_getNbSamples(pArray);
+  startIndex = dparray_getFirstIndex(pArray);
+
+  /*
+   * Is X table requested ?
+   */
+  if (pXtable != (gfloat**)NULL) {
+
+    if (*pXtable == (gfloat*)NULL) {
+      *pXtable = (gfloat*)g_malloc0(nbPoints * sizeof(gfloat));
+    }
+    xFloatPtr = *pXtable;
+
+  }
+
+  /*
+   * Is Y table requested ?
+   */
+  if (pYtable != (gfloat**)NULL) {
+
+    if (*pYtable == (gfloat*)NULL) {
+      *pYtable = (gfloat*)g_malloc0(nbPoints * sizeof(gfloat));
+    }
+    yFloatPtr = *pYtable;
+
+  }
+
+  /*
+   * Fill the tables.
+   */
+  for (cptPoint=startIndex; cptPoint<startIndex+nbPoints; cptPoint++) {
+
+    pSample = dparray_getSamplePtr(pArray,cptPoint);
+
+    if (xFloatPtr != (gfloat*)NULL) {
+      *xFloatPtr++ = (gfloat)pSample->x;
+    }
+
+    if (yFloatPtr != (gfloat*)NULL) {
+      *yFloatPtr++ = (gfloat)pSample->y;
+    }
+
+  }
+
+  return nbPoints;
+
+}
+
+
+/*
+ * Main program for test purpose.
+ */
 #ifdef _TEST_POINT_ARRAY
 int main(int argc, char *argv[])
 {
