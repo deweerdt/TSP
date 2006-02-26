@@ -141,6 +141,7 @@ endif
 
 destroy ::
 	$(RM) $(TARGET) $(OBJECTS) $(SECONDARY_TARGETS) *.o *~
+	$(MAKE) remove_include
 
 include $(DEVBASE)/make/Makerules
 
