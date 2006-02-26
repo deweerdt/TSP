@@ -1,6 +1,6 @@
-/*!  \file 
+/*
 
-$Id: gdisp_main.c,v 1.9 2006-02-15 21:39:07 esteban Exp $
+$Id: gdisp_main.c,v 1.10 2006-02-26 13:34:19 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -55,6 +55,23 @@ File      : Graphic Tool main part.
 #include "gdisp_kernel.h"
 #include "gdisp_prototypes.h"
 
+/**
+ * @defgroup TSP_GDispPlus GDisp+
+ * @ingroup  TSP_Consumers
+ * tsp_gdisp+ is the second generation TSP consumer GUI.
+ * This a gtk+1.2 (which should evolve to gtk+2.x), 
+ * GUI which may be used to efficiently draw or view TSP sample symbol. 
+ * GDisp+ includes following features:
+ * <ul>
+ *   <li> Multi Y vs X graphing capability </li>
+ *   <li> Graph snapshot </li>
+ *   <li> Textual Viewing  with rendering (hex, binary, etc...) </li>
+ *   <li> Interactive drag'n'drop </li>
+ *   <li> Save/Restore sampling configuration </li>
+ *   <li> many more to come... </li>
+ * </ul>
+ * \par \c tsp_gdisp+ \c [-u TSPurl ]  \c [-h host ] \c [-x config.xml]
+ */
 
 /*
  --------------------------------------------------------------------
