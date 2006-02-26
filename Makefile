@@ -3,7 +3,7 @@ include $(DEVBASE)/make/Makeparams
 #---------------------------------
 # by default compile only src code
 #---------------------------------
-SUBDIRS = src
+SUBDIRS = external src
 
 #-----------------------------------------------------------
 # compile external first for VXWORKS target (posix + rpcgen)
