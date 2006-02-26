@@ -29,7 +29,25 @@ Component : Documentation main tree for doxygen
 Purpose   : Define the TSP main doxygen modules 
 -----------------------------------------------------------------------
  */
-
+/**
+ * @mainpage
+ * \section intro_sec Introduction
+ *
+ * This is the Transport Sample Protocol (TSP) API documentation.
+ * You'll find hereafter the documentation for the main modules
+ * of the TSP project.
+ *
+ * \section tsp_modules Main TSP Module
+ * The main TSP modules are:
+ * <ul>
+ *   <li> \ref TSP </li>
+ *   <li> \ref BlackBoard </li> 
+ * </ul>
+ * 
+ * \section tsp_sdk Installing and using TSP SDK
+ *
+ * <em>will come soon</em>
+ */
 /**
  * @defgroup TSP The Transport Sample Protocol
  * The Transport Sample Protocol (TSP).
