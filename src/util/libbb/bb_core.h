@@ -1,6 +1,6 @@
-/*!  \file 
+/*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.h,v 1.17 2006-02-03 20:46:22 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.h,v 1.18 2006-02-26 13:36:06 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -26,7 +26,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 Project   : TSP
 Maintainer : tsp@astrium-space.com
-Component : Consumer
+Component : BlackBoard
 
 -----------------------------------------------------------------------
 
@@ -46,10 +46,9 @@ Purpose   : BlackBoard Idiom implementation
 #ifdef _SEM_SEMUN_UNDEFINED
 #undef _SEM_SEMUN_UNDEFINED
 #endif
-/**
+/*
  * Union a definir et utiliser
  * pour les appels 'semop' SysV.
- * @ingroup BlackBoard
  */
 union semun {
   int val;                           /* value for SETVAL */
@@ -61,62 +60,144 @@ union semun {
 
 
 /**
- * @defgroup BlackBoard
+ * @defgroup BlackBoard The BlackBoard (BB)
  * BlackBoard idiom definition and functions.
- * A blackboard is an inter-process communication mean based
- * on the publish/subscribe principle.
- * Every process/thread attached to the blackboard may
- * publish or subscribe to a piece of data using a key
+ * A BlackBoard is an inter-process communication mean based
+ * on the publish/subscribe principle. It is implemented using
+ * classical IPC objects:
+ *    <ul>
+ *       <li> 1 shared memory ojbect </li>
+ *       <li> 1 message queue (may be more in the future) </li>
+ *       <li> 1 semaphore set containing 1 semaphore (may be more in the future) </li>
+ *    </ul>
+ * The current implementation use SystemV IPC (shmget, semget, msgget) but
+ * the BlackBoard may be easily translated to any other similar IPC tools,
+ * such as POSIX IPC.
+ * Every process/thread attached to the BlackBoard may
+ * publish (@ref bb_publish) or subscribe (@ref bb_subscribe) to a piece of data using a key
  * (string based in this implementation).
- * @ingroup TSP_Utils
+ * You may have as many BlackBoard as the local memory authorize it.
+ * A BlackBoard is identified by a name, the BlackBoard Name and
+ * an identifier.
+ *
+ * The BlackBoard is mainly composed of its shared memory object which is
+ * divided in 3 areas:
+ * <ul>
+ *     <li> The BlackBoard descriptor itself which is represented by 
+ *          one @ref S_BB structure</li>
+ *     <li> The BlackBoard Data descriptor which is represented by 
+ *          an array of @ref S_BB_DATADESC structure</li>
+ *     <li> The BlackBoard Data area which is only raw memory where
+ *          published data will effectively be stored. </li>
+ * </ul>
  */
 
-#define MAX_SYSMSG_SIZE     255
-
+/**
+ * The maximum size of a BB name.
+ */
 #define BB_NAME_MAX_SIZE    255
+/**
+ * The maximum size of a BB published data.
+ */
 #define VARNAME_MAX_SIZE    150
-#define MSG_BB_MAX_SIZE     32
+
+/**
+ * The default access right of the shared memory 
+ * used to create a BlackBoard.
+ */
 #define BB_SHM_ACCESS_RIGHT 0770
+/**
+ * The default access right to the semaphore
+ * set used by a BlackBoard.
+ */
 #define BB_SEM_ACCESS_RIGHT 0770
+/**
+ * The default access right to the message queue
+ * used by a BlackBoard.
+ */
 #define BB_MSG_ACCESS_RIGHT 0770
+
+/**
+ * The maximum BlackBoard message size.
+ * This is used for building BlackBoard messages
+ * to be sent by BlackBoard message queue.
+ */
+#define MAX_SYSMSG_SIZE     255
+/**
+ * The maximum size of the BB message queue(s).
+ */
+#define MSG_BB_MAX_SIZE     32
+
+/**
+ * The BlackBoard version identifier.
+ * Since the BlackBoard is evolving, the BlackBoard structure
+ * itself may change from time to time.
+ * If suche change occurs the BB_VERSION_ID is changed
+ * such that @ref bb_check_version may be called in order
+ * to check if the BlackBoard version used by an application
+ * is compatible with the process currently trying to use 
+ * BlackBoard.
+ */
 #define BB_VERSION_ID       0x0002000
 
-#define E_OK    0
-#define E_NOK  -1
+#define BB_OK        0
+#define BB_NOK      -1
+#define BB_SUCESS    BB_OK
+#define BB_FAILURE   BB_NOK
+#define BB_YES       1
+#define BB_NO        0
+
+/**
+ * @defgroup BBLib The BB Core Library
+ * The BlackBoard library API.
+ * The BlackBoard library has two-level of usage
+ * a full-fledge more complicated API which is the API
+ * you are currently looking at or a more simple 
+ * with less functionnality API called @ref BBSimpleLib. 
+ * @ingroup BlackBoard
+ * @{
+ */
 
 /**
  * BlackBoard publishable data type.
- * @ingroup BlackBoard
+ * Any data published with @ref bb_publish, @ref bb_alias_publish 
+ * or @ref bb_simple_publish should be specified with its type.
  */
-typedef enum {E_BB_DISCOVER=0,
-              E_BB_DOUBLE=1, 
-	      E_BB_FLOAT,
-	      E_BB_INT8, 
-	      E_BB_INT16, 
-	      E_BB_INT32, 
-	      E_BB_INT64, 
-	      E_BB_UINT8, 
-	      E_BB_UINT16, 
-	      E_BB_UINT32, 
-	      E_BB_UINT64,
-	      E_BB_CHAR,
-	      E_BB_UCHAR,
-              E_BB_USER} E_BB_TYPE_T;
+typedef enum {E_BB_DISCOVER=0, /*!< Discover is used by @ref bb_subscribe when discovering data type */
+              E_BB_DOUBLE=1,   /*!< An IEEE double precision floating point  */
+	      E_BB_FLOAT,      /*!< An IEEE simple precision floating point  */
+	      E_BB_INT8,       /*!< An 8bit signed integer                   */
+	      E_BB_INT16,      /*!< A 16bit signed integer                   */
+	      E_BB_INT32,      /*!< A 32bit signed integer                   */
+	      E_BB_INT64,      /*!< A 64bit signed integer                   */
+	      E_BB_UINT8,      /*!< An 8bit unsigned integer                 */
+	      E_BB_UINT16,     /*!< A 16bit unsigned integer                 */
+	      E_BB_UINT32,     /*!< A 32bit unsigned integer                 */
+	      E_BB_UINT64,     /*!< A 64bit unsigned integer                 */
+	      E_BB_CHAR,       /*!< An 8bit signed character                 */
+	      E_BB_UCHAR,      /*!< An 8bit unsigned character               */
+              E_BB_USER        /*!< A user type of any size (should be supplied) in @ref bb_publish */
+} E_BB_TYPE_T;
 
-typedef enum {BB_STATUS_UNKNOWN=0,
-	      BB_STATUS_GENUINE,
-	      BB_STATUS_DIRTY,
-	      BB_STATUS_DESTROYED,
-	      BB_STATUS_SHADOW} BB_STATUS_T;
+/**
+ * BlackBoard status.
+ */
+typedef enum {BB_STATUS_UNKNOWN=0, /*!< Unknown status     */
+	      BB_STATUS_GENUINE,   /*!< Genuine as opposed to a shadow one */
+	      BB_STATUS_DIRTY,     /*!< Unused for now */
+	      BB_STATUS_DESTROYED, /*!< The BlackBoard has been destroyed by one of the process that were attached to, other should detach as fast as possible */
+	      BB_STATUS_SHADOW     /*!< A Shadow BlackBoard created by @ref bb_shadow_get */
+} BB_STATUS_T;
 	      
 /**
  * BlackBoard data descriptor.
- * @ingroup BlackBoard
+ * Each data published in a blackboard is described using
+ * one such structure.
  */     	      
 typedef struct S_BB_DATADESC {
   /** Variable name */
   char name[VARNAME_MAX_SIZE+1];
-  /** Variable (BlackBoard) type */
+  /** The Variable type */
   E_BB_TYPE_T type;
   /** 
    * Dimension. 1 if scalar, > 1 for single dimension array.
@@ -126,28 +207,27 @@ typedef struct S_BB_DATADESC {
   /** 
    * Type size (in byte).
    * This size enables the appropriate computation
-   * of the data offset in the data array section.
+   * of the data offset in the raw data BlackBoard area.
    */
   size_t type_size;
   /**
-   * Data offset (in bytes) in the data array section.
+   * Data offset (in bytes) in the raw data BlackBoard area.
    */
   unsigned long data_offset;
   
   /**
-   * the index of the aliases published
-   * data in the BB data descriptor array
-   * -1 if genuine published data.
+   * The index of the aliases published (@ref bb_alias_publish)
+   * data in the BlackBoard data descriptor array
+   * -1 if genuine published data (not an alias).
    */
   int  alias_target;
   
-} S_BB_DATADESC_T;
+} S_BB_DATADESC_T ;
 
 /**
  * BlackBoard message definition.
  * This type must conform to the constraint of
  * a SysV message queue message used by msgsnd(2).
- * @ingroup BlackBoard
  */
 typedef struct S_BB_MSG {
   /** 
@@ -163,26 +243,28 @@ typedef struct S_BB_MSG {
    * This is an opaque buffer.
    */
   unsigned char mtext[MSG_BB_MAX_SIZE];
-} S_BB_MSG_T;
+} S_BB_MSG_T ;
 
 /**
- * BlackBoard definition.
- * A blackboard implements the publish/subsbcribe idiom.
- * @ingroup BlackBoard
+ * BlackBoard description structure.
+ * This structure describes the BlackBoard itself
+ * (not data published in BlackBoard which are described
+ *  by the @ref S_BB_DATADESC_T structure).
  */
 typedef struct S_BB {
   /**
    * The BlackBoard version identifier
-   * This is used by bb_tools and bb API in order
+   * This is used by bb_tools and BB Library API in order
    * to avoid version mismatch between API blackboard access.
    */
   int32_t bb_version_id;
   /** 
    * BB access semaphore. 
-   * This SysV sempahore set contains only 1 semaphore
+   * This SysV semaphore set contains only 1 semaphore
    * which should be taken before any structural BB 
    * modification and/or BB data zone copy.
    * @see bb_shadow_get.
+   * @see bb_publish
    */
   int semid;
   /**
@@ -195,30 +277,47 @@ typedef struct S_BB {
   int msgid;
   /** BlackBoard name */
   char name[BB_NAME_MAX_SIZE+1];
-  /** Maximum data descriptor size in bytes. */
-  int32_t  max_data_desc_size;
-  /** Data descriptor array offset */  
-  unsigned long  data_desc_offset; 
   /** 
-   * The number of data currently stored in the BB.
-   * This is the used size of the data descriptor array.
+   * Maximum data descriptor size in bytes.
+   * This the maximum number of publishable data
+   * is the BlackBoard (independently of their size).
+   */
+  int32_t  max_data_desc_size;
+
+  /** 
+   * Data descriptor array offset.
+   * The offset in the shared memory segment
+   * where the BlackBoard data descriptor array begins.
+   */  
+  unsigned long  data_desc_offset; 
+
+  /** 
+   * The number of data currently stored (i.e. published) in the BB.
+   * This is the used size of the BlackBoard data descriptor array.
    */
   int n_data;
-  /** The maximum data size in BB. */
+
+  /** 
+   * The maximum data size in BB (bytes). 
+   * The sum of the size (in bytes) of all published data
+   * may not exceed this number.
+   */
   unsigned long max_data_size;
-  /** BlackBoard data zone offset (bytes) */
+
+  /** 
+   * BlackBoard data zone offset (bytes) 
+   * The offset in the shared memory segment
+   * where the BlackBoard raw data area array begins.
+   */
   unsigned long data_offset;
   /** 
-   * Offset (octets) of the next free byte 
-   * in the blackboard data zone.
+   * Offset (in bytes) of the next free byte 
+   * in the blackboard data zone. This offset
+   * is relative to @ref data_offset
    */
   unsigned long data_free_offset;
   /**
    * State of a BB.
-   * May be:
-   *      BB_GENUINE
-   *      BB_DESTROYED
-   *      BB_SHADOW
    * Should be used by processes to detach/re-attach
    * to a destroyed BB and avoid some operation on shadowed BB.
    */
@@ -227,19 +326,30 @@ typedef struct S_BB {
 
 BEGIN_C_DECLS
 
+/**
+ * The size (in byte) of a BlackBoard data type.
+ * @param bb_type IN, a BlackBoard data type
+ * @return The size (in byte) of a BlackBoard data type or -1 if bb_type equals @ref E_BB_USER
+ *         or is unknown.
+ */
 size_t 
 sizeof_bb_type(E_BB_TYPE_T bb_type);
 
+/**
+ * Convert a string representing a E_BB_TYPE_T to a BlackBoard data type.
+ * @param bb_type_string IN, a string representing a BlackBoard data type
+ * @return the BlackBoard data type or -1 if conversion failed.
+ */
 E_BB_TYPE_T 
 bb_type_string2bb_type(const char* bb_type_string);
 
 /**
  * Check if the accessed blackboard is of the same
  * version as the one used by this code.
+ * @param bb IN, the BlackBoard to be checked 
  * @return 0 if version is the same, < 0 if current
  *         version is older than the accessed blackboard, 
  *         > 0  for the converse.
- * @ingroup BlackBoard
  */
 int32_t
 bb_check_version(volatile S_BB_T* bb);
@@ -252,7 +362,6 @@ bb_check_version(volatile S_BB_T* bb);
  * @param n_data IN the number of publishable data in blackboard
  * @param data_size IN the size (in byte) of the blackboard data zone.
  * @return the size (in byte) of this kind of blackboard.
- * @ingroup BlackBoard
  */
 int32_t
 bb_size(const int32_t n_data, const int32_t data_size);
@@ -262,41 +371,25 @@ bb_size(const int32_t n_data, const int32_t data_size);
  * @param bb IN BlackBoard pointer
  * @param var_name IN the name of the searched variable
  * @return index of the variable in the BB descriptor array
- * @ingroup BlackBoard
  */
 int32_t 
 bb_find(volatile S_BB_T* bb, const char* var_name);
 
-/**
- * Initialize the fast find string algorithm.
- * The function will allocate a big string
- * which is the concatenation of the name
- * of the published BB element.
- * @return fastfind string to be used for fast finding.
- */
-/* char* */
-/* bb_fastfind_build(volatile S_BB_T* bb); */
-
-/**
+/*
  * Search a variable within a BlackBoard using fastfind algorithm.
  * @param bb IN BlackBoard pointer
  * @param fastfind_string IN the fastfind string build with @ref bb_fastfind_build
  * @param var_name IN the name of the searched variable
  * @return index of the variable in the BB descriptor array
- * @ingroup BlackBoard
  */
 /* int32_t */
 /* bb_fastfind(volatile S_BB_T* bb, const char* fastfind_string, const char* var_name); */
-
-/* int32_t */
-/* bb_fastfind_destroy(volatile S_BB_T* bb, char* fastfindstring); */
 
 /**
  * Return a pointer to the beginning of the data 
  * descriptor array of the specified BB.
  * @param bb IN BlackBoard pointer
  * @return start address of the data descriptor array in bb
- * @ingroup BlackBoard
  */
 S_BB_DATADESC_T* 
 bb_data_desc(volatile S_BB_T* bb);
@@ -306,7 +399,6 @@ bb_data_desc(volatile S_BB_T* bb);
  * of the specified BB.
  * @param bb IN BlackBoard pointer
  * @return start address of the data array in bb
- * @ingroup BlackBoard
  */
 void* 
 bb_data(volatile S_BB_T* bb);
@@ -317,7 +409,6 @@ bb_data(volatile S_BB_T* bb);
  * @param value IN pointer to the value
  * @param bbtype IN the type of the pointer
  * @return double value of the pointed value
- * @ingroup BlackBoard
  */
 double
 bb_double_of(void *value, E_BB_TYPE_T bbtype);
@@ -333,7 +424,6 @@ bb_double_of(void *value, E_BB_TYPE_T bbtype);
  * @param default_value INOUT default pointer to the default value used for init.
  *                         If NULL then initialize to 0.
  * @return E_OK if init OK E_NOK otherwise.
- * @ingroup BlackBoard
  */
 int32_t 
 bb_data_initialise(volatile S_BB_T* bb, S_BB_DATADESC_T* data_desc,void* default_value);
@@ -360,7 +450,6 @@ bb_value_print(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc, FILE* pf,
  * @param idxstack IN, the index stack 
  * @param idxstack_len IN, the size of the index stack
  * @return always return E_OK unless pf is NULL.
- * @ingroup BlackBoard
  */
 int32_t 
 bb_data_print(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc, FILE* pf,
@@ -384,7 +473,6 @@ bb_data_print(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc, FILE* pf,
  * @param data_size IN the maximum data zone size (in byte) of the blackboard.
  *                     This is the sum of all data published in the blackboard.
  * @return E_OK if creation succeed E_NOK if failed.
- * @ingroup BlackBoard
  */
 int32_t 
 bb_create(S_BB_T** bb, 
@@ -400,7 +488,6 @@ bb_create(S_BB_T** bb,
  * @param bb INOUT Pointer to BB pointer.
  *                 Should not be NULL.
  * @return E_OK on success E_NOK otherwise.
- * @ingroup BlackBoard
  */
 int32_t 
 bb_destroy(S_BB_T** bb);
@@ -423,7 +510,6 @@ bb_data_memset(S_BB_T* bb, const char c);
  * @see bb_publish/ @see bb_subscribe automatically lock the blackboard.
  * @param bb INOUT BB pointer, should not be NULL.
  * @return E_OK if lock succeed, E_NOK otherwise.
- * @ingroup BlackBoard
  */
 int32_t 
 bb_lock(volatile S_BB_T* bb);
@@ -432,7 +518,6 @@ bb_lock(volatile S_BB_T* bb);
  * Unlock blackboard.
  * @param bb INOUT, BB pointer, should not be NULL.
  * @return E_OK if unlock succeed, E_NOK otherwise.
- * @ingroup BlackBoard
  */
 int32_t 
 bb_unlock(volatile S_BB_T* bb);
@@ -444,7 +529,6 @@ bb_unlock(volatile S_BB_T* bb);
  * @param bb_name IN, blackboard name
  * @return  E_OK  if blackboard exists and attach succeed
  *                E_NOK otherwise.
- * @ingroup BlackBoard
  */
 int32_t 
 bb_attach(S_BB_T** bb, const char* bb_name);
@@ -453,7 +537,6 @@ bb_attach(S_BB_T** bb, const char* bb_name);
  * Detach from blackboard.
  * @param bb INOUT, Pointer to BB pointer (should not be NULL)
  * @return E_OK if blackboard exists and detach succeed E_NOK otherwise.
- * @ingroup BlackBoard
  */
 int32_t 
 bb_detach(S_BB_T** bb);
@@ -469,7 +552,6 @@ bb_detach(S_BB_T** bb);
  *                         the S_BB_DATADESC_T.data_offset is updated.
  * @return address of the allocated data, NULL
  *         if allocation failed.
- * @ingroup BlackBoard
  */
 void* 
 bb_publish(volatile S_BB_T *bb, S_BB_DATADESC_T* data_desc);
@@ -488,7 +570,6 @@ bb_item_offset(volatile S_BB_T *bb,
  * @param data_desc INOUT, data descriptor for the searched data on entry
  *                         updated data desc if found.
  * @return data address if found NULL if not found.
- * @ingroup BlackBoard
  */
 void* 
 bb_subscribe(volatile S_BB_T *bb, S_BB_DATADESC_T* data_desc);
@@ -499,7 +580,6 @@ bb_subscribe(volatile S_BB_T *bb, S_BB_DATADESC_T* data_desc);
  * @param bb INOUT, pointer to BB.
  * @param filedesc INOUT, file stream descriptor.
  * @return E_OK if dump succeed E_NOK otherwise.
- * @ingroup BlackBoard
  */
 int32_t 
 bb_dump(volatile S_BB_T *bb, FILE* filedesc);
@@ -509,7 +589,6 @@ bb_dump(volatile S_BB_T *bb, FILE* filedesc);
  * could be published in blackboard.
  * @param bb IN, pointer to blackboard.
  * @return the maximum number of data that could be published in blackboard
- * @ingroup BlackBoard
  */
 int32_t
 bb_get_nb_max_item(volatile S_BB_T *bb);
@@ -519,7 +598,6 @@ bb_get_nb_max_item(volatile S_BB_T *bb);
  * are currently published in blackboard. 
  * @param bb IN, pointer to blackboard. 
  * @return the number of data currently published in blackboard. 
- * @ingroup BlackBoard
  */
 int32_t
 bb_get_nb_item(volatile S_BB_T *bb);
@@ -528,7 +606,6 @@ bb_get_nb_item(volatile S_BB_T *bb);
  * Return the memory occupation (in byte) of a blackboard.
  * @param bb IN, pointer to BB.
  * @return memory occupied by the specified BB in bytes
- * @ingroup BlackBoard
  */
 int32_t
 bb_get_mem_size(volatile S_BB_T *bb);
@@ -549,7 +626,6 @@ bb_get_mem_size(volatile S_BB_T *bb);
  *                         which will receive the shadow BB.
  * @param bb_src IN, pointer to source blackboard to be shadowed.
  * @return  E_OK on success E_NOK if not.
- * @ingroup BlackBoard
  */
 int32_t 
 bb_shadow_get(S_BB_T *bb_shadow, volatile S_BB_T *bb_src);
@@ -561,7 +637,6 @@ bb_shadow_get(S_BB_T *bb_shadow, volatile S_BB_T *bb_src);
  * @param bb_src IN, pointer to source BB (the same BB
  *                   initially used for making shadow)
  * @return E_OK on success.
- * @ingroup BlackBoard
  */
 int32_t 
 bb_shadow_update_data(S_BB_T *bb_shadow, volatile S_BB_T *bb_src);
@@ -570,7 +645,6 @@ bb_shadow_update_data(S_BB_T *bb_shadow, volatile S_BB_T *bb_src);
  * Return the BB message queue identifier.
  * @param bb INOUT, pointer to BB.
  * @return message queue id 
- * @ingroup BlackBoard
  */
 int32_t 
 bb_msg_id(volatile S_BB_T *bb);
@@ -583,7 +657,6 @@ bb_msg_id(volatile S_BB_T *bb);
  * @param bb INOUT, pointer to BB
  * @param msg INOUT, pointer to message to be sent
  * @return E_OK on success E_NOK otherwise.
- * @ingroup BlackBoard
  */
 int32_t 
 bb_snd_msg(volatile S_BB_T *bb, S_BB_MSG_T* msg);
@@ -598,17 +671,21 @@ bb_snd_msg(volatile S_BB_T *bb, S_BB_MSG_T* msg);
  *                  be specified on entry in the message structure
  *                  msg->mtype.
  * @return E_OK on success, E_NOK otherwise
- * @ingroup BlackBoard
  */
 int32_t 
 bb_rcv_msg(volatile S_BB_T *bb, S_BB_MSG_T* msg);
 
 
 /**
- * write in array_name the name of the array given in parameter
- * 
+ * Build in array_name the name of the array defined
+ * by the provided  alias stack and index stack.
+ * @param array_name OUT, the string to be used to build array name
+ * @param array_name_size_max IN, the maximum (usable) size for array_name
+ * @param aliasstack IN, the alias stack
+ * @param aliasstack_size IN, the size of the alias stack
+ * @param indexstack IN, the index stack 
+ * @param indexstack_len IN, the lenth of the index stack
  * @return E_OK on success, E_NOK otherwise
- * @ingroup BlackBoard
  */
 int32_t
 get_array_name(char * array_name,
@@ -616,6 +693,6 @@ get_array_name(char * array_name,
 	       S_BB_DATADESC_T * aliasstack, int32_t aliasstack_size,
 	       int32_t * indexstack, int32_t indexstack_len);
 
-
+/** @} */
 END_C_DECLS
 #endif /* _BB_H_ */

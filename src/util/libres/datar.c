@@ -1,6 +1,6 @@
-/*!  \file
+/*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libres/datar.c,v 1.7 2005-07-05 14:09:18 tsp_admin Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libres/datar.c,v 1.8 2006-02-26 13:36:06 erk Exp $
 
 -----------------------------------------------------------------------
 

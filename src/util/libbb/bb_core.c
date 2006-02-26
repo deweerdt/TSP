@@ -1,8 +1,6 @@
+/*
 
-
-/*!  \file 
-
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.20 2006-02-11 15:40:40 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.21 2006-02-26 13:36:06 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -283,12 +281,12 @@ bb_data_initialise(volatile S_BB_T* bb, S_BB_DATADESC_T* data_desc,void* default
   
   assert(data_desc);
   /* on recupere l'adresse de la donnee dans le BB */
-  /** FIXME a modifier peut etre */
+  /* FIXME a modifier peut etre */
   //data = (char*)bb_data(bb) + data_desc.data_offset;
   data = bb_item_offset(bb,data_desc,idxstack, idxstack_len);
   
   
-  retval = E_OK;
+  retval = BB_OK;
   for (i=0; i< data_desc->dimension; ++i) {
     switch (data_desc->type) {
     case E_BB_DOUBLE: 
@@ -332,7 +330,7 @@ bb_data_initialise(volatile S_BB_T* bb, S_BB_DATADESC_T* data_desc,void* default
       }
       break; 
     default:
-      retval = E_NOK;
+      retval = BB_NOK;
       break;
     }
   } 
@@ -343,7 +341,7 @@ bb_data_initialise(volatile S_BB_T* bb, S_BB_DATADESC_T* data_desc,void* default
 int32_t
 bb_value_direct_rawwrite(void* data, S_BB_DATADESC_T data_desc, void* value) {  
   memcpy(data,value,data_desc.type_size);
-  return E_OK;
+  return BB_OK;
 }
 
 int32_t
@@ -351,7 +349,7 @@ bb_value_direct_write(void* data, S_BB_DATADESC_T data_desc, const char* value, 
 
   int retval;
 
-  retval = E_OK;
+  retval = BB_OK;
 
   switch (data_desc.type) {
   case E_BB_DOUBLE: 
@@ -396,10 +394,10 @@ bb_value_direct_write(void* data, S_BB_DATADESC_T data_desc, const char* value, 
 					    &((unsigned char*)data)[0*data_desc.type_size],
 					    data_desc.type_size, 
 					    hexval);
-    retval = E_NOK;
+    retval = BB_NOK;
     break; 
   default:
-    retval = E_NOK;
+    retval = BB_NOK;
     break;
   }
   return retval;
@@ -414,7 +412,7 @@ bb_value_write(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc,const char* value,
   int lenval;
   assert(bb);
   
-  retval = E_OK;
+  retval = BB_OK;
 
   lenval = strlen(value);
 
@@ -584,7 +582,7 @@ bb_data_print(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc, FILE* pf) {
 	bb_data_header_print(data_desc,pf,-1);
 	bb_value_print(bb,data_desc,pf,-1);
 	bb_data_footer_print(data_desc,pf,-1);
-	return E_OK;
+	return BB_OK;
 
 }*/ /* end of bb_data_print */
 
@@ -599,7 +597,7 @@ bb_data_print(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc, FILE* pf,
    bb_data_header_print(data_desc,pf,-1,aliasstack_size);
    bb_value_print(bb,data_desc,pf,idxstack,idxstack_len);
    bb_data_footer_print(data_desc,pf,-1,aliasstack_size);
-   return E_OK;
+   return BB_OK;
 } /* end of bb_data_print */
 
 
@@ -621,7 +619,7 @@ bb_create(S_BB_T** bb,
   struct sembuf s_semop;
   
   assert(bb);
-  retcode = E_OK;  
+  retcode = BB_OK;  
   name_shm = bb_utils_build_shm_name(pc_bb_name);
   name_sem = NULL;
   name_msg = NULL;
@@ -638,9 +636,9 @@ bb_create(S_BB_T** bb,
     mmap_size = bb_size(n_data,data_size);    
     fd_shm = shmget(bb_utils_ntok(name_shm), mmap_size, IPC_CREAT|IPC_EXCL|BB_SHM_ACCESS_RIGHT);        
   } else {
-    retcode = E_NOK;
+    retcode = BB_NOK;
   }
-  if((retcode==E_OK) && (-1==fd_shm)) {
+  if((retcode==BB_OK) && (-1==fd_shm)) {
     strncpy(syserr,strerror(errno),MAX_SYSMSG_SIZE);
     /* Try to create an existing segment is NOT an error
      * its an info that should be handled by the caller.
@@ -656,21 +654,21 @@ bb_create(S_BB_T** bb,
 		name_shm, bb_utils_ntok(name_shm), syserr);
 
     }
-    retcode = E_NOK; 
+    retcode = BB_NOK; 
   }
 
-  if (E_OK == retcode) {
+  if (BB_OK == retcode) {
     *bb = (S_BB_T*) shmat(fd_shm,NULL,0);
   }
 
-  if ((E_OK == retcode) && ((void *)-1 == *bb)) {
+  if ((BB_OK == retcode) && ((void *)-1 == *bb)) {
     strncpy(syserr,strerror(errno),MAX_SYSMSG_SIZE);
     bb_logMsg(BB_LOG_SEVERE,"BlackBoard::bb_create", 
 		"Cannot attach shm segment (%s)",syserr);
-    retcode = E_NOK; 
+    retcode = BB_NOK; 
   } 
   /* On initialise la structure comme il se doit */
-  if (E_OK == retcode) {
+  if (BB_OK == retcode) {
     /* RAZ de la mémoire allouee */
     memset(*bb,0,mmap_size);        
     (*bb)->bb_version_id = BB_VERSION_ID;
@@ -688,7 +686,7 @@ bb_create(S_BB_T** bb,
   /* On initialise la structure comme il se doit */
 
   /* Initialisation du semaphore d'acces au BB */
-  if (E_OK == retcode) {
+  if (BB_OK == retcode) {
     name_sem = bb_utils_build_sem_name((*bb)->name);
     (*bb)->semid = semget(bb_utils_ntok(name_sem),1,
 			       IPC_CREAT|IPC_EXCL|BB_SEM_ACCESS_RIGHT);
@@ -698,7 +696,7 @@ bb_create(S_BB_T** bb,
       bb_logMsg(BB_LOG_SEVERE,"BlackBoard::bb_create", 
 		"Cannot create semaphore <%s key = 0x%x> (%s)",
 		name_sem, bb_utils_ntok(name_sem), syserr);
-      retcode = E_NOK; 
+      retcode = BB_NOK; 
     } else {
       u_sem_ctrl.val = 2;
       if (-1 == semctl((*bb)->semid,0,SETVAL,u_sem_ctrl)) {
@@ -706,14 +704,14 @@ bb_create(S_BB_T** bb,
 	bb_logMsg(BB_LOG_SEVERE,"BlackBoard::bb_create", 
 		    "Cannot initialise semaphore <%s key = 0x%x> (%s)",
 		    name_sem, bb_utils_ntok(name_sem), syserr);
-	retcode = E_NOK;
+	retcode = BB_NOK;
       }
     }
     /* appeler 1 fois semop pour eviter
      * les races conditions entre le createur
      * du sémaphore et les clients (cf UNPV2 pages 284--285)
      */
-    if (E_OK == retcode) {
+    if (BB_OK == retcode) {
       s_semop.sem_num = 0; 
       s_semop.sem_op  = -1; 
       s_semop.sem_flg = 0; 
@@ -722,7 +720,7 @@ bb_create(S_BB_T** bb,
     free(name_sem);
 
     /* Initialisation de la queue de message liee au BB */
-    if (E_OK == retcode) {     
+    if (BB_OK == retcode) {     
       name_msg = bb_utils_build_msg_name((*bb)->name);
       (*bb)->msgid = msgget(bb_utils_ntok(name_msg),
 				 IPC_CREAT|IPC_EXCL|BB_MSG_ACCESS_RIGHT);
@@ -732,7 +730,7 @@ bb_create(S_BB_T** bb,
 	bb_logMsg(BB_LOG_SEVERE,"BlackBoard::bb_create", 
 		    "Cannot message queue <%s key = 0x%x> (%s)",
 		    name_msg, bb_utils_ntok(name_msg), syserr);
-	retcode = E_NOK; 
+	retcode = BB_NOK; 
       } 
     }
     free(name_msg);
@@ -754,7 +752,7 @@ bb_destroy(S_BB_T** bb) {
   int32_t local_msgid;
   S_BB_MSG_T bb_msg;
   
-  retcode = E_OK;
+  retcode = BB_OK;
   assert(bb);
   assert(*bb);  
   bb_logMsg(BB_LOG_INFO,"BlackBoard::bb_destroy", 
@@ -784,17 +782,17 @@ bb_destroy(S_BB_T** bb) {
     strncpy(&syserr[0],strerror(errno),MAX_SYSMSG_SIZE);
     bb_logMsg(BB_LOG_SEVERE,"BlackBoard::bb_destroy", 
 		"SHM Destroy failed (%s)",syserr);
-    retcode = E_NOK;
+    retcode = BB_NOK;
   }
   free(name_shm);
   
   /* on se detache de façon a provoquer la destruction */
-  if (E_OK == retcode) {
+  if (BB_OK == retcode) {
     if (-1 == shmdt((void*)*bb)) {
       strncpy(&syserr[0],strerror(errno),MAX_SYSMSG_SIZE);
       bb_logMsg(BB_LOG_SEVERE,"BlackBoard::bb_destroy", 
 		"SHM detach failed (%s)",syserr);
-      retcode = E_NOK;
+      retcode = BB_NOK;
     }
   }
   /* FIXME doit-on prendre le semaphore avant de le détruire ?? */
@@ -829,7 +827,7 @@ bb_lock(volatile S_BB_T* bb) {
    * they have neither semaphore nor msgqueue attached
    */
   if (BB_STATUS_SHADOW == bb->status) {
-    return E_OK;
+    return BB_OK;
   }
 
   s_semop.sem_num = 0; 
@@ -845,9 +843,9 @@ bb_lock(volatile S_BB_T* bb) {
       bb_logMsg(BB_LOG_SEVERE,"BlackBoard::bb_lock", 
 		  "semop failed (%s)", syserr);
     }
-    retcode = E_NOK;
+    retcode = BB_NOK;
   } else {
-    retcode = E_OK; 
+    retcode = BB_OK; 
   }
   
   return retcode;
@@ -864,7 +862,7 @@ bb_unlock(volatile S_BB_T* bb) {
    * they have neither semaphore nor msgqueue attached
    */
   if (BB_STATUS_SHADOW == bb->status) {
-    return E_OK;
+    return BB_OK;
   }
 
   s_semop.sem_num = 0; 
@@ -878,9 +876,9 @@ bb_unlock(volatile S_BB_T* bb) {
     }
     bb_logMsg(BB_LOG_SEVERE,"BlackBoard::bb_unlock", 
 		"semop failed (%s)", syserr);
-    retcode = E_NOK;
+    retcode = BB_NOK;
   } else {
-    retcode = E_OK; 
+    retcode = BB_OK; 
   }
   
   return retcode;
@@ -895,7 +893,7 @@ bb_attach(S_BB_T** bb, const char* pc_bb_name) {
   char* name_shm;
   int32_t  fd_shm;
   
-  retcode = E_OK;
+  retcode = BB_OK;
   fd_shm  = 0;
   assert(bb);
   
@@ -906,9 +904,9 @@ bb_attach(S_BB_T** bb, const char* pc_bb_name) {
     /* On recupere l'acces au SHM */
     fd_shm = shmget(bb_utils_ntok(name_shm), 0, BB_SHM_ACCESS_RIGHT);        
   } else {
-    retcode = E_NOK;
+    retcode = BB_NOK;
   }
-  if((E_OK==retcode) && (-1==fd_shm)) {
+  if((BB_OK==retcode) && (-1==fd_shm)) {
 
     strncpy(syserr,strerror(errno),MAX_SYSMSG_SIZE);
     /* attaching to a non-existing segment is NOT an error
@@ -925,18 +923,18 @@ bb_attach(S_BB_T** bb, const char* pc_bb_name) {
 		name_shm, bb_utils_ntok(name_shm), syserr);
 
     }
-    retcode = E_NOK; 
+    retcode = BB_NOK; 
   }
   free(name_shm);
 
-  if (E_OK == retcode) {
+  if (BB_OK == retcode) {
     *bb = (S_BB_T*) shmat(fd_shm,NULL,0);
   }
-  if ((E_OK == retcode) && ((void *)-1 == *bb)) {
+  if ((BB_OK == retcode) && ((void *)-1 == *bb)) {
     strncpy(syserr,strerror(errno),MAX_SYSMSG_SIZE);
     bb_logMsg(BB_LOG_SEVERE,"BlackBoard::bb_attach", 
 		"Cannot attach shm segment (%s)",syserr);
-    retcode = E_NOK; 
+    retcode = BB_NOK; 
   }   
   
   return retcode;
@@ -948,7 +946,7 @@ bb_detach(S_BB_T** bb) {
   int32_t retcode;
   char syserr[MAX_SYSMSG_SIZE];
   
-  retcode = E_OK;
+  retcode = BB_OK;
   assert(bb);
   assert(*bb);
 /*   bb_logMsg(BB_LOG_INFO,"BlackBoard::bb_detach",  */
@@ -958,7 +956,7 @@ bb_detach(S_BB_T** bb) {
     strncpy(&syserr[0],strerror(errno),MAX_SYSMSG_SIZE);
     bb_logMsg(BB_LOG_SEVERE,"BlackBoard::bb_detach", 
 		"SHM detach failed (%s)",syserr);
-    retcode = E_NOK;
+    retcode = BB_NOK;
   }
 
   *bb = NULL;
@@ -1114,7 +1112,7 @@ bb_dump(volatile S_BB_T *bb, FILE* p_filedesc) {
   int32_t array_in_aliasstack;
 
   
-  retcode = E_OK;
+  retcode = BB_OK;
   assert(bb);
   fprintf(p_filedesc,"============= <[begin] BlackBoard [%s] [begin] > ===============\n",
 	  bb->name);
@@ -1236,7 +1234,7 @@ bb_shadow_get(S_BB_T *bb_shadow,
   bb_lock(bb_src);  
   assert(bb_src);
   assert(bb_shadow);
-  retcode = E_OK;
+  retcode = BB_OK;
   /* raw copy of BB */
   memcpy(bb_shadow,
 	 (void*)bb_src,
@@ -1257,7 +1255,7 @@ bb_shadow_update_data(S_BB_T *bb_shadow,
   
   assert(bb_src);
   assert(bb_shadow);
-  retcode = E_OK;
+  retcode = BB_OK;
   bb_lock(bb_src);
   /* raw copy of BlackBoard data zone content
    * (in fact only used part of the data zone, 
@@ -1289,7 +1287,7 @@ bb_snd_msg(volatile S_BB_T *bb,
   char syserr[MAX_SYSMSG_SIZE];
   struct msqid_ds mystat;
   
-  retcode = E_OK;
+  retcode = BB_OK;
   assert(bb);
   /* do not flood message queue if no one read it !!*/
   retcode  = msgctl(bb->msgid,IPC_STAT,&mystat);
@@ -1297,7 +1295,7 @@ bb_snd_msg(volatile S_BB_T *bb,
     /* Non blocking send */
     retcode = msgsnd(bb->msgid,msg,MSG_BB_MAX_SIZE,IPC_NOWAIT);
     if (-1 == retcode) {
-      retcode = E_NOK;
+      retcode = BB_NOK;
       strncpy(syserr,strerror(errno),MAX_SYSMSG_SIZE);
       if (EAGAIN == errno) {
 	/*bb_logMsg(BB_LOG_WARNING,
@@ -1331,7 +1329,7 @@ bb_rcv_msg(volatile S_BB_T *bb,
   char syserr[MAX_SYSMSG_SIZE];
   int32_t  i_cont;
   
-  retcode = E_OK;
+  retcode = BB_OK;
   assert(bb);
 
   i_cont = 1;
@@ -1344,7 +1342,7 @@ bb_rcv_msg(volatile S_BB_T *bb,
     }
   }
   if (-1 == retcode) {
-    retcode = E_NOK;
+    retcode = BB_NOK;
     /* The identifier removed case and INTR
      * should not generate a log message 
      * FIXME on devrait pouvoir faire mieux que ça.
@@ -1404,6 +1402,6 @@ get_array_name(char * array_name,
     }
   }
   free (part_of_name);
-  return E_OK;
+  return BB_OK;
 
 } /* end of get_array_name */

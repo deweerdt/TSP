@@ -1,6 +1,6 @@
-/*!  \file 
+/*
 
-$Id: tsp_common.c,v 1.3 2005-11-29 22:08:53 erk Exp $
+$Id: tsp_common.c,v 1.4 2006-02-26 13:36:05 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -46,7 +46,7 @@ Purpose   : Main implementation for the producer module
 
 void TSP_request_create(TSP_request_t* req, TSP_request_type_t req_type) {
   assert(req);
-  req->version_id = TSP_VERSION;
+  req->version_id = TSP_PROTOCOL_VERSION;
   req->req_type   = req_type;
   req->req_data   = NULL;
 }

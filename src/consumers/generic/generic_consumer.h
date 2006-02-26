@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/consumers/generic/generic_consumer.h,v 1.4 2006-02-03 20:46:22 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/consumers/generic/generic_consumer.h,v 1.5 2006-02-26 13:36:05 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -43,15 +43,10 @@ Purpose   : A generic command line consumer
 #include <tsp_consumer.h>
 
 /**
- * @defgroup Generic_Consumer
- * The Generic consumer tools.
- * @ingroup Consumer
- */
-
-/**
- * @defgroup Generic_Consumer_API
- * The generic consumer API.
- * @ingroup Generic_Consumer
+ * @defgroup TSP_GenericConsumerLib Generic Consumer Library
+ * The generic consumer library API.
+ * @ingroup TSP_GenericConsumer
+ * @ingroup TSP_Libraries
  */
 
 typedef struct generic_consumer_request {
@@ -71,31 +66,35 @@ typedef struct generic_consumer_request {
 BEGIN_C_DECLS
 
 /**
- * Initialise Generic_Consumer request.
+ * @addtogroup  TSP_GenericConsumerLib
+ * @{
+ */
+
+/**
+ * Initialise GenericConsumer request.
  * @param req OUT, the request to initialize.
  */
 void 
 generic_consumer_request_create(generic_consumer_request_t* req);
 
 /**
- * The Generic_Consumer command generic API.
- * @ingroup Generic_Consumer_API
+ * The GenericConsumer command generic API.
+ * @param req INOUT, The TSP request to be honored
  */
 int32_t 
 generic_consumer(generic_consumer_request_t* req);
 
 /**
- * Return the BB Tools command type
+ * Return the TSP request command type
  * from the string passed as parameter
  * @param generic_consumer_request_string the name of the generic_consumer command
- * @ingroup Generic_Consumer_API
  */
 TSP_request_type_t
 generic_consumer_cmd(const char* generic_consumer_request_string);
 
 /**
- *
- * @ingroup Generic_Consumer_API
+ * Check arguments.
+ * @param req INOUT, req the TSP request for which the arguments should be analyzed
  */
 TSP_request_type_t
 generic_consumer_checkargs(generic_consumer_request_t* req);
@@ -103,35 +102,62 @@ generic_consumer_checkargs(generic_consumer_request_t* req);
 /**
  * Print usage of the specified generic_consumer request.
  * @param req IN, the generic_consumer request.
- * @ingroup Generic_Consumer_API
  */
 void 
 generic_consumer_usage(generic_consumer_request_t* req);
 
 /**
- *
- * @ingroup Generic_Consumer_API
+ * When unimplemented call this.
+ * @param req IN, the generic_consumer request.
  */
 int32_t 
 generic_consumer_unimplemented_cmd(generic_consumer_request_t* req);
 
+/**
+ * The TSP request open handler.
+ * @param req IN, the generic_consumer request.
+ */
 int32_t 
 generic_consumer_open(generic_consumer_request_t* req);
 
+/**
+ * The TSP request close handler.
+ * @param req IN, the generic_consumer request.
+ */
 int32_t 
 generic_consumer_close(generic_consumer_request_t* req);
 
+/**
+ * The TSP request information handler.
+ * @param req IN, the generic_consumer request.
+ */
 int32_t 
 generic_consumer_information(generic_consumer_request_t* req);
 
+/**
+ * The TSP request filtered information handler.
+ * @param req IN, the generic_consumer request.
+ */
 int32_t 
 generic_consumer_filtered_information(generic_consumer_request_t* req);
 
+/**
+ * The TSP request asynchronous read handler.
+ * @param req IN, the generic_consumer request.
+ */
 int32_t 
 generic_consumer_async_read(generic_consumer_request_t* req);
 
+/**
+ * The TSP request asynchronous write handler.
+ * @param req IN, the generic_consumer request.
+ */
 int32_t 
 generic_consumer_async_write(generic_consumer_request_t* req);
+
+/**
+ * @}
+ */
 
 END_C_DECLS
 

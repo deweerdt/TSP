@@ -1,6 +1,6 @@
-/*!  \file 
+/*
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_client.c,v 1.14 2005-10-30 17:18:18 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_client.c,v 1.15 2006-02-26 13:36:06 erk Exp $
 
 -----------------------------------------------------------------------
 

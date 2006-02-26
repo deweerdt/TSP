@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_default_glu.h,v 1.3 2006-02-03 20:46:22 erk Exp $
+$Id: tsp_default_glu.h,v 1.4 2006-02-26 13:36:05 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -40,10 +40,11 @@ Purpose   : Interface for the glue server : the data producer
 
 #include <tsp_glu.h>
 /**
- * @defgroup DefaultGLU
- * @ingroup GLU
+ * @defgroup TSP_DefaultGLU GLU Default Instance
+ * @ingroup TSP_GLULib
  * The default GLU API implements
  * default function that are suitable for a 'simple'
+ * GLU object.
  * @{
  */
 
@@ -96,6 +97,11 @@ int GLU_get_pgi_default(GLU_handle_t* this, TSP_sample_symbol_info_list_t* symbo
  * The default implementation is only valid for an ACTIVE GLU.
  * In this case this function always return this.
  * PASSIVE GLU should reimplement this function.
+ * @param this INOUT, the this object pointer
+ * @param custom_argc IN,
+ * @param custom_argv IN,
+ * @param error_info INOUT,
+ * @return the GLU handle  
  */ 
 GLU_handle_t* GLU_get_instance_default(GLU_handle_t* this,
                                        int custom_argc,

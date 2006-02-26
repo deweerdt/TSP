@@ -1,6 +1,6 @@
-/*!  \file 
+/*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libutil/tsp_hash.c,v 1.3 2005-12-03 12:45:07 esteban Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libutil/tsp_hash.c,v 1.4 2006-02-26 13:36:06 erk Exp $
 
 -----------------------------------------------------------------------
 

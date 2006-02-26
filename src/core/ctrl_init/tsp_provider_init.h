@@ -1,6 +1,6 @@
-/*!  \file 
+/*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl_init/tsp_provider_init.h,v 1.11 2006-02-03 20:46:22 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl_init/tsp_provider_init.h,v 1.12 2006-02-26 13:36:05 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -44,10 +44,16 @@ Purpose   : Function calls to launch a TSP Provider program
 
 BEGIN_C_DECLS
 
-/** @defgroup Provider { */
+/** 
+ * @addtogroup TSP_ProviderLib 
+ * @{
+ */
 
 /**
- * Main initialisation function for a TSP provider.
+ * Initialize the TSP provider library.
+ * Main initialisation function for a TSP provider
+ * one should call this function before any other
+ * call to the TSP provider library.
  * Call this function at the start of your main function
  * with the received argc/argv. Then use the modified argc/argv.
  * @param theGLU the GLU object to be used by this provider.
@@ -56,9 +62,14 @@ BEGIN_C_DECLS
  * @return TRUE or FALSE. OK = TRUE.
  */
 int TSP_provider_init(GLU_handle_t* theGLU, int* argc, char** argv[]);
+
+/**
+ * Finalize the TSP provider library.
+ * After this call the TSP provider library should
+ * not be called anymore.
+ */
 void TSP_provider_end(void);
 
-/*@{*/ 
 /**
  * The different value of the TSP
  * asynchronous request handling mode
@@ -69,7 +80,6 @@ void TSP_provider_end(void);
 #define TSP_ASYNC_REQUEST_SIMPLE         0x00000
 #define TSP_ASYNC_REQUEST_DYNAMIC        0x00010
 
-/*@}*/ 
 
 /**
  * Main run function for a TSP provider.
@@ -89,7 +99,6 @@ void TSP_provider_end(void);
 int TSP_provider_run(int spawn_mode);
 
 
-/*@{*/ 
 /**
  * The different value of the TSP
  * asynchronous request URLs publishing mode
@@ -98,7 +107,6 @@ int TSP_provider_run(int spawn_mode);
 #define TSP_PUBLISH_URLS_PRINT   0x0010
 #define TSP_PUBLISH_URLS_FILE    0x0100
 #define TSP_PUBLISH_URLS_SNMP    0x1000
-/*@}*/ 
 
 /**
  * Universal Resource Locators of a TSP provider.
@@ -115,7 +123,7 @@ char **TSP_provider_urls(int pub_mode);
 
 void TSP_provider_print_usage(void);
 
-/**  } */
+/**  @} */
 
 END_C_DECLS
 

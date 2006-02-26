@@ -1,4 +1,4 @@
- /*!  \file 
+ /*
 
 $Header $
 
@@ -46,6 +46,15 @@ Purpose   : posix implementation for VXWORKS
 #include "bb_tsp_provider.h"
 #include "tsp_provider_init.h"
 #include "tsp_const_def.h"
+
+/**
+ * @defgroup BB_TSPProvider BB TSP Provider
+ * A TSP BlackBoard provider, this provider attach itself
+ * to an existing @ref BlackBoard and offers all the published
+ * data as TSP symbols.
+ * @ingroup TSP_Providers
+ */
+
 
 #ifndef VXWORKS
 

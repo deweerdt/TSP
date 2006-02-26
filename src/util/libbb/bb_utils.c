@@ -1,6 +1,6 @@
-/*!  \file 
+/*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_utils.c,v 1.10 2006-02-11 15:40:40 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_utils.c,v 1.11 2006-02-26 13:36:06 erk Exp $
 
 -----------------------------------------------------------------------
 

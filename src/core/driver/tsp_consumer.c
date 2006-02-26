@@ -1,6 +1,6 @@
-/*!  \file 
+/*
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.41 2006-01-27 17:23:59 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.42 2006-02-26 13:36:05 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -398,9 +398,9 @@ void TSP_consumer_end(void)
   STRACE_IO(("-->OUT"));
 }
 
-TSP_provider_t* 
+TSP_provider_t
 TSP_consumer_connect_url(const char*  url) {	
-  TSP_provider_t *provider = NULL;
+  TSP_provider_t provider = NULL;
   TSP_server_t server;
   TSP_server_info_string_t server_info;
 
@@ -409,7 +409,7 @@ TSP_consumer_connect_url(const char*  url) {
   char *protocol, *hostname, *servername, *p;
   char *endptr;
 
-  /** Parse (simply ...) URL **/ 
+  /* Parse (simply ...) URL */ 
   protocol = NULL;
   hostname = NULL;
   servername = NULL;
@@ -497,7 +497,7 @@ TSP_consumer_connect_url(const char*  url) {
       return NULL;
     }
   else {
-    /** Partial URL, without server number : try to find one, by recursion **/
+    /* Partial URL, without server number : try to find one, by recursion */
     int server_max_number = TSP_get_server_max_number();
     
     for(i = 0; i < server_max_number; i++) {
@@ -651,7 +651,7 @@ int TSP_consumer_request_open(TSP_provider_t provider, int custom_argc, char* cu
   STRACE_IO(("-->IN"));
   assert(X_tsp_init_ok);
 	
-  req_open.version_id = TSP_VERSION;
+  req_open.version_id = TSP_PROTOCOL_VERSION;
 
   /* Default argv to command line (may be empty) */
   req_open.argv = X_tsp_argv;
@@ -726,7 +726,7 @@ int TSP_consumer_request_close(TSP_provider_t provider)
 	
   TSP_CHECK_SESSION(otsp, FALSE);
 	
-  req_close.version_id = TSP_VERSION;
+  req_close.version_id = TSP_PROTOCOL_VERSION;
   req_close.channel_id = otsp->channel_id;
 	
   STRACE_DEBUG(("TSP_request_close(ing) channel_id=%u", otsp->channel_id));
@@ -757,7 +757,7 @@ int TSP_consumer_request_information(TSP_provider_t provider)
   /* Delete allocation of any previous call */
   TSP_consumer_delete_information(otsp);
 	
-  req_info.version_id = TSP_VERSION;
+  req_info.version_id = TSP_PROTOCOL_VERSION;
   req_info.channel_id = otsp->channel_id;
 	
   /* Ask the provider for informations */
@@ -846,7 +846,7 @@ TSP_consumer_request_filtered_information(TSP_provider_t provider, int filter_ki
   /* Delete allocation of any previous call */
   TSP_consumer_delete_information(otsp);
 	
-  req_info.version_id = TSP_VERSION;
+  req_info.version_id = TSP_PROTOCOL_VERSION;
   req_info.channel_id = otsp->channel_id;
 	
   /* Ask the provider for informations */
@@ -980,7 +980,7 @@ int TSP_consumer_request_sample(TSP_provider_t provider, TSP_consumer_symbol_req
 	
   TSP_CHECK_SESSION(otsp, FALSE);
 	
-  req_sample.version_id = TSP_VERSION;
+  req_sample.version_id = TSP_PROTOCOL_VERSION;
   req_sample.channel_id = otsp->channel_id;
   req_sample.symbols.TSP_sample_symbol_info_list_t_len = symbols->len;
   req_sample.symbols.TSP_sample_symbol_info_list_t_val = 
@@ -1131,7 +1131,7 @@ int TSP_consumer_request_sample_init(TSP_provider_t provider, TSP_sample_callbac
   
   TSP_CHECK_SESSION(otsp, FALSE);
   
-  req_sample.version_id = TSP_VERSION;
+  req_sample.version_id = TSP_PROTOCOL_VERSION;
   req_sample.channel_id = otsp->channel_id;
   
   ans_sample = TSP_request_sample_init(&req_sample, otsp->server);
@@ -1195,7 +1195,7 @@ int TSP_consumer_request_sample_destroy(TSP_provider_t provider)
   
   TSP_CHECK_SESSION(otsp, FALSE);
   
-  req_sample.version_id = TSP_VERSION;
+  req_sample.version_id = TSP_PROTOCOL_VERSION;
   req_sample.channel_id = otsp->channel_id;  
   
   /* turn all alarms off, coz the provider is going to break its socket */

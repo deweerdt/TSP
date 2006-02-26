@@ -1,6 +1,6 @@
-/*!  \file 
+/*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libcalc/calc_func.c,v 1.2 2005-10-09 23:01:26 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libcalc/calc_func.c,v 1.3 2006-02-26 13:36:06 erk Exp $
 
 -----------------------------------------------------------------------
 

@@ -1,6 +1,6 @@
-/*!  \file 
+/*
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_data_receiver.c,v 1.18 2005-10-09 23:01:24 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_data_receiver.c,v 1.19 2006-02-26 13:36:05 erk Exp $
 
 -----------------------------------------------------------------------
 

@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_xmlrpc_client.h,v 1.2 2006-02-07 21:10:41 deweerdt Exp $
+$Id: tsp_xmlrpc_client.h,v 1.3 2006-02-26 13:36:06 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -46,10 +46,10 @@ Purpose   :
 
 
 /**
- * @defgroup Client
+ * @defgroup TSP_XMLRPCClientLib XML-RPC Client
  * The Client module is the set of functions which encapsulate
  * the RPC machinery.
- * @ingroup Consumer
+ * @ingroup TSP_ConsumerLib
  * @{
  */
 

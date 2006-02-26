@@ -1,6 +1,6 @@
-/*!  \file 
+/*
 
-$Id: tsp_glu.h,v 1.5 2006-02-03 20:46:22 erk Exp $
+$Id: tsp_glu.h,v 1.6 2006-02-26 13:36:05 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -43,12 +43,12 @@ Purpose   : Interface for the glue server : the data producer
 
 
 /**
- * @defgroup GLU
- * @ingroup Provider
+ * @defgroup TSP_GLULib GLU Library
+ * @ingroup TSP_ProviderLib
  * The GLU is the part of the TSP provider that should be
  * coded each time the underlying 'real' sampled system 
  * (hardware card, simulator, ...) change.
- * The GLU object interface should be implemented in order to combine
+ * The GLU object interface @ref GLU_handle_t should be implemented in order to combine
  * the TSP provider lib in a real TSP provider.
  * @{
  */

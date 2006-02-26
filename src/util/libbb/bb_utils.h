@@ -1,6 +1,6 @@
-/*!  \file 
+/*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_utils.h,v 1.7 2006-01-22 09:35:15 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_utils.h,v 1.8 2006-02-26 13:36:06 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -43,14 +43,14 @@ Purpose   : Blackboard Idiom utilities
 #include <sys/types.h>
 
 /**
- * @defgroup BBUtils
+ * @defgroup BBUtilsLib The BB Utilities Library
  * @ingroup BlackBoard
  * General utility functions for TSP BlackBoard.
  */
 
 /**
  * BlackBoard Log message level
- * @ingroup BBUtils
+ * @ingroup BBUtilsLib
  */
 typedef enum BB_LOG_LEVEL {
   BB_LOG_ABORT,
@@ -65,6 +65,11 @@ typedef enum BB_LOG_LEVEL {
 BEGIN_C_DECLS
 
 /**
+ * @addtogroup BBUtilsLib
+ * @{
+ */
+
+/**
  * Build the string name used for creating a shm segment
  * from a user supplied name.
  * We use this for easy SHM name 'normalization' for easy
@@ -75,7 +80,6 @@ BEGIN_C_DECLS
  * @return the name to be used by shm creator. 
  *         The string is allocated (as strdup(3) do) so that
  *         caller should free it.
- * @ingroup BBUtils
  */
 char* 
 bb_utils_build_shm_name(const char* shm_name);
@@ -91,7 +95,6 @@ bb_utils_build_shm_name(const char* shm_name);
  * @return the name to be used by semaphore creator. 
  *         The string is allocated (as strdup(3) do) so that
  *         caller should free it.
- * @ingroup BBUtils
  */
 char*
 bb_utils_build_sem_name(const char* sem_name);
@@ -107,7 +110,6 @@ bb_utils_build_sem_name(const char* sem_name);
  * @return the name to be used by message queue creator. 
  *         The string is allocated (as strdup(3) do) so that
  *         caller should free it.
- * @ingroup BBUtils
  */
 char*
 bb_utils_build_msg_name(const char* msg_name);
@@ -140,7 +142,6 @@ bb_utils_ntok_user(const char* name, int32_t user_specific_value);
  * @param name un nom représentant l'élément IPC pour lequel on
  *                veut générer une clef.
  * @return SysV IPC key corresponding to the specified name.
- * @ingroup BBUtils
  */
 key_t
 bb_utils_ntok(const char* name);
@@ -156,7 +157,6 @@ bb_utils_ntok(const char* name);
  * @param hexval IN, 0 if string is to be interpreted as decimal value
  *                   1 if string is to be interpreted as hexadecimal value
  * @return 0 if success !=0 otherwise
- * @ingroup BBUtils
  */
 int32_t
 bb_utils_convert_string2hexbuf(const char* string, unsigned char* buf, size_t buflen, int hexval);
@@ -170,7 +170,6 @@ bb_utils_convert_string2hexbuf(const char* string, unsigned char* buf, size_t bu
  * @param modname IN, the module who sent the message.
  * @param fmt IN, format as in printf.
  * @return 0 on success, -1 on error.
- * @ingroup BBUtils
  */
 int32_t 
 bb_logMsg(const BB_LOG_LEVEL_T level, const char* modname, char* fmt, ...);
@@ -188,6 +187,8 @@ bb_untils_parsearrayname(const char* provided_symname,
 			 const int32_t parsed_symname_maxlen,
 			 int32_t* array_index, 
 			 int32_t* array_index_len);
+
+/** @} */
 
 END_C_DECLS
 

@@ -1,6 +1,6 @@
-/*!  \file 
+/*
 
-$Id: tsp_provider.c,v 1.35 2006-01-22 09:35:15 erk Exp $
+$Id: tsp_provider.c,v 1.36 2006-02-26 13:36:05 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -291,14 +291,14 @@ void TSP_provider_request_open(const TSP_request_open_t* req_open,
      {
        if(TSP_add_session(&(ans_open->channel_id), glu_h))
 	 {
-	   if(req_open->version_id <= TSP_VERSION)
+	   if(req_open->version_id <= TSP_PROTOCOL_VERSION)
 	     {
-	       ans_open->version_id = TSP_VERSION;
+	       ans_open->version_id = TSP_PROTOCOL_VERSION;
 	       ans_open->status = TSP_STATUS_OK;
 	     }
 	   else
 	     {
-	       STRACE_ERROR(("TSP version ERROR. Requested=%d Current=%d",req_open->version_id, TSP_VERSION ));
+	       STRACE_ERROR(("TSP version ERROR. Requested=%d Current=%d",req_open->version_id, TSP_PROTOCOL_VERSION ));
 	       ans_open->status = TSP_STATUS_ERROR_VERSION;
 	     }
 	 }
@@ -356,7 +356,7 @@ void  TSP_provider_request_information(TSP_request_information_t* req_info,
 void TSP_provider_update_answer_with_minimalinfo(TSP_request_information_t* req_info,
 				      TSP_answer_sample_t* ans_sample) {
 
-  ans_sample->version_id            = TSP_VERSION;
+  ans_sample->version_id            = TSP_PROTOCOL_VERSION;
   ans_sample->channel_id            = req_info->channel_id;
   ans_sample->status                = TSP_STATUS_ERROR_UNKNOWN;
   ans_sample->provider_group_number = 0;
@@ -380,8 +380,8 @@ void  TSP_provider_request_filtered_information(TSP_request_information_t* req_i
   ans_sample->symbols.TSP_sample_symbol_info_list_t_val = NULL;  
 
   /* check request TSP version */
-  if (req_info->version_id > TSP_VERSION) {
-    STRACE_ERROR(("TSP version ERROR. Requested=%d Current=%d",req_info->version_id, TSP_VERSION ));
+  if (req_info->version_id > TSP_PROTOCOL_VERSION) {
+    STRACE_ERROR(("TSP version ERROR. Requested=%d Current=%d",req_info->version_id, TSP_PROTOCOL_VERSION ));
     ans_sample->status = TSP_STATUS_ERROR_VERSION;
     TSP_UNLOCK_MUTEX(&X_tsp_request_mutex,);
     return;
@@ -426,7 +426,7 @@ void  TSP_provider_request_sample(TSP_request_sample_t* req_sample,
   int32_t i;
   int32_t invalid_period;
   int32_t invalid_phase;
-  ans_sample->version_id            = TSP_VERSION;
+  ans_sample->version_id            = TSP_PROTOCOL_VERSION;
   ans_sample->channel_id            = req_sample->channel_id;
   ans_sample->status                = TSP_STATUS_ERROR_UNKNOWN;
   ans_sample->provider_group_number = 0;
@@ -439,7 +439,7 @@ void  TSP_provider_request_sample(TSP_request_sample_t* req_sample,
   
   STRACE_INFO(("Consumer No %d asked for %d symbols",req_sample->channel_id,req_sample->symbols.TSP_sample_symbol_info_list_t_len  ));
   
-  if(req_sample->version_id <= TSP_VERSION)
+  if(req_sample->version_id <= TSP_PROTOCOL_VERSION)
     {
       
       if(TSP_session_get_symbols_global_index_by_channel(req_sample->channel_id, &(req_sample->symbols) ))
@@ -489,7 +489,7 @@ void  TSP_provider_request_sample(TSP_request_sample_t* req_sample,
     }
   else
     {
-      STRACE_WARNING(("TSP version ERROR. Requested=%d Current=%d",req_sample->version_id, TSP_VERSION ));
+      STRACE_WARNING(("TSP version ERROR. Requested=%d Current=%d",req_sample->version_id, TSP_PROTOCOL_VERSION ));
       ans_sample->status = TSP_STATUS_ERROR_VERSION;
     }
 
@@ -511,7 +511,7 @@ void  TSP_provider_request_sample_init(TSP_request_sample_init_t* req_sample_ini
   ans_sample->channel_id = req_sample_init->channel_id;
   ans_sample->status = TSP_STATUS_ERROR_UNKNOWN;
  
-  if(req_sample_init->version_id <= TSP_VERSION)
+  if(req_sample_init->version_id <= TSP_PROTOCOL_VERSION)
     {
       ans_sample->version_id = req_sample_init->version_id;
       /* If the sample server is a lazy pasive server, we need a thread per session*/
@@ -534,7 +534,7 @@ void  TSP_provider_request_sample_init(TSP_request_sample_init_t* req_sample_ini
     }
   else
     {
-      STRACE_ERROR(("TSP version ERROR. Requested=%d Current=%d",req_sample_init->version_id, TSP_VERSION ));
+      STRACE_ERROR(("TSP version ERROR. Requested=%d Current=%d",req_sample_init->version_id, TSP_PROTOCOL_VERSION ));
       ans_sample->status = TSP_STATUS_ERROR_VERSION;
     }
 
@@ -561,14 +561,14 @@ void  TSP_provider_request_sample_destroy(TSP_request_sample_destroy_t* req_samp
   ans_sample->channel_id = req_sample_destroy->channel_id;
   ans_sample->status = TSP_STATUS_OK;
  
-  if(req_sample_destroy->version_id <= TSP_VERSION)
+  if(req_sample_destroy->version_id <= TSP_PROTOCOL_VERSION)
     {      
       TSP_provider_request_sample_destroy_priv(req_sample_destroy->channel_id);
     }
   else
     {
       STRACE_ERROR(("TSP version ERROR. Requested=%d Current=%d for session %d",
-		    req_sample_destroy->version_id, TSP_VERSION,req_sample_destroy->channel_id  ));
+		    req_sample_destroy->version_id, TSP_PROTOCOL_VERSION,req_sample_destroy->channel_id  ));
       ans_sample->status = TSP_STATUS_ERROR_VERSION;
     }
 

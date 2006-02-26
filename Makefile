@@ -35,6 +35,11 @@ build::
 	- mkdir -p $(DIRSCRIPT)
 	- cd $(DEVBASE)/exec; rm -f current; ln -s DEV current; cd $(DEVBASE);
 
+distclean: destroy
+	if [ -d $(DEVBASE)/dist ] ; then \
+	   $(RM) -r $(DEVBASE)/dist; \
+	fi
+
 destroy::
 	find . -name .make.state -exec rm -f {} \; -print
 	$(RM) -r $(DIRBASE).old

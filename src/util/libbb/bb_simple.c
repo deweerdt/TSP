@@ -1,6 +1,6 @@
-/*!  \file 
+/*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_simple.c,v 1.7 2006-01-22 09:35:15 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_simple.c,v 1.8 2006-02-26 13:36:06 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -190,7 +190,7 @@ void* bb_simple_alias_publish(S_BB_T* bb_simple,
 int32_t 
 bb_simple_synchro_config(int synchro_type) {
   
-  int32_t retcode=E_OK;
+  int32_t retcode=BB_OK;
   
   switch (synchro_type) {
   case BB_SIMPLE_SYNCHRO_PROCESS:
@@ -260,10 +260,10 @@ bb_simple_synchro_verify(S_BB_T* bb_simple) {
 	 &s_msgq_stat);
   
   if (s_msgq_stat.msg_qnum > 0) {
-    retcode = E_NOK;
+    retcode = BB_NOK;
     
   } else {
-    retcode = E_OK;
+    retcode = BB_OK;
   }  
   
   return retcode;
@@ -290,7 +290,7 @@ bb_simple_thread_synchro_go(int msg_type) {
 	      "Invalid thread synchro ID <%d>",msg_type);
   }
   /* pthread_cond_broadcast always succeed */
-  retcode = E_OK;
+  retcode = BB_OK;
   
   return retcode;
 } /* end of bb_simple_synchro_go */
@@ -316,7 +316,7 @@ bb_simple_thread_synchro_wait(int msg_type) {
 	      "Invalid thread synchro ID <%d>",msg_type);
   }
   /* pthread_cond_wait always succeed (or never return)*/
-  retcode = E_OK;
+  retcode = BB_OK;
   
   return retcode;
 } /* end of bb_simple_synchro_wait */

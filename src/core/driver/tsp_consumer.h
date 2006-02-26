@@ -1,6 +1,6 @@
-/*!  \file 
+/*
 
-$Id: tsp_consumer.h,v 1.24 2005-11-01 10:37:12 erk Exp $
+$Id: tsp_consumer.h,v 1.25 2006-02-26 13:36:05 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -44,8 +44,8 @@ Purpose   : Main interface for the TSP consumer library
 #include <tsp_common.h>
 
 /**
- * @defgroup Consumer
- * @ingroup Core
+ * @defgroup TSP_ConsumerLib Consumer Core Library
+ * @ingroup TSP_CoreLib
  * The Consumer module is the set of all 
  * consumer library interface.
  * @{
@@ -170,7 +170,7 @@ typedef  void* TSP_provider_t;
 BEGIN_C_DECLS
 
 /**
- * @addtogroup Consumer
+ * @addtogroup TSP_ConsumerLib
  * @{
  */
 
@@ -239,7 +239,7 @@ TSP URL format is defined by <PROTOCOL://HOST/SERVER:PORT>           \n\
 \t\tvoid, /, //, /// or :///   = rpc://localhost/(find any):(find first)     \n\
 \tOthers may have unpredictable results .. \n"
 
-TSP_provider_t* TSP_consumer_connect_url(const char *url);
+TSP_provider_t TSP_consumer_connect_url(const char *url);
 
 
 /** 
@@ -253,6 +253,7 @@ const char* TSP_consumer_get_connected_name(TSP_provider_t provider);
 
 /**
  * Disconnect one given provider.
+ * @param provider IN, the provider to be disconnected from.
  */ 
 void TSP_consumer_disconnect_one(TSP_provider_t provider);
 
@@ -397,7 +398,7 @@ int TSP_consumer_request_async_sample_read(TSP_provider_t provider,TSP_consumer_
 
 void TSP_consumer_print_invalid_symbols(FILE*, TSP_consumer_symbol_requested_list_t* symbols, const char* tsp_provider_url);
 
-/** @} end group Consumer */ 
+/** @} end group TSP_ConsumerLib */ 
 
 END_C_DECLS
     

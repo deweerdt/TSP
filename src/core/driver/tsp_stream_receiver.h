@@ -1,6 +1,6 @@
-/*!  \file 
+/*
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_stream_receiver.h,v 1.4 2002-12-24 14:14:25 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_stream_receiver.h,v 1.5 2006-02-26 13:36:05 erk Exp $
 
 -----------------------------------------------------------------------
 

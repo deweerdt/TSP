@@ -1,6 +1,6 @@
-/*!  \file 
+/*
 
-$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer_main.c,v 1.7 2005-11-01 12:15:05 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer_main.c,v 1.8 2006-02-26 13:36:05 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -42,6 +42,12 @@ Purpose   : TSP ascii writer consumer (main)
 
 #include "tsp_ascii_writer.h"
 #include "tsp_consumer.h"
+
+/**
+ * @defgroup TSP_AsciiWriter ASCII Writer
+ * A TSP ascii writer consumer.
+ * @ingroup TSP_Consumers
+ */
 
 
 static void 

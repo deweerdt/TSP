@@ -1,4 +1,39 @@
+/*
 
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bbtools/bb_simu.c,v 1.9 2006-02-26 13:36:06 erk Exp $
+
+-----------------------------------------------------------------------
+
+TSP Library - core components for a generic Transport Sampling Protocol.
+
+Copyright (c) 2002 Yves DUFRENNE, Stephane GALLES, Eric NOULARD and Robert PAGNOT 
+
+This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 2.1 of the License, or (at your option) any later version.
+
+This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public
+License along with this library; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+-----------------------------------------------------------------------
+
+Project   : TSP
+Maintainer : tsp@astrium-space.com
+Component : BlackBoard
+
+-----------------------------------------------------------------------
+
+Purpose   : BlackBoard Idiom implementation
+
+-----------------------------------------------------------------------
+ */
 #include <stdio.h>
 #include <malloc.h>
 #include <unistd.h>
@@ -76,7 +111,7 @@ main (int argc, char ** argv) {
   /***************/
   n_data = 1000;
   data_size = n_data*8 + 500*30*4 + 200000*8;
-  if (E_NOK==bb_create(&mybb,basename(argv[0]),n_data,data_size)) {
+  if (BB_NOK==bb_create(&mybb,basename(argv[0]),n_data,data_size)) {
     bb_attach(&mybb,basename(argv[0]));
 /*     bb_destroy(&mybb); */
 /*     bb_create(&mybb,argv[0],n_data,data_size); */

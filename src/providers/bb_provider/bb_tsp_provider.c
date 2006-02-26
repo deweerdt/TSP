@@ -1,6 +1,6 @@
-/*!  \file 
+/*
 
-$Header: /home/def/zae/tsp/tsp/src/providers/bb_provider/bb_tsp_provider.c,v 1.20 2006-02-11 15:40:40 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/providers/bb_provider/bb_tsp_provider.c,v 1.21 2006-02-26 13:36:06 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -53,8 +53,7 @@ int TSP_provider_rqh_manager_get_nb_running();
 /* 
  * We include TSP header which are necessary for
  * implementing a TSP GLU.
- * See 'glue_sserver.h' in order to know what function needs
- * to be coded.
+ * See 'tsp_glu.h' in order to know what function needs to be coded.
  */
 #include <tsp_sys_headers.h>
 #include <tsp_glu.h>
@@ -70,10 +69,10 @@ int TSP_provider_rqh_manager_get_nb_running();
 static TSP_sample_symbol_info_t *X_sample_symbol_info_list_val = NULL;
 
 /* The BB and its shadow BB */
-static S_BB_T* the_bb = NULL;
-static char* the_bbname = NULL;
-static S_BB_T* shadow_bb = NULL;
-static int nb_symbols = 0;
+static S_BB_T* the_bb      = NULL;
+static char*   the_bbname  = NULL;
+static S_BB_T* shadow_bb   = NULL;
+static int     nb_symbols  = 0;
 
 /* GLU time stamp */
 static time_stamp_t glu_time = 0;
@@ -122,10 +121,7 @@ BB_GLU_init(GLU_handle_t* this, int fallback_argc, char* fallback_argv[]) {
   int32_t          aliasstack_size = MAX_ALIAS_LEVEL;
   S_BB_DATADESC_T  aliasstack[MAX_ALIAS_LEVEL];
   int32_t indexstack[MAX_ALIAS_LEVEL];
-  int32_t indexstack_len;
-  
-
-  
+  int32_t indexstack_len;    
 
   retcode = TRUE;
   /* We don't need fallback for now */
@@ -133,7 +129,7 @@ BB_GLU_init(GLU_handle_t* this, int fallback_argc, char* fallback_argv[]) {
    * !!! We need to attach to BB iff
    * !!! we are in a separate process
    */
-  if (bb_attach(&the_bb,the_bbname) != E_OK) {
+  if (bb_attach(&the_bb,the_bbname) != BB_OK) {
     bb_logMsg(BB_LOG_SEVERE,
 	      "bb_tsp_provider::GLU_init","Cannot attach to BlackBoard <%s>!!",
 	      the_bbname);
@@ -154,13 +150,13 @@ BB_GLU_init(GLU_handle_t* this, int fallback_argc, char* fallback_argv[]) {
   }
   if (TRUE == retcode) {
     /* Shadow BBPE */
-    if (E_NOK == bb_shadow_get(shadow_bb, the_bb)) {
+    if (BB_NOK == bb_shadow_get(shadow_bb, the_bb)) {
       retcode = FALSE;
     }  
   }
   if (TRUE == retcode) {
     /* Initial update */
-    if (E_NOK ==  bb_shadow_update_data(shadow_bb,the_bb)) {
+    if (BB_NOK ==  bb_shadow_update_data(shadow_bb,the_bb)) {
       retcode = FALSE;
     } 
   }
@@ -258,7 +254,7 @@ BB_GLU_init(GLU_handle_t* this, int fallback_argc, char* fallback_argv[]) {
 					allow_to_write[i_pg_index]    = TSP_ASYNC_WRITE_ALLOWED;
 					++i_pg_index;
 				}
-				while (E_OK == bb_alias_increment_idxstack(aliasstack, aliasstack_size, indexstack, indexstack_len));
+				while (BB_OK == bb_alias_increment_idxstack(aliasstack, aliasstack_size, indexstack, indexstack_len));
 			}
 			
 			
@@ -491,7 +487,7 @@ void* BB_GLU_thread(void* arg) {
   /* boucle infinie tant que le blackboard n'est pas detruit */
   while(BB_STATUS_DESTROYED != the_bb->status) {
     /* On attend le déblocage du PE */
-    if (E_NOK == bb_simple_synchro_wait(the_bb,BB_SIMPLE_MSGID_SYNCHRO_COPY)) {
+    if (BB_NOK == bb_simple_synchro_wait(the_bb,BB_SIMPLE_MSGID_SYNCHRO_COPY)) {
       /* on sort car le BB a été détruit */
       break;
     }
@@ -536,7 +532,7 @@ int
 BB_GLU_async_sample_write(GLU_handle_t* glu, int provider_global_index, void* value_ptr, uint32_t value_size)
 {
 	S_BB_DATADESC_T* data_desc;
-	int retcode = E_NOK;       	
+	int retcode = BB_NOK;       	
 	double value;
 	char   strvalue[256];
 	void*  genuineBBdata;
@@ -578,7 +574,7 @@ int
 BB_GLU_async_sample_read(GLU_handle_t* glu, int provider_global_index, void* value_ptr, uint32_t* value_size)
 {
 	S_BB_DATADESC_T* data_desc;
-	int retcode = E_NOK; 
+	int retcode = BB_NOK; 
 	void*  genuineBBdata;
 	
 	STRACE_DEBUG(("BB_PROVIDER want to AsyncRead : pgi <%d> (value_size allowed=%d)",provider_global_index,*value_size));
@@ -601,7 +597,7 @@ BB_GLU_async_sample_read(GLU_handle_t* glu, int provider_global_index, void* val
 	    *((double*)value_ptr) = bb_double_of(genuineBBdata,
 						 bbdatadesc_by_pgi[provider_global_index]->type);
 	    STRACE_INFO(("AsyncRead value is <%f>.",*((double*)value_ptr)));
-	    retcode = E_OK;	
+	    retcode = BB_OK;	
 	} else {
 	  STRACE_INFO(("BB_GLU : pgi = %d is not valid provider_global_index",provider_global_index));	
 	}
@@ -616,11 +612,11 @@ int32_t
 bb_tsp_provider_allow_write_symbol(int provider_global_index){
 
   int32_t retcode;
-  retcode = E_NOK;
+  retcode = BB_NOK;
   
   if(provider_global_index>=0 && provider_global_index<nb_symbols){
   	allow_to_write[provider_global_index] = TSP_ASYNC_WRITE_ALLOWED;
-	retcode = E_OK;
+	retcode = BB_OK;
   }	
   return retcode;
 }
@@ -630,11 +626,11 @@ int32_t
 bb_tsp_provider_forbid_write_symbol(int provider_global_index){
 
   int32_t retcode;
-  retcode = E_NOK;
+  retcode = BB_NOK;
   
   if(provider_global_index>=0 && provider_global_index<nb_symbols){
   	allow_to_write[provider_global_index] = TSP_ASYNC_WRITE_FORBIDDEN;
-	retcode = E_OK;
+	retcode = BB_OK;
   }	
   return retcode;
 }
@@ -662,11 +658,11 @@ bb_tsp_provider_initialise(int* argc, char** argv[],int TSPRunMode, const char* 
    */
   bbGLU->private_data            = malloc(sizeof(int));
   * ((int*)bbGLU->private_data)  = acknowledgeCopy;
-  retcode = E_OK;
+  retcode = BB_OK;
 
   /* Init LibTSP provider */
   if (FALSE==TSP_provider_init(bbGLU,argc, argv)) {
-    retcode = E_NOK;
+    retcode = BB_NOK;
     return retcode;
   }
   /* demarrage provider */
@@ -695,7 +691,7 @@ bb_tsp_provider_finalize() {
   int32_t retcode;
   
   TSP_provider_end();
-  retcode = E_OK;
+  retcode = BB_OK;
 
   return retcode;
 }

@@ -2,7 +2,7 @@
 
 @configure_input@
 
-$Id: tsp_prjcfg.h.in,v 1.7 2005-10-09 23:01:24 erk Exp $
+$Id: tsp_prjcfg.h.in,v 1.8 2006-02-26 13:36:05 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -39,60 +39,22 @@ Purpose   : some includes
 #ifndef __TSP_PRJCFG_H
 #define __TSP_PRJCFG_H
 
-#include "tsp_abs_types.h"
-#include "tsp_const_def.h"
-#include "tsp_simple_trace.h"
+#include <tsp_abs_types.h>
+#include <tsp_const_def.h>
 
-/* defines the global TSP modules */
+/* 
+ * The following macro should be used to print-out TSP 
+ * version in binary executable. We should find a way to 
+ * automatically change this when tagging...
+ */
+#define TSP_SOURCE_VERSION "@PACKAGE_VERSION@"
 
-/**
- * @defgroup TSP
- * The Transport Sample Protocol.
- * TSP is a networked enabled  multi-consumer multi-provider
- * protocol for sampling data, TSP is designed for efficiency 
- * and ease of use.
+#include <tsp_simple_trace.h>
+
+/* 
+ * The TSP doxygen modules are now defined
+ * in tsp/src/doxy/tsp_doc_tree.dox
  */
 
-/**
- * @defgroup TSP_Lib
- * The TSP programming library
- * @ingroup TSP
- */
-
-/**
- * @defgroup Core
- * The TSP Core module is the module 
- * includes core TSP framework utility.
- * @ingroup TSP_Lib
- */
-
-/**
- * @defgroup TSP_Applications
- * The final TSP applications, either TSP consumer
- * (GUI or not) or TSP provider.
- * @ingroup TSP
- */	
-
-/**
- * @defgroup TSP_Consumers
- * The TSP consumer applications.
- * @ingroup TSP_Applications
- */
-
-/**
- * @defgroup TSP_Providers
- * The TSP providers applications.
- * @ingroup TSP_Applications
- */	
-
-
-/**
- * @defgroup TSP_Utils
- * The TSP utilities.
- * This consists in several libraries which may save
- * a great amount of time when using TSP.
- * Some TSP provider and consumer us thos libs.
- * @ingroup TSP
- */ 
 
 #endif /* _PRJCFG_H */

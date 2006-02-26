@@ -1,6 +1,6 @@
-/*!  \file 
+/*
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_sample_ringbuf.h,v 1.7 2002-12-24 14:14:25 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_sample_ringbuf.h,v 1.8 2006-02-26 13:36:05 erk Exp $
 
 -----------------------------------------------------------------------
 

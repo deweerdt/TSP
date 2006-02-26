@@ -14,7 +14,7 @@ echo "**********************************************************"
 
 # Check for a required file
 AC_CONFIG_SRCDIR([src/core/driver/tsp_consumer.c])
-AC_CONFIG_HEADER([src/core/include/tsp_prjcfg.h])
+#AC_CONFIG_HEADER([src/core/include/tsp_prjcfg.h])
 
 # Checks for programs.
 AC_PROG_AWK
@@ -239,7 +239,7 @@ fi
 ######################################
 AC_ARG_ENABLE(openGL,   [  --enable-openGL              enable openGL use for TSP consumers  (this feature is ALPHA)],
 	      OPENGLOK=$enableval,
-	      OPENGLOK="no")
+	      OPENGLOK="yes")
 AC_MSG_CHECKING([enabling OpenGL use])
 if test "$OPENGLOK" = "yes"; then
   AC_MSG_RESULT([Enabled, will be configured])
@@ -545,7 +545,7 @@ AC_SUBST(BUILD_XMLRPC)
 AC_CONFIG_FILES([src/scripts/tsp_dev.login
 		src/scripts/tsp_dev.login.sh
 		make/Makeparams
-		src/doxy/Makefile])
+		src/core/include/tsp_prjcfg.h])
 
 AC_OUTPUT
 

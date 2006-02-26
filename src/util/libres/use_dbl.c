@@ -1,6 +1,6 @@
-/*!  \file
+/*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libres/use_dbl.c,v 1.1 2003-01-31 18:32:56 tsp_admin Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libres/use_dbl.c,v 1.2 2006-02-26 13:36:06 erk Exp $
 
 -----------------------------------------------------------------------
 

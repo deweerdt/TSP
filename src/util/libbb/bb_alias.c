@@ -1,6 +1,6 @@
-/*!  \file 
-
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_alias.c,v 1.1 2006-01-08 19:22:27 erk Exp $
+/*
+  
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_alias.c,v 1.2 2006-02-26 13:36:06 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -236,13 +236,13 @@ bb_alias_increment_idxstack(S_BB_DATADESC_T * aliasstack, int32_t aliasstack_siz
   int j = 0;
   int32_t indexstack_curr = indexstack_len-1;
   int elemnt_found = 0;
-  int32_t return_value = E_NOK;
+  int32_t return_value = BB_NOK;
   
-  while (j<aliasstack_size && return_value == E_NOK){
+  while (j<aliasstack_size && return_value == BB_NOK){
     if (aliasstack[j].dimension > 1) {
       if (indexstack[indexstack_curr] < (aliasstack[j].dimension - 1) ) {
 	++indexstack[indexstack_curr];
-	return_value = E_OK;
+	return_value = BB_OK;
       }
       else {
 	indexstack[indexstack_curr] = 0;

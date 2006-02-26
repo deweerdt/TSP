@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_tools.c,v 1.21 2006-02-11 15:40:40 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_tools.c,v 1.22 2006-02-26 13:36:06 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -43,8 +43,7 @@ Purpose   : BlackBoard Idiom implementation
 #include <libgen.h>
 #include <stdarg.h>
 
-#include <tsp_abs_types.h>
-#include <tsp_const_def.h>
+#include <tsp_prjcfg.h>
 #include <bb_core.h>
 #include <bb_alias.h>
 #include <bb_utils.h>
@@ -152,7 +151,7 @@ S_BB_T*
 bbtools_checkbbname(const char* bbname) {
   S_BB_T* retval;
   retval = NULL;
-  if (bb_attach(&retval,bbname) != E_OK) {
+  if (bb_attach(&retval,bbname) != BB_OK) {
     retval = NULL;
   }  
   return retval;
@@ -295,7 +294,7 @@ bbtools_usage(bbtools_request_t* req) {
   case E_BBTOOLS_GENERIC:
   case E_BBTOOLS_HELP:
     fprintf(req->stream, 
-	    "TSP bb_tools v%s (%s)\n",TSP_SOURCE_VERSION,TSP_PROJECT_URL);
+	    "TSP bb_tools (BB vId=0x%08X, TSP v%s, %s)\n",BB_VERSION_ID,TSP_SOURCE_VERSION,TSP_PROJECT_URL);
     fprintf(req->stream, 
 	    "Usage: %s [bb_tools_opts] <bb_tools_cmd> [cmd_opts]\n",
 	    bbtools_cmdname_tab[E_BBTOOLS_GENERIC]);
@@ -459,7 +458,7 @@ bbtools_read(bbtools_request_t* req) {
 		     sym_data_desc.name,
 		     req->bbname);
     } else {
-	 /** the test to determine exeeding array dimension */
+	 /* the test to determine exeeding array dimension */
      if (array_index_len>0) {
 			aliasstack[0]=sym_data_desc;
 			bb_find_aliastack(req->theBB, aliasstack, &aliasstack_size);
@@ -792,7 +791,7 @@ bbtools_create(bbtools_request_t* req) {
   }
  
   retcode = bb_create(&(req->theBB),req->bbname,ndata,datasize);
-  if ((retcode != E_OK) && (req->verbose)) {
+  if ((retcode != BB_OK) && (req->verbose)) {
     bbtools_logMsg(req->stream,
 		   "%s: creating failed to create BB <%s>\n",
 		   bbtools_cmdname_tab[E_BBTOOLS_CREATE],
@@ -856,7 +855,7 @@ bbtools_publish(bbtools_request_t* req) {
       symbol_desc.type_size = sizeof_bb_type(symbol_desc.type);
     } else {
       /* FIXME the user case is not supported */
-      /** @todo */
+      /* @todo */
       printf("\ntaille d'un alias?\n");
       symbol_desc.type_size = 1;
     }

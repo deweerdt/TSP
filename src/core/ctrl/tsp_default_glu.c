@@ -1,6 +1,6 @@
-/*!  \file 
+/*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_default_glu.c,v 1.6 2005-12-05 21:51:14 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_default_glu.c,v 1.7 2006-02-26 13:36:05 erk Exp $
 
 -----------------------------------------------------------------------
 

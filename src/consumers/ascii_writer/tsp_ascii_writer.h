@@ -1,6 +1,6 @@
-/*!  \file 
+/*
 
-$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer.h,v 1.7 2005-11-01 17:07:48 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer.h,v 1.8 2006-02-26 13:36:05 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -47,9 +47,11 @@ Purpose   : TSP ascii writer consumer
 typedef int32_t  (* tsp_ascii_writer_logMsg_ft)(char* fmt, ...);
 
 /**
- * @defgroup Ascii_Writer
- * A TSP ascii writer consumer.
- * @ingroup TSP_Consumers
+ * @defgroup TSP_AsciiWriterLib ASCII Writer Library 
+ * The TSP ascii writer consumer library API.
+ * @ingroup TSP_AsciiWriter
+ * @ingroup TSP_Libraries
+ * @{
  */
 
 extern pthread_cond_t  tsp_ascii_writer_condvar;
@@ -73,7 +75,6 @@ int32_t tsp_ascii_writer_logMsg_stdout(char* fmt, ...);
  * @param argc The main 'argc' argument
  * @param argv The main 'argv' argument
  * @return 0 if init OK  -1 otherwise.
- * @ingroup Ascii_Writer
  */
 int32_t 
 tsp_ascii_writer_initialise(int* argc, char** argv[]);
@@ -81,9 +82,11 @@ tsp_ascii_writer_initialise(int* argc, char** argv[]);
 /**
  * Add a variable to the global symbols array
  * used by the Lex+Yacc lexer+parser.
+ * @param symbol_name IN, the symbol name to add to the list of requested symbol.
  */
 int32_t
 tsp_ascii_writer_add_var(char* symbol_name);
+
 int32_t
 tsp_ascii_writer_add_var_period(int32_t period);
 int32_t 
@@ -98,7 +101,6 @@ tsp_ascii_writer_add_comment(char* comment);
  *                         the array is allocated by the function.
  * @param nb_symbols OUT, the number of symbols found in file
  * @return 0 if config file loaded properly (no syntax error) -1 otherwise.
- * @ingroup Ascii_Writer
  */
 int32_t 
 tsp_ascii_writer_load_config(const char* conffilename, 
@@ -117,7 +119,6 @@ tsp_ascii_writer_load_config(const char* conffilename,
  *                          the number of remaining (unique) symbols on return.
  * @return 0 if uniticy may be enforced or the rank of non-unique
  *           symbol otherwise.
- * @ingroup Ascii_Writer
  */
 int32_t 
 tsp_ascii_writer_make_unique(TSP_consumer_symbol_requested_t**  tsp_symbols,
@@ -133,7 +134,6 @@ tsp_ascii_writer_make_unique(TSP_consumer_symbol_requested_t**  tsp_symbols,
  * @param tsp_provider_hostname IN, TSP provider hostname used for validating symbols.
  * @param tsp_symbol_list TSP IN/OUT, TSP validated symbol list.
  * @return 0 OK -1 otherwise.
- * @ingroup Ascii_Writer
  */
 int32_t 
 tsp_ascii_writer_validate_symbols(TSP_consumer_symbol_requested_t*  tsp_symbols,
@@ -150,7 +150,6 @@ tsp_ascii_writer_validate_symbols(TSP_consumer_symbol_requested_t*  tsp_symbols,
  *                                 to save the nb_sample_max_infile-th sample
  *                                 we rewind the file.
  * @return 0 OK -1 otherwise.
- * @ingroup Ascii_Writer
  */
 int32_t 
 tsp_ascii_writer_start(FILE* sfile, int32_t nb_sample_max_infile);
@@ -159,7 +158,6 @@ tsp_ascii_writer_start(FILE* sfile, int32_t nb_sample_max_infile);
  * Function to be used with pthread_create(3).
  * @param sfile pointer to an opened stdio file stream (FILE*).
  * @return 0 if OK -1 otherwise.
- * @ingroup Ascii_Writer
  */
 void*
 tsp_ascii_writer_thread(void* sfile);
@@ -167,7 +165,6 @@ tsp_ascii_writer_thread(void* sfile);
 /**
  * Stop data archiving.
  * @return 0 if OK -1 otherwise.
- * @ingroup Ascii_Writer
  */
 int32_t 
 tsp_ascii_writer_stop();
@@ -175,10 +172,10 @@ tsp_ascii_writer_stop();
 /**
  * Finalise TSP consumer.
  * @return 0 if OK -1 otherwise.
- * @ingroup Ascii_Writer
  */
 int32_t 
 tsp_ascii_writer_finalise();
 
+/** @} */
 
 #endif /* _TSP_ASCII_WRITER_H_ */

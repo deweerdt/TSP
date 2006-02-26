@@ -1,6 +1,6 @@
-/*!  \file 
+/*
 
-$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_abs_types.h,v 1.20 2005-04-08 14:48:49 le_tche Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_abs_types.h,v 1.21 2006-02-26 13:36:05 erk Exp $
 
 -----------------------------------------------------------------------
 

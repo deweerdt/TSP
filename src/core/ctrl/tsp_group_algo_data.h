@@ -1,6 +1,6 @@
-/*!  \file 
+/*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_group_algo_data.h,v 1.4 2002-12-18 16:27:17 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_group_algo_data.h,v 1.5 2006-02-26 13:36:05 erk Exp $
 
 -----------------------------------------------------------------------
 

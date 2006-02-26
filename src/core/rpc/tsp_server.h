@@ -1,6 +1,6 @@
-/*!  \file 
+/*
 
-$Id: tsp_server.h,v 1.9 2004-10-07 08:56:33 tractobob Exp $
+$Id: tsp_server.h,v 1.10 2006-02-26 13:36:06 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -41,10 +41,10 @@ Purpose   :
 #include "tsp_prjcfg.h"
 
 /**
- * @defgroup Server
- * The Server module is the set of functions which encapsulate
- * the RPC machinery.
- * @ingroup Provider
+ * @defgroup TSP_RPCRequestHandlerLib RPC Request Handler
+ * The module is the set of functions which encapsulate
+ * the RPC machinery on server side.
+ * @ingroup TSP_RequestHandlerLib
  * @{
  */
 
@@ -55,6 +55,6 @@ void* TSP_rpc_request_run(TSP_provider_request_handler_t* this);
 int TSP_rpc_request_stop(TSP_provider_request_handler_t* this);
 char* TSP_rpc_request_url(TSP_provider_request_handler_t* this);
 
-/** @} end group Server */ 
+/** @} end group TSP_RPCRequestHandlerLib */ 
 
 #endif /* _TSP_SERVER_H */

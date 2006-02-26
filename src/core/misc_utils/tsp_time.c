@@ -1,6 +1,6 @@
-/*!  \file 
+/*
 
-$Header: /home/def/zae/tsp/tsp/src/core/misc_utils/tsp_time.c,v 1.9 2004-09-22 14:25:58 tractobob Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/misc_utils/tsp_time.c,v 1.10 2006-02-26 13:36:06 erk Exp $
 
 -----------------------------------------------------------------------
 

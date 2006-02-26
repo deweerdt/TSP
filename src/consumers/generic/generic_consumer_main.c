@@ -1,6 +1,6 @@
-/*!  \file 
+/*
 
-$Id: generic_consumer_main.c,v 1.5 2005-12-05 21:02:10 erk Exp $
+$Id: generic_consumer_main.c,v 1.6 2006-02-26 13:36:05 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -46,6 +46,29 @@ Purpose   : Generic tsp consumer
 #include "tsp_prjcfg.h"
 #include "tsp_consumer.h"
 #include "generic_consumer.h"
+
+/**
+ * @defgroup TSP_GenericConsumer Generic Consumer
+ * The Generic consumer set of tools may be used
+ * to test in a simple command line interface the 
+ * most the of the TSP Asynchronous Request:
+ * <ul>
+ *   <li>   tsp_request_open </li>
+ *   <li>   tsp_request_close </li>
+ *   <li>   tsp_request_information </li>
+ *   <li>   tsp_request_filtered_information </li>
+ *   <li>   tsp_request_feature </li>
+ *   <li>   tsp_request_sample </li>
+ *   <li>   tsp_request_sample_init </li>
+ *   <li>   tsp_request_sample_destroy </li>
+ *   <li>   tsp_request_async_sample_write </li>
+ *   <li>   tsp_request_async_sample_read </li>      
+ * </ul>
+ * Just like @ref BBToolsCommandLine the generic consumer has a BusyBox-like
+ * design ((<A HREF="http://www.busybox.net">http://www.busybox.net</A>).
+ * 
+ * @ingroup TSP_Consumers
+ */
 
 static void 
 my_sighandler(int signum) {

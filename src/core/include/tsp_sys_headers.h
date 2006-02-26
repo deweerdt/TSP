@@ -1,6 +1,6 @@
-/*!  \file 
+/*
 
-$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_sys_headers.h,v 1.19 2005-10-09 23:01:24 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_sys_headers.h,v 1.20 2006-02-26 13:36:05 erk Exp $
 
 -----------------------------------------------------------------------
 

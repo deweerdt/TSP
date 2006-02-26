@@ -1,6 +1,6 @@
-/*!  \file 
+/*
 
-$Id: tsp_client.h,v 1.10 2005-10-18 23:10:22 erk Exp $
+$Id: tsp_client.h,v 1.11 2006-02-26 13:36:06 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -43,10 +43,10 @@ Purpose   :
 #include "tsp_rpc.h"
 
 /**
- * @defgroup Client
- * The Client module is the set of functions which encapsulate
+ * @defgroup TSP_RPCClientLib RPC Client
+ * The TSP_RPCClientLib module is the set of functions which encapsulate
  * the RPC machinery.
- * @ingroup Consumer
+ * @ingroup TSP_ConsumerLib
  * @{
  */
 
@@ -109,6 +109,6 @@ int* TSP_request_async_sample_write(const TSP_async_sample_t* async_sample_write
 
 TSP_async_sample_t* TSP_request_async_sample_read(const TSP_async_sample_t* async_sample_read, TSP_server_t server);
 
-/** @} end group Client */ 
+/** @} end group TSP_RPCClientLib */ 
 
 #endif /* _TSP_CLIENT */

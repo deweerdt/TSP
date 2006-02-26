@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_xmlrpc_server.h,v 1.2 2006-02-07 21:10:41 deweerdt Exp $
+$Id: tsp_xmlrpc_server.h,v 1.3 2006-02-26 13:36:06 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -41,10 +41,10 @@ Purpose   :
 #include "tsp_prjcfg.h"
 
 /**
- * @defgroup Server
- * The Server module is the set of functions which encapsulate
+ * @defgroup TSP_XMLRPCRequestHandlerLib XML-RPC Request Handler
+ * The XMLRPCRequestLib module is the set of functions which encapsulate
  * the RPC machinery.
- * @ingroup Provider
+ * @ingroup TSP_RequestHandlerLib
  * @{
  */
 
@@ -55,6 +55,6 @@ void* TSP_xmlrpc_request_run(TSP_provider_request_handler_t* this);
 int TSP_xmlrpc_request_stop(TSP_provider_request_handler_t* this);
 char* TSP_xmlrpc_request_url(TSP_provider_request_handler_t* this);
 
-/** @} end group Server */ 
+/** @} end group TSP_XMLRPCRequestHandlerLib */ 
 
 #endif /* _TSP_XMLRPC_SERVER_H */

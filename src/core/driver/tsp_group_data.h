@@ -1,6 +1,6 @@
-/*!  \file 
+/*
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_group_data.h,v 1.5 2002-12-24 14:14:24 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_group_data.h,v 1.6 2006-02-26 13:36:05 erk Exp $
 
 -----------------------------------------------------------------------
 

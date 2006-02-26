@@ -1,6 +1,6 @@
-/*!  \file 
+/*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_datapool.c,v 1.23 2006-02-03 20:46:22 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_datapool.c,v 1.24 2006-02-26 13:36:05 erk Exp $
 
 -----------------------------------------------------------------------
 

@@ -1,6 +1,6 @@
-/*!  \file 
+/*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_simple.h,v 1.6 2006-02-03 20:46:22 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_simple.h,v 1.7 2006-02-26 13:36:06 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -51,6 +51,11 @@ pthread_mutex_t bb_simple_stockage_mutex;
 #define BB_SIMPLE_SYNCHRO_PROCESS 2
 
 /**
+ * @addtogroup BBSimpleLib
+ * @{
+ */
+
+/**
  * Message id used by an application to
  * notify BB tsp provider to shadow copy the blackboard.
  */
@@ -59,18 +64,21 @@ pthread_mutex_t bb_simple_stockage_mutex;
  * Message id used by BB tsp provider (or even
  * a specialized tsp consumer) in order to notify
  * the application that sampled symbols has been processed.
- * This is an ACKnolegde message of Synchro COPY.
+ * This is an ACKnowlegde message of Synchro COPY.
  * This should not be used by stringent realtime application.
  */
 #define BB_SIMPLE_MSGID_SYNCHRO_COPY_ACK  2
 
+/** @} */
+
 /**
- * @defgroup SimpleBlackBoard
+ * @defgroup BBSimpleLib The BB Simple Library
  * @ingroup BlackBoard
- * A simplest way to use blackboard.
- * The simple blackboard interface is an easy to use
+ * A simple way to use blackboard which may be simplier than @ref BBLib.
+ * The simple blackboard API is an easy to use
  * publish subscribe interface using simple synchronization
- * primitive.
+ * primitives.
+ * @{
  */
 
 BEGIN_C_DECLS
@@ -101,7 +109,6 @@ BEGIN_C_DECLS
  *                    - 1 for scalar
  *                    - > 1 for array var.
  * @return address of the allocated data on success, NULL if allocation failed.
- * @ingroup SimpleBlackBoard
  */
 void* bb_simple_publish(S_BB_T* bb_simple,
 			const char* var_name, 
@@ -125,7 +132,6 @@ void* bb_simple_publish(S_BB_T* bb_simple,
  *                           la taille effective de la donnée.
  * @return adresse de la donnée allouée, NULL
  *         si allocation impossible.
- * @ingroup SimpleBlackBoard
  */
 void* bb_simple_subscribe(S_BB_T* bb_simple,
 			  const char* var_name,
@@ -141,7 +147,6 @@ void* bb_simple_subscribe(S_BB_T* bb_simple,
  *        - BB_SIMPLE_SYNCHRO_THREAD for POSIX thread synchro
  *        - BB_SIMPLE_SYNCHRO_PROCESS for Sys V synchro
  * @return E_OK on success, E_NOK on failure.
- * @ingroup SimpleBlackBoard
  */
 int32_t bb_simple_synchro_config(int synchro_type);
 
@@ -150,7 +155,6 @@ int32_t bb_simple_synchro_config(int synchro_type);
  * @param bb_simple INOUT, a pointer to a valid BB.
  * @param msg_type IN, le type de message à envoyer pour la synchro
  * @return E_OK si tout se passe bien
- * @ingroup SimpleBlackBoard
  */
 int32_t bb_simple_synchro_go(S_BB_T* bb_simple,int msg_type);
 
@@ -160,7 +164,6 @@ int32_t bb_simple_synchro_go(S_BB_T* bb_simple,int msg_type);
  * @param bb_simple a pointer to a valid BB.
  * @param type_msg le type de message à recevoir pour la synchro
  * @return E_OK si tout se passe bien
- * @ingroup SimpleBlackBoard
  */
 int32_t bb_simple_synchro_wait(S_BB_T* bb_simple,int type_msg);
 
@@ -168,7 +171,6 @@ int32_t bb_simple_synchro_wait(S_BB_T* bb_simple,int type_msg);
  * Verification de la synchronisation SIMPLE.
  * @param bb_simple INOUT, a pointer to a valid BB.
  * @return E_OK si tous les messages de synchro ont ete consommes, E_NOK sinon.
- * @ingroup SimpleBlackBoard
  */
 int32_t bb_simple_synchro_verify(S_BB_T* bb_simple);
 
@@ -177,7 +179,6 @@ int32_t bb_simple_synchro_verify(S_BB_T* bb_simple);
  * de synchronisation SIMPLE (version thread).
  * @param type_msg le type de message à envoyer pour la synchro
  * @return E_OK si tout se passe bien
- * @ingroup SimpleBlackBoard
  */
 int32_t bb_simple_thread_synchro_go(int type_msg);
 
@@ -186,7 +187,6 @@ int32_t bb_simple_thread_synchro_go(int type_msg);
  * de synchronisation SIMPLE (version thread).
  * @param type_msg le type de message à recevoir pour la synchro
  * @return E_OK si tout se passe bien
- * @ingroup SimpleBlackBoard
  */
 int32_t bb_simple_thread_synchro_wait(int type_msg);
 
@@ -218,7 +218,6 @@ int32_t bb_simple_thread_synchro_wait(int type_msg);
  *                    - > 1 for array var.
  * @param offset IN, offset relative of the alias from the target 
  * @return address of the allocated data on success, NULL if allocation failed.
- * @ingroup SimpleBlackBoard
  */
 void* bb_simple_alias_publish(S_BB_T* bb_simple,
 			      const char* var_name,
@@ -230,6 +229,8 @@ void* bb_simple_alias_publish(S_BB_T* bb_simple,
 			      int dimension,
 			      unsigned long offset);
 
+
+/** @} */
 
 END_C_DECLS
 

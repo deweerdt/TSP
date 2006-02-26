@@ -1,6 +1,6 @@
-#/*!  \file 
+/*
 
-$Id: server_main.c,v 1.4 2005-10-09 23:01:25 erk Exp $
+$Id: server_main.c,v 1.5 2006-02-26 13:36:06 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -42,6 +42,13 @@ Purpose   : Allow the output of a datapool of symbols from res file
 
 void RES_GLU_loop(void);
 GLU_handle_t* GLU_resreader_create();
+
+/**
+ * @defgroup TSP_ResReader Res File Reader
+ * The TSP 'RES' file reader, this provider is reading
+ * a RES file providing the contained symbols as a TSP provider.
+ * @ingroup TSP_Providers
+ */
 
 int main(int argc, char *argv[])
 {

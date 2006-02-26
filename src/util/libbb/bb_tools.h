@@ -1,6 +1,6 @@
-/*!  \file 
+/*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_tools.h,v 1.7 2006-02-03 20:46:22 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_tools.h,v 1.8 2006-02-26 13:36:06 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -42,20 +42,24 @@ Purpose   : BlackBoard Idiom implementation
 #include <tsp_abs_types.h>
 
 /**
- * @defgroup BBTools
+ * @defgroup BBTools The BB Tools
  * The BlackBoard tools.
  * @ingroup BlackBoard
  */
 
 /**
- * @defgroup BBTools_API
+ * @defgroup BBToolsLib The BB Tools Library
  * The BlackBoard tools.
  * @ingroup BBTools
  */
 
+/** 
+ * @addtogroup BBToolsLib
+ * @{
+ */
+
 /**
  * The list of BB Tools command.
- * @ingroup BBTools_API
  */
 typedef enum {E_BBTOOLS_UNKNOWN=0,
               E_BBTOOLS_GENERIC,
@@ -128,7 +132,15 @@ extern const char* bbtools_cmdname_tab[];
 extern const char* bbtools_cmdhelp_tab[];
 #endif
 
+/** @} */
+
+
 BEGIN_C_DECLS
+
+/**
+ * @addtogroup BBToolsLib
+ * @{
+ */
 
 /**
  * Initialise BBTools request.
@@ -139,7 +151,8 @@ bbtools_init(bbtools_request_t* req);
 
 /**
  * The BBTools command generic API.
- * @ingroup BBTools_API
+ * @param req INOUT, the bbtools request to be handled
+ * @return E_OK on success E_NOK otherwise.
  */
 int32_t 
 bbtools(bbtools_request_t* req);
@@ -148,14 +161,12 @@ bbtools(bbtools_request_t* req);
  * Return the BB Tools command type
  * from the string passed as parameter
  * @param bbtools_string the name of the bbtools command
- * @ingroup BBTools_API
  */
 E_BBTOOLS_CMD_T
 bbtools_cmd(const char* bbtools_string);
 
 /**
  *
- * @ingroup BBTools_API
  */
 E_BBTOOLS_CMD_T
 bbtools_checkargs(bbtools_request_t* req);
@@ -163,7 +174,6 @@ bbtools_checkargs(bbtools_request_t* req);
 /**
  * Print usage of the specified bbtools request.
  * @param req IN, the bbtools request.
- * @ingroup BBTools_API
  */
 void 
 bbtools_usage(bbtools_request_t* req);
@@ -172,84 +182,72 @@ bbtools_usage(bbtools_request_t* req);
  * Return the BB structure if the named
  * BB exists, NULL if not.
  * @param bbname IN, the name of a blackboard
- * @ingroup BBTools_API
  */
 S_BB_T*
 bbtools_checkbbname(const char* bbname);
 
 /**
  *
- * @ingroup BBTools_API
  */
 int32_t 
 bbtools_unimplemented_cmd(const char* bbtools_cmdname);
 
 /**
  *
- * @ingroup BBTools_API
  */
 int32_t 
 bbtools_read(bbtools_request_t* req);
 
 /**
  *
- * @ingroup BBTools_API
  */
 int32_t 
 bbtools_write(bbtools_request_t* req);
 
 /**
  *
- * @ingroup BBTools_API
  */
 int32_t 
 bbtools_dump(bbtools_request_t* req);
 
 /**
  *
- * @ingroup BBTools_API
  */
 int32_t 
 bbtools_find(bbtools_request_t* req);
 
 /**
  *
- * @ingroup BBTools_API
  */
 int32_t
 bbtools_check_id(bbtools_request_t* req);
 
 /**
  *
- * @ingroup BBTools_API
  */
 int32_t
 bbtools_destroy(bbtools_request_t* req);
 
 /**
  *
- * @ingroup BBTools_API
  */
 int32_t
 bbtools_create(bbtools_request_t* req);
 
 /**
  *
- * @ingroup BBTools_API
  */
 int32_t
 bbtools_publish(bbtools_request_t* req);
 
 /**
  *
- * @ingroup BBTools_API
  */
 int32_t
 bbtools_synchro_send(bbtools_request_t* req);
 
 /**
  *
- * @ingroup BBTools_API
  */
 int32_t
 bbtools_synchro_recv(bbtools_request_t* req);
@@ -257,17 +255,18 @@ bbtools_synchro_recv(bbtools_request_t* req);
 
 /**
  *
- * @ingroup BBTools_API
  */
 int32_t
 bbtools_memset(bbtools_request_t* req);
 
 /**
  *
- * @ingroup BBTools_API
  */
 int32_t
 bbtools_check_version(bbtools_request_t* req);
+
+/**  @} */
+
 
 END_C_DECLS
 

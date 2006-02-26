@@ -1,6 +1,6 @@
-/*!  \file 
+/*
 
-$Header: /home/def/zae/tsp/tsp/src/core/misc_utils/tsp_time.h,v 1.7 2005-10-23 13:15:23 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/misc_utils/tsp_time.h,v 1.8 2006-02-26 13:36:06 erk Exp $
 
 -----------------------------------------------------------------------
 

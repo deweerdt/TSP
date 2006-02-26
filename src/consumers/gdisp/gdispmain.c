@@ -1,6 +1,6 @@
-/*!  \file 
+/*
 
-$Header: /home/def/zae/tsp/tsp/src/consumers/gdisp/gdispmain.c,v 1.8 2005-11-29 22:08:53 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/consumers/gdisp/gdispmain.c,v 1.9 2006-02-26 13:36:05 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -15,6 +15,18 @@ Purpose   : main functions for GDISP program
 -----------------------------------------------------------------------
 */
 
+
+/**
+ * @defgroup TSP_GDisp GDisp
+ * @ingroup  TSP_Consumers
+ * tsp_gdisp is the first generation TSP consumer GUI.
+ * This a gtk+1.2, GUI we may be used to efficiently draw
+ * or view TSP sample symbol. It has a simple XML configuration
+ * file which may be used to described the TSP Symbols you
+ * want to draw or view.
+ * \par \c tsp_gdisp \c [-u TSP_provider URL ] \c -x config.xml
+ */
+
 #include <unistd.h>
 #include <stdio.h>
 #include <assert.h>
@@ -26,17 +38,17 @@ extern char *optarg;
 #include "page.h"
 
 
-/**
+/*
  *  The TSP object
  */
 TSP_provider_t tsp = 0;
 
-/**
+/*
  *  The displayed pages
  */
 display_page* pages;
 
-/** 
+/* 
  * For each provider global index this array gives
  * us a list of var that must be refreshed with this value
  * when the TSP provider send them to us
@@ -44,7 +56,7 @@ display_page* pages;
 variable*** index2vars;
 
 
-/**
+/*
  * Find the tsp provider global index for each requested variable,
  * and store in pages array 
  */ 
@@ -75,7 +87,7 @@ void init_tsp_index(void)
   
 }
 
-/**
+/*
  * @param index a provider global index
  * @return total number of vars for the given provider global index
  */ 

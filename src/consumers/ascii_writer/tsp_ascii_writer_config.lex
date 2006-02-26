@@ -1,6 +1,6 @@
-/*!  \file 
+/*
 
-$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer_config.lex,v 1.4 2006-02-03 19:19:11 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer_config.lex,v 1.5 2006-02-26 13:36:05 erk Exp $
 
 -----------------------------------------------------------------------
 

@@ -1,6 +1,6 @@
-/*!  \file 
+/*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libhisto/histogram.c,v 1.1 2004-04-09 15:52:04 dufy Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libhisto/histogram.c,v 1.2 2006-02-26 13:36:06 erk Exp $
 
 -----------------------------------------------------------------------
 

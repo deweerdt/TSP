@@ -1,6 +1,6 @@
-/*!  \file 
+/*
 
-$Id: tsp_provider.h,v 1.16 2006-01-22 09:35:15 erk Exp $
+$Id: tsp_provider.h,v 1.17 2006-02-26 13:36:05 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -44,8 +44,8 @@ Purpose   : Main interface for the producer module
 #include <tsp_glu.h>
 
 /**
- * @defgroup Provider
- * @ingroup  Core
+ * @defgroup TSP_ProviderLib Provider Core Library
+ * @ingroup  TSP_CoreLib
  * The Provider module is the set of all 
  * provider library interface.
  * @{

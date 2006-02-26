@@ -1,6 +1,6 @@
-/*!  \file 
+/*
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_rpc_confprogid.h,v 1.3 2004-08-31 09:58:53 dufy Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_rpc_confprogid.h,v 1.4 2006-02-26 13:36:06 erk Exp $
 
 -----------------------------------------------------------------------
 

@@ -1,7 +1,6 @@
-/* -*- idl -*- */
-/*!  \file 
+/* -*- idl -*-
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_rpc.x,v 1.22 2006-01-27 17:23:59 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_rpc.x,v 1.23 2006-02-26 13:36:06 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -17,10 +16,40 @@ Purpose   :
  */
 
 /**
- * @defgroup RPC
- * The TSP RPC module is the one which concentrate the
- * RPC interface of TSP for both the Client and Server part.
- * @ingroup Core
+ * @defgroup TSP_AbstractAPI The TSP Abstract API
+ * The TSP API module is the one which define the TSP global API
+ * for both consumer and provider. For now this is done through
+ * the RPC IDL of the @ref TSP_RPCRequestHandlerLib, 
+ * but this should be replaced by a request handler neutral
+ * API which will be called by each request handler.
+ * The TSP Abstract API directly comes from TSP Specifications,
+ * it contains the definition of:
+ * <ul>
+ *    <li> Some constants </li>
+ *    <li> The TSP asynchronous requests with associated answer 
+ *         <ul>
+ *            <li> TSP Request Open @ref TSP_request_open_t </li>
+ *            <li> TSP Answer Open @ref TSP_answer_open_t </li>
+ *            <li> TSP Request Close @ref TSP_request_close_t</li>
+ *            <li> TSP Request Information @ref TSP_request_information_t </li>
+ *            <li> TSP Request Filtered Information @ref TSP_request_information_t </li>
+ *            <li> TSP Answer Sample @ref TSP_answer_sample_t </li>
+ *            <li> TSP Request Sample @ref TSP_request_sample_t </li>
+ *            <li> TSP Request Sample Initialisation @ref TSP_request_sample_init_t</li>
+ *            <li> TSP Answer Sample Initialisation @ref TSP_answer_sample_init_t</li>
+ *            <li> TSP Request Sample Destroy  @ref TSP_request_sample_destroy_t </li>
+ *            <li> TSP Answer Sample Destroy @ref TSP_answer_sample_destroy_t </li>
+ *            <li> TSP Request Async Sample Read </li>
+ *            <li> TSP Request Async Sample Write </li>
+ *            <li> TSP Request Feature </li>
+ *            <li> TSP Answer Feature </li>
+ *            <li> TSP Exec Feature </li>
+ *         </ul>
+ *    </li>
+ * </ul>
+ * @todo Use TSP_status_t ENUM where possible
+ * @todo Add channel id to async_read/write
+ * @ingroup TSP_CoreLib
  * @{
  */
 
@@ -62,22 +91,32 @@ enum TSP_status_t
          * The requested feature is not implemented
          */
 	TSP_STATUS_ERROR_NOT_IMPLEMENTED,
-	/*
+	/**
          * The requested PGI (provider global index is unknown)
          */
 	TSP_STATUS_ERROR_PGI_UNKNOWN,
-	/*
-         * Asynchronous read/write return status.
+	/**
+         * Asynchronous read is not allowed.
          */
  	TSP_STATUS_ERROR_ASYNC_READ_NOT_ALLOWED,
+	/**
+         * Asynchronous write is not allowed.
+         */
  	TSP_STATUS_ERROR_ASYNC_WRITE_NOT_ALLOWED,       
+	/**
+         * Asynchronous read is not supported.
+         */
 	TSP_STATUS_ERROR_ASYNC_READ_NOT_SUPPORTED,	
+	/**
+         * Asynchronous write is not supported.
+         */
  	TSP_STATUS_ERROR_ASYNC_WRITE_NOT_SUPPORTED       	
 };
 
 /** 
  * The TSP answer open is the answer
  * from a TSP request open.
+ * @see TSP_request_open_t
  */
 struct TSP_answer_open_t
 {
@@ -100,10 +139,13 @@ typedef string   TSP_argv_item_t<>;
 typedef TSP_argv_item_t TSP_argv_t<>; 
 
 /**  
+ * TSP request open.
  * The TSP request open is the first TSP request
  * a TSP consumer may send a TSP provider 
- * to obtain a TSP channel id
+ * to obtain a (unique) TSP channel identifier
  * in order to be able to send other TSP request.
+ * @see TSP_answer_open_t
+ * @see TSP_request_close_t
  */
 struct TSP_request_open_t
 {
@@ -111,65 +153,140 @@ struct TSP_request_open_t
 	int version_id;       
 /*	string stream_init<>;
 	int use_stream_init;*/
-        /** The arguments which me be transmitted from
+        /** The arguments which may be transmitted from
             consumer-side to provider-side in order
             to transmit initialization option  */
 	TSP_argv_t argv;	
 };
 
 /**
- * 
+ * TSP Request close.
+ * This request may be sent for ending a TSP
+ * session. All session related information on
+ * provider side will be dropped.
+ * The channel id may not be used any more.
+ * @see TSP_request_open_t
  */
 struct TSP_request_close_t
 {
-	int version_id;
-	unsigned int channel_id;
+  /** TSP Protocol Version */
+  int version_id;          
+  /** TSP Asynchronous Channel Id  */
+  unsigned int channel_id; 
 };
 
+/**
+ * TSP Request Informations.
+ * Ask TSP provider to send informations
+ * about symbols.
+ */
 struct TSP_request_information_t
 {
-	int version_id;
-	unsigned int channel_id;
+  /** TSP Protocol Version */
+  int version_id;
+  /** TSP Asynchronous Channel Id  */
+  unsigned int channel_id;
 };
 
+/**
+ * TSP Request feature.
+ * Test if provider is implementing the features
+ * specified by the provided feature words.
+ * This is an extension point for specific 
+ * TSP usage.
+ */
 struct TSP_request_feature_t
 {
-	int version_id;
-	unsigned int channel_id;
-	unsigned int feature_words[4];
+  /** TSP Protocol Version */
+  int version_id;
+  /** TSP Asynchronous Channel Id  */
+  unsigned int channel_id;
+  /** TSP Feature Word  */
+  unsigned int feature_words[4];
 };
 
-
+/**
+ * TSP Answer feature.
+ * This is the answer to a TSP Request feature.
+ */
 struct TSP_answer_feature_t
 {
-	int version_id;
-	unsigned int channel_id;
-	unsigned int feature_words[4];
-	int int_value;
-	double double_value;
-	string string_value<>;
+  /** TSP Protocol Version */
+  int version_id;
+  /** TSP Asynchronous Channel Id  */
+  unsigned int channel_id;
+  /** TSP Feature Word  */
+  unsigned int feature_words[4];
+  
+  int int_value;
+  double double_value;
+  string string_value<>;
 };
 
+/**
+ * TSP Exec Feature.
+ * After sending a TSP Request Feature a consumer
+ * may want to 'exec' this feature.
+ */
 struct TSP_exec_feature_t
 {
-	int version_id;
-	unsigned int channel_id;
-	unsigned int feature_words[4];
-	int int_value;
-	double double_value;
-	string string_value<>;
+  /** TSP Protocol Version */
+  int version_id;
+  /** TSP Asynchronous Channel Id  */
+  unsigned int channel_id;
+  unsigned int feature_words[4];
+  int int_value;
+  double double_value;
+  string string_value<>;
 };
 
+/**
+ * TSP Sample Information.
+ * A TSP Symbol is entirely defined by this
+ * structure.
+ */
 struct TSP_sample_symbol_info_t
 {
-	string name<>;
-	int provider_global_index;
-	int provider_group_index;
-	int provider_group_rank;
-	opaque xdr_tsp_t[4];
-	unsigned int dimension;
-	int period;
-	int phase; 
+  /** TSP Symbol name */
+  string name<>;
+  /** 
+   * The provider global index (PGI).
+   * This a provider-side index which uniquely
+   * identify a symbol. Each symbol provided by
+   * a TSP provider should have a unique PGI assigned
+   * by the provider.
+   */
+  int provider_global_index;
+  /**
+   * The TSP Group Index to which the symbol belongs to.
+   * TSP Groups are computed by the provider
+   * upon a TSP request sample.
+   */
+  int provider_group_index;
+  /**
+   * The rank of the symbol in its TSP Group.
+   */
+  int provider_group_rank;
+  /**
+   * The type of the TSP symbol.
+   */
+  opaque xdr_tsp_t[4];
+  /**
+   * The dimension of the symbol (array size).
+   * <ul>
+   *   <li> 1 for scalar </li> 
+   *   <li> more than 1 for arrays. </li>
+   * </ul>
+   */
+  unsigned int dimension;
+  /**
+   * The period at which the symbol will be provided.
+   */
+  int period;
+  /**
+   * The phase at which the symbol will be provided.
+   */
+  int phase; 
 };
 
 
@@ -182,94 +299,153 @@ struct TSP_sample_symbol_info_t
 typedef TSP_sample_symbol_info_t TSP_sample_symbol_info_list_t<>;
 
 /*
-FIXME : Use it when the consumer will be able
-to ask for a given endianity
-enum TSP_endianity_t 
-{
-	TSP_PSEUDO_XDR_LITTLE_ENDIAN,
-	TSP_XDR_BIG_ENDIAN
-};*/
+  FIXME : Use it when the consumer will be able
+  to ask for a given endianity
+  enum TSP_endianity_t 
+  {
+  TSP_PSEUDO_XDR_LITTLE_ENDIAN,
+  TSP_XDR_BIG_ENDIAN
+  };*/
 
-
+/**
+ * TSP Request Sample.
+ * This request is used by a TSP consumer
+ * to negotiate the symbol he wants.
+ */
 struct TSP_request_sample_t
 {
-	int version_id;
-	unsigned int channel_id;
-	unsigned int feature_words[4];
-	int consumer_timeout;
-	TSP_sample_symbol_info_list_t symbols;
-
-	/* TSP_endianity_t data_endianity; FIXME : implementer */
+  /** TSP Protocol Version */
+  int version_id;
+  /** TSP Asynchronous Channel Id  */
+  unsigned int channel_id;
+  unsigned int feature_words[4];
+  int consumer_timeout;
+  TSP_sample_symbol_info_list_t symbols;
+  
+  /* TSP_endianity_t data_endianity; FIXME : implementer */
 };
 
+/**
+ * TSP Sample Answer.
+ * The answer to TSP Request Sample.
+ */
 struct TSP_answer_sample_t
 {
-	int version_id;
-	unsigned int channel_id;
-
-	int provider_timeout;
-	int provider_group_number;
-	TSP_sample_symbol_info_list_t symbols;
-	double base_frequency;
-	int max_period; 
-	int max_client_number; 
-	int current_client_number; 
-	TSP_status_t status;		
-
-	/*unsigned int feature_words[4]; FIXME*/
-	/* TSP_endianity_t data_endianity; FIXME : implementer */
+  /** TSP Protocol Version */
+  int version_id;
+  /** TSP Asynchronous Channel Id  */
+  unsigned int channel_id;
+  
+  int provider_timeout;
+  int provider_group_number;
+  /** 
+   * The list of symbol available from the provider 
+   * this list may be incomplete if it coming
+   * either from a TSP request filtered information
+   * or from Request Sample
+   */
+  TSP_sample_symbol_info_list_t symbols;
+  double base_frequency;
+  int max_period; 
+  int max_client_number; 
+  int current_client_number; 
+  TSP_status_t status;		
+  
+  /*unsigned int feature_words[4]; FIXME*/
+  /* TSP_endianity_t data_endianity; FIXME : implementer */
 
 
 };
 
+/**
+ * TSP Request sample initialisation.
+ * Ask the provider to begin sampling with
+ * the previously negotiated request sample.
+ */
 struct TSP_request_sample_init_t
 {
-	int version_id;
-	unsigned int channel_id;
+  /** TSP Protocol Version */
+  int version_id;
+  /** TSP Asynchronous Channel Id  */
+  unsigned int channel_id;
 };
 
+/**
+ * TSP Answer sample initialisation.
+ * Answer to TSP request sample initialisation,
+ * the provider indicates where the consumer
+ * may read the data sample stream from.
+ */
 struct TSP_answer_sample_init_t
 {
-	int version_id;
-	unsigned int channel_id;
-	string data_address<>;		
-	TSP_status_t status;			
+  /** TSP Protocol Version */
+  int version_id;
+  /** TSP Asynchronous Channel Id  */
+  unsigned int channel_id;
+  /** 
+   * The (string-encoded) address where
+   * the consumer may find the sample data stream
+   */ 
+  string data_address<>;
+  /**
+   * Status of the answer.
+   */
+  TSP_status_t status;			
 };
 
 
-/* FIXME : utiliser ca...*/
-struct TSP_asynchronous_sample_symbol_t
-{
-	int provider_index;
-};
-
-
-/* FIXME : implementer */
+/**
+ * TSP Request sample destroy.
+ * Ask the provider to finalize
+ * the sample process.
+ */
 struct TSP_request_sample_destroy_t
 {
-	int version_id;
-	unsigned int channel_id;	
+  /** TSP Protocol Version */
+  int version_id;
+  /** TSP Asynchronous Channel Id  */
+  unsigned int channel_id;	
 };
 
-/* FIXME : implementer */
+/**
+ * TSP Answer sample destroy.
+ * Answer to TSP Request sample destroy.
+ */
 struct TSP_answer_sample_destroy_t
 {
-	int version_id;
-	unsigned int channel_id;		
-	int status;
+  /** TSP Protocol Version */
+  int version_id;
+  /** TSP Asynchronous Channel Id  */
+  unsigned int channel_id;
+  /** TSP Status */		
+  int status;
 };
 
-/* tsp async read/write */
+/**
+ * TSP asynchronous sample definition.
+ * This is to be used in 
+ * Asynchronous sample write and read request.
+ */
 struct TSP_async_sample_t
 {
-	int provider_global_index;
-        opaque data<>;
+  /** 
+   * The provider global index (PGI).
+   * This a provider-side index which uniquely
+   * identify a symbol. Each symbol provided by
+   * a TSP provider should have a unique PGI assigned
+   * by the provider.
+   */
+  int provider_global_index;
+  /**
+   * Opaque data container.
+   */
+  opaque data<>;
 };
 
 
 /* This structure is not part of TSP Protocol*/
 struct TSP_provider_info_t{
-	string info<>;
+  string info<>;
 };
 
 

@@ -4,7 +4,7 @@
 # Project related configuration options
 #---------------------------------------------------------------------------
 PROJECT_NAME           = TSP
-PROJECT_NUMBER         = 0.7.0
+PROJECT_NUMBER         = 0.7.2
 OUTPUT_DIRECTORY       = $(DEVBASE)/dist/doc/api
 CREATE_SUBDIRS         = NO
 OUTPUT_LANGUAGE        = English
@@ -47,7 +47,7 @@ HIDE_SCOPE_NAMES       = NO
 SHOW_INCLUDE_FILES     = NO
 INLINE_INFO            = YES
 SORT_MEMBER_DOCS       = YES
-SORT_BRIEF_DOCS        = NO
+SORT_BRIEF_DOCS        = YES
 SORT_BY_SCOPE_NAME     = NO
 GENERATE_TODOLIST      = YES
 GENERATE_TESTLIST      = YES
@@ -62,10 +62,10 @@ FILE_VERSION_FILTER    =
 # configuration options related to warning and progress messages
 #---------------------------------------------------------------------------
 QUIET                  = YES
-WARNINGS               = NO
+WARNINGS               = YES
 WARN_IF_UNDOCUMENTED   = YES
 WARN_IF_DOC_ERROR      = YES
-WARN_NO_PARAMDOC       = NO
+WARN_NO_PARAMDOC       = YES
 WARN_FORMAT            = "$file:$line: $text"
 WARN_LOGFILE           = 
 #---------------------------------------------------------------------------
@@ -93,7 +93,7 @@ FILTER_SOURCE_FILES    = NO
 #---------------------------------------------------------------------------
 SOURCE_BROWSER         = NO
 INLINE_SOURCES         = NO
-STRIP_CODE_COMMENTS    = YES
+STRIP_CODE_COMMENTS    = NO
 REFERENCED_BY_RELATION = YES
 REFERENCES_RELATION    = YES
 USE_HTAGS              = NO
@@ -112,7 +112,7 @@ HTML_OUTPUT            = html
 HTML_FILE_EXTENSION    = .html
 HTML_HEADER            = header/header.html
 HTML_FOOTER            = footer/footer.html
-HTML_STYLESHEET        = 
+HTML_STYLESHEET        = tsp.css
 HTML_ALIGN_MEMBERS     = YES
 GENERATE_HTMLHELP      = NO
 CHM_FILE               = 
@@ -180,7 +180,7 @@ PERLMOD_MAKEVAR_PREFIX =
 ENABLE_PREPROCESSING   = YES
 MACRO_EXPANSION        = NO
 EXPAND_ONLY_PREDEF     = NO
-SEARCH_INCLUDES        = YES
+SEARCH_INCLUDES        = NO
 INCLUDE_PATH           = 
 INCLUDE_FILE_PATTERNS  = 
 PREDEFINED             = 
@@ -199,14 +199,14 @@ PERL_PATH              = /usr/bin/perl
 #---------------------------------------------------------------------------
 CLASS_DIAGRAMS         = NO
 HIDE_UNDOC_RELATIONS   = NO
-HAVE_DOT               = NO
+HAVE_DOT               = YES
 CLASS_GRAPH            = YES
 COLLABORATION_GRAPH    = YES
 GROUP_GRAPHS           = YES
 UML_LOOK               = NO
 TEMPLATE_RELATIONS     = NO
-INCLUDE_GRAPH          = YES
-INCLUDED_BY_GRAPH      = YES
+INCLUDE_GRAPH          = NO
+INCLUDED_BY_GRAPH      = NO
 CALL_GRAPH             = NO
 GRAPHICAL_HIERARCHY    = YES
 DIRECTORY_GRAPH        = YES

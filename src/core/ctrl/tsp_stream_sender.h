@@ -1,6 +1,6 @@
-/*!  \file 
+/*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_stream_sender.h,v 1.9 2002-12-24 14:14:19 tntdev Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_stream_sender.h,v 1.10 2006-02-26 13:36:05 erk Exp $
 
 -----------------------------------------------------------------------
 

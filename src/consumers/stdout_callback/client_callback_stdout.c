@@ -1,6 +1,6 @@
-/*!  \file 
+/*
 
-$Id: client_callback_stdout.c,v 1.2 2004-09-22 14:25:58 tractobob Exp $
+$Id: client_callback_stdout.c,v 1.3 2006-02-26 13:36:05 erk Exp $
 
 -----------------------------------------------------------------------
 

@@ -1,6 +1,6 @@
-/*!  \file 
+/*
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_datastruct.h,v 1.3 2003-12-26 18:13:01 uid67973 Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_datastruct.h,v 1.4 2006-02-26 13:36:06 erk Exp $
 
 -----------------------------------------------------------------------
 
