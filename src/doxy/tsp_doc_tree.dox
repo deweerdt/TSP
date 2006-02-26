@@ -1,0 +1,95 @@
+/* -*- c -*-
+-----------------------------------------------------------------------
+
+TSP Library - core components for a generic Transport Sampling Protocol.
+
+Copyright (c) 2002 Yves DUFRENNE, Stephane GALLES, Eric NOULARD and Robert PAGNOT
+
+This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 2.1 of the License, or (at your option) any later version.
+
+This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public
+License along with this library; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+-----------------------------------------------------------------------
+
+Project   : TSP
+Maintainer: eric.noulard@gmail.com
+Component : Documentation main tree for doxygen 
+
+-----------------------------------------------------------------------
+Purpose   : Define the TSP main doxygen modules 
+-----------------------------------------------------------------------
+ */
+
+/**
+ * @defgroup TSP The Transport Sample Protocol
+ * The Transport Sample Protocol (TSP).
+ * TSP is a networked enabled  multi-consumer multi-provider
+ * protocol for sampling data, TSP is designed for efficiency
+ * and ease of use.
+ * In TSP there exist data producer and data consumer, following
+ * a kind of publish/subscribe paradigm. A data producer
+ * is called a <em>TSP provider</em>, and a data consumer
+ * is called a <em>TSP consumer</em>. The TSP itself consists
+ * in a set of libraries, ready to use consumers and providers.
+ * @see TSP_Libraries which may be used to build consumers and providers. 
+ * @see TSP_Consumers Some ready-to-use TSP consumer applications (GUI, file writer, ...)
+ * @see TSP_Providers Some ready-to-use TSP provider applications (file readers, Blackboard provider, ...)
+ * More informations on
+ * <A HREF="http://savannah.nongnu.org/projects/tsp">http://savannah.nongnu.org/projects/tsp</A>.
+ */
+
+/**
+ * @defgroup TSP_Libraries TSP Libraries
+ * The TSP programming libraries.
+ * @ingroup TSP
+ */
+
+/**
+ * @defgroup TSP_CoreLib TSP Core Libraries
+ * The TSP Core module is the module
+ * includes core TSP framework utility.
+ * @ingroup TSP_Libraries
+ */
+
+/**
+ * @defgroup TSP_Applications TSP Applications
+ * The final TSP applications, either TSP consumer
+ * (GUI or not) or TSP provider.
+ * @ingroup TSP
+ */
+
+/**
+ * @defgroup TSP_Consumers TSP Consumers
+ * The TSP consumer applications.
+ * A set of ready-to-use TSP consumer such as
+ * @ref TSP_AsciiWriter, @ref TSP_GDisp, @ref TSP_GDispPlus...
+ * @ingroup TSP_Applications
+ */
+
+/**
+ * @defgroup TSP_Providers TSP Providers
+ * The TSP providers applications.
+ * A set of ready-to-use TSP provider such as 
+ * @ref BB_TSPProvider, @ref TSP_ResReader... 
+ * @ingroup TSP_Applications
+ */
+
+
+/**
+ * @defgroup TSP_Utils TSP Utilities
+ * The TSP utilities.
+ * This module consists in several libraries which may save
+ * a great amount of time when using TSP.
+ * Some TSP provider and consumer use those libraries.
+ * @ingroup TSP
+ */
