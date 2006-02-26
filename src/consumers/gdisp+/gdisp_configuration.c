@@ -1,6 +1,6 @@
-/*!  \file 
+/*
 
-$Id: gdisp_configuration.c,v 1.8 2006-02-21 22:11:00 esteban Exp $
+$Id: gdisp_configuration.c,v 1.9 2006-02-26 14:08:23 erk Exp $
 
 -----------------------------------------------------------------------
 

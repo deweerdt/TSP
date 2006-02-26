@@ -1,6 +1,6 @@
-/*!  \file 
+/*
 
-$Id: gdisp_sampledSymbols.c,v 1.9 2006-01-20 21:59:14 esteban Exp $
+$Id: gdisp_sampledSymbols.c,v 1.10 2006-02-26 14:08:24 erk Exp $
 
 -----------------------------------------------------------------------
 
