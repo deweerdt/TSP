@@ -14,7 +14,7 @@ ifeq (${TSP_TARGET},dec)
 SUBDIRS = RpcGen
 endif
 
-ifeq (${GTK_BASED_CONSUMER},yes)
+ifeq (${BUILD_GTK_BASED_CONSUMER},yes)
 SUBDIRS += gtk-1.2
 endif
 
