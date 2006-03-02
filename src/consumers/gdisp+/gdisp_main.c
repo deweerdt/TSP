@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_main.c,v 1.10 2006-02-26 13:34:19 erk Exp $
+$Id: gdisp_main.c,v 1.11 2006-03-02 16:17:50 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -70,7 +70,34 @@ File      : Graphic Tool main part.
  *   <li> Save/Restore sampling configuration </li>
  *   <li> many more to come... </li>
  * </ul>
+ * The gdisp command lines options are the following:
  * \par \c tsp_gdisp+ \c [-u TSPurl ]  \c [-h host ] \c [-x config.xml]
+ * <ul>
+ *   <li> \c TSPurl the TSP URL @ref TSP_URL_FORMAT_USAGE</li>   
+ *   <li> \c host the hostname or IP address </li>
+ *   <li> \c config.xml the GDisp+ xml configuration file </li>
+ * </ul>
+ * @section gdispPlus_Design GDisp+ Design
+ * GDisp+ is a TSP consumer which is designed as a modular graphical object renderer.
+ * You can display the TSP symbols in XY Graph or textual view or with
+ * the other graphical object renderer.
+ * 
+ * @subsection gdispPlus_plugins Graphical plugins
+ * GDisp+ map TSP symbols onto graphical object renderer which are 
+ * structured as GDisp+ plugins.
+ * @subsubsection gdispPlus_plottext Text Plot
+ * The text viewer module is able to display textual values
+ * of symbols with different rendering:
+ *       <ul>
+ *         <li> hexadecimal </li>
+ *         <li> octal       </li>
+ *         <li> scientific  </li>
+ *         <li> ... </li>
+ *       </ul>
+ * @subsubsection gdispPlus_graph 2D Graph Plot
+ * The 2D grapher module is able to plot Y versus X curves with
+ * mutiple Y. You may drag'n'drop TSP symbols onto the graph widget
+ * in order to chose X and Y's data.
  */
 
 /*
