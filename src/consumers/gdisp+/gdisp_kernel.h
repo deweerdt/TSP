@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_kernel.h,v 1.22 2006-02-26 14:08:23 erk Exp $
+$Id: gdisp_kernel.h,v 1.23 2006-03-02 16:27:25 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -56,6 +56,11 @@ File      : Graphic Tool Kernel Interface.
 #include "tsp_hash.h"
 #include "gdisp_doubleArray.h"
 
+/** 
+ * @defgroup TSP_GDispPlus_Kernel Kernel API
+ * @ingroup TSP_GDispPlusLib
+ * @{
+ */
 
 /*
  * Define this to enable Drag And Drop debug.
@@ -117,39 +122,31 @@ typedef gint64 HRTime_T;
 #define _ONE_SECOND_IN_MICROSECONDS_            1000000LL
 
 
-/*
+/**
  * HOST management.
  * Few things by now... be patient...
  */
 typedef struct Host_T_ {
 
-  GString *hName;
+  GString *hName; /*!< the host name */
   
 } Host_T;
 
 
-/*
- * TSP provider management.
- * Available provider statuses :
- *  - FROM_SCRATCH
- *      The provider has just been created. Nothing can be done with it.
- *  - SESSION_CLOSED
- *      The provider has now its name.
- *      But 'TSP_consumer_request_*' functions can not be called yet.
- *  - SESSION_OPENED
- *      Ready now to request any information of the provider.
- *  - SAMPLE_REQUESTED
- *      The provider has been given the set of symbols to be sampled.
- *      But 'sampling' is still OFF.
- *  - SAMPLE_STARTED
- *      'sampling' is now ON.
+/**
+ * TSP provider management which define
+ * Available provider statuses.
  */
 typedef enum {
-
+  /** The provider has just been created. Nothing can be done with it. */
   GD_FROM_SCRATCH = 0,
+  /** The provider has now its name, But 'TSP_consumer_request_*' functions can not be called yet. */ 
   GD_SESSION_CLOSED,
+  /**  Ready now to request any information of the provider. */
   GD_SESSION_OPENED,
+  /** The provider has been given the set of symbols to be sampled. But 'sampling' is still OFF. */
   GD_SAMPLE_REQUESTED,
+  /** 'sampling' is now ON. */
   GD_SAMPLE_STARTED
 
 } ProviderStatus_T;
@@ -662,5 +659,7 @@ typedef struct Kernel_T_ {
 
 } Kernel_T;
 
+/* doxygen end tag do not remove the line below */
+/** @} */
 
 #endif /* __KERNEL_H__ */

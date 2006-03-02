@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_main.c,v 1.11 2006-03-02 16:17:50 erk Exp $
+$Id: gdisp_main.c,v 1.12 2006-03-02 16:27:25 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -98,6 +98,12 @@ File      : Graphic Tool main part.
  * The 2D grapher module is able to plot Y versus X curves with
  * mutiple Y. You may drag'n'drop TSP symbols onto the graph widget
  * in order to chose X and Y's data.
+ */
+
+/**
+ * @defgroup TSP_GDispPlusLib GDisp+ Library
+ * The GDisp+ libraries.
+ * @ingroup TSP_GDispPlus
  */
 
 /*
