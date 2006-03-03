@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_tools.c,v 1.22 2006-02-26 13:36:06 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_tools.c,v 1.23 2006-03-03 17:57:33 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -344,8 +344,13 @@ bbtools_usage(bbtools_request_t* req) {
 	    bbtools_cmdname_tab[E_BBTOOLS_CREATE]);  
     break;
   case E_BBTOOLS_PUBLISH:
-    fprintf(req->stream,"Usage : %s <bbname> <symbol_name> [<symbol_type>=BB_UINT] [<arraysize>=1]\n",
+    fprintf(req->stream,"Usage : %s <bbname> <symbol_name> [<symbol_type>=UINT32] [<arraysize>=1]\n",
 	    bbtools_cmdname_tab[E_BBTOOLS_PUBLISH]);  
+    fprintf(req->stream,"bb_tools publishable types (case insensitive) are :\n");	  
+    fprintf(req->stream,"    INT8,INT16,INT32,INT64\n");
+    fprintf(req->stream,"    UINT8,UINT16,UINT32,UINT64\n");
+    fprintf(req->stream,"    FLOAT,DOUBLE\n");
+    fprintf(req->stream,"    CHAR,UCHAR\n");        
     break;
   case E_BBTOOLS_SYNCHRO_SEND:
     fprintf(req->stream,"Usage : %s <bbname>\n",
@@ -824,11 +829,12 @@ bbtools_publish(bbtools_request_t* req) {
     symbol_type_str = "UINT32";
   }
 
-  /* guess if we have an array type or not using parse array... */
-  bb_utils_parsearrayname(symbol_type_str,
-			  symbol_desc.name,
-			  VARNAME_MAX_SIZE,
-			  dimension,&dimension_len);
+  if (req->argc > 3) {
+    dimension[0] = atoi(req->argv[3]);
+  } else {
+    dimension[0] = 1;
+  }
+
   if (dimension[0]==-1) {
     /* default dimension is 1 (scalar) */
     symbol_desc.dimension = 1;
