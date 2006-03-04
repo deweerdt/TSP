@@ -390,6 +390,13 @@ case "$host" in
 	LDLIBS="-lsocket -lnsl -lm -lposix4 -lgen -lpthread"
 	HOST_TARGET=dec
 	;;
+    *powerpc-unknown-none*)
+	AC_MSG_RESULT([ppc is OK])
+	HOST_TARGET=ppc
+	LDLIBS="-lm  -lpthread"
+	CPPFLAGS="-D_REENTRANT  -DUSE_STRACE -DTSP_NO_XDR_ENCODE -Wall"
+	HOST_TARGET=ppc
+	;;
 	*)
 	AC_MSG_WARN([$host has NOT been tested, be warned!!])
 	HOST_TARGET=unknown

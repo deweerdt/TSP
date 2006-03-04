@@ -1,0 +1,12 @@
+# Makeparams.linux.debug
+
+# Common tools
+# -------------
+include $(DEVBASE)/make/Makeparams.ppc
+
+# Default options
+# ---------------
+CFLAGS = -g 
+
+
+

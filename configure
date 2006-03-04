@@ -5860,6 +5860,14 @@ echo "${ECHO_T}OSF1 Host is OK" >&6
 	LDLIBS="-lsocket -lnsl -lm -lposix4 -lgen -lpthread"
 	HOST_TARGET=dec
 	;;
+    *powerpc-unknown-none*)
+	echo "$as_me:$LINENO: result: ppc is OK" >&5
+echo "${ECHO_T}ppc is OK" >&6
+	HOST_TARGET=ppc
+	LDLIBS="-lm  -lpthread"
+	CPPFLAGS="-D_REENTRANT  -DUSE_STRACE -DTSP_NO_XDR_ENCODE -Wall"
+	HOST_TARGET=ppc
+	;;
 	*)
 	{ echo "$as_me:$LINENO: WARNING: $host has NOT been tested, be warned!!" >&5
 echo "$as_me: WARNING: $host has NOT been tested, be warned!!" >&2;}

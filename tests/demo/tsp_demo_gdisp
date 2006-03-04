@@ -1,4 +1,4 @@
-#!/bin/csh
+#!/bin/sh
 
 echo "------------------------------------"
 echo "---------- Demo gdisp --------------"
@@ -6,7 +6,7 @@ echo "------------------------------------"
 echo " - Tests a GTK client on stub server connections"
 
 tsp_stub_server --tsp-server-number 0  > /dev/null &
-tsp_gdisp sexy.xml localhost 
+tsp_gdisp -x sexy.xml -u localhost 
 
 set result=$status
 

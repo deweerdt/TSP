@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_abs_types.h,v 1.21 2006-02-26 13:36:05 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_abs_types.h,v 1.22 2006-03-04 11:20:21 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -114,6 +114,23 @@ Purpose   : Type abstraction : Stolen from GLIB public headers
 # define TSP_SYSTEM_HAVE_NANOSLEEP 1
 # define TSP_HAVE_INT64 1
 #endif /* Linux / Intel */
+
+
+
+/* Linux / Powerpc */ 							
+#if defined (__linux__) &&  defined (__powerpc__)  
+# include <stdint.h>							
+# define TSP_BYTE_ORDER TSP_BIG_ENDIAN			
+# define TSP_INT64_CONSTANT(val)  (val##LL) 	
+# define TSP_GUINT64_FORMAT "llu"				
+# define TSP_SYSTEM_HAVE_NANOSLEEP 1			
+# define TSP_HAVE_INT64 1						
+#endif /* Linux / Powerpc */						
+												
+												
+
+												
+
 
 
 /* OSF1 / Alpha */

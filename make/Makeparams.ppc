@@ -1,0 +1,16 @@
+# Makeparams.ppc
+
+# Default tools
+# -------------
+# Using standard tools
+CC=powerpc-linux-gcc
+
+
+# Default options
+# ---------------
+#ARFLAGS = rvs
+#CPPFLAGS +=  -D_REENTRANT  -DUSE_STRACE -DTSP_NO_XDR_ENCODE
+#LDLIBS =   -lm  -lpthread  
+
+
+#include .make.state
