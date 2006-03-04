@@ -190,3 +190,15 @@ V-0.7.2: Creation 15/02/2006	tag TSP_0_7_2
         - Gdisp+ improvement					
           Ask the author to be sure :))                        	- Euskadi
         - XML-RPC update                                       	- FredD
+V-0.7.3: Creation ??/03/2006    tag TSP_0_7_3
+	- Bug Corrections
+		* bug #15905 : --disable-consumer will trigger consumers compile
+		* bug #15979 : Array sized is ignored when bb_publish 
+                               an array with the bb_tools command line
+	- Linux PPC port
+	  Frederic BLANCHET-MOMAS has added the Linux PPC target
+          to the set of supported TSP target			- FredBM->Erk
+	- TSP API Documentation improvement			- Erk
+V-0.8.0: Creation ??/03/2006    tag TSP_0_8_0
+	- TSP Core multiple type handling			- Erk+AM->Erk
+
