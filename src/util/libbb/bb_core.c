@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.21 2006-02-26 13:36:06 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.22 2006-03-10 22:21:04 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -1131,16 +1131,9 @@ bb_dump(volatile S_BB_T *bb, FILE* p_filedesc) {
   for (i=0;i<bb->n_data;++i) {
     /* NON ALIAS CASE */
     if ((bb_data_desc(bb)[i]).alias_target == -1) {
-      if ((bb_data_desc(bb)[i]).dimension >1){
-	indexstack[0] = -1;
-	indexstack_len = 1;
-	bb_data_print(bb,bb_data_desc(bb)[i],p_filedesc,indexstack, indexstack_len);
-      }
-      if ((bb_data_desc(bb)[i]).dimension == 1){
-	indexstack[0]  = 0;
-	indexstack_len = 0;
-	bb_data_print(bb,bb_data_desc(bb)[i],p_filedesc,indexstack, indexstack_len);
-      }
+      indexstack[0]  = 0;
+      indexstack_len = 0;
+      bb_data_print(bb,bb_data_desc(bb)[i],p_filedesc,indexstack, indexstack_len);
     }
     /* ALIAS CASE */
     else {
