@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_tools.c,v 1.23 2006-03-03 17:57:33 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_tools.c,v 1.24 2006-03-10 22:42:21 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -603,10 +603,11 @@ bbtools_write(bbtools_request_t* req) {
 		   				    bbtools_cmdname_tab[E_BBTOOLS_WRITE]);
 		}
 		else if ( (array_index_len>0) && (aliasstack[j-1].dimension <= array_index[array_index_len-1]) ) {
-			bbtools_logMsg(req->stream,"%s: index <%d> exceeding symbol array dimension <%d>\n",
-		   				   bbtools_cmdname_tab[E_BBTOOLS_WRITE],
-		       				array_index[array_index_len-1],
-		                	aliasstack[j-1].dimension);
+			bbtools_logMsg(req->stream,"%s: index <%d> exceeds symbol array dimension <%d> whose valid index range is <0..%d>\n",
+				       bbtools_cmdname_tab[E_BBTOOLS_WRITE],
+				       array_index[array_index_len-1],
+				       aliasstack[j-1].dimension,
+				       aliasstack[j-1].dimension-1);
 		} else {
 		  	if (array_index_len>0) {
 		    	 idx = array_index[array_index_len-1];
@@ -614,7 +615,7 @@ bbtools_write(bbtools_request_t* req) {
 		    	idx = 0;
 		  	}
 	     	if (req->verbose) {
-		   	 bbtools_logMsg(req->stream,"Writing <%s> (index=%d)\n",
+		   	 bbtools_logMsg(req->stream,"Writing <%s> (at index=%d)\n",
 				 req->argv[2],idx);	 		 
 	    	}
 	    	bb_value_write(req->theBB,sym_data_desc,req->argv[2],array_index,array_index_len);
