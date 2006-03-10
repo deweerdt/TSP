@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.h,v 1.18 2006-02-26 13:36:06 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.h,v 1.19 2006-03-10 22:41:32 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -428,8 +428,40 @@ bb_double_of(void *value, E_BB_TYPE_T bbtype);
 int32_t 
 bb_data_initialise(volatile S_BB_T* bb, S_BB_DATADESC_T* data_desc,void* default_value);
 
+/**
+ * Write value represented by string to BB published data.
+ * This is a mid-level BlackBoard write API which avoid
+ * the search complexity used when bb_subscribing to get
+ * the data pointer.
+ * Nevertheless the function take care of the string to value
+ * conversion with proper hexvalue.
+ * @param bb IN, the BlackBoard where data is published
+ * @param data_desc IN, the BB data descriptor. Be sure to provide
+ *                      a properly initialised data_desc since the
+ *                      function does not verify this. 
+ * @param value IN, the string representing the value to be written to BB data
+ * @param idxstack IN, the indexstack (in the alias case)  @ref BBAliasLib.
+ *                     it is not read if idxstack_len is 0.
+ * @param idxstack_len IN, the indexstack length should be >= 0, if 0 idxstack is ignored
+ * @return BB_OK on success BB_NOK otherwise.
+ */
 int32_t
-bb_value_write(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc,const char* value, int32_t* idxstack, int32_t idxstack_len);
+bb_value_write(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc, const char* value, int32_t* idxstack, int32_t idxstack_len);
+
+/**
+ * Print the value off a BB published data on a STDIO file stream.
+ * @param bb IN, the BlackBoard where data is published
+ * @param data_desc IN, the BB data descriptor. Be sure to provide
+ *                      a properly initialised data_desc since the
+ *                      function does not verify this. 
+ * @param pf IN, the STDIO file stream pointer, should be open for writing.
+ * @param idxstack IN, the indexstack (in the alias case)  @ref BBAliasLib.
+ *                     it is not read if idxstack_len is 0.
+ * @param idxstack_len IN, the indexstack length should be >= 0, if 0 idxstack is ignored
+ */
+int32_t 
+bb_value_print(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc, FILE* pf,
+               int32_t* idxstack, int32_t idxstack_len);
 
 int32_t
 bb_data_header_print(S_BB_DATADESC_T data_desc, FILE* pf, int32_t idx, int32_t aliastack);
@@ -437,9 +469,6 @@ bb_data_header_print(S_BB_DATADESC_T data_desc, FILE* pf, int32_t idx, int32_t a
 int32_t
 bb_data_footer_print(S_BB_DATADESC_T data_desc, FILE* pf, int32_t idx, int32_t aliastack);
 
-int32_t 
-bb_value_print(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc, FILE* pf,
-               int32_t* idxstack, int32_t idxstack_len);
 
 
 /**
