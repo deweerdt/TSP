@@ -11,6 +11,10 @@ ifeq (${BUILD_CONSUMER},yes)
 	SUBDIRS += consumers
 endif
 
+ifeq (${APIDOC_GEN},yes)
+	SUBDIRS += doxy
+endif
+
 
 include $(DEVBASE)/make/Makesubdirs
 

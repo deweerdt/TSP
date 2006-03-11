@@ -59,5 +59,18 @@ install_once::
 	$(INSTALL_PROGRAM) $(DEVBASE)/src/scripts/tsp_profile.sh $(DEVBASE)/src/scripts/tsp_profile.csh $(exec_prefix)/scripts
 	$(INSTALL_PROGRAM) $(DEVBASE)/src/scripts/psinfo.sh $(exec_prefix)/scripts
 
+ifeq (${APIDOC_GEN},yes)
+	mkdir -p $(exec_prefix)/doc/api/html/footer
+	mkdir -p $(exec_prefix)/doc/api/html/header
+	$(INSTALL_DATA) $(DEVBASE)/dist/doc/api/html/*.* $(exec_prefix)/doc/api/html
+	$(INSTALL_DATA) $(DEVBASE)/dist/doc/api/html/footer/*.html $(exec_prefix)/doc/api/html/footer
+	$(INSTALL_DATA) $(DEVBASE)/dist/doc/api/html/header/*.html $(exec_prefix)/doc/api/html/header
+else
+	mkdir -p $(exec_prefix)/doc/api/html/footer
+	mkdir -p $(exec_prefix)/doc/api/html/header
+	$(INSTALL_DATA) $(DEVBASE)/src/doxy/footer/*.html $(exec_prefix)/doc/api/html/footer
+	$(INSTALL_DATA) $(DEVBASE)/src/doxy/header/*.html $(exec_prefix)/doc/api/html/header
+endif
+
 include $(DEVBASE)/make/Makesubdirs
 

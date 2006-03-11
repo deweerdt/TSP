@@ -301,6 +301,7 @@ fi
 ### End of BlackBoard Setup  ###
 ################################
 
+
 ###############################################
 # Scripting API for TSP
 # this is an alpha feature which will
@@ -316,9 +317,9 @@ AC_MSG_RESULT([Enabled, will be configured])
 else
 AC_MSG_RESULT([Disabled, won't be configured])
 fi
-################################
-### End of BlackBoard Setup  ###
-################################
+###########################################
+### End of Scripting API for TSP setup  ###
+###########################################
 
 ##########################
 # Setup C++ part of TSP
@@ -344,6 +345,27 @@ fi
 ##########################
 ### End of C++ Setup   ###
 ##########################
+
+################################
+# APIDOC generation
+################################
+AC_ARG_ENABLE(apidoc,   [  --enable-apidoc              enable API doc generation with doxygen],
+	      APIDOC_GEN=$enableval,
+	      APIDOC_GEN="no")
+AC_MSG_CHECKING([API documentation generation using doxygen])
+if test "$APIDOC_GEN" = "yes"; then
+  AC_MSG_RESULT([Enabled, will be generated])
+  AC_CHECK_PROG([DOXYGEN],[doxygen],[`which doxygen`],[notfound],[$PATH],[rej])
+  if test "$DOXYGEN" = "notfound"; then
+     AC_MSG_WARN([NOK: doxygen not found (update your path and rerun if present])
+     APIDOC_GEN="no"
+  fi
+else
+  AC_MSG_RESULT([Disabled, won't be generated])
+fi
+########################################
+### End of API Doc generation Setup  ###
+########################################
 
 #####################|##|############################|############
 # Get the system type from AC
@@ -547,6 +569,7 @@ AC_SUBST(GTK_BASED_CONSUMER)
 AC_SUBST(LEX_YACC_PARSER)
 AC_SUBST(TSPPROVIDER)
 AC_SUBST(BUILD_XMLRPC)
+AC_SUBST(APIDOC_GEN)
 
 # Config for outputed files
 AC_CONFIG_FILES([src/scripts/tsp_dev.login

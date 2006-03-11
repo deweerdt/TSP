@@ -86,6 +86,8 @@ ifeq ($(BUILD_XMLRPC), yes)
         CPPFLAGS += -DBUILD_XMLRPC -I$(TSP_BASE)/src/core/xmlrpc 
 endif
 
+APIDOC_GEN		= @APIDOC_GEN@
+
 # ----------------
 # customize
 # ----------------
