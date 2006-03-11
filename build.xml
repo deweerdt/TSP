@@ -42,7 +42,7 @@ date, time and user name.
 	<target name="clean">
                <echo> Nothing to be done, see clean-dist. </echo>
 	</target>		
-        <target name="prepare-dist" depends="init">
+        <target name="prepare-dist" depends="init,clean-dist">
             <mkdir dir="${dist.dir}"/> 
             <tstamp>
 		<format property="timeStamp" pattern="dMMMMyyyy-HH'h'mm" locale="en"/>
