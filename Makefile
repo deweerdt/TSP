@@ -58,6 +58,7 @@ install_once::
 	$(INSTALL_PROGRAM) $(DEVBASE)/exec/current/scripts/* $(exec_prefix)/scripts
 	$(INSTALL_PROGRAM) $(DEVBASE)/src/scripts/tsp_profile.sh $(DEVBASE)/src/scripts/tsp_profile.csh $(exec_prefix)/scripts
 	$(INSTALL_PROGRAM) $(DEVBASE)/src/scripts/psinfo.sh $(exec_prefix)/scripts
+	$(INSTALL_DATA) $(DEVBASE)/src/scripts/tsp.pc $(exec_prefix)/scripts
 
 ifeq (${APIDOC_GEN},yes)
 	mkdir -p $(exec_prefix)/doc/api/html/footer

@@ -1,0 +1,12 @@
+prefix=/opt/tsp-@PACKAGE_VERSION@
+exec_prefix=/opt/tsp-@PACKAGE_VERSION@
+libdir=/opt/tsp-@PACKAGE_VERSION@/lib
+includedir=/opt/tsp-@PACKAGE_VERSION@/include
+
+
+Name: tsp
+Version: @PACKAGE_VERSION@
+Description: Transport Sample Protocol
+Requires: 
+Libs: -L${libdir} -ltsp_consumer -ltsp_provider -lbb -ltsp_common -lpthread -lm 
+Cflags: -I${includedir}
