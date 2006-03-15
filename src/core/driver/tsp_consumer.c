@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.42 2006-02-26 13:36:05 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.43 2006-03-15 15:32:13 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -1375,6 +1375,13 @@ TSP_consumer_request_async_sample_read(TSP_provider_t provider,TSP_consumer_asyn
       } else {
 	/* should update value */
 	memcpy(async_sample_read->value_ptr,async_read_result->data.data_val,async_sample_read->value_size);
+	/* 
+	 * We should free the RPC result in order to avoid memleak
+	 * since the RPC generated stub function allocates that
+	 * space when reading the XDR stream
+	 */
+	free(async_read_result->data.data_val);	
+	async_read_result->data.data_len=0;
 	ret = TSP_STATUS_OK;
       }
     }
