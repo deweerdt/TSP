@@ -311,7 +311,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS AWK INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA LN_S SET_MAKE RANLIB ac_ct_RANLIB AR CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT CPP EGREP LIBOBJS PKG_CONFIG XML2_CONFIG GTK_CONFIG LEX LEXLIB LEX_OUTPUT_ROOT YACC XMLRPC_CONFIG CXX CXXFLAGS ac_ct_CXX DOXYGEN build build_cpu build_vendor build_os host host_cpu host_vendor host_os HOST_TARGET ARFLAGS LDLIBS TSP_BASE ENABLED_TSP_TARGET BB SHAREDLIB_ENABLED GL_OK GLUT_OK SCRIPT_BINDING TSPCONSUMER XML2_CONFIG_USER XMLWRITER_SUPPORTED GTK_BASED_CONSUMER LEX_YACC_PARSER TSPPROVIDER BUILD_XMLRPC APIDOC_GEN LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS AWK INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA LN_S SET_MAKE RANLIB ac_ct_RANLIB AR CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT CPP EGREP LIBOBJS PKG_CONFIG XML2_CONFIG GTK_CONFIG LEX LEXLIB LEX_OUTPUT_ROOT YACC XMLRPC_CONFIG CXX CXXFLAGS ac_ct_CXX DOXYGEN build build_cpu build_vendor build_os host host_cpu host_vendor host_os HOST_TARGET ARFLAGS LDLIBS TSP_BASE ENABLED_TSP_TARGET BB SHAREDLIB_ENABLED GL_OK GLUT_OK SCRIPT_BINDING TSPCONSUMER XML2_CONFIG_USER XMLWRITER_SUPPORTED GTK_BASED_CONSUMER LEX_YACC_PARSER TSPPROVIDER BUILD_XMLRPC BUILD_TSPFS APIDOC_GEN LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -721,13 +721,13 @@ echo X"$0" |
   	  /^X\(\/\).*/{ s//\1/; q; }
   	  s/.*/./; q'`
   srcdir=$ac_confdir
-  if test ! -r $srcdir/$ac_unique_file; then
+  if test ! -r "$srcdir/$ac_unique_file"; then
     srcdir=..
   fi
 else
   ac_srcdir_defaulted=no
 fi
-if test ! -r $srcdir/$ac_unique_file; then
+if test ! -r "$srcdir/$ac_unique_file"; then
   if test "$ac_srcdir_defaulted" = yes; then
     { echo "$as_me: error: cannot find sources ($ac_unique_file) in $ac_confdir or .." >&2
    { (exit 1); exit 1; }; }
@@ -736,7 +736,7 @@ if test ! -r $srcdir/$ac_unique_file; then
    { (exit 1); exit 1; }; }
   fi
 fi
-(cd $srcdir && test -r ./$ac_unique_file) 2>/dev/null ||
+(cd $srcdir && test -r "./$ac_unique_file") 2>/dev/null ||
   { echo "$as_me: error: sources are in $srcdir, but \`cd $srcdir' does not work" >&2
    { (exit 1); exit 1; }; }
 srcdir=`echo "$srcdir" | sed 's%\([^\\/]\)[\\/]*$%\1%'`
@@ -857,6 +857,7 @@ Optional Features:
   --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
   --enable-ctsp                enable C TSP library build
+  --enable-tspfs               build tspfs consumer
   --enable-sharedlib           enable shared libraries (this feature is ALPHA)
   --enable-openGL              enable openGL use for TSP consumers  (this feature is ALPHA)
   --enable-xmlrpc              enable xmlrpc for TSP commands  (this feature is ALPHA and _disables_ RPC usage)
@@ -4507,6 +4508,99 @@ fi
 ### End of GTK devel check   ###
 ################################
 
+#
+# TSPfs consumer, enable and look for fuse.
+#
+# Check whether --enable-tspfs or --disable-tspfs was given.
+if test "${enable_tspfs+set}" = set; then
+  enableval="$enable_tspfs"
+  BUILD_TSPFS=$enableval
+else
+  BUILD_TSPFS="no"
+fi;
+if test ${BUILD_TSPFS} != "no"; then
+
+echo "$as_me:$LINENO: checking for fuse_main in -lfuse" >&5
+echo $ECHO_N "checking for fuse_main in -lfuse... $ECHO_C" >&6
+if test "${ac_cv_lib_fuse_fuse_main+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lfuse  $LIBS"
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+
+/* Override any gcc2 internal prototype to avoid an error.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+/* We use char because int might match the return type of a gcc2
+   builtin and then its argument prototype would still apply.  */
+char fuse_main ();
+int
+main ()
+{
+fuse_main ();
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_c_werror_flag"
+			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest$ac_exeext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  ac_cv_lib_fuse_fuse_main=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+ac_cv_lib_fuse_fuse_main=no
+fi
+rm -f conftest.err conftest.$ac_objext \
+      conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+echo "$as_me:$LINENO: result: $ac_cv_lib_fuse_fuse_main" >&5
+echo "${ECHO_T}$ac_cv_lib_fuse_fuse_main" >&6
+if test $ac_cv_lib_fuse_fuse_main = yes; then
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_LIBFUSE 1
+_ACEOF
+
+  LIBS="-lfuse $LIBS"
+
+else
+
+		        echo "Error! You need to install FUSE."; exit -1
+fi
+
+fi
+#
+# end of TSPfs checks
+#
+
 ################################
 # Flex/Bison based config file
 # (tsp_ascii_writer)
@@ -4854,9 +4948,9 @@ echo "${ECHO_T}Ok, lex=$LEX yacc=$YACC" >&6
   LEX_YACC_PARSER="yes"
 fi
 
-################################
-### End of GTK devel check   ###
-################################
+#################################
+### End of bison/flex check   ###
+#################################
 
 ######################################
 # shared library handling
@@ -6132,6 +6226,7 @@ done
 
 
 
+
 # Config for outputed files
                                                   ac_config_files="$ac_config_files src/scripts/tsp_dev.login src/scripts/tsp_dev.login.sh src/scripts/tsp.pc make/Makeparams src/core/include/tsp_prjcfg.h"
 
@@ -6831,6 +6926,7 @@ s,@GTK_BASED_CONSUMER@,$GTK_BASED_CONSUMER,;t t
 s,@LEX_YACC_PARSER@,$LEX_YACC_PARSER,;t t
 s,@TSPPROVIDER@,$TSPPROVIDER,;t t
 s,@BUILD_XMLRPC@,$BUILD_XMLRPC,;t t
+s,@BUILD_TSPFS@,$BUILD_TSPFS,;t t
 s,@APIDOC_GEN@,$APIDOC_GEN,;t t
 s,@LTLIBOBJS@,$LTLIBOBJS,;t t
 CEOF

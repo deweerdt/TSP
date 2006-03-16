@@ -186,6 +186,20 @@ fi
 ### End of GTK devel check   ###
 ################################
 
+#
+# TSPfs consumer, enable and look for fuse.
+#
+AC_ARG_ENABLE(tspfs,[  --enable-tspfs               build tspfs consumer],
+	      BUILD_TSPFS=$enableval,
+	      BUILD_TSPFS="no")
+if test ${BUILD_TSPFS} != "no"; then
+	    AC_CHECK_LIB(fuse, fuse_main, [], [
+		        echo "Error! You need to install FUSE."; exit -1 ])
+fi
+#
+# end of TSPfs checks
+#
+
 ################################
 # Flex/Bison based config file
 # (tsp_ascii_writer)
@@ -214,9 +228,9 @@ else
   LEX_YACC_PARSER="yes"
 fi
 
-################################
-### End of GTK devel check   ###
-################################
+#################################
+### End of bison/flex check   ###
+#################################
 
 ######################################
 # shared library handling
@@ -569,6 +583,7 @@ AC_SUBST(GTK_BASED_CONSUMER)
 AC_SUBST(LEX_YACC_PARSER)
 AC_SUBST(TSPPROVIDER)
 AC_SUBST(BUILD_XMLRPC)
+AC_SUBST(BUILD_TSPFS)
 AC_SUBST(APIDOC_GEN)
 
 # Config for outputed files
