@@ -1,0 +1,65 @@
+tspfs, un système de fichiers tsp.
+
+1. Introduction
+
+tspfs est un système de fichiers en mode utilisateur utilisant fuse
+(voir http://fuse.sourceforge.net) afin d'exporter les symboles TSP
+comme s'il s'agissait de fichiers dans un répertoire.
+
+2. Configuration requise
+
+libattr1-devel
+libfuse >= 2.5
+linux kernel >= 2.6.15 pour utiliser la version de fuse
+intégrée au noyau (CONFIG_FUSE_FS)
+linux kernel 2.4 ou 2.6 avec fuse en module externe
+
+3. Une session tspfs
+
+# Demarrage d'une session bb
+$ bb_simu -s > /dev/null 2>&1 &
+
+# Export des données par tsp
+$ bb_tsp_provide bb_simu 10 &
+
+# Creer un point de montage, monter le système de fichiers tspfs
+$ mkdir mp/
+$ tspfs --url=rpc://localhost/bb_simu --sync=10 --sync mp/
+
+# Lister les symboles
+$ ls -l mp/
+total 0
+-r--r--r--  1 root root 512 jan  1  1970 bb_simu_1_HugeArray[0]
+[...]
+-r--r--r--  1 root root 512 jan  1  1970 ECLA_0_d_ecl_lune
+-r--r--r--  1 root root 512 jan  1  1970 ECLA_0_d_ecl_sol
+-r--r--r--  1 root root 512 jan  1  1970 ORBT_0_d_possat_m[0]
+-r--r--r--  1 root root 512 jan  1  1970 ORBT_0_d_possat_m[1]
+-r--r--r--  1 root root 512 jan  1  1970 ORBT_0_d_possat_m[2]
+-r--r--r--  1 root root 512 jan  1  1970 POSA_0_d_DirLun[0]
+-r--r--r--  1 root root 512 jan  1  1970 POSA_0_d_DirLun[1]
+-r--r--r--  1 root root 512 jan  1  1970 POSA_0_d_DirLun[2]
+-r--r--r--  1 root root 512 jan  1  1970 POSA_0_d_DirSol[0]
+-r--r--r--  1 root root 512 jan  1  1970 POSA_0_d_DirSol[1]
+-r--r--r--  1 root root 512 jan  1  1970 POSA_0_d_DirSol[2]
+-r--r--r--  1 root root 512 jan  1  1970 Sequenceur_0_d_t_s
+
+# Afficher la valeur d'un symbole
+$ cat mp/Sequenceur_0_d_t_s
+time=197600 value=3961.280000
+$ cat mp/Sequenceur_0_d_t_s
+time=197680 value=3962.880000
+
+# Changer le format d'affichage (Nous utilisons \012, pas \n, cela doit
+être corrigé)
+$ setfattr -n format -v 't=%d v=%e\012' ECLA_0_d_ecl_sol
+$ cat ECLA_0_d_ecl_sol
+t=208880 v=1.000000e+00
+
+# Afficher le format d'affichage par défaut d'un symbole
+$ getfattr -n format bb_simu_int8\[0\]
+# file: bb_simu_int8[0]
+format="time=%d value=%f\012"
+
+# Démonter le système de fichiers
+$ fusermount -u mp/

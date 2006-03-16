@@ -1,0 +1,60 @@
+tspfs a tsp filesystem.
+
+1. Introduction
+
+tspfs is a usermode filesystem that uses fuse (see http://fuse.sourceforge.net) to export TSP symbols as files in a directory.
+
+2. Requirements
+
+libfuse >= 2.5
+linux kernel >= 2.6.15 for in-kernel fuse support (CONFIG_FUSE_FS)
+linux kernel 2.4 or 2.6 with an external module
+
+3. Sample tspfs session
+
+# Start a sample bb
+$ bb_simu -s > /dev/null 2>&1 &
+
+# TSPize the bb's data
+$ bb_tsp_provide bb_simu 10 &
+
+# Create the mount point, mount the tspfs filesystem
+$ mkdir mp/
+$ tspfs --url=rpc://localhost/bb_simu --sync=10 mp/
+
+# List the symbols
+$ ls -l mp/
+total 0
+-r--r--r--  1 root root 512 jan  1  1970 bb_simu_1_HugeArray[0]
+[...]
+-r--r--r--  1 root root 512 jan  1  1970 ECLA_0_d_ecl_lune
+-r--r--r--  1 root root 512 jan  1  1970 ECLA_0_d_ecl_sol
+-r--r--r--  1 root root 512 jan  1  1970 ORBT_0_d_possat_m[0]
+-r--r--r--  1 root root 512 jan  1  1970 ORBT_0_d_possat_m[1]
+-r--r--r--  1 root root 512 jan  1  1970 ORBT_0_d_possat_m[2]
+-r--r--r--  1 root root 512 jan  1  1970 POSA_0_d_DirLun[0]
+-r--r--r--  1 root root 512 jan  1  1970 POSA_0_d_DirLun[1]
+-r--r--r--  1 root root 512 jan  1  1970 POSA_0_d_DirLun[2]
+-r--r--r--  1 root root 512 jan  1  1970 POSA_0_d_DirSol[0]
+-r--r--r--  1 root root 512 jan  1  1970 POSA_0_d_DirSol[1]
+-r--r--r--  1 root root 512 jan  1  1970 POSA_0_d_DirSol[2]
+-r--r--r--  1 root root 512 jan  1  1970 Sequenceur_0_d_t_s
+
+# Display a particular value
+$ cat mp/Sequenceur_0_d_t_s 
+time=197600 value=3961.280000
+$ cat mp/Sequenceur_0_d_t_s 
+time=197680 value=3962.880000
+
+# Change the display format (notice we use \012, not \n, this needs to be fixed)
+$ setfattr -n format -v 't=%d v=%e\012' ECLA_0_d_ecl_sol
+$ cat ECLA_0_d_ecl_sol
+t=208880 v=1.000000e+00
+
+# Get the format from a symbol
+$ getfattr -n format bb_simu_int8\[0\] 
+# file: bb_simu_int8[0]
+format="time=%d value=%f\012"
+
+# Go wild, umount the filesystem
+$ fusermount -u mp/
