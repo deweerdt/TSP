@@ -10,6 +10,10 @@ SUBDIRS = \
 	ascii_writer \
 	generic
 
+ifeq (${BUILD_TSPFS},yes)
+	SUBDIRS+=tspfs
+endif
+
 ifeq (${BUILD_GTK_BASED_CONSUMER},yes)
 ifeq (${BUILD_XML2_CONFIG_USER},yes)
 	SUBDIRS += gdisp gdisp+
