@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer_main.c,v 1.8 2006-02-26 13:36:05 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer_main.c,v 1.9 2006-03-17 13:46:54 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -46,6 +46,31 @@ Purpose   : TSP ascii writer consumer (main)
 /**
  * @defgroup TSP_AsciiWriter ASCII Writer
  * A TSP ascii writer consumer.
+ * a TSP consumer which is able to output symbols values in different ASCII file format. 
+ * It's output may be standard output or file with other options to chose file format and eventual 
+ * size limit. It's main purposes is to be able to export TSP distributed symbols and value to 
+ * some kind of CSV (Comma Separated Value) format in order to be easily post processed by 
+ * spreadsheet softwares or simpler plotting software like 
+ * <a href="http://www.gnuplot.org/">Gnuplot (http://www.gnuplot.org/)</a>.
+ * You may specify different file format output which essentialy change the header of the file. 
+ *
+ * \par tsp_ascii_writer [-n] -x=\<sample_config_file\> [-o=\<output_filename\>] [-f=\<output file format>] [-l=\<nb sample\>] [-u TSP_provider URL ] 
+ * \par 
+ * <ul>
+ *   <li> \b -n  (optional) will check and enforce no duplicate symbols</li>
+ *   <li> \b -x  the file specifying the list of symbols to be sampled</li>
+ *   <li> \b -f  (optional) specifying the format of output file. Recognized file format are
+ *               <ul>
+ *                 <li> \b simple_ascii  tabulated ascii no header</li>
+ *                 <li> \b bach          tabulated ascii with BACH header</li>
+ *                 <li> \b macsim        tabulated ascii with MACSIM header</li>
+ *               </ul>
+ *               Default is \b simple_ascii.
+ *   </li>
+ *   <li> \b -o  (optional) the name of the output file. If not specified standard out is used</li>
+ *   <li> \b -l  (optional) the maximum number of sample to be stored in file. Unlimited if not specified.</li>
+ *   <li> \b -u  (optional) the TSP provider URL. If not specified default is localhost.</li>
+ * </ul>
  * @ingroup TSP_Consumers
  */
 
@@ -68,10 +93,14 @@ main (int argc, char* argv[]) {
   TSP_consumer_symbol_requested_t*      mysymbols;
   char*   input_filename  = NULL;
   char*   output_filename = NULL;
+  char*   file_format     = NULL;
   FILE*   output_stream   = NULL;
   int32_t output_limit    = 0;
-  char*   provider_url   = "rpc://localhost/";
+  char*   provider_url    = "rpc://localhost/";
   int32_t no_duplicate;
+
+  /* set up default output file format */
+  int header_style  		  = SimpleAsciiTabulated_FileFmt;
 
   /* Main options handling */
   char*         errorString;
@@ -87,7 +116,7 @@ main (int argc, char* argv[]) {
   }
 
   /* Analyse command line parameters */
-  while (opt_ok && (EOF != (c_opt = getopt(argc,argv,"x:u:o:l:hn")))) {    
+  while (opt_ok && (EOF != (c_opt = getopt(argc,argv,"x:u:o:l:f:hn")))) {    
     switch (c_opt) {
     case 'x':
       input_filename = strdup(optarg);
@@ -97,6 +126,19 @@ main (int argc, char* argv[]) {
       output_filename = strdup(optarg);
       fprintf(stdout,"%s: output sample file is <%s>\n",argv[0],output_filename);
       break;
+    case 'f':
+      file_format = strdup(optarg);
+      fprintf(stdout,"%s: provided output file format is <%s>\n",argv[0],file_format);
+      OutputFileFormat_t fmt;
+      for (fmt=SimpleAsciiTabulated_FileFmt;fmt<LAST_FileFmt;++fmt) {
+	if (strcasecmp(file_format,OutputFileFormat_name_tab[fmt])==0) {
+	  header_style=fmt;
+	  break;
+	}
+      }
+      fprintf(stdout,"%s: selected output file format is <%s>\n",argv[0],OutputFileFormat_desc_tab[header_style]);
+      break;
+   /*-------------*/
     case 'l':
       errorString = NULL;
       output_limit = strtol(optarg,&errorString,10);
@@ -126,9 +168,14 @@ main (int argc, char* argv[]) {
   }
 
   if (!opt_ok) {
-    printf("Usage: %s [-n] -x=<sample_config_file> [-o=<output_filename>] [-l=<nb sample>] [-u=<TSP_URL>]\n", argv[0]);
+    printf("Usage: %s [-n] -x=<sample_config_file> [-o=<output_filename>] [-f=<output file format] [-l=<nb sample>] [-u=<TSP_URL>]\n", argv[0]);
     printf("   -n   will check and enforce no duplicate symbols\n");
     printf("   -x   the file specifying the list of symbols to be sampled\n");
+    printf("   -f   (optional) specifying the format of output file\n");
+    printf("        possible formats are:\n");
+    printf("           simple_ascii : tabulated ascii no header \n");
+    printf("           bach         : tabulated ascii with BACH header\n");
+    printf("           macsim       : tabulated ascii with MACSIM header\n");
     printf("   -o   the name of the output file\n");
     printf("   -l   (optional) the maximum number of sample to be stored in file\n");
     printf("   -u   (optional) the  TSP provider URL <TSP_URL> \n");
@@ -186,7 +233,7 @@ main (int argc, char* argv[]) {
   }
   
   if (0 == retcode) {
-    retcode = tsp_ascii_writer_start(output_stream,output_limit);
+    retcode = tsp_ascii_writer_start(output_stream,output_limit,header_style);
   }
 
   fprintf(stdout,"%s: Ascii writer stopped...\n",argv[0]);

@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer.c,v 1.13 2006-02-26 13:36:05 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer.c,v 1.14 2006-03-17 13:46:53 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -45,6 +45,7 @@ Purpose   : TSP ascii writer consumer
 #include <errno.h>
 #include <stdarg.h>
 
+#define ASCII_WRITER_C
 #include <tsp_ascii_writer.h>
 #include <tsp_consumer.h>
 #include <tsp_simple_trace.h>
@@ -70,7 +71,7 @@ int tsp_ascii_writer_current_var    = -1;
 int tsp_ascii_writer_header_style   =  0;
 int tsp_ascii_writer_sample_running =  0;
 TSP_consumer_symbol_requested_t*  g_tsp_symbols = NULL; 
-static tsp_ascii_writer_logMsg_ft my_logMsg = tsp_ascii_writer_logMsg_stdout;
+static tsp_ascii_writer_logMsg_ft my_logMsg = tsp_ascii_writer_logMsg_stdout; 
 
 void tsp_ascii_writer_set_logMsgCB(tsp_ascii_writer_logMsg_ft logMsgCB) {
   my_logMsg = logMsgCB;
@@ -494,7 +495,7 @@ tsp_ascii_writer_validate_symbols(TSP_consumer_symbol_requested_t*  tsp_symbols,
 
 
 int32_t 
-tsp_ascii_writer_start(FILE* sfile, int32_t nb_sample_max_infile) {
+tsp_ascii_writer_start(FILE* sfile, int32_t nb_sample_max_infile, OutputFileFormat_t file_format) {
   
   int32_t retcode;
   int             new_sample;
@@ -505,6 +506,10 @@ tsp_ascii_writer_start(FILE* sfile, int32_t nb_sample_max_infile) {
   char            charbuf[MAX_VAR_NAME_SIZE];
   int             symbol_dim;
   int             nb_sample;
+  int					indice;
+  char				indice_char[5];
+  
+  char** tab_colonne=NULL;
 
   retcode = 0;
 
@@ -517,31 +522,105 @@ tsp_ascii_writer_start(FILE* sfile, int32_t nb_sample_max_infile) {
 
   /* Get previously configured symbols */
   symbols = TSP_consumer_get_requested_sample(myproviders[0]);
+
+  tsp_ascii_writer_header_style=file_format;
+
   /* Write header if necessary */
   switch  (tsp_ascii_writer_header_style) {
-    case 0:
+    case SimpleAsciiTabulated_FileFmt:
     /* no header */
     break;
     /* xxx style header */
     case 1: 
-      for (symbol_index=0;symbol_index<symbols->len;++symbol_index) {
-	/* 
-	 * Si la variable est un tableau on compte calcul
-	 * la taille de ce tableau
-	 */
-	strncpy(charbuf,symbols->val[symbol_index].name,MAX_VAR_NAME_SIZE);
-	if (NULL != index(charbuf,'[')) {
-	  *(index(charbuf,'[')) = '\0';
-	  symbol_dim   = tsp_ascii_writer_validate_symbol_requested(charbuf,symbols);
-	  symbol_index += symbol_dim - 1;
-	} else {
-	  symbol_dim = 1;
-	}
-	fprintf(sfile,"%s : %d\n", charbuf, symbol_dim);    
+      for (symbol_index=0;symbol_index<symbols->len;++symbol_index) 
+		{
+			/* 
+	 		 * Si la variable est un tableau on compte calcul
+	 		 * la taille de ce tableau
+	 		 */
+			strncpy(charbuf,symbols->val[symbol_index].name,MAX_VAR_NAME_SIZE);
+			if (NULL != index(charbuf,'[')) 
+			{
+	 			 *(index(charbuf,'[')) = '\0';
+	  			 symbol_dim   = tsp_ascii_writer_validate_symbol_requested(charbuf,symbols);
+	  			 symbol_index += symbol_dim - 1;
+			}
+			else
+			{
+	  			symbol_dim = 1;
+			}
+			fprintf(sfile,"%s : %d\n", charbuf, symbol_dim);    
       }
       fprintf(sfile," ==========================================\n");
       fflush(sfile);
     break;
+	 /*--------------*/
+	 case 2:
+	 
+	 	/* tableau contenant l'entete des colonnes
+		 */
+	 	tab_colonne=(char**)malloc(symbols->len * sizeof(char*));
+		
+	   for (symbol_index=0;symbol_index<symbols->len;++symbol_index) 
+		{
+			/* 
+	 		 * Si la variable est un tableau on compte calcul
+	 		 * la taille de ce tableau
+	 		 */
+			strncpy(charbuf,symbols->val[symbol_index].name,MAX_VAR_NAME_SIZE);
+			if (NULL != index(charbuf,'[')) 
+			{
+	  			*(index(charbuf,'[')) = '\0';
+	  			symbol_dim   = tsp_ascii_writer_validate_symbol_requested(charbuf,symbols);
+	  						
+				/*
+				 * ecriture des entetes de colonnes a n dimension dans le tableau
+				 */
+				for(indice=0;indice<symbol_dim;++indice)
+				{
+				
+					sprintf(indice_char,"%d",indice+1);
+					*(tab_colonne + symbol_index + indice)=(char*)malloc(strlen(charbuf)+strlen(indice_char)+3);
+					sprintf(*(tab_colonne + symbol_index + indice),"%s(%s)",charbuf,indice_char);
+					
+				}
+				
+				symbol_index += symbol_dim - 1;
+
+
+			}
+			else
+			{
+	 			 symbol_dim = 1;
+				 
+				 /*
+				  * ecriture des entetes des variables à 1 dimension dans le tableau
+				  */
+				 *(tab_colonne + symbol_index)=(char*)malloc(strlen(charbuf)+1);
+			    strcpy(*(tab_colonne + symbol_index),charbuf);
+
+			}
+			fprintf(sfile,"%s : %d : double : s\n", charbuf, symbol_dim);
+			
+      }
+      fprintf(sfile," ==========================================\n");
+		
+		/*
+		 * ecriture dans le fichier des entetes de colonnes
+		 */
+		for (symbol_index=0;symbol_index<symbols->len;++symbol_index)
+		{
+			fprintf(sfile,"%s	", *(tab_colonne + symbol_index));
+			free(*(tab_colonne + symbol_index));
+		}
+		free(tab_colonne);
+		
+		fprintf(sfile,"\n");
+
+      fflush(sfile);
+
+	 break;
+	 /*--------------*/
   default:
     /* no header */
     break;
@@ -555,26 +634,52 @@ tsp_ascii_writer_start(FILE* sfile, int32_t nb_sample_max_infile) {
 
   tsp_ascii_writer_sample_running = 1;
   STRACE_DEBUG(("Begin sample read...\n"));
-  if (0 == retcode) {
+  if (0 == retcode) 
+  {
     complete_line = 0;
     nb_sample     = 0;
     /* write loop */
-    while (TSP_consumer_read_sample(myproviders[0],&sample, &new_sample) && !stop_it) {
-      if (new_sample) {
-	fprintf(sfile,"%16.9E ",sample.user_value);
-	++complete_line;
-	/* We write the endl if we receive a whole sample line */
-	if (symbols->len==complete_line) {
-	  fprintf(sfile,"\n");
-	  complete_line = 0;
-	  ++nb_sample;
-	  if ((0 != nb_sample_max_infile) && 
-	      (0 == (nb_sample % nb_sample_max_infile ))
-	      ) {
-	    rewind(sfile);
-	  }
-	}
-      } else {
+    while (TSP_consumer_read_sample(myproviders[0],&sample, &new_sample) && !stop_it) 
+    {
+      if (new_sample) 
+      {
+			if (tsp_ascii_writer_header_style==2) 
+			{
+				fprintf(sfile,"%f	",sample.user_value);
+				++complete_line;
+				/* We write the endl if we receive a whole sample line */
+				if (symbols->len==complete_line) 
+				{
+	  				fprintf(sfile,"\n");
+	 				complete_line = 0;
+	  				++nb_sample;
+	  				if ((0 != nb_sample_max_infile) && 
+	      			(0 == (nb_sample % nb_sample_max_infile ))) 
+					{
+	    				rewind(sfile);
+	  				}
+				}
+			} 
+			else 
+			{
+				fprintf(sfile,"%16.9E ",sample.user_value);
+				++complete_line;
+				/* We write the endl if we receive a whole sample line */
+				if (symbols->len==complete_line) 
+				{
+	  				fprintf(sfile,"\n");
+	 				complete_line = 0;
+	  				++nb_sample;
+	  				if ((0 != nb_sample_max_infile) && 
+	      			(0 == (nb_sample % nb_sample_max_infile ))) 
+					{
+	    				rewind(sfile);
+	  				}
+				}
+			}
+      } 
+      else 
+      {
 	tsp_usleep(1000);
       }
     } /* end of while ecriture */
@@ -586,7 +691,7 @@ void*
 tsp_ascii_writer_thread(void* sfile) {
 
   static int retcode;
-  retcode = tsp_ascii_writer_start((FILE* )sfile,0);  
+  retcode = tsp_ascii_writer_start((FILE* )sfile,0,0);  
   return &retcode;
 } 
 

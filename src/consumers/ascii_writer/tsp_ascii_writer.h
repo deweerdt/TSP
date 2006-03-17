@@ -1,8 +1,8 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer.h,v 1.8 2006-02-26 13:36:05 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer.h,v 1.9 2006-03-17 13:46:54 erk Exp $
 
------------------------------------------------------------------------
+------------------------------------------------------------------------
 
 TSP Library - core components for a generic Transport Sampling Protocol.
 
@@ -38,13 +38,10 @@ Purpose   : TSP ascii writer consumer
 #define _TSP_ASCII_WRITER_H_
 
 #include <pthread.h>
-#include <stdio.h> 
+#include <stdio.h>
 
 #include <tsp_abs_types.h>
 #include <tsp_consumer.h>
-
-
-typedef int32_t  (* tsp_ascii_writer_logMsg_ft)(char* fmt, ...);
 
 /**
  * @defgroup TSP_AsciiWriterLib ASCII Writer Library 
@@ -62,9 +59,40 @@ extern int tsp_ascii_writer_colno;
 extern int tsp_ascii_writer_nb_var;
 extern int tsp_ascii_writer_current_var;
 
+typedef int32_t  (* tsp_ascii_writer_logMsg_ft)(char* fmt, ...);
+
 void tsp_ascii_writer_set_logMsgCB(tsp_ascii_writer_logMsg_ft logMsgCB);
 
 int32_t tsp_ascii_writer_logMsg_stdout(char* fmt, ...);
+
+/**
+ * Output file format handled by the ascii_writer
+ */
+typedef enum OutputFileFormat {
+  /** 
+   * The simple ASCII file format
+   */
+  SimpleAsciiTabulated_FileFmt=0,
+  MACSIM_FileFmt,
+  BACH_FileFmt,
+  LAST_FileFmt
+} OutputFileFormat_t;
+
+#ifdef ASCII_WRITER_C
+const char* OutputFileFormat_name_tab[] = {"simple_ascii",
+					   "macsim",
+					   "bach",
+					   "LAST"
+};
+const char* OutputFileFormat_desc_tab[] = {"Simple tabulated ASCII format",
+					   "CNES MACSIM file format",
+					   "CNES BACH file format",
+					   "LAST"
+};
+#else
+extern const char* OutputFileFormat_name_tab[];
+extern const char* OutputFileFormat_desc_tab[];
+#endif
 
 /**
  * Initialise ascii TSP consumer.
@@ -96,10 +124,10 @@ tsp_ascii_writer_add_comment(char* comment);
 /**
  * Load a configuration file and build the array of
  * of requested symbol in config file.
- * @param conffilename IN, the name of the config file.
- * @param tsp_symbols OUT, pointer to the array of symbols found in config file.
+ * @param[in] conffilename the name of the config file.
+ * @param[out] tsp_symbols  pointer to the array of symbols found in config file.
  *                         the array is allocated by the function.
- * @param nb_symbols OUT, the number of symbols found in file
+ * @param[out] nb_symbols  the number of symbols found in file
  * @return 0 if config file loaded properly (no syntax error) -1 otherwise.
  */
 int32_t 
@@ -149,10 +177,12 @@ tsp_ascii_writer_validate_symbols(TSP_consumer_symbol_requested_t*  tsp_symbols,
  *                                 if 0<= then no limit, if >0 then when about
  *                                 to save the nb_sample_max_infile-th sample
  *                                 we rewind the file.
+ * @param file_format IN, the header style to be used for the output. 
  * @return 0 OK -1 otherwise.
  */
 int32_t 
-tsp_ascii_writer_start(FILE* sfile, int32_t nb_sample_max_infile);
+tsp_ascii_writer_start(FILE* sfile, int32_t nb_sample_max_infile, OutputFileFormat_t file_format);
+
 
 /**
  * Function to be used with pthread_create(3).
