@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer_main.c,v 1.9 2006-03-17 13:46:54 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer_main.c,v 1.10 2006-03-17 15:48:20 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -136,9 +136,7 @@ main (int argc, char* argv[]) {
 	  break;
 	}
       }
-      fprintf(stdout,"%s: selected output file format is <%s>\n",argv[0],OutputFileFormat_desc_tab[header_style]);
-      break;
-   /*-------------*/
+      break;  
     case 'l':
       errorString = NULL;
       output_limit = strtol(optarg,&errorString,10);
@@ -182,6 +180,8 @@ main (int argc, char* argv[]) {
     printf("%s",TSP_URL_FORMAT_USAGE);
     exit(retcode);
   }
+  
+  fprintf(stdout,"%s: selected output file format is <%s>\n",argv[0],OutputFileFormat_desc_tab[header_style]);
 
   tsp_ascii_writer_initialise(&argc,&argv);
     

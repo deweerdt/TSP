@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer.c,v 1.14 2006-03-17 13:46:53 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer.c,v 1.15 2006-03-17 15:48:20 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -527,100 +527,92 @@ tsp_ascii_writer_start(FILE* sfile, int32_t nb_sample_max_infile, OutputFileForm
 
   /* Write header if necessary */
   switch  (tsp_ascii_writer_header_style) {
-    case SimpleAsciiTabulated_FileFmt:
+  case SimpleAsciiTabulated_FileFmt:
     /* no header */
     break;
-    /* xxx style header */
-    case 1: 
-      for (symbol_index=0;symbol_index<symbols->len;++symbol_index) 
-		{
-			/* 
-	 		 * Si la variable est un tableau on compte calcul
-	 		 * la taille de ce tableau
-	 		 */
-			strncpy(charbuf,symbols->val[symbol_index].name,MAX_VAR_NAME_SIZE);
-			if (NULL != index(charbuf,'[')) 
-			{
-	 			 *(index(charbuf,'[')) = '\0';
-	  			 symbol_dim   = tsp_ascii_writer_validate_symbol_requested(charbuf,symbols);
-	  			 symbol_index += symbol_dim - 1;
-			}
-			else
-			{
-	  			symbol_dim = 1;
-			}
-			fprintf(sfile,"%s : %d\n", charbuf, symbol_dim);    
+  case BACH_FileFmt: 
+    for (symbol_index=0;symbol_index<symbols->len;++symbol_index) 
+      {
+	/* 
+	 * Si la variable est un tableau on compte calcul
+	 * la taille de ce tableau
+	 */
+	strncpy(charbuf,symbols->val[symbol_index].name,MAX_VAR_NAME_SIZE);
+	if (NULL != index(charbuf,'[')) 
+	  {
+	    *(index(charbuf,'[')) = '\0';
+	    symbol_dim   = tsp_ascii_writer_validate_symbol_requested(charbuf,symbols);
+	    symbol_index += symbol_dim - 1;
+	  }
+	else
+	  {
+	    symbol_dim = 1;
+	  }
+	fprintf(sfile,"%s : %d\n", charbuf, symbol_dim);    
       }
-      fprintf(sfile," ==========================================\n");
-      fflush(sfile);
+    fprintf(sfile," ==========================================\n");
+    fflush(sfile);
     break;
-	 /*--------------*/
-	 case 2:
-	 
-	 	/* tableau contenant l'entete des colonnes
-		 */
-	 	tab_colonne=(char**)malloc(symbols->len * sizeof(char*));
-		
-	   for (symbol_index=0;symbol_index<symbols->len;++symbol_index) 
-		{
-			/* 
-	 		 * Si la variable est un tableau on compte calcul
-	 		 * la taille de ce tableau
-	 		 */
-			strncpy(charbuf,symbols->val[symbol_index].name,MAX_VAR_NAME_SIZE);
-			if (NULL != index(charbuf,'[')) 
-			{
-	  			*(index(charbuf,'[')) = '\0';
-	  			symbol_dim   = tsp_ascii_writer_validate_symbol_requested(charbuf,symbols);
-	  						
-				/*
-				 * ecriture des entetes de colonnes a n dimension dans le tableau
-				 */
-				for(indice=0;indice<symbol_dim;++indice)
-				{
-				
-					sprintf(indice_char,"%d",indice+1);
-					*(tab_colonne + symbol_index + indice)=(char*)malloc(strlen(charbuf)+strlen(indice_char)+3);
-					sprintf(*(tab_colonne + symbol_index + indice),"%s(%s)",charbuf,indice_char);
-					
-				}
-				
-				symbol_index += symbol_dim - 1;
-
-
-			}
-			else
-			{
-	 			 symbol_dim = 1;
-				 
-				 /*
-				  * ecriture des entetes des variables à 1 dimension dans le tableau
-				  */
-				 *(tab_colonne + symbol_index)=(char*)malloc(strlen(charbuf)+1);
-			    strcpy(*(tab_colonne + symbol_index),charbuf);
-
-			}
-			fprintf(sfile,"%s : %d : double : s\n", charbuf, symbol_dim);
-			
+    
+  case MACSIM_FileFmt:
+    
+    /* tableau contenant l'entete des colonnes
+     */
+    tab_colonne=(char**)malloc(symbols->len * sizeof(char*));
+    
+    for (symbol_index=0;symbol_index<symbols->len;++symbol_index) 
+      {
+	/* 
+	 * Si la variable est un tableau on compte calcul
+	 * la taille de ce tableau
+	 */
+	strncpy(charbuf,symbols->val[symbol_index].name,MAX_VAR_NAME_SIZE);
+	if (NULL != index(charbuf,'[')) 
+	  {
+	    *(index(charbuf,'[')) = '\0';
+	    symbol_dim   = tsp_ascii_writer_validate_symbol_requested(charbuf,symbols);
+	    
+	    /*
+	     * ecriture des entetes de colonnes a n dimension dans le tableau
+	     */
+	    for(indice=0;indice<symbol_dim;++indice) {
+	      
+	      sprintf(indice_char,"%d",indice+1);
+	      *(tab_colonne + symbol_index + indice)=(char*)malloc(strlen(charbuf)+strlen(indice_char)+3);
+	      sprintf(*(tab_colonne + symbol_index + indice),"%s(%s)",charbuf,indice_char);
+	      
+	    }
+	    
+	    symbol_index += symbol_dim - 1;
+	    
+	    
+	  }
+	else
+	  {
+	    symbol_dim = 1;
+	    
+	    /*
+	     * ecriture des entetes des variables à 1 dimension dans le tableau
+	     */
+	    *(tab_colonne + symbol_index)=(char*)malloc(strlen(charbuf)+1);
+	    strcpy(*(tab_colonne + symbol_index),charbuf);
+	    
+	  }
+	fprintf(sfile,"%s : %d : double : s\n", charbuf, symbol_dim);
+	
       }
-      fprintf(sfile," ==========================================\n");
-		
-		/*
-		 * ecriture dans le fichier des entetes de colonnes
-		 */
-		for (symbol_index=0;symbol_index<symbols->len;++symbol_index)
-		{
-			fprintf(sfile,"%s	", *(tab_colonne + symbol_index));
-			free(*(tab_colonne + symbol_index));
-		}
-		free(tab_colonne);
-		
-		fprintf(sfile,"\n");
-
-      fflush(sfile);
-
-	 break;
-	 /*--------------*/
+    fprintf(sfile," ==========================================\n");   
+    /*
+     * ecriture dans le fichier des entetes de colonnes
+     */
+    for (symbol_index=0;symbol_index<symbols->len;++symbol_index) {
+      fprintf(sfile,"%s	", *(tab_colonne + symbol_index));
+      free(*(tab_colonne + symbol_index));
+    }
+    free(tab_colonne);    
+    fprintf(sfile,"\n");    
+    fflush(sfile);    
+    break;
   default:
     /* no header */
     break;
