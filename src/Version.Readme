@@ -195,10 +195,16 @@ V-0.7.3: Creation ??/03/2006    tag TSP_0_7_3
 		* bug #15905 : --disable-consumer will trigger consumers compile
 		* bug #15979 : Array sized is ignored when bb_publish 
                                an array with the bb_tools command line
+		* bug #16057 : bb_dump display error on array
+		* bug #16102 : Memory leak on TSP_consumer_async_read
 	- Linux PPC port
 	  Frederic BLANCHET-MOMAS has added the Linux PPC target
           to the set of supported TSP target			- FredBM->Erk
 	- TSP API Documentation improvement			- Erk
+	- Add tsp-apidoc RPM subpackage				- Erk
+	- Differente header file format handling 
+          for tsp_ascii_writer (simple_ascii, macsim, bach)	- Arnaud M->Erk
+	- TSPFS a User Space File System for TSP		- FredD
 V-0.8.0: Creation ??/03/2006    tag TSP_0_8_0
 	- TSP Core multiple type handling			- Erk+AM->Erk
 
