@@ -721,13 +721,13 @@ echo X"$0" |
   	  /^X\(\/\).*/{ s//\1/; q; }
   	  s/.*/./; q'`
   srcdir=$ac_confdir
-  if test ! -r "$srcdir/$ac_unique_file"; then
+  if test ! -r $srcdir/$ac_unique_file; then
     srcdir=..
   fi
 else
   ac_srcdir_defaulted=no
 fi
-if test ! -r "$srcdir/$ac_unique_file"; then
+if test ! -r $srcdir/$ac_unique_file; then
   if test "$ac_srcdir_defaulted" = yes; then
     { echo "$as_me: error: cannot find sources ($ac_unique_file) in $ac_confdir or .." >&2
    { (exit 1); exit 1; }; }
@@ -736,7 +736,7 @@ if test ! -r "$srcdir/$ac_unique_file"; then
    { (exit 1); exit 1; }; }
   fi
 fi
-(cd $srcdir && test -r "./$ac_unique_file") 2>/dev/null ||
+(cd $srcdir && test -r ./$ac_unique_file) 2>/dev/null ||
   { echo "$as_me: error: sources are in $srcdir, but \`cd $srcdir' does not work" >&2
    { (exit 1); exit 1; }; }
 srcdir=`echo "$srcdir" | sed 's%\([^\\/]\)[\\/]*$%\1%'`
@@ -6228,7 +6228,7 @@ done
 
 
 # Config for outputed files
-                                                  ac_config_files="$ac_config_files src/scripts/tsp_dev.login src/scripts/tsp_dev.login.sh src/scripts/tsp.pc make/Makeparams src/core/include/tsp_prjcfg.h"
+                                                            ac_config_files="$ac_config_files src/scripts/tsp_dev.login src/scripts/tsp_dev.login.sh src/scripts/tsp.pc src/doxy/tsp make/Makeparams src/core/include/tsp_prjcfg.h"
 
 
 cat >confcache <<\_ACEOF
@@ -6785,6 +6785,7 @@ do
   "src/scripts/tsp_dev.login" ) CONFIG_FILES="$CONFIG_FILES src/scripts/tsp_dev.login" ;;
   "src/scripts/tsp_dev.login.sh" ) CONFIG_FILES="$CONFIG_FILES src/scripts/tsp_dev.login.sh" ;;
   "src/scripts/tsp.pc" ) CONFIG_FILES="$CONFIG_FILES src/scripts/tsp.pc" ;;
+  "src/doxy/tsp" ) CONFIG_FILES="$CONFIG_FILES src/doxy/tsp" ;;
   "make/Makeparams" ) CONFIG_FILES="$CONFIG_FILES make/Makeparams" ;;
   "src/core/include/tsp_prjcfg.h" ) CONFIG_FILES="$CONFIG_FILES src/core/include/tsp_prjcfg.h" ;;
   *) { { echo "$as_me:$LINENO: error: invalid argument: $ac_config_target" >&5
