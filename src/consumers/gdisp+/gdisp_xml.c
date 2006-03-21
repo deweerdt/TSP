@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_xml.c,v 1.6 2006-02-26 14:08:24 erk Exp $
+$Id: gdisp_xml.c,v 1.7 2006-03-21 16:39:15 brutusj Exp $
 
 -----------------------------------------------------------------------
 
@@ -321,12 +321,13 @@ gdisp_xmlParseAndValidate ( const char *filename )
 void
 gdisp_xmlGotoLine ( xmlTextWriterPtr writer )
 {
-
+#ifdef XMLWRITER_SUPPORTED
   /*
    * Goto line.
    */
   xmlTextWriterWriteRaw(writer,
 			(xmlChar*)"\n");
+#endif
 
 }
 
@@ -354,9 +355,10 @@ gdisp_xmlIndent( xmlTextWriterPtr  writer,
       indentBuffer[strlen(indentBuffer) - nbSpaces] = '\0';
     }
   }
-
+#ifdef XMLWRITER_SUPPORTED
   xmlTextWriterWriteRaw(writer,
 			(xmlChar*)indentBuffer);
+#endif
 
 }
 
@@ -388,7 +390,6 @@ gdisp_xmlWriteAttributes( xmlTextWriterPtr  writer,
   gdisp_xmlIndent  (writer,
 		    indentBuffer,
 		    indentationMode);
-
   errorCode = xmlTextWriterStartElement(writer,
 					elementName);
 
@@ -476,8 +477,10 @@ gdisp_xmlWriteAttributeList ( xmlTextWriterPtr  writer,
 		    indentBuffer,
 		    indentationMode);
 
+#ifdef XMLWRITER_SUPPORTED
   errorCode = xmlTextWriterStartElement(writer,
 					elementName);
+#endif
 
   if (errorCode < 0) {
     /* No need to print any error message, because gdisp+ is exiting */
@@ -500,9 +503,11 @@ gdisp_xmlWriteAttributeList ( xmlTextWriterPtr  writer,
     attributeList  = g_list_next(attributeList);
     attributeValue = (gchar*)attributeList->data;
 
+#ifdef XMLWRITER_SUPPORTED
     errorCode = xmlTextWriterWriteAttribute(writer,
 					    attributeName,
 					    attributeValue);
+#endif
 
     if (errorCode < 0) {
       /* No need to print any error message, because gdisp+ is exiting */
@@ -518,8 +523,9 @@ gdisp_xmlWriteAttributeList ( xmlTextWriterPtr  writer,
    * End up element if requested.
    */
   if (endUpElement == TRUE) {
-
+#ifdef XMLWRITER_SUPPORTED
     errorCode = xmlTextWriterEndElement(writer);
+#endif
 
   }
 

@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_configuration.c,v 1.9 2006-02-26 14:08:23 erk Exp $
+$Id: gdisp_configuration.c,v 1.10 2006-03-21 16:39:14 brutusj Exp $
 
 -----------------------------------------------------------------------
 
@@ -556,8 +556,9 @@ gdisp_saveOneGraphicPlot ( Kernel_T         *kernel,
     gdisp_xmlIndent  (writer,
 		      indentBuffer,
 		      GD_DECREASE_INDENTATION);
-
+#ifdef XMLWRITER_SUPPORTED
     errorCode = xmlTextWriterEndElement(writer);
+#endif
 	  
     if (errorCode < 0) {
       return errorCode;
@@ -647,8 +648,9 @@ gdisp_saveOneGraphicPage ( Kernel_T         *kernel,
   gdisp_xmlIndent  (writer,
 		    indentBuffer,
 		    GD_DECREASE_INDENTATION);
-
+#ifdef XMLWRITER_SUPPORTED
   errorCode = xmlTextWriterEndElement(writer);
+#endif
 
   if (errorCode < 0) {
     return errorCode;
@@ -768,8 +770,10 @@ gdisp_saveProviderSampledSymbols ( Kernel_T         *kernel,
      * Start an element whose name is 'SampledSymbols'.
      * This element is a child of provider XML node.
      */
+#ifdef XMLWRITER_SUPPORTED
     errorCode = xmlTextWriterStartElement(writer,
 					  (xmlChar*)"SampledSymbols");
+#endif
     if (errorCode < 0) {
       return errorCode;
     }
@@ -861,8 +865,9 @@ gdisp_saveProviderSampledSymbols ( Kernel_T         *kernel,
     gdisp_xmlIndent  (writer,
 		      indentBuffer,
 		      GD_DECREASE_INDENTATION);
-
+#ifdef XMLWRITER_SUPPORTED
     errorCode = xmlTextWriterEndElement(writer);
+#endif
 
     if (errorCode < 0) {
       return errorCode;
@@ -876,8 +881,9 @@ gdisp_saveProviderSampledSymbols ( Kernel_T         *kernel,
 		      indentBuffer,
 		      GD_DECREASE_INDENTATION);
 
+#ifdef XMLWRITER_SUPPORTED
     errorCode = xmlTextWriterEndElement(writer);
-
+#endif
     if (errorCode < 0) {
       return errorCode;
     }
@@ -1762,6 +1768,7 @@ gdisp_saveConfigurationFile ( Kernel_T *kernel )
    * encoding ISO 8859-1 and the default for the standalone
    * declaration.
    */
+
   errorCode = xmlTextWriterStartDocument(writer,
 					 (const char*)NULL, /* version */
 					 GD_PREFERENCE_ENCODING,
