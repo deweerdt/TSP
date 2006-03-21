@@ -1,6 +1,6 @@
 /*
 
-$Id: macsim_fmt.h,v 1.1 2006-03-21 09:56:59 morvan Exp $
+$Id: macsim_fmt.h,v 1.2 2006-03-21 15:20:11 morvan Exp $
 
 -----------------------------------------------------------------------
 
@@ -61,10 +61,8 @@ Purpose   : function for file with format of macsim
 
 
 /**
- * @defgroup MacsimFormatLib BB TSP Provider Library
- * The BlackBoard TSP provider library API.
- * The library is used to build the @ref BB_TSPProvider application.
- * It can be used to build its own customized BlackBoard provider.
+ * @defgroup MacsimFormatLib  Macsim Format Library
+ * The library is used to read a Macsim File by the Generic Reader.
  * @ingroup TSP_GenericReaderLib
  * @{
  */
@@ -72,7 +70,7 @@ Purpose   : function for file with format of macsim
 /**
  * extract the space from a string.
  * 
- * @param string the string to modify
+ * @param[in] string the string to modify
  *                      
  * @return the same string without the spaces
  */
@@ -81,7 +79,7 @@ char *str_strip (const char *string);
 /**
  * calculate the dimension of a macsim's symbol
  * 
- * @param dimension_var the string who contain the dimension
+ * @param[in] dimension_var the string who contain the dimension
  *                      
  * @return the dimension
  */
@@ -90,8 +88,8 @@ uint32_t macsim_dimension_data(char* dimension_var);
 /**
  * determine BB type and size type.
  * 
- * @param type_var the data type extract from macsim file 
- * @param type_var_bb the BB type container
+ * @param[in] type_var the data type extract from macsim file 
+ * @param[out] type_var_bb the BB type container
  *                      
  * @return the type's size and the BB data type
  */
@@ -100,7 +98,7 @@ size_t macsim_size_data(char* type_var,E_BB_TYPE_T* type_var_bb);
 /**
  * initialize the fmtHandler (for generic handler)
  * 
- * @param fmtHandler the fmtHandler to initialze
+ * @param[out] fmtHandler the fmtHandler to initialze
  *                      
  * @return 0 if OK
  */
@@ -109,7 +107,7 @@ int macsim_createHandler(FmtHandler_T** fmtHandler);
 /**
  * open a macsim file
  * 
- * @param nom_fichier_macsim the file name
+ * @param[in] nom_fichier_macsim the file name
  *                      
  * @return the pointer file
  */
@@ -118,7 +116,7 @@ FILE * macsim_open(char * nom_fichier_macsim);
 /**
  * close macsim file
  * 
- * @param fichier_macsim the pointer file
+ * @param[in] fichier_macsim the pointer file
  *                      
  * @return nothing
  */
@@ -127,8 +125,8 @@ void macsim_close(FILE * fichier_macsim);
 /**
  * Count the size of the BB for this creation and create the symbol of the BB by reading the header file.
  * 
- * @param genreader the generic reader ( contain data information (pointer file...)
- * @param justcount Indicate if we want count the size of the BB or create the symbol of the BB
+ * @param[in] genreader the generic reader ( contain data information (pointer file...)
+ * @param[in] justcount Indicate if we want count the size of the BB or create the symbol of the BB
  *                      
  * @return 0 if OK 
  */
@@ -137,7 +135,7 @@ int macsim_read_header(GenericReader_T* genreader, int32_t justcount);
 /**
  * Read the data containing in the file and send it to the BB.
  * 
- * @param genreader the generic reader (contain data information (pointer file....)
+ * @param[in] genreader the generic reader (contain data information (pointer file....)
  *                      
  * @return 0 if OK
  */

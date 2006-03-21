@@ -1,6 +1,6 @@
 /*
 
-$Id: generic_reader.h,v 1.1 2006-03-21 09:56:59 morvan Exp $
+$Id: generic_reader.h,v 1.2 2006-03-21 15:20:11 morvan Exp $
 
 -----------------------------------------------------------------------
 
@@ -81,8 +81,8 @@ typedef struct GenericReader {
 /**
  * create the handler for a format file
  * 
- * @param format_file the file format to treat
- * @param file_name the file name
+ * @param[in] format_file the file format to treat
+ * @param[in] file_name the file name
  *                      
  * @return the fmtHandler
  */
@@ -92,8 +92,8 @@ FmtHandler_T* genreader_createFmHandler(char* format_file,char* file_name);
 /**
  * create the generic reader
  * 
- * @param genreader the generic reader to intialize
- * @param fmtHandler the file handler
+ * @param[out] genreader the generic reader to intialize
+ * @param[in] fmtHandler the file handler
  *                      
  * @return 0 if OK
  */
@@ -102,7 +102,7 @@ int genreader_create(GenericReader_T** genreader,FmtHandler* fmtHandler);
 /**
  * open the file to treat
  * 
- * @param genreader the generic reader who contain the information about the file
+ * @param[in] genreader the generic reader who contain the information about the file
  *                      
  * @return 0 if OK
  */
@@ -111,7 +111,7 @@ int genreader_open(GenericReader_T* genreader);
 /**
  * create the BB
  * 
- * @param genreader the generic reader who contain the information about the file
+ * @param[in] genreader the generic reader who contain the information about the file
  *                      
  * @return 0 if OK
  */
@@ -120,7 +120,7 @@ int genreader_read_header_create_bb(GenericReader_T* genreader);
 /**
  * create the symbol read in the file to the BB
  * 
- * @param genreader the generic reader who contain the information about the file
+ * @param[in] genreader the generic reader who contain the information about the file
  *                      
  * @return 0 if OK
  */
@@ -129,11 +129,11 @@ int genreader_read_header_create_symbole(GenericReader_T* genreader);
 /**
  * add symbol to the BB
  * 
- * @param symbname the symbol name
- * @param dimension the symbol dimension
- * @param type_len  the type size
- * @param type      the BB type
- * @param unit      the symbol unit
+ * @param[in] symbname the symbol name
+ * @param[in] dimension the symbol dimension
+ * @param[in] type_len  the type size
+ * @param[in] type      the BB type
+ * @param[in] unit      the symbol unit
  *                      
  * @return 0 if OK
  */
@@ -142,18 +142,18 @@ int genreader_addvar(char* symbname, int dimension, int type_len, E_BB_TYPE_T ty
 /**
  * open the file to treat
  * 
- * @param genreader the generic reader who contain the information about the file
- * @param data_var  the data read in the file
- * @param indice    index of the corresponding symbol
+ * @param[in] genreader the generic reader who contain the information about the file
+ * @param[in] data_var  the data read in the file
+ * @param[in] indice    index of the corresponding symbol
  *                      
  * @return 0 if OK
  */
 int genreader_write(GenericReader_T* genreader, char* data_var, int indice);
 
 /**
- * sned a synchro to the BB
+ * send a synchro to the BB
  * 
- * @param genreader the generic reader who contain the information about the file
+ * @param[in] genreader the generic reader who contain the information about the file
  *                      
  * @return 0 if OK
  */
@@ -170,7 +170,7 @@ int genreader_finalize();
 /**
  * Initialize Blackboard TSP provider Library for generic reader.
  * 
- * @param TSPRunMode running mode, 0 = non blocking, 1 = blocking (never return).
+ * @param[in] TSPRunMode running mode, 0 = non blocking, 1 = blocking (never return).
  *
  * @return E_OK if initialization is successfull  E_NOK otherwise.
  */		   
