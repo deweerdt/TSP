@@ -5,6 +5,7 @@ Release:        1
 Group:          Applications/Communications
 URL:            https://savannah.nongnu.org/projects/tsp
 License:        LGPL
+Vendor:		The TSP Team Worldwide
 Source:         %{name}-%{version}.tar.gz
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root
 

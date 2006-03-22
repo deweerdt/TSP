@@ -205,6 +205,8 @@ V-0.7.3: Creation 22/03/2006    tag TSP_0_7_3
 	- Different header file format handling 
           for tsp_ascii_writer (simple_ascii, macsim, bach)	- Arnaud M->Erk
 	- TSPFS a User Space File System for TSP		- FredD
+	- Change Install prefix from /opt/tsp to 
+          /opt/tsp-<version>                                    - Erk
 V-0.8.0: Creation ??/03/2006    tag TSP_0_8_0
 	- TSP Core multiple type handling			- Erk+AM->Erk
 	- Generic Reader Provider				- AM+Erk
