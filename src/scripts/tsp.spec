@@ -52,15 +52,33 @@ rm -rf %{name}
 %post
 if [ -d  /etc/profile.d ]; then
   cd /etc/profile.d
-  ln -s %{prefix}/scripts/tsp_profile.sh
-  ln -s %{prefix}/scripts/tsp_profile.csh
+  ln -sf %{prefix}/scripts/tsp_profile.sh
+  ln -sf %{prefix}/scripts/tsp_profile.csh
 fi
 if [ -d /usr/lib/pkgconfig ]; then
-  ln -s %{prefix}/tsp.pc
+  cd /usr/lib/pkgconfig
+  ln -sf %{prefix}/scripts/tsp.pc
 fi
 
 %preun
 
+%postun
+rm -rf %{prefix}/bin
+rm -rf %{prefix}/scripts
+rm -rf %{prefix}/include
+rm -rf %{prefix}/lib
+if [ ! -r /etc/profile.d/tsp_profile.sh ]; then
+   rm /etc/profile.d/tsp_profile.sh
+fi
+if [ ! -r /etc/profile.d/tsp_profile.sh ]; then
+   rm /etc/profile.d/tsp_profile.csh
+fi
+if [ ! -r /usr/lib/pkgconfig/tsp.pc ]; then
+   rm /usr/lib/pkgconfig/tsp.pc
+fi
+
+%postun apidoc
+rm -rf %{prefix}/doc
 
 %files
 %defattr(-,root,root,0644)
@@ -76,6 +94,8 @@ fi
 %changelog
 * Wed Mar 22 2006 Erk
   - Ready to tag 0.7.3
+  - Make postun scripts for main package and apidoc package
+    really do their jobs
 * Sun Mar 12 2006 Erk
   - Add tsp.pc file for pkg-config
   - Change install prefix from /opt/tsp to /opt/tsp-%{version}
