@@ -1,6 +1,6 @@
 Summary:        TSP : library for a generic Transport Sampling Protocol
 Name:           tsp
-Version:        0.7.3cvs
+Version:        0.7.3
 Release:        1
 Group:          Applications/Communications
 URL:            https://savannah.nongnu.org/projects/tsp
@@ -73,6 +73,8 @@ fi
 %attr(0644, root, root) %{prefix}/doc/api/html/*
 
 %changelog
+* Wed Mar 22 2006 Erk
+  - Ready to tag 0.7.3
 * Sun Mar 12 2006 Erk
   - Add tsp.pc file for pkg-config
   - Change install prefix from /opt/tsp to /opt/tsp-%{version}
