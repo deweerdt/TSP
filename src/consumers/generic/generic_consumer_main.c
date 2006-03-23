@@ -1,6 +1,6 @@
 /*
 
-$Id: generic_consumer_main.c,v 1.6 2006-02-26 13:36:05 erk Exp $
+$Id: generic_consumer_main.c,v 1.7 2006-03-23 22:37:13 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -50,8 +50,21 @@ Purpose   : Generic tsp consumer
 /**
  * @defgroup TSP_GenericConsumer Generic Consumer
  * The Generic consumer set of tools may be used
- * to test in a simple command line interface the 
- * most the of the TSP Asynchronous Request:
+ * to test in a simple command line interface  
+ * most of the TSP Asynchronous Requests.
+ *
+ * Just like @ref BBToolsCommandLine the generic consumer has a BusyBox-like
+ * design ((<A HREF="http://www.busybox.net">http://www.busybox.net</A>).
+ *
+ * \par tsp_request_generic [generic_opts]  \<tsp_request\> [request_opts]
+ * \par generic_opts
+ * <ul> 
+ *   <li> \b -u  (optional) TSP Provider URL. Default is localhost</li>
+ *   <li> \b -s  (optional) silent mode (may be used for silent scripting) </li>
+ *   <li> \b -v  (optional) verbose mode </li>
+ *   <li> \b -n  (optional) no newline read mode </li>
+ * </ul>
+ * \par tsp_request
  * <ul>
  *   <li>   tsp_request_open </li>
  *   <li>   tsp_request_close </li>
@@ -64,9 +77,6 @@ Purpose   : Generic tsp consumer
  *   <li>   tsp_request_async_sample_write </li>
  *   <li>   tsp_request_async_sample_read </li>      
  * </ul>
- * Just like @ref BBToolsCommandLine the generic consumer has a BusyBox-like
- * design ((<A HREF="http://www.busybox.net">http://www.busybox.net</A>).
- * 
  * @ingroup TSP_Consumers
  */
 
@@ -108,12 +118,11 @@ main(int argc, char *argv[]){
   generic_consumer_request_create(&req);
 
   /* Analyse command line parameters */
-  while (opt_ok && (EOF != (c_opt = getopt(argc,argv,"u:hnv")))) {    
+  while (opt_ok && (EOF != (c_opt = getopt(argc,argv,"u:hnsv")))) {    
     switch (c_opt) {
     case 'u':
       opt_ok+=2;
       req.provider_url = strdup(optarg);
-      fprintf(stdout,"%s: TSP provider URL is <%s>\n",argv[0],req.provider_url);
       break;
     case 'n':
       opt_ok++;
@@ -152,6 +161,9 @@ main(int argc, char *argv[]){
     exit(retcode); 
   }
 
+  if ( (NULL!=req.provider_url) && (!req.silent)) {
+    fprintf(stdout,"%s: TSP provider URL is <%s>\n",argv[0],req.provider_url);
+  }
   /* invoke generic_consumer */
   retcode = generic_consumer(&req);
 
