@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/providers/bb_provider/bb_tsp_provider.c,v 1.21 2006-02-26 13:36:06 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/providers/bb_provider/bb_tsp_provider.c,v 1.22 2006-03-31 12:55:19 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -134,7 +134,7 @@ BB_GLU_init(GLU_handle_t* this, int fallback_argc, char* fallback_argv[]) {
 	      "bb_tsp_provider::GLU_init","Cannot attach to BlackBoard <%s>!!",
 	      the_bbname);
     retcode = FALSE;
-    return;
+    return retcode;
   } 
   
   /* 
@@ -248,6 +248,7 @@ BB_GLU_init(GLU_handle_t* this, int fallback_argc, char* fallback_argv[]) {
 										indexstack, indexstack_len);
 					X_sample_symbol_info_list_val[i_pg_index].provider_global_index = i_pg_index;
 					X_sample_symbol_info_list_val[i_pg_index].period = 1;
+					X_sample_symbol_info_list_val[i_pg_index].type   = TSP_TYPE_DOUBLE;
 					/* update data pointer with appropriate value */
 					value_by_pgi[i_pg_index] = bb_item_offset(shadow_bb, &bb_data_desc(shadow_bb)[i], indexstack, indexstack_len);
 					bbdatadesc_by_pgi[i_pg_index] = &bb_data_desc(shadow_bb)[i];
@@ -263,6 +264,7 @@ BB_GLU_init(GLU_handle_t* this, int fallback_argc, char* fallback_argv[]) {
 				X_sample_symbol_info_list_val[i_pg_index].name = strdup(bb_data_desc(shadow_bb)[i].name);
 				X_sample_symbol_info_list_val[i_pg_index].provider_global_index = i_pg_index;
 				X_sample_symbol_info_list_val[i_pg_index].period = 1;
+				X_sample_symbol_info_list_val[i_pg_index].type   = TSP_TYPE_DOUBLE;
 				value_by_pgi[i_pg_index] = bb_item_offset(shadow_bb, &bb_data_desc(shadow_bb)[i], indexstack, indexstack_len);
 				bbdatadesc_by_pgi[i_pg_index] = &bb_data_desc(shadow_bb)[i];
 				allow_to_write[i_pg_index]    = TSP_ASYNC_WRITE_ALLOWED;
@@ -288,6 +290,7 @@ BB_GLU_init(GLU_handle_t* this, int fallback_argc, char* fallback_argv[]) {
 					j);
 			X_sample_symbol_info_list_val[i_pg_index].provider_global_index = i_pg_index;
 			X_sample_symbol_info_list_val[i_pg_index].period = 1;
+			X_sample_symbol_info_list_val[i_pg_index].type   = TSP_TYPE_DOUBLE;
 			/* update data pointer with appropriate value */
 			value_by_pgi[i_pg_index]  = ((void*) ((char*)bb_data(shadow_bb) + bb_data_desc(shadow_bb)[i].data_offset)) + j*bb_data_desc(shadow_bb)[i].type_size;
 			bbdatadesc_by_pgi[i_pg_index] = &bb_data_desc(shadow_bb)[i];
@@ -300,6 +303,7 @@ BB_GLU_init(GLU_handle_t* this, int fallback_argc, char* fallback_argv[]) {
 			X_sample_symbol_info_list_val[i_pg_index].name = strdup(bb_data_desc(shadow_bb)[i].name);
 			X_sample_symbol_info_list_val[i_pg_index].provider_global_index = i_pg_index;
 			X_sample_symbol_info_list_val[i_pg_index].period = 1;
+			X_sample_symbol_info_list_val[i_pg_index].type   = TSP_TYPE_DOUBLE;
 			value_by_pgi[i_pg_index] = ((void*) ((char*)bb_data(shadow_bb) + bb_data_desc(shadow_bb)[i].data_offset));
 			bbdatadesc_by_pgi[i_pg_index] = &bb_data_desc(shadow_bb)[i];
 			allow_to_write[i_pg_index]    = TSP_ASYNC_WRITE_ALLOWED;
@@ -356,11 +360,11 @@ BB_GLU_get_pgi(GLU_handle_t* this, TSP_sample_symbol_info_list_t* symbol_list, i
   for( i = 0 ; i < symbol_list->TSP_sample_symbol_info_list_t_len ; i++) {
   
     /* Get short name (without [XXX], for array) and indexstack and its length */                                
-	 memset(&sym_data_desc,0,sizeof(S_BB_DATADESC_T));
-	 if (bb_utils_parsearrayname(symbol_list->TSP_sample_symbol_info_list_t_val[i].name, 
-				    sym_data_desc.name,
-				    VARNAME_MAX_SIZE,
-				    array_index, &array_index_len)) {
+    memset(&sym_data_desc,0,sizeof(S_BB_DATADESC_T));
+    if (bb_utils_parsearrayname(symbol_list->TSP_sample_symbol_info_list_t_val[i].name, 
+				sym_data_desc.name,
+				VARNAME_MAX_SIZE,
+				array_index, &array_index_len)) {
 	   STRACE_INFO  (("%s: cannot parse symname <%s>",
 			  "B_GLU_get_pgi",
 			  symbol_list->TSP_sample_symbol_info_list_t_val[i].name));
@@ -635,14 +639,24 @@ bb_tsp_provider_forbid_write_symbol(int provider_global_index){
   return retcode;
 }
 
-int32_t 
-bb_tsp_provider_initialise(int* argc, char** argv[],int TSPRunMode, const char* bbname,
-			   double frequency, int32_t acknowledgeCopy) {
-  
-  int32_t retcode;
 
+void
+bb_tsp_provider_setbbname(const char* bbname) {
+  if (NULL != bbGLU) {
+    free(bbGLU->name);
+    bbGLU->name = strdup(bbname);
+    free(the_bbname);
+    the_bbname = strdup(bbname);
+  } else {
+    the_bbname = strdup(bbname);
+  }
+}
+
+GLU_handle_t*
+bb_tsp_provider_create_GLU(double frequency, int32_t acknowledgeCopy, int GLUServerType) {
+  
   /* create a default GLU */
-  GLU_handle_create(&bbGLU,bbname,GLU_SERVER_TYPE_ACTIVE,frequency);
+  GLU_handle_create(&bbGLU,NULL == the_bbname ? "BBGLU" : the_bbname,GLUServerType,frequency);
 
   /* now override default methods with more efficient BB specific methods */
   bbGLU->initialize     = &BB_GLU_init;
@@ -651,15 +665,26 @@ bb_tsp_provider_initialise(int* argc, char** argv[],int TSPRunMode, const char* 
   bbGLU->get_nb_symbols = &BB_GLU_get_symbol_number;
   bbGLU->get_pgi        = &BB_GLU_get_pgi;
   bbGLU->async_write    = &BB_GLU_async_sample_write;
-  bbGLU->async_read     = &BB_GLU_async_sample_read;
-  the_bbname                     = strdup(bbname);
+  bbGLU->async_read     = &BB_GLU_async_sample_read;  
   /* Update private data with acknowlegdeCopy flag 
    * (will be used by BB_GLU_thread)
    */
   bbGLU->private_data            = malloc(sizeof(int));
   * ((int*)bbGLU->private_data)  = acknowledgeCopy;
-  retcode = BB_OK;
+  
+  return bbGLU;
+}
 
+
+int32_t 
+bb_tsp_provider_initialise(int* argc, char** argv[],int TSPRunMode, const char* bbname,
+			   double frequency, int32_t acknowledgeCopy) {
+  
+  int32_t retcode;
+
+  bb_tsp_provider_create_GLU(frequency,acknowledgeCopy,GLU_SERVER_TYPE_ACTIVE);
+  bb_tsp_provider_setbbname(bbname);
+  
   /* Init LibTSP provider */
   if (FALSE==TSP_provider_init(bbGLU,argc, argv)) {
     retcode = BB_NOK;

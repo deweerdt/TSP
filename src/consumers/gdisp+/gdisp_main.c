@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_main.c,v 1.12 2006-03-02 16:27:25 erk Exp $
+$Id: gdisp_main.c,v 1.13 2006-03-31 12:55:19 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -65,17 +65,17 @@ File      : Graphic Tool main part.
  * <ul>
  *   <li> Multi Y vs X graphing capability </li>
  *   <li> Graph snapshot </li>
- *   <li> Textual Viewing  with rendering (hex, binary, etc...) </li>
+ *   <li> Textual Viewing with rendering (hex, binary, etc...) </li>
  *   <li> Interactive drag'n'drop </li>
  *   <li> Save/Restore sampling configuration </li>
  *   <li> many more to come... </li>
  * </ul>
  * The gdisp command lines options are the following:
- * \par \c tsp_gdisp+ \c [-u TSPurl ]  \c [-h host ] \c [-x config.xml]
+ * \par  tsp_gdisp+ [-u TSPurl ] [-h host ] [-x config.xml]
  * <ul>
- *   <li> \c TSPurl the TSP URL @ref TSP_URL_FORMAT_USAGE</li>   
- *   <li> \c host the hostname or IP address </li>
- *   <li> \c config.xml the GDisp+ xml configuration file </li>
+ *   <li> \b -u TSPurl the TSP URL @ref TSP_URL_FORMAT_USAGE</li>   
+ *   <li> \b -h host the hostname or IP address </li>
+ *   <li> \b -x config.xml the GDisp+ xml configuration file </li>
  * </ul>
  * @section gdispPlus_Design GDisp+ Design
  * GDisp+ is a TSP consumer which is designed as a modular graphical object renderer.

@@ -6,7 +6,7 @@ include $(DEVBASE)/make/Makeparams
 SOURCES = \
 	client_group.c
 
-ADD_LIB =  $(DIRLIB)/libtsp_consumer.a  $(DIRLIB)/libtsp_services.a $(DIRLIB)/libtsp_calc.a
+ADD_LIB =  $(DIRLIB)/libtsp_consumer.a  $(DIRLIB)/libtsp_services.a $(DIRLIB)/libtsp_calc.a $(DIRLIB)/libtsp_common.a
 
 ifeq (${BUILD_CONSUMER},yes)
     TARGET=$(DIRBIN)/tsp_testgrp_client

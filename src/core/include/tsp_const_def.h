@@ -1,6 +1,6 @@
 /*
  
-$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_const_def.h,v 1.35 2006-02-26 13:36:05 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_const_def.h,v 1.36 2006-03-31 12:55:19 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -325,7 +325,33 @@ typedef struct  TSP_otsp_server_info_t TSP_otsp_server_info_t;
 #define TSP_ENCODE_DOUBLE_TO_UINT64(val) (TSP_UINT64_TO_BE (*(uint64_t*)val))
 #define TSP_DECODE_DOUBLE_TO_UINT64(val) (TSP_UINT64_FROM_BE (*(uint64_t*)val))
 
+#define TSP_ENCODE_FLOAT_TO_UINT32(val) (TSP_UINT32_TO_BE (*(uint32_t*)val))
+#define TSP_DECODE_FLOAT_TO_UINT32(val) (TSP_UINT32_FROM_BE (*(uint32_t*)val))
+
 #define TSP_ENCODE_INT(val) (TSP_INT_TO_BE (val))
-#define TSP_DECODE_INT(val) (TSP_INT_FROM_BE (val)) 
+#define TSP_DECODE_INT(val) (TSP_INT_FROM_BE (val))
+
+
+#define TSP_ENCODE_INT64(val) (TSP_INT64_TO_BE (*(int64_t*)val))
+#define TSP_DECODE_INT64(val) (TSP_INT64_FROM_BE (*(int64_t*)val))
+
+#define TSP_ENCODE_UINT64(val) (TSP_UINT64_TO_BE (*(uint64_t*)val))
+#define TSP_DECODE_UINT64(val) (TSP_UINT64_FROM_BE (*(uint64_t*)val))
+
+#define TSP_ENCODE_UINT32(val) (TSP_UINT32_TO_BE (*(uint32_t*)val))
+#define TSP_DECODE_UINT32(val) (TSP_UINT32_FROM_BE (*(uint32_t*)val))
+
+#define TSP_ENCODE_INT32(val) (TSP_INT32_TO_BE (*(int32_t*)val))
+#define TSP_DECODE_INT32(val) (TSP_INT32_FROM_BE (*(int32_t*)val))
+
+#define TSP_ENCODE_UINT16(val) (TSP_UINT16_TO_BE (*(uint16_t*)val))
+#define TSP_DECODE_UINT16(val) (TSP_UINT16_FROM_BE (*(uint16_t*)val))
+
+#define TSP_ENCODE_INT16(val) (TSP_INT16_TO_BE (*(int16_t*)val))
+#define TSP_DECODE_INT16(val) (TSP_INT16_FROM_BE (*(int16_t*)val))
+
+#define TSP_ENCODE_UINT(val) (TSP_UINT_TO_BE (*(uint8_t*)val))
+#define TSP_DECODE_UINT(val) (TSP_UINT_FROM_BE (*(uint8_t*)val))
+ 
 
 #endif /*_TSP_CONST_DEF_H*/

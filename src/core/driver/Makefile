@@ -15,7 +15,7 @@ OBJECTS=$(SOURCES:%.c=$(DIROBJ)/%.o)
 
 TARGET=$(DIRLIB)/libtsp_consumer.a
 
-CPPFLAGS += -I../rpc -I../misc_utils
+CPPFLAGS += -I../rpc -I../misc_utils -I../common
 
 # -----------------------------------------------------------
 # No label all:: because it's in Makeparams and calls build::	

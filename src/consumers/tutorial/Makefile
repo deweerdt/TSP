@@ -6,7 +6,7 @@ include $(DEVBASE)/make/Makeparams
 SOURCES = \
 	simple_client.c
 
-ADD_LIB =  $(DIRLIB)/libtsp_consumer.a $(DIRLIB)/libtsp_services.a $(DIRLIB)/libtsp_calc.a
+ADD_LIB =  $(DIRLIB)/libtsp_consumer.a $(DIRLIB)/libtsp_services.a $(DIRLIB)/libtsp_calc.a $(DIRLIB)/libtsp_common.a
 
 ifeq (${BUILD_CONSUMER},yes)
     TARGET=$(DIRBIN)/tsp_tutorial_client

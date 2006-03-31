@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_provider.h,v 1.17 2006-02-26 13:36:05 erk Exp $
+$Id: tsp_provider.h,v 1.18 2006-03-31 12:55:19 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -99,6 +99,9 @@ int TSP_provider_get_server_base_number(void );
 int TSP_provider_request_async_sample_write(TSP_async_sample_t* async_sample_write);
 
 int TSP_provider_request_async_sample_read(TSP_async_sample_t* async_sample_read);
+
+void  TSP_provider_request_extended_information(TSP_request_extended_information_t* req_extinfo, 
+						TSP_answer_extended_information_t* ans_extinfo);
 
 END_C_DECLS
 /** @} end group Provider */ 

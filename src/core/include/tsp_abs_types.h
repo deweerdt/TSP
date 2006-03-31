@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_abs_types.h,v 1.22 2006-03-04 11:20:21 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_abs_types.h,v 1.23 2006-03-31 12:55:19 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -244,7 +244,7 @@ typedef	int64_t	int_least64_t;
 
 #define TSP_INT16_TO_LE(val)	((int16_t) (val))
 #define TSP_UINT16_TO_LE(val)	((uint16_t) (val))
-#define TSP_INT16_TO_BE(val)	((int16_t) TSP_INT16_SWAP_LE_BE (val))
+#define TSP_INT16_TO_BE(val)	((int16_t) TSP_UINT16_SWAP_LE_BE (val))
 #define TSP_UINT16_TO_BE(val)	(TSP_UINT16_SWAP_LE_BE (val))
 #define TSP_INT32_TO_LE(val)	((int32_t) (val))
 #define TSP_UINT32_TO_LE(val)	((uint32_t) (val))

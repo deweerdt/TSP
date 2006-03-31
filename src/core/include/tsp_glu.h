@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_glu.h,v 1.6 2006-02-26 13:36:05 erk Exp $
+$Id: tsp_glu.h,v 1.7 2006-03-31 12:55:19 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -53,7 +53,13 @@ Purpose   : Interface for the glue server : the data producer
  * @{
  */
 
+/**
+ * Asynchronous write "allowed" value.
+ */
 #define TSP_ASYNC_WRITE_ALLOWED   1
+/**
+ * Asynchronous write "forbidden" value.
+ */
 #define TSP_ASYNC_WRITE_FORBIDDEN 0
 
 
@@ -308,14 +314,27 @@ typedef struct GLU_handle_t {
 
   pthread_t                 tid;             /**< The GLU thread Id */
   char*                     name;            /**< The GLU name */
-  GLU_server_type_t         type;            /**< The GLU type */
+  GLU_server_type_t         type;            /**< The GLU type */  
   double                    base_frequency;  /**< The provider base frequency */
   int                       nb_max_consumer; /**< The provider base frequency */
+  int                       nb_connected_consumer; /**< The number of currently connected consumers using this GLU instance */
   void*                     private_data;    /**< The opaque pointer extensibility point */
 
-  GLU_get_server_name_ft     get_name;            /**< name getter */
-  GLU_get_server_type_ft     get_type;            /**< type getter */
-  GLU_get_base_frequency_ft  get_base_frequency;  /**< base frequency getter */
+  /**
+   * Name getter
+   */
+  GLU_get_server_name_ft     get_name; 
+  /**
+   * Type getter.
+   */
+  GLU_get_server_type_ft     get_type; 
+  /**
+   * Base frequency getter
+   */ 
+  GLU_get_base_frequency_ft  get_base_frequency;
+  /**
+   * max consumer getter
+   */ 
   GLU_get_nb_max_consumer_ft get_nb_max_consumer; /**< max consumer getter */
   GLU_get_instance_ft        get_instance;        /**< instance getter */
   GLU_init_ft                initialize;
@@ -335,10 +354,10 @@ BEGIN_C_DECLS
 /**
  * Create a GLU_handle. 
  * This will provide some default implementation for member function.
- * @param glu OUT, pointer to a GLU_handle pointer that will be allocated
- * @param name IN, the name of the GLU that will be advertised by the TSP provider.
- * @param type IN, the type of the GLU @see GLU_server_type_t
- * @param base_frequency IN, the base frequency that will be advertised by the TSP provider
+ * @param[out] glu pointer to a GLU_handle pointer that will be allocated
+ * @param[in] name the name of the GLU that will be advertised by the TSP provider.
+ * @param[in] type the type of the GLU @see GLU_server_type_t
+ * @param[in] base_frequency the base frequency that will be advertised by the TSP provider
  * @return TRUE if ok FALSE otherwise
  */
 int32_t GLU_handle_create(GLU_handle_t** glu, const char* name, const GLU_server_type_t type, const double base_frequency);
@@ -346,7 +365,7 @@ int32_t GLU_handle_create(GLU_handle_t** glu, const char* name, const GLU_server
 /**
  * Destroy a GLU_handle.
  * for member function.
- * @param glu OUT, pointer to a GLU_handle pointer that will be allocated
+ * @param[out] glu pointer to a GLU_handle pointer that will be allocated
  * @return TRUE if ok FALSE otherwise
  */
 int32_t GLU_handle_destroy(GLU_handle_t** glu);

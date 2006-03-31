@@ -1,12 +1,13 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_group_algo.c,v 1.15 2006-02-26 13:36:05 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_group_algo.c,v 1.16 2006-03-31 12:55:19 erk Exp $
 
 -----------------------------------------------------------------------
 
 TSP Library - core components for a generic Transport Sampling Protocol.
 
-Copyright (c) 2002 Yves DUFRENNE, Stephane GALLES, Eric NOULARD and Robert PAGNOT 
+Copyright (c) 2002 Yves DUFRENNE, Stephane GALLES, Eric NOULARD, Robert PAGNOT and Arnaud MORVAN
+
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -45,6 +46,7 @@ and use groups
 
 #include "tsp_datapool.h"
 #include "tsp_data_sender.h"
+#include <tsp_encoder.h>
 
 /** pgcd will be equal to the GCD od n1 and n2 */
 #define PGCD(n1, n2, pgcd) \
@@ -361,9 +363,9 @@ int TSP_group_algo_create_symbols_table(const TSP_sample_symbol_info_list_t* in_
                                 rank))
                     /* 1 - In the out group table */
 		    
-                    /* FIXME : When more types (RAW, STRING...) will be managed, there will be
-		       other functions like TSP_data_sender_get_string_encoder or TSP_data_sender_get_raw_encoder */
-                    table->groups[group_id].items[rank].data_encoder = TSP_data_sender_get_double_encoder();
+                    /* find the encoder of the data type*/
+                    table->groups[group_id].items[rank].data_encoder = TSP_data_channel_get_encoder(in_info->type);
+		    table->groups[group_id].items[rank].dimension =in_info->dimension; 
 		  
 		  
 		  table->groups[group_id].items[rank].data = 

@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_client.h,v 1.11 2006-02-26 13:36:06 erk Exp $
+$Id: tsp_client.h,v 1.12 2006-03-31 12:55:19 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -108,6 +108,10 @@ TSP_answer_sample_destroy_t * TSP_request_sample_destroy(const TSP_request_sampl
 int* TSP_request_async_sample_write(const TSP_async_sample_t* async_sample_write, TSP_server_t server);
 
 TSP_async_sample_t* TSP_request_async_sample_read(const TSP_async_sample_t* async_sample_read, TSP_server_t server);
+
+TSP_answer_extended_information_t* 
+TSP_request_extended_information(const TSP_request_extended_information_t* req_extinfo,
+				 TSP_server_t server);
 
 /** @} end group TSP_RPCClientLib */ 
 

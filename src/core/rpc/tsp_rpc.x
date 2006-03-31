@@ -1,6 +1,6 @@
 /* -*- idl -*-
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_rpc.x,v 1.23 2006-02-26 13:36:06 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_rpc.x,v 1.24 2006-03-31 12:55:19 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -33,6 +33,7 @@ Purpose   :
  *            <li> TSP Request Close @ref TSP_request_close_t</li>
  *            <li> TSP Request Information @ref TSP_request_information_t </li>
  *            <li> TSP Request Filtered Information @ref TSP_request_information_t </li>
+ *            <li> TSP Request Extended Information @ref TSP_request_extended_information_t </li>
  *            <li> TSP Answer Sample @ref TSP_answer_sample_t </li>
  *            <li> TSP Request Sample @ref TSP_request_sample_t </li>
  *            <li> TSP Request Sample Initialisation @ref TSP_request_sample_init_t</li>
@@ -74,44 +75,85 @@ enum TSP_status_t
 	TSP_STATUS_ERROR_VERSION,
 
 	/**
-         * Error with the symbols (asked or returned )
+         * Error with the symbols (asked or returned)
          */
-
 	TSP_STATUS_ERROR_SYMBOLS,
 
 	/**
 	 * The requested symbols filter is ill-formed
 	 */
 	TSP_STATUS_ERROR_SYMBOL_FILTER,
+
 	/**
          * The requested feature is not supported (by this particular consumer/provider)
          */
 	TSP_STATUS_ERROR_NOT_SUPPORTED,
+
 	/**	
          * The requested feature is not implemented
          */
 	TSP_STATUS_ERROR_NOT_IMPLEMENTED,
+
 	/**
          * The requested PGI (provider global index is unknown)
          */
 	TSP_STATUS_ERROR_PGI_UNKNOWN,
+
 	/**
          * Asynchronous read is not allowed.
          */
  	TSP_STATUS_ERROR_ASYNC_READ_NOT_ALLOWED,
+
 	/**
          * Asynchronous write is not allowed.
          */
  	TSP_STATUS_ERROR_ASYNC_WRITE_NOT_ALLOWED,       
+
 	/**
          * Asynchronous read is not supported.
          */
 	TSP_STATUS_ERROR_ASYNC_READ_NOT_SUPPORTED,	
+
 	/**
          * Asynchronous write is not supported.
          */
  	TSP_STATUS_ERROR_ASYNC_WRITE_NOT_SUPPORTED       	
 };
+
+/** TSP Symbols basic types */
+enum TSP_datatype_t 
+{
+  /**
+   *  Unknown is used when type is unknown.
+   *  Consumer may use it in its request sample when he 
+   *  does not know the exact type of the symbol (he may only
+   *  known its name).
+   *  Provider may use it in answer sample when requested type
+   *  does not match the one found on provider side.
+   */
+  TSP_TYPE_UNKNOWN=0,
+  TSP_TYPE_DOUBLE=1,   /*!< An IEEE double precision floating point  */
+  TSP_TYPE_FLOAT,      /*!< An IEEE simple precision floating point  */
+  TSP_TYPE_INT8,       /*!< An 8bit signed integer                   */
+  TSP_TYPE_INT16,      /*!< A 16bit signed integer                   */
+  TSP_TYPE_INT32,      /*!< A 32bit signed integer                   */
+  TSP_TYPE_INT64,      /*!< A 64bit signed integer                   */
+  TSP_TYPE_UINT8,      /*!< An 8bit unsigned integer                 */
+  TSP_TYPE_UINT16,     /*!< A 16bit unsigned integer                 */
+  TSP_TYPE_UINT32,     /*!< A 32bit unsigned integer                 */
+  TSP_TYPE_UINT64,     /*!< A 64bit unsigned integer                 */
+  TSP_TYPE_CHAR,       /*!< An 8bit signed character                 */
+  TSP_TYPE_UCHAR,      /*!< An 8bit unsigned character               */
+  /**
+   * Any type of 8bit size.
+   * For this type no encoding will be done
+   * before sending it and no decode
+   * will be done on receive.
+   * Beware endianity problem when using this.
+   */
+  TSP_TYPE_RAW       
+};
+
 
 /** 
  * The TSP answer open is the answer
@@ -270,7 +312,7 @@ struct TSP_sample_symbol_info_t
   /**
    * The type of the TSP symbol.
    */
-  opaque xdr_tsp_t[4];
+  TSP_datatype_t type;
   /**
    * The dimension of the symbol (array size).
    * <ul>
@@ -289,14 +331,77 @@ struct TSP_sample_symbol_info_t
   int phase; 
 };
 
-
-/*struct TSP_sample_symbol_info_list_t
-{
-	TSP_sample_symbol_info_t TSP_sample_symbol_info_list_t<>;
-};
-*/
-
+/** List of @ref TSP_sample_symbol_info_t */
 typedef TSP_sample_symbol_info_t TSP_sample_symbol_info_list_t<>;
+
+/**
+ * The TSP extended information structure
+ * which is a simple pair of key/value
+ */
+struct TSP_extended_info_t {
+  /** Extended info key */
+  string key<>;
+  /** Extended info value */
+  string value<>;
+};
+
+/** List of @ref TSP_extended_info_t */
+typedef TSP_extended_info_t TSP_extended_info_list_t<>;
+
+/**
+ * TSP Sample Extended Information.
+ * A TSP Symbol may have extended information
+ * which are not defined in @ref TSP_sample_symbol_info_t.
+ * Those informations are defined by a list of
+ * @ref TSP_extended_info_t.
+ */
+struct TSP_sample_symbol_extended_info_t
+{ 
+  /** 
+   * The provider global index (PGI).
+   * This a provider-side index which uniquely
+   * identify a symbol. Each symbol provided by
+   * a TSP provider should have a unique PGI assigned
+   * by the provider.
+   */
+  int provider_global_index;
+  /**
+   * The extended information list.
+   */
+  TSP_extended_info_list_t info;
+};
+
+/** List of @ref TSP_sample_symbol_extended_info_t */
+typedef TSP_sample_symbol_extended_info_t TSP_sample_symbol_extended_info_list_t<>;
+
+/**
+ * TSP Request Extended Informations.
+ * Ask TSP provider to send extended informations
+ * about TSP symbols whose PGI is given on the
+ * pgi list, the @ref TSP_answer_feature_t will contains
+ * the requested extended informations.
+ */
+struct TSP_request_extended_information_t
+{
+  /** TSP Protocol Version */
+  int version_id;
+  /** TSP Asynchronous Channel Id  */
+  unsigned int channel_id;
+  /** List of PGI for which we want extended informations */
+  int pgi<>;
+};
+
+/**
+ * Answer to @ref TSP_request_extended_information_t.
+ */
+struct TSP_answer_extended_information_t {
+  /** TSP Protocol Version */
+  int version_id;
+  /** TSP Asynchronous Channel Id  */
+  unsigned int channel_id;
+  /** The Symbols extended informations */
+  TSP_sample_symbol_extended_info_list_t extsymbols;
+};
 
 /*
   FIXME : Use it when the consumer will be able
@@ -428,6 +533,8 @@ struct TSP_answer_sample_destroy_t
  */
 struct TSP_async_sample_t
 {
+  /** TSP Asynchronous Channel Id  */
+  unsigned int channel_id;
   /** 
    * The provider global index (PGI).
    * This a provider-side index which uniquely
@@ -466,27 +573,28 @@ program TSP_RPC {
 	
 	/* TSP Protocol */	
 
-	TSP_answer_open_t 		TSP_REQUEST_OPEN(TSP_request_open_t req_open) = 102;
+	TSP_answer_open_t 		     TSP_REQUEST_OPEN(TSP_request_open_t req_open) = 102;
 	
-	int 				TSP_REQUEST_CLOSE(TSP_request_close_t req_close) = 103;
+	int 				     TSP_REQUEST_CLOSE(TSP_request_close_t req_close) = 103;
 	
-	TSP_answer_sample_t		TSP_REQUEST_INFORMATION(TSP_request_information_t req_info) = 104;
+	TSP_answer_sample_t		     TSP_REQUEST_INFORMATION(TSP_request_information_t req_info) = 104;
 	
-	TSP_answer_feature_t		TSP_REQUEST_FEATURE(TSP_request_feature_t req_feature) = 105;
+	TSP_answer_feature_t		     TSP_REQUEST_FEATURE(TSP_request_feature_t req_feature) = 105;
 	
-	TSP_answer_sample_t		TSP_REQUEST_SAMPLE(TSP_request_sample_t req_sample) = 106;
+	TSP_answer_sample_t		     TSP_REQUEST_SAMPLE(TSP_request_sample_t req_sample) = 106;
 	
-	TSP_answer_sample_init_t	TSP_REQUEST_SAMPLE_INIT(TSP_request_sample_init_t req_sample) = 107;
+	TSP_answer_sample_init_t	     TSP_REQUEST_SAMPLE_INIT(TSP_request_sample_init_t req_sample) = 107;
 	
-	TSP_answer_sample_destroy_t	TSP_REQUEST_SAMPLE_DESTROY(TSP_request_sample_destroy_t req_destroy) = 108;
+	TSP_answer_sample_destroy_t	     TSP_REQUEST_SAMPLE_DESTROY(TSP_request_sample_destroy_t req_destroy) = 108;
 	
-	int				TSP_EXEC_FEATURE(TSP_exec_feature_t exec_feature) = 109;
+	int				     TSP_EXEC_FEATURE(TSP_exec_feature_t exec_feature) = 109;
 	
-	int 				TSP_REQUEST_ASYNC_SAMPLE_WRITE(TSP_async_sample_t async_sample_write) = 110;
+	int 				     TSP_REQUEST_ASYNC_SAMPLE_WRITE(TSP_async_sample_t async_sample_write) = 110;
 
-	TSP_async_sample_t              TSP_REQUEST_ASYNC_SAMPLE_READ(TSP_async_sample_t async_sample_read) = 111;
+	TSP_async_sample_t                   TSP_REQUEST_ASYNC_SAMPLE_READ(TSP_async_sample_t async_sample_read) = 111;
 
-	TSP_answer_sample_t		TSP_REQUEST_FILTERED_INFORMATION(TSP_request_information_t req_info, int filter_kind, string filter_string<>) = 114;
+	TSP_answer_sample_t		     TSP_REQUEST_FILTERED_INFORMATION(TSP_request_information_t req_info, int filter_kind, string filter_string<>) = 114;
+	TSP_answer_extended_information_t    TSP_REQUEST_EXTENDED_INFORMATION(TSP_request_extended_information_t req_extinfo) = 115;
 	
 
 	} = 1;

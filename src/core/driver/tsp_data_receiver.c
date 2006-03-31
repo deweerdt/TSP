@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_data_receiver.c,v 1.19 2006-02-26 13:36:05 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_data_receiver.c,v 1.20 2006-03-31 12:55:19 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -48,9 +48,6 @@ stream  for the requested symbols
 
 #include "tsp_stream_receiver.h"
 
-#define TSP_SIZEOF_ENCODED_DOUBLE RNDUP(sizeof(double))
-
-
 
 struct TSP_struct_data_receiver_t
 {
@@ -65,31 +62,6 @@ struct TSP_struct_data_receiver_t
 
 typedef struct TSP_struct_data_receiver_t TSP_struct_data_receiver_t;
 
-static int TSP_data_receiver_double_decoder(void* out_double,  char* in_buf)
-{
-#ifndef TSP_NO_XDR_ENCODE
-
-  XDR xhandle;
-  xdrmem_create(&xhandle, in_buf, TSP_SIZEOF_ENCODED_DOUBLE, XDR_DECODE);
-  if( xdr_double(&xhandle, (double*)out_double) != TRUE)
-    {
-      STRACE_ERROR(("Function xdr_double failed"));
-      return FALSE;
-    }
-  else
-    {
-      return TRUE;
-    }
-
-#else
-  
-  *(uint64_t*)out_double = TSP_DECODE_DOUBLE_TO_UINT64(in_buf);   
-  
-  return TRUE;
-
-#endif
-
-}
 
 static void TSP_data_receiver_process_receiver_error(TSP_sample_ringbuf_t* sample_fifo)
 {
@@ -266,7 +238,9 @@ int TSP_data_receiver_receive(TSP_data_receiver_t _receiver,
 		      /*--------------*/
 
 		      /* Call registered function to decode data */
-		      ret = (groups[group_index].items[rank].data_decoder)(&(sample->user_value),in_buf);
+		      ret = (groups[group_index].items[rank].data_decoder)(&(sample->user_value),
+									   1, /* FIXME retrieve SYMBOL DIMENSION */
+									   in_buf);
 		      if(!ret)
 			{
 			  STRACE_ERROR(("decoder function failed"));
@@ -381,17 +355,7 @@ void TSP_data_receiver_destroy(TSP_data_receiver_t _receiver)
 }
 
 
-TSP_data_decoder_t TSP_data_receiver_get_double_decoder(void)
-{
-  return TSP_data_receiver_double_decoder;
-}
 
-int TSP_data_receiver_get_double_encoded_size(void)
-{
-  return TSP_SIZEOF_ENCODED_DOUBLE;
-}
-
- 
             
 	      
 			      

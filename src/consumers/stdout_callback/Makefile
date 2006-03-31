@@ -6,7 +6,7 @@ include $(DEVBASE)/make/Makeparams
 SOURCES = \
 	client_callback_stdout.c
 
-ADD_LIB =  $(DIRLIB)/libtsp_consumer.a $(DIRLIB)/libtsp_services.a $(DIRLIB)/libtsp_calc.a
+ADD_LIB =  $(DIRLIB)/libtsp_consumer.a $(DIRLIB)/libtsp_services.a $(DIRLIB)/libtsp_calc.a $(DIRLIB)/libtsp_common.a
 
 ADD_INCLUDE = -I $(DEVBASE)/src/util/libcalc
 

@@ -1,12 +1,12 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_group.c,v 1.8 2006-02-26 13:36:05 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_group.c,v 1.9 2006-03-31 12:55:19 erk Exp $
 
 -----------------------------------------------------------------------
 
 TSP Library - core components for a generic Transport Sampling Protocol.
 
-Copyright (c) 2002 Yves DUFRENNE, Stephane GALLES, Eric NOULARD and Robert PAGNOT 
+Copyright (c) 2002 Yves DUFRENNE, Stephane GALLES, Eric NOULARD, Robert PAGNOT and Arnaud MORVAN
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -39,6 +39,7 @@ Purpose   : Implementation for the groups management
 
 #include "tsp_group_data.h"
 #include "tsp_group.h"
+#include <tsp_decoder.h>
 
 #include "tsp_data_receiver.h"
 
@@ -113,9 +114,11 @@ TSP_group_create_group_table(const TSP_sample_symbol_info_list_t* symbols, int g
 	      
 	      table->groups[group_id].items[rank].provider_global_index = symbols->TSP_sample_symbol_info_list_t_val[i].provider_global_index;
 
-	      /* FIXME : en fonction du type, appeler la bonne fonction */
-	      table->groups[group_id].items[rank].data_decoder = TSP_data_receiver_get_double_decoder();
-	      table->groups[group_id].items[rank].sizeof_encoded_item = TSP_data_receiver_get_double_encoded_size();
+	      /*find the dat type and decode and load  the data */
+	      table->groups[group_id].items[rank].data_decoder = TSP_data_channel_get_decoder(symbols->TSP_sample_symbol_info_list_t_val[i].type);
+	      table->groups[group_id].items[rank].sizeof_encoded_item = 
+		                                             TSP_data_channel_get_encoded_size(symbols->TSP_sample_symbol_info_list_t_val[i].type)
+		                                             * symbols->TSP_sample_symbol_info_list_t_val[i].dimension;
 	      table->groups[group_id].sizeof_encoded_group += table->groups[group_id].items[rank].sizeof_encoded_item;
 	      
 	      STRACE_DEBUG(("Added to group table Id=%d, Gr=%d, Rank=%d", 

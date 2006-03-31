@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.c,v 1.20 2006-02-26 13:36:05 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.c,v 1.21 2006-03-31 12:55:19 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -617,6 +617,15 @@ int TSP_session_get_symbols_global_index_by_channel(channel_id_t channel_id,
     /* Store all global indexes into list including NOT FOUND ones */
     for ( i=0 ; i < symbol_list->TSP_sample_symbol_info_list_t_len ; i++ ) {
       symbol_list->TSP_sample_symbol_info_list_t_val[i].provider_global_index=pg_indexes[i];
+      if (TSP_TYPE_UNKNOWN == symbol_list->TSP_sample_symbol_info_list_t_val[i].type) {
+	symbol_list->TSP_sample_symbol_info_list_t_val[i].type = TSP_TYPE_DOUBLE; /* FIXME get real type from provider */
+	symbol_list->TSP_sample_symbol_info_list_t_val[i].dimension = 1;
+      } else {
+	// CHECK requested type match provider type
+	symbol_list->TSP_sample_symbol_info_list_t_val[i].type = TSP_TYPE_DOUBLE;
+	symbol_list->TSP_sample_symbol_info_list_t_val[i].dimension = 1;
+	// IF NOT MATCH set PGI to -1
+      }
       
       /* If symbol has not been found */
       if ( pg_indexes[i] == -1 ) {

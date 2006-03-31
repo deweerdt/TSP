@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_server.c,v 1.28 2006-02-26 13:36:06 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_server.c,v 1.29 2006-03-31 12:55:19 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -451,6 +451,19 @@ int TSP_rpc_request_stop(TSP_provider_request_handler_t* this)
   return TRUE;
 } /* end of TSP_rpc_request_stop */
 
+                                   
+TSP_answer_extended_information_t* tsp_request_extended_information_1_svc(TSP_request_extended_information_t req_extinfo, struct svc_req * rqstp)
+{
+
+  static TSP_answer_extended_information_t ans_extinfo;
+	
+  STRACE_IO(("-->IN"));	
+  TSP_provider_request_extended_information(&req_extinfo, &ans_extinfo);
+  STRACE_IO(("-->OUT"));       
+  return &ans_extinfo;
+
+}
+
 #else
 int main(void)
 {
@@ -462,4 +475,5 @@ int main(void)
     }
   return 0;
 }
+
 #endif

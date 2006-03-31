@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_group_data.h,v 1.6 2006-02-26 13:36:05 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_group_data.h,v 1.7 2006-03-31 12:55:19 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -44,6 +44,9 @@ for performance reason may include this header
 
 #include "tsp_datastruct.h"
 #include "tsp_data_receiver.h"
+
+#include <tsp_decoder.h>
+#include <tsp_encoder.h>
 
 struct TSP_group_item_t
 {

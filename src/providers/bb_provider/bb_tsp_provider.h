@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/providers/bb_provider/bb_tsp_provider.h,v 1.11 2006-02-26 13:36:06 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/providers/bb_provider/bb_tsp_provider.h,v 1.12 2006-03-31 12:55:19 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -38,6 +38,7 @@ Purpose   : Blackboard TSP Provider
 #define _BB_TSP_PROVIDER_H_
 
 #include <tsp_abs_types.h>
+#include <tsp_default_glu.h>
 #include <pthread.h>
 
 /**
@@ -49,16 +50,41 @@ Purpose   : Blackboard TSP Provider
  * @ingroup TSP_Libraries
  * @{
  */
+ 
+ 
+ /**
+ * set the bb name
+ * 
+ * @param[in] bbname name of the blackboard
+ *
+ * @return void
+ */
+void
+bb_tsp_provider_setbbname(const char* bbname);
+
+/**
+ * attribute the function of the GLU
+ * 
+ * @param[in] frequency the frequency advertised by the bb_tsp_provider
+ * @param[in] acknowledgeCopy 0 if no acknowledgment is to be sent
+ *                        by the provider to the simulation driving
+ *                        sample, otherwise acknowledgment is sent.
+ * @param[in] GLUServerType   type of serveur: ACTIVE or PASSIVE
+ * @return the pointer's GLU
+ */
+
+GLU_handle_t*
+bb_tsp_provider_create_GLU(double frequency, int32_t acknowledgeCopy, int GLUServerType);
 
 /**
  * Initialize Blackboard TSP provider Library.
  * 
- * @param argc argc coming from main (before the main use it)
- * @param argv argv coming from main (before the main use it)
- * @param TSPRunMode running mode, 0 = non blocking, 1 = blocking (never return).
- * @param bbname the blackboard name we should attach to.
- * @param frequency the frequency advertised by the bb_tsp_provider 
- * @param acknowledgeCopy 0 if no acknowledgment is to be sent
+ * @param[in] argc argc coming from main (before the main use it)
+ * @param[in] argv argv coming from main (before the main use it)
+ * @param[in] TSPRunMode running mode, 0 = non blocking, 1 = blocking (never return).
+ * @param[in] bbname the blackboard name we should attach to.
+ * @param[in] frequency the frequency advertised by the bb_tsp_provider 
+ * @param[in] acknowledgeCopy 0 if no acknowledgment is to be sent
  *                        by the provider to the simulation driving
  *                        sample, otherwise acknowledgment is sent.
  * @return E_OK if initialization is successfull  E_NOK otherwise.
@@ -68,7 +94,8 @@ bb_tsp_provider_initialise(int* argc, char** argv[],int TSPRunMode,
 			   const char* bbname,
 			   double frequency, 
 			   int32_t acknowledgeCopy);
-
+			   
+	
 /**
  * Terminate the bb_tsp_provider nicely.
  * The function end up in a call to TSP_provider_finalize().
@@ -92,7 +119,7 @@ bb_tsp_provider_allow_write_symbol(int provider_global_index);
  * Forbid asynchronous write for BB symbols specified by its PGI.
  * After a call to this asynchronous write request to this PGI
  * will be refused by BB provider.
- * @param provider_global_index IN, the PGI of the symbol we want to forbid
+ * @param[in] provider_global_index IN, the PGI of the symbol we want to forbid
  *                                  the asynchronous write.
  * @return TRUE if authorization succeed FALSE otherwise.
  */

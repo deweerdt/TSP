@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_data_receiver.h,v 1.9 2006-02-26 13:36:05 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_data_receiver.h,v 1.10 2006-03-31 12:55:19 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -45,8 +45,7 @@ stream  for the requested  symbols
 
 typedef  void* TSP_data_receiver_t;
 
-/** Generic function to decode data */
-typedef int(*TSP_data_decoder_t)(void* v, char* in_buf); 
+
 
 /**
  * Receive the data coming from the provider.
@@ -87,26 +86,6 @@ void TSP_data_receiver_stop(TSP_data_receiver_t _receiver);
  * @param _receiver handle that must be destroyed
  */
 void TSP_data_receiver_destroy(TSP_data_receiver_t _receiver);
-
-/**
- * Get the function that's used to decode a double encoded
- * in the data stream.
- * This function address is stored by the group object to 
- * decode the incoming data as fast as possible.
- * FIXME : Other functions like this one will have to be
- * implemented when other types are managed ( ex :
- * TSP_data_receiver_get_string_decoder, TSP_data_receiver_get_raw_decoder)
- * @return The address of the decoder function for doubles
- */
-TSP_data_decoder_t TSP_data_receiver_get_double_decoder(void);
-
-/**
- * Get the size of an encoded double coming from the data stream
- * FIXME : Other functions like this one will have to be
- * implemented when other types are managed.
- * @return The size (bytes) of an encoded double for the data stream 
- */
-int TSP_data_receiver_get_double_encoded_size(void);
 
 
 /**

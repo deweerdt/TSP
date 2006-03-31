@@ -1,14 +1,18 @@
 include $(DEVBASE)/make/Makeparams
 
-XINC    = tsp_common.h
+XINC    = tsp_common.h \
+	tsp_decoder.h \
+	tsp_encoder.h
 SOURCES = \
-	tsp_common.c 
+	tsp_common.c \
+	tsp_encoder.c \
+	tsp_decoder.c
 
 OBJECTS=$(SOURCES:%.c=$(DIROBJ)/%.o) 
 
 TARGET=$(DIRLIB)/libtsp_common.a
 
-CPPFLAGS += -I../rpc -I ../misc_utils
+CPPFLAGS += -I. #./rpc -I../misc_utils -I../driver -I../ctrl -I../include 
 
 # -----------------------------------------------------------
 # No label all:: because it's in Makeparams and calls build::	

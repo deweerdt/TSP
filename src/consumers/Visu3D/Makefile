@@ -15,7 +15,9 @@ endif
 
 OBJECTS = $(SOURCES:%.c=$(DIROBJ)/%.o)
 
-ADD_LIB =  $(DIRLIB)/libtsp_consumer.a  $(DIRLIB)/libtsp_services.a
+ADD_LIB =  $(DIRLIB)/libtsp_consumer.a \
+	$(DIRLIB)/libtsp_services.a \
+	$(DIRLIB)/libtsp_common.a
 LDLIBS +=  -L/usr/X11R6/lib  -L/usr/lib -lm -lGLU -lGL -lglut -lX11 -Llib -lXmu
 
 ifeq (${BUILD_CONSUMER},yes)

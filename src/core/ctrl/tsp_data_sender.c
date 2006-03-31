@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_data_sender.c,v 1.18 2006-02-26 13:36:05 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_data_sender.c,v 1.19 2006-03-31 12:55:19 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -79,40 +79,6 @@ struct TSP_struct_data_sender_t
 
 typedef struct TSP_struct_data_sender_t TSP_struct_data_sender_t;
 
-static u_int TSP_data_sender_double_encoder(void* v_double,  char* out_buf, u_int size)
-{
-
-#ifndef TSP_NO_XDR_ENCODE
-
-  XDR xhandle;
-   
-  xdrmem_create(&xhandle, out_buf,  size, XDR_ENCODE);
-  if( xdr_double(&xhandle, (double*)v_double) != TRUE)
-    {
-      STRACE_ERROR(("Function xdr_double failed"));
-      return 0;
-    }
-  else
-    {
-      return xdr_getpos(&xhandle);
-    }
-
-#else
-
-  if(size < sizeof(double) )
-    {
-      STRACE_ERROR(("buffer is too small"));
-      return 0;
-    }
-  else
-    {
-      *(uint64_t*)out_buf = TSP_ENCODE_DOUBLE_TO_UINT64(v_double);
-      return (u_int)sizeof(double);
-    }
-
-#endif /*TSP_NO_XDR_ENCODE*/
-
-}
 
 TSP_data_sender_t TSP_data_sender_create(int fifo_size, int max_group_size)
 {
@@ -385,6 +351,7 @@ int TSP_data_sender_send(TSP_data_sender_t _sender, TSP_groups_t _groups, time_s
 	      /* Call encode function */
 	      assert(group->items[i].data_encoder);
 	      size = (group->items[i].data_encoder)(group->items[i].data,
+						    group->items[i].dimension,
 						    buf_char,
 						    data_sender->buffer_size - ( buf_char - buf_main) );
 	      if ( 0 == size )
@@ -412,11 +379,6 @@ const char* TSP_data_sender_get_data_address_string(TSP_data_sender_t sender)
 {
   TSP_struct_data_sender_t* data_sender = (TSP_struct_data_sender_t*)sender;
   return TSP_stream_sender_get_data_address_string(data_sender->stream_sender);
-}
-
-TSP_data_encoder_t TSP_data_sender_get_double_encoder(void)
-{
-  return TSP_data_sender_double_encoder;
 }
 
 

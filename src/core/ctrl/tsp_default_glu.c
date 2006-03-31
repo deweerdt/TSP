@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_default_glu.c,v 1.7 2006-02-26 13:36:05 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_default_glu.c,v 1.8 2006-03-31 12:55:19 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -58,6 +58,7 @@ int32_t GLU_handle_create(GLU_handle_t** glu, const char* name, const GLU_server
   (*glu)->type            = type;
   (*glu)->base_frequency  = base_frequency;
   (*glu)->nb_max_consumer = TSP_MAX_CLIENT_NUMBER;
+  (*glu)->nb_connected_consumer = 0;
   (*glu)->private_data    = NULL;
   /* provides default method implementation  and NULLIFY others */
   (*glu)->get_name            = &GLU_get_server_name_default;

@@ -1,12 +1,12 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_data_sender.h,v 1.9 2006-02-26 13:36:05 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_data_sender.h,v 1.10 2006-03-31 12:55:19 erk Exp $
 
 -----------------------------------------------------------------------
 
 TSP Library - core components for a generic Transport Sampling Protocol.
 
-Copyright (c) 2002 Yves DUFRENNE, Stephane GALLES, Eric NOULARD and Robert PAGNOT 
+Copyright (c) 2002 Yves DUFRENNE, Stephane GALLES, Eric NOULARD, Robert PAGNOT and Arnaud MORVAN
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -48,9 +48,6 @@ stream  for the asked symbols
 typedef  void* TSP_data_sender_t;
 
 
-/** Generic function type to encode data */
-typedef u_int(*TSP_data_encoder_t)(void* v, char* out_buf, u_int size); 
-
 /**
  * Send data to the consumer.
  * @param sender The data sender handle.
@@ -85,7 +82,7 @@ TSP_data_sender_t TSP_data_sender_create(int fifo_size, int max_group_size);
  */
 void TSP_data_sender_stop(TSP_data_sender_t sender);
 
-/**
+/**TSP_data_sender_get_encoder
  * Destroy a data sender.
  * @param sender The data sender handle.
  */
@@ -100,13 +97,6 @@ void TSP_data_sender_destroy(TSP_data_sender_t sender);
  */
 const char* TSP_data_sender_get_data_address_string(TSP_data_sender_t sender);
 
-/**
- * Returns the function used to encode a double type.
- * This value is stored in the group table to encode the data
- * as fast as possible. FIXME : manage more types : RAW, STRING ...
- * @return The double encoder function
- */
-TSP_data_encoder_t TSP_data_sender_get_double_encoder(void);
 
 /**
  * Is the consumer connected to the data sender ?

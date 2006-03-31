@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_group_algo_data.h,v 1.5 2006-02-26 13:36:05 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_group_algo_data.h,v 1.6 2006-03-31 12:55:19 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -41,11 +41,12 @@ for performance reason may include this header
 #define _TSP_GROUP_ALGO_DATA_H
 
 #include "tsp_data_sender.h"
+#include <tsp_encoder.h>
 
 struct TSP_algo_group_item_t
 {
   void* data;
-    
+  int   dimension;
   TSP_data_encoder_t data_encoder;
 };
 

@@ -12,7 +12,7 @@ SOURCES = \
 
 OBJECTS = $(SOURCES:%.c=$(DIROBJ)/%.o)
 
-ADD_LIB = $(DIRLIB)/libtsp_ascii_writer.a $(DIRLIB)/libtsp_consumer.a  $(DIRLIB)/libtsp_services.a 
+ADD_LIB = $(DIRLIB)/libtsp_ascii_writer.a $(DIRLIB)/libtsp_consumer.a  $(DIRLIB)/libtsp_services.a $(DIRLIB)/libtsp_common.a
 LDLIBS += $(LEXLIB)
 
 ifeq (${BUILD_CONSUMER},yes)

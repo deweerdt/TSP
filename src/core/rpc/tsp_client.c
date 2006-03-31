@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_client.c,v 1.15 2006-02-26 13:36:06 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_client.c,v 1.16 2006-03-31 12:55:19 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -400,5 +400,19 @@ TSP_async_sample_t* TSP_request_async_sample_read(const TSP_async_sample_t* asyn
 	
   STRACE_IO(("-->OUT"));
   	
+  return result;
+}	
+
+TSP_answer_extended_information_t* 
+TSP_request_extended_information(const TSP_request_extended_information_t* req_extinfo, TSP_server_t server)
+{
+
+  TSP_answer_extended_information_t* result;
+	
+  LOCAL_RPCCHECK_0;
+	
+  result = tsp_request_extended_information_1(*req_extinfo, server);
+  TSP_STRACE_RPC_ERROR(server, result);
+  
   return result;
 }	

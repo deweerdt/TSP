@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_provider.c,v 1.36 2006-02-26 13:36:05 erk Exp $
+$Id: tsp_provider.c,v 1.37 2006-03-31 12:55:19 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -697,3 +697,9 @@ int TSP_provider_request_async_sample_read(TSP_async_sample_t* async_sample_read
   return ret;
 
 } /* End of TSP_async_sample_read */
+
+void  TSP_provider_request_extended_information(TSP_request_extended_information_t* req_extinfo, 
+						TSP_answer_extended_information_t* ans_extinfo) {
+
+  return;
+}
