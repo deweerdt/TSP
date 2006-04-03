@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_client.c,v 1.16 2006-03-31 12:55:19 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_client.c,v 1.17 2006-04-03 16:07:36 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -369,13 +369,12 @@ int* TSP_request_async_sample_write(const TSP_async_sample_t* async_sample_write
   STRACE_IO(("-->OUT"));
   	
  return result;
-}	
+} /* end of async_sample_write */	
 
-TSP_async_sample_t* TSP_request_async_sample_read(const TSP_async_sample_t* async_sample_read, TSP_server_t server)
+TSP_async_sample_t* TSP_request_async_sample_read(const TSP_async_sample_t* async_sample_read, 
+						  TSP_server_t server)
 {
   TSP_async_sample_t* result;
-  
-  STRACE_IO(("-->IN"));
   
 
 /*   switch (async_sample_read->data.data_len) { */
@@ -401,7 +400,7 @@ TSP_async_sample_t* TSP_request_async_sample_read(const TSP_async_sample_t* asyn
   STRACE_IO(("-->OUT"));
   	
   return result;
-}	
+} /* end of async_sample_read */	
 
 TSP_answer_extended_information_t* 
 TSP_request_extended_information(const TSP_request_extended_information_t* req_extinfo, TSP_server_t server)

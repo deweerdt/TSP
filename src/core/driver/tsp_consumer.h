@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_consumer.h,v 1.25 2006-02-26 13:36:05 erk Exp $
+$Id: tsp_consumer.h,v 1.26 2006-04-03 16:07:36 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -392,11 +392,17 @@ int TSP_consumer_read_sample(TSP_provider_t provider,
 			     int* new_sample);
 
 
-int TSP_consumer_request_async_sample_write(TSP_provider_t provider,TSP_consumer_async_sample_t* async_sample_write);
+int32_t 
+TSP_consumer_request_async_sample_write(TSP_provider_t provider,
+					TSP_consumer_async_sample_t* async_sample_write);
 
-int TSP_consumer_request_async_sample_read(TSP_provider_t provider,TSP_consumer_async_sample_t* async_sample_read);
+int32_t 
+TSP_consumer_request_async_sample_read(TSP_provider_t provider,
+				       TSP_consumer_async_sample_t* async_sample_read);
 
-void TSP_consumer_print_invalid_symbols(FILE*, TSP_consumer_symbol_requested_list_t* symbols, const char* tsp_provider_url);
+void TSP_consumer_print_invalid_symbols(FILE*, 
+					TSP_consumer_symbol_requested_list_t* symbols, 
+					const char* tsp_provider_url);
 
 /** @} end group TSP_ConsumerLib */ 
 

@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_default_glu.c,v 1.8 2006-03-31 12:55:19 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_default_glu.c,v 1.9 2006-04-03 16:07:36 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -87,6 +87,8 @@ int32_t GLU_handle_create(GLU_handle_t** glu, const char* name, const GLU_server
   (*glu)->start                 = &GLU_start_default;
   (*glu)->get_pgi               = &GLU_get_pgi_default;
   (*glu)->get_filtered_ssi_list = &GLU_get_filtered_ssi_list_default;
+  (*glu)->get_ssi_list_fromPGI  = &GLU_get_ssi_list_fromPGI_default;
+  (*glu)->get_ssei_list_fromPGI = &GLU_get_ssei_list_fromPGI_default;
   (*glu)->get_nb_symbols        = &GLU_get_nb_symbols_default;
   (*glu)->async_read            = &GLU_async_sample_read_default;
   (*glu)->async_write           = &GLU_async_sample_write_default;
@@ -103,6 +105,12 @@ int32_t GLU_handle_destroy(GLU_handle_t** glu) {
   retcode = TRUE;
   return retcode;
 } /* end if GLU_handle_destroy */
+
+int32_t 
+GLU_handle_check(GLU_handle_t* glu) {
+  return TSP_STATUS_OK;
+}
+
 
 /* ====== You'll find hereafter some default implementation GLU methods ====== */
 
@@ -121,7 +129,7 @@ GLU_get_base_frequency_default(struct GLU_handle_t* this) {
   return this->base_frequency;
 }
 
-int 
+int32_t
 GLU_get_nb_max_consumer_default(struct GLU_handle_t* this) {
   return this->nb_max_consumer;
 }
@@ -140,7 +148,7 @@ GLU_get_instance_default(GLU_handle_t* this,
 } /* end of GLU_get_instance_default */
 
 
-int  
+int32_t
 GLU_start_default(GLU_handle_t* this)
 {
   if (0==this->tid) {
@@ -148,9 +156,9 @@ GLU_start_default(GLU_handle_t* this)
   } else {
     return 1;
   }
-}
+} /* GLU_start_default */
 
-int 
+int32_t
 GLU_get_pgi_default(GLU_handle_t* this, TSP_sample_symbol_info_list_t* symbol_list, int* pg_indexes) {
   int retcode = TRUE;
   TSP_sample_symbol_info_list_t complete_symbol_list;
@@ -190,18 +198,18 @@ GLU_get_pgi_default(GLU_handle_t* this, TSP_sample_symbol_info_list_t* symbol_li
 } /* end of GLU_get_pgi_default */
 
 
-int  
-GLU_get_nb_symbols_default(GLU_handle_t* this)
-{
+int32_t  
+GLU_get_nb_symbols_default(GLU_handle_t* this) {
   int retval = 0;
   TSP_sample_symbol_info_list_t complete_symbol_list;
   this->get_ssi_list(this,&complete_symbol_list);
 
   retval = complete_symbol_list.TSP_sample_symbol_info_list_t_len;
   return retval;
-}
+} /* end of GLU_get_nb_symbols_default */
 
-int GLU_get_filtered_ssi_list_default(GLU_handle_t* this, int filter_kind, char* filter_string, TSP_answer_sample_t* answer_sample) {
+int32_t 
+GLU_get_filtered_ssi_list_default(GLU_handle_t* this, int filter_kind, char* filter_string, TSP_answer_sample_t* answer_sample) {
 
   TSP_sample_symbol_info_list_t complete_symbol_list;
   int32_t nb_match;
@@ -257,14 +265,35 @@ int GLU_get_filtered_ssi_list_default(GLU_handle_t* this, int filter_kind, char*
   return -1;
 }
 
-int 
-GLU_async_sample_read_default(struct GLU_handle_t* this, int pgi, void* value_ptr, uint32_t* value_size) {
-  /* default GLU does not authorize async read for any symbol */
-  return -1;
+int32_t
+GLU_get_ssi_list_fromPGI_default(struct GLU_handle_t* this, 
+				 int32_t* pgis, int32_t pgis_len, 
+				 TSP_sample_symbol_info_list_t* SSI_list) {
+  
+  return  TSP_STATUS_ERROR_NOT_SUPPORTED;
+} /* end of GLU_get_ssi_list_fromPGI_default */
+
+int32_t
+GLU_get_ssei_list_fromPGI_default(struct GLU_handle_t* this, 
+				  int32_t* pgis, int32_t pgis_len, 
+				  TSP_sample_symbol_extended_info_t* SSEI_list) {
+  
+  return  TSP_STATUS_ERROR_NOT_SUPPORTED;
+
+} /* end of GLU_get_ssei_list_fromPGI_default */
+
+int32_t
+GLU_async_sample_read_default(struct GLU_handle_t* this, 
+			      int32_t pgi, 
+			      void* value_ptr, uint32_t* value_size) {
+  /* default GLU does not authorize async read for any symbol */  
+  return TSP_STATUS_ERROR_ASYNC_READ_NOT_SUPPORTED;
 }
 
-int 
-GLU_async_sample_write_default(struct GLU_handle_t* this, int pgi, void* value_ptr, uint32_t value_size) {
+int32_t
+GLU_async_sample_write_default(struct GLU_handle_t* this, 
+			       int pgi, 
+			       void* value_ptr, uint32_t value_size) {
   /* default GLU does not authorize async write for any symbol */
-  return -1;
+  return TSP_STATUS_ERROR_ASYNC_WRITE_NOT_SUPPORTED;
 }

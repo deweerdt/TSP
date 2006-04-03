@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_provider.h,v 1.18 2006-03-31 12:55:19 erk Exp $
+$Id: tsp_provider.h,v 1.19 2006-04-03 16:07:36 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -56,13 +56,11 @@ BEGIN_C_DECLS
 /**
  * Initialize TSP provider library.
  * One should call this before any other TSP provider lib call.
- * @param theGLU INOUT, the GLU to be used by this provider.
- * @param argc INOUT, the number of argument of the main
- * @param argv INOUT, array of argument of size argc.
+ * @param[in,out] theGLU the GLU to be used by this provider.
+ * @param[in,out] argc   the number of argument of the main
+ * @param[in,out] argv   array of argument of size argc.
  */
 int TSP_provider_private_init(GLU_handle_t* theGLU, int* argc, char** argv[]);
-int TSP_provider_private_run();
-
 
 int TSP_provider_private_run();
 

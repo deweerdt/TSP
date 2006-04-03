@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl_init/tsp_provider_init.c,v 1.14 2006-02-26 13:36:05 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl_init/tsp_provider_init.c,v 1.15 2006-04-03 16:07:36 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -49,11 +49,11 @@ Purpose   : Function calls to launch a TSP Provider program
 #include "tsp_server.h"
 #endif
 
-int TSP_provider_init(GLU_handle_t* theGLU, int* argc, char** argv[])
+int 
+TSP_provider_init(GLU_handle_t* theGLU, int* argc, char** argv[])
 {
 
   int ret;
-  STRACE_IO(("-->IN"));
 
   ret = TSP_provider_private_init(theGLU,argc, argv);
   
@@ -63,18 +63,14 @@ int TSP_provider_init(GLU_handle_t* theGLU, int* argc, char** argv[])
   /* install atexit handler to close properly */
   atexit(TSP_provider_end);
 
-  STRACE_IO(("-->OUT"));
   return ret;
 
 } /* End of TSP_provider_init */
 
-int TSP_provider_run(int spawn_mode)
-{
+int 
+TSP_provider_run(int spawn_mode) {
   int ret = FALSE;
 
-  STRACE_IO(("-->IN"));
-  
-  
   if(TSP_provider_is_initialized())
     {            
       /* build and install default request handler (RPC) */
@@ -106,12 +102,10 @@ int TSP_provider_run(int spawn_mode)
 	TSP_provider_rqh_manager_waitend();
       }
     }
-  else
-    {
-      STRACE_ERROR(("Call TSP_provider_init first, and then call TSP_provider_run ! "))
-	}
+  else {
+    STRACE_ERROR(("Call TSP_provider_init first, and then call TSP_provider_run ! "));
+  }
   
-  STRACE_IO(("-->OUT"));
   return ret;  
   
 } /* TSP_provider_run */

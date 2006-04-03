@@ -1,6 +1,6 @@
 /*
 
-$Id: generic_consumer.c,v 1.6 2006-02-26 13:36:05 erk Exp $
+$Id: generic_consumer.c,v 1.7 2006-04-03 16:07:36 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -459,5 +459,10 @@ generic_consumer_async_write(generic_consumer_request_t* req) {
   }		       
 
   retval = TSP_consumer_request_async_sample_write(req->the_provider,&async_sample);
+  if ((TSP_STATUS_OK != retval) && (!(req->silent))) {
+    generic_consumer_logMsg(req->stream,
+			    "%s: async write refused (or not handled) by provider\n",
+			    tsp_reqname_tab[E_TSP_REQUEST_ASYNC_SAMPLE_WRITE]);
+  }
   return retval;
 }  /* end of generic_consumer_async_write */

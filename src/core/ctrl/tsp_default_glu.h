@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_default_glu.h,v 1.4 2006-02-26 13:36:05 erk Exp $
+$Id: tsp_default_glu.h,v 1.5 2006-04-03 16:07:36 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -52,73 +52,108 @@ BEGIN_C_DECLS
 
 /** 
  * Default GLU server name.
- * @param this the GLU structure
+ * @param this the GLU object
  * @return GLU name.
  */
 char* GLU_get_server_name_default(GLU_handle_t* this);
 
 /**
  * Default GLU server type.
- * @param this the GLU structure
+ * @param[in] this the GLU object
  * @return GLU server type.
  */
 GLU_server_type_t GLU_get_server_type_default(GLU_handle_t* this);
 
 /**
  * Default GLU base frequency.
- * @param this the GLU structure
+ * @param[in] this the GLU object
  * @return GLU base frequency (Hz)
  */
 double GLU_get_base_frequency_default(GLU_handle_t* this);
 
-int 
+int32_t 
 GLU_get_nb_max_consumer_default(struct GLU_handle_t* this);
 
 /**
  * Default GLU start.
- * @param this the GLU structure
+ * @param[in] this the GLU object
  * @return true or false
  */
-int GLU_start_default(GLU_handle_t* this);
+int32_t 
+GLU_start_default(GLU_handle_t* this);
 
 /** 
  * Default GLU_get_pgi.
  * The default implementation use the mandatory GLU_get_sample_symbol_info_list
  * and does a linear search in it.
- * @param this IN, 
- * @param symbol_list IN the symbol list to validate
- * @param pg_indexes OUT array containing corresponding provider global indexes or -1 if not found 
+ * @param[in] this the GLU object 
+ * @param[in] symbol_list the symbol list to validate
+ * @param[out] pg_indexes array containing corresponding provider global indexes or -1 if not found 
  * @return TRUE if all symbol found, else return FALSE 
  */
-int GLU_get_pgi_default(GLU_handle_t* this, TSP_sample_symbol_info_list_t* symbol_list, int* pg_indexes);
+int32_t
+GLU_get_pgi_default(GLU_handle_t* this, 
+		    TSP_sample_symbol_info_list_t* symbol_list, 
+		    int* pg_indexes);
 
 /**
  * Default GLU_get_instance.
  * The default implementation is only valid for an ACTIVE GLU.
  * In this case this function always return this.
  * PASSIVE GLU should reimplement this function.
- * @param this INOUT, the this object pointer
- * @param custom_argc IN,
- * @param custom_argv IN,
- * @param error_info INOUT,
+ * @param[in,out] this  the GLU object
+ * @param[in] custom_argc
+ * @param[in] custom_argv
+ * @param[in,out] error_info
  * @return the GLU handle  
  */ 
-GLU_handle_t* GLU_get_instance_default(GLU_handle_t* this,
-                                       int custom_argc,
-	 		               char* custom_argv[],
-			               char** error_info);
+GLU_handle_t* 
+GLU_get_instance_default(GLU_handle_t* this,
+			 int custom_argc,
+			 char* custom_argv[],
+			 char** error_info);
 
-int  
+/**
+ * Return the number of (static) available symbols.
+ * @param[in] this the GLU object
+ * @return the number of (static) available symbols.
+ */
+int32_t
 GLU_get_nb_symbols_default(GLU_handle_t* this);
 
-int 
-GLU_get_filtered_ssi_list_default(GLU_handle_t* this, int filter_kind, char* filter_string, TSP_answer_sample_t* answer_sample);
+/**
+ * Return the filtered list of sample symbols.
+ * @param[in] this the GLU object
+ * @param[in] filter_kind the filter kind
+ * @param[in] filter_string the filter string
+ * @param[out] answer_sample the Answer Sample containing the list of symbols
+ *             matching specified filter.
+ * @return the number of (static) available symbols.
+ */
+int32_t
+GLU_get_filtered_ssi_list_default(GLU_handle_t* this, 
+				  int filter_kind, char* filter_string, 
+				  TSP_answer_sample_t* answer_sample);
 
-int 
-GLU_async_sample_read_default(struct GLU_handle_t* this, int pgi, void* value_ptr, uint32_t* value_size);
+int32_t
+GLU_get_ssi_list_fromPGI_default(struct GLU_handle_t* this, 
+				 int* pgis, int pgis_len, 
+				 TSP_sample_symbol_info_list_t* SSI_list);
 
-int 
-GLU_async_sample_write_default(struct GLU_handle_t* this, int pgi, void* value_ptr, uint32_t value_size);
+int32_t
+GLU_get_ssei_list_fromPGI_default(struct GLU_handle_t* this, 
+				  int* pgis, int pgis_len, 
+				  TSP_sample_symbol_extended_info_t* SSEI_list);
+
+int32_t
+GLU_async_sample_read_default(struct GLU_handle_t* this, 
+			      int pgi, 
+			      void* value_ptr, uint32_t* value_size);
+
+int32_t
+GLU_async_sample_write_default(struct GLU_handle_t* this, 
+			       int pgi, 
+			       void* value_ptr, uint32_t value_size);
 
 /** @} */
 

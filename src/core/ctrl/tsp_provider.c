@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_provider.c,v 1.37 2006-03-31 12:55:19 erk Exp $
+$Id: tsp_provider.c,v 1.38 2006-04-03 16:07:36 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -650,53 +650,45 @@ int TSP_provider_private_run() {
 }
 
 
-int TSP_provider_request_async_sample_write(TSP_async_sample_t* async_sample_write)
+int32_t 
+TSP_provider_request_async_sample_write(TSP_async_sample_t* async_sample_write)
 {
-  int ret = TRUE;
-  STRACE_IO(("-->IN"));
+  int32_t ret = TSP_STATUS_OK;
 
   STRACE_DEBUG(("TSP_PROVIDER Before async_write: pgi %d value %s return %d ",async_sample_write->provider_global_index,async_sample_write->data.data_val,ret ));
-  
+
+  /* FIXME should check channel id and get GLU from session object */
   ret = firstGLU->async_write(firstGLU,
 			      async_sample_write->provider_global_index,
   			      async_sample_write->data.data_val,async_sample_write->data.data_len);
 
-  if (0!=ret) {
-    ret = FALSE;
-  }
-
   STRACE_DEBUG(("TSP_PROVIDER After async_write: pgi %d value %s return %d ",async_sample_write->provider_global_index,async_sample_write->data.data_val,ret ));
   
-  STRACE_IO(("-->OUT"));
   return ret;
 
-} /* End of TSP_async_sample_write */
+} /* end of TSP_provider_request_async_sample_write */
 
 
-int TSP_provider_request_async_sample_read(TSP_async_sample_t* async_sample_read)
+int32_t 
+TSP_provider_request_async_sample_read(TSP_async_sample_t* async_sample_read)
 {
-  int ret = TRUE;
-  STRACE_IO(("-->IN"));
+  int32_t ret = TSP_STATUS_OK;
 
   STRACE_DEBUG(("TSP_PROVIDER Before async_read: pgi %d value %s return %d ",async_sample_read->provider_global_index,async_sample_read->data.data_val,ret ));
   
+  /* FIXME should check channel id and get GLU from session object */
+
   ret = firstGLU->async_read(firstGLU,
 			     async_sample_read->provider_global_index,
 			     (async_sample_read->data.data_val),
 			     &(async_sample_read->data.data_len));
 
-  if (0 != ret) {
-    ret = FALSE;
-  } else {
-    ret = TRUE;
-  }
-
   STRACE_DEBUG(("TSP_PROVIDER After async_read: pgi %d value %f return %d ",async_sample_read->provider_global_index,*((double*)(async_sample_read->data.data_val)),ret ));
   
-  STRACE_IO(("-->OUT"));
   return ret;
 
 } /* End of TSP_async_sample_read */
+
 
 void  TSP_provider_request_extended_information(TSP_request_extended_information_t* req_extinfo, 
 						TSP_answer_extended_information_t* ans_extinfo) {

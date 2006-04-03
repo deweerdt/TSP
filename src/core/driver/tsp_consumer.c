@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.43 2006-03-15 15:32:13 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.44 2006-04-03 16:07:36 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -1308,12 +1308,13 @@ TSP_groups_t TSP_test_get_groups(TSP_provider_t provider) {
 }
 
 
-int 
-TSP_consumer_request_async_sample_write(TSP_provider_t provider,TSP_consumer_async_sample_t* async_sample_write)
+int32_t 
+TSP_consumer_request_async_sample_write(TSP_provider_t provider,
+					TSP_consumer_async_sample_t* async_sample_write)
 {
   int *result;
   TSP_async_sample_t async_write;
-  int ret = 0;
+  int32_t ret = TSP_STATUS_ERROR_UNKNOWN;
   TSP_otsp_t* otsp = (TSP_otsp_t*)provider;
  
   /* As there are a two level structure for hidding all RPC stuff, we need to copy the struct fields */
@@ -1341,14 +1342,15 @@ TSP_consumer_request_async_sample_write(TSP_provider_t provider,TSP_consumer_asy
 	
 } /* TSP_consumer_request_async_sample_write */
 
-int 
-TSP_consumer_request_async_sample_read(TSP_provider_t provider,TSP_consumer_async_sample_t* async_sample_read)
+int32_t
+TSP_consumer_request_async_sample_read(TSP_provider_t provider,
+				       TSP_consumer_async_sample_t* async_sample_read)
 {
  
   TSP_async_sample_t* async_read_result;
   TSP_async_sample_t async_read_param;
   
-  int ret = TSP_STATUS_ERROR_UNKNOWN;
+  int32_t ret = TSP_STATUS_ERROR_UNKNOWN;
   TSP_otsp_t* otsp = (TSP_otsp_t*)provider;
  
   /* update internal RPC structure */
