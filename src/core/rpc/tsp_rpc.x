@@ -1,6 +1,6 @@
 /* -*- idl -*-
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_rpc.x,v 1.24 2006-03-31 12:55:19 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_rpc.x,v 1.25 2006-04-03 16:06:57 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -59,6 +59,15 @@ enum TSP_status_t
 {
 	/** OK */
 	TSP_STATUS_OK,
+
+	/** NOK but not an error */
+	TSP_STATUS_NOK,
+
+	/** 
+	 * Provider unreachable.
+	 * The provider may be stopped or dead.
+	 */
+	TSP_STATUS_ERROR_PROVIDER_UNREACHABLE,
 
 	/** Fatal error */
 	TSP_STATUS_ERROR_UNKNOWN,
@@ -321,6 +330,18 @@ struct TSP_sample_symbol_info_t
    * </ul>
    */
   unsigned int dimension;
+  /**
+   * The offset of the first requested element
+   * if the symbol is an array.
+   * Only used if dimension > 1.
+   */
+  unsigned int offset;
+  /**
+   * The number of requested element beginning at offset.
+   * 0 means all element requested beginning at offset.
+   * Only used if dimension > 1.
+   */
+  unsigned int nelem;
   /**
    * The period at which the symbol will be provided.
    */
