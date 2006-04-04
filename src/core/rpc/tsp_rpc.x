@@ -1,6 +1,6 @@
 /* -*- idl -*-
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_rpc.x,v 1.26 2006-04-04 12:36:25 morvan Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_rpc.x,v 1.27 2006-04-04 18:10:53 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -615,8 +615,8 @@ program TSP_RPC {
 
 	TSP_async_sample_t                   TSP_REQUEST_ASYNC_SAMPLE_READ(TSP_async_sample_t async_sample_read) = 111;
 
-	TSP_answer_sample_t		     TSP_REQUEST_FILTERED_INFORMATION(TSP_request_information_t req_info, int filter_kind, string filter_string<>) = 114;
-	TSP_answer_extended_information_t    TSP_REQUEST_EXTENDED_INFORMATION(TSP_request_extended_information_t req_extinfo) = 115;
+	TSP_answer_sample_t		     TSP_REQUEST_FILTERED_INFORMATION(TSP_request_information_t req_info, int filter_kind, string filter_string<>) = 112;
+	TSP_answer_extended_information_t    TSP_REQUEST_EXTENDED_INFORMATION(TSP_request_extended_information_t req_extinfo) = 113;
 	
 
 	} = 1;
