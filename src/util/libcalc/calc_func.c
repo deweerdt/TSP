@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libcalc/calc_func.c,v 1.3 2006-02-26 13:36:06 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libcalc/calc_func.c,v 1.4 2006-04-04 14:26:04 morvan Exp $
 
 -----------------------------------------------------------------------
 
@@ -100,5 +100,28 @@ double calc_func (int index, double my_time)
 	  ret = -1;
 	}
     }
+  return ret;
+}	
+
+
+    
+/* return nice value for plotting */
+char calc_func_char (int index, double my_time)
+{
+  char ret=' ';
+  char lettre[20]={'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t'};
+  
+
+  if ( index == 0)
+  {
+    ret = 'A';
+  }
+  else
+  {
+      index= my_time * index;
+      int module = index % 20;
+      ret=lettre[module];
+
+  }
   return ret;
 }	    

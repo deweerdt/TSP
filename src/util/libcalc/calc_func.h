@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libcalc/calc_func.h,v 1.3 2006-02-26 13:36:06 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libcalc/calc_func.h,v 1.4 2006-04-04 14:26:04 morvan Exp $
 
 -----------------------------------------------------------------------
 
@@ -43,6 +43,9 @@ BEGIN_C_DECLS
 
 /* return nice value for plotting */
 double calc_func (int index, double my_time);
+
+/* return nice value for plotting */
+double calc_func_char (int index, double my_time);
 
 END_C_DECLS
 
