@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_glu.h,v 1.8 2006-04-03 16:07:36 erk Exp $
+$Id: tsp_glu.h,v 1.9 2006-04-04 12:36:24 morvan Exp $
 
 -----------------------------------------------------------------------
 
@@ -114,9 +114,10 @@ typedef enum GLU_get_state_t
  */
 typedef struct glu_item_t
 {
-    time_stamp_t time;
-    int32_t          provider_global_index;
-    double       value;
+  time_stamp_t time;
+  int32_t      provider_global_index;
+  void*        raw_value;
+  uint32_t     size;
 
 } glu_item_t;
 

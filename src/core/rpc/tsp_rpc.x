@@ -1,6 +1,6 @@
 /* -*- idl -*-
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_rpc.x,v 1.25 2006-04-03 16:06:57 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_rpc.x,v 1.26 2006-04-04 12:36:25 morvan Exp $
 
 -----------------------------------------------------------------------
 
@@ -160,7 +160,8 @@ enum TSP_datatype_t
    * will be done on receive.
    * Beware endianity problem when using this.
    */
-  TSP_TYPE_RAW       
+  TSP_TYPE_RAW,      
+  TSP_TYPE_LAST       
 };
 
 

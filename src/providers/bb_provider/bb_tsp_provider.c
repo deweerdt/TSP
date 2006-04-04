@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/providers/bb_provider/bb_tsp_provider.c,v 1.22 2006-03-31 12:55:19 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/providers/bb_provider/bb_tsp_provider.c,v 1.23 2006-04-04 12:36:25 morvan Exp $
 
 -----------------------------------------------------------------------
 
@@ -520,7 +520,7 @@ void* BB_GLU_thread(void* arg) {
       /* we return a double value even if 
        * the blackboard type is different
        * since TSP only knows double ... till now */
-      item.value                 = bb_double_of(value_by_pgi[pgi],bbdatadesc_by_pgi[pgi]->type);
+      *((double*)item.raw_value) = bb_double_of(value_by_pgi[pgi],bbdatadesc_by_pgi[pgi]->type);
       TSP_datapool_push_next_item(&item);      
     }
     TSP_datapool_push_commit(glu_time, GLU_GET_NEW_ITEM);

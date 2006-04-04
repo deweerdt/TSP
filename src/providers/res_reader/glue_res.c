@@ -1,6 +1,6 @@
 /*
 
-$Id: glue_res.c,v 1.10 2006-02-26 13:36:06 erk Exp $
+$Id: glue_res.c,v 1.11 2006-04-04 12:36:25 morvan Exp $
 
 -----------------------------------------------------------------------
  
@@ -85,7 +85,7 @@ void RES_GLU_loop()
     {
       if(d_read_r(obj->h_res, obj->res_values) == EOF)
 	{
-	  STRACE_DEBUG (("EOF for time=%d, val[0]=%g", obj->time_stamp, item.value));
+	  STRACE_DEBUG (("EOF for time=%d, val[0]=%g", obj->time_stamp, *((double*)item.raw_value)));
 	  if(!_wait_eof)
 	    {
 	      state = GLU_GET_EOF;
@@ -109,14 +109,14 @@ void RES_GLU_loop()
 	  for(i=0; i<obj->nbvar; i++)
 	    {
 	      item.provider_global_index = i;
-	      item.value = obj->use_dbl ?
+	      *((double*)item.raw_value) = obj->use_dbl ?
 		((double*)(obj->res_values)) [i] :
 	        ((float*) (obj->res_values)) [i];
 	      
 	      TSP_datapool_push_next_item(&item);
 
 	      if(i==0)
-		STRACE_INFO (("New record : time=%d, val[0]=%g", obj->time_stamp, item.value));
+		STRACE_INFO (("New record : time=%d, val[0]=%g", obj->time_stamp, *((double*)item.raw_value)));
 	    }
       
 	}

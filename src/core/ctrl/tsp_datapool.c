@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_datapool.c,v 1.24 2006-02-26 13:36:05 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_datapool.c,v 1.25 2006-04-04 12:36:24 morvan Exp $
 
 -----------------------------------------------------------------------
 
@@ -64,8 +64,8 @@ struct TSP_datapool_item_t
    * Somehow the GLU should provide its own functions to transform a RAW in double or
    * string.
    */
-  double user_value;
-  int is_wanted;	/* Is the symbol wanted by some consummers */
+  void* raw_value;
+  int   is_wanted;	/* Is the symbol wanted by some consummers */
 };
 
 typedef struct TSP_datapool_item_t TSP_datapool_item_t;
@@ -130,7 +130,8 @@ void TSP_datapool_get_reverse_list (int *nb, int **list)
  */ 
 inline int TSP_datapool_push_next_item(glu_item_t* item)
 {
-  X_global_datapool.items[item->provider_global_index].user_value = item->value;
+  memcpy(X_global_datapool.items[item->provider_global_index].raw_value,item->raw_value,item->size);
+  /* X_global_datapool.items[item->provider_global_index].user_value = item->value; */
   return 0;
 }
 
@@ -197,6 +198,7 @@ static int TSP_global_datapool_init(GLU_handle_t* glu)
 {
 	 
   TSP_sample_symbol_info_list_t symbols;
+  int32_t i;
 	
   /* Here the datapool is global */
   X_global_datapool.h_glu = glu;   
@@ -208,6 +210,19 @@ static int TSP_global_datapool_init(GLU_handle_t* glu)
   X_global_datapool.items = 
     (TSP_datapool_item_t*)calloc(X_global_datapool.size, sizeof(TSP_datapool_item_t));
   TSP_CHECK_ALLOC(X_global_datapool.items, FALSE);
+
+
+  for(i=0;i<symbols.TSP_sample_symbol_info_list_t_len;++i)
+  {
+
+    X_global_datapool.items[i].raw_value = 
+                       calloc(symbols.TSP_sample_symbol_info_list_t_val[i].dimension,sizeof(symbols.TSP_sample_symbol_info_list_t_val[i].type));
+    TSP_CHECK_ALLOC(X_global_datapool.items[i].raw_value, FALSE); 
+
+
+  }
+
+
 
   X_global_datapool.reverse_index = (int*)calloc(X_global_datapool.size, sizeof(int));
   TSP_CHECK_ALLOC(X_global_datapool.reverse_index, FALSE);
@@ -276,7 +291,10 @@ void* TSP_datapool_get_symbol_value(TSP_datapool_t datapool, int provider_global
       obj_datapool->reverse_index[obj_datapool->nb_wanted_items++] = provider_global_index;
     }
 
-  p = &(obj_datapool->items[provider_global_index].user_value);
+
+/*  p = &(obj_datapool->items[provider_global_index].raw_value);*/
+
+    p = obj_datapool->items[provider_global_index].raw_value;
 
   /* FIXME : manages different types RAW, DOUBLE, STRING...,
      see how to implement this when the data will be RAW in the datapool */

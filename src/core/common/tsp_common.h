@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_common.h,v 1.6 2006-02-26 13:36:05 erk Exp $
+$Id: tsp_common.h,v 1.7 2006-04-04 12:36:24 morvan Exp $
 
 -----------------------------------------------------------------------
 
@@ -87,9 +87,27 @@ const char* tsp_reqhelp_tab[] = {"invalid tsp request",
 				 "tsp_request_async_sample_read",
 				 "TSP LAST REQUEST"
 };
+const int tsp_type_size[] = { 0,
+			      sizeof(double),
+			      sizeof(float),
+			      sizeof(int8_t),
+			      sizeof(int16_t),
+			      sizeof(int32_t),
+			      sizeof(int64_t),
+			      sizeof(uint8_t),
+			      sizeof(uint16_t),
+			      sizeof(uint32_t),
+			      sizeof(uint64_t),
+			      sizeof(char),
+			      sizeof(unsigned char),
+			      sizeof(uint8_t),
+			      0
+				
+};
 #else
 extern const char* tsp_reqname_tab[];
 extern const char* tsp_reqhelp_tab[];
+extern const int tsp_type_size[];
 #endif
 
 typedef struct TSP_request {

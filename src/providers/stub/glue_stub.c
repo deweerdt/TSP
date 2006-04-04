@@ -1,6 +1,6 @@
 /*
 
-$Id: glue_stub.c,v 1.13 2006-02-26 13:36:06 erk Exp $
+$Id: glue_stub.c,v 1.14 2006-04-04 12:36:25 morvan Exp $
 
 -----------------------------------------------------------------------
 
@@ -44,6 +44,7 @@ Purpose   : Implementation for the glue_server, for stub test
 #include "tsp_time.h"
 #include "tsp_datapool.h"
 #include "calc_func.h"
+#include <tsp_common.h>
 
 /* TSP glue server defines */
 #define TSP_STUB_FREQ 100.0 /*Hz*/
@@ -55,6 +56,7 @@ static TSP_sample_symbol_info_t *X_sample_symbol_info_list_val;
 static tsp_hrtime_t X_lasttime;
 static time_stamp_t my_time = 0;
 static GLU_handle_t* stub_GLU = NULL;
+static int32_t taille_max_symbol=0;
 
 void* STUB_GLU_thread(void* athis)
 {
@@ -66,6 +68,9 @@ void* STUB_GLU_thread(void* athis)
 
   current_time = X_lasttime = tsp_gethrtime();  
 
+  item.raw_value=calloc(1,taille_max_symbol);
+  assert(item.raw_value);
+
   /* infinite loop for symbols generation */
   while(1)
     {
@@ -76,13 +81,15 @@ void* STUB_GLU_thread(void* athis)
 	  int index=ptr_index[i];
 	  if(my_time%X_sample_symbol_info_list_val[index].period == 0)
 	    {
+	      item.size = X_sample_symbol_info_list_val[index].dimension * tsp_type_size[X_sample_symbol_info_list_val[index].type];
+ 
 	      item.time = my_time;
 	      item.provider_global_index = index;
 	      if (index!=0)
-		item.value = calc_func(index, my_time);
+		*((double*)item.raw_value) = calc_func(index, my_time);
 	      else
-		item.value = (double)(my_time) / (double)(TSP_STUB_FREQ);
-	      memo_val[index]=item.value;
+		*((double*)item.raw_value) = (double)(my_time) / (double)(TSP_STUB_FREQ);
+	      memo_val[index]=*((double*)item.raw_value);
 
 	      TSP_datapool_push_next_item(&item);
 	    }
@@ -121,6 +128,7 @@ void* STUB_GLU_thread(void* athis)
 int STUB_GLU_init(GLU_handle_t* this, int fallback_argc, char* fallback_argv[])
 {
   int i;
+  int32_t size;
   char symbol_buf[50];
   
   X_sample_symbol_info_list_val = calloc (GLU_MAX_SYMBOLS+1, sizeof (TSP_sample_symbol_info_t)) ;
@@ -129,7 +137,17 @@ int STUB_GLU_init(GLU_handle_t* this, int fallback_argc, char* fallback_argv[])
       sprintf(symbol_buf, "Symbol%d",i);
       X_sample_symbol_info_list_val[i].name = strdup(symbol_buf);
       X_sample_symbol_info_list_val[i].provider_global_index = i;
-      X_sample_symbol_info_list_val[i].period = 1; 
+      X_sample_symbol_info_list_val[i].period = 1;
+      X_sample_symbol_info_list_val[i].type = TSP_TYPE_DOUBLE;
+      X_sample_symbol_info_list_val[i].dimension = 1;
+
+      size=X_sample_symbol_info_list_val[i].dimension * tsp_type_size[X_sample_symbol_info_list_val[i].type];
+      if(taille_max_symbol< size)
+      {
+	taille_max_symbol= size;
+      }
+
+ 
     }  
   /*overide first name*/
   X_sample_symbol_info_list_val[0].name = strdup("t");
