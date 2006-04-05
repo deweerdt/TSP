@@ -1,7 +1,7 @@
 
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/common/tsp_encoder.c,v 1.1 2006-03-31 12:59:07 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/common/tsp_encoder.c,v 1.2 2006-04-05 08:10:31 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -84,7 +84,7 @@ uint32_t TSP_data_channel_double_encoder(void* v_double, uint32_t dimension,  ch
     for(i=0;i<dimension;++i)
     {
       ((uint64_t*)out_buf)[i] = TSP_ENCODE_DOUBLE_TO_UINT64(pt_double+i);
-    STRACE_DEBUG(("DOUBLE = %f, encoded DOUBLE=0x%08x",*pt_double,((uint64_t*)out_buf)[i]));
+      STRACE_DEBUG(("DOUBLE = %f, encoded DOUBLE=0x%08llx",*pt_double,((uint64_t*)out_buf)[i]));
     }
 
 
@@ -634,53 +634,51 @@ uint32_t TSP_data_channel_user_encoder(void* v_user,uint32_t dimension,  char* o
 #endif /*TSP_NO_XDR_ENCODE*/
 }
 
-TSP_data_encoder_t TSP_data_channel_get_encoder(TSP_datatype_t type)
-{
+TSP_data_encoder_t 
+TSP_data_channel_get_encoder(TSP_datatype_t type) {
   
-  switch(type)
-  {
+  switch(type) {
 
-    case TSP_TYPE_DOUBLE :
-      return TSP_data_channel_double_encoder;
+  case TSP_TYPE_DOUBLE :
+    return TSP_data_channel_double_encoder;
     
-    case TSP_TYPE_FLOAT :
-      return TSP_data_channel_float_encoder;
-
-    case TSP_TYPE_INT8 :
-      return TSP_data_channel_int8_encoder;
-
-    case TSP_TYPE_INT16:
-      return TSP_data_channel_int16_encoder;
-
-    case TSP_TYPE_INT32 :
+  case TSP_TYPE_FLOAT :
+    return TSP_data_channel_float_encoder;
+    
+  case TSP_TYPE_INT8 :
+    return TSP_data_channel_int8_encoder;
+    
+  case TSP_TYPE_INT16:
+    return TSP_data_channel_int16_encoder;
+    
+  case TSP_TYPE_INT32 :
       return TSP_data_channel_int32_encoder;
-
-    case TSP_TYPE_INT64 :
-      return TSP_data_channel_int64_encoder;
-
-    case TSP_TYPE_UINT8:
-      return TSP_data_channel_uint8_encoder;
-
-    case TSP_TYPE_UINT16:
-      return TSP_data_channel_uint16_encoder;
-
-    case TSP_TYPE_UINT32:
-      return TSP_data_channel_uint32_encoder;
-
-    case TSP_TYPE_UINT64:
-      return TSP_data_channel_uint64_encoder;
-
-    case TSP_TYPE_CHAR:
-      return TSP_data_channel_char_encoder;
-
-    case TSP_TYPE_UCHAR:
-      return TSP_data_channel_uchar_encoder;
-
-    case TSP_TYPE_RAW:
-      return TSP_data_channel_user_encoder;
-   
-    case TSP_TYPE_UNKNOWN:
-      return NULL;
+      
+  case TSP_TYPE_INT64 :
+    return TSP_data_channel_int64_encoder;
+    
+  case TSP_TYPE_UINT8:
+    return TSP_data_channel_uint8_encoder;
+    
+  case TSP_TYPE_UINT16:
+    return TSP_data_channel_uint16_encoder;
+    
+  case TSP_TYPE_UINT32:
+    return TSP_data_channel_uint32_encoder;
+    
+  case TSP_TYPE_UINT64:
+    return TSP_data_channel_uint64_encoder;
+    
+  case TSP_TYPE_CHAR:
+    return TSP_data_channel_char_encoder;
+    
+  case TSP_TYPE_UCHAR:
+    return TSP_data_channel_uchar_encoder;
+    
+  case TSP_TYPE_RAW:
+    return TSP_data_channel_user_encoder;
+    
+  default:
+    return NULL;
   }
-  return NULL;
-}
+} /* end of TSP_data_channel_get_encoder */

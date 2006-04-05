@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/providers/bb_provider/bb_tsp_provider.c,v 1.23 2006-04-04 12:36:25 morvan Exp $
+$Header: /home/def/zae/tsp/tsp/src/providers/bb_provider/bb_tsp_provider.c,v 1.24 2006-04-05 08:10:31 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -34,6 +34,10 @@ Purpose   : Blackboard TSP Provider
 -----------------------------------------------------------------------
  */
 #include <tsp_abs_types.h>
+#include <tsp_provider_init.h>
+#include <tsp_datapool.h>
+#include <tsp_common.h>
+
 #include <bb_core.h>
 #include <bb_utils.h>
 #include <bb_alias.h>
@@ -41,8 +45,6 @@ Purpose   : Blackboard TSP Provider
 #define BB_TSP_PROVIDER_C
 #include <bb_tsp_provider.h>
 
-#include <tsp_provider_init.h>
-#include <tsp_datapool.h>
 
 /*
  * Ugly declare for smooth TSP startup
@@ -188,9 +190,8 @@ BB_GLU_init(GLU_handle_t* this, int fallback_argc, char* fallback_argv[]) {
    * Allocate symbol list whose size
    * correspond to number of data (scalar) published in BB
    */
-  X_sample_symbol_info_list_val = calloc (i_nb_item_scalaire,
-					  sizeof (TSP_sample_symbol_info_t));
-  assert(X_sample_symbol_info_list_val);
+  TSP_common_SSIList_create(&X_sample_symbol_info_list_val,
+			    i_nb_item_scalaire);
 
   /* 
    * Allocate array of pointer to data
@@ -469,6 +470,7 @@ void* BB_GLU_thread(void* arg) {
   
   int i;
   glu_item_t item;
+  double     item_value;
   sigset_t s_mask;
   int nb_consumed_symbols;
   int* ptr_consumed_index;
@@ -486,7 +488,10 @@ void* BB_GLU_thread(void* arg) {
   /* 
    * Initialise le temps propre du GLU 
    */
-  glu_time      = 0;
+  glu_time       = 0;
+  /* FIXME for now its ok to only have scalar DOUBLE value */
+  item.raw_value = &item_value; 
+  item.size      = 1*tsp_type_size[TSP_TYPE_DOUBLE];
 
   /* boucle infinie tant que le blackboard n'est pas detruit */
   while(BB_STATUS_DESTROYED != the_bb->status) {

@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_default_glu.c,v 1.9 2006-04-03 16:07:36 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_default_glu.c,v 1.10 2006-04-05 08:10:31 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -247,8 +247,8 @@ GLU_get_filtered_ssi_list_default(GLU_handle_t* this, int filter_kind, char* fil
       answer_sample->symbols.TSP_sample_symbol_info_list_t_len = nb_match;
       for (i=0;i<nb_match;i++) {
 	STRACE_DEBUG(("Adding <%s> to answer_sample...",complete_symbol_list.TSP_sample_symbol_info_list_t_val[matched_index[i]].name));
-	TSP_common_sample_symbol_copy(&(answer_sample->symbols.TSP_sample_symbol_info_list_t_val[i]),
-				      complete_symbol_list.TSP_sample_symbol_info_list_t_val[matched_index[i]]);
+	TSP_common_SSI_copy(&(answer_sample->symbols.TSP_sample_symbol_info_list_t_val[i]),
+			    complete_symbol_list.TSP_sample_symbol_info_list_t_val[matched_index[i]]);
       }
     }
     free(matched_index);
@@ -288,7 +288,7 @@ GLU_async_sample_read_default(struct GLU_handle_t* this,
 			      void* value_ptr, uint32_t* value_size) {
   /* default GLU does not authorize async read for any symbol */  
   return TSP_STATUS_ERROR_ASYNC_READ_NOT_SUPPORTED;
-}
+} /* end of GLU_async_sample_read_default */
 
 int32_t
 GLU_async_sample_write_default(struct GLU_handle_t* this, 
@@ -296,4 +296,4 @@ GLU_async_sample_write_default(struct GLU_handle_t* this,
 			       void* value_ptr, uint32_t value_size) {
   /* default GLU does not authorize async write for any symbol */
   return TSP_STATUS_ERROR_ASYNC_WRITE_NOT_SUPPORTED;
-}
+} /* end of GLU_async_sample_write_default */

@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_provider.c,v 1.38 2006-04-03 16:07:36 erk Exp $
+$Id: tsp_provider.c,v 1.39 2006-04-05 08:10:31 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -459,7 +459,7 @@ void  TSP_provider_request_sample(TSP_request_sample_t* req_sample,
 	  }
 	  if ((invalid_phase>0) || (invalid_period>0)) {
 	    ans_sample->status = TSP_STATUS_ERROR_UNKNOWN;
-	    TSP_common_sample_symbol_info_list_copy(&(ans_sample->symbols), req_sample->symbols);
+	    TSP_common_SSIList_copy(&(ans_sample->symbols), req_sample->symbols);
 	    STRACE_DEBUG(("Invalid phase or period"));
 	  } else {
 
@@ -484,7 +484,7 @@ void  TSP_provider_request_sample(TSP_request_sample_t* req_sample,
 	  /* Now we shall update answer_sample->symbols in order to indicates
 	   * to consumer side which symbols are marked as 'unknown'
 	   */
-	  TSP_common_sample_symbol_info_list_copy(&(ans_sample->symbols), req_sample->symbols);
+	  TSP_common_SSIList_copy(&(ans_sample->symbols), req_sample->symbols);
 	}
     }
   else

@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/common/tsp_decoder.c,v 1.1 2006-03-31 12:59:07 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/common/tsp_decoder.c,v 1.2 2006-04-05 08:10:31 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -73,7 +73,7 @@ int32_t TSP_data_channel_double_decoder(void* out_double, uint32_t dimension,  c
   for(i=0;i<dimension;++i)
   {
     ((uint64_t*)out_double)[i] = TSP_DECODE_DOUBLE_TO_UINT64(in_buf+(i*TSP_SIZEOF_ENCODED_DOUBLE));   
-    STRACE_DEBUG(("decoded DOUBLE = %f, (received) encoded DOUBLE=0x%08x",((double*)out_double)[i],((uint64_t*)in_buf)[i]));
+    STRACE_DEBUG(("decoded DOUBLE = %f, (received) encoded DOUBLE=0x%08llx",((double*)out_double)[i],((uint64_t*)in_buf)[i]));
   }
   
   return TRUE;
@@ -537,53 +537,53 @@ TSP_data_decoder_t TSP_data_channel_get_decoder(TSP_datatype_t type)
   }
 }
 
-int32_t TSP_data_channel_get_encoded_size(TSP_datatype_t type)
-{
+int32_t 
+TSP_data_channel_get_encoded_size(TSP_datatype_t type) {
   
-  switch(type)
-  {
-
-     case TSP_TYPE_DOUBLE :
-       return TSP_SIZEOF_ENCODED_DOUBLE;
+  switch(type) {
     
-     case TSP_TYPE_FLOAT :
-       return TSP_SIZEOF_ENCODED_FLOAT;
-
-     case TSP_TYPE_INT8 :
-       return TSP_SIZEOF_ENCODED_INT8;
-
-     case TSP_TYPE_INT16:
-       return TSP_SIZEOF_ENCODED_INT16;
-
-     case TSP_TYPE_INT32 :
-       return TSP_SIZEOF_ENCODED_INT32;
-
-     case TSP_TYPE_INT64 :
-       return TSP_SIZEOF_ENCODED_INT64;
-
-     case TSP_TYPE_UINT8:
-       return TSP_SIZEOF_ENCODED_UINT8;
-
-     case TSP_TYPE_UINT16:
-       return TSP_SIZEOF_ENCODED_UINT16;
-
-     case TSP_TYPE_UINT32:
-       return TSP_SIZEOF_ENCODED_UINT32;
-
-     case TSP_TYPE_UINT64:
-       return TSP_SIZEOF_ENCODED_UINT64;
-
-     case TSP_TYPE_CHAR:
-       return TSP_SIZEOF_ENCODED_CHAR;
-
-     case TSP_TYPE_UCHAR:
-       return TSP_SIZEOF_ENCODED_UCHAR;
-
-     case TSP_TYPE_RAW:
-       return TSP_SIZEOF_ENCODED_USER;
-
-     default:
-       return NULL;
+  case TSP_TYPE_DOUBLE :
+    return TSP_SIZEOF_ENCODED_DOUBLE;
+    
+  case TSP_TYPE_FLOAT :
+    return TSP_SIZEOF_ENCODED_FLOAT;
+    
+  case TSP_TYPE_INT8 :
+    return TSP_SIZEOF_ENCODED_INT8;
+    
+  case TSP_TYPE_INT16:
+    return TSP_SIZEOF_ENCODED_INT16;
+    
+  case TSP_TYPE_INT32 :
+    return TSP_SIZEOF_ENCODED_INT32;
+    
+  case TSP_TYPE_INT64 :
+    return TSP_SIZEOF_ENCODED_INT64;
+    
+  case TSP_TYPE_UINT8:
+    return TSP_SIZEOF_ENCODED_UINT8;
+    
+  case TSP_TYPE_UINT16:
+    return TSP_SIZEOF_ENCODED_UINT16;
+    
+  case TSP_TYPE_UINT32:
+    return TSP_SIZEOF_ENCODED_UINT32;
+    
+  case TSP_TYPE_UINT64:
+    return TSP_SIZEOF_ENCODED_UINT64;
+    
+  case TSP_TYPE_CHAR:
+    return TSP_SIZEOF_ENCODED_CHAR;
+    
+  case TSP_TYPE_UCHAR:
+    return TSP_SIZEOF_ENCODED_UCHAR;
+    
+  case TSP_TYPE_RAW:
+    return TSP_SIZEOF_ENCODED_USER;
+        
+  default:
+    STRACE_ERROR(("Unknown TSP Type <%d>",type))
+    return 0;
 
   }
 }

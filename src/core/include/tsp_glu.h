@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_glu.h,v 1.9 2006-04-04 12:36:24 morvan Exp $
+$Id: tsp_glu.h,v 1.10 2006-04-05 08:10:31 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -110,13 +110,28 @@ typedef enum GLU_get_state_t
 } GLU_get_state_t;
 
 /** 
- * Item used to transmit a data sample 
+ * Item used to transmit a sample data
+ * from the GLU to the datapool of the TSP provider lib.
  */
 typedef struct glu_item_t
 {
+  /**
+   * The GLU timestamp
+   */
   time_stamp_t time;
+  /**
+   * The PGI of the concerned sample
+   */
   int32_t      provider_global_index;
+  /**
+   * Pointer to the raw sample value.
+   */
   void*        raw_value;
+  /**
+   * The size of the pointer to be copied.
+   * The size may vary for different type
+   * including array version.
+   */
   uint32_t     size;
 
 } glu_item_t;
@@ -447,6 +462,7 @@ int32_t GLU_handle_destroy(GLU_handle_t** glu);
  * @return TRUE if ok FALSE otherwise
  */
 int32_t GLU_handle_check(GLU_handle_t* glu);
+
 
 /** @} */
 
