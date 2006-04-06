@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_default_glu.c,v 1.10 2006-04-05 08:10:31 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_default_glu.c,v 1.11 2006-04-06 15:17:47 morvan Exp $
 
 -----------------------------------------------------------------------
 
@@ -269,8 +269,35 @@ int32_t
 GLU_get_ssi_list_fromPGI_default(struct GLU_handle_t* this, 
 				 int32_t* pgis, int32_t pgis_len, 
 				 TSP_sample_symbol_info_list_t* SSI_list) {
-  
-  return  TSP_STATUS_ERROR_NOT_SUPPORTED;
+  /* FIXME */
+  int32_t i,ret;
+  TSP_sample_symbol_info_list_t complete_symbol_list; 
+ 
+  this->get_ssi_list(this,&complete_symbol_list);
+
+  ret=TSP_STATUS_OK;
+
+  /* Store all global indexes into list including NOT FOUND ones */
+  for ( i=0 ; i < pgis_len;++i)
+  {
+
+      if(-1!=pgis[i])
+      {
+	TSP_common_SSI_copy(&(SSI_list->TSP_sample_symbol_info_list_t_val[i]), 
+			    complete_symbol_list.TSP_sample_symbol_info_list_t_val[pgis[i]]);
+
+      }
+      else
+      {
+	SSI_list->TSP_sample_symbol_info_list_t_val[i].provider_global_index=-1;
+
+        STRACE_INFO(("Unable to find symbol '%s'",  SSI_list->TSP_sample_symbol_info_list_t_val[i].name));
+
+	ret=TSP_STATUS_ERROR_SYMBOLS;
+       
+      }
+  }
+  return  ret;
 } /* end of GLU_get_ssi_list_fromPGI_default */
 
 int32_t
