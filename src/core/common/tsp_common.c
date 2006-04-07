@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_common.c,v 1.5 2006-04-05 08:10:31 erk Exp $
+$Id: tsp_common.c,v 1.6 2006-04-07 07:46:14 morvan Exp $
 
 -----------------------------------------------------------------------
 
@@ -127,7 +127,7 @@ TSP_common_SSIList_copy(TSP_sample_symbol_info_list_t* dest_symbols,
     return;
   }
 
-  if (0 == dest_symbols->TSP_sample_symbol_info_list_t_len) {
+  if (0 != dest_symbols->TSP_sample_symbol_info_list_t_len) {
     dest_symbols->TSP_sample_symbol_info_list_t_len = src_symbols.TSP_sample_symbol_info_list_t_len;
     dest_symbols->TSP_sample_symbol_info_list_t_val = 
       malloc(sizeof(TSP_sample_symbol_info_t)*(dest_symbols->TSP_sample_symbol_info_list_t_len));
