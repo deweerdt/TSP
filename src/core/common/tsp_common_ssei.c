@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_common.h,v 1.9 2006-04-07 09:30:36 erk Exp $
+$Id: tsp_common_ssei.c,v 1.1 2006-04-07 09:30:36 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -26,62 +26,40 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 Project    : TSP
 Maintainer : tsp@astrium.eads.net
-Component  : Common
+Component  : Provider
 
 -----------------------------------------------------------------------
 
-Purpose   : Main interface for the producer module
+Purpose   : Main implementation for the producer module
 
 -----------------------------------------------------------------------
  */
+#include <string.h>
 
-#ifndef _TSP_COMMON_H
-#define _TSP_COMMON_H
-
-#include <tsp_prjcfg.h>
+#include <tsp_sys_headers.h>
+#include <tsp_abs_types.h>
 #include <tsp_datastruct.h>
-
-/* All common includes */
-#include <tsp_common_request.h>
-#include <tsp_common_filter.h>
-#include <tsp_common_ssi.h>
+#include <tsp_simple_trace.h>
+#include <tsp_const_def.h>
+#define TSP_COMMON_SSI_C
 #include <tsp_common_ssei.h>
 
-/**
- * @defgroup TSP_CommonLib TSP Common Library
- * The common librarie is the part of the TSP Core library
- * which is shared by provider and consumer.
- * It contains TSP datatypes definitions and helper functions.
- * @{
- */
+int32_t
+TSP_ei_initialize(TSP_extended_info_t* ei, const char* key, const char* value) {
+  assert(ei);  
+  ei->key   = strdup(key);
+  ei->value = strdup(value);
+  return TSP_STATUS_OK;
+} /* end of TSP_ei_initialize */
 
-#ifdef TSP_COMMON_C
-const int tsp_type_size[] = { 0,
-			      sizeof(double),
-			      sizeof(float),
-			      sizeof(int8_t),
-			      sizeof(int16_t),
-			      sizeof(int32_t),
-			      sizeof(int64_t),
-			      sizeof(uint8_t),
-			      sizeof(uint16_t),
-			      sizeof(uint32_t),
-			      sizeof(uint64_t),
-			      sizeof(char),
-			      sizeof(unsigned char),
-			      sizeof(uint8_t),
-			      0
-				
-};
-#else
-extern const int tsp_type_size[];
-#endif
-
-BEGIN_C_DECLS
+int32_t
+TSP_ei_finalize(TSP_extended_info_t* ei, const char* key, const char* value) {
+  assert(ei);  
+  free(ei->key); 
+  ei->key = NULL;
+  free(ei->value); 
+  ei->value = NULL;
+  return TSP_STATUS_OK;
+} /* end of TSP_ei_initialize */
 
 
-/** @} */
-
-END_C_DECLS
-
-#endif /* _TSP_COMMON_H */

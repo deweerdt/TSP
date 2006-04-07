@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_common.h,v 1.9 2006-04-07 09:30:36 erk Exp $
+$Id: tsp_common_filter.h,v 1.1 2006-04-07 09:30:36 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -35,53 +35,40 @@ Purpose   : Main interface for the producer module
 -----------------------------------------------------------------------
  */
 
-#ifndef _TSP_COMMON_H
-#define _TSP_COMMON_H
+#ifndef _TSP_COMMON_FILTER_H
+#define _TSP_COMMON_FILTER_H
 
 #include <tsp_prjcfg.h>
 #include <tsp_datastruct.h>
 
-/* All common includes */
-#include <tsp_common_request.h>
-#include <tsp_common_filter.h>
-#include <tsp_common_ssi.h>
-#include <tsp_common_ssei.h>
-
 /**
- * @defgroup TSP_CommonLib TSP Common Library
- * The common librarie is the part of the TSP Core library
- * which is shared by provider and consumer.
- * It contains TSP datatypes definitions and helper functions.
+ * @defgroup TSP_CommonLib_Filter TSP Request Filtering Parameters
+ * @ingroup TSP_CommonLib
  * @{
  */
 
-#ifdef TSP_COMMON_C
-const int tsp_type_size[] = { 0,
-			      sizeof(double),
-			      sizeof(float),
-			      sizeof(int8_t),
-			      sizeof(int16_t),
-			      sizeof(int32_t),
-			      sizeof(int64_t),
-			      sizeof(uint8_t),
-			      sizeof(uint16_t),
-			      sizeof(uint32_t),
-			      sizeof(uint64_t),
-			      sizeof(char),
-			      sizeof(unsigned char),
-			      sizeof(uint8_t),
-			      0
-				
-};
-#else
-extern const int tsp_type_size[];
-#endif
+/**
+ * The filter kind used in 
+ * TSP_request_filtered_information.
+ */
+typedef enum TSP_filter_kind {
+  TSP_FILTER_NONE=0,
+  TSP_FILTER_MINIMAL,
+  TSP_FILTER_SIMPLE,
+  TSP_FILTER_REGEX,
+  TSP_FILTER_XPATH,
+  TSP_FILTER_SQL,
+  TSP_FILTER_LAST
+} TSP_filter_kind_t;
+
+#define MINIMAL_STRING           "minimal"
+#define SIMPLE_CASE_SENSITIVE    "simple_withcase"
+#define SIMPLE_CASE_INSENSITIVE  "simple_nocase"
 
 BEGIN_C_DECLS
-
 
 /** @} */
 
 END_C_DECLS
 
-#endif /* _TSP_COMMON_H */
+#endif /* _TSP_COMMON_FILTER_H */

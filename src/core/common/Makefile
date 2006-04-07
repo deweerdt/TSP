@@ -1,10 +1,17 @@
 include $(DEVBASE)/make/Makeparams
 
 XINC    = tsp_common.h \
+	tsp_common_request.h \
+	tsp_common_filter.h \
+	tsp_common_ssi.h \
+	tsp_common_ssei.h \
 	tsp_decoder.h \
 	tsp_encoder.h
 SOURCES = \
 	tsp_common.c \
+	tsp_common_request.c \
+	tsp_common_ssi.c \
+	tsp_common_ssei.c \
 	tsp_encoder.c \
 	tsp_decoder.c
 
