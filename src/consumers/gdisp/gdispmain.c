@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/consumers/gdisp/gdispmain.c,v 1.10 2006-03-26 19:51:57 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/consumers/gdisp/gdispmain.c,v 1.11 2006-04-07 10:37:17 morvan Exp $
 
 -----------------------------------------------------------------------
 
@@ -122,7 +122,7 @@ variable*** index2vars;
  */ 
 void init_tsp_index(void)
 {
-  const TSP_consumer_symbol_requested_list_t* symbols;
+  const TSP_sample_symbol_info_list_t* symbols;
   int i, j, k;
   variable* var;
   int maxid = 0;
@@ -130,16 +130,16 @@ void init_tsp_index(void)
   symbols = TSP_consumer_get_requested_sample(tsp);
   assert(symbols);
 
-  for (i=0 ; i < symbols->len ; i++)
+  for (i=0 ; i < symbols->TSP_sample_symbol_info_list_t_len ; i++)
     {
       for (j=0; j < conf_data.nb_page; j++)
 	{
 	  for (k=0; k < pages[j].variables->len; k++)
 	    {
 	      var =  g_ptr_array_index(pages[j].variables, k);	      
-	      if(!strcmp(symbols->val[i].name, var->text) && (var->type != VAR_TITLE ) )
+	      if(!strcmp(symbols->TSP_sample_symbol_info_list_t_val[i].name, var->text) && (var->type != VAR_TITLE ) )
 		{
-		  var->provider_global_index = symbols->val[i].index;
+		  var->provider_global_index = symbols->TSP_sample_symbol_info_list_t_val[i].provider_global_index;
 		}
 	    }
 	}      
@@ -181,7 +181,7 @@ int get_nbvars_per_index(int index)
  */ 
 int get_index2vars_size(void)
 {
-  const TSP_consumer_symbol_requested_list_t* symbols;
+  const TSP_sample_symbol_info_list_t* symbols;
   int i;
   int maxid = 0;
 
@@ -190,11 +190,11 @@ int get_index2vars_size(void)
   assert(symbols);
   
   /* find the max of all provider global index */
-  for (i=0 ; i < symbols->len ; i++)
+  for (i=0 ; i < symbols->TSP_sample_symbol_info_list_t_len ; i++)
     {
-      if (maxid < symbols->val[i].index )
+      if (maxid < symbols->TSP_sample_symbol_info_list_t_val[i].provider_global_index )
 	{
-	  maxid = symbols->val[i].index;
+	  maxid = symbols->TSP_sample_symbol_info_list_t_val[i].provider_global_index;
 	}
     }
   

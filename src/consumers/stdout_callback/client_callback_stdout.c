@@ -1,6 +1,6 @@
 /*
 
-$Id: client_callback_stdout.c,v 1.3 2006-02-26 13:36:05 erk Exp $
+$Id: client_callback_stdout.c,v 1.4 2006-04-07 10:37:17 morvan Exp $
 
 -----------------------------------------------------------------------
 
@@ -72,7 +72,7 @@ void test_callback(TSP_sample_t* sample, void* user_data){
   count_samples++;
   if(i == 1 )
     {
-      printf ("TSP : Sample nb[%d] time=%d val=%f\n", count_samples, sample->time, sample->user_value);
+      printf ("TSP : Sample nb[%d] time=%d val=%f\n", count_samples, sample->time, sample->uvalue.double_value);
     }
   
   calc = calc_func(i,sample->time);
@@ -80,9 +80,9 @@ void test_callback(TSP_sample_t* sample, void* user_data){
   /* i = 0 is t */
   if(i != 0)
     {
-      if((ABS(sample->user_value - calc ) > 1e-7) || (0 != strncmp((char*)user_data, USER_DATA, strlen(USER_DATA))))
+      if((ABS(sample->uvalue.double_value - calc ) > 1e-7) || (0 != strncmp((char*)user_data, USER_DATA, strlen(USER_DATA))))
         {
-          STRACE_ERROR(("!!!!ERROR : T=%u, I=%d, V1=%f, V2=%f", sample->time,i,sample->user_value,calc ));			
+          STRACE_ERROR(("!!!!ERROR : T=%u, I=%d, V1=%f, V2=%f", sample->time,i,sample->uvalue.double_value,calc ));			
           all_data_ok = FALSE;
         }
     }
@@ -100,8 +100,8 @@ void test_callback(TSP_sample_t* sample, void* user_data){
 
 int main(int argc, char *argv[]){
 
-  const TSP_consumer_information_t*  information;
-  TSP_consumer_symbol_requested_list_t symbols;
+  const TSP_answer_sample_t*  information;
+  TSP_sample_symbol_info_list_t symbols;
 
   int i, j, count=0;
   int nb_providers;
@@ -206,7 +206,7 @@ int main(int argc, char *argv[]){
   information = TSP_consumer_get_information(providers[0]);
 
   /* Check total symbol number */
-  if(1000 !=  information->symbols.len )
+  if(1000 !=  information->symbols.TSP_sample_symbol_info_list_t_len )
     {
       STRACE_ERROR(("The total number of symbols should be 1000"));
       STRACE_TEST(("STAGE 001 | STEP 003 : FAILED"));
@@ -214,10 +214,10 @@ int main(int argc, char *argv[]){
     }
 
   /* Compare symbols names */
-  for( i = 1 ; i<  information->symbols.len ; i++)
+  for( i = 1 ; i<  information->symbols.TSP_sample_symbol_info_list_t_len ; i++)
     {
       sprintf(symbol_buf, "Symbol%d",i);
-      if(strcmp(symbol_buf,  information->symbols.val[i].name))
+      if(strcmp(symbol_buf,  information->symbols.TSP_sample_symbol_info_list_t_val[i].name))
 	{
 	  STRACE_ERROR(("Symbol name corrupted"));
 	  STRACE_TEST(("STAGE 001 | STEP 003 : FAILED"));
@@ -228,15 +228,15 @@ int main(int argc, char *argv[]){
       
   STRACE_TEST(("STAGE 001 | STEP 003 : PASSED"));
 
-  symbols.val = (TSP_consumer_symbol_requested_t*)calloc(information->symbols.len, sizeof(TSP_consumer_symbol_requested_t));
-  TSP_CHECK_ALLOC(symbols.val, -1);
-  symbols.len = information->symbols.len;
+  symbols.TSP_sample_symbol_info_list_t_val = (TSP_sample_symbol_info_t*)calloc(information->symbols.TSP_sample_symbol_info_list_t_len, sizeof(TSP_sample_symbol_info_t));
+  TSP_CHECK_ALLOC(symbols.TSP_sample_symbol_info_list_t_val, -1);
+  symbols.TSP_sample_symbol_info_list_t_len = information->symbols.TSP_sample_symbol_info_list_t_len;
   /* Change period of sampling for each client */
-  for(i = 0 ; i < information->symbols.len ; i++)
+  for(i = 0 ; i < information->symbols.TSP_sample_symbol_info_list_t_len ; i++)
     {
-      symbols.val[i].name = information->symbols.val[i].name;
-      symbols.val[i].period = period;
-      symbols.val[i].phase = 0;
+      symbols.TSP_sample_symbol_info_list_t_val[i].name = information->symbols.TSP_sample_symbol_info_list_t_val[i].name;
+      symbols.TSP_sample_symbol_info_list_t_val[i].period = period;
+      symbols.TSP_sample_symbol_info_list_t_val[i].phase = 0;
     }
   /*-------------------------------------------------------------------------------------------------------*/ 
   /* TEST : STAGE 001 | STEP 004 */
@@ -255,7 +255,7 @@ int main(int argc, char *argv[]){
       return -1;
     }
 
-  free(symbols.val);
+  free(symbols.TSP_sample_symbol_info_list_t_val);
 
   STRACE_TEST(("STAGE 001 | STEP 004 : PASSED"));
   /*-------------------------------------------------------------------------------------------------------*/ 

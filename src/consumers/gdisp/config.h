@@ -7,7 +7,7 @@
 
 struct conf_data_t
 {
-  TSP_consumer_symbol_requested_list_t tsp_requested;
+  TSP_sample_symbol_info_list_t tsp_requested;
   int nb_page;
   gfloat display_frequency;
 };

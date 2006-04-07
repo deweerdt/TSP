@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer_main.c,v 1.10 2006-03-17 15:48:20 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer_main.c,v 1.11 2006-04-07 10:37:17 morvan Exp $
 
 -----------------------------------------------------------------------
 
@@ -89,8 +89,8 @@ main (int argc, char* argv[]) {
   struct sigaction old_action;
   int32_t                               retcode=0;
   int32_t                               nb_symbols;
-  TSP_consumer_symbol_requested_list_t  symbol_list;
-  TSP_consumer_symbol_requested_t*      mysymbols;
+ TSP_sample_symbol_info_list_t      symbol_list;
+  TSP_sample_symbol_info_t*         mysymbols;
   char*   input_filename  = NULL;
   char*   output_filename = NULL;
   char*   file_format     = NULL;

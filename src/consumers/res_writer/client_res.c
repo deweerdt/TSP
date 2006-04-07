@@ -1,6 +1,6 @@
 /*
 
-$Id: client_res.c,v 1.14 2006-02-26 13:36:05 erk Exp $
+$Id: client_res.c,v 1.15 2006-04-07 10:37:17 morvan Exp $
 
 -----------------------------------------------------------------------
 
@@ -109,8 +109,8 @@ void usage (char *txt)
 
 int main(int argc, char *argv[]){
 
-  const TSP_consumer_information_t*  information;
-  TSP_consumer_symbol_requested_list_t symbols[TSP_MAX_SERVER_NUMBER];
+  const TSP_answer_sample_t*  information;
+  TSP_sample_symbol_info_list_t symbols[TSP_MAX_SERVER_NUMBER];
 
   int i, count=0;
   int nb_providers = 0;
@@ -209,21 +209,21 @@ int main(int argc, char *argv[]){
 	    }
 	  
 	  information = TSP_consumer_get_information(providers[provider]);
-	  symbols[provider].len = information->symbols.len;
-	  if(!symbols[provider].len)
+	  symbols[provider].TSP_sample_symbol_info_list_t_len = information->symbols.TSP_sample_symbol_info_list_t_len;
+	  if(!symbols[provider].TSP_sample_symbol_info_list_t_len)
 	    tsp_usleep(TSP_NANOSLEEP_PERIOD_US);
 	}
-      while(!symbols[provider].len);
+      while(!symbols[provider].TSP_sample_symbol_info_list_t_len);
       
-      symbols[provider].val = (TSP_consumer_symbol_requested_t*)calloc(symbols[provider].len, sizeof(TSP_consumer_symbol_requested_t));
-      TSP_CHECK_ALLOC(symbols[provider].val, -1);
+      symbols[provider].TSP_sample_symbol_info_list_t_val = (TSP_sample_symbol_info_t*)calloc(symbols[provider].TSP_sample_symbol_info_list_t_len, sizeof(TSP_sample_symbol_info_t));
+      TSP_CHECK_ALLOC(symbols[provider].TSP_sample_symbol_info_list_t_val, -1);
       
-      for( i = 0 ; i< symbols[provider].len ; i++)
+      for( i = 0 ; i< symbols[provider].TSP_sample_symbol_info_list_t_len ; i++)
 	{
-	  STRACE_INFO(("Id=%d Sym='%s'",i, information->symbols.val[i].name));
-	  symbols[provider].val[i].name = information->symbols.val[i].name;
-	  symbols[provider].val[i].period = period;
-	  symbols[provider].val[i].phase = 0;
+	  STRACE_INFO(("Id=%d Sym='%s'",i, information->symbols.TSP_sample_symbol_info_list_t_val[i].name));
+	  symbols[provider].TSP_sample_symbol_info_list_t_val[i].name = information->symbols.TSP_sample_symbol_info_list_t_val[i].name;
+	  symbols[provider].TSP_sample_symbol_info_list_t_val[i].period = period;
+	  symbols[provider].TSP_sample_symbol_info_list_t_val[i].phase = 0;
 	}
       
       /* chose smallest frequency */
@@ -238,12 +238,12 @@ int main(int argc, char *argv[]){
 	  /* all variables */
 	  break;
 	case 2 :
-	  symbols[provider].val[1] = symbols[provider].val[ symbols[provider].len/2];
-	  symbols[provider].val[2] = symbols[provider].val[ symbols[provider].len-1];
-	  symbols[provider].len = 3;
+	  symbols[provider].TSP_sample_symbol_info_list_t_val[1] = symbols[provider].TSP_sample_symbol_info_list_t_val[ symbols[provider].TSP_sample_symbol_info_list_t_len/2];
+	  symbols[provider].TSP_sample_symbol_info_list_t_val[2] = symbols[provider].TSP_sample_symbol_info_list_t_val[ symbols[provider].TSP_sample_symbol_info_list_t_len-1];
+	  symbols[provider].TSP_sample_symbol_info_list_t_len = 3;
 	  break;
 	case 3 :     
-	  symbols[provider].len = 10;
+	  symbols[provider].TSP_sample_symbol_info_list_t_len = 10;
 	  break;
 	default:
 	  STRACE_ERROR(("Unknown test number"));
@@ -295,11 +295,11 @@ int main(int argc, char *argv[]){
   res_values_nb = 0;
   for(provider=0; provider<nb_providers; provider++)
     {
-      for (i = 0; i < symbols[provider].len; i++)
+      for (i = 0; i < symbols[provider].TSP_sample_symbol_info_list_t_len; i++)
 	{
-	  d_wnam(symbols[provider].val[i].name, "?"); /* write header with no unit */
+	  d_wnam(symbols[provider].TSP_sample_symbol_info_list_t_val[i].name, "?"); /* write header with no unit */
 	}
-      res_values_nb += symbols[provider].len;
+      res_values_nb += symbols[provider].TSP_sample_symbol_info_list_t_len;
     }
   
   res_values = _use_dbl ? 
@@ -322,12 +322,12 @@ int main(int argc, char *argv[]){
 	      if(_use_dbl)
 		{
 		  double* d_res_values = (double*)res_values;
-		  d_res_values[res_value_i++] = sample.user_value;
+		  d_res_values[res_value_i++] = sample.uvalue.double_value;
 		}
 	      else
 		{
 		  float* f_res_values = (float*)res_values;
-		  f_res_values[res_value_i++] = sample.user_value;	      
+		  f_res_values[res_value_i++] = sample.uvalue.double_value;	      
 		}
 
 	      /* Received complete buffer, need to write */

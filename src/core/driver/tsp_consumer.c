@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.44 2006-04-03 16:07:36 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.45 2006-04-07 10:37:17 morvan Exp $
 
 -----------------------------------------------------------------------
 
@@ -110,12 +110,12 @@ struct TSP_otsp_t
    * List of symbols avaible in the producer.
    * The consumer must chose its symbols in this list
    */
-  TSP_consumer_information_t information;
+ TSP_answer_sample_t information;
   
   /** 
    * List of symbols that were requested
    */
-  TSP_consumer_symbol_requested_list_t requested_sym;
+  TSP_sample_symbol_info_list_t requested_sym;
 
   /**
    * Groups table.
@@ -162,13 +162,13 @@ static void TSP_consumer_delete_information(TSP_otsp_t* otsp)
 
   STRACE_IO(("-->IN"));
 
-  for(i = 0 ; i< otsp->information.symbols.len ; i++)
+  for(i = 0 ; i< otsp->information.symbols.TSP_sample_symbol_info_list_t_len ; i++)
     {
-      free(otsp->information.symbols.val[i].name);
-      otsp->information.symbols.val[i].name = 0;
+      free(otsp->information.symbols.TSP_sample_symbol_info_list_t_val[i].name);
+      otsp->information.symbols.TSP_sample_symbol_info_list_t_val[i].name = 0;
     }
-  free(otsp->information.symbols.val);
-  otsp->information.symbols.val = 0;
+  free(otsp->information.symbols.TSP_sample_symbol_info_list_t_val);
+  otsp->information.symbols.TSP_sample_symbol_info_list_t_val = 0;
   
   STRACE_IO(("-->OUT"));
 
@@ -180,17 +180,17 @@ static void TSP_consumer_delete_requested_symbol(TSP_otsp_t* otsp)
 
   STRACE_IO(("-->IN"));
 
-    if(otsp->requested_sym.val)
+    if(otsp->requested_sym.TSP_sample_symbol_info_list_t_val)
     {
-      for (i = 0 ;  i < otsp->requested_sym.len ; i++)
+      for (i = 0 ;  i < otsp->requested_sym.TSP_sample_symbol_info_list_t_len ; i++)
 	{
 	  /* free strdup */
-	  free(otsp->requested_sym.val[i].name);
-	  otsp->requested_sym.val[i].name = 0;
+	  free(otsp->requested_sym.TSP_sample_symbol_info_list_t_val[i].name);
+	  otsp->requested_sym.TSP_sample_symbol_info_list_t_val[i].name = 0;
       
 	}
-      free(otsp->requested_sym.val);
-      otsp->requested_sym.val = 0;
+      free(otsp->requested_sym.TSP_sample_symbol_info_list_t_val);
+      otsp->requested_sym.TSP_sample_symbol_info_list_t_val = 0;
     }
 
   STRACE_IO(("-->OUT"));
@@ -226,10 +226,10 @@ static TSP_otsp_t* TSP_new_object_tsp(	TSP_server_t server,
   /* Init */
   obj->channel_id = UNDEFINED_CHANNEL_ID;
 	
-  obj->information.symbols.len = 0;
-  obj->information.symbols.val = 0;
-  obj->requested_sym.len = 0;
-  obj->requested_sym.val = 0;
+  obj->information.symbols.TSP_sample_symbol_info_list_t_len = 0;
+  obj->information.symbols.TSP_sample_symbol_info_list_t_val = 0;
+  obj->requested_sym.TSP_sample_symbol_info_list_t_len = 0;
+  obj->requested_sym.TSP_sample_symbol_info_list_t_val = 0;
   obj->groups = 0;
   obj->receiver = 0;
   obj->sample_fifo = NULL;
@@ -800,20 +800,20 @@ int TSP_consumer_request_information(TSP_provider_t provider)
       STRACE_INFO(("Provider base frequency = %f Hz", ans_sample->base_frequency));
 
       /* allocate memory to store those symbols */
-      otsp->information.symbols.len = symbols_number;
+      otsp->information.symbols.TSP_sample_symbol_info_list_t_len = symbols_number;
       if(symbols_number > 0)
 	{
-	  otsp->information.symbols.val = 
-	    (TSP_consumer_symbol_info_t* )calloc(symbols_number,sizeof(TSP_consumer_symbol_info_t));
-	  TSP_CHECK_ALLOC(otsp->information.symbols.val, FALSE);
+	  otsp->information.symbols.TSP_sample_symbol_info_list_t_val = 
+	    (TSP_sample_symbol_info_t* )calloc(symbols_number,sizeof(TSP_sample_symbol_info_t));
+	  TSP_CHECK_ALLOC(otsp->information.symbols.TSP_sample_symbol_info_list_t_val, FALSE);
 		
 	  for(i = 0 ; i< symbols_number ; i++)
 	    {		
-	      otsp->information.symbols.val[i].index =
+	      otsp->information.symbols.TSP_sample_symbol_info_list_t_val[i].provider_global_index =
 		ans_sample->symbols.TSP_sample_symbol_info_list_t_val[i].provider_global_index;
-	      otsp->information.symbols.val[i].name =
+	      otsp->information.symbols.TSP_sample_symbol_info_list_t_val[i].name =
 		strdup(ans_sample->symbols.TSP_sample_symbol_info_list_t_val[i].name);				
-	      TSP_CHECK_ALLOC(otsp->information.symbols.val[i].name, FALSE);			
+	      TSP_CHECK_ALLOC(otsp->information.symbols.TSP_sample_symbol_info_list_t_val[i].name, FALSE);			
 	    }
         }
     }
@@ -884,24 +884,24 @@ TSP_consumer_request_filtered_information(TSP_provider_t provider, int filter_ki
       otsp->information.max_period            = ans_sample->max_period;
       otsp->information.max_client_number     = ans_sample->max_client_number;
       otsp->information.current_client_number = ans_sample->current_client_number;
-      otsp->information.symbols.len           = ans_sample->symbols.TSP_sample_symbol_info_list_t_len;
+      otsp->information.symbols.TSP_sample_symbol_info_list_t_len = ans_sample->symbols.TSP_sample_symbol_info_list_t_len;
       STRACE_INFO(("Provider base frequency = %f Hz", ans_sample->base_frequency));
 
-      if (otsp->information.symbols.len > 0) {
+      if (otsp->information.symbols.TSP_sample_symbol_info_list_t_len > 0) {
 	/* allocate memory to store those symbols */
-	otsp->information.symbols.val = 
-	  (TSP_consumer_symbol_info_t* )calloc(otsp->information.symbols.len,sizeof(TSP_consumer_symbol_info_t));
-	TSP_CHECK_ALLOC(otsp->information.symbols.val, FALSE);
+	otsp->information.symbols.TSP_sample_symbol_info_list_t_val = 
+	  (TSP_sample_symbol_info_t* )calloc(otsp->information.symbols.TSP_sample_symbol_info_list_t_len,sizeof(TSP_sample_symbol_info_t));
+	TSP_CHECK_ALLOC(otsp->information.symbols.TSP_sample_symbol_info_list_t_val, FALSE);
 		
-	for(i = 0 ; i< otsp->information.symbols.len ; i++) {		
-	  otsp->information.symbols.val[i].index =
+	for(i = 0 ; i< otsp->information.symbols.TSP_sample_symbol_info_list_t_len ; i++) {		
+	  otsp->information.symbols.TSP_sample_symbol_info_list_t_val[i].provider_global_index =
 	    ans_sample->symbols.TSP_sample_symbol_info_list_t_val[i].provider_global_index;
-	  otsp->information.symbols.val[i].name =
+	  otsp->information.symbols.TSP_sample_symbol_info_list_t_val[i].name =
 	    strdup(ans_sample->symbols.TSP_sample_symbol_info_list_t_val[i].name);				
-	  TSP_CHECK_ALLOC(otsp->information.symbols.val[i].name, FALSE);			
+	  TSP_CHECK_ALLOC(otsp->information.symbols.TSP_sample_symbol_info_list_t_val[i].name, FALSE);			
 	}
       } else {
-	otsp->information.symbols.val = NULL;
+	otsp->information.symbols.TSP_sample_symbol_info_list_t_val = NULL;
       }
     }
   else {
@@ -914,7 +914,7 @@ TSP_consumer_request_filtered_information(TSP_provider_t provider, int filter_ki
 }
 
 
-const TSP_consumer_information_t*  TSP_consumer_get_information(TSP_provider_t provider)
+const TSP_answer_sample_t*  TSP_consumer_get_information(TSP_provider_t provider)
 {
 	
   TSP_otsp_t* otsp = (TSP_otsp_t*)provider;
@@ -932,41 +932,41 @@ const TSP_consumer_information_t*  TSP_consumer_get_information(TSP_provider_t p
 
 }
 
-static int TSP_consumer_store_requested_symbols(TSP_consumer_symbol_requested_list_t* stored_sym,
+static int TSP_consumer_store_requested_symbols(TSP_sample_symbol_info_list_t* stored_sym,
 						TSP_sample_symbol_info_list_t* new_sym)
 {
 
   int i;
-  if(stored_sym->val)
+  if(stored_sym->TSP_sample_symbol_info_list_t_val)
     {
-      for (i = 0 ;  i < stored_sym->len ; i++)
+      for (i = 0 ;  i < stored_sym->TSP_sample_symbol_info_list_t_len ; i++)
 	{
 	  /* free strdup */
-	  free(stored_sym->val[i].name);
+	  free(stored_sym->TSP_sample_symbol_info_list_t_val[i].name);
 	}
-      free(stored_sym->val);
+      free(stored_sym->TSP_sample_symbol_info_list_t_val);
     }
-  stored_sym->len = new_sym->TSP_sample_symbol_info_list_t_len;	
-  stored_sym->val = 
-    (TSP_consumer_symbol_requested_t* )calloc(stored_sym->len,
-					      sizeof(TSP_consumer_symbol_requested_t));
-  TSP_CHECK_ALLOC(stored_sym->val, FALSE);
+  stored_sym->TSP_sample_symbol_info_list_t_len = new_sym->TSP_sample_symbol_info_list_t_len;	
+  stored_sym->TSP_sample_symbol_info_list_t_val = 
+    (TSP_sample_symbol_info_t* )calloc(stored_sym->TSP_sample_symbol_info_list_t_len,
+					      sizeof(TSP_sample_symbol_info_t));
+  TSP_CHECK_ALLOC(stored_sym->TSP_sample_symbol_info_list_t_val, FALSE);
 		
   /* For each requested symbol, we store it */
-  for(i = 0 ; i< stored_sym->len ; i++)
+  for(i = 0 ; i< stored_sym->TSP_sample_symbol_info_list_t_len ; i++)
     {		
       /* FIXME : ajouter les autres valeurs */
-      stored_sym->val[i].name = strdup(new_sym->TSP_sample_symbol_info_list_t_val[i].name);
-      TSP_CHECK_ALLOC(stored_sym->val[i].name, FALSE);
-      stored_sym->val[i].index = new_sym->TSP_sample_symbol_info_list_t_val[i].provider_global_index;
-      stored_sym->val[i].phase = new_sym->TSP_sample_symbol_info_list_t_val[i].phase;
-      stored_sym->val[i].period = new_sym->TSP_sample_symbol_info_list_t_val[i].period;
+      stored_sym->TSP_sample_symbol_info_list_t_val[i].name = strdup(new_sym->TSP_sample_symbol_info_list_t_val[i].name);
+      TSP_CHECK_ALLOC(stored_sym->TSP_sample_symbol_info_list_t_val[i].name, FALSE);
+      stored_sym->TSP_sample_symbol_info_list_t_val[i].provider_global_index = new_sym->TSP_sample_symbol_info_list_t_val[i].provider_global_index;
+      stored_sym->TSP_sample_symbol_info_list_t_val[i].phase = new_sym->TSP_sample_symbol_info_list_t_val[i].phase;
+      stored_sym->TSP_sample_symbol_info_list_t_val[i].period = new_sym->TSP_sample_symbol_info_list_t_val[i].period;
     }
   return TRUE;
 }
 
 
-int TSP_consumer_request_sample(TSP_provider_t provider, TSP_consumer_symbol_requested_list_t* symbols)
+int TSP_consumer_request_sample(TSP_provider_t provider, TSP_sample_symbol_info_list_t* symbols)
 {
 	
   TSP_otsp_t* otsp = (TSP_otsp_t*)provider;
@@ -982,19 +982,25 @@ int TSP_consumer_request_sample(TSP_provider_t provider, TSP_consumer_symbol_req
 	
   req_sample.version_id = TSP_PROTOCOL_VERSION;
   req_sample.channel_id = otsp->channel_id;
-  req_sample.symbols.TSP_sample_symbol_info_list_t_len = symbols->len;
+  req_sample.symbols.TSP_sample_symbol_info_list_t_len = symbols->TSP_sample_symbol_info_list_t_len;
   req_sample.symbols.TSP_sample_symbol_info_list_t_val = 
-    (TSP_sample_symbol_info_t*)calloc(symbols->len, sizeof(TSP_sample_symbol_info_t));
+    (TSP_sample_symbol_info_t*)calloc(symbols->TSP_sample_symbol_info_list_t_len, sizeof(TSP_sample_symbol_info_t));
   TSP_CHECK_ALLOC(req_sample.symbols.TSP_sample_symbol_info_list_t_val, FALSE);
 
-  for(i = 0 ; i <  symbols->len ; i++)
+ /* for(i = 0 ; i <  symbols->TSP_sample_symbol_info_list_t_len ; i++)
     {
 
       req_sample.symbols.TSP_sample_symbol_info_list_t_val[i].provider_global_index = -1;
-      req_sample.symbols.TSP_sample_symbol_info_list_t_val[i].period = symbols->val[i].period;
-      req_sample.symbols.TSP_sample_symbol_info_list_t_val[i].phase = symbols->val[i].phase;
-      req_sample.symbols.TSP_sample_symbol_info_list_t_val[i].name = symbols->val[i].name;
-    }
+      req_sample.symbols.TSP_sample_symbol_info_list_t_val[i].period = symbols->TSP_sample_symbol_info_list_t_val[i].period;
+      req_sample.symbols.TSP_sample_symbol_info_list_t_val[i].phase  = symbols->TSP_sample_symbol_info_list_t_val[i].phase;
+      req_sample.symbols.TSP_sample_symbol_info_list_t_val[i].name   = symbols->TSP_sample_symbol_info_list_t_val[i].name;
+      req_sample.symbols.TSP_sample_symbol_info_list_t_val[i].dimension   = symbols->TSP_sample_symbol_info_list_t_val[i].dimension;
+      req_sample.symbols.TSP_sample_symbol_info_list_t_val[i].type   = symbols->TSP_sample_symbol_info_list_t_val[i].type;
+      req_sample.symbols.TSP_sample_symbol_info_list_t_val[i].offset   = symbols->TSP_sample_symbol_info_list_t_val[i].offset;
+      req_sample.symbols.TSP_sample_symbol_info_list_t_val[i].nelem   = symbols->TSP_sample_symbol_info_list_t_val[i].nelem;
+    }*/
+
+   TSP_common_SSIList_copy(&(req_sample.symbols), *symbols);
 	
   /* Get the computed ans_sample from the provider */
   ans_sample = TSP_request_sample(&req_sample, otsp->server);
@@ -1003,10 +1009,22 @@ int TSP_consumer_request_sample(TSP_provider_t provider, TSP_consumer_symbol_req
    * now update provider global index in the requested symbols
    * in case unknown symbols was found on provider side
    */
-  for(i = 0 ; i <  symbols->len ; i++)
+/*  for(i = 0 ; i <  symbols->TSP_sample_symbol_info_list_t_len ; i++)
     {
-      symbols->val[i].index = ans_sample->symbols.TSP_sample_symbol_info_list_t_val[i].provider_global_index;
-    }
+      symbols->TSP_sample_symbol_info_list_t_val[i].provider_global_index = ans_sample->symbols.TSP_sample_symbol_info_list_t_val[i].provider_global_index;
+
+      symbols->TSP_sample_symbol_info_list_t_val[i].period = ans_sample->symbols.TSP_sample_symbol_info_list_t_val[i].period;
+      symbols->TSP_sample_symbol_info_list_t_val[i].phase  =  ans_sample->symbols.TSP_sample_symbol_info_list_t_val[i].phase;
+      symbols->TSP_sample_symbol_info_list_t_val[i].name   =  ans_sample->symbols.TSP_sample_symbol_info_list_t_val[i].name;
+      symbols->TSP_sample_symbol_info_list_t_val[i].dimension   =  ans_sample->symbols.TSP_sample_symbol_info_list_t_val[i].dimension;
+      symbols->TSP_sample_symbol_info_list_t_val[i].type   = ans_sample->symbols.TSP_sample_symbol_info_list_t_val[i].type;
+      symbols->TSP_sample_symbol_info_list_t_val[i].offset   =  ans_sample->symbols.TSP_sample_symbol_info_list_t_val[i].offset;
+      symbols->TSP_sample_symbol_info_list_t_val[i].nelem   =  ans_sample->symbols.TSP_sample_symbol_info_list_t_val[i].nelem;
+
+    }*/
+
+  TSP_common_SSIList_copy(symbols, ans_sample->symbols);
+		       
 
   /*free allocated request sample symbol list */
   free(req_sample.symbols.TSP_sample_symbol_info_list_t_val);  
@@ -1067,7 +1085,7 @@ int TSP_consumer_request_sample(TSP_provider_t provider, TSP_consumer_symbol_req
   return ret;
 }
 
-const TSP_consumer_symbol_requested_list_t* TSP_consumer_get_requested_sample(TSP_provider_t provider)
+const TSP_sample_symbol_info_list_t* TSP_consumer_get_requested_sample(TSP_provider_t provider)
 {
 	
   TSP_otsp_t* otsp = (TSP_otsp_t*)provider;
@@ -1078,7 +1096,7 @@ const TSP_consumer_symbol_requested_list_t* TSP_consumer_get_requested_sample(TS
 	
   STRACE_IO(("-->OUT"));
   
-  if(otsp->requested_sym.val)
+  if(otsp->requested_sym.TSP_sample_symbol_info_list_t_val)
     return &(otsp->requested_sym);
   else
     {
@@ -1400,15 +1418,15 @@ TSP_consumer_request_async_sample_read(TSP_provider_t provider,
 
 void 
 TSP_consumer_print_invalid_symbols(FILE* stream, 
-				   TSP_consumer_symbol_requested_list_t* symbols,
+				   TSP_sample_symbol_info_list_t* symbols,
 				   const char* provider_url) {
 
   int i;
   assert(symbols);
-  for (i=0;i<symbols->len;i++) {
-    if (symbols->val[i].index < 0) {
+  for (i=0;i<symbols->TSP_sample_symbol_info_list_t_len;i++) {
+    if (symbols->TSP_sample_symbol_info_list_t_val[i].provider_global_index < 0) {
       fprintf(stream,"Symbol <%s> is unknown on provider <%s>\n",
-	      symbols->val[i].name,
+	      symbols->TSP_sample_symbol_info_list_t_val[i].name,
 	      provider_url);
     }
   }

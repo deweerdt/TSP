@@ -124,8 +124,8 @@ struct tspfs {
 	char *filter;
 	int sync;
 	int async;
-	const TSP_consumer_information_t *information;
-	TSP_consumer_symbol_requested_list_t symbols;
+	const TSP_answer_sample_t *information;
+	TSP_sample_symbol_info_list_t symbols;
 	TSP_provider_t provider;
 	TSP_sample_t **samples;
 	char **formats;
@@ -270,8 +270,8 @@ static int tspfs_init_connect(int argc, char **argv, char *url)
 
 	tspfs.symbols.len = tspfs.information->symbols.len;
 	tspfs.symbols.val =
-	    (TSP_consumer_symbol_requested_t *) calloc(tspfs.symbols.len,
-						      sizeof(TSP_consumer_symbol_requested_t));
+	    (TSP_sample_symbol_info_t *) calloc(tspfs.symbols.len,
+						      sizeof(TSP_sample_symbol_info_t));
 	if (!tspfs.symbols.val)
 		return -1;
 

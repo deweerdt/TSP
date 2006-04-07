@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_group_data.h,v 1.7 2006-03-31 12:55:19 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_group_data.h,v 1.8 2006-04-07 10:37:17 morvan Exp $
 
 -----------------------------------------------------------------------
 
@@ -50,11 +50,14 @@ for performance reason may include this header
 
 struct TSP_group_item_t
 {
+  TSP_sample_symbol_info_t* symbol_info;
   int provider_global_index;
 
   int sizeof_encoded_item;
 
   TSP_data_decoder_t data_decoder;
+
+ 
 
 };
 
@@ -67,6 +70,8 @@ struct TSP_group_t
   int sizeof_encoded_group;
     
   TSP_group_item_t* items;
+
+  void * decode_buffer;
     
 };
 

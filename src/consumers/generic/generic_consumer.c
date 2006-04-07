@@ -1,6 +1,6 @@
 /*
 
-$Id: generic_consumer.c,v 1.7 2006-04-03 16:07:36 erk Exp $
+$Id: generic_consumer.c,v 1.8 2006-04-07 10:37:17 morvan Exp $
 
 -----------------------------------------------------------------------
 
@@ -324,7 +324,7 @@ generic_consumer_close(generic_consumer_request_t* req) {
 }
 
 void generic_consumer_printinfo(generic_consumer_request_t* req) {
-  const TSP_consumer_information_t* pinfo;
+  const TSP_answer_sample_t* pinfo;
   int32_t i;
   pinfo = TSP_consumer_get_information(req->the_provider);
   fprintf(req->stream,"Provider::base frequency      = %f\n",pinfo->base_frequency);
@@ -332,10 +332,10 @@ void generic_consumer_printinfo(generic_consumer_request_t* req) {
   fprintf(req->stream,"Provider::max consumer        = %d\n",pinfo->max_client_number);
   fprintf(req->stream,"Provider::current consumer nb = %d\n",pinfo->current_client_number);
   fprintf(req->stream,"Provider <symbols list begin>\n");
-  for (i=0;i<pinfo->symbols.len;i++) {
+  for (i=0;i<pinfo->symbols.TSP_sample_symbol_info_list_t_len;i++) {
     fprintf(req->stream,"    pgi = %08d, %s \n",
-	    pinfo->symbols.val[i].index,
-	    pinfo->symbols.val[i].name);
+	    pinfo->symbols.TSP_sample_symbol_info_list_t_val[i].provider_global_index,
+	    pinfo->symbols.TSP_sample_symbol_info_list_t_val[i].name);
   }
   fprintf(req->stream,"Provider <symbols list end>.\n");
 }

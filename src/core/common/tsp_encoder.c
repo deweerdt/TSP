@@ -1,7 +1,7 @@
 
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/common/tsp_encoder.c,v 1.2 2006-04-05 08:10:31 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/common/tsp_encoder.c,v 1.3 2006-04-07 10:37:17 morvan Exp $
 
 -----------------------------------------------------------------------
 
@@ -44,6 +44,7 @@ Purpose   :  Implementation for the functions used to encode the type
 #include <tsp_simple_trace.h>
 #include <tsp_datastruct.h>
 #include <tsp_encoder.h>
+#include <tsp_decoder.h>
 
 uint32_t TSP_data_channel_double_encoder(void* v_double, uint32_t dimension,  char* out_buf, uint32_t size)
 {
@@ -147,43 +148,17 @@ uint32_t TSP_data_channel_int8_encoder(void* v_int8,uint32_t dimension,  char* o
 {
 
   int8_t *pt_int8;
-  uint32_t taille;
-
-  taille= sizeof(int8_t) * dimension;
-  if(size  < taille )
-  {
-    STRACE_ERROR(("buffer is too small"));
-    return 0;
-  }
+  uint32_t taille,i;
+  int32_t  temp[dimension];
 
   pt_int8=(int8_t*)v_int8;
 
-#ifndef TSP_NO_XDR_ENCODE
-
-  XDR xhandle;
-  uint32_t i;
-  
- 
-  xdrmem_create(&xhandle, out_buf,  size, XDR_ENCODE);
-
-  for(i=0;i<dimension;++i)
-  {
-    if( xdr_opaque(&xhandle, pt_int8+i,1) != TRUE)
-    {
-       STRACE_ERROR(("Function xdr_int failed"));
-       return 0;
-    }
+  for (i=0;i<dimension;++i) {
+    temp[i] = (int32_t) pt_int8[i];
   }
-  
-  return xdr_getpos(&xhandle);
-    
 
-#else
-  memcpy(pt_int8,out_buf,taille);
-    
-  return (uint32_t)(taille);
+  return  TSP_data_channel_int32_encoder(&temp[0],dimension,out_buf,size);
 
-#endif /*TSP_NO_XDR_ENCODE*/
 
 }
 
@@ -192,46 +167,15 @@ uint32_t TSP_data_channel_int16_encoder(void* v_int16,uint32_t dimension,  char*
 {
   int16_t *pt_int16;
   uint32_t i,taille;
-
-  taille= sizeof(int16_t) * dimension;
-  if(size  < taille )
-  {
-    STRACE_ERROR(("buffer is too small"));
-    return 0;
-  }
+  int32_t  temp[dimension];
 
   pt_int16=(int16_t*)v_int16;
 
-#ifndef TSP_NO_XDR_ENCODE
-
-  XDR xhandle;
-  
- 
-  xdrmem_create(&xhandle, out_buf,  size, XDR_ENCODE);
-
-  for(i=0;i<dimension;++i)
-  {
-    if( xdr_opaque(&xhandle, pt_int16+i,2) != TRUE)
-    {
-       STRACE_ERROR(("Function xdr_double failed"));
-       return 0;
-    }
+  for (i=0;i<dimension;++i) {
+    temp[i] = (int32_t) pt_int16[i];
   }
-  
-  return xdr_getpos(&xhandle);
-    
 
-#else
-   
-    for(i=0;i<dimension;++i)
-    {
-      ((int16_t*)out_buf)[i] = TSP_ENCODE_INT16(pt_int16+i);
-
-    }
-
-    return (uint32_t)(taille);
-
-#endif /*TSP_NO_XDR_ENCODE*/
+  return  TSP_data_channel_int32_encoder(&temp[0],dimension,out_buf,size);
 }
 
 uint32_t TSP_data_channel_int32_encoder(void* v_int32,uint32_t dimension,  char* out_buf, uint32_t size)
@@ -239,7 +183,7 @@ uint32_t TSP_data_channel_int32_encoder(void* v_int32,uint32_t dimension,  char*
   int32_t *pt_int32;
   uint32_t i,taille;
 
-  taille= sizeof(int32_t) * dimension;
+  taille= TSP_SIZEOF_ENCODED_INT32 * dimension;
   if(size  < taille )
   {
     STRACE_ERROR(("buffer is too small"));
@@ -285,7 +229,7 @@ uint32_t TSP_data_channel_int64_encoder(void* v_int64,uint32_t dimension,  char*
   int64_t *pt_int64;
   uint32_t i,taille;
 
-  taille= sizeof(int64_t) * dimension;
+  taille= TSP_SIZEOF_ENCODED_INT64 * dimension;
   if(size  < taille )
   {
     STRACE_ERROR(("buffer is too small"));
@@ -328,90 +272,33 @@ uint32_t TSP_data_channel_int64_encoder(void* v_int64,uint32_t dimension,  char*
 
 uint32_t TSP_data_channel_uint8_encoder(void* v_uint8,uint32_t dimension,  char* out_buf, uint32_t size)
 {
-  uint8_t *pt_uint8;
-  uint32_t taille;
 
-  taille= sizeof(uint8_t) * dimension;
-  if(size  < taille )
-  {
-    STRACE_ERROR(("buffer is too small"));
-    return 0;
-  }
+  uint8_t *pt_uint8;
+  uint32_t taille,i;
+  uint32_t  temp[dimension];
 
   pt_uint8=(uint8_t*)v_uint8;
 
-#ifndef TSP_NO_XDR_ENCODE
-
-  XDR xhandle;
-  uint32_t i;
-  
- 
-  xdrmem_create(&xhandle, out_buf,  size, XDR_ENCODE);
-
-  for(i=0;i<dimension;++i)
-  {
-    if( xdr_opaque(&xhandle,(char*)(pt_uint8+i),1) != TRUE)
-    {
-       STRACE_ERROR(("Function xdr_u_int failed"));
-       return 0;
-    }
+  for (i=0;i<dimension;++i) {
+    temp[i] = (uint32_t) pt_uint8[i];
   }
-  
-  return xdr_getpos(&xhandle);
-    
 
-#else
-  memcpy(pt_uint8,out_buf,taille);
-    
-  return (uint32_t)(taille);
-
-#endif /*TSP_NO_XDR_ENCODE*/
+  return  TSP_data_channel_uint32_encoder(&temp[0],dimension,out_buf,size);
 }
 
 uint32_t TSP_data_channel_uint16_encoder(void* v_uint16,uint32_t dimension,  char* out_buf, uint32_t size)
 {
   uint16_t *pt_uint16;
-  int32_t i,taille;
-
-  taille= sizeof(uint16_t) * dimension;
-  if(size  < taille )
-  {
-    STRACE_ERROR(("buffer is too small"));
-    return 0;
-  }
+  uint32_t taille,i;
+  uint32_t  temp[dimension];
 
   pt_uint16=(uint16_t*)v_uint16;
 
-#ifndef TSP_NO_XDR_ENCODE
-
-  XDR xhandle;
-  
- 
-  xdrmem_create(&xhandle, out_buf,  size, XDR_ENCODE);
-
-  for(i=0;i<dimension;++i)
-  {
-    if( xdr_opaque(&xhandle,(char*)(pt_uint16+i),2) != TRUE)
-    {
-       STRACE_ERROR(("Function xdr_double failed"));
-       return 0;
-    }
+  for (i=0;i<dimension;++i) {
+    temp[i] = (uint32_t) pt_uint16[i];
   }
-  
-  return xdr_getpos(&xhandle);
-    
 
-#else
-   
-    for(i=0;i<dimension;++i)
-    {
-      ((uint16_t*)out_buf)[i] = TSP_ENCODE_UINT16(pt_uint16+i);
-
-    }
-
-    return (uint32_t)(taille);
-
-#endif /*TSP_NO_XDR_ENCODE*/
+  return  TSP_data_channel_uint32_encoder(&temp[0],dimension,out_buf,size);
 }
 
 uint32_t TSP_data_channel_uint32_encoder(void* v_uint32,uint32_t dimension,  char* out_buf, uint32_t size)
@@ -419,7 +306,7 @@ uint32_t TSP_data_channel_uint32_encoder(void* v_uint32,uint32_t dimension,  cha
   uint32_t *pt_uint32;
   uint32_t i,taille;
 
-  taille= sizeof(uint32_t) * dimension;
+  taille= TSP_SIZEOF_ENCODED_UINT32 * dimension;
   if(size  < taille )
   {
     STRACE_ERROR(("buffer is too small"));
@@ -466,7 +353,7 @@ uint32_t TSP_data_channel_uint64_encoder(void* v_uint64,uint32_t dimension,  cha
   uint64_t *pt_uint64;
   uint32_t i,taille;
 
-  taille= sizeof(uint64_t) * dimension;
+  taille= TSP_SIZEOF_ENCODED_UINT64 * dimension;
   if(size  < taille )
   {
     STRACE_ERROR(("buffer is too small"));
@@ -511,127 +398,48 @@ uint32_t TSP_data_channel_uint64_encoder(void* v_uint64,uint32_t dimension,  cha
 uint32_t TSP_data_channel_char_encoder(void* v_char,uint32_t dimension,  char* out_buf, uint32_t size)
 {
   uint8_t *pt_char;
-  uint32_t taille;
-
-  taille= sizeof(uint8_t) * dimension;
-  if(size  < taille )
-  {
-    STRACE_ERROR(("buffer is too small"));
-    return 0;
-  }
+  uint32_t taille,i;
+  uint32_t  temp[dimension];
 
   pt_char=(uint8_t*)v_char;
 
-#ifndef TSP_NO_XDR_ENCODE
-
-  XDR xhandle;
-  uint32_t i;
-  
- 
-  xdrmem_create(&xhandle, out_buf,  size, XDR_ENCODE);
-
-  for(i=0;i<dimension;++i)
-  {
-    if( xdr_bytes(&xhandle,&((char *) pt_char+i),dimension,dimension) != TRUE)
-    {
-       STRACE_ERROR(("Function xdr_u_int failed"));
-       return 0;
-    }
+  for (i=0;i<dimension;++i) {
+    temp[i] = (uint32_t) pt_char[i];
   }
-  
-  return xdr_getpos(&xhandle);
-    
 
-#else
-  memcpy(pt_char,out_buf,taille);
-    
-  return (uint32_t)(taille);
-
-#endif /*TSP_NO_XDR_ENCODE*/
+  return  TSP_data_channel_uint32_encoder(&temp[0],dimension,out_buf,size);
 }
 
 uint32_t TSP_data_channel_uchar_encoder(void* v_uchar,uint32_t dimension,  char* out_buf, uint32_t size)
 {
-  uint8_t *pt_uchar;
-  uint32_t taille;
 
-  taille= sizeof(uint8_t) * dimension;
-  if(size  < taille )
-  {
-    STRACE_ERROR(("buffer is too small"));
-    return 0;
-  }
+  uint8_t *pt_uchar;
+  uint32_t taille,i;
+  uint32_t  temp[dimension];
 
   pt_uchar=(uint8_t*)v_uchar;
 
-#ifndef TSP_NO_XDR_ENCODE
-
-  XDR xhandle;
-  uint32_t i;
-  
- 
-  xdrmem_create(&xhandle, out_buf,  size, XDR_ENCODE);
-
-  for(i=0;i<dimension;++i)
-  {
-    if( xdr_bytes(&xhandle,&((char *)pt_uchar+i),dimension,dimension) != TRUE)
-    {
-       STRACE_ERROR(("Function xdr_u_int failed"));
-       return 0;
-    }
+  for (i=0;i<dimension;++i) {
+    temp[i] = (uint32_t) pt_uchar[i];
   }
-  
-  return xdr_getpos(&xhandle);
-    
 
-#else
-  memcpy(pt_uchar,out_buf,taille);
-    
-  return (uint32_t)(taille);
-
-#endif /*TSP_NO_XDR_ENCODE*/
+  return  TSP_data_channel_uint32_encoder(&temp[0],dimension,out_buf,size);
 }
 
 uint32_t TSP_data_channel_user_encoder(void* v_user,uint32_t dimension,  char* out_buf, uint32_t size)
 {
-  uint8_t *pt_user;
-  uint32_t taille;
 
-  taille= sizeof(uint8_t) * dimension;
-  if(size  < taille )
-  {
-    STRACE_ERROR(("buffer is too small"));
-    return 0;
-  }
+  uint8_t *pt_user;
+  uint32_t taille,i;
+  uint32_t  temp[dimension];
 
   pt_user=(uint8_t*)v_user;
 
-#ifndef TSP_NO_XDR_ENCODE
-
-  XDR xhandle;
-  uint32_t i;
-  
- 
-  xdrmem_create(&xhandle, out_buf,  size, XDR_ENCODE);
-
-  for(i=0;i<dimension;++i)
-  {
-    if( xdr_opaque(&xhandle,(char *) pt_user+i,dimension) != TRUE)
-    {
-       STRACE_ERROR(("Function xdr_u_int failed"));
-       return 0;
-    }
+  for (i=0;i<dimension;++i) {
+    temp[i] = (uint32_t) pt_user[i];
   }
-  
-  return xdr_getpos(&xhandle);
-    
 
-#else
-  memcpy(pt_user,out_buf,taille);
-    
-  return (uint32_t)(taille);
-
-#endif /*TSP_NO_XDR_ENCODE*/
+  return  TSP_data_channel_uint32_encoder(&temp[0],dimension,out_buf,size);
 }
 
 TSP_data_encoder_t 

@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_kernel.h,v 1.23 2006-03-02 16:27:25 erk Exp $
+$Id: gdisp_kernel.h,v 1.24 2006-04-07 10:37:17 morvan Exp $
 
 -----------------------------------------------------------------------
 
@@ -176,7 +176,7 @@ typedef struct Symbol_T_ {
 
   guchar                           sReference;
   guint                            sPgi;
-  TSP_consumer_symbol_requested_t  sInfo;
+  TSP_sample_symbol_info_t         sInfo;
   guint                            sTimeTag;
   gdouble                          sLastValue;
   gboolean                         sHasChanged;
@@ -222,7 +222,7 @@ typedef enum {
 /*
  * Shorter name for symbol that must be sampled.
  */
-typedef TSP_consumer_symbol_requested_list_t SampleList_T;
+typedef TSP_sample_symbol_info_list_t SampleList_T;
 
 
 /*

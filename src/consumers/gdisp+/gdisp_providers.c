@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_providers.c,v 1.11 2006-02-26 14:08:24 erk Exp $
+$Id: gdisp_providers.c,v 1.12 2006-04-07 10:37:17 morvan Exp $
 
 -----------------------------------------------------------------------
 
@@ -90,7 +90,7 @@ gdisp_sortProviderSymbolByIndex ( gconstpointer data1,
   Symbol_T *symbol1 = (Symbol_T*)data1,
            *symbol2 = (Symbol_T*)data2;
 
-  return (symbol1->sInfo.index - symbol2->sInfo.index);
+  return (symbol1->sInfo.provider_global_index - symbol2->sInfo.provider_global_index);
 
 }
 
@@ -191,7 +191,7 @@ gdisp_poolProviderThreadStatus ( Kernel_T *kernel )
 			     1 /* status row */,
 			     &kernel->colors[bgColorId]);
 
-    sprintf(rowBuffer,"%d",provider->pSampleList.len);
+    sprintf(rowBuffer,"%d",provider->pSampleList.TSP_sample_symbol_info_list_t_len);
     gtk_clist_set_text(GTK_CLIST(provider->pCList),
 		       6 /* sample symbol row */,
 		       1 /* information       */,
@@ -395,7 +395,7 @@ gdisp_insertAllProviders ( Kernel_T *kernel )
 				  rowInfo);
 
     rowInfo[0] = "Sampled Symbols";
-    sprintf(rowInfo[1],"%d",provider->pSampleList.len);
+    sprintf(rowInfo[1],"%d",provider->pSampleList.TSP_sample_symbol_info_list_t_len);
 
     rowNumber  = gtk_clist_append(GTK_CLIST(provider->pCList),
 				  rowInfo);

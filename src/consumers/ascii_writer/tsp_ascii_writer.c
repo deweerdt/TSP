@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer.c,v 1.15 2006-03-17 15:48:20 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer.c,v 1.16 2006-04-07 10:37:17 morvan Exp $
 
 -----------------------------------------------------------------------
 
@@ -56,12 +56,29 @@ Purpose   : TSP ascii writer consumer
 int yyrestart(FILE*);
 int yyparse (void);
 extern FILE *yyin, *yyout;
-
+  
 static TSP_provider_t* myproviders = NULL;
 #define OUTPUT_STREAM_BUFFER_SIZE 1024*10
 #define MAX_VAR_NAME_SIZE 256
 static char tc_output_buffer[OUTPUT_STREAM_BUFFER_SIZE];
 static int stop_it = 0;
+const static char* fmt_tab[] = { 0,
+			      "%16.9F ",
+			      "%16.9F ",
+			      "%d ",
+			      "%d ",
+			      "%d ",
+			      "%d ",
+			      "%d ",
+			      "%d ",
+			      "%d ",
+			      "%d ",
+			      "%c ",
+			      "%c ",
+			      "%c ",
+			      0
+				
+};
 
 int tsp_ascii_writer_parse_error    =  0;
 int tsp_ascii_writer_lineno         =  0;
@@ -70,7 +87,7 @@ int tsp_ascii_writer_nb_var         =  0;
 int tsp_ascii_writer_current_var    = -1;
 int tsp_ascii_writer_header_style   =  0;
 int tsp_ascii_writer_sample_running =  0;
-TSP_consumer_symbol_requested_t*  g_tsp_symbols = NULL; 
+TSP_sample_symbol_info_t*  g_tsp_symbols = NULL; 
 static tsp_ascii_writer_logMsg_ft my_logMsg = tsp_ascii_writer_logMsg_stdout; 
 
 void tsp_ascii_writer_set_logMsgCB(tsp_ascii_writer_logMsg_ft logMsgCB) {
@@ -151,7 +168,7 @@ static int32_t previous_symbol_found_dim = 0;
 
 int32_t
 tsp_ascii_writer_validate_symbol_info(char* symbol_name, 
-				      const TSP_consumer_symbol_info_list_t* tsp_symbols) {
+				      const TSP_sample_symbol_info_list_t* tsp_symbols) {
   int     i;
   int32_t retval;
   char*   searched_array_symbol;
@@ -171,9 +188,9 @@ tsp_ascii_writer_validate_symbol_info(char* symbol_name,
   searched_array_symbol[i] = '[';
   searched_array_symbol[i+1] = '\0';
 
-  for (i=0; i< tsp_symbols->len; ++i) {
+  for (i=0; i< tsp_symbols->TSP_sample_symbol_info_list_t_len; ++i) {
     /* scalar symbol match */
-    if (0==strcmp(tsp_symbols->val[i].name,symbol_name)) {
+    if (0==strcmp(tsp_symbols->TSP_sample_symbol_info_list_t_val[i].name,symbol_name)) {
       STRACE_DEBUG(("Scalar symbol match <%s>",symbol_name));
       retval =1;
       break;
@@ -184,7 +201,7 @@ tsp_ascii_writer_validate_symbol_info(char* symbol_name,
      * and found symbol == searched symbol + '['
      * "toto" is an array iff we found "toto["
      */
-    if (NULL != strstr(tsp_symbols->val[i].name,searched_array_symbol)) {
+    if (NULL != strstr(tsp_symbols->TSP_sample_symbol_info_list_t_val[i].name,searched_array_symbol)) {
       ++retval;
     }
   }
@@ -206,14 +223,14 @@ tsp_ascii_writer_validate_symbol_info(char* symbol_name,
 
 int32_t
 tsp_ascii_writer_validate_symbol_requested(char* symbol_name,
-					   const TSP_consumer_symbol_requested_list_t* tsp_symbols) {
+					   const TSP_sample_symbol_info_list_t* tsp_symbols) {
   int i;
   int32_t retval;
 
   assert(tsp_symbols);
   retval = 0;
-  for (i=0; i< tsp_symbols->len; ++i) {
-    if (NULL != strstr(tsp_symbols->val[i].name,symbol_name)) {
+  for (i=0; i< tsp_symbols->TSP_sample_symbol_info_list_t_len; ++i) {
+    if (NULL != strstr(tsp_symbols->TSP_sample_symbol_info_list_t_val[i].name,symbol_name)) {
       ++retval;
     }
   }
@@ -222,7 +239,7 @@ tsp_ascii_writer_validate_symbol_requested(char* symbol_name,
 
 int32_t 
 tsp_ascii_writer_load_config(const char* conffilename, 
-			     TSP_consumer_symbol_requested_t**  tsp_symbols,
+			     TSP_sample_symbol_info_t**  tsp_symbols,
 			     int32_t* nb_symbols) {
   
   int32_t retcode;
@@ -248,7 +265,7 @@ tsp_ascii_writer_load_config(const char* conffilename,
      * rewind the file for second parsing.
      */
     if (0==retcode) {
-      g_tsp_symbols = (TSP_consumer_symbol_requested_t*) calloc(tsp_ascii_writer_nb_var,sizeof(TSP_consumer_symbol_requested_t));
+      g_tsp_symbols = (TSP_sample_symbol_info_t*) calloc(tsp_ascii_writer_nb_var,sizeof(TSP_sample_symbol_info_t));
       
       /* restart parsing */
       rewind(yyin);
@@ -266,13 +283,13 @@ tsp_ascii_writer_load_config(const char* conffilename,
 } /* tsp_ascii_writer_load_config */
 
 int32_t 
-tsp_ascii_writer_make_unique(TSP_consumer_symbol_requested_t**  tsp_symbols,
+tsp_ascii_writer_make_unique(TSP_sample_symbol_info_t**  tsp_symbols,
 			     int32_t* nb_symbols) {
   int i;
   int j;
   int nbsym_in;
   int nbsym_out;
-  TSP_consumer_symbol_requested_t* symbols;
+  TSP_sample_symbol_info_t* symbols;
   
   nbsym_in  = *nb_symbols;
   nbsym_out = nbsym_in;
@@ -295,7 +312,7 @@ tsp_ascii_writer_make_unique(TSP_consumer_symbol_requested_t**  tsp_symbols,
 	    (symbols[i].phase == symbols[j].phase)) {
 	  /* copy remaining symbols */
 	  if ((i+1)<nbsym_out) {
-	    memmove(&symbols[i],&symbols[i+1],(nbsym_out-i)*sizeof(TSP_consumer_symbol_requested_t));
+	    memmove(&symbols[i],&symbols[i+1],(nbsym_out-i)*sizeof(TSP_sample_symbol_info_t));
 	  } else {
 	    /* special case for last symbol remove */
 	    --nbsym_out;
@@ -318,27 +335,27 @@ tsp_ascii_writer_make_unique(TSP_consumer_symbol_requested_t**  tsp_symbols,
 
   /* zero out duplicate at the end */
   if (nbsym_in>nbsym_out) {
-    memset(&symbols[nbsym_out],0,(nbsym_in-nbsym_out)*sizeof(TSP_consumer_symbol_requested_t));
+    memset(&symbols[nbsym_out],0,(nbsym_in-nbsym_out)*sizeof(TSP_sample_symbol_info_t));
     *nb_symbols = nbsym_out;
   }
   return 0;
 }
 
 int32_t 
-tsp_ascii_writer_new_validate_symbols(TSP_consumer_symbol_requested_t*  tsp_symbols,
+tsp_ascii_writer_new_validate_symbols(TSP_sample_symbol_info_t*  tsp_symbols,
 				      int32_t nb_symbols,
 				      const char* tsp_provider_url,
-				      TSP_consumer_symbol_requested_list_t* tsp_symbol_list) {
+				      TSP_sample_symbol_info_list_t* tsp_symbol_list) {
 
   int32_t retcode;
-  const TSP_consumer_information_t* current_tsp_info=NULL;
+  const TSP_answer_sample_t* current_tsp_info=NULL;
   int32_t symbol_dim;
   int32_t nb_scalar_symbol; 
   int32_t i;
   int32_t j;
   int32_t var_index;
   int32_t forced_period;
-  TSP_consumer_symbol_requested_list_t current_requested_symbols_list;
+  TSP_sample_symbol_info_list_t current_requested_symbols_list;
   
   
   retcode = 0;
@@ -359,23 +376,23 @@ tsp_ascii_writer_new_validate_symbols(TSP_consumer_symbol_requested_t*  tsp_symb
   }
 
   /* first build a request_sample with provided symbols */
-  current_requested_symbols_list.val = (TSP_consumer_symbol_requested_t*)calloc(nb_symbols, sizeof(TSP_consumer_symbol_requested_t));
-  current_requested_symbols_list.len = nb_symbols;
-  memcpy(current_requested_symbols_list.val,tsp_symbols,nb_symbols*sizeof(TSP_consumer_symbol_requested_t));
+  current_requested_symbols_list.TSP_sample_symbol_info_list_t_val = (TSP_sample_symbol_info_t*)calloc(nb_symbols, sizeof(TSP_sample_symbol_info_t));
+  current_requested_symbols_list.TSP_sample_symbol_info_list_t_len = nb_symbols;
+  memcpy(current_requested_symbols_list.TSP_sample_symbol_info_list_t_val,tsp_symbols,nb_symbols*sizeof(TSP_sample_symbol_info_t));
   STRACE_INFO(("Initial number of asked symbol = %d",nb_symbols));
   /* send the initial request_sample for obtaining provider-side validation */  
   if (!TSP_consumer_request_sample(myproviders[0],&current_requested_symbols_list)) {
     /* now build request filtered info to handle invalid symbols */
     nb_scalar_symbol = 0;
     forced_period    = -1;
-    for (i=0;i<current_requested_symbols_list.len;++i) {
-      STRACE_INFO(("Examining symbol <%s> of pgi <%d>",current_requested_symbols_list.val[i].name,current_requested_symbols_list.val[i].index));
-      if (current_requested_symbols_list.val[i].index == -1) {
-	my_logMsg("Checking for symbol like <%s> on provider side.\n",current_requested_symbols_list.val[i].name);
+    for (i=0;i<current_requested_symbols_list.TSP_sample_symbol_info_list_t_len;++i) {
+      STRACE_INFO(("Examining symbol <%s> of pgi <%d>",current_requested_symbols_list.TSP_sample_symbol_info_list_t_val[i].name,current_requested_symbols_list.TSP_sample_symbol_info_list_t_val[i].provider_global_index));
+      if (current_requested_symbols_list.TSP_sample_symbol_info_list_t_val[i].provider_global_index == -1) {
+	my_logMsg("Checking for symbol like <%s> on provider side.\n",current_requested_symbols_list.TSP_sample_symbol_info_list_t_val[i].name);
 	/* Ask for filtered information using the name of the currently invalid symbol */
-	TSP_consumer_request_filtered_information(myproviders[0],TSP_FILTER_SIMPLE,current_requested_symbols_list.val[i].name);
+	TSP_consumer_request_filtered_information(myproviders[0],TSP_FILTER_SIMPLE,current_requested_symbols_list.TSP_sample_symbol_info_list_t_val[i].name);
 	current_tsp_info = TSP_consumer_get_information(myproviders[0]);
-	symbol_dim = tsp_ascii_writer_validate_symbol_info(current_requested_symbols_list.val[i].name,&(current_tsp_info->symbols));
+	symbol_dim = tsp_ascii_writer_validate_symbol_info(current_requested_symbols_list.TSP_sample_symbol_info_list_t_val[i].name,&(current_tsp_info->symbols));
 	if (0==symbol_dim) {
 	  my_logMsg("Symbol <%s> not found on provider side.\n",tsp_symbols[i].name);
 	  /* hack for ignoring unfound symbols */
@@ -418,7 +435,7 @@ tsp_ascii_writer_new_validate_symbols(TSP_consumer_symbol_requested_t*  tsp_symb
       nb_scalar_symbol     += symbol_dim;
     } /* end for loop */
   } else { /* initial request_sample is ok */
-    nb_scalar_symbol = current_requested_symbols_list.len;
+    nb_scalar_symbol = current_requested_symbols_list.TSP_sample_symbol_info_list_t_len;
     /* now force period to first one */
     forced_period = tsp_symbols[0].period;
     for (i=0;i<nb_scalar_symbol;++i) {
@@ -434,8 +451,8 @@ tsp_ascii_writer_new_validate_symbols(TSP_consumer_symbol_requested_t*  tsp_symb
       
   /* Now build final request sample */
   if (0==retcode) {
-    tsp_symbol_list->val = (TSP_consumer_symbol_requested_t*)calloc(nb_scalar_symbol, sizeof(TSP_consumer_symbol_requested_t));
-    tsp_symbol_list->len = nb_scalar_symbol;
+    tsp_symbol_list->TSP_sample_symbol_info_list_t_val = (TSP_sample_symbol_info_t*)calloc(nb_scalar_symbol, sizeof(TSP_sample_symbol_info_t));
+    tsp_symbol_list->TSP_sample_symbol_info_list_t_len = nb_scalar_symbol;
     var_index = 0;
     for (i=0;i<nb_symbols; ++i) {
       /* 
@@ -443,24 +460,24 @@ tsp_ascii_writer_new_validate_symbols(TSP_consumer_symbol_requested_t*  tsp_symb
        */
       if (tsp_symbols[i].phase > 1) {
 	for (j=0;j<tsp_symbols[i].phase;++j) {	    
-	  tsp_symbol_list->val[var_index].name = malloc(MAX_VAR_NAME_SIZE*sizeof(char));
-	  snprintf(tsp_symbol_list->val[var_index].name,
+	  tsp_symbol_list->TSP_sample_symbol_info_list_t_val[var_index].name = malloc(MAX_VAR_NAME_SIZE*sizeof(char));
+	  snprintf(tsp_symbol_list->TSP_sample_symbol_info_list_t_val[var_index].name,
 		   MAX_VAR_NAME_SIZE,		     
 		   "%s[%0d]",
 		   tsp_symbols[i].name,
 		   j);
-	  STRACE_DEBUG(("Asking for TSP var = <%s>",tsp_symbol_list->val[var_index].name));
-	  tsp_symbol_list->val[var_index].period = tsp_symbols[i].period;
-	  tsp_symbol_list->val[var_index].phase  = 0;
+	  STRACE_DEBUG(("Asking for TSP var = <%s>",tsp_symbol_list->TSP_sample_symbol_info_list_t_val[var_index].name));
+	  tsp_symbol_list->TSP_sample_symbol_info_list_t_val[var_index].period = tsp_symbols[i].period;
+	  tsp_symbol_list->TSP_sample_symbol_info_list_t_val[var_index].phase  = 0;
 	  ++var_index;
 	} /* loop over array var index */
       } else {
 	/* ignore symbols with negative phase */
 	if (tsp_symbols[i].phase >= 0) {
-	  tsp_symbol_list->val[var_index].name   = strdup(tsp_symbols[i].name);
-	  STRACE_DEBUG(("Asking for TSP var = <%s>",tsp_symbol_list->val[var_index].name));
-	  tsp_symbol_list->val[var_index].period = tsp_symbols[i].period;
-	  tsp_symbol_list->val[var_index].phase  = 0;
+	  tsp_symbol_list->TSP_sample_symbol_info_list_t_val[var_index].name   = strdup(tsp_symbols[i].name);
+	  STRACE_DEBUG(("Asking for TSP var = <%s>",tsp_symbol_list->TSP_sample_symbol_info_list_t_val[var_index].name));
+	  tsp_symbol_list->TSP_sample_symbol_info_list_t_val[var_index].period = tsp_symbols[i].period;
+	  tsp_symbol_list->TSP_sample_symbol_info_list_t_val[var_index].phase  = 0;
 	  ++var_index;
 	}
       } /* end if tsp_symbols[i].phase > 1 */
@@ -481,10 +498,10 @@ tsp_ascii_writer_new_validate_symbols(TSP_consumer_symbol_requested_t*  tsp_symb
 }
 
 int32_t 
-tsp_ascii_writer_validate_symbols(TSP_consumer_symbol_requested_t*  tsp_symbols,
+tsp_ascii_writer_validate_symbols(TSP_sample_symbol_info_t*  tsp_symbols,
 				  int32_t nb_symbols,
 				  const char* tsp_provider_url,
-				  TSP_consumer_symbol_requested_list_t* tsp_symbol_list) {
+				  TSP_sample_symbol_info_list_t* tsp_symbol_list) {
 
   return tsp_ascii_writer_new_validate_symbols(tsp_symbols,
 					       nb_symbols,
@@ -501,7 +518,7 @@ tsp_ascii_writer_start(FILE* sfile, int32_t nb_sample_max_infile, OutputFileForm
   int             new_sample;
   int             symbol_index;
   TSP_sample_t    sample;
-  const TSP_consumer_symbol_requested_list_t*  symbols;
+  const TSP_sample_symbol_info_list_t*  symbols;
   int             complete_line;
   char            charbuf[MAX_VAR_NAME_SIZE];
   int             symbol_dim;
@@ -531,13 +548,13 @@ tsp_ascii_writer_start(FILE* sfile, int32_t nb_sample_max_infile, OutputFileForm
     /* no header */
     break;
   case BACH_FileFmt: 
-    for (symbol_index=0;symbol_index<symbols->len;++symbol_index) 
+    for (symbol_index=0;symbol_index<symbols->TSP_sample_symbol_info_list_t_len;++symbol_index) 
       {
 	/* 
 	 * Si la variable est un tableau on compte calcul
 	 * la taille de ce tableau
 	 */
-	strncpy(charbuf,symbols->val[symbol_index].name,MAX_VAR_NAME_SIZE);
+	strncpy(charbuf,symbols->TSP_sample_symbol_info_list_t_val[symbol_index].name,MAX_VAR_NAME_SIZE);
 	if (NULL != index(charbuf,'[')) 
 	  {
 	    *(index(charbuf,'[')) = '\0';
@@ -558,15 +575,15 @@ tsp_ascii_writer_start(FILE* sfile, int32_t nb_sample_max_infile, OutputFileForm
     
     /* tableau contenant l'entete des colonnes
      */
-    tab_colonne=(char**)malloc(symbols->len * sizeof(char*));
+    tab_colonne=(char**)malloc(symbols->TSP_sample_symbol_info_list_t_len * sizeof(char*));
     
-    for (symbol_index=0;symbol_index<symbols->len;++symbol_index) 
+    for (symbol_index=0;symbol_index<symbols->TSP_sample_symbol_info_list_t_len;++symbol_index) 
       {
 	/* 
 	 * Si la variable est un tableau on compte calcul
 	 * la taille de ce tableau
 	 */
-	strncpy(charbuf,symbols->val[symbol_index].name,MAX_VAR_NAME_SIZE);
+	strncpy(charbuf,symbols->TSP_sample_symbol_info_list_t_val[symbol_index].name,MAX_VAR_NAME_SIZE);
 	if (NULL != index(charbuf,'[')) 
 	  {
 	    *(index(charbuf,'[')) = '\0';
@@ -605,7 +622,7 @@ tsp_ascii_writer_start(FILE* sfile, int32_t nb_sample_max_infile, OutputFileForm
     /*
      * ecriture dans le fichier des entetes de colonnes
      */
-    for (symbol_index=0;symbol_index<symbols->len;++symbol_index) {
+    for (symbol_index=0;symbol_index<symbols->TSP_sample_symbol_info_list_t_len;++symbol_index) {
       fprintf(sfile,"%s	", *(tab_colonne + symbol_index));
       free(*(tab_colonne + symbol_index));
     }
@@ -618,6 +635,9 @@ tsp_ascii_writer_start(FILE* sfile, int32_t nb_sample_max_infile, OutputFileForm
     break;
   }
  
+
+
+
   /* Demarrage des sample au niveau provider */
   if(!TSP_consumer_request_sample_init(myproviders[0],0,0)) {
     STRACE_ERROR(("Sample init refused by the provider??..."));
@@ -637,10 +657,10 @@ tsp_ascii_writer_start(FILE* sfile, int32_t nb_sample_max_infile, OutputFileForm
       {
 			if (tsp_ascii_writer_header_style==2) 
 			{
-				fprintf(sfile,"%f	",sample.user_value);
+				fprintf(sfile,fmt_tab[sample.type],sample.uvalue);
 				++complete_line;
 				/* We write the endl if we receive a whole sample line */
-				if (symbols->len==complete_line) 
+				if (symbols->TSP_sample_symbol_info_list_t_len==complete_line) 
 				{
 	  				fprintf(sfile,"\n");
 	 				complete_line = 0;
@@ -654,10 +674,10 @@ tsp_ascii_writer_start(FILE* sfile, int32_t nb_sample_max_infile, OutputFileForm
 			} 
 			else 
 			{
-				fprintf(sfile,"%16.9E ",sample.user_value);
+				fprintf(sfile,fmt_tab[sample.type],sample.uvalue.double_value);
 				++complete_line;
 				/* We write the endl if we receive a whole sample line */
-				if (symbols->len==complete_line) 
+				if (symbols->TSP_sample_symbol_info_list_t_len==complete_line) 
 				{
 	  				fprintf(sfile,"\n");
 	 				complete_line = 0;

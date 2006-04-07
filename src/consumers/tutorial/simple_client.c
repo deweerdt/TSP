@@ -1,6 +1,6 @@
 /*
 
-$Id: simple_client.c,v 1.5 2006-02-26 13:36:05 erk Exp $
+$Id: simple_client.c,v 1.6 2006-04-07 10:37:17 morvan Exp $
 
 -----------------------------------------------------------------------
 
@@ -53,8 +53,8 @@ void perror_and_exit(char *txt)
 /* Everthing must begin somewhere */
 int main(int argc, char *argv[])
 {
-  const TSP_consumer_information_t*  information;
-  TSP_consumer_symbol_requested_list_t symbols;
+  const TSP_answer_sample_t*  information;
+  TSP_sample_symbol_info_list_t symbols;
   int i, count_frame, nb_providers, wanted_sym=10, t = -1;
   TSP_provider_t* providers;
   char* name;
@@ -92,19 +92,19 @@ int main(int argc, char *argv[])
 
   /* Get the provider information asked by TSP_consumer_request_information */
   information = TSP_consumer_get_information(providers[0]);
-  if (wanted_sym > information->symbols.len)
-	wanted_sym = information->symbols.len;
+  if (wanted_sym > information->symbols.TSP_sample_symbol_info_list_t_len)
+	wanted_sym = information->symbols.TSP_sample_symbol_info_list_t_len;
 
   /* Will use only the "wanted_sym" first symbols of provider */
-  symbols.val = (TSP_consumer_symbol_requested_t*)calloc(wanted_sym, sizeof(TSP_consumer_symbol_requested_t));
+  symbols.TSP_sample_symbol_info_list_t_val = (TSP_sample_symbol_info_t*)calloc(wanted_sym, sizeof(TSP_sample_symbol_info_t));
 
-  symbols.len = wanted_sym;
+  symbols.TSP_sample_symbol_info_list_t_len = wanted_sym;
   for(i = 0 ; i < wanted_sym ; i++)
     {
-      symbols.val[i].name = information->symbols.val[i].name;
-      symbols.val[i].period = 1;	/* at max frequency */
-      symbols.val[i].phase = 0;		/* with no offset */
-      printf ("Asking for symbol = %s\n", symbols.val[i].name);
+      symbols.TSP_sample_symbol_info_list_t_val[i].name = information->symbols.TSP_sample_symbol_info_list_t_val[i].name;
+      symbols.TSP_sample_symbol_info_list_t_val[i].period = 1;	/* at max frequency */
+      symbols.TSP_sample_symbol_info_list_t_val[i].phase = 0;		/* with no offset */
+      printf ("Asking for symbol = %s\n", symbols.TSP_sample_symbol_info_list_t_val[i].name);
     }
 
   /*-------------------------------------------------------------------------------------------------------*/ 
@@ -134,7 +134,7 @@ int main(int argc, char *argv[])
 		  printf ("======== Frame[%d] ======== Time : %d ========\n", count_frame, t);
 		}		  
 	      i = sample.provider_global_index;
-	      printf ("# Sample nb[%d] \t%s \tval=%f\n", i, symbols.val[i].name, sample.user_value);
+	      printf ("# Sample nb[%d] \t%s \tval=%f\n", i, symbols.TSP_sample_symbol_info_list_t_val[i].name, sample.uvalue.double_value);
 	    }
 	  else
 	    {
@@ -148,7 +148,7 @@ int main(int argc, char *argv[])
 	}
     }
 
-  free (symbols.val);
+  free (symbols.TSP_sample_symbol_info_list_t_val);
 
   /*-------------------------------------------------------------------------------------------------------*/ 
   /* Stop and destroy the sampling sequence*/

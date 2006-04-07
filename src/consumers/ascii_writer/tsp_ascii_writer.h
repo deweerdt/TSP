@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer.h,v 1.9 2006-03-17 13:46:54 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer.h,v 1.10 2006-04-07 10:37:17 morvan Exp $
 
 ------------------------------------------------------------------------
 
@@ -132,7 +132,7 @@ tsp_ascii_writer_add_comment(char* comment);
  */
 int32_t 
 tsp_ascii_writer_load_config(const char* conffilename, 
-			     TSP_consumer_symbol_requested_t**  tsp_symbols,
+			     TSP_sample_symbol_info_t**  tsp_symbols,
 			     int32_t* nb_symbols);
 
 /**
@@ -149,7 +149,7 @@ tsp_ascii_writer_load_config(const char* conffilename,
  *           symbol otherwise.
  */
 int32_t 
-tsp_ascii_writer_make_unique(TSP_consumer_symbol_requested_t**  tsp_symbols,
+tsp_ascii_writer_make_unique(TSP_sample_symbol_info_t**  tsp_symbols,
 			     int32_t* nb_symbols);
 
 /**
@@ -164,10 +164,10 @@ tsp_ascii_writer_make_unique(TSP_consumer_symbol_requested_t**  tsp_symbols,
  * @return 0 OK -1 otherwise.
  */
 int32_t 
-tsp_ascii_writer_validate_symbols(TSP_consumer_symbol_requested_t*  tsp_symbols,
+tsp_ascii_writer_validate_symbols(TSP_sample_symbol_info_t*  tsp_symbols,
 				  int32_t nb_symbols,
 				  const char* tsp_provider_hostname,
-				  TSP_consumer_symbol_requested_list_t* tsp_symbol_list);
+				  TSP_sample_symbol_info_list_t* tsp_symbol_list);
 
 /**
  * Start TSP data receive and archive.

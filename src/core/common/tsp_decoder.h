@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/common/tsp_decoder.h,v 1.1 2006-03-31 12:59:07 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/common/tsp_decoder.h,v 1.2 2006-04-07 10:37:17 morvan Exp $
 
 -----------------------------------------------------------------------
 
@@ -40,7 +40,7 @@ Purpose   :  Implementation for the functions used to decode the data received
 
 
 #include <tsp_abs_types.h>
-
+#include <tsp_rpc.h>
 
 #define TSP_SIZEOF_ENCODED_DOUBLE RNDUP(sizeof(double))
 #define TSP_SIZEOF_ENCODED_FLOAT RNDUP(sizeof(float))

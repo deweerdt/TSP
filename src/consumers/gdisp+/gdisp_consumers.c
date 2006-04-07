@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_consumers.c,v 1.13 2006-02-26 14:08:23 erk Exp $
+$Id: gdisp_consumers.c,v 1.14 2006-04-07 10:37:17 morvan Exp $
 
 -----------------------------------------------------------------------
 
@@ -100,8 +100,8 @@ gdisp_insertProvider ( Kernel_T *kernel,
   Provider_T     *newProvider      = (Provider_T*)NULL;
   gint            requestStatus    = 0;
 
-  const TSP_consumer_information_t *providerInfo =
-                                  (const TSP_consumer_information_t*)NULL;
+  const TSP_answer_sample_t *providerInfo =
+                                  (const TSP_answer_sample_t*)NULL;
 
   /*
    * Try to connect to the URL.
@@ -180,7 +180,7 @@ gdisp_insertProvider ( Kernel_T *kernel,
 	newProvider->pMaxClientNumber     = providerInfo->max_client_number;
 	newProvider->pCurrentClientNumber =
 	                                providerInfo->current_client_number;
-	newProvider->pSymbolNumber        = providerInfo->symbols.len;
+	newProvider->pSymbolNumber        = providerInfo->symbols.TSP_sample_symbol_info_list_t_len;
 
 	/*
 	 * Shall I retreive all symbols ?? It depends on the action.
@@ -211,9 +211,9 @@ gdisp_insertProvider ( Kernel_T *kernel,
 	       symbolCpt<newProvider->pSymbolNumber; symbolCpt++) {
 
 	    newProvider->pSymbolList[symbolCpt].sInfo.name   =
-                     gdisp_strDup(providerInfo->symbols.val[symbolCpt].name);
-	    newProvider->pSymbolList[symbolCpt].sInfo.index  =
-                                  providerInfo->symbols.val[symbolCpt].index;
+                     gdisp_strDup(providerInfo->symbols.TSP_sample_symbol_info_list_t_val[symbolCpt].name);
+	    newProvider->pSymbolList[symbolCpt].sInfo.provider_global_index  =
+                                  providerInfo->symbols.TSP_sample_symbol_info_list_t_val[symbolCpt].provider_global_index;
 
 	    /* Default is : at maximum frequency without offset */
 	    newProvider->pSymbolList[symbolCpt].sInfo.period = 1;
@@ -259,7 +259,6 @@ gdisp_insertProvider ( Kernel_T *kernel,
     } /* requestStatus == TRUE (TSP_consumer_request_open) */
 
     else {
-
       messageString = g_string_new((gchar*)NULL);
       g_string_sprintf(messageString,"Cannot open a session towards");
       kernel->outputFunc(kernel,messageString,GD_ERROR);
@@ -544,9 +543,9 @@ gdisp_consumingEnd (Kernel_T *kernel)
       provider->pSymbolHashTablePGI = (hash_t*)NULL;
     }
 
-    if (provider->pSampleList.len != 0) {
-      g_free(provider->pSampleList.val);
-      provider->pSampleList.val = (TSP_consumer_symbol_requested_t*)NULL;
+    if (provider->pSampleList.TSP_sample_symbol_info_list_t_len != 0) {
+      g_free(provider->pSampleList.TSP_sample_symbol_info_list_t_val);
+      provider->pSampleList.TSP_sample_symbol_info_list_t_val = (TSP_sample_symbol_info_t*)NULL;
     }
 
     g_string_free(provider->pUrl        ,TRUE);

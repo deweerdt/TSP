@@ -1,6 +1,6 @@
 /*
 
-$Id: client_group.c,v 1.5 2006-02-26 13:36:05 erk Exp $
+$Id: client_group.c,v 1.6 2006-04-07 10:37:17 morvan Exp $
 
 -----------------------------------------------------------------------
 
@@ -117,7 +117,7 @@ static group_test_t group_test[] = {
 
 int main(int argc, char *argv[]){
 
-  TSP_consumer_symbol_requested_list_t symbols;
+  TSP_sample_symbol_info_list_t symbols;
 
   int i, j;
   int nb_providers;
@@ -213,15 +213,15 @@ int main(int argc, char *argv[]){
   STRACE_INFO(("Total number of requested symbols = %d", requested_nb));
 
 
-  symbols.len = requested_nb;
-  symbols.val = (TSP_consumer_symbol_requested_t*)calloc(requested_nb, sizeof(TSP_consumer_symbol_requested_t));
+  symbols.TSP_sample_symbol_info_list_t_len = requested_nb;
+  symbols.TSP_sample_symbol_info_list_t_val = (TSP_sample_symbol_info_t*)calloc(requested_nb, sizeof(TSP_sample_symbol_info_t));
   
   /* Initialize data of sampling */
   for(i = 0 ; i <requested_nb ; i++)
     {
-      symbols.val[i].phase = data_test[i].phase ;
-      symbols.val[i].period = data_test[i].period ;
-      symbols.val[i].name = data_test[i].name ;
+      symbols.TSP_sample_symbol_info_list_t_val[i].phase = data_test[i].phase ;
+      symbols.TSP_sample_symbol_info_list_t_val[i].period = data_test[i].period ;
+      symbols.TSP_sample_symbol_info_list_t_val[i].name = data_test[i].name ;
     }
   /*-------------------------------------------------------------------------------------------------------*/ 
   /* TEST : STAGE 002 | STEP 004 */

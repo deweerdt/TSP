@@ -1,6 +1,6 @@
 /*
 
-$Id: client_stdout.c,v 1.10 2006-02-26 13:36:05 erk Exp $
+$Id: client_stdout.c,v 1.11 2006-04-07 10:37:17 morvan Exp $
 
 -----------------------------------------------------------------------
 
@@ -48,8 +48,8 @@ Purpose   : Simple consummer test that print samples received to stdout
 
 int main(int argc, char *argv[]){
 
-  const TSP_consumer_information_t*  information;
-  TSP_consumer_symbol_requested_list_t symbols;
+  const TSP_answer_sample_t*  information;
+  TSP_sample_symbol_info_list_t symbols;
 
   int i, j;
   int period=0;
@@ -156,20 +156,20 @@ int main(int argc, char *argv[]){
   information = TSP_consumer_get_information(provider);
 
   /* Check total symbol number */
-  if(information->symbols.len < 1 || information->symbols.len > 999999)
+  if(information->symbols.TSP_sample_symbol_info_list_t_len < 1 || information->symbols.TSP_sample_symbol_info_list_t_len > 999999)
     {
-      STRACE_ERROR(("The total number of symbols should be fair, and not %d",information->symbols.len));
+      STRACE_ERROR(("The total number of symbols should be fair, and not %d",information->symbols.TSP_sample_symbol_info_list_t_len));
       STRACE_TEST(("STAGE 001 | STEP 003 : FAILED"));
       return -1;      
     }
 
   /* Compare symbols names */
-  for( i = 1 ; i<  information->symbols.len ; i++)
+  for( i = 1 ; i<  information->symbols.TSP_sample_symbol_info_list_t_len ; i++)
     {
       sprintf(symbol_buf, "Symbol%d",i);
-      if(strcmp(symbol_buf,  information->symbols.val[i].name))
+      if(strcmp(symbol_buf,  information->symbols.TSP_sample_symbol_info_list_t_val[i].name))
 	{
-printf("%s != %s\n", symbol_buf,  information->symbols.val[i].name);
+printf("%s != %s\n", symbol_buf,  information->symbols.TSP_sample_symbol_info_list_t_val[i].name);
 	  STRACE_ERROR(("Symbol name corrupted"));
 	  STRACE_TEST(("STAGE 001 | STEP 003 : FAILED"));
 	  return -1;
@@ -180,21 +180,21 @@ printf("%s != %s\n", symbol_buf,  information->symbols.val[i].name);
   STRACE_TEST(("STAGE 001 | STEP 003 : PASSED"));
 
   if (nb_samples>0)
-    symbols.len = nb_samples;
+    symbols.TSP_sample_symbol_info_list_t_len = nb_samples;
   else
-    symbols.len = information->symbols.len;
-  symbols.val = (TSP_consumer_symbol_requested_t*)calloc(symbols.len, sizeof(TSP_consumer_symbol_requested_t));
-  TSP_CHECK_ALLOC(symbols.val, -1);
+    symbols.TSP_sample_symbol_info_list_t_len = information->symbols.TSP_sample_symbol_info_list_t_len;
+  symbols.TSP_sample_symbol_info_list_t_val = (TSP_sample_symbol_info_t*)calloc(symbols.TSP_sample_symbol_info_list_t_len, sizeof(TSP_sample_symbol_info_t));
+  TSP_CHECK_ALLOC(symbols.TSP_sample_symbol_info_list_t_val, -1);
 
   /* Change period of sampling for each client */
-  for(i = 0 ; i < symbols.len ; i++)
+  for(i = 0 ; i < symbols.TSP_sample_symbol_info_list_t_len ; i++)
     {
-      symbols.val[i].name = information->symbols.val[i].name;
-      symbols.val[i].period = period;
-      symbols.val[i].phase = 0;
+      symbols.TSP_sample_symbol_info_list_t_val[i].name = information->symbols.TSP_sample_symbol_info_list_t_val[i].name;
+      symbols.TSP_sample_symbol_info_list_t_val[i].period = period;
+      symbols.TSP_sample_symbol_info_list_t_val[i].phase = 0;
     }
 
-  STRACE_INFO(("Asking for %d symboles", symbols.len));
+  STRACE_INFO(("Asking for %d symboles", symbols.TSP_sample_symbol_info_list_t_len));
   /*-------------------------------------------------------------------------------------------------------*/ 
   /* TEST : STAGE 001 | STEP 004 */
   /*-------------------------------------------------------------------------------------------------------*/ 
@@ -212,7 +212,7 @@ printf("%s != %s\n", symbol_buf,  information->symbols.val[i].name);
       return -1;
     }
 
-  free(symbols.val);
+  free(symbols.TSP_sample_symbol_info_list_t_val);
 
   STRACE_TEST(("STAGE 001 | STEP 004 : PASSED"));
   /*-------------------------------------------------------------------------------------------------------*/ 
@@ -256,7 +256,7 @@ printf("%s != %s\n", symbol_buf,  information->symbols.val[i].name);
 		if(i == 1 )
 		  {
 		    count_samples++;
-		    printf ("TSP : Sample nb[%d] time=%d val=%f\n", count_samples, sample.time, sample.user_value);
+		    printf ("TSP : Sample nb[%d] time=%d val=%f\n", count_samples, sample.time, sample.uvalue.double_value);
 		  }
 
 		calc = calc_func(i,sample.time);
@@ -264,9 +264,9 @@ printf("%s != %s\n", symbol_buf,  information->symbols.val[i].name);
 		/* i = 0 is t */
 		if(i != 0)
 		  {
-		    if( (ABS(sample.user_value - calc) > 1e-7) && (t == (sample.time - 1)) )
+		    if( (ABS(sample.uvalue.double_value - calc) > 1e-7) && (t == (sample.time - 1)) )
 		      {
-			STRACE_ERROR(("!!!!ERROR : T=%u, I=%d, V1=%f, V2=%f", sample.time,i,sample.user_value,calc ));			
+			STRACE_ERROR(("!!!!ERROR : T=%u, I=%d, V1=%f, V2=%f", sample.time,i,sample.uvalue.double_value,calc ));			
 			all_data_ok = FALSE;
 		      }
 		  }

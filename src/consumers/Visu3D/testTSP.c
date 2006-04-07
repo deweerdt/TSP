@@ -1,6 +1,6 @@
 /*
 
-$Id: testTSP.c,v 1.2 2006-02-26 13:36:05 erk Exp $
+$Id: testTSP.c,v 1.3 2006-04-07 10:37:16 morvan Exp $
 
 -----------------------------------------------------------------------
 
@@ -113,8 +113,8 @@ int   main_window;
 static TSP_provider_t* myproviders = NULL;
 char tsp_provider_url[200];
 char config_file[100];
-TSP_consumer_symbol_requested_list_t  symbol_list;
-const TSP_consumer_symbol_requested_list_t*  symbols;
+TSP_sample_symbol_info_list_t  symbol_list;
+const TSP_sample_symbol_info_list_t*  symbols;
    int complete_line = 0;
   int             new_sample;
   TSP_sample_t    sample;
@@ -218,7 +218,7 @@ void myGlutKeyboard(unsigned char Key, int x, int y)
 /*functions TSP*/
 
 int validate_symbol_info(char* symbol_name, 
-			 const TSP_consumer_symbol_info_list_t* tsp_symbols) {
+			 const TSP_sample_symbol_info_list_t* tsp_symbols) {
   int     i;
   int32_t retval;
   char*   searched_array_symbol;
@@ -230,9 +230,9 @@ int validate_symbol_info(char* symbol_name,
   searched_array_symbol[i] = '[';
   searched_array_symbol[i+1] = '\0';
 
-  for (i=0; i< tsp_symbols->len; ++i) {
+  for (i=0; i< tsp_symbols->TSP_sample_symbol_info_list_t_len; ++i) {
     /* scalar symbol match */
-    if (0==strcmp(tsp_symbols->val[i].name,symbol_name)) {
+    if (0==strcmp(tsp_symbols->TSP_sample_symbol_info_list_t_val[i].name,symbol_name)) {
       printf("Scalar symbol match <%s>\n",symbol_name);
       retval =1;
       break;
@@ -243,7 +243,7 @@ int validate_symbol_info(char* symbol_name,
      * and found symbol == searched symbol + '['
      * "toto" is an array iff we found "toto["
      */
-    if (NULL != strstr(tsp_symbols->val[i].name,searched_array_symbol)) {
+    if (NULL != strstr(tsp_symbols->TSP_sample_symbol_info_list_t_val[i].name,searched_array_symbol)) {
       ++retval;
     }
   }
@@ -253,8 +253,8 @@ int validate_symbol_info(char* symbol_name,
 void tspinit(int argc, char* argv[])
 {
   int i,j;
-  const TSP_consumer_information_t* tsp_info=NULL;
-  TSP_consumer_symbol_requested_list_t  *tsp_symbol_list;
+  const TSP_answer_sample_t* tsp_info=NULL;
+  TSP_sample_symbol_info_list_t  *tsp_symbol_list;
   int nb_scalar_symbol=0; 
   int symbol_dim=0;
   int forced_period=0;
@@ -398,8 +398,8 @@ void tspinit(int argc, char* argv[])
  
   
   /* Now build request sample */
-    tsp_symbol_list->val = (TSP_consumer_symbol_requested_t*)calloc(nb_scalar_symbol, sizeof(TSP_consumer_symbol_requested_t));
-    tsp_symbol_list->len = nb_scalar_symbol;
+    tsp_symbol_list->TSP_sample_symbol_info_list_t_val = (TSP_sample_symbol_info_t*)calloc(nb_scalar_symbol, sizeof(TSP_sample_symbol_info_t));
+    tsp_symbol_list->TSP_sample_symbol_info_list_t_len = nb_scalar_symbol;
     var_index = 0;
     for (i=0;i<nb_symbols; ++i) {
       /* 
@@ -407,24 +407,24 @@ void tspinit(int argc, char* argv[])
        */
       if (phase[i] > 1) {
 	for (j=0;j<phase[i];++j) {	    
-	  tsp_symbol_list->val[var_index].name = (char*)malloc(MAX_VAR_NAME_SIZE*sizeof(char));
-	  snprintf(tsp_symbol_list->val[var_index].name,
+	  tsp_symbol_list->TSP_sample_symbol_info_list_t_val[var_index].name = (char*)malloc(MAX_VAR_NAME_SIZE*sizeof(char));
+	  snprintf(tsp_symbol_list->TSP_sample_symbol_info_list_t_val[var_index].name,
 		   MAX_VAR_NAME_SIZE,		     
 		   "%s[%0d]",
 		   name[i],
 		   j);
-	  printf("Asking for TSP var = <%s>\n",tsp_symbol_list->val[var_index].name);
-	  tsp_symbol_list->val[var_index].period = period[i];
-	  tsp_symbol_list->val[var_index].phase  = 0;
+	  printf("Asking for TSP var = <%s>\n",tsp_symbol_list->TSP_sample_symbol_info_list_t_val[var_index].name);
+	  tsp_symbol_list->TSP_sample_symbol_info_list_t_val[var_index].period = period[i];
+	  tsp_symbol_list->TSP_sample_symbol_info_list_t_val[var_index].phase  = 0;
 	  ++var_index;
 	} /* loop over array var index */
       } else {
 	/* ignore symbols with negative phase */
 	if (phase[i] >0) {
-	  tsp_symbol_list->val[var_index].name   = strdup(name[i]);
-	  printf("Asking for TSP var = <%s>\n",tsp_symbol_list->val[var_index].name);
-	  tsp_symbol_list->val[var_index].period = period[i];
-	  tsp_symbol_list->val[var_index].phase  = 0;
+	  tsp_symbol_list->TSP_sample_symbol_info_list_t_val[var_index].name   = strdup(name[i]);
+	  printf("Asking for TSP var = <%s>\n",tsp_symbol_list->TSP_sample_symbol_info_list_t_val[var_index].name);
+	  tsp_symbol_list->TSP_sample_symbol_info_list_t_val[var_index].period = period[i];
+	  tsp_symbol_list->TSP_sample_symbol_info_list_t_val[var_index].phase  = 0;
 	  ++var_index;
 	}
       } /* end if phase[i] > 1 */
@@ -498,10 +498,10 @@ void myGlutDisplay()
     while(stop_it && TSP_consumer_read_sample(myproviders[0],&sample, &new_sample)) {
       if (new_sample) {
 	//printf("%16.9E ",sample.user_value);
-	lastinfo[complete_line]=sample.user_value;
+	lastinfo[complete_line]=sample.uvalue.double_value;
 	++complete_line;
 	/* We write the endl if we receive a whole sample line */
-	if (symbols->len==complete_line) {
+	if (symbols->TSP_sample_symbol_info_list_t_len==complete_line) {
 	  //printf("\n");
 	  complete_line = 0;
 	  //printf("lecture ligne %f\n",lastinfo[4]);

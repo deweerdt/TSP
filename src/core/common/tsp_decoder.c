@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/common/tsp_decoder.c,v 1.2 2006-04-05 08:10:31 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/common/tsp_decoder.c,v 1.3 2006-04-07 10:37:17 morvan Exp $
 
 -----------------------------------------------------------------------
 
@@ -120,68 +120,43 @@ int32_t TSP_data_channel_float_decoder(void* out_float, uint32_t dimension,  cha
 
 int32_t TSP_data_channel_int8_decoder(void* out_int8, uint32_t dimension,  char* in_buf)
 {
-
-#ifndef TSP_NO_XDR_ENCODE
-
   uint32_t i;
-  XDR xhandle;
-  xdrmem_create(&xhandle, in_buf, TSP_SIZEOF_ENCODED_INT8, XDR_DECODE);
+  int32_t out_temp[dimension];
 
-  for(i=0;i<dimension;++i)
+
+  if(TSP_data_channel_int32_decoder((void *)(&out_temp[0]), dimension, in_buf))
   {
-    if( xdr_opaque(&xhandle, (char *)out_int8+i,1) != TRUE)
+    for(i=0;i<dimension;++i)
     {
-      STRACE_ERROR(("Function xdr_int failed"));
-      return FALSE;
+      ((int8_t *)out_int8)[i]=(int8_t)(out_temp[i]);
     }
-    else
-    {
-      return TRUE;
-    }
+    return TRUE;
   }
-
-#else
-  memcpy(in_buf,out_int8,TSP_SIZEOF_ENCODED_INT8 * dimension);
-   
-  return TRUE;
-
-#endif
+  else
+  {
+    return FALSE;
+  }
 }
 
 int32_t TSP_data_channel_int16_decoder(void* out_int16, uint32_t dimension,  char* in_buf)
 {
+
   uint32_t i;
+  int32_t out_temp[dimension];
 
 
-#ifndef TSP_NO_XDR_ENCODE
-
-  XDR xhandle;
-  xdrmem_create(&xhandle, in_buf, TSP_SIZEOF_ENCODED_INT16, XDR_DECODE);
-
-  for(i=0;i<dimension;++i)
+  if(TSP_data_channel_int32_decoder((void *)(&out_temp[0]), dimension, in_buf))
   {
-    if( xdr_opaque(&xhandle, (char *)out_int16+i,2) != TRUE)
+    for(i=0;i<dimension;++i)
     {
-      STRACE_ERROR(("Function xdr_float failed"));
-      return FALSE;
+      ((int16_t *)out_int16)[i]=(int16_t)(out_temp[i]);
     }
-    else
-    {
-      return TRUE;
-    }
+    return TRUE;
   }
-
-#else
-  
-  for(i=0;i<dimension;++i)
+  else
   {
-
-    ((int16_t*)out_int16)[i] = TSP_DECODE_INT16(in_buf+(i * TSP_SIZEOF_ENCODED_INT16));   
+    return FALSE;
   }
-  
-  return TRUE;
-
-#endif
 }
 
 
@@ -259,68 +234,42 @@ int32_t TSP_data_channel_int64_decoder(void* out_int64, uint32_t dimension,  cha
 
 int32_t TSP_data_channel_uint8_decoder(void* out_uint8, uint32_t dimension,  char* in_buf)
 {
-
-#ifndef TSP_NO_XDR_ENCODE
-
   uint32_t i;
-  XDR xhandle;
-  xdrmem_create(&xhandle, in_buf, TSP_SIZEOF_ENCODED_UINT8, XDR_DECODE);
+  int32_t out_temp[dimension];
 
-  for(i=0;i<dimension;++i)
+
+  if(TSP_data_channel_int32_decoder((void *)(&out_temp[0]), dimension, in_buf))
   {
-    if( xdr_opaque(&xhandle, (char*)out_uint8+i,1) != TRUE)
+    for(i=0;i<dimension;++i)
     {
-      STRACE_ERROR(("Function xdr_u_int failed"));
-      return FALSE;
+      ((uint8_t *)out_uint8)[i]=(uint8_t)(out_temp[i]);
     }
-    else
-    {
-      return TRUE;
-    }
+    return TRUE;
   }
-
-#else
-  memcpy(in_buf,out_uint8,TSP_SIZEOF_ENCODED_UINT8 * dimension);
-   
-  return TRUE;
-
-#endif
+  else
+  {
+    return FALSE;
+  }
 }
 
 int32_t TSP_data_channel_uint16_decoder(void* out_uint16, uint32_t dimension,  char* in_buf)
 {
   uint32_t i;
+  int32_t out_temp[dimension];
 
 
-#ifndef TSP_NO_XDR_ENCODE
-
-  XDR xhandle;
-  xdrmem_create(&xhandle, in_buf, TSP_SIZEOF_ENCODED_UINT16, XDR_DECODE);
-
-  for(i=0;i<dimension;++i)
+  if(TSP_data_channel_int32_decoder((void *)(&out_temp[0]), dimension, in_buf))
   {
-    if( xdr_opaque(&xhandle, (char*)out_uint16+i,2) != TRUE)
+    for(i=0;i<dimension;++i)
     {
-      STRACE_ERROR(("Function xdr_float failed"));
-      return FALSE;
+      ((uint16_t *)out_uint16)[i]=(uint16_t)(out_temp[i]);
     }
-    else
-    {
-      return TRUE;
-    }
+    return TRUE;
   }
-
-#else
-  
-  for(i=0;i<dimension;++i)
+  else
   {
-
-    ((uint16_t*)out_uint16)[i] = TSP_DECODE_UINT16(in_buf+(i * TSP_SIZEOF_ENCODED_UINT16));   
+    return FALSE;
   }
-  
-  return TRUE;
-
-#endif
 }
 
 int32_t TSP_data_channel_uint32_decoder(void* out_uint32, uint32_t dimension,  char* in_buf)
@@ -398,91 +347,64 @@ int32_t TSP_data_channel_uint64_decoder(void* out_uint64, uint32_t dimension,  c
 int32_t TSP_data_channel_char_decoder(void* out_char, uint32_t dimension,  char* in_buf)
 {
 
-#ifndef TSP_NO_XDR_ENCODE
-
   uint32_t i;
-  XDR xhandle;
-  xdrmem_create(&xhandle, in_buf, TSP_SIZEOF_ENCODED_UINT8, XDR_DECODE);
+  int32_t out_temp[dimension];
 
-  for(i=0;i<dimension;++i)
+
+  if(TSP_data_channel_int32_decoder((void *)(&out_temp[0]), dimension, in_buf))
   {
-    if( xdr_bytes(&xhandle, &((char*)out_char+i),dimension,dimension) != TRUE)
+    for(i=0;i<dimension;++i)
     {
-      STRACE_ERROR(("Function xdr_u_int failed"));
-      return FALSE;
+      ((char *)out_char)[i]=(char)(out_temp[i]);
     }
-    else
-    {
-      return TRUE;
-    }
+    return TRUE;
   }
-
-#else
-  memcpy(in_buf,out_char,TSP_SIZEOF_ENCODED_UINT8 * dimension);
-   
-  return TRUE;
-
-#endif
+  else
+  {
+    return FALSE;
+  }
 }
 
 int32_t TSP_data_channel_uchar_decoder(void* out_uchar, uint32_t dimension,  char* in_buf)
 {
 
-#ifndef TSP_NO_XDR_ENCODE
-
   uint32_t i;
-  XDR xhandle;
-  xdrmem_create(&xhandle, in_buf, TSP_SIZEOF_ENCODED_UINT8, XDR_DECODE);
+  int32_t out_temp[dimension];
 
-  for(i=0;i<dimension;++i)
+
+  if(TSP_data_channel_int32_decoder((void *)(&out_temp[0]), dimension, in_buf))
   {
-    if( xdr_bytes(&xhandle,&( (char*)out_uchar+i),dimension,dimension) != TRUE)
+    for(i=0;i<dimension;++i)
     {
-      STRACE_ERROR(("Function xdr_u_int failed"));
-      return FALSE;
+      ((unsigned char *)out_uchar)[i]=(unsigned char)(out_temp[i]);
     }
-    else
-    {
-      return TRUE;
-    }
+    return TRUE;
   }
-
-#else
-  memcpy(in_buf,out_uchar,TSP_SIZEOF_ENCODED_UINT8 * dimension);
-   
-  return TRUE;
-
-#endif
+  else
+  {
+    return FALSE;
+  }
 }
 
 int32_t TSP_data_channel_user_decoder(void* out_user, uint32_t dimension,  char* in_buf)
 {
 
-#ifndef TSP_NO_XDR_ENCODE
-
   uint32_t i;
-  XDR xhandle;
-  xdrmem_create(&xhandle, in_buf, TSP_SIZEOF_ENCODED_UINT8, XDR_DECODE);
+  int32_t out_temp[dimension];
 
-  for(i=0;i<dimension;++i)
+
+  if(TSP_data_channel_int32_decoder((void *)(&out_temp[0]), dimension, in_buf))
   {
-    if( xdr_opaque(&xhandle,(char*)out_user+i,dimension) != TRUE)
+    for(i=0;i<dimension;++i)
     {
-      STRACE_ERROR(("Function xdr_u_int failed"));
-      return FALSE;
+      (( uint8_t *)out_user)[i]=(uint8_t)(out_temp[i]);
     }
-    else
-    {
-      return TRUE;
-    }
+    return TRUE;
   }
-
-#else
-  memcpy(in_buf,out_user,TSP_SIZEOF_ENCODED_UINT8 * dimension);
-   
-  return TRUE;
-
-#endif
+  else
+  {
+    return FALSE;
+  }
 }
 
 

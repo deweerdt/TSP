@@ -1,6 +1,6 @@
 /*
 
-$Id: glue_stub.c,v 1.15 2006-04-04 14:26:04 morvan Exp $
+$Id: glue_stub.c,v 1.16 2006-04-07 10:37:17 morvan Exp $
 
 -----------------------------------------------------------------------
 
@@ -50,7 +50,7 @@ Purpose   : Implementation for the glue_server, for stub test
 #define TSP_STUB_FREQ 100.0 /*Hz*/
 #define TSP_USLEEP_PERIOD_US (1000000/TSP_STUB_FREQ) /*given in µS, value 10ms*/
 #define GLU_MAX_SYMBOLS_DOUBLE 1000
-#define GLU_MAX_SYMBOLS_NOT_DOUBLE 5
+#define GLU_MAX_SYMBOLS_NOT_DOUBLE 11
 
 /* Nasty static variables */
 static TSP_sample_symbol_info_t *X_sample_symbol_info_list_val;
@@ -99,14 +99,14 @@ void* STUB_GLU_thread(void* athis)
 
 	      case TSP_TYPE_FLOAT:
 		if (index!=0)
-		  *((float*)item.raw_value) = (float)calc_func(index, my_time);
+		  *((float*)item.raw_value) = 1.102;  /* (float)calc_func(index, my_time);*/
 		else
 		  *((float*)item.raw_value) = (float)(my_time) / (float)(TSP_STUB_FREQ);
 		break;
 	
 	      case TSP_TYPE_INT8:
 		if (index!=0)
-		  *((int8_t*)item.raw_value) = (int8_t)calc_func(index, my_time);
+		  *((int8_t*)item.raw_value) = 2; /*  (int8_t)calc_func(index, my_time);*/
 		else
 		  *((int8_t*)item.raw_value) = (int8_t)(my_time) / (int8_t)(TSP_STUB_FREQ);
 		break;
@@ -114,7 +114,7 @@ void* STUB_GLU_thread(void* athis)
 
 	      case TSP_TYPE_INT16:
 		if (index!=0)
-		  *((int16_t*)item.raw_value) =(int16_t) calc_func(index, my_time);
+		  *((int16_t*)item.raw_value) = 3; /*(int16_t) calc_func(index, my_time);*/
 		else
 		  *((int16_t*)item.raw_value) = (int16_t)(my_time) / (int16_t)(TSP_STUB_FREQ);
 		break;
@@ -122,7 +122,7 @@ void* STUB_GLU_thread(void* athis)
 
 	      case TSP_TYPE_INT32:
 		if (index!=0)
-		  *((int32_t*)item.raw_value) = (int32_t)calc_func(index, my_time);
+		  *((int32_t*)item.raw_value) =  4; /*(int32_t)calc_func(index, my_time);*/
 		else
 		  *((int32_t*)item.raw_value) = (int32_t)(my_time) / (int32_t)(TSP_STUB_FREQ);
 		break;
@@ -130,14 +130,14 @@ void* STUB_GLU_thread(void* athis)
 
 	      case TSP_TYPE_INT64:
 		if (index!=0)
-		  *((int64_t*)item.raw_value) = (int64_t)calc_func(index, my_time);
+		  *((int64_t*)item.raw_value) = 5; /* (int64_t)calc_func(index, my_time);*/
 		else
 		  *((int64_t*)item.raw_value) = (int64_t)(my_time) / (int64_t)(TSP_STUB_FREQ);
 		break;
 	
 	      case TSP_TYPE_UINT8:
 		if (index!=0)
-		  *((uint8_t*)item.raw_value) = (uint8_t)calc_func(index, my_time);
+		  *((uint8_t*)item.raw_value) = 6; /* (uint8_t)calc_func(index, my_time);*/
 		else
 		  *((uint8_t*)item.raw_value) = (uint8_t)(my_time) / (uint8_t)(TSP_STUB_FREQ);
 		break;
@@ -145,7 +145,7 @@ void* STUB_GLU_thread(void* athis)
 
 	      case TSP_TYPE_UINT16:
 		if (index!=0)
-		  *((uint16_t*)item.raw_value) = (uint16_t)calc_func(index, my_time);
+		  *((uint16_t*)item.raw_value) = 7; /* (uint16_t)calc_func(index, my_time);*/
 		else
 		  *((uint16_t*)item.raw_value) = (uint16_t)(my_time) / (uint16_t)(TSP_STUB_FREQ);
 		break;
@@ -153,26 +153,26 @@ void* STUB_GLU_thread(void* athis)
 
 	      case TSP_TYPE_UINT32:
 		if (index!=0)
-		  *((uint32_t*)item.raw_value) = (uint32_t)calc_func(index, my_time);
+		  *((uint32_t*)item.raw_value) = 8; /* (uint32_t)calc_func(index, my_time);*/
 		else
 		  *((uint32_t*)item.raw_value) = (uint32_t)(my_time) / (uint32_t)(TSP_STUB_FREQ);
 		break;
 	
 	      case TSP_TYPE_UINT64:
 		if (index!=0)
-		  *((uint64_t*)item.raw_value) = (uint64_t)calc_func(index, my_time);
+		  *((uint64_t*)item.raw_value) = 9; /* (uint64_t)calc_func(index, my_time);*/
 		else
 		  *((uint64_t*)item.raw_value) = (uint64_t)(my_time) / (uint64_t)(TSP_STUB_FREQ);
 		break;
 	
 	      case TSP_TYPE_CHAR:
 	
-		  *((char*)item.raw_value) = calc_func_char(index, my_time);
+		*((char*)item.raw_value) = 'A'; /* calc_func_char(index, my_time);*/
 		  break;
 			
 	      case TSP_TYPE_UCHAR:
 		
-		  *((unsigned char*)item.raw_value) = (unsigned char)calc_func_char(index, my_time);
+		*((unsigned char*)item.raw_value) = 'B'; /* (unsigned char)calc_func_char(index, my_time);*/
 		  break;
 	
 	
@@ -242,8 +242,24 @@ int STUB_GLU_init(GLU_handle_t* this, int fallback_argc, char* fallback_argv[])
 
   if(0!=GLU_MAX_SYMBOLS_NOT_DOUBLE)
   {
+
+      /*Float*/
+      sprintf(symbol_buf, "FLOAT_Symbol%d",i);
+      X_sample_symbol_info_list_val[i].name = strdup(symbol_buf);
+      X_sample_symbol_info_list_val[i].provider_global_index = i;
+      X_sample_symbol_info_list_val[i].period = 1;
+      X_sample_symbol_info_list_val[i].type =  TSP_TYPE_FLOAT;
+      X_sample_symbol_info_list_val[i].dimension = 1;
+
+      size=X_sample_symbol_info_list_val[i].dimension * tsp_type_size[X_sample_symbol_info_list_val[i].type];
+      if(taille_max_symbol< size)
+      {
+	taille_max_symbol= size;
+      }
+
+      ++i;
     
-    /*ENTIER*/
+      /*ENTIER*/
       sprintf(symbol_buf, "INT8_Symbol%d",i);
       X_sample_symbol_info_list_val[i].name = strdup(symbol_buf);
       X_sample_symbol_info_list_val[i].provider_global_index = i;
@@ -259,25 +275,7 @@ int STUB_GLU_init(GLU_handle_t* this, int fallback_argc, char* fallback_argv[])
 
       ++i;
 
-
-    /*Float*/
-      sprintf(symbol_buf, "FLoat_Symbol%d",i);
-      X_sample_symbol_info_list_val[i].name = strdup(symbol_buf);
-      X_sample_symbol_info_list_val[i].provider_global_index = i;
-      X_sample_symbol_info_list_val[i].period = 1;
-      X_sample_symbol_info_list_val[i].type =  TSP_TYPE_FLOAT;
-      X_sample_symbol_info_list_val[i].dimension = 1;
-
-      size=X_sample_symbol_info_list_val[i].dimension * tsp_type_size[X_sample_symbol_info_list_val[i].type];
-      if(taille_max_symbol< size)
-      {
-	taille_max_symbol= size;
-      }
-
-      ++i;
-
-
-    /*Int16*/
+      /*Int16*/
       sprintf(symbol_buf, "INT16_Symbol%d",i);
       X_sample_symbol_info_list_val[i].name = strdup(symbol_buf);
       X_sample_symbol_info_list_val[i].provider_global_index = i;
@@ -293,8 +291,72 @@ int STUB_GLU_init(GLU_handle_t* this, int fallback_argc, char* fallback_argv[])
 
       ++i;
 
+      /*Int32*/
+      sprintf(symbol_buf, "INT32_Symbol%d",i);
+      X_sample_symbol_info_list_val[i].name = strdup(symbol_buf);
+      X_sample_symbol_info_list_val[i].provider_global_index = i;
+      X_sample_symbol_info_list_val[i].period = 1;
+      X_sample_symbol_info_list_val[i].type =  TSP_TYPE_INT32;
+      X_sample_symbol_info_list_val[i].dimension = 1;
 
-    /*uint32*/
+      size=X_sample_symbol_info_list_val[i].dimension * tsp_type_size[X_sample_symbol_info_list_val[i].type];
+      if(taille_max_symbol< size)
+      {
+	taille_max_symbol= size;
+      }
+
+      ++i;
+
+      /*Int64*/
+      sprintf(symbol_buf, "INT64_Symbol%d",i);
+      X_sample_symbol_info_list_val[i].name = strdup(symbol_buf);
+      X_sample_symbol_info_list_val[i].provider_global_index = i;
+      X_sample_symbol_info_list_val[i].period = 1;
+      X_sample_symbol_info_list_val[i].type =  TSP_TYPE_INT64;
+      X_sample_symbol_info_list_val[i].dimension = 1;
+
+      size=X_sample_symbol_info_list_val[i].dimension * tsp_type_size[X_sample_symbol_info_list_val[i].type];
+      if(taille_max_symbol< size)
+      {
+	taille_max_symbol= size;
+      }
+
+      ++i;
+
+      /*uint8*/
+      sprintf(symbol_buf, "UINT8_Symbol%d",i);
+      X_sample_symbol_info_list_val[i].name = strdup(symbol_buf);
+      X_sample_symbol_info_list_val[i].provider_global_index = i;
+      X_sample_symbol_info_list_val[i].period = 1;
+      X_sample_symbol_info_list_val[i].type =  TSP_TYPE_UINT8;
+      X_sample_symbol_info_list_val[i].dimension = 1;
+
+      size=X_sample_symbol_info_list_val[i].dimension * tsp_type_size[X_sample_symbol_info_list_val[i].type];
+      if(taille_max_symbol< size)
+      {
+	taille_max_symbol= size;
+      }
+
+      ++i;
+
+      /*uint16*/
+      sprintf(symbol_buf, "UINT16_Symbol%d",i);
+      X_sample_symbol_info_list_val[i].name = strdup(symbol_buf);
+      X_sample_symbol_info_list_val[i].provider_global_index = i;
+      X_sample_symbol_info_list_val[i].period = 1;
+      X_sample_symbol_info_list_val[i].type =  TSP_TYPE_UINT16;
+      X_sample_symbol_info_list_val[i].dimension = 1;
+
+      size=X_sample_symbol_info_list_val[i].dimension * tsp_type_size[X_sample_symbol_info_list_val[i].type];
+      if(taille_max_symbol< size)
+      {
+	taille_max_symbol= size;
+      }
+
+      ++i;
+
+
+      /*uint32*/
       sprintf(symbol_buf, "UINT32_Symbol%d",i);
       X_sample_symbol_info_list_val[i].name = strdup(symbol_buf);
       X_sample_symbol_info_list_val[i].provider_global_index = i;
@@ -310,13 +372,47 @@ int STUB_GLU_init(GLU_handle_t* this, int fallback_argc, char* fallback_argv[])
 
       ++i;
 
+      /*uint64*/
+      sprintf(symbol_buf, "UINT64_Symbol%d",i);
+      X_sample_symbol_info_list_val[i].name = strdup(symbol_buf);
+      X_sample_symbol_info_list_val[i].provider_global_index = i;
+      X_sample_symbol_info_list_val[i].period = 1;
+      X_sample_symbol_info_list_val[i].type =  TSP_TYPE_UINT64;
+      X_sample_symbol_info_list_val[i].dimension = 1;
 
-    /*CHAR*/
+      size=X_sample_symbol_info_list_val[i].dimension * tsp_type_size[X_sample_symbol_info_list_val[i].type];
+      if(taille_max_symbol< size)
+      {
+	taille_max_symbol= size;
+      }
+
+      ++i;
+
+
+
+      /*CHAR*/
       sprintf(symbol_buf, "CHAR_Symbol%d",i);
       X_sample_symbol_info_list_val[i].name = strdup(symbol_buf);
       X_sample_symbol_info_list_val[i].provider_global_index = i;
       X_sample_symbol_info_list_val[i].period = 1;
       X_sample_symbol_info_list_val[i].type =  TSP_TYPE_CHAR;
+      X_sample_symbol_info_list_val[i].dimension = 1;
+
+      size=X_sample_symbol_info_list_val[i].dimension * tsp_type_size[X_sample_symbol_info_list_val[i].type];
+      if(taille_max_symbol< size)
+      {
+	taille_max_symbol= size;
+      }
+
+      ++i;
+
+
+      /*UCHAR*/
+      sprintf(symbol_buf, "UCHAR_Symbol%d",i);
+      X_sample_symbol_info_list_val[i].name = strdup(symbol_buf);
+      X_sample_symbol_info_list_val[i].provider_global_index = i;
+      X_sample_symbol_info_list_val[i].period = 1;
+      X_sample_symbol_info_list_val[i].type =  TSP_TYPE_UCHAR;
       X_sample_symbol_info_list_val[i].dimension = 1;
 
       size=X_sample_symbol_info_list_val[i].dimension * tsp_type_size[X_sample_symbol_info_list_val[i].type];

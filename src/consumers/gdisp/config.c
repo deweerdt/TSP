@@ -77,7 +77,7 @@ load_config (gchar *filename, conf_data_t* data)
   PGC_global_t pgc_global;
   variable *new_var;
 
-  data->tsp_requested.len = 0;
+  data->tsp_requested.TSP_sample_symbol_info_list_t_len = 0;
 
   pgc = PGC_open_file(filename);
 
@@ -90,8 +90,8 @@ load_config (gchar *filename, conf_data_t* data)
   
   /* Allocate room for tsp symbols */
   /* FIXME : 0 symbols ? */
-  data->tsp_requested.val =
-    (TSP_consumer_symbol_requested_t*)calloc(PGC_get_nb_var(pgc),sizeof(TSP_consumer_symbol_requested_t));
+  data->tsp_requested.TSP_sample_symbol_info_list_t_val =
+    (TSP_sample_symbol_info_t*)calloc(PGC_get_nb_var(pgc),sizeof(TSP_sample_symbol_info_t));
 
   data->nb_page = PGC_get_nb_page(pgc);
   PGC_get_global(pgc, &pgc_global);
@@ -159,9 +159,9 @@ load_config (gchar *filename, conf_data_t* data)
 	      {
 		/* We do not want to ask twice the same variable */
 		int u; int found = FALSE;
-		for ( u = 0; u < data->tsp_requested.len ; u++)
+		for ( u = 0; u < data->tsp_requested.TSP_sample_symbol_info_list_t_len ; u++)
 		  {
-		    if( !strcmp(data->tsp_requested.val[u].name,var.name))
+		    if( !strcmp(data->tsp_requested.TSP_sample_symbol_info_list_t_val[u].name,var.name))
 		      {
 			found = TRUE; break;
 		      }
@@ -169,10 +169,10 @@ load_config (gchar *filename, conf_data_t* data)
 		  
 		if(!found)
 		  {
-		    int current = data->tsp_requested.len++;
-		    data->tsp_requested.val[current].name = var.name;
-		    data->tsp_requested.val[current].period = var.period;
-		    data->tsp_requested.val[current].phase = 0;
+		    int current = data->tsp_requested.TSP_sample_symbol_info_list_t_len++;
+		    data->tsp_requested.TSP_sample_symbol_info_list_t_val[current].name = var.name;
+		    data->tsp_requested.TSP_sample_symbol_info_list_t_val[current].period = var.period;
+		    data->tsp_requested.TSP_sample_symbol_info_list_t_val[current].phase = 0;
 		  }
 	      }
 	      break;

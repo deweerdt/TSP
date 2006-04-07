@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_sampling.c,v 1.15 2006-02-26 14:08:24 erk Exp $
+$Id: gdisp_sampling.c,v 1.16 2006-04-07 10:37:17 morvan Exp $
 
 -----------------------------------------------------------------------
 
@@ -635,12 +635,12 @@ gdisp_samplingThread (void *data )
 
   tmpHashTable = hash_open('.','z');
 
-  for (sampleCpt=0; sampleCpt<sampleList->len; sampleCpt++) {
+  for (sampleCpt=0; sampleCpt<sampleList->TSP_sample_symbol_info_list_t_len; sampleCpt++) {
 
     symbol = (Symbol_T*)hash_get(provider->pSymbolHashTable,
-				 sampleList->val[sampleCpt].name);
+				 sampleList->TSP_sample_symbol_info_list_t_val[sampleCpt].name);
 
-    symbol->sPgi = sampleList->val[sampleCpt].index;
+    symbol->sPgi = sampleList->TSP_sample_symbol_info_list_t_val[sampleCpt].provider_global_index;
 
     /* I can use 'sprintf' because sampling has not started yet */
     sprintf(samplePGIasStringBuffer,
@@ -683,7 +683,7 @@ gdisp_samplingThread (void *data )
    */
   provider->pLoad    = 0;
   provider->pMaxLoad = provider->pBaseFrequency  *
-                       provider->pSampleList.len * sizeof(gdouble);
+                       provider->pSampleList.TSP_sample_symbol_info_list_t_len * sizeof(gdouble);
 
   provider->pSamplingThreadStatus = GD_THREAD_RUNNING;
 
@@ -767,9 +767,9 @@ gdisp_samplingThread (void *data )
       symbol->sTimeTag    = (guint)sampleValue.time;
 
       symbol->sHasChanged =
-	sampleValue.user_value == symbol->sLastValue ? FALSE : TRUE;
+	sampleValue.uvalue.double_value == symbol->sLastValue ? FALSE : TRUE;
 
-      symbol->sLastValue  = sampleValue.user_value;
+      symbol->sLastValue  = sampleValue.uvalue.double_value;
 
     } /* sampleHasArrived == TRUE */
 
@@ -876,7 +876,7 @@ gdisp_preSamplingThread (void *data )
     /*
      * Create the thread is only there something to be sampled...
      */
-    if (provider->pSampleList.len != 0) {
+    if (provider->pSampleList.TSP_sample_symbol_info_list_t_len != 0) {
 
       threadStatus = gdisp_createThread(kernel,
 					provider->pUrl->str,
@@ -1160,16 +1160,16 @@ gdisp_affectRequestedSymbolsToProvider ( Kernel_T *kernel )
       /*
        * Cancel any previous sampling configuration.
        */
-      provider->pSampleList.len = 0;
-      if (provider->pSampleList.val != (TSP_consumer_symbol_requested_t*)NULL)
-	g_free(provider->pSampleList.val);
-      provider->pSampleList.val = (TSP_consumer_symbol_requested_t*)NULL;
+      provider->pSampleList.TSP_sample_symbol_info_list_t_len = 0;
+      if (provider->pSampleList.TSP_sample_symbol_info_list_t_val != (TSP_sample_symbol_info_t*)NULL)
+	g_free(provider->pSampleList.TSP_sample_symbol_info_list_t_val);
+      provider->pSampleList.TSP_sample_symbol_info_list_t_val = (TSP_sample_symbol_info_t*)NULL;
 
 
       /*
        * Temporary ressource.
        */
-      elementSize = sizeof(TSP_consumer_symbol_requested_t);
+      elementSize = sizeof(TSP_sample_symbol_info_t);
       requestedSymbolArray = g_array_new(FALSE, /* zero_terminated */
 					 TRUE,  /* clear           */
 					 (guint)elementSize);
@@ -1202,9 +1202,9 @@ gdisp_affectRequestedSymbolsToProvider ( Kernel_T *kernel )
       /*
        * Transfer information to provider.
        */
-      provider->pSampleList.val =
-	(TSP_consumer_symbol_requested_t*)requestedSymbolArray->data;
-      provider->pSampleList.len = requestedSymbolArray->len;
+      provider->pSampleList.TSP_sample_symbol_info_list_t_val =
+	(TSP_sample_symbol_info_t*)requestedSymbolArray->data;
+      provider->pSampleList.TSP_sample_symbol_info_list_t_len = requestedSymbolArray->len;
 
 
       /*

@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_group.c,v 1.9 2006-03-31 12:55:19 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_group.c,v 1.10 2006-04-07 10:37:17 morvan Exp $
 
 -----------------------------------------------------------------------
 
@@ -48,17 +48,19 @@ void TSP_group_delete_group_table(TSP_groups_t groups)
 {
 
    TSP_group_table_t* table = (TSP_group_table_t*)groups;
+   int32_t i;
 
-   STRACE_IO(("-->IN"));
-   
    if(table)
      {
        free(table->items_table);table->items_table = 0;
+       /* free decode buffer for each group */
+       for (i=0;i<table->table_len;++i) {
+	 free(table->groups[i].decode_buffer);
+       }
        free(table->groups);table->groups = 0;
        free(table);
      }
 
-   STRACE_IO(("-->OUT"));
 }
 
 
@@ -102,6 +104,11 @@ TSP_group_create_group_table(const TSP_sample_symbol_info_list_t* symbols, int g
      
       /* Rank for the symbol in a group*/
       int rank = 0;
+      /* The maximum size of the decode buffer 
+       * to be used for this group.
+       * Should be resetted and recomputed for each group.
+       */
+      int32_t decode_buffer_maxsize=0;
      
       /* Correct items pointer */
       table->groups[group_id].items = items_table;
@@ -112,6 +119,7 @@ TSP_group_create_group_table(const TSP_sample_symbol_info_list_t* symbols, int g
 	  if(group_id == symbols->TSP_sample_symbol_info_list_t_val[i].provider_group_index)
 	    {
 	      
+	      table->groups[group_id].items[rank].symbol_info = &(symbols->TSP_sample_symbol_info_list_t_val[i]);
 	      table->groups[group_id].items[rank].provider_global_index = symbols->TSP_sample_symbol_info_list_t_val[i].provider_global_index;
 
 	      /*find the dat type and decode and load  the data */
@@ -120,6 +128,12 @@ TSP_group_create_group_table(const TSP_sample_symbol_info_list_t* symbols, int g
 		                                             TSP_data_channel_get_encoded_size(symbols->TSP_sample_symbol_info_list_t_val[i].type)
 		                                             * symbols->TSP_sample_symbol_info_list_t_val[i].dimension;
 	      table->groups[group_id].sizeof_encoded_group += table->groups[group_id].items[rank].sizeof_encoded_item;
+	      /* update decode buffer maximum size which is the size
+	       * of the longest encoded size of all items in the group
+	       */
+	      decode_buffer_maxsize = (table->groups[group_id].items[rank].sizeof_encoded_item > decode_buffer_maxsize ?
+				       table->groups[group_id].items[rank].sizeof_encoded_item :
+				       decode_buffer_maxsize);
 	      
 	      STRACE_DEBUG(("Added to group table Id=%d, Gr=%d, Rank=%d", 
 			    table->groups[group_id].items[rank].provider_global_index,
@@ -137,6 +151,9 @@ TSP_group_create_group_table(const TSP_sample_symbol_info_list_t* symbols, int g
 	}
       /* set group size */
       table->groups[group_id].group_len = rank;
+      /* allocate group decode buffer */
+      table->groups[group_id].decode_buffer = calloc(1,decode_buffer_maxsize);
+      TSP_CHECK_ALLOC(table->groups[group_id].decode_buffer,0);
 
       /* step thrue table */
       items_table += rank;

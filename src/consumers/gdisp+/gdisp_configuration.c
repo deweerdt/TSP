@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_configuration.c,v 1.10 2006-03-21 16:39:14 brutusj Exp $
+$Id: gdisp_configuration.c,v 1.11 2006-04-07 10:37:17 morvan Exp $
 
 -----------------------------------------------------------------------
 
@@ -782,19 +782,19 @@ gdisp_saveProviderSampledSymbols ( Kernel_T         *kernel,
      * Loop over all sampled symbol of the current provider.
      */
     pSampleList = &provider->pSampleList;
-    pSampleMax  = pSampleList->len;
+    pSampleMax  = pSampleList->TSP_sample_symbol_info_list_t_len;
 
     for (pSampleCpt=0; pSampleCpt<pSampleMax; pSampleCpt++) {
 
       /*
        * Get in touch with the symbol through the global index.
        */
-      if (pSampleList->val[pSampleCpt].index >= 0) {
+      if (pSampleList->TSP_sample_symbol_info_list_t_val[pSampleCpt].provider_global_index >= 0) {
 
 #if defined(GD_LOAD_CONFIGURATION_WITH_ALL_SYMBOLS)
 
 	symbol =
-	  &provider->pSymbolList[pSampleList->val[pSampleCpt].index];
+	  &provider->pSymbolList[pSampleList->TSP_sample_symbol_info_list_t_val[pSampleCpt].provider_global_index];
 
 #else
 
@@ -803,7 +803,7 @@ gdisp_saveProviderSampledSymbols ( Kernel_T         *kernel,
 	 */
 	samplePGIasStringBuffer[GD_SAMPLE_PGI_AS_STRING_LENGTH-1] = '\0';
 	samplePGIasString =
-	  gdisp_uIntToStr(pSampleList->val[pSampleCpt].index,
+	  gdisp_uIntToStr(pSampleList->TSP_sample_symbol_info_list_t_val[pSampleCpt].provider_global_index,
 		  &samplePGIasStringBuffer[GD_SAMPLE_PGI_AS_STRING_LENGTH-1]);
 
 	/*

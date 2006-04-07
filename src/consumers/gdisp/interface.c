@@ -149,7 +149,7 @@ redraw_widgets (gpointer data)
   variable* var;
 
   
-  const TSP_consumer_information_t*  tsp_info;
+  const TSP_answer_sample_t*  tsp_info;
 
   /* Get the TSP information structure to retreive the base frequency */
   tsp_info = TSP_consumer_get_information(tsp);
@@ -166,13 +166,13 @@ redraw_widgets (gpointer data)
 
 	  if(var->widget_type == WIDGET_VIEW)
 	    {
-	      var->double_value = sample.user_value;
+	      var->double_value = sample.uvalue.double_value;
 	    }
 	  else
 	    {
 	      assert( var->widget_type == WIDGET_DRAW );
 	      pt.x = ((gdouble)sample.time)/(tsp_info->base_frequency ? tsp_info->base_frequency : 1);
-	      pt.y = sample.user_value;
+	      pt.y = sample.uvalue.double_value;
 	      add_point(PLOTWINDOW(var->widget),&pt);
 	    }
 	}		       
@@ -262,7 +262,7 @@ static void  page_variables_add (int page) {
   double val_double = 0.0;
   int i;
 
-  const TSP_consumer_information_t*  tsp_info;
+  const TSP_answer_sample_t*  tsp_info;
 
   /* Get the TSP information structure to retreive the base frequency */
   tsp_info = TSP_consumer_get_information(tsp);

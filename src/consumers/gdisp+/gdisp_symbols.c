@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_symbols.c,v 1.8 2006-02-26 14:08:24 erk Exp $
+$Id: gdisp_symbols.c,v 1.9 2006-04-07 10:37:17 morvan Exp $
 
 -----------------------------------------------------------------------
 
@@ -133,7 +133,7 @@ gdisp_insertAndSortSymbols (Kernel_T  *kernel,
 	    /*
 	     * If symbol is not available, use special color.
 	     */
-	    if (symbolPtr->sInfo.index < 0) {
+	    if (symbolPtr->sInfo.provider_global_index < 0) {
 
 	      gtk_clist_set_foreground(GTK_CLIST(kernel->widgets.symbolCList),
 				       rowNumber, /* row */

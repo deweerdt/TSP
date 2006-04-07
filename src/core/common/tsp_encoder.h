@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/common/tsp_encoder.h,v 1.1 2006-03-31 12:59:07 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/common/tsp_encoder.h,v 1.2 2006-04-07 10:37:17 morvan Exp $
 
 -----------------------------------------------------------------------
 
@@ -39,6 +39,7 @@ Purpose   :  Implementation for the functions used to encode the type
 #define _TSP_ENCODER_H
 
 #include <tsp_abs_types.h>
+#include <tsp_rpc.h>
 
 
 

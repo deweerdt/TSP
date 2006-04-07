@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_consumer.h,v 1.26 2006-04-03 16:07:36 erk Exp $
+$Id: tsp_consumer.h,v 1.27 2006-04-07 10:37:17 morvan Exp $
 
 -----------------------------------------------------------------------
 
@@ -73,8 +73,23 @@ struct TSP_sample_t
 {
   int time;
   int provider_global_index;
-  double user_value;
-
+  int32_t array_index;
+  TSP_datatype_t type; 
+ 
+  union {
+    double        double_value;
+    float         float_value;
+    int8_t        int8_value;
+    int16_t       int16_value;
+    int32_t       int32_value;
+    int64_t       int64_value;    
+    uint8_t       uint8_value;
+    uint16_t      uint16_value;
+    uint32_t      uint32_value;
+    uint64_t      uint64_value;
+    char          char_value;
+    unsigned char uchar_value;
+  } uvalue;
 
 };
 
@@ -84,64 +99,6 @@ typedef struct TSP_sample_t TSP_sample_t;
 FIXME : The callback function should transmit the error code
 too ( ex :  typedef void (*TSP_sample_callback_t) (TSP_sample_t* sample, TSP_consumer_status_t status);  */
 typedef void (*TSP_sample_callback_t) (TSP_sample_t* sample, void* user_data); 
-
-
-/** Structure used to request symbols */
-struct TSP_consumer_symbol_requested_t
-{
-  char* name;
-  int index;
-  int period;
-  int phase;
-  /* FIXME : we need a way to tell when
-     we want a RAW, STRING or DOUBLE
-     char xdr_tsp_t[4]; */
-
-};
-
-typedef struct TSP_consumer_symbol_requested_t TSP_consumer_symbol_requested_t;
-
-struct TSP_consumer_symbol_requested_list_t
-{
-  int len;
-  TSP_consumer_symbol_requested_t* val;
-};
-
-typedef struct TSP_consumer_symbol_requested_list_t TSP_consumer_symbol_requested_list_t;
-
-
-/** Structure used to read all symbols info */
-struct TSP_consumer_symbol_info_t
-{
-  char* name;
-  int index;
-  /* FIXME : char xdr_tsp_t[4]; Symbol type*/
-  /* FIXME :  u_int dimension ; Symbol dimension, for vectors*/
-};
-
-typedef struct TSP_consumer_symbol_info_t TSP_consumer_symbol_info_t;
-
-
-struct TSP_consumer_symbol_info_list_t
-{
-  int len;
-  TSP_consumer_symbol_info_t* val;
-};
-
-typedef struct TSP_consumer_symbol_info_list_t TSP_consumer_symbol_info_list_t;
-
-/** return all information about a provider */
-struct TSP_consumer_information_t
-{
-  /* FIXME : int provider_timeout;*/
-  double base_frequency;
-  int max_period;
-  int max_client_number;
-  int current_client_number;
-  TSP_consumer_symbol_info_list_t symbols;
-};
-
-typedef struct TSP_consumer_information_t TSP_consumer_information_t;
 
 typedef struct TSP_consumer_async_sample_t
 {
@@ -326,7 +283,7 @@ int TSP_consumer_request_filtered_information(TSP_provider_t provider, int filte
  * @param provider The provider handle
  * @return the provider information structure
  */				  
-const TSP_consumer_information_t* TSP_consumer_get_information(TSP_provider_t provider);
+const TSP_answer_sample_t* TSP_consumer_get_information(TSP_provider_t provider);
 
 /** 
  * Ask the provider for a list of symbols.
@@ -343,7 +300,7 @@ const TSP_consumer_information_t* TSP_consumer_get_information(TSP_provider_t pr
  * @return TRUE or FALSE. TRUE = OK.
  */				  
 int TSP_consumer_request_sample(TSP_provider_t provider,
-				TSP_consumer_symbol_requested_list_t* symbols);
+				TSP_sample_symbol_info_list_t* symbols);
 
 /** 
  * Retrieve the symbols requested list.
@@ -352,7 +309,7 @@ int TSP_consumer_request_sample(TSP_provider_t provider,
  * @param provider The provider handle
  * @return the requested symbols list.
  */				  
-const TSP_consumer_symbol_requested_list_t* TSP_consumer_get_requested_sample(TSP_provider_t provider);
+const TSP_sample_symbol_info_list_t* TSP_consumer_get_requested_sample(TSP_provider_t provider);
 
 /** 
  * Prepare and start the sampling sequence.
@@ -401,7 +358,7 @@ TSP_consumer_request_async_sample_read(TSP_provider_t provider,
 				       TSP_consumer_async_sample_t* async_sample_read);
 
 void TSP_consumer_print_invalid_symbols(FILE*, 
-					TSP_consumer_symbol_requested_list_t* symbols, 
+					TSP_sample_symbol_info_list_t* symbols, 
 					const char* tsp_provider_url);
 
 /** @} end group TSP_ConsumerLib */ 
