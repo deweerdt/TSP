@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_common_ssei.h,v 1.2 2006-04-12 13:06:10 erk Exp $
+$Id: tsp_common_ssei.h,v 1.3 2006-04-12 19:19:51 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -81,7 +81,16 @@ TSP_EI_update(TSP_extended_info_t* ei, const char* key, const char* value);
  * @return TSP_STATUS_OK on success 
  */
 int32_t
-TSP_EI_finalize(TSP_extended_info_t* ei, const char* key, const char* value);
+TSP_EI_finalize(TSP_extended_info_t* ei);
+
+/**
+ * copy a TSP Extended Info .
+ * @param[in,out] dest_EI destination
+ * @param[in]     src_EI  source
+ * @return TSP_STATUS_OK on success 
+ */
+int32_t
+TSP_EI_copy(TSP_extended_info_t* dest_EI, const TSP_extended_info_t src_EI);
 
 /**
  * Initialize an extended information list.
@@ -98,14 +107,21 @@ TSP_EIList_initialize(TSP_extended_info_list_t* eil, const int32_t len);
 /**
  * Find a extended information in a list by key.
  * @param[in] eil the extended information list to look in
- * @param[in] key the key of the extended information to look for
+ * @param[in] key the key of the extended information to look for 
+ * @return a TSP_extended_info_t if found else NULL 
  */
 const TSP_extended_info_t*
 TSP_EIList_findEIByKey(const TSP_extended_info_list_t* eil, const char* key);
 
+/**
+ * copy a TSP Extended Info list.
+ * @param[in,out] eil_dest destination list
+ * @param[in]     eil_src  source list
+ * @return TSP_STATUS_OK on success 
+ */
 int32_t
 TSP_EIList_copy(TSP_extended_info_list_t* eil_dest,
-		const TSP_extended_info_list_t* eil_src);
+		const TSP_extended_info_list_t eil_src);
 
 
 /**
@@ -121,26 +137,69 @@ TSP_EIList_finalize(TSP_extended_info_list_t* eil);
  * @param[in,out] ssei the SSEI structure 
  * @param[in] pgi the provider global index
  * @param[in] nei the number of extended informations to be attached to this PGI
+ * @return TSP_STATUS_OK on success 
  */
 int32_t
 TSP_SSEI_initialize(TSP_sample_symbol_extended_info_t* ssei, const int32_t pgi, const int32_t nei);
 
+/**
+ * destruction of a TSP Sample Symbol Extended Info structure.
+ * @param[in,out] ssei struct to destroy
+ * @return TSP_STATUS_OK on success 
+ */
 int32_t
 TSP_SSEI_finalize(TSP_sample_symbol_extended_info_t* ssei);
 
+/**
+ * copy a TSP Sample Symbol Extended Info structure.
+ * @param[in,out] ssei_dest destination  
+ * @param[in]     ssei_src  source 
+ * @return TSP_STATUS_OK on success 
+ */
 int32_t
-TSP_SSEIList_create(TSP_sample_symbol_extended_info_list_t** ssei);
+TSP_SSEI_copy(TSP_sample_symbol_extended_info_t* ssei_dest,
+  	      const TSP_sample_symbol_extended_info_t ssei_src);
 
+
+
+/**
+ * create a TSP Sample Symbol Extended Info list structure.
+ * @param[in,out] ssei_list pointer on the list to create
+ * @return TSP_STATUS_OK on success 
+ */
 int32_t
-TSP_SSEIList_initialize(TSP_sample_symbol_extended_info_list_t* sseil);
+TSP_SSEIList_create(TSP_sample_symbol_extended_info_list_t** ssei_list);
 
+/**
+ * initialize a TSP Sample Symbol Extended Info list structure.
+ * @param[in,out] ssei_list list to initialize
+ * @param[in]     len length of the list
+ * @return TSP_STATUS_OK on success 
+ */
 int32_t
-TSP_SSEIList_finalize(TSP_sample_symbol_extended_info_list_t* sseil);
+TSP_SSEIList_initialize(TSP_sample_symbol_extended_info_list_t* ssei_list,int32_t len);
 
+/**
+ * destruction of a TSP Sample Symbol Extended Info list structure.
+ * @param[in,out] ssei_list list to destroy
+ * @return TSP_STATUS_OK on success 
+ */
 int32_t
-TSP_SSEIList_copy(TSP_sample_symbol_extended_info_list_t* sseil);
+TSP_SSEIList_finalize(TSP_sample_symbol_extended_info_list_t* ssei_list);
 
+/**
+ * copy a TSP Sample Symbol Extended Info list structure.
+ * @param[in,out] dest_ssei_list destination list 
+ * @param[in] src_ssei_list source list
+ * @return TSP_STATUS_OK on success 
+ */
+int32_t
+TSP_SSEIList_copy(TSP_sample_symbol_extended_info_list_t* dest_ssei_list,
+                  const TSP_sample_symbol_extended_info_list_t src_ssei_list);
 
 END_C_DECLS
+
+/** @} */
+ 
 
 #endif /* _TSP_COMMON_SSEI_H */
