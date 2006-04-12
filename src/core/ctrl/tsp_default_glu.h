@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_default_glu.h,v 1.5 2006-04-03 16:07:36 erk Exp $
+$Id: tsp_default_glu.h,v 1.6 2006-04-12 06:56:03 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -154,6 +154,19 @@ int32_t
 GLU_async_sample_write_default(struct GLU_handle_t* this, 
 			       int pgi, 
 			       void* value_ptr, uint32_t value_size);
+
+/**
+ * Test if the asked symbol is the same symbol of the complete symbol list.
+ * @param[in] looked_for asked symbol
+ * @param[in] compared symbol of the complete list
+ * @param[out] pg_indexes provider global index (-1 if symbol is NOK)
+ *             matching specified filter.
+ * @return true if symbol is correct.
+ */
+int32_t
+GLU_validate_sample_default( TSP_sample_symbol_info_t* looked_for, 
+			     TSP_sample_symbol_info_t* compared,
+			     int* pg_indexes);
 
 /** @} */
 

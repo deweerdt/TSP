@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_data_receiver.c,v 1.21 2006-04-07 10:37:17 morvan Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_data_receiver.c,v 1.22 2006-04-12 06:56:03 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -234,9 +234,7 @@ int TSP_data_receiver_receive(TSP_data_receiver_t _receiver,
 		      /* FIXME decoder TOUT le groupe dans un buffer groups[group_index].decode_buffer pre-alloue
 		       * de taille MAX a La construction du groupe */
 		      ret = (groups[group_index].items[rank].data_decoder)(groups[group_index].decode_buffer,
-									   /* FIXME groups[group_index].decode_buffer  &(sample->uvalue.double_value),*/
-									   /* FIXME retrieve SYMBOL DIMENSION and TYPE */
-									   groups[group_index].items[rank].symbol_info->dimension,
+									   groups[group_index].items[rank].symbol_info->nelem,
 									   in_buf);
 		      if(!ret)
 			{
@@ -244,11 +242,13 @@ int TSP_data_receiver_receive(TSP_data_receiver_t _receiver,
 			  break;
 			}
 
-		      /* FIXME boucle sur sample->dimension pour affectation de groups[group_index].decode_buffer
+		      /* FIXME boucle à partir d'offset pour nelem element () sur sample->dimension pour affectation de groups[group_index].decode_buffer
 		       * dans sample->uvalue.TYPE_value = decode_buffer[i]
 		       * 
 		       */
-		      for(i=0;i < groups[group_index].items[rank].symbol_info->dimension;++i)
+		      for(i=groups[group_index].items[rank].symbol_info->offset;
+			  i < groups[group_index].items[rank].symbol_info->offset+groups[group_index].items[rank].symbol_info->nelem;
+			  ++i)
 		      {
 
 			/*--------------*/
@@ -320,6 +320,7 @@ int TSP_data_receiver_receive(TSP_data_receiver_t _receiver,
 			/* add time stamp */
 			sample->time = time_stamp;
 			sample->provider_global_index = groups[group_index].items[rank].provider_global_index;
+			sample->array_index = i;
 
 			/* FIXME : Implement error code returned by callback */
 			if(! (receiver->read_callback) )

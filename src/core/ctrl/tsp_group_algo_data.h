@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_group_algo_data.h,v 1.6 2006-03-31 12:55:19 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_group_algo_data.h,v 1.7 2006-04-12 06:56:03 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -47,6 +47,10 @@ struct TSP_algo_group_item_t
 {
   void* data;
   int   dimension;
+  u_int offset;
+  u_int nelem;
+
+
   TSP_data_encoder_t data_encoder;
 };
 

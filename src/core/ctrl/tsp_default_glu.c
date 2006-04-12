@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_default_glu.c,v 1.11 2006-04-06 15:17:47 morvan Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_default_glu.c,v 1.12 2006-04-12 06:56:03 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -162,6 +162,7 @@ int32_t
 GLU_get_pgi_default(GLU_handle_t* this, TSP_sample_symbol_info_list_t* symbol_list, int* pg_indexes) {
   int retcode = TRUE;
   TSP_sample_symbol_info_list_t complete_symbol_list;
+  TSP_sample_symbol_info_t* compared;
   int i;
   int j;
 
@@ -177,23 +178,36 @@ GLU_get_pgi_default(GLU_handle_t* this, TSP_sample_symbol_info_list_t* symbol_li
        
        for( j = 0 ; j < complete_symbol_list.TSP_sample_symbol_info_list_t_len ; j++)
 	 {
-	   TSP_sample_symbol_info_t* compared = &(complete_symbol_list.TSP_sample_symbol_info_list_t_val[j]);
+	   compared = &(complete_symbol_list.TSP_sample_symbol_info_list_t_val[j]);
 	   if(!strcmp(looked_for->name, compared->name))
-	     {
-	       found = TRUE;
-	       looked_for->provider_global_index = compared->provider_global_index;
-	       pg_indexes[i]=looked_for->provider_global_index;
-	     }
+	   {
+	     found = TRUE;
+	     looked_for->provider_global_index = compared->provider_global_index;
+	     pg_indexes[i]=looked_for->provider_global_index;
+           }
 	   if(found) break;
 
 	 }
        if(!found)
 	 {
 	   retcode = FALSE;
-	   STRACE_INFO(("Unable to find symbol '%s'",  looked_for->name));
-	   break;	   
+	   STRACE_INFO(("Unable to find symbol '%s'",  looked_for->name));	   
 	 }
+   
+
+       found = FALSE;
+     
+       found=GLU_validate_sample_default(looked_for,compared,&pg_indexes[i]);
+     
+       if(!found)
+       {
+	  retcode = FALSE;
+	  STRACE_INFO(("No good data in symbol '%s'",  looked_for->name));	   
+       }
+
      }
+
+
   return retcode;
 } /* end of GLU_get_pgi_default */
 
@@ -324,3 +338,84 @@ GLU_async_sample_write_default(struct GLU_handle_t* this,
   /* default GLU does not authorize async write for any symbol */
   return TSP_STATUS_ERROR_ASYNC_WRITE_NOT_SUPPORTED;
 } /* end of GLU_async_sample_write_default */
+
+
+int32_t
+GLU_validate_sample_default( TSP_sample_symbol_info_t* looked_for, 
+			     TSP_sample_symbol_info_t* compared,
+			     int* pg_indexes){
+
+  /* validate period and phase range */
+	   
+  if(looked_for->period < 1) 
+  {
+    *pg_indexes=-1;
+    STRACE_DEBUG(("Invalid period"));
+    return FALSE;
+  }
+
+  if(looked_for->phase < 0) 
+  {
+    *pg_indexes=-1;
+    STRACE_DEBUG(("Invalid phase"));
+    return FALSE;
+  }
+	  
+      		     
+ if(looked_for->type != TSP_TYPE_UNKNOWN)
+ {
+    if(looked_for->type != compared->type)
+    {
+      *pg_indexes=-1;
+       STRACE_DEBUG(("Invalid type"));
+      return FALSE;
+
+    }
+ }
+ else
+ {
+   looked_for->type = compared->type;
+
+ }
+
+ if(looked_for->offset != 0)
+ {	    
+    if(looked_for->offset >= compared->dimension)
+    {
+      *pg_indexes=-1;
+      STRACE_DEBUG(("Invalid offset"));
+      return FALSE;
+    }
+ }
+
+ if(looked_for->nelem != 0)
+ {
+    if((looked_for->offset + looked_for->nelem - 1) >= compared->dimension)
+    {
+      *pg_indexes=-1;
+      STRACE_DEBUG(("Invalid nelem"));
+      return FALSE;
+    }
+ }
+ else
+ {
+   looked_for->nelem =compared->dimension;
+ }
+
+
+ if(looked_for->dimension != 0)
+ {
+    if(looked_for->dimension != compared->dimension)
+    {
+      *pg_indexes=-1;
+      STRACE_DEBUG(("Invalid dimension"));
+      return FALSE;
+    }
+ }
+ else
+ {
+   looked_for->dimension =compared->dimension;
+ }
+
+  return TRUE;
+} 

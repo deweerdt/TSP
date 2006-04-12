@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_provider.c,v 1.39 2006-04-05 08:10:31 erk Exp $
+$Id: tsp_provider.c,v 1.40 2006-04-12 06:56:03 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -424,8 +424,6 @@ void  TSP_provider_request_sample(TSP_request_sample_t* req_sample,
   TSP_LOCK_MUTEX(&X_tsp_request_mutex,);	
   STRACE_IO(("-->IN"));
   int32_t i;
-  int32_t invalid_period;
-  int32_t invalid_phase;
   ans_sample->version_id            = TSP_PROTOCOL_VERSION;
   ans_sample->channel_id            = req_sample->channel_id;
   ans_sample->status                = TSP_STATUS_ERROR_UNKNOWN;
@@ -444,37 +442,17 @@ void  TSP_provider_request_sample(TSP_request_sample_t* req_sample,
       
       if(TSP_session_get_symbols_global_index_by_channel(req_sample->channel_id, &(req_sample->symbols) ))
 	{  
-	  invalid_period = 0;
-	  invalid_phase  = 0;
-	  /* validate period and phase range */
-	  for (i=0;i<req_sample->symbols.TSP_sample_symbol_info_list_t_len;++i) {	    
-	    if(req_sample->symbols.TSP_sample_symbol_info_list_t_val[i].period < 1) {
-	      req_sample->symbols.TSP_sample_symbol_info_list_t_val[i].provider_global_index = -1;
-	      invalid_period++;
-	    }
-	    if(req_sample->symbols.TSP_sample_symbol_info_list_t_val[i].phase < 0) {
-	      req_sample->symbols.TSP_sample_symbol_info_list_t_val[i].provider_global_index = -1;
-	      invalid_phase++;
-	    }
+	  /* The datapool will be created here (if it does not already exist) */
+	  if(TSP_session_create_symbols_table_by_channel(req_sample, ans_sample)) 
+	  {
+	    /* FIXME do we need to start glu here for PASSIVE glu 
+	     * instead of TSP_provider_private_run
+	     */
+	    ans_sample->status = TSP_STATUS_OK;
 	  }
-	  if ((invalid_phase>0) || (invalid_period>0)) {
-	    ans_sample->status = TSP_STATUS_ERROR_UNKNOWN;
-	    TSP_common_SSIList_copy(&(ans_sample->symbols), req_sample->symbols);
-	    STRACE_DEBUG(("Invalid phase or period"));
-	  } else {
-
-	    /* The datapool will be created here (if it does not already exist) */
-	    if(TSP_session_create_symbols_table_by_channel(req_sample, ans_sample)) 
-	      {
-		/* FIXME do we need to start glu here for PASSIVE glu 
-		 * instead of TSP_provider_private_run
-		 */
-		ans_sample->status = TSP_STATUS_OK;
-	      }
-	    else  
-	      {
-		STRACE_ERROR(("Function TSP_session_create_symbols_table_by_channel failed"));
-	      }    
+	  else  
+	  {
+	    STRACE_ERROR(("Function TSP_session_create_symbols_table_by_channel failed"));    
 	  }    
 	}
       else

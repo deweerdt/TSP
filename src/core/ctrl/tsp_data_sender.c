@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_data_sender.c,v 1.19 2006-03-31 12:55:19 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_data_sender.c,v 1.20 2006-04-12 06:56:03 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -351,7 +351,7 @@ int TSP_data_sender_send(TSP_data_sender_t _sender, TSP_groups_t _groups, time_s
 	      /* Call encode function */
 	      assert(group->items[i].data_encoder);
 	      size = (group->items[i].data_encoder)(group->items[i].data,
-						    group->items[i].dimension,
+						    group->items[i].nelem,
 						    buf_char,
 						    data_sender->buffer_size - ( buf_char - buf_main) );
 	      if ( 0 == size )

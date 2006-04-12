@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_group_algo.c,v 1.16 2006-03-31 12:55:19 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_group_algo.c,v 1.17 2006-04-12 06:56:03 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -47,6 +47,7 @@ and use groups
 #include "tsp_datapool.h"
 #include "tsp_data_sender.h"
 #include <tsp_encoder.h>
+#include <tsp_decoder.h>
 
 /** pgcd will be equal to the GCD od n1 and n2 */
 #define PGCD(n1, n2, pgcd) \
@@ -365,11 +366,18 @@ int TSP_group_algo_create_symbols_table(const TSP_sample_symbol_info_list_t* in_
 		    
                     /* find the encoder of the data type*/
                     table->groups[group_id].items[rank].data_encoder = TSP_data_channel_get_encoder(in_info->type);
-		    table->groups[group_id].items[rank].dimension =in_info->dimension; 
+		    table->groups[group_id].items[rank].dimension =in_info->dimension;
+		    table->groups[group_id].items[rank].offset =in_info->offset;
+		    table->groups[group_id].items[rank].nelem =in_info->nelem;
+ 
+		    /*complete les infos)*/
+
+
 		  
 		  
 		  table->groups[group_id].items[rank].data = 
-		    TSP_datapool_get_symbol_value(datapool, in_info->provider_global_index, 0);
+		    TSP_datapool_get_symbol_value(datapool, in_info->provider_global_index, 0)
+                    + in_info->offset * TSP_data_channel_get_encoded_size(in_info->type);
 		  
 		  /* 2 - In the out symbol table */
 		  
