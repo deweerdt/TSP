@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_default_glu.c,v 1.12 2006-04-12 06:56:03 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_default_glu.c,v 1.13 2006-04-12 13:04:55 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -122,17 +122,17 @@ GLU_get_server_name_default(struct GLU_handle_t* this) {
 GLU_server_type_t 
 GLU_get_server_type_default(struct GLU_handle_t* this) {
   return this->type;
-}
+} /* end of GLU_get_server_type_default */
 
 double 
 GLU_get_base_frequency_default(struct GLU_handle_t* this) {
   return this->base_frequency;
-}
+} /* end of GLU_get_base_frequency_default */
 
 int32_t
 GLU_get_nb_max_consumer_default(struct GLU_handle_t* this) {
   return this->nb_max_consumer;
-}
+} /* end of GLU_get_nb_max_consumer_default */
 
 GLU_handle_t* 
 GLU_get_instance_default(GLU_handle_t* this,
@@ -170,44 +170,34 @@ GLU_get_pgi_default(GLU_handle_t* this, TSP_sample_symbol_info_list_t* symbol_li
     
   /* now do the infamous double search loop */
   /* For each requested symbols, check by name, and find the provider global index */
-
-  for( i = 0 ; i < symbol_list->TSP_sample_symbol_info_list_t_len ; i++)
-     {
-       int found = FALSE;
-       TSP_sample_symbol_info_t* looked_for = &(symbol_list->TSP_sample_symbol_info_list_t_val[i]);
-       
-       for( j = 0 ; j < complete_symbol_list.TSP_sample_symbol_info_list_t_len ; j++)
-	 {
-	   compared = &(complete_symbol_list.TSP_sample_symbol_info_list_t_val[j]);
-	   if(!strcmp(looked_for->name, compared->name))
-	   {
-	     found = TRUE;
-	     looked_for->provider_global_index = compared->provider_global_index;
-	     pg_indexes[i]=looked_for->provider_global_index;
-           }
-	   if(found) break;
-
-	 }
-       if(!found)
-	 {
-	   retcode = FALSE;
-	   STRACE_INFO(("Unable to find symbol '%s'",  looked_for->name));	   
-	 }
-   
-
-       found = FALSE;
-     
-       found=GLU_validate_sample_default(looked_for,compared,&pg_indexes[i]);
-     
-       if(!found)
-       {
-	  retcode = FALSE;
-	  STRACE_INFO(("No good data in symbol '%s'",  looked_for->name));	   
-       }
-
-     }
-
-
+  for( i = 0 ; i < symbol_list->TSP_sample_symbol_info_list_t_len ; i++) {
+    int found = FALSE;
+    TSP_sample_symbol_info_t* looked_for = &(symbol_list->TSP_sample_symbol_info_list_t_val[i]);
+    
+    for( j = 0 ; j < complete_symbol_list.TSP_sample_symbol_info_list_t_len ; j++) {
+      compared = &(complete_symbol_list.TSP_sample_symbol_info_list_t_val[j]);
+      if(!strcmp(looked_for->name, compared->name)) {
+	found = TRUE;
+	looked_for->provider_global_index = compared->provider_global_index;
+	pg_indexes[i]=looked_for->provider_global_index;
+      }
+      if(found) break;
+      
+    }
+    if(!found) {
+      retcode = FALSE;
+      pg_indexes[i]= -1;
+      STRACE_INFO(("Unable to find symbol '%s'",  looked_for->name));	   
+    }
+    
+    found = FALSE;     
+    found = GLU_validate_sample_default(looked_for,compared,&pg_indexes[i]);
+    
+    if(!found) {
+      retcode = FALSE;
+      STRACE_INFO(("No good data in symbol '%s'",  looked_for->name));	   
+    }
+  }
   return retcode;
 } /* end of GLU_get_pgi_default */
 
@@ -288,28 +278,21 @@ GLU_get_ssi_list_fromPGI_default(struct GLU_handle_t* this,
   TSP_sample_symbol_info_list_t complete_symbol_list; 
  
   this->get_ssi_list(this,&complete_symbol_list);
-
   ret=TSP_STATUS_OK;
 
   /* Store all global indexes into list including NOT FOUND ones */
-  for ( i=0 ; i < pgis_len;++i)
-  {
-
-      if(-1!=pgis[i])
-      {
-	TSP_common_SSI_copy(&(SSI_list->TSP_sample_symbol_info_list_t_val[i]), 
-			    complete_symbol_list.TSP_sample_symbol_info_list_t_val[pgis[i]]);
-
-      }
-      else
-      {
-	SSI_list->TSP_sample_symbol_info_list_t_val[i].provider_global_index=-1;
-
-        STRACE_INFO(("Unable to find symbol '%s'",  SSI_list->TSP_sample_symbol_info_list_t_val[i].name));
-
-	ret=TSP_STATUS_ERROR_SYMBOLS;
-       
-      }
+  for ( i=0 ; i < pgis_len;++i) {
+    
+    if(-1!=pgis[i]) {
+      TSP_common_SSI_copy(&(SSI_list->TSP_sample_symbol_info_list_t_val[i]), 
+			  complete_symbol_list.TSP_sample_symbol_info_list_t_val[pgis[i]]);
+      
+    }
+    else {
+      SSI_list->TSP_sample_symbol_info_list_t_val[i].provider_global_index=-1;      
+      STRACE_INFO(("Unable to find symbol '%s'",  SSI_list->TSP_sample_symbol_info_list_t_val[i].name));      
+      ret=TSP_STATUS_ERROR_SYMBOLS;      
+    }
   }
   return  ret;
 } /* end of GLU_get_ssi_list_fromPGI_default */
@@ -345,8 +328,7 @@ GLU_validate_sample_default( TSP_sample_symbol_info_t* looked_for,
 			     TSP_sample_symbol_info_t* compared,
 			     int* pg_indexes){
 
-  /* validate period and phase range */
-	   
+  /* validate period and phase range */	   
   if(looked_for->period < 1) 
   {
     *pg_indexes=-1;
@@ -417,5 +399,7 @@ GLU_validate_sample_default( TSP_sample_symbol_info_t* looked_for,
    looked_for->dimension =compared->dimension;
  }
 
-  return TRUE;
+ /* update PGI */
+ looked_for->provider_global_index = *pg_indexes; 
+ return TRUE;
 } 
