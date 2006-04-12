@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_common_ssei.c,v 1.1 2006-04-07 09:30:36 erk Exp $
+$Id: tsp_common_ssei.c,v 1.2 2006-04-12 13:06:10 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -45,21 +45,23 @@ Purpose   : Main implementation for the producer module
 #include <tsp_common_ssei.h>
 
 int32_t
-TSP_ei_initialize(TSP_extended_info_t* ei, const char* key, const char* value) {
+TSP_EI_initialize(TSP_extended_info_t* ei, const char* key, const char* value) {
   assert(ei);  
   ei->key   = strdup(key);
   ei->value = strdup(value);
   return TSP_STATUS_OK;
-} /* end of TSP_ei_initialize */
+} /* end of TSP_EI_initialize */
 
 int32_t
-TSP_ei_finalize(TSP_extended_info_t* ei, const char* key, const char* value) {
+TSP_EI_finalize(TSP_extended_info_t* ei, const char* key, const char* value) {
   assert(ei);  
   free(ei->key); 
   ei->key = NULL;
   free(ei->value); 
   ei->value = NULL;
   return TSP_STATUS_OK;
-} /* end of TSP_ei_initialize */
+} /* end of TSP_EI_initialize */
+
+
 
 

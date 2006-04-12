@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_common_ssi.c,v 1.1 2006-04-07 09:30:36 erk Exp $
+$Id: tsp_common_ssi.c,v 1.2 2006-04-12 13:06:10 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -80,24 +80,25 @@ TSP_common_SSI_initialize(TSP_sample_symbol_info_t* ssi) {
 } /* end of TSP_common_SSI_initialize */
 
 int32_t 
-TSP_common_SSIList_create(TSP_sample_symbol_info_list_t** ssil, int32_t nbSSI) {
+TSP_common_SSIList_create(TSP_sample_symbol_info_list_t* ssil, int32_t nbSSI) {
   int32_t retcode = TSP_STATUS_ERROR_UNKNOWN;
 
   assert(ssil);
-  *ssil = calloc (nbSSI,sizeof(TSP_sample_symbol_info_t));
-  if (NULL==*ssil) {
-    return retcode;
-  }
-  TSP_common_SSIList_initialize(*ssil,nbSSI);
+  ssil->TSP_sample_symbol_info_list_t_len = nbSSI;
+  ssil->TSP_sample_symbol_info_list_t_val = (TSP_sample_symbol_info_t*) calloc (nbSSI,sizeof(TSP_sample_symbol_info_t));
+  assert(ssil->TSP_sample_symbol_info_list_t_val);
+  TSP_common_SSIList_initialize(ssil);
   retcode = TSP_STATUS_OK;
   return retcode;
 } /* end of TSP_common_SSIList_initialize */
 
 void 
-TSP_common_SSIList_initialize(TSP_sample_symbol_info_list_t* ssil, int32_t nbSSI) {
+TSP_common_SSIList_initialize(TSP_sample_symbol_info_list_t* ssil) {
 
   int32_t i;
-  for (i=0;i<nbSSI;++i) {
+  assert(ssil);
+  assert(ssil->TSP_sample_symbol_info_list_t_val);
+  for (i=0;i<ssil->TSP_sample_symbol_info_list_t_len;++i) {
     TSP_common_SSI_initialize(&(ssil->TSP_sample_symbol_info_list_t_val[i]));
   }
 } /* end of TSP_common_SSIList_initialize */

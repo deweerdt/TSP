@@ -1,6 +1,6 @@
 /*
 
-$Id: generic_consumer.c,v 1.9 2006-04-12 07:29:47 erk Exp $
+$Id: generic_consumer.c,v 1.10 2006-04-12 13:06:10 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -217,6 +217,9 @@ generic_consumer(generic_consumer_request_t* req) {
   case E_TSP_REQUEST_ASYNC_SAMPLE_WRITE:
     retval=generic_consumer_async_write(req);
     break;
+  case E_TSP_REQUEST_EXTENDED_INFORMATION:
+    retval=generic_consumer_extended_information(req);
+    break; 
   default:
     req->stream               = stderr;
     req->request.req_type    = E_TSP_REQUEST_INVALID;
@@ -245,6 +248,7 @@ generic_consumer_usage(generic_consumer_request_t* req) {
 	    "%s::unknown %s request\n",
 	    tsp_reqname_tab[E_TSP_REQUEST_GENERIC],
 	    tsp_reqname_tab[E_TSP_REQUEST_GENERIC]);	    
+    /* no break */
   case E_TSP_REQUEST_GENERIC:
     fprintf(req->stream, 
 	    "TSP generic consumer v%s (%s)\n",TSP_SOURCE_VERSION,TSP_PROJECT_URL);
@@ -469,3 +473,32 @@ generic_consumer_async_write(generic_consumer_request_t* req) {
   }
   return retval;
 }  /* end of generic_consumer_async_write */
+
+int32_t 
+generic_consumer_extended_information(generic_consumer_request_t* req) {
+  int32_t  retval   = -1;
+  int32_t* pgis    = NULL; 
+  int32_t  pgis_len = 1;
+  
+  if (req->argc<1) {
+    generic_consumer_logMsg(req->stream,"%s: <%d> argument(s) missing\n",
+		   tsp_reqname_tab[E_TSP_REQUEST_EXTENDED_INFORMATION],
+		   1-req->argc);
+    generic_consumer_usage(req);
+    retval = -1;
+    return retval;
+  }
+
+  /* FIXME handle multiple PGIS */
+  pgis_len = 1;
+  pgis = (int32_t*)malloc(pgis_len*sizeof(int32_t));
+
+  if (TSP_STATUS_OK!=TSP_consumer_request_extended_information(req->the_provider,pgis,pgis_len)) {
+    generic_consumer_logMsg(req->stream,"%s: TSP request failed\n",
+			    tsp_reqname_tab[E_TSP_REQUEST_EXTENDED_INFORMATION]);
+  } else {    
+    generic_consumer_printinfo(req);
+    retval = 0;
+  }
+  return retval;  
+}

@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_consumer.h,v 1.28 2006-04-12 06:53:20 erk Exp $
+$Id: tsp_consumer.h,v 1.29 2006-04-12 13:06:10 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -277,6 +277,10 @@ int TSP_consumer_request_information(TSP_provider_t provider);
  */				  
 int TSP_consumer_request_filtered_information(TSP_provider_t provider, int filter_kind, char* filter_string);
 
+
+int32_t 
+TSP_consumer_request_extended_information(TSP_provider_t provider, int32_t* pgis, int32_t pgis_len);
+
 /** 
  * Retrieve the provider list.
  * Get the provider information asked by TSP_consumer_request_information
@@ -350,15 +354,36 @@ int TSP_consumer_read_sample(TSP_provider_t provider,
 			     int* new_sample);
 
 
+/**
+ * Send a TSP asynchronous sample write request.
+ * @param[in] provider the TSP session onto we want to send the request
+ * @param[in] async_sample_write the async write message itself
+ * @return TSP_STATUS_OK on success other TSP_STATUS_ERROR on failure.
+ */
 int32_t 
 TSP_consumer_request_async_sample_write(TSP_provider_t provider,
 					TSP_consumer_async_sample_t* async_sample_write);
 
+/**
+ * Send a TSP asynchronous sample read request.
+ * @param[in] provider the TSP session onto we want to send the request
+ * @param[in,out] async_sample_read the async read message itself
+ *                on entry describes the symbol to read
+ *                on return contains the read value (if success)
+ * @return TSP_STATUS_OK on success other TSP_STATUS_ERROR on failure.
+ */
 int32_t 
 TSP_consumer_request_async_sample_read(TSP_provider_t provider,
 				       TSP_consumer_async_sample_t* async_sample_read);
 
-void TSP_consumer_print_invalid_symbols(FILE*, 
+/**
+ * Print the symbols flagged as invalid
+ * in the provided sample symbol info list.
+ * @param[in]  fs the STDIO file stream
+ * @param[in]  symbol the list of symbol to analyse
+ * @param[in]  tsp_provider_url the provider TSP URL.
+ */
+void TSP_consumer_print_invalid_symbols(FILE* fs, 
 					TSP_sample_symbol_info_list_t* symbols, 
 					const char* tsp_provider_url);
 

@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_provider.c,v 1.40 2006-04-12 06:56:03 erk Exp $
+$Id: tsp_provider.c,v 1.41 2006-04-12 13:06:10 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -422,7 +422,7 @@ void  TSP_provider_request_sample(TSP_request_sample_t* req_sample,
 			 TSP_answer_sample_t* ans_sample)
 {
   TSP_LOCK_MUTEX(&X_tsp_request_mutex,);	
-  STRACE_IO(("-->IN"));
+
   int32_t i;
   ans_sample->version_id            = TSP_PROTOCOL_VERSION;
   ans_sample->channel_id            = req_sample->channel_id;
@@ -459,9 +459,12 @@ void  TSP_provider_request_sample(TSP_request_sample_t* req_sample,
 	{
 	  STRACE_WARNING(("Function TSP_session_get_symbols_global_index_by_channel failed"));
 	  ans_sample->status = TSP_STATUS_ERROR_SYMBOLS;
-	  /* Now we shall update answer_sample->symbols in order to indicates
+	  /* 
+	   * Now we shall update answer_sample->symbols in order to indicates
 	   * to consumer side which symbols are marked as 'unknown'
+	   * 
 	   */
+	  TSP_common_SSIList_create(&(ans_sample->symbols),req_sample->symbols.TSP_sample_symbol_info_list_t_len);
 	  TSP_common_SSIList_copy(&(ans_sample->symbols), req_sample->symbols);
 	}
     }
@@ -470,10 +473,6 @@ void  TSP_provider_request_sample(TSP_request_sample_t* req_sample,
       STRACE_WARNING(("TSP version ERROR. Requested=%d Current=%d",req_sample->version_id, TSP_PROTOCOL_VERSION ));
       ans_sample->status = TSP_STATUS_ERROR_VERSION;
     }
-
-
-	
-  STRACE_IO(("-->OUT"));
 
   TSP_UNLOCK_MUTEX(&X_tsp_request_mutex,);
 } /* End of TSP_provider_request_sample */

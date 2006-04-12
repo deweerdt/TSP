@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_common_request.h,v 1.1 2006-04-07 09:30:36 erk Exp $
+$Id: tsp_common_request.h,v 1.2 2006-04-12 13:06:10 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -81,21 +81,23 @@ const char* tsp_reqname_tab[] = {"tsp_request_invalid",
 				 "tsp_request_sample_destroy",
 				 "tsp_request_async_sample_write",
 				 "tsp_request_async_sample_read",
+				 "tsp_request_extended_information",
 				 "tsp_request_last"
 };
 
 const char* tsp_reqhelp_tab[] = {"invalid tsp request",
-				 "tsp_request_generic",
-				 "tsp_request_open",
-				 "tsp_request_close",
-				 "tsp_request_information",
-				 "tsp_request_filtered_information",
-				 "tsp_request_feature",
+				 "Generic interface to TSP request",
+				 "Send a TSP request open then close",
+				 "Same as request_open",
+				 "Get TSP symbols information from provider using Request Information",
+				 "Get TSP symbols information from provider using Request Filtered Information",
+				 "tsp_request_feature (not implemented)",
 				 "tsp_request_sample",
 				 "tsp_request_sample_init",
 				 "tsp_request_sample_destroy",
-				 "tsp_request_async_sample_write",
-				 "tsp_request_async_sample_read",
+				 "Send TSP Asynchronous write request",
+				 "Send TSP Asynchronous read request",
+				 "tsp_request_extended_information",
 				 "TSP LAST REQUEST"
 };
 #else

@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_common_ssi.h,v 1.1 2006-04-07 09:30:36 erk Exp $
+$Id: tsp_common_ssi.h,v 1.2 2006-04-12 13:06:10 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -83,19 +83,19 @@ TSP_common_SSI_initialize(TSP_sample_symbol_info_t* ssi);
 
 /**
  * Allocate a list of sample symbol information and initialize it.
- * @param[out] ssil pointer to pointer to the list to be create.
+ * @param[out] ssil pointer to the list to be create.
  * @param[in]  nbSSI the number of SSI in the to be created list.
  * @return TSP_STATUS_OK if allocation is OK. TSP_STATUS_ALLOC_FAILED otherwise.
  */
 int32_t 
-TSP_common_SSIList_create(TSP_sample_symbol_info_list_t** ssil, int32_t nbSSI);
+TSP_common_SSIList_create(TSP_sample_symbol_info_list_t* ssil, int32_t nbSSI);
 
 /**
  * Initialize a preallocated list of sample symbol information.
  * @param[in] ssil the list to be initialized.
  */
 void 
-TSP_common_SSIList_initialize(TSP_sample_symbol_info_list_t* ssil, int32_t nbSSI);
+TSP_common_SSIList_initialize(TSP_sample_symbol_info_list_t* ssil);
 
 /**
  * Copy a list of symbols from src_symbols to dest_symbols.

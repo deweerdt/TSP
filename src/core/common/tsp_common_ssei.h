@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_common_ssei.h,v 1.1 2006-04-07 09:30:36 erk Exp $
+$Id: tsp_common_ssei.h,v 1.2 2006-04-12 13:06:10 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -58,17 +58,88 @@ BEGIN_C_DECLS
  *                be allocated but the field may not
  * @param[in] key the key/name of the extended information
  * @param[in] value the value of the extended information
+ * @return TSP_STATUS_OK on success 
  */
 int32_t
-TSP_ei_initialize(TSP_extended_info_t* ei, const char* key, const char* value);
+TSP_EI_initialize(TSP_extended_info_t* ei, const char* key, const char* value);
+
+/**
+ * Udpate an extended information item.
+ * @param[in,out] ei the extended info structure, the structure should
+ *                be allocated including the field
+ * @param[in] key the key/name of the extended information
+ * @param[in] value the value of the extended information
+ * @return TSP_STATUS_OK on success 
+ */
+int32_t
+TSP_EI_update(TSP_extended_info_t* ei, const char* key, const char* value);
 
 /**
  * Finalize an extended information item.
  * @param[in,out] ei the extended info structure, the structure should
  *                be allocated but the field may not
+ * @return TSP_STATUS_OK on success 
  */
 int32_t
-TSP_ei_finalize(TSP_extended_info_t* ei, const char* key, const char* value);
+TSP_EI_finalize(TSP_extended_info_t* ei, const char* key, const char* value);
+
+/**
+ * Initialize an extended information list.
+ * @param[in,out] eil the extended info list structure, the structure should
+ *                be allocated but the field may not
+ *                On input the pre-allocated structure
+ *                On output the content of the structure has been allocated 
+ *                and initialized.
+ * @return TSP_STATUS_OK on success 
+ */
+int32_t
+TSP_EIList_initialize(TSP_extended_info_list_t* eil, const int32_t len);
+
+/**
+ * Find a extended information in a list by key.
+ * @param[in] eil the extended information list to look in
+ * @param[in] key the key of the extended information to look for
+ */
+const TSP_extended_info_t*
+TSP_EIList_findEIByKey(const TSP_extended_info_list_t* eil, const char* key);
+
+int32_t
+TSP_EIList_copy(TSP_extended_info_list_t* eil_dest,
+		const TSP_extended_info_list_t* eil_src);
+
+
+/**
+ * Finalize an extended information list.
+ * @param[in,out] eil the extended info list structure
+ * @return TSP_STATUS_OK on success 
+ */
+int32_t
+TSP_EIList_finalize(TSP_extended_info_list_t* eil);
+
+/**
+ * Initialize a TSP Sample Symbol Extended Info structure.
+ * @param[in,out] ssei the SSEI structure 
+ * @param[in] pgi the provider global index
+ * @param[in] nei the number of extended informations to be attached to this PGI
+ */
+int32_t
+TSP_SSEI_initialize(TSP_sample_symbol_extended_info_t* ssei, const int32_t pgi, const int32_t nei);
+
+int32_t
+TSP_SSEI_finalize(TSP_sample_symbol_extended_info_t* ssei);
+
+int32_t
+TSP_SSEIList_create(TSP_sample_symbol_extended_info_list_t** ssei);
+
+int32_t
+TSP_SSEIList_initialize(TSP_sample_symbol_extended_info_list_t* sseil);
+
+int32_t
+TSP_SSEIList_finalize(TSP_sample_symbol_extended_info_list_t* sseil);
+
+int32_t
+TSP_SSEIList_copy(TSP_sample_symbol_extended_info_list_t* sseil);
+
 
 END_C_DECLS
 
