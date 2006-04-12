@@ -1,6 +1,6 @@
 /*
 
-$Id: generic_consumer.c,v 1.8 2006-04-07 10:37:17 morvan Exp $
+$Id: generic_consumer.c,v 1.9 2006-04-12 07:29:47 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -41,10 +41,11 @@ Purpose   : Generic tsp consumer
 #include <libgen.h>
 #include <stdarg.h>
 
-#include "tsp_sys_headers.h"
-#include "tsp_prjcfg.h"
-#include "generic_consumer.h"
-#include "tsp_consumer.h"
+#include <tsp_sys_headers.h>
+#include <tsp_prjcfg.h>
+#include <generic_consumer.h>
+#include <tsp_consumer.h>
+#include <tsp_common.h>
 
 
 void 
@@ -333,9 +334,11 @@ void generic_consumer_printinfo(generic_consumer_request_t* req) {
   fprintf(req->stream,"Provider::current consumer nb = %d\n",pinfo->current_client_number);
   fprintf(req->stream,"Provider <symbols list begin>\n");
   for (i=0;i<pinfo->symbols.TSP_sample_symbol_info_list_t_len;i++) {
-    fprintf(req->stream,"    pgi = %08d, %s \n",
+    fprintf(req->stream,"    pgi = %08d, %s, type = %s, dim = %d\n",
 	    pinfo->symbols.TSP_sample_symbol_info_list_t_val[i].provider_global_index,
-	    pinfo->symbols.TSP_sample_symbol_info_list_t_val[i].name);
+	    pinfo->symbols.TSP_sample_symbol_info_list_t_val[i].name,
+	    tsp_type_name[pinfo->symbols.TSP_sample_symbol_info_list_t_val[i].type],
+	    pinfo->symbols.TSP_sample_symbol_info_list_t_val[i].dimension);
   }
   fprintf(req->stream,"Provider <symbols list end>.\n");
 }

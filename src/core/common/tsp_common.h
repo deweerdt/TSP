@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_common.h,v 1.9 2006-04-07 09:30:36 erk Exp $
+$Id: tsp_common.h,v 1.10 2006-04-12 07:29:47 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -70,11 +70,27 @@ const int tsp_type_size[] = { 0,
 			      sizeof(char),
 			      sizeof(unsigned char),
 			      sizeof(uint8_t),
-			      0
-				
+			      0				
+};
+const char* tsp_type_name[] = { "TSP_TYPE_UNKNOWN",
+				"TSP_TYPE_DOUBLE",
+				"TSP_TYPE_FLOAT",
+				"TSP_TYPE_INT8",
+				"TSP_TYPE_INT16",
+				"TSP_TYPE_INT32",
+				"TSP_TYPE_INT64",
+				"TSP_TYPE_UINT8",
+				"TSP_TYPE_UINT16",
+				"TSP_TYPE_UINT32",
+				"TSP_TYPE_UINT64",
+				"TSP_TYPE_CHAR",
+				"TSP_TYPE_UCHAR",
+				"TSP_TYPE_RAW",
+				"TSP_TYPE_LAST"
 };
 #else
 extern const int tsp_type_size[];
+extern const char* tsp_type_name[];
 #endif
 
 BEGIN_C_DECLS

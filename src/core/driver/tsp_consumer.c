@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.46 2006-04-12 06:53:20 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.47 2006-04-12 07:29:47 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -45,7 +45,7 @@ Purpose   : Main implementation for the TSP consumer library
 #include "tsp_sample_ringbuf.h"
 #include "tsp_datastruct.h"
 #include "tsp_time.h"
-
+#include <tsp_common.h>
 
 /* Pool time for network data read (µs) */
 #define TSP_RECEIVER_THREAD_WAIT_FIFO_FULL (2e5)
@@ -806,15 +806,8 @@ int TSP_consumer_request_information(TSP_provider_t provider)
 	  otsp->information.symbols.TSP_sample_symbol_info_list_t_val = 
 	    (TSP_sample_symbol_info_t* )calloc(symbols_number,sizeof(TSP_sample_symbol_info_t));
 	  TSP_CHECK_ALLOC(otsp->information.symbols.TSP_sample_symbol_info_list_t_val, FALSE);
-		
-	  for(i = 0 ; i< symbols_number ; i++)
-	    {		
-	      otsp->information.symbols.TSP_sample_symbol_info_list_t_val[i].provider_global_index =
-		ans_sample->symbols.TSP_sample_symbol_info_list_t_val[i].provider_global_index;
-	      otsp->information.symbols.TSP_sample_symbol_info_list_t_val[i].name =
-		strdup(ans_sample->symbols.TSP_sample_symbol_info_list_t_val[i].name);				
-	      TSP_CHECK_ALLOC(otsp->information.symbols.TSP_sample_symbol_info_list_t_val[i].name, FALSE);			
-	    }
+	
+	  TSP_common_SSIList_copy(&(otsp->information.symbols),ans_sample->symbols);
         }
     }
   else
