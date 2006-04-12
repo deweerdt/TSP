@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer.h,v 1.10 2006-04-07 10:37:17 morvan Exp $
+$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer.h,v 1.11 2006-04-12 06:58:15 erk Exp $
 
 ------------------------------------------------------------------------
 
@@ -205,6 +205,16 @@ tsp_ascii_writer_stop();
  */
 int32_t 
 tsp_ascii_writer_finalise();
+
+/**
+ * display the value of the sample.
+ * @param sfile [in] print file.
+ * @param sample [in] sample value to display
+ * @return 0 OK -1 otherwise.
+ */
+int32_t 
+tsp_ascii_writer_display_value(FILE* sfile,TSP_sample_t sample);
+
 
 /** @} */
 

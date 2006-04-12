@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer.c,v 1.16 2006-04-07 10:37:17 morvan Exp $
+$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer.c,v 1.17 2006-04-12 06:58:15 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -523,8 +523,9 @@ tsp_ascii_writer_start(FILE* sfile, int32_t nb_sample_max_infile, OutputFileForm
   char            charbuf[MAX_VAR_NAME_SIZE];
   int             symbol_dim;
   int             nb_sample;
-  int					indice;
-  char				indice_char[5];
+  int		  indice;
+  char		  indice_char[5];
+  int32_t         nb_data_receive=0;
   
   char** tab_colonne=NULL;
 
@@ -625,7 +626,7 @@ tsp_ascii_writer_start(FILE* sfile, int32_t nb_sample_max_infile, OutputFileForm
     for (symbol_index=0;symbol_index<symbols->TSP_sample_symbol_info_list_t_len;++symbol_index) {
       fprintf(sfile,"%s	", *(tab_colonne + symbol_index));
       free(*(tab_colonne + symbol_index));
-    }
+    }  /* For each requested symbol, we store it */
     free(tab_colonne);    
     fprintf(sfile,"\n");    
     fflush(sfile);    
@@ -635,6 +636,12 @@ tsp_ascii_writer_start(FILE* sfile, int32_t nb_sample_max_infile, OutputFileForm
     break;
   }
  
+
+  /*calculate the total data receive: simple + table*/
+  for(indice=0;indice<symbols->TSP_sample_symbol_info_list_t_len;++indice)
+  {
+    nb_data_receive+=symbols->TSP_sample_symbol_info_list_t_val[indice].nelem;
+  }
 
 
 
@@ -657,10 +664,11 @@ tsp_ascii_writer_start(FILE* sfile, int32_t nb_sample_max_infile, OutputFileForm
       {
 			if (tsp_ascii_writer_header_style==2) 
 			{
-				fprintf(sfile,fmt_tab[sample.type],sample.uvalue);
+				tsp_ascii_writer_display_value(sfile,sample);
+
 				++complete_line;
 				/* We write the endl if we receive a whole sample line */
-				if (symbols->TSP_sample_symbol_info_list_t_len==complete_line) 
+				if (nb_data_receive==complete_line) 
 				{
 	  				fprintf(sfile,"\n");
 	 				complete_line = 0;
@@ -674,10 +682,11 @@ tsp_ascii_writer_start(FILE* sfile, int32_t nb_sample_max_infile, OutputFileForm
 			} 
 			else 
 			{
-				fprintf(sfile,fmt_tab[sample.type],sample.uvalue.double_value);
+			        tsp_ascii_writer_display_value(sfile,sample);
+
 				++complete_line;
 				/* We write the endl if we receive a whole sample line */
-				if (symbols->TSP_sample_symbol_info_list_t_len==complete_line) 
+				if (nb_data_receive==complete_line) 
 				{
 	  				fprintf(sfile,"\n");
 	 				complete_line = 0;
@@ -739,3 +748,68 @@ tsp_ascii_writer_finalise() {
   STRACE_IO(("-->OUT"));   
   return retcode;
 } /* end of tsp_ascii_writer_finalise */
+
+int32_t 
+tsp_ascii_writer_display_value(FILE* sfile,TSP_sample_t sample)
+{
+
+ switch(sample.type) {
+
+  case TSP_TYPE_DOUBLE :
+    fprintf(sfile,fmt_tab[sample.type],sample.uvalue.double_value);
+    break;
+    
+  case TSP_TYPE_FLOAT :
+    fprintf(sfile,fmt_tab[sample.type],sample.uvalue.float_value);
+    break;
+    
+  case TSP_TYPE_INT8 :
+    fprintf(sfile,fmt_tab[sample.type],sample.uvalue.int8_value);
+    break;
+    
+  case TSP_TYPE_INT16:
+    fprintf(sfile,fmt_tab[sample.type],sample.uvalue.int16_value);
+    break;
+    
+  case TSP_TYPE_INT32 :
+      fprintf(sfile,fmt_tab[sample.type],sample.uvalue.int32_value);
+      break;
+      
+  case TSP_TYPE_INT64 :
+    fprintf(sfile,fmt_tab[sample.type],sample.uvalue.int64_value);
+    break;
+    
+  case TSP_TYPE_UINT8:
+    fprintf(sfile,fmt_tab[sample.type],sample.uvalue.uint8_value);
+    break;
+    
+  case TSP_TYPE_UINT16:
+    fprintf(sfile,fmt_tab[sample.type],sample.uvalue.uint16_value);
+    break;
+    
+  case TSP_TYPE_UINT32:
+    fprintf(sfile,fmt_tab[sample.type],sample.uvalue.uint32_value);
+    break;
+    
+  case TSP_TYPE_UINT64:
+    fprintf(sfile,fmt_tab[sample.type],sample.uvalue.uint64_value);
+    break;
+    
+  case TSP_TYPE_CHAR:
+    fprintf(sfile,fmt_tab[sample.type],sample.uvalue.char_value);
+    break;
+    
+  case TSP_TYPE_UCHAR:
+    fprintf(sfile,fmt_tab[sample.type],sample.uvalue.uchar_value);
+    break;
+    
+  case TSP_TYPE_RAW:
+    fprintf(sfile,fmt_tab[sample.type],sample.uvalue.raw_value);
+    break;
+    
+  default:
+    return -1;
+  }
+
+  return 0;
+}
