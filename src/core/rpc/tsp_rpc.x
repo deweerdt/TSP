@@ -1,6 +1,6 @@
 /* -*- idl -*-
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_rpc.x,v 1.27 2006-04-04 18:10:53 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_rpc.x,v 1.28 2006-04-12 13:05:22 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -273,6 +273,7 @@ struct TSP_answer_feature_t
   int int_value;
   double double_value;
   string string_value<>;
+  TSP_status_t status;		
 };
 
 /**
@@ -423,6 +424,8 @@ struct TSP_answer_extended_information_t {
   unsigned int channel_id;
   /** The Symbols extended informations */
   TSP_sample_symbol_extended_info_list_t extsymbols;
+  /** Status */
+  TSP_status_t status;		
 };
 
 /*
