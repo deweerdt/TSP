@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer_main.c,v 1.11 2006-04-07 10:37:17 morvan Exp $
+$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer_main.c,v 1.12 2006-04-12 13:04:25 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -97,17 +97,15 @@ main (int argc, char* argv[]) {
   FILE*   output_stream   = NULL;
   int32_t output_limit    = 0;
   char*   provider_url    = "rpc://localhost/";
-  int32_t no_duplicate;
+  int32_t no_duplicate    = 0;
 
   /* set up default output file format */
   int header_style  		  = SimpleAsciiTabulated_FileFmt;
 
   /* Main options handling */
   char*         errorString;
-  int           opt_ok;
+  int           opt_ok=1;
   char          c_opt;
-
-  opt_ok            = 1;
     
   if (argc < 2) {
     opt_ok  = 0;
@@ -116,54 +114,68 @@ main (int argc, char* argv[]) {
   }
 
   /* Analyse command line parameters */
-  while (opt_ok && (EOF != (c_opt = getopt(argc,argv,"x:u:o:l:f:hn")))) {    
-    switch (c_opt) {
-    case 'x':
-      input_filename = strdup(optarg);
-      fprintf(stdout,"%s: sample config file is <%s>\n",argv[0],input_filename);
-      break;
-    case 'o':
-      output_filename = strdup(optarg);
-      fprintf(stdout,"%s: output sample file is <%s>\n",argv[0],output_filename);
-      break;
-    case 'f':
-      file_format = strdup(optarg);
-      fprintf(stdout,"%s: provided output file format is <%s>\n",argv[0],file_format);
-      OutputFileFormat_t fmt;
-      for (fmt=SimpleAsciiTabulated_FileFmt;fmt<LAST_FileFmt;++fmt) {
-	if (strcasecmp(file_format,OutputFileFormat_name_tab[fmt])==0) {
-	  header_style=fmt;
-	  break;
+  c_opt = getopt(argc,argv,"x:u:o:l:f:hn");
+
+  if(opt_ok && EOF != c_opt)
+  {
+    opt_ok  = 1;
+    do
+    {    
+      switch (c_opt) {
+      case 'x':
+	input_filename = strdup(optarg);
+	fprintf(stdout,"%s: sample config file is <%s>\n",argv[0],input_filename);
+	break;
+      case 'o':
+	output_filename = strdup(optarg);
+	fprintf(stdout,"%s: output sample file is <%s>\n",argv[0],output_filename);
+	break;
+      case 'f':
+	file_format = strdup(optarg);
+	fprintf(stdout,"%s: provided output file format is <%s>\n",argv[0],file_format);
+	OutputFileFormat_t fmt;
+	for (fmt=SimpleAsciiTabulated_FileFmt;fmt<LAST_FileFmt;++fmt) {
+	  if (strcasecmp(file_format,OutputFileFormat_name_tab[fmt])==0) {
+	    header_style=fmt;
+	    break;
+	  }
 	}
-      }
-      break;  
-    case 'l':
-      errorString = NULL;
-      output_limit = strtol(optarg,&errorString,10);
-      if ('\0' != *errorString) {
-	fprintf(stderr,"%s: incorrect output limit format : <%s> (error begin at <%s>)\n",argv[0],optarg, errorString);
+	break;  
+      case 'l':
+	errorString = NULL;
+	output_limit = strtol(optarg,&errorString,10);
+	if ('\0' != *errorString) {
+	  fprintf(stderr,"%s: incorrect output limit format : <%s> (error begin at <%s>)\n",argv[0],optarg, errorString);
+	  opt_ok = 0;
+	} else {
+	  fprintf(stderr,"%s: TSP sample output file limited to <%d> sample(s).\n",argv[0],output_limit);
+	}
+	break;
+      case 'u':
+	provider_url = strdup(optarg);
+	fprintf(stdout,"%s: TSP provider URL is <%s>\n",argv[0],provider_url);
+	break;
+      case 'n':
+	no_duplicate = 1;
+	fprintf(stdout,"%s: will enforce no duplicate symbol\n",argv[0]);
+	break;
+      case '?':
+	fprintf(stderr,"Invalid command line option(s), correct it and rerun\n");
 	opt_ok = 0;
-      } else {
-	fprintf(stderr,"%s: TSP sample output file limited to <%d> sample(s).\n",argv[0],output_limit);
-      }
-      break;
-    case 'u':
-      provider_url = strdup(optarg);
-      fprintf(stdout,"%s: TSP provider URL is <%s>\n",argv[0],provider_url);
-      break;
-    case 'n':
-      no_duplicate = 1;
-      fprintf(stdout,"%s: will enforce no duplicate symbol\n",argv[0]);
-      break;
-    case '?':
-      fprintf(stderr,"Invalid command line option(s), correct it and rerun\n");
-      opt_ok = 0;
-      break;
-    default:
-      opt_ok = 0;
-      break;
-    } /* end of switch */    
+	break;
+      default:
+	opt_ok = 0;
+	break;
+      } /* end of switch */  
+      c_opt = getopt(argc,argv,"x:u:o:l:f:hn");  
+    }
+    while (opt_ok && (EOF != c_opt));
   }
+  else
+  {
+    opt_ok = 0;
+  }
+
 
   if (!opt_ok) {
     printf("Usage: %s [-n] -x=<sample_config_file> [-o=<output_filename>] [-f=<output file format] [-l=<nb sample>] [-u=<TSP_URL>]\n", argv[0]);
@@ -195,12 +207,12 @@ main (int argc, char* argv[]) {
   retcode = tsp_ascii_writer_load_config(input_filename,&mysymbols,&nb_symbols);
 
   if (0!=retcode) {
-    fprintf(stderr,"<%s>: Invalid configuration file (%d parse error(s)).",
+    fprintf(stderr,"<%s>: Invalid configuration file (%d parse error(s)).\n",
 	    input_filename, tsp_ascii_writer_parse_error);
     tsp_ascii_writer_stop();
   }
 
-  if (no_duplicate) {
+  if (0==retcode && no_duplicate) {
     retcode = tsp_ascii_writer_make_unique(&mysymbols,&nb_symbols);
 
     if (0!=retcode) {
