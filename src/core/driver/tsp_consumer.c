@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.45 2006-04-07 10:37:17 morvan Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.46 2006-04-12 06:53:20 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -935,8 +935,7 @@ const TSP_answer_sample_t*  TSP_consumer_get_information(TSP_provider_t provider
 static int TSP_consumer_store_requested_symbols(TSP_sample_symbol_info_list_t* stored_sym,
 						TSP_sample_symbol_info_list_t* new_sym)
 {
-
-  int i;
+  int32_t i;
   if(stored_sym->TSP_sample_symbol_info_list_t_val)
     {
       for (i = 0 ;  i < stored_sym->TSP_sample_symbol_info_list_t_len ; i++)
@@ -951,17 +950,11 @@ static int TSP_consumer_store_requested_symbols(TSP_sample_symbol_info_list_t* s
     (TSP_sample_symbol_info_t* )calloc(stored_sym->TSP_sample_symbol_info_list_t_len,
 					      sizeof(TSP_sample_symbol_info_t));
   TSP_CHECK_ALLOC(stored_sym->TSP_sample_symbol_info_list_t_val, FALSE);
+
+
+  TSP_common_SSIList_copy(stored_sym,*new_sym);
+
 		
-  /* For each requested symbol, we store it */
-  for(i = 0 ; i< stored_sym->TSP_sample_symbol_info_list_t_len ; i++)
-    {		
-      /* FIXME : ajouter les autres valeurs */
-      stored_sym->TSP_sample_symbol_info_list_t_val[i].name = strdup(new_sym->TSP_sample_symbol_info_list_t_val[i].name);
-      TSP_CHECK_ALLOC(stored_sym->TSP_sample_symbol_info_list_t_val[i].name, FALSE);
-      stored_sym->TSP_sample_symbol_info_list_t_val[i].provider_global_index = new_sym->TSP_sample_symbol_info_list_t_val[i].provider_global_index;
-      stored_sym->TSP_sample_symbol_info_list_t_val[i].phase = new_sym->TSP_sample_symbol_info_list_t_val[i].phase;
-      stored_sym->TSP_sample_symbol_info_list_t_val[i].period = new_sym->TSP_sample_symbol_info_list_t_val[i].period;
-    }
   return TRUE;
 }
 
@@ -987,19 +980,6 @@ int TSP_consumer_request_sample(TSP_provider_t provider, TSP_sample_symbol_info_
     (TSP_sample_symbol_info_t*)calloc(symbols->TSP_sample_symbol_info_list_t_len, sizeof(TSP_sample_symbol_info_t));
   TSP_CHECK_ALLOC(req_sample.symbols.TSP_sample_symbol_info_list_t_val, FALSE);
 
- /* for(i = 0 ; i <  symbols->TSP_sample_symbol_info_list_t_len ; i++)
-    {
-
-      req_sample.symbols.TSP_sample_symbol_info_list_t_val[i].provider_global_index = -1;
-      req_sample.symbols.TSP_sample_symbol_info_list_t_val[i].period = symbols->TSP_sample_symbol_info_list_t_val[i].period;
-      req_sample.symbols.TSP_sample_symbol_info_list_t_val[i].phase  = symbols->TSP_sample_symbol_info_list_t_val[i].phase;
-      req_sample.symbols.TSP_sample_symbol_info_list_t_val[i].name   = symbols->TSP_sample_symbol_info_list_t_val[i].name;
-      req_sample.symbols.TSP_sample_symbol_info_list_t_val[i].dimension   = symbols->TSP_sample_symbol_info_list_t_val[i].dimension;
-      req_sample.symbols.TSP_sample_symbol_info_list_t_val[i].type   = symbols->TSP_sample_symbol_info_list_t_val[i].type;
-      req_sample.symbols.TSP_sample_symbol_info_list_t_val[i].offset   = symbols->TSP_sample_symbol_info_list_t_val[i].offset;
-      req_sample.symbols.TSP_sample_symbol_info_list_t_val[i].nelem   = symbols->TSP_sample_symbol_info_list_t_val[i].nelem;
-    }*/
-
    TSP_common_SSIList_copy(&(req_sample.symbols), *symbols);
 	
   /* Get the computed ans_sample from the provider */
@@ -1009,20 +989,6 @@ int TSP_consumer_request_sample(TSP_provider_t provider, TSP_sample_symbol_info_
    * now update provider global index in the requested symbols
    * in case unknown symbols was found on provider side
    */
-/*  for(i = 0 ; i <  symbols->TSP_sample_symbol_info_list_t_len ; i++)
-    {
-      symbols->TSP_sample_symbol_info_list_t_val[i].provider_global_index = ans_sample->symbols.TSP_sample_symbol_info_list_t_val[i].provider_global_index;
-
-      symbols->TSP_sample_symbol_info_list_t_val[i].period = ans_sample->symbols.TSP_sample_symbol_info_list_t_val[i].period;
-      symbols->TSP_sample_symbol_info_list_t_val[i].phase  =  ans_sample->symbols.TSP_sample_symbol_info_list_t_val[i].phase;
-      symbols->TSP_sample_symbol_info_list_t_val[i].name   =  ans_sample->symbols.TSP_sample_symbol_info_list_t_val[i].name;
-      symbols->TSP_sample_symbol_info_list_t_val[i].dimension   =  ans_sample->symbols.TSP_sample_symbol_info_list_t_val[i].dimension;
-      symbols->TSP_sample_symbol_info_list_t_val[i].type   = ans_sample->symbols.TSP_sample_symbol_info_list_t_val[i].type;
-      symbols->TSP_sample_symbol_info_list_t_val[i].offset   =  ans_sample->symbols.TSP_sample_symbol_info_list_t_val[i].offset;
-      symbols->TSP_sample_symbol_info_list_t_val[i].nelem   =  ans_sample->symbols.TSP_sample_symbol_info_list_t_val[i].nelem;
-
-    }*/
-
   TSP_common_SSIList_copy(symbols, ans_sample->symbols);
 		       
 

@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_consumer.h,v 1.27 2006-04-07 10:37:17 morvan Exp $
+$Id: tsp_consumer.h,v 1.28 2006-04-12 06:53:20 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -89,6 +89,7 @@ struct TSP_sample_t
     uint64_t      uint64_value;
     char          char_value;
     unsigned char uchar_value;
+    int8_t        raw_value;
   } uvalue;
 
 };
