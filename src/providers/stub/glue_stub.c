@@ -1,6 +1,6 @@
 /*
 
-$Id: glue_stub.c,v 1.16 2006-04-07 10:37:17 morvan Exp $
+$Id: glue_stub.c,v 1.17 2006-04-12 06:51:16 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -50,7 +50,7 @@ Purpose   : Implementation for the glue_server, for stub test
 #define TSP_STUB_FREQ 100.0 /*Hz*/
 #define TSP_USLEEP_PERIOD_US (1000000/TSP_STUB_FREQ) /*given in µS, value 10ms*/
 #define GLU_MAX_SYMBOLS_DOUBLE 1000
-#define GLU_MAX_SYMBOLS_NOT_DOUBLE 11
+#define GLU_MAX_SYMBOLS_NOT_DOUBLE 12
 
 /* Nasty static variables */
 static TSP_sample_symbol_info_t *X_sample_symbol_info_list_val;
@@ -175,6 +175,12 @@ void* STUB_GLU_thread(void* athis)
 		*((unsigned char*)item.raw_value) = 'B'; /* (unsigned char)calc_func_char(index, my_time);*/
 		  break;
 	
+	      case TSP_TYPE_RAW:
+		if (index!=0)
+		  *((uint8_t*)item.raw_value) = 10; /* (uint8_t)calc_func(index, my_time);*/
+		else
+		  *((uint8_t*)item.raw_value) = (uint8_t)(my_time) / (uint8_t)(TSP_STUB_FREQ);
+		break;
 	
 	 
 	      }
@@ -423,6 +429,21 @@ int STUB_GLU_init(GLU_handle_t* this, int fallback_argc, char* fallback_argv[])
 
       ++i;
 
+      /*TAB INT8*/
+      sprintf(symbol_buf, "TAB_INT8_Symbol%d",i);
+      X_sample_symbol_info_list_val[i].name = strdup(symbol_buf);
+      X_sample_symbol_info_list_val[i].provider_global_index = i;
+      X_sample_symbol_info_list_val[i].period = 1;
+      X_sample_symbol_info_list_val[i].type =  TSP_TYPE_INT8;
+      X_sample_symbol_info_list_val[i].dimension = 10;
+
+      size=X_sample_symbol_info_list_val[i].dimension * tsp_type_size[X_sample_symbol_info_list_val[i].type];
+      if(taille_max_symbol< size)
+      {
+	taille_max_symbol= size;
+      }
+
+      ++i;
   }
 
   
