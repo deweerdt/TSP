@@ -1,6 +1,6 @@
 /* -*- idl -*-
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_rpc.x,v 1.28 2006-04-12 13:05:22 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_rpc.x,v 1.29 2006-04-12 15:06:37 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -126,7 +126,11 @@ enum TSP_status_t
 	/**
          * Asynchronous write is not supported.
          */
- 	TSP_STATUS_ERROR_ASYNC_WRITE_NOT_SUPPORTED       	
+ 	TSP_STATUS_ERROR_ASYNC_WRITE_NOT_SUPPORTED,     	
+	/**
+	 * Memory Allocation error
+	 */
+	TSP_STATUS_ERROR_MEMORY_ALLOCATION
 };
 
 /** TSP Symbols basic types */
