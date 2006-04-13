@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_glu.h,v 1.10 2006-04-05 08:10:31 erk Exp $
+$Id: tsp_glu.h,v 1.11 2006-04-13 20:38:25 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -297,7 +297,7 @@ typedef int32_t                (* GLU_get_ssi_list_fromPGI_ft)(struct GLU_handle
  * @param[in,out] on entry the preallocated SSEI list, on return the updated SSEI list
  * @return TRUE of FALSE. TRUE = OK;
  */
-typedef int32_t                (* GLU_get_ssei_list_fromPGI_ft)(struct GLU_handle_t* this, int* pgis, int32_t pgis_len, TSP_sample_symbol_extended_info_t* SSEI_list);
+typedef int32_t                (* GLU_get_ssei_list_fromPGI_ft)(struct GLU_handle_t* this, int* pgis, int32_t pgis_len, TSP_sample_symbol_extended_info_list_t* SSEI_list);
 
 /**
  * Get the number of symbols managed by the GLU.
