@@ -3,10 +3,13 @@ include $(DEVBASE)/make/Makeparams
 # ---------------------
 # Vars to build project
 # ---------------------
-XSCRIPT = tsp_request_async_sample_read \
+XSCRIPT = tsp_request_open \
+	  tsp_request_close \
+	tsp_request_async_sample_read \
 	 tsp_request_async_sample_write \
 	 tsp_request_information \
-	 tsp_request_filtered_information
+	 tsp_request_filtered_information \
+	 tsp_request_extended_information
 SOURCES = \
 	generic_consumer.c \
 	generic_consumer_main.c

@@ -1,6 +1,6 @@
 /*
 
-$Id: generic_consumer.c,v 1.10 2006-04-12 13:06:10 erk Exp $
+$Id: generic_consumer.c,v 1.11 2006-04-13 22:28:25 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -185,7 +185,18 @@ generic_consumer(generic_consumer_request_t* req) {
       }
       return -1;
     } else {
-      TSP_consumer_request_open(req->the_provider, 0, 0);
+      if (TSP_consumer_request_open(req->the_provider, 0, 0)) {
+	fprintf(req->stream,
+		"Request Open successfully sent to : <%s>\n",
+		TSP_consumer_get_connected_name(req->the_provider));
+	fprintf(req->stream,
+		"Obtained channel Id : <%d>\n",
+		TSP_consumer_get_channel_id(req->the_provider));
+      } else {
+	generic_consumer_logMsg(req->stream,
+				"Request Open FAILED.\n");
+	return -1;
+      }
     }
   }
 
@@ -228,9 +239,18 @@ generic_consumer(generic_consumer_request_t* req) {
     break;
   }
   
-  /* be nice close the session */
+  /* Be nice close the session */
   if (NULL != req->the_provider) {
-    TSP_consumer_request_close(req->the_provider);
+    
+    if (TSP_consumer_request_close(req->the_provider)) {
+      fprintf(req->stream,
+	      "Request Close successfully sent to :%s\n",
+	      TSP_consumer_get_connected_name(req->the_provider));
+    } else {
+      generic_consumer_logMsg(req->stream,
+			      "Request Close FAILED.\n");
+      return -1;
+    }
   }
   
   return retval;
@@ -281,13 +301,17 @@ generic_consumer_usage(generic_consumer_request_t* req) {
 	    tsp_reqname_tab[req->request.req_type]);    	    
     break;    
   case E_TSP_REQUEST_ASYNC_SAMPLE_READ:
-    fprintf(req->stream,"Usage : %s <symbol_name>\n",
+    fprintf(req->stream,"Usage : %s <symbol_pgi>\n",
 	    tsp_reqname_tab[req->request.req_type]);    	    
     break;
   case E_TSP_REQUEST_ASYNC_SAMPLE_WRITE:
-    fprintf(req->stream,"Usage : %s <symbol_name>\n",
+    fprintf(req->stream,"Usage : %s <symbol_pgi>\n",
 	    tsp_reqname_tab[req->request.req_type]);    	    
     break; 
+  case E_TSP_REQUEST_EXTENDED_INFORMATION:
+    fprintf(req->stream,"Usage : %s <symbol_pgi>\n",
+	    tsp_reqname_tab[req->request.req_type]);    	    
+    break;
   default:
     fprintf(req->stream, 
 	    "default: should never be reached?\n");
@@ -316,15 +340,17 @@ generic_consumer_unimplemented_cmd(generic_consumer_request_t* req) {
 
 int32_t 
 generic_consumer_open(generic_consumer_request_t* req) {
-  int32_t retval  = -1;
-  retval = generic_consumer_unimplemented_cmd(req);
+  int32_t retval  = 0;
+  fprintf(req->stream,"Nothing more to do for <%s>...\n",
+	  tsp_reqname_tab[req->request.req_type]);
   return retval;  
 }
 
 int32_t 
 generic_consumer_close(generic_consumer_request_t* req) {
-  int32_t retval  = -1;
-  retval = generic_consumer_unimplemented_cmd(req);
+  int32_t retval  = 0;
+  fprintf(req->stream,"Nothing more to do for <%s>...\n",
+	  tsp_reqname_tab[req->request.req_type]);
   return retval;  
 }
 
@@ -345,7 +371,25 @@ void generic_consumer_printinfo(generic_consumer_request_t* req) {
 	    pinfo->symbols.TSP_sample_symbol_info_list_t_val[i].dimension);
   }
   fprintf(req->stream,"Provider <symbols list end>.\n");
-}
+} /* end of generic_consumer_printinfo */
+
+void generic_consumer_printextendedinfo(generic_consumer_request_t* req) {
+  const TSP_sample_symbol_extended_info_list_t* pexinfo;
+  int32_t i,j;
+  pexinfo = TSP_consumer_get_extended_information(req->the_provider);
+  fprintf(req->stream,"Extented info list <begins>\n");
+  for (j=0;j<pexinfo->TSP_sample_symbol_extended_info_list_t_len;++j) {
+    fprintf(req->stream,"    Extended info for PGI <%d> <begins>\n",pexinfo->TSP_sample_symbol_extended_info_list_t_val[i].provider_global_index);
+    for (i=0;i<pexinfo->TSP_sample_symbol_extended_info_list_t_val[i].info.TSP_extended_info_list_t_len;i++) {
+
+      fprintf(req->stream,"    key=%s, value=%s\n",
+	      pexinfo->TSP_sample_symbol_extended_info_list_t_val[i].info.TSP_extended_info_list_t_val[j].key,
+	      pexinfo->TSP_sample_symbol_extended_info_list_t_val[i].info.TSP_extended_info_list_t_val[j].value);
+    }
+    fprintf(req->stream,"    Extended info for PGI <%d> <ends>\n",pexinfo->TSP_sample_symbol_extended_info_list_t_val[i].provider_global_index);
+  }
+  fprintf(req->stream,"Provider <symbols list end>.\n");
+} /* end of generic_consumer_printextendedinfo */
 
 int32_t 
 generic_consumer_information(generic_consumer_request_t* req) {
@@ -477,13 +521,13 @@ generic_consumer_async_write(generic_consumer_request_t* req) {
 int32_t 
 generic_consumer_extended_information(generic_consumer_request_t* req) {
   int32_t  retval   = -1;
-  int32_t* pgis    = NULL; 
+  int32_t* pgis     = NULL; 
   int32_t  pgis_len = 1;
   
-  if (req->argc<1) {
+  if (req->argc<2) {
     generic_consumer_logMsg(req->stream,"%s: <%d> argument(s) missing\n",
 		   tsp_reqname_tab[E_TSP_REQUEST_EXTENDED_INFORMATION],
-		   1-req->argc);
+		   2-req->argc);
     generic_consumer_usage(req);
     retval = -1;
     return retval;
@@ -492,12 +536,14 @@ generic_consumer_extended_information(generic_consumer_request_t* req) {
   /* FIXME handle multiple PGIS */
   pgis_len = 1;
   pgis = (int32_t*)malloc(pgis_len*sizeof(int32_t));
+  assert(pgis);
+  pgis[0] = atoi(req->argv[1]);
 
   if (TSP_STATUS_OK!=TSP_consumer_request_extended_information(req->the_provider,pgis,pgis_len)) {
     generic_consumer_logMsg(req->stream,"%s: TSP request failed\n",
 			    tsp_reqname_tab[E_TSP_REQUEST_EXTENDED_INFORMATION]);
   } else {    
-    generic_consumer_printinfo(req);
+    generic_consumer_printextendedinfo(req);
     retval = 0;
   }
   return retval;  

@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/consumers/generic/generic_consumer.h,v 1.5 2006-02-26 13:36:05 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/consumers/generic/generic_consumer.h,v 1.6 2006-04-13 22:28:25 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -154,6 +154,10 @@ generic_consumer_async_read(generic_consumer_request_t* req);
  */
 int32_t 
 generic_consumer_async_write(generic_consumer_request_t* req);
+
+
+int32_t 
+generic_consumer_extended_information(generic_consumer_request_t* req);
 
 /**
  * @}

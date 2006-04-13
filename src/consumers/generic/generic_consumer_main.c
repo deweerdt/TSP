@@ -1,6 +1,6 @@
 /*
 
-$Id: generic_consumer_main.c,v 1.7 2006-03-23 22:37:13 erk Exp $
+$Id: generic_consumer_main.c,v 1.8 2006-04-13 22:28:25 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -70,6 +70,7 @@ Purpose   : Generic tsp consumer
  *   <li>   tsp_request_close </li>
  *   <li>   tsp_request_information </li>
  *   <li>   tsp_request_filtered_information </li>
+ *   <li>   tsp_request_extended_information </li>
  *   <li>   tsp_request_feature </li>
  *   <li>   tsp_request_sample </li>
  *   <li>   tsp_request_sample_init </li>
@@ -168,4 +169,4 @@ main(int argc, char *argv[]){
   retcode = generic_consumer(&req);
 
   return (retcode);
-}
+}  /* end of main */
