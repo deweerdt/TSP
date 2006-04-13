@@ -1,12 +1,12 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer.c,v 1.17 2006-04-12 06:58:15 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer.c,v 1.18 2006-04-13 21:22:46 erk Exp $
 
 -----------------------------------------------------------------------
 
 TSP Library - core components for a generic Transport Sampling Protocol.
 
-Copyright (c) 2002 Yves DUFRENNE, Stephane GALLES, Eric NOULARD and Robert PAGNOT 
+Copyright (c) 2002 Yves DUFRENNE, Stephane GALLES, Eric NOULARD,Robert PAGNOT and Arnaud MORVAN
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -79,6 +79,25 @@ const static char* fmt_tab[] = { 0,
 			      0
 				
 };
+const static char* libelle_type_tab[] = { "unknown",
+			      "double",
+			      "float",
+			      "entier",
+			      "entier",
+			      "entier",
+			      "entier",
+			      "entier",
+			      "entier",
+			      "entier",
+			      "entier",
+			      "character",
+			      "character",
+			      "type_raw",
+			      0
+				
+};
+
+
 
 int tsp_ascii_writer_parse_error    =  0;
 int tsp_ascii_writer_lineno         =  0;
@@ -216,7 +235,6 @@ tsp_ascii_writer_validate_symbol_info(char* symbol_name,
     STRACE_DEBUG(("symbol=[%s], previous_symbol_found =[%s]",symbol_name,previous_symbol_found));
     previous_symbol_found_dim=retval;
   }
-  
   
   return retval;
 } /* end of tsp_ascii_writer_validatesymbol_info */
@@ -376,36 +394,49 @@ tsp_ascii_writer_new_validate_symbols(TSP_sample_symbol_info_t*  tsp_symbols,
   }
 
   /* first build a request_sample with provided symbols */
+
   current_requested_symbols_list.TSP_sample_symbol_info_list_t_val = (TSP_sample_symbol_info_t*)calloc(nb_symbols, sizeof(TSP_sample_symbol_info_t));
   current_requested_symbols_list.TSP_sample_symbol_info_list_t_len = nb_symbols;
+
   memcpy(current_requested_symbols_list.TSP_sample_symbol_info_list_t_val,tsp_symbols,nb_symbols*sizeof(TSP_sample_symbol_info_t));
+
   STRACE_INFO(("Initial number of asked symbol = %d",nb_symbols));
   /* send the initial request_sample for obtaining provider-side validation */  
-  if (!TSP_consumer_request_sample(myproviders[0],&current_requested_symbols_list)) {
+  if (!TSP_consumer_request_sample(myproviders[0],&current_requested_symbols_list))
+  {
     /* now build request filtered info to handle invalid symbols */
     nb_scalar_symbol = 0;
     forced_period    = -1;
-    for (i=0;i<current_requested_symbols_list.TSP_sample_symbol_info_list_t_len;++i) {
+
+    for (i=0;i<current_requested_symbols_list.TSP_sample_symbol_info_list_t_len;++i)
+    {
       STRACE_INFO(("Examining symbol <%s> of pgi <%d>",current_requested_symbols_list.TSP_sample_symbol_info_list_t_val[i].name,current_requested_symbols_list.TSP_sample_symbol_info_list_t_val[i].provider_global_index));
-      if (current_requested_symbols_list.TSP_sample_symbol_info_list_t_val[i].provider_global_index == -1) {
+
+      if (current_requested_symbols_list.TSP_sample_symbol_info_list_t_val[i].provider_global_index == -1) 
+      {
 	my_logMsg("Checking for symbol like <%s> on provider side.\n",current_requested_symbols_list.TSP_sample_symbol_info_list_t_val[i].name);
+
 	/* Ask for filtered information using the name of the currently invalid symbol */
 	TSP_consumer_request_filtered_information(myproviders[0],TSP_FILTER_SIMPLE,current_requested_symbols_list.TSP_sample_symbol_info_list_t_val[i].name);
 	current_tsp_info = TSP_consumer_get_information(myproviders[0]);
 	symbol_dim = tsp_ascii_writer_validate_symbol_info(current_requested_symbols_list.TSP_sample_symbol_info_list_t_val[i].name,&(current_tsp_info->symbols));
-	if (0==symbol_dim) {
+	if (0==symbol_dim)
+	{
 	  my_logMsg("Symbol <%s> not found on provider side.\n",tsp_symbols[i].name);
 	  /* hack for ignoring unfound symbols */
 	  tsp_symbols[i].phase  = -1;   
 	  continue;
-	} else { /* symbol found */
+	}
+	else
+	{ /* symbol found */
 	  my_logMsg("Asking for array symbol <%s> with period <%d>\n",
 		  tsp_symbols[i].name,
 		  tsp_symbols[i].period);
 	}
       } 
       /* else symbol is ok and scalar */
-      else {
+      else
+      {
 	symbol_dim = 1;
 	my_logMsg("Asking for symbol <%s> with period <%d>\n",
 		tsp_symbols[i].name,
@@ -415,15 +446,20 @@ tsp_ascii_writer_new_validate_symbols(TSP_sample_symbol_info_t*  tsp_symbols,
        * FIXME force period to be the same 
        * as the first valid symbol
        */
-      if (-1 == forced_period) {
+      if (-1 == forced_period) 
+      {
 	forced_period = tsp_symbols[i].period;
-      } else {
-	if (tsp_symbols[i].period != forced_period) {
+      }
+      else
+      {
+	if (tsp_symbols[i].period != forced_period) 
+	{
 	  tsp_symbols[i].period = forced_period;
 	  my_logMsg(" ---> [period forced to <%d>]\n",tsp_symbols[i].period);
 	}
       }
-      if (symbol_dim>1) {
+      if (symbol_dim>1) 
+      {
 	my_logMsg(" ---> [array of size <%d>]\n",symbol_dim);
       }
       /* 
@@ -434,15 +470,22 @@ tsp_ascii_writer_new_validate_symbols(TSP_sample_symbol_info_t*  tsp_symbols,
       tsp_symbols[i].phase  = symbol_dim;
       nb_scalar_symbol     += symbol_dim;
     } /* end for loop */
-  } else { /* initial request_sample is ok */
+  } 
+  else 
+  { 
+    /* initial request_sample is ok */
     nb_scalar_symbol = current_requested_symbols_list.TSP_sample_symbol_info_list_t_len;
+
     /* now force period to first one */
     forced_period = tsp_symbols[0].period;
-    for (i=0;i<nb_scalar_symbol;++i) {
+
+    for (i=0;i<nb_scalar_symbol;++i) 
+    {
       my_logMsg("Asking for symbol <%s> with period <%d>\n",
 	      tsp_symbols[i].name,
 	      tsp_symbols[i].period);
-      if (tsp_symbols[i].period != forced_period) {
+      if (tsp_symbols[i].period != forced_period) 
+      {
 	tsp_symbols[i].period = forced_period;
 	my_logMsg(" ---> [period forced to <%d>]\n",tsp_symbols[i].period);
       }
@@ -450,16 +493,22 @@ tsp_ascii_writer_new_validate_symbols(TSP_sample_symbol_info_t*  tsp_symbols,
   }
       
   /* Now build final request sample */
-  if (0==retcode) {
+  if (0==retcode) 
+  {
     tsp_symbol_list->TSP_sample_symbol_info_list_t_val = (TSP_sample_symbol_info_t*)calloc(nb_scalar_symbol, sizeof(TSP_sample_symbol_info_t));
     tsp_symbol_list->TSP_sample_symbol_info_list_t_len = nb_scalar_symbol;
+
     var_index = 0;
-    for (i=0;i<nb_symbols; ++i) {
+
+    for (i=0;i<nb_symbols; ++i) 
+    {
       /* 
        * Generate symbol name for array var specified without index.
        */
-      if (tsp_symbols[i].phase > 1) {
-	for (j=0;j<tsp_symbols[i].phase;++j) {	    
+      if (tsp_symbols[i].phase > 1) 
+      {
+	for (j=0;j<tsp_symbols[i].phase;++j) 
+	{	    
 	  tsp_symbol_list->TSP_sample_symbol_info_list_t_val[var_index].name = malloc(MAX_VAR_NAME_SIZE*sizeof(char));
 	  snprintf(tsp_symbol_list->TSP_sample_symbol_info_list_t_val[var_index].name,
 		   MAX_VAR_NAME_SIZE,		     
@@ -471,9 +520,12 @@ tsp_ascii_writer_new_validate_symbols(TSP_sample_symbol_info_t*  tsp_symbols,
 	  tsp_symbol_list->TSP_sample_symbol_info_list_t_val[var_index].phase  = 0;
 	  ++var_index;
 	} /* loop over array var index */
-      } else {
+      } 
+      else 
+      {
 	/* ignore symbols with negative phase */
-	if (tsp_symbols[i].phase >= 0) {
+	if (tsp_symbols[i].phase >= 0) 
+	{
 	  tsp_symbol_list->TSP_sample_symbol_info_list_t_val[var_index].name   = strdup(tsp_symbols[i].name);
 	  STRACE_DEBUG(("Asking for TSP var = <%s>",tsp_symbol_list->TSP_sample_symbol_info_list_t_val[var_index].name));
 	  tsp_symbol_list->TSP_sample_symbol_info_list_t_val[var_index].period = tsp_symbols[i].period;
@@ -492,7 +544,27 @@ tsp_ascii_writer_new_validate_symbols(TSP_sample_symbol_info_t*  tsp_symbols,
       retcode = -1;
     }
   }
-  
+
+
+  /* Now send request sample for retrieve extended information */
+  if (0==retcode) {
+    int32_t * pgis;
+    
+    pgis=malloc(sizeof(int32_t) * tsp_symbol_list->TSP_sample_symbol_info_list_t_len);
+    for(i=0;i<tsp_symbol_list->TSP_sample_symbol_info_list_t_len;++i)
+    {
+      pgis[i]=tsp_symbol_list->TSP_sample_symbol_info_list_t_val[i]. provider_global_index;
+    }
+
+    if (!TSP_consumer_request_extended_information(myproviders[0], pgis, tsp_symbol_list->TSP_sample_symbol_info_list_t_len))
+    {
+      TSP_consumer_print_invalid_symbols(stderr,&tsp_symbol_list,tsp_provider_url);
+      STRACE_ERROR(("TSP request extended information refused by the provider?huh?..."));
+      free(pgis);
+      retcode = -1;
+    }
+    free(pgis);
+  }
   return retcode;
   
 }
@@ -519,6 +591,11 @@ tsp_ascii_writer_start(FILE* sfile, int32_t nb_sample_max_infile, OutputFileForm
   int             symbol_index;
   TSP_sample_t    sample;
   const TSP_sample_symbol_info_list_t*  symbols;
+
+  const TSP_sample_symbol_extended_info_list_t* extended_symbols;
+  const TSP_extended_info_t* ext_info_profil;
+  const TSP_extended_info_t* ext_info_unit;
+
   int             complete_line;
   char            charbuf[MAX_VAR_NAME_SIZE];
   int             symbol_dim;
@@ -540,6 +617,8 @@ tsp_ascii_writer_start(FILE* sfile, int32_t nb_sample_max_infile, OutputFileForm
 
   /* Get previously configured symbols */
   symbols = TSP_consumer_get_requested_sample(myproviders[0]);
+
+  extended_symbols=TSP_consumer_get_extended_information(myproviders[0]);
 
   tsp_ascii_writer_header_style=file_format;
 
@@ -574,14 +653,33 @@ tsp_ascii_writer_start(FILE* sfile, int32_t nb_sample_max_infile, OutputFileForm
     
   case MACSIM_FileFmt:
     
-    /* tableau contenant l'entete des colonnes
+    /* array with the column title
      */
     tab_colonne=(char**)malloc(symbols->TSP_sample_symbol_info_list_t_len * sizeof(char*));
     
     for (symbol_index=0;symbol_index<symbols->TSP_sample_symbol_info_list_t_len;++symbol_index) 
       {
+
+	/* retrieve the extended information*/
+        ext_info_unit=NULL;
+        ext_info_profil=NULL;
+
+	ext_info_unit=TSP_EIList_findEIByKey(&(extended_symbols->TSP_sample_symbol_extended_info_list_t_val[symbol_index].info),
+			       "unit");
+
+	ext_info_profil=TSP_EIList_findEIByKey(&(extended_symbols->TSP_sample_symbol_extended_info_list_t_val[symbol_index].info),
+			       "profil");
+
+	/* for MACSIM file, we must have a profil data*/
+	if(NULL==ext_info_profil)
+        {
+	  STRACE_ERROR(("Error extended info: NO PROFIL for MACSIM file..."));
+	  retcode = -1;
+	}
+ 
+
 	/* 
-	 * Si la variable est un tableau on compte calcul
+	 * if the variable is an array, we calculate his size
 	 * la taille de ce tableau
 	 */
 	strncpy(charbuf,symbols->TSP_sample_symbol_info_list_t_val[symbol_index].name,MAX_VAR_NAME_SIZE);
@@ -591,7 +689,7 @@ tsp_ascii_writer_start(FILE* sfile, int32_t nb_sample_max_infile, OutputFileForm
 	    symbol_dim   = tsp_ascii_writer_validate_symbol_requested(charbuf,symbols);
 	    
 	    /*
-	     * ecriture des entetes de colonnes a n dimension dans le tableau
+	     *  write variable name with n dimension in this array
 	     */
 	    for(indice=0;indice<symbol_dim;++indice) {
 	      
@@ -610,18 +708,24 @@ tsp_ascii_writer_start(FILE* sfile, int32_t nb_sample_max_infile, OutputFileForm
 	    symbol_dim = 1;
 	    
 	    /*
-	     * ecriture des entetes des variables à 1 dimension dans le tableau
+	     * write variable name with 1 dimension in this array
 	     */
 	    *(tab_colonne + symbol_index)=(char*)malloc(strlen(charbuf)+1);
 	    strcpy(*(tab_colonne + symbol_index),charbuf);
 	    
 	  }
-	fprintf(sfile,"%s : %d : double : s\n", charbuf, symbol_dim);
+
+
+	fprintf(sfile,"%s : %s : %s : %s s\n", 
+		charbuf, 
+		ext_info_profil->value,
+		libelle_type_tab[symbols->TSP_sample_symbol_info_list_t_val[symbol_index].type],
+		(NULL==ext_info_unit)?" ":ext_info_unit->value);
 	
-      }
+      } /*end for*/
     fprintf(sfile," ==========================================\n");   
     /*
-     * ecriture dans le fichier des entetes de colonnes
+     * write the column title
      */
     for (symbol_index=0;symbol_index<symbols->TSP_sample_symbol_info_list_t_len;++symbol_index) {
       fprintf(sfile,"%s	", *(tab_colonne + symbol_index));

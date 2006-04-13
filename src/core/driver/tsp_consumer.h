@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_consumer.h,v 1.29 2006-04-12 13:06:10 erk Exp $
+$Id: tsp_consumer.h,v 1.30 2006-04-13 21:22:46 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -277,9 +277,29 @@ int TSP_consumer_request_information(TSP_provider_t provider);
  */				  
 int TSP_consumer_request_filtered_information(TSP_provider_t provider, int filter_kind, char* filter_string);
 
-
+/** 
+ * Request provider extended information.
+ * Ask the provider informations about several parameters, including
+ * the available symbol list that can be asked.
+ * This function should be called multiple times only to refresh
+ * the structure returned by the TSP_consumer_get_extended_information function.
+ * @param provider The provider handle
+ * @param filter_kind the kind of filter
+ * @param filter_string the filter string
+ * @return TRUE or FALSE. TRUE = OK.
+ */
 int32_t 
 TSP_consumer_request_extended_information(TSP_provider_t provider, int32_t* pgis, int32_t pgis_len);
+
+/** 
+ * Retrieve the provider extended information list.
+ * Get the provider information asked by TSP_consumer_request_information
+ * This function may be called multiple times per session
+ * @param provider The provider handle
+ * @return the provider extended information structure
+ */
+const TSP_sample_symbol_extended_info_list_t*  
+TSP_consumer_get_extended_information(TSP_provider_t provider);
 
 /** 
  * Retrieve the provider list.

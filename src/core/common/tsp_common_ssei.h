@@ -1,12 +1,12 @@
 /*
 
-$Id: tsp_common_ssei.h,v 1.3 2006-04-12 19:19:51 erk Exp $
+$Id: tsp_common_ssei.h,v 1.4 2006-04-13 21:22:46 erk Exp $
 
 -----------------------------------------------------------------------
 
 TSP Library - core components for a generic Transport Sampling Protocol.
 
-Copyright (c) 2002 Yves DUFRENNE, Stephane GALLES, Eric NOULARD and Robert PAGNOT 
+Copyright (c) 2002 Yves DUFRENNE, Stephane GALLES, Eric NOULARD ,Robert PAGNOT and Arnaud MORVAN
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public

@@ -1,12 +1,12 @@
 /*
 
-$Id: tsp_default_glu.h,v 1.6 2006-04-12 06:56:03 erk Exp $
+$Id: tsp_default_glu.h,v 1.7 2006-04-13 21:22:46 erk Exp $
 
 -----------------------------------------------------------------------
 
 TSP Library - core components for a generic Transport Sampling Protocol.
 
-Copyright (c) 2002 Yves DUFRENNE, Stephane GALLES, Eric NOULARD and Robert PAGNOT 
+Copyright (c) 2002 Yves DUFRENNE, Stephane GALLES, Eric NOULARD,Robert PAGNOT and Arnaud MORVAN
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -143,7 +143,7 @@ GLU_get_ssi_list_fromPGI_default(struct GLU_handle_t* this,
 int32_t
 GLU_get_ssei_list_fromPGI_default(struct GLU_handle_t* this, 
 				  int* pgis, int pgis_len, 
-				  TSP_sample_symbol_extended_info_t* SSEI_list);
+  				  TSP_sample_symbol_extended_info_list_t* SSEI_list);
 
 int32_t
 GLU_async_sample_read_default(struct GLU_handle_t* this, 

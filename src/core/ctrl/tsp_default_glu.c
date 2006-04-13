@@ -1,12 +1,12 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_default_glu.c,v 1.13 2006-04-12 13:04:55 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_default_glu.c,v 1.14 2006-04-13 21:22:46 erk Exp $
 
 -----------------------------------------------------------------------
 
 TSP Library - core components for a generic Transport Sampling Protocol.
 
-Copyright (c) 2002 Yves DUFRENNE, Stephane GALLES, Eric NOULARD and Robert PAGNOT 
+Copyright (c) 2002 Yves DUFRENNE, Stephane GALLES, Eric NOULARD,Robert PAGNOT and Arnaud MORVAN
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -300,9 +300,26 @@ GLU_get_ssi_list_fromPGI_default(struct GLU_handle_t* this,
 int32_t
 GLU_get_ssei_list_fromPGI_default(struct GLU_handle_t* this, 
 				  int32_t* pgis, int32_t pgis_len, 
-				  TSP_sample_symbol_extended_info_t* SSEI_list) {
-  
-  return  TSP_STATUS_ERROR_NOT_SUPPORTED;
+				  TSP_sample_symbol_extended_info_list_t* SSEI_list) {
+
+  int32_t i,ret;
+  ret=TSP_STATUS_OK;
+
+  /* Store all global indexes into list including NOT FOUND ones */
+  for ( i=0 ; i < pgis_len;++i) {
+    
+    if (-1!=pgis[i]) {
+      SSEI_list->TSP_sample_symbol_extended_info_list_t_val[i].provider_global_index=pgis[i]; 
+      SSEI_list->TSP_sample_symbol_extended_info_list_t_val[i].info.TSP_extended_info_list_t_len=0;
+      SSEI_list->TSP_sample_symbol_extended_info_list_t_val[i].info.TSP_extended_info_list_t_val=NULL;
+    } else {
+      SSEI_list->TSP_sample_symbol_extended_info_list_t_val[i].provider_global_index=-1;      
+      SSEI_list->TSP_sample_symbol_extended_info_list_t_val[i].info.TSP_extended_info_list_t_len=0;
+      SSEI_list->TSP_sample_symbol_extended_info_list_t_val[i].info.TSP_extended_info_list_t_val=NULL;
+      ret=TSP_STATUS_ERROR_PGI_UNKNOWN;      
+    }
+  } /*end for*/
+  return  ret;
 
 } /* end of GLU_get_ssei_list_fromPGI_default */
 

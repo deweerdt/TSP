@@ -1,6 +1,6 @@
 /*
 
-$Id: glue_stub.c,v 1.17 2006-04-12 06:51:16 erk Exp $
+$Id: glue_stub.c,v 1.18 2006-04-13 21:22:46 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -181,7 +181,8 @@ void* STUB_GLU_thread(void* athis)
 		else
 		  *((uint8_t*)item.raw_value) = (uint8_t)(my_time) / (uint8_t)(TSP_STUB_FREQ);
 		break;
-	
+	      default:
+		STRACE_ERROR(("Unhandled TSP datatype =%d",X_sample_symbol_info_list_val[index].type));
 	 
 	      }
 
@@ -457,7 +458,8 @@ int STUB_GLU_init(GLU_handle_t* this, int fallback_argc, char* fallback_argv[])
   return TRUE;
 }
 
-int  STUB_GLU_get_sample_symbol_info_list(GLU_handle_t* h_glu,TSP_sample_symbol_info_list_t* symbol_list)
+int  
+STUB_GLU_get_ssi_list(GLU_handle_t* h_glu,TSP_sample_symbol_info_list_t* symbol_list)
 {
   int i = 0;
   TSP_sample_symbol_info_t* p; 
@@ -471,7 +473,99 @@ int  STUB_GLU_get_sample_symbol_info_list(GLU_handle_t* h_glu,TSP_sample_symbol_
   symbol_list->TSP_sample_symbol_info_list_t_val = X_sample_symbol_info_list_val;
 	    
   return TRUE;
-}
+} /* STUB_GLU_get_ssi_list */
+
+int32_t
+STUB_GLU_get_ssei_list_fromPGI(struct GLU_handle_t* this, 
+			       int32_t* pgis, int32_t pgis_len, 
+			       TSP_sample_symbol_extended_info_list_t* SSEI_list) {
+
+  int32_t i,ret;
+  ret=TSP_STATUS_OK;
+
+  /* Store all global indexes into list including NOT FOUND ones */
+  for ( i=0 ; i < pgis_len;++i) {    
+    if(-1!=pgis[i]) {
+      
+      SSEI_list->TSP_sample_symbol_extended_info_list_t_val[i].provider_global_index=pgis[i]; 
+
+      if(1000<=pgis[i])
+      {     
+	SSEI_list->TSP_sample_symbol_extended_info_list_t_val[i].info.TSP_extended_info_list_t_len=0;
+	SSEI_list->TSP_sample_symbol_extended_info_list_t_val[i].info.TSP_extended_info_list_t_val=NULL;
+      }
+      else
+      {
+	switch(pgis[i])
+	{
+	  case 1001:
+   	    TSP_EIList_initialize(&(SSEI_list->TSP_sample_symbol_extended_info_list_t_val[i].info),1);
+	    TSP_EI_update(&(SSEI_list->TSP_sample_symbol_extended_info_list_t_val[i].info.TSP_extended_info_list_t_val[0]), "unit", "m");
+	    break;
+          case 1002:
+   	     TSP_EIList_initialize(&(SSEI_list->TSP_sample_symbol_extended_info_list_t_val[i].info),1);
+	    TSP_EI_update(&(SSEI_list->TSP_sample_symbol_extended_info_list_t_val[i].info.TSP_extended_info_list_t_val[0]), "unit", "m");
+	    break;
+          case 1003:
+   	     TSP_EIList_initialize(&(SSEI_list->TSP_sample_symbol_extended_info_list_t_val[i].info),1);
+	   TSP_EI_update(&(SSEI_list->TSP_sample_symbol_extended_info_list_t_val[i].info.TSP_extended_info_list_t_val[0]), "unit", "m");
+	    break;
+          case 1004:
+   	     TSP_EIList_initialize(&(SSEI_list->TSP_sample_symbol_extended_info_list_t_val[i].info),1);
+	    TSP_EI_update(&(SSEI_list->TSP_sample_symbol_extended_info_list_t_val[i].info.TSP_extended_info_list_t_val[0]), "unit", "m");
+	    break;
+          case 1005:
+   	     TSP_EIList_initialize(&(SSEI_list->TSP_sample_symbol_extended_info_list_t_val[i].info),1);
+	   TSP_EI_update(&(SSEI_list->TSP_sample_symbol_extended_info_list_t_val[i].info.TSP_extended_info_list_t_val[0]), "unit", "m");
+	    break;
+          case 1006:
+   	     TSP_EIList_initialize(&(SSEI_list->TSP_sample_symbol_extended_info_list_t_val[i].info),1);
+	    TSP_EI_update(&(SSEI_list->TSP_sample_symbol_extended_info_list_t_val[i].info.TSP_extended_info_list_t_val[0]), "unit", "m");
+	    break;
+         case 1007:
+   	     TSP_EIList_initialize(&(SSEI_list->TSP_sample_symbol_extended_info_list_t_val[i].info),1);
+	   TSP_EI_update(&(SSEI_list->TSP_sample_symbol_extended_info_list_t_val[i].info.TSP_extended_info_list_t_val[0]), "unit", "m");
+	    break;
+         case 1008:
+   	     TSP_EIList_initialize(&(SSEI_list->TSP_sample_symbol_extended_info_list_t_val[i].info),1);
+	   TSP_EI_update(&(SSEI_list->TSP_sample_symbol_extended_info_list_t_val[i].info.TSP_extended_info_list_t_val[0]), "unit", "m");
+	    break;
+         case 1009:
+   	     TSP_EIList_initialize(&(SSEI_list->TSP_sample_symbol_extended_info_list_t_val[i].info),1);
+	   TSP_EI_update(&(SSEI_list->TSP_sample_symbol_extended_info_list_t_val[i].info.TSP_extended_info_list_t_val[0]), "unit", "m");
+	    break;
+         case 1010:
+   	     TSP_EIList_initialize(&(SSEI_list->TSP_sample_symbol_extended_info_list_t_val[i].info),1);
+	    TSP_EI_update(&(SSEI_list->TSP_sample_symbol_extended_info_list_t_val[i].info.TSP_extended_info_list_t_val[0]), "unit", "m");
+	    break;
+         case 1011:
+   	     TSP_EIList_initialize(&(SSEI_list->TSP_sample_symbol_extended_info_list_t_val[i].info),1);
+	    TSP_EI_update(&(SSEI_list->TSP_sample_symbol_extended_info_list_t_val[i].info.TSP_extended_info_list_t_val[0]), "unit", "m");
+	    break;
+         case 1012:
+   	    TSP_EIList_initialize(&(SSEI_list->TSP_sample_symbol_extended_info_list_t_val[i].info),1);
+	    TSP_EI_update(&(SSEI_list->TSP_sample_symbol_extended_info_list_t_val[i].info.TSP_extended_info_list_t_val[0]), "profil", "2*2*4");
+ 	    TSP_EI_update(&(SSEI_list->TSP_sample_symbol_extended_info_list_t_val[i].info.TSP_extended_info_list_t_val[0]), "unit", "SI");
+	    break;
+	default:
+	  /* do not forget invalid > 1012 PGIs */
+	  SSEI_list->TSP_sample_symbol_extended_info_list_t_val[i].provider_global_index=-1;      
+	  SSEI_list->TSP_sample_symbol_extended_info_list_t_val[i].info.TSP_extended_info_list_t_len=0;
+	  SSEI_list->TSP_sample_symbol_extended_info_list_t_val[i].info.TSP_extended_info_list_t_val=NULL;
+	  ret=TSP_STATUS_ERROR_PGI_UNKNOWN;     
+       }
+    }
+  }
+  else {
+      SSEI_list->TSP_sample_symbol_extended_info_list_t_val[i].provider_global_index=-1;      
+      SSEI_list->TSP_sample_symbol_extended_info_list_t_val[i].info.TSP_extended_info_list_t_len=0;
+      SSEI_list->TSP_sample_symbol_extended_info_list_t_val[i].info.TSP_extended_info_list_t_val=NULL;
+      ret=TSP_STATUS_ERROR_PGI_UNKNOWN;      
+    }
+  } /*end for*/
+  return  ret;
+
+} /* end of STUB_GLU_get_ssei_list_fromPGI */
 
 
 /* create the GLU handle instance for STUB */
@@ -480,9 +574,10 @@ GLU_handle_t* GLU_stub_create() {
   /* create a default GLU */
   GLU_handle_create(&stub_GLU,"StubbedServer",GLU_SERVER_TYPE_ACTIVE,TSP_STUB_FREQ);
   
-  stub_GLU->initialize     = &STUB_GLU_init;
-  stub_GLU->run            = &STUB_GLU_thread;
-  stub_GLU->get_ssi_list   = &STUB_GLU_get_sample_symbol_info_list;
+  stub_GLU->initialize             = &STUB_GLU_init;
+  stub_GLU->run                    = &STUB_GLU_thread;
+  stub_GLU->get_ssi_list           = &STUB_GLU_get_ssi_list;
+  stub_GLU->get_ssei_list_fromPGI  = &STUB_GLU_get_ssei_list_fromPGI;
 
   return stub_GLU;
-}
+} /* GLU_stub_create */

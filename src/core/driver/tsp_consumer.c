@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.48 2006-04-12 13:06:10 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.49 2006-04-13 21:22:46 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -225,7 +225,13 @@ static void TSP_consumer_delete_requested_symbol(TSP_otsp_t* otsp)
 static int32_t
 TSP_consumer_store_extended_informations(TSP_otsp_t* otsp, TSP_answer_extended_information_t* ans_extinfo) {
   int32_t retcode = TSP_STATUS_OK;
-  
+
+  unsigned int symbols_number = ans_extinfo->extsymbols.TSP_sample_symbol_extended_info_list_t_len;
+  unsigned int i;
+ 
+  TSP_SSEIList_initialize(&(otsp->extended_informations),symbols_number);
+  TSP_SSEIList_copy(&(otsp->extended_informations),ans_extinfo->extsymbols);
+   
   return retcode;
 } /* end of TSP_consumer_store_extended_informations */
 
@@ -233,9 +239,11 @@ static int32_t
 TSP_consumer_delete_extended_informations(TSP_otsp_t* otsp) {
   int32_t retcode = TSP_STATUS_OK;
 
-  if (0 != otsp->extended_informations.TSP_sample_symbol_extended_info_list_t_len) {
+  TSP_SSEIList_finalize(&(otsp->extended_informations));
+
+/*  if (0 != otsp->extended_informations.TSP_sample_symbol_extended_info_list_t_len) {
      otsp->extended_informations.TSP_sample_symbol_extended_info_list_t_val =NULL;
-  }
+  }*/
 
   return retcode;
 }  /* end of TSP_consumer_delete_extended_informations */
@@ -931,6 +939,15 @@ TSP_consumer_request_extended_information(TSP_provider_t provider, int32_t* pgis
   return retcode;
 }  /* end of TSP_consumer_request_extended_information */
 
+
+const TSP_sample_symbol_extended_info_list_t*  
+TSP_consumer_get_extended_information(TSP_provider_t provider) {
+	
+  TSP_otsp_t* otsp = (TSP_otsp_t*)provider;
+	
+  TSP_CHECK_SESSION(otsp, 0);
+  return &(otsp->extended_informations);	
+} /* end of TSP_consumer_get_extended_information */
 
 const TSP_answer_sample_t*  
 TSP_consumer_get_information(TSP_provider_t provider) {
