@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_common_ssei.c,v 1.4 2006-04-13 21:22:46 erk Exp $
+$Id: tsp_common_ssei.c,v 1.5 2006-04-13 23:05:18 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -322,7 +322,6 @@ TSP_SSEIList_finalize(TSP_sample_symbol_extended_info_list_t* ssei_list){
   TSP_SSEI_finalize(ssei_list->TSP_sample_symbol_extended_info_list_t_val);
 
   free(ssei_list->TSP_sample_symbol_extended_info_list_t_val);
-  free(ssei_list);
 
   return TSP_STATUS_OK;
 }

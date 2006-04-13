@@ -1,6 +1,6 @@
 /*
 
-$Id: generic_consumer.c,v 1.11 2006-04-13 22:28:25 erk Exp $
+$Id: generic_consumer.c,v 1.12 2006-04-13 23:05:18 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -379,12 +379,13 @@ void generic_consumer_printextendedinfo(generic_consumer_request_t* req) {
   pexinfo = TSP_consumer_get_extended_information(req->the_provider);
   fprintf(req->stream,"Extented info list <begins>\n");
   for (j=0;j<pexinfo->TSP_sample_symbol_extended_info_list_t_len;++j) {
-    fprintf(req->stream,"    Extended info for PGI <%d> <begins>\n",pexinfo->TSP_sample_symbol_extended_info_list_t_val[i].provider_global_index);
-    for (i=0;i<pexinfo->TSP_sample_symbol_extended_info_list_t_val[i].info.TSP_extended_info_list_t_len;i++) {
+    fprintf(req->stream,"    Extended info for PGI <%d> <begins>\n",
+	    pexinfo->TSP_sample_symbol_extended_info_list_t_val[j].provider_global_index);
+    for (i=0;i<pexinfo->TSP_sample_symbol_extended_info_list_t_val[j].info.TSP_extended_info_list_t_len;i++) {
 
       fprintf(req->stream,"    key=%s, value=%s\n",
-	      pexinfo->TSP_sample_symbol_extended_info_list_t_val[i].info.TSP_extended_info_list_t_val[j].key,
-	      pexinfo->TSP_sample_symbol_extended_info_list_t_val[i].info.TSP_extended_info_list_t_val[j].value);
+	      pexinfo->TSP_sample_symbol_extended_info_list_t_val[j].info.TSP_extended_info_list_t_val[j].key,
+	      pexinfo->TSP_sample_symbol_extended_info_list_t_val[j].info.TSP_extended_info_list_t_val[j].value);
     }
     fprintf(req->stream,"    Extended info for PGI <%d> <ends>\n",pexinfo->TSP_sample_symbol_extended_info_list_t_val[i].provider_global_index);
   }

@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.49 2006-04-13 21:22:46 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.50 2006-04-13 23:05:18 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -239,11 +239,9 @@ static int32_t
 TSP_consumer_delete_extended_informations(TSP_otsp_t* otsp) {
   int32_t retcode = TSP_STATUS_OK;
 
-  TSP_SSEIList_finalize(&(otsp->extended_informations));
-
-/*  if (0 != otsp->extended_informations.TSP_sample_symbol_extended_info_list_t_len) {
-     otsp->extended_informations.TSP_sample_symbol_extended_info_list_t_val =NULL;
-  }*/
+  if (otsp->extended_informations.TSP_sample_symbol_extended_info_list_t_len!=0) {
+    TSP_SSEIList_finalize(&(otsp->extended_informations));
+  }
 
   return retcode;
 }  /* end of TSP_consumer_delete_extended_informations */
@@ -555,13 +553,8 @@ void TSP_consumer_disconnect_one(TSP_provider_t provider)
 {	
   TSP_otsp_t* otsp = (TSP_otsp_t*)provider;
 
-  STRACE_IO(("-->IN"));
-  
   TSP_remote_close_server(otsp->server);
   TSP_delete_object_tsp(otsp);
-  	
-  STRACE_IO(("-->OUT"));
-
 }
 
 
@@ -628,8 +621,6 @@ void TSP_consumer_connect_all(const char*  host_name, TSP_provider_t** providers
     }
 
   STRACE_INFO(("%d server opened", *nb_providers));
-  STRACE_IO(("-->OUT"));
-
 }
 
 
@@ -638,8 +629,6 @@ void TSP_consumer_disconnect_all(TSP_provider_t providers[])
   int server_max_number;
   int i;
 	
-  STRACE_IO(("-->IN"));
-
   fprintf(stderr, "\n\007This function is now deprecated, use TSP_consumer_disconnect_one instead\007\n");
 
   server_max_number = TSP_get_server_max_number();
@@ -663,8 +652,6 @@ void TSP_consumer_disconnect_all(TSP_provider_t providers[])
   
   free(providers);
 	
-  STRACE_IO(("-->OUT"));
-
 }
 
 /*--- End of deprecated functions ---*/
@@ -677,15 +664,15 @@ const char* TSP_consumer_get_connected_name(TSP_provider_t provider)
 }
 
 
-int TSP_consumer_request_open(TSP_provider_t provider, int custom_argc, char* custom_argv[])
+int 
+TSP_consumer_request_open(TSP_provider_t provider, int custom_argc, char* custom_argv[])
 {
 	
   TSP_otsp_t* otsp = (TSP_otsp_t*)provider;
   TSP_request_open_t req_open;
   TSP_answer_open_t* ans_open = 0;
   int ret = FALSE;
-	
-  STRACE_IO(("-->IN"));
+       
   assert(X_tsp_init_ok);
 	
   req_open.version_id = TSP_PROTOCOL_VERSION;
@@ -745,12 +732,15 @@ int TSP_consumer_request_open(TSP_provider_t provider, int custom_argc, char* cu
 
     }
 	
-  STRACE_IO(("-->OUT"));
+  return ret;	
+} /* end of TSP_request_open */
 
-	
-  return ret;
-	
-}
+uint32_t
+TSP_consumer_get_channel_id(TSP_provider_t provider) {
+  TSP_otsp_t* otsp = (TSP_otsp_t*)provider;
+
+  return otsp->channel_id;
+} /* end of TSP_consumer_get_channel_id */
 
 int 
 TSP_consumer_request_close(TSP_provider_t provider)

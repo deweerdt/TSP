@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_provider.c,v 1.41 2006-04-12 13:06:10 erk Exp $
+$Id: tsp_provider.c,v 1.42 2006-04-13 23:05:18 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -250,12 +250,10 @@ void TSP_provider_request_open(const TSP_request_open_t* req_open,
   int i;
 	
   TSP_LOCK_MUTEX(&X_tsp_request_mutex,);
-  STRACE_IO(("-->IN"));
 
-
-    /* Fortify calls */
+  /* Fortify calls */
   
-    /*Fortify_EnterScope();*/
+  /*Fortify_EnterScope();*/
 
    ans_open->version_id = UNDEFINED_VERSION_ID;
    ans_open->channel_id = UNDEFINED_CHANNEL_ID;
@@ -313,9 +311,7 @@ void TSP_provider_request_open(const TSP_request_open_t* req_open,
         ans_open->status = TSP_STATUS_ERROR_SEE_STRING;
 	ans_open->status_str = error_info;
      }
-
-  STRACE_IO(("-->OUT"));
-
+ 
   TSP_UNLOCK_MUTEX(&X_tsp_request_mutex,);	
 
 } /* End of TSP_provider_request_open */
@@ -323,12 +319,8 @@ void TSP_provider_request_open(const TSP_request_open_t* req_open,
 
 static void TSP_provider_request_close_priv(channel_id_t channel_id)
 {
-  STRACE_IO(("-->IN"));
-
   TSP_session_destroy_symbols_table_by_channel(channel_id);
   TSP_session_close_session_by_channel(channel_id);
-
-  STRACE_IO(("-->OUT"));
 }
 
 void TSP_provider_request_close(const TSP_request_close_t* req_close)
@@ -336,11 +328,7 @@ void TSP_provider_request_close(const TSP_request_close_t* req_close)
 {
   TSP_LOCK_MUTEX(&X_tsp_request_mutex,);
 
-  STRACE_IO(("-->IN"));
-
   TSP_provider_request_close_priv(req_close->channel_id);
-
-  STRACE_IO(("-->OUT"));
 
   TSP_UNLOCK_MUTEX(&X_tsp_request_mutex,);
 } /* End of TSP_provider_request_close */
@@ -423,7 +411,6 @@ void  TSP_provider_request_sample(TSP_request_sample_t* req_sample,
 {
   TSP_LOCK_MUTEX(&X_tsp_request_mutex,);	
 
-  int32_t i;
   ans_sample->version_id            = TSP_PROTOCOL_VERSION;
   ans_sample->channel_id            = req_sample->channel_id;
   ans_sample->status                = TSP_STATUS_ERROR_UNKNOWN;
@@ -669,6 +656,31 @@ TSP_provider_request_async_sample_read(TSP_async_sample_t* async_sample_read)
 
 void  TSP_provider_request_extended_information(TSP_request_extended_information_t* req_extinfo, 
 						TSP_answer_extended_information_t* ans_extinfo) {
+  TSP_LOCK_MUTEX(&X_tsp_request_mutex,);  
 
-  return;
-}
+  /* fill-in minimal info in ans_extinfo */
+  ans_extinfo->version_id = TSP_PROTOCOL_VERSION;
+  ans_extinfo->channel_id = req_extinfo->channel_id;
+  if (ans_extinfo->extsymbols.TSP_sample_symbol_extended_info_list_t_len!=0) {
+    TSP_SSEIList_finalize(&(ans_extinfo->extsymbols));
+  }
+
+  /* check request TSP version */
+  if (req_extinfo->version_id > TSP_PROTOCOL_VERSION) {
+    STRACE_ERROR(("TSP version ERROR. Requested=%d Current=%d",req_extinfo->version_id, TSP_PROTOCOL_VERSION ));
+    ans_extinfo->status = TSP_STATUS_ERROR_VERSION;
+    TSP_UNLOCK_MUTEX(&X_tsp_request_mutex,);
+    return;
+  }
+  
+  /* 
+   * Ask the GLU for extended info by PGI 
+   */
+  TSP_SSEIList_initialize(&(ans_extinfo->extsymbols),req_extinfo->pgi.pgi_len);
+  ans_extinfo->status = firstGLU->get_ssei_list_fromPGI(firstGLU,
+							req_extinfo->pgi.pgi_val,
+							req_extinfo->pgi.pgi_len,
+							&(ans_extinfo->extsymbols));
+      
+  TSP_UNLOCK_MUTEX(&X_tsp_request_mutex,);
+} /* end of TSP_provider_request_extended_information */

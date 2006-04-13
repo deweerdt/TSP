@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_consumer.h,v 1.30 2006-04-13 21:22:46 erk Exp $
+$Id: tsp_consumer.h,v 1.31 2006-04-13 23:05:18 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -216,8 +216,6 @@ const char* TSP_consumer_get_connected_name(TSP_provider_t provider);
 void TSP_consumer_disconnect_one(TSP_provider_t provider);
 
 
-	  
-
 /** 
  * Ask the provider for a new consumer session.
  * This function must be called and must succed for the program to be able to call
@@ -244,6 +242,16 @@ void TSP_consumer_disconnect_one(TSP_provider_t provider);
  * line.
  */
 int TSP_consumer_request_open(TSP_provider_t provider, int custom_argc, char* custom_argv[]);
+
+/**
+ * Return the TSP channel Id associated with this
+ * TSP session if a TSP Request Open has already been sent to this
+ * provider.
+ * @param provider the TSP session to provider
+ * @return the channel Id  if the session is open -1 if session not opened. 
+ */
+uint32_t
+TSP_consumer_get_channel_id(TSP_provider_t provider);
 
 /**
  * Close the session.
