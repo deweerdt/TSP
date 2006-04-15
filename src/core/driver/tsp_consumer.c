@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.51 2006-04-15 10:46:02 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.52 2006-04-15 23:07:34 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -203,8 +203,8 @@ static void TSP_consumer_delete_information(TSP_otsp_t* otsp)
   otsp->information.symbols.TSP_sample_symbol_info_list_t_val = 0;
 } /* end of TSP_consumer_delete_information */
 
-static void TSP_consumer_delete_requested_symbol(TSP_otsp_t* otsp)
-{
+static 
+void TSP_consumer_delete_requested_symbol(TSP_otsp_t* otsp) {
   int i;
 
     if(otsp->requested_sym.TSP_sample_symbol_info_list_t_val)
@@ -259,11 +259,10 @@ static TSP_otsp_t* TSP_new_object_tsp(	TSP_server_t server,
 	
   obj = (TSP_otsp_t*)calloc(1, sizeof(TSP_otsp_t) );
 	
-  if(0 == obj)
-    { 
-      printf("ERROR : calloc error\n");
-      return 0;
-    }
+  if(0 == obj) { 
+    printf("ERROR : calloc error\n");
+    return 0;
+  }
 	
   obj->server = server;
   strncpy(obj->server_info.info, server_info, STRING_SIZE_SERVER_INFO);
@@ -286,16 +285,16 @@ static TSP_otsp_t* TSP_new_object_tsp(	TSP_server_t server,
 } /* end of TSP_new_object_tsp */
 
 
-static void TSP_delete_object_tsp(TSP_otsp_t* o)
-{
+static 
+void TSP_delete_object_tsp(TSP_otsp_t* o) {
   TSP_consumer_delete_information(o);
   TSP_consumer_delete_requested_symbol(o);
   TSP_group_delete_group_table(o->groups); o->groups = 0;
   free(o);
 }  /* end of TSP_delete_object_tsp */
 
-void TSP_print_object_tsp(TSP_otsp_t* o)
-{	
+void 
+TSP_print_object_tsp(TSP_otsp_t* o) {	
   STRACE_INFO(("----------------------------------------------"));
   STRACE_INFO(("SERVER_INFO->INFO='%s'\n", o->server_info.info));
   STRACE_INFO(("----------------------------------------------"));
@@ -303,16 +302,14 @@ void TSP_print_object_tsp(TSP_otsp_t* o)
 
 /*-------------------------------------------------------------------*/
 
-int TSP_consumer_init(int* argc, char** argv[])
-{
+int 
+TSP_consumer_init(int* argc, char** argv[]) {
   int i;
   int final_argc = 1;
   int found_stream_start = FALSE;
   int found_stream_stop = FALSE;
   char* p;
   int ret = TRUE;
-
-  STRACE_IO(("-->IN"));
 
   X_argv = (char**)calloc(*argc, sizeof(char*));
   X_argc = *argc;
@@ -400,27 +397,19 @@ int TSP_consumer_init(int* argc, char** argv[])
   *argc = final_argc;
   *argv = X_argv;
 
-  STRACE_IO(("-->OUT"));
-
   X_tsp_init_ok = ret;
   
   /* Display usage */
-  if(!ret)
-    {
-      STRACE_WARNING((TSP_ARG_CONSUMER_USAGE));
-    }
-
-  return ret;
-  
-}
+  if(!ret) {
+    STRACE_WARNING((TSP_ARG_CONSUMER_USAGE));
+  }
+  return ret;  
+} /* TSP_consumer_init */
 
 
+void 
+TSP_consumer_end(void) {	
 
-void TSP_consumer_end(void)
-{	
-
-  STRACE_IO(("-->IN"));
-  
   /* This is the end my friend ... the end ...*/
 
   /* Some day, we will find stuff to do here ;) */
@@ -429,9 +418,7 @@ void TSP_consumer_end(void)
      the main code may be using them... */
 
   STRACE_INFO(("End..."));
-
-  STRACE_IO(("-->OUT"));
-}
+} /* TSP_consumer_end */
 
 TSP_provider_t
 TSP_consumer_connect_url(const char*  url) {	
@@ -571,8 +558,6 @@ void TSP_consumer_connect_all(const char*  host_name, TSP_provider_t** providers
 
   fprintf(stderr, "\n\007This function is now deprecated, use TSP_consumer_connect_url instead\007\n");
 
-  STRACE_IO(("-->IN"));
-	
   *nb_providers = 0;
 	
   if( server_max_number > 0 )
@@ -1279,22 +1264,20 @@ int TSP_consumer_read_sample(TSP_provider_t provider, TSP_sample_t* sample, int*
 	      /* FIXME : get last error à gerer ? */
 	    }
 	}
-    }
-      
+    }      
   return ret;
 }
 
-TSP_groups_t TSP_test_get_groups(TSP_provider_t provider) {
-  TSP_otsp_t* otsp = (TSP_otsp_t*)provider;
-  
+TSP_groups_t 
+TSP_test_get_groups(TSP_provider_t provider) {
+  TSP_otsp_t* otsp = (TSP_otsp_t*)provider;  
   return otsp->groups;
 }
 
 
 int32_t 
 TSP_consumer_request_async_sample_write(TSP_provider_t provider,
-					TSP_consumer_async_sample_t* async_sample_write)
-{
+					TSP_consumer_async_sample_t* async_sample_write) {
   int *result;
   TSP_async_sample_t async_write;
   int32_t ret = TSP_STATUS_ERROR_UNKNOWN;
@@ -1319,8 +1302,6 @@ TSP_consumer_request_async_sample_write(TSP_provider_t provider,
     STRACE_ERROR(("This provider is not instanciate"));
   }
      
-  STRACE_IO(("-->OUT"));
-	
   return ret;
 	
 } /* TSP_consumer_request_async_sample_write */
@@ -1375,8 +1356,6 @@ TSP_consumer_request_async_sample_read(TSP_provider_t provider,
     STRACE_ERROR(("This provider is not instanciate"));
   }
      
-  STRACE_IO(("-->OUT"));
-	
   return ret;
 	
 } /* TSP_consumer_request_async_sample_read */

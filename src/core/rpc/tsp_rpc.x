@@ -1,6 +1,6 @@
 /* -*- idl -*-
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_rpc.x,v 1.30 2006-04-15 10:46:02 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_rpc.x,v 1.31 2006-04-15 23:07:34 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -564,10 +564,7 @@ struct TSP_answer_sample_destroy_t
  * This is to be used in 
  * Asynchronous sample write and read request.
  */
-struct TSP_async_sample_t
-{
-  /** TSP Asynchronous Channel Id  */
-  unsigned int channel_id;
+struct TSP_async_sample_t {
   /** 
    * The provider global index (PGI).
    * This a provider-side index which uniquely
@@ -580,6 +577,26 @@ struct TSP_async_sample_t
    * Opaque data container.
    */
   opaque data<>;
+};
+
+struct TSP_request_async_sample_t {
+ /** TSP Protocol Version */
+  int version_id;
+  /** TSP Asynchronous Channel Id  */
+  unsigned int channel_id;
+  /** The asynchronous sample */
+  TSP_async_sample_t async_sample;
+};
+
+struct TSP_answer_async_sample_t {
+  /** TSP Protocol Version */
+  int version_id;
+  /** TSP Asynchronous Channel Id  */
+  unsigned int channel_id;
+  /** The asynchronous sample */
+  TSP_async_sample_t async_sample;
+  /** TSP Status */		
+  int status;
 };
 
 
