@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_provider.c,v 1.42 2006-04-13 23:05:18 erk Exp $
+$Id: tsp_provider.c,v 1.43 2006-04-15 10:46:02 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -86,8 +86,6 @@ static int TSP_cmd_line_parser(int* argc, char** argv[])
   int found_server_number_flag = FALSE;
   char* p;
   int ret = TRUE;
-
-  STRACE_IO(("-->IN"));
 
   /* FIXME : FUITE */
   X_argv = (char**)calloc(*argc, sizeof(char*));
@@ -221,8 +219,6 @@ static int TSP_cmd_line_parser(int* argc, char** argv[])
   else
     X_glu_is_active = FALSE;
 
-  STRACE_IO(("-->OUT"));
-  
   return ret;
 }
 
@@ -243,7 +239,7 @@ const char* TSP_provider_get_name() {
 
 
 void TSP_provider_request_open(const TSP_request_open_t* req_open,
-		      TSP_answer_open_t* ans_open)
+			       TSP_answer_open_t* ans_open)
 {
   GLU_handle_t* glu_h;
   char* error_info;
@@ -272,18 +268,25 @@ void TSP_provider_request_open(const TSP_request_open_t* req_open,
           STRACE_DEBUG(("No custom args from consumer"));
      }
 
-
-   /*  get GLU instance. If a stream init is provided, use it, else, use default */   
+   /*  
+    * Get a GLU instance for this session. 
+    * If a stream init is provided, use it, else, use default 
+    */   
    if( 0 != req_open->argv.TSP_argv_t_len )
      {
-       glu_h = firstGLU->get_instance(firstGLU, req_open->argv.TSP_argv_t_len, req_open->argv.TSP_argv_t_val, &error_info);
+       glu_h = firstGLU->get_instance(firstGLU, 
+				      req_open->argv.TSP_argv_t_len, 
+				      req_open->argv.TSP_argv_t_val, 
+				      &error_info);
      }
    else
      {
        /* use fallback if provided */
-       glu_h = firstGLU->get_instance(firstGLU, X_glu_argc, X_glu_argv, &error_info);
+       glu_h = firstGLU->get_instance(firstGLU, 
+				      X_glu_argc, 
+				      X_glu_argv, 
+				      &error_info);
      }
-
    
    if(glu_h)
      {
@@ -292,7 +295,7 @@ void TSP_provider_request_open(const TSP_request_open_t* req_open,
 	   if(req_open->version_id <= TSP_PROTOCOL_VERSION)
 	     {
 	       ans_open->version_id = TSP_PROTOCOL_VERSION;
-	       ans_open->status = TSP_STATUS_OK;
+	       ans_open->status     = TSP_STATUS_OK;
 	     }
 	   else
 	     {
@@ -307,9 +310,9 @@ void TSP_provider_request_open(const TSP_request_open_t* req_open,
      }
    else
      {
-       STRACE_INFO(("Unable to get GLU instance"));
-        ans_open->status = TSP_STATUS_ERROR_SEE_STRING;
-	ans_open->status_str = error_info;
+       STRACE_INFO(("Unable to get first GLU instance"));
+       ans_open->status = TSP_STATUS_ERROR_SEE_STRING;
+       ans_open->status_str = error_info;
      }
  
   TSP_UNLOCK_MUTEX(&X_tsp_request_mutex,);	
@@ -328,7 +331,11 @@ void TSP_provider_request_close(const TSP_request_close_t* req_close)
 {
   TSP_LOCK_MUTEX(&X_tsp_request_mutex,);
 
-  TSP_provider_request_close_priv(req_close->channel_id);
+  if (TSP_STATUS_OK==TSP_provider_checkVersionAndChannelId(req_close->version_id,
+							   req_close->channel_id,
+							   NULL)) {
+    TSP_provider_request_close_priv(req_close->channel_id);
+  }
 
   TSP_UNLOCK_MUTEX(&X_tsp_request_mutex,);
 } /* End of TSP_provider_request_close */
@@ -342,25 +349,32 @@ void  TSP_provider_request_information(TSP_request_information_t* req_info,
 } /* End of TSP_provider_request_information */
 
 void TSP_provider_update_answer_with_minimalinfo(TSP_request_information_t* req_info,
-				      TSP_answer_sample_t* ans_sample) {
+						 TSP_answer_sample_t* ans_sample) {
+  GLU_handle_t* myGLU;
 
   ans_sample->version_id            = TSP_PROTOCOL_VERSION;
   ans_sample->channel_id            = req_info->channel_id;
-  ans_sample->status                = TSP_STATUS_ERROR_UNKNOWN;
-  ans_sample->provider_group_number = 0;
-  ans_sample->base_frequency        = firstGLU->get_base_frequency(firstGLU);
-  ans_sample->max_client_number     = firstGLU->get_nb_max_consumer(firstGLU);
-  ans_sample->current_client_number = TSP_session_get_nb_session();
-  ans_sample->max_period            = TSP_MAX_PERIOD;
-  
-}
+
+  ans_sample->status = TSP_provider_checkVersionAndChannelId(req_info->version_id,
+							     req_info->channel_id,
+							     &myGLU);
+
+  if (TSP_STATUS_OK==ans_sample->status) {
+    ans_sample->provider_group_number = 0;
+    ans_sample->base_frequency        = myGLU->get_base_frequency(myGLU);
+    ans_sample->max_client_number     = myGLU->get_nb_max_consumer(myGLU);
+    ans_sample->current_client_number = TSP_session_get_nb_session();
+    ans_sample->max_period            = TSP_MAX_PERIOD;
+  }  
+} /* end of TSP_provider_update_answer_with_minimalinfo */
 
 void  TSP_provider_request_filtered_information(TSP_request_information_t* req_info, 
 						int filter_kind, char* filter_string,
 						TSP_answer_sample_t* ans_sample)
 {
   TSP_LOCK_MUTEX(&X_tsp_request_mutex,);  
-
+  GLU_handle_t* myGLU = NULL;
+  
   /* fill-in minimal info in answer_sample */
   TSP_provider_update_answer_with_minimalinfo(req_info,ans_sample);
 
@@ -374,7 +388,10 @@ void  TSP_provider_request_filtered_information(TSP_request_information_t* req_i
     TSP_UNLOCK_MUTEX(&X_tsp_request_mutex,);
     return;
   }
-  
+
+  myGLU = TSP_session_get_GLU_by_channel(ans_sample->channel_id);
+  TSP_CHECK_POINTER(myGLU,TSP_STATUS_ERROR_UNKNOWN);
+
   /* switch case for filter_kind */
   switch (filter_kind) {
   case TSP_FILTER_NONE:
@@ -388,12 +405,12 @@ void  TSP_provider_request_filtered_information(TSP_request_information_t* req_i
   default:
     STRACE_INFO(("Requested filter kind <%d>, filter string = <%s>",filter_kind,filter_string));
     /* 
-     * forward other filtered request directly to GLU 
+     * Forward other filtered request directly to GLU 
      * such that even non anticipated filtering method could
      * be implemented by specialized consumer and provider pair
      * default GLU will provider reasonnable default implementation.
-     */
-    firstGLU->get_filtered_ssi_list(firstGLU,filter_kind,filter_string,ans_sample);
+     */    
+    myGLU->get_filtered_ssi_list(myGLU,filter_kind,filter_string,ans_sample);
     break;
   } /* end switch filter_kind */
     
@@ -407,16 +424,21 @@ void TSP_provider_request_sample_free_call(TSP_answer_sample_t* ans_sample)
 }
 
 void  TSP_provider_request_sample(TSP_request_sample_t* req_sample, 
-			 TSP_answer_sample_t* ans_sample)
+				  TSP_answer_sample_t* ans_sample)
 {
   TSP_LOCK_MUTEX(&X_tsp_request_mutex,);	
 
+  GLU_handle_t* myGLU;
+
   ans_sample->version_id            = TSP_PROTOCOL_VERSION;
+
+  myGLU = TSP_session_get_GLU_by_channel(ans_sample->channel_id);
+  
   ans_sample->channel_id            = req_sample->channel_id;
   ans_sample->status                = TSP_STATUS_ERROR_UNKNOWN;
   ans_sample->provider_group_number = 0;
-  ans_sample->base_frequency        = firstGLU->get_base_frequency(firstGLU);
-  ans_sample->max_client_number     = firstGLU->get_nb_max_consumer(firstGLU);
+  ans_sample->base_frequency        = myGLU->get_base_frequency(myGLU);
+  ans_sample->max_client_number     = myGLU->get_nb_max_consumer(myGLU);
   ans_sample->current_client_number = TSP_session_get_nb_session();
   ans_sample->max_period            = TSP_MAX_PERIOD;
   ans_sample->symbols.TSP_sample_symbol_info_list_t_len = 0;
@@ -469,7 +491,6 @@ void  TSP_provider_request_sample_init(TSP_request_sample_init_t* req_sample_ini
 {  
   int start_local_thread;
   TSP_LOCK_MUTEX(&X_tsp_request_mutex,);    
-  STRACE_IO(("-->IN"));
     
   ans_sample->version_id = UNDEFINED_VERSION_ID;
   ans_sample->channel_id = req_sample_init->channel_id;
@@ -501,8 +522,6 @@ void  TSP_provider_request_sample_init(TSP_request_sample_init_t* req_sample_ini
       STRACE_ERROR(("TSP version ERROR. Requested=%d Current=%d",req_sample_init->version_id, TSP_PROTOCOL_VERSION ));
       ans_sample->status = TSP_STATUS_ERROR_VERSION;
     }
-
-  STRACE_IO(("-->OUT"));
 
   TSP_UNLOCK_MUTEX(&X_tsp_request_mutex,);
 } /* End of TSP_provider_request_sample_init */
@@ -684,3 +703,24 @@ void  TSP_provider_request_extended_information(TSP_request_extended_information
       
   TSP_UNLOCK_MUTEX(&X_tsp_request_mutex,);
 } /* end of TSP_provider_request_extended_information */
+
+int32_t 
+TSP_provider_checkVersionAndChannelId(int32_t version_id, int32_t channel_id,
+				      GLU_handle_t** glu) {
+  int32_t retval = TSP_STATUS_OK;
+
+  if (version_id>TSP_PROTOCOL_VERSION) {
+    STRACE_ERROR(("TSP version ERROR. Requested=%d Current=%d",version_id, TSP_PROTOCOL_VERSION ));    
+    retval = TSP_STATUS_ERROR_VERSION;
+  }
+
+  if ((TSP_STATUS_OK==retval) && (NULL!=glu)) {
+    *glu = TSP_session_get_GLU_by_channel(channel_id);
+    if (NULL==*glu) {
+      STRACE_ERROR(("TSP channel id ERROR. Used Channel Id=%d",channel_id));
+      retval=TSP_STATUS_ERROR_INVALID_CHANNEL_ID;
+    }
+  }
+
+  return retval;
+} /* end of TSP_provider_check_versionAndId */

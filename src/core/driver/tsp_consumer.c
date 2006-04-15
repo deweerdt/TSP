@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.50 2006-04-13 23:05:18 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.51 2006-04-15 10:46:02 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -1162,9 +1162,6 @@ int TSP_consumer_request_sample_init(TSP_provider_t provider, TSP_sample_callbac
       STRACE_ERROR(("Unable to communicate with the provider"));
     }
   
-  STRACE_IO(("-->OUT"));
-
-	
   return ret;
 }
 

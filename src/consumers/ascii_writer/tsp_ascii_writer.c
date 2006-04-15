@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer.c,v 1.18 2006-04-13 21:22:46 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer.c,v 1.19 2006-04-15 10:46:02 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -556,9 +556,8 @@ tsp_ascii_writer_new_validate_symbols(TSP_sample_symbol_info_t*  tsp_symbols,
       pgis[i]=tsp_symbol_list->TSP_sample_symbol_info_list_t_val[i]. provider_global_index;
     }
 
-    if (!TSP_consumer_request_extended_information(myproviders[0], pgis, tsp_symbol_list->TSP_sample_symbol_info_list_t_len))
+    if (TSP_STATUS_OK!=TSP_consumer_request_extended_information(myproviders[0], pgis, tsp_symbol_list->TSP_sample_symbol_info_list_t_len))
     {
-      TSP_consumer_print_invalid_symbols(stderr,&tsp_symbol_list,tsp_provider_url);
       STRACE_ERROR(("TSP request extended information refused by the provider?huh?..."));
       free(pgis);
       retcode = -1;
@@ -673,8 +672,9 @@ tsp_ascii_writer_start(FILE* sfile, int32_t nb_sample_max_infile, OutputFileForm
 	/* for MACSIM file, we must have a profil data*/
 	if(NULL==ext_info_profil)
         {
-	  STRACE_ERROR(("Error extended info: NO PROFIL for MACSIM file..."));
+	  /*STRACE_ERROR(("Error extended info: NO PROFIL for MACSIM file..."));
 	  retcode = -1;
+	  return retcode;*/
 	}
  
 
@@ -716,9 +716,9 @@ tsp_ascii_writer_start(FILE* sfile, int32_t nb_sample_max_infile, OutputFileForm
 	  }
 
 
-	fprintf(sfile,"%s : %s : %s : %s s\n", 
+	fprintf(sfile,"%s : %s : %s : %s \n", 
 		charbuf, 
-		ext_info_profil->value,
+		(NULL==ext_info_profil)?"1":ext_info_profil->value,
 		libelle_type_tab[symbols->TSP_sample_symbol_info_list_t_val[symbol_index].type],
 		(NULL==ext_info_unit)?" ":ext_info_unit->value);
 	

@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_common_ssei.c,v 1.5 2006-04-13 23:05:18 erk Exp $
+$Id: tsp_common_ssei.c,v 1.6 2006-04-15 10:46:02 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -51,64 +51,68 @@ struct TSP_extended_info_t {
 };
 */
 
+TSP_extended_info_t*
+TSP_EI_new(const char *key,const char *value) {
+  TSP_extended_info_t* ei;
+  
+  ei = calloc(1,sizeof(TSP_extended_info_t));
+ 
+  if(NULL!=ei)
+    TSP_EI_initialize(ei,key,value);
+
+  return ei;
+}
+
+int32_t
+TSP_EI_delete(TSP_extended_info_t** ei) {
+  int32_t ret;
+
+  assert(ei); 
+
+  ret=TSP_STATUS_OK;
+
+  if(NULL==*ei)
+  {
+
+    ret=TSP_EI_finalize(*ei);
+    free(*ei);
+    *ei=NULL;
+  }
+
+  return ret;
+} 
+
 int32_t
 TSP_EI_initialize(TSP_extended_info_t* ei, const char* key, const char* value) {
 
   assert(ei);  
   
+  if(NULL!=ei->key)
+  {
+    free(ei->key);
+    ei->key=NULL;
+  }
+
   if(NULL!=key)
      ei->key = strdup(key);
+
+ if(NULL!=ei->value)
+  {
+    free(ei->value);
+    ei->value=NULL;
+  }
 
   if(NULL!=value)
     ei->value = strdup(value);
 
   return TSP_STATUS_OK;
-} /* end of TSP_EI_initialize */
+} 
 
 int32_t
 TSP_EI_update(TSP_extended_info_t* ei, const char* key, const char* value){
 
-  assert(ei); 
+  return TSP_EI_initialize(ei,key,value);
 
-  if(NULL!=ei->key)
-  {
-    free(ei->key); 
-    ei->key = NULL;
-  }
-
-  if(NULL!=ei->value)
-  {
-    free(ei->value); 
-    ei->value = NULL;
-  }
-
-  if(NULL!=key)
-    ei->key   = strdup(key);
-
-  if(NULL!=value)
-    ei->value = strdup(value);
-
-  return TSP_STATUS_OK;
-}
-
-int32_t
-TSP_EI_copy(TSP_extended_info_t* dest_EI, const TSP_extended_info_t src_EI){
-
-  if (NULL==dest_EI) {
-    return TSP_STATUS_ERROR_UNKNOWN;
-  }	
-
-  /* brut memory copy */
-  memcpy(dest_EI,&src_EI,sizeof(TSP_extended_info_t));
-
-  /* then strdup the member */
-  if(NULL!=src_EI.key)
-    dest_EI->key = strdup(src_EI.key);
-
-  if(NULL!=src_EI.value)
-    dest_EI->value = strdup(src_EI.value);
-
-  return TSP_STATUS_OK;
 }
 
 int32_t
@@ -129,8 +133,28 @@ TSP_EI_finalize(TSP_extended_info_t* ei) {
   }
 
   return TSP_STATUS_OK;
+
 } /* end of TSP_EI_initialize */
 
+int32_t
+TSP_EI_copy(TSP_extended_info_t* dest_EI, const TSP_extended_info_t src_EI){
+  int32_t ret;
+
+  assert(dest_EI);
+
+  ret= TSP_STATUS_OK;
+
+  
+  ret=TSP_EI_finalize(dest_EI);
+  
+  if (TSP_STATUS_OK!=ret) {
+    return ret; 
+  }  
+
+  ret=TSP_EI_initialize(dest_EI,src_EI.key, src_EI.value);
+
+  return ret;
+}
 
 
 /* function to use this struc
@@ -140,22 +164,95 @@ typedef struct {
 } TSP_extended_info_list_t;
 */
 
+TSP_extended_info_list_t*
+TSP_EIList_new(int32_t len){
+
+  TSP_extended_info_list_t* ei_list;
+
+  ei_list = calloc(1,sizeof(TSP_extended_info_list_t));
+  if(NULL!=ei_list)
+  {
+    TSP_EIList_initialize(ei_list,len);
+  }
+
+  return ei_list;
+}
+
 int32_t
-TSP_EIList_initialize(TSP_extended_info_list_t* eil, const int32_t len){
-  int32_t i;
-  
+TSP_EIList_delete(TSP_extended_info_list_t** eil){
+  int32_t ret;
+
   assert(eil);
 
-  eil->TSP_extended_info_list_t_val = malloc(sizeof(TSP_extended_info_t)*(len));
-  eil->TSP_extended_info_list_t_len=len;
+  ret=TSP_STATUS_OK;
 
-  TSP_CHECK_ALLOC(eil->TSP_extended_info_list_t_val,TSP_STATUS_ERROR_MEMORY_ALLOCATION);
+  if(NULL!=*eil)
+    {
+      ret=TSP_EIList_finalize(*eil);
+      free(*eil);
+      *eil=NULL;
+    }
 
-  for (i=0;i<len;++i) {
-    TSP_EI_initialize(&(eil->TSP_extended_info_list_t_val[i]),"","");
+
+  return ret;
+
+}
+
+
+int32_t
+TSP_EIList_initialize(TSP_extended_info_list_t* eil, const int32_t len){
+  int32_t ret;
+  int32_t i;
+
+  assert(eil);
+
+  ret=TSP_STATUS_OK;
+
+  if(NULL!=eil->TSP_extended_info_list_t_val)
+  {
+    for(i=0;i<eil->TSP_extended_info_list_t_len;++i)
+    {
+       ret=TSP_EI_finalize(&(eil->TSP_extended_info_list_t_val[i]));
+      
+    }
   }
+
+  eil->TSP_extended_info_list_t_len=len;
+  eil->TSP_extended_info_list_t_val=calloc(len,sizeof(TSP_extended_info_t));
   
-  return TSP_STATUS_OK;
+  if(NULL!=eil->TSP_extended_info_list_t_val)
+  {
+    for (i=0;i<len;++i) {
+       ret=TSP_EI_initialize(&(eil->TSP_extended_info_list_t_val[i]),"","");
+    }
+  }
+  else
+  {
+    ret=TSP_STATUS_ERROR_MEMORY_ALLOCATION;
+  }
+ 
+  return ret;
+ 
+}
+
+int32_t
+TSP_EIList_finalize(TSP_extended_info_list_t* eil){
+  int32_t ret;
+  int32_t i;
+
+  assert(eil);
+
+ ret= TSP_STATUS_OK;
+
+  for (i=0;i<eil->TSP_extended_info_list_t_len;++i) {
+    ret=TSP_EI_finalize(&(eil->TSP_extended_info_list_t_val[i]));
+  }
+
+  eil->TSP_extended_info_list_t_len=0;
+  eil->TSP_extended_info_list_t_val=NULL;
+
+  return ret;
+
 }
 
 const TSP_extended_info_t*
@@ -177,56 +274,32 @@ TSP_EIList_findEIByKey(const TSP_extended_info_list_t* eil, const char* key){
 int32_t
 TSP_EIList_copy(TSP_extended_info_list_t* eil_dest,
 		const TSP_extended_info_list_t eil_src){
-  int i;
-
-  if (NULL==eil_dest) {
-    return TSP_STATUS_ERROR_UNKNOWN;
-  }
-
-  if (0 == eil_src.TSP_extended_info_list_t_len) {
-    /* quick return nothing to copy from */
-    return TSP_STATUS_ERROR_UNKNOWN;
-  }
-
-  if (0 != eil_dest->TSP_extended_info_list_t_len) {
-
-    eil_dest->TSP_extended_info_list_t_len = eil_src.TSP_extended_info_list_t_len;
-
-    eil_dest->TSP_extended_info_list_t_val = 
-      malloc(sizeof(TSP_extended_info_t)*(eil_dest->TSP_extended_info_list_t_len));
-
-    TSP_CHECK_ALLOC(eil_dest->TSP_extended_info_list_t_val,TSP_STATUS_ERROR_MEMORY_ALLOCATION);
-
-    /* loop over symbol_info to copy */
-    for (i=0;i<eil_dest->TSP_extended_info_list_t_len;++i) {
-      TSP_EI_copy(&(eil_dest->TSP_extended_info_list_t_val[i]),
-			  eil_src.TSP_extended_info_list_t_val[i]);
-    }
-  }
-
-  return TSP_STATUS_OK;
-}
-
-int32_t
-TSP_EIList_finalize(TSP_extended_info_list_t* eil){
-  
-  assert(eil);
-
   int32_t i;
+  int32_t ret;
 
-  for (i=0;i<eil->TSP_extended_info_list_t_len;++i) {
-    TSP_EI_finalize(&(eil->TSP_extended_info_list_t_val[i]));
+  assert(eil_dest);
 
+  ret= TSP_STATUS_OK;
+ 
+  ret=TSP_EIList_finalize(eil_dest);
+  if(TSP_STATUS_OK!=ret){
+    return ret;
   }
 
-  eil->TSP_extended_info_list_t_len=0;
-  free(eil->TSP_extended_info_list_t_val);
+  ret=TSP_EIList_initialize(eil_dest,eil_src.TSP_extended_info_list_t_len);
+  if(TSP_STATUS_OK!=ret){
+    return ret;
+  }
 
-  return TSP_STATUS_OK;
+  /* loop over symbol_info to copy */
+  for (i=0;i<eil_dest->TSP_extended_info_list_t_len;++i) {
+      ret=TSP_EI_copy(&(eil_dest->TSP_extended_info_list_t_val[i]),
+			  eil_src.TSP_extended_info_list_t_val[i]);
+  }
+  
 
+  return ret;
 }
-
-
 
 
 
@@ -238,6 +311,45 @@ struct TSP_sample_symbol_extended_info_t {
 typedef struct TSP_sample_symbol_extended_info_t
 */
 
+TSP_sample_symbol_extended_info_t*
+TSP_SSEI_new(const int32_t pgi, const int32_t nei) {
+
+  TSP_sample_symbol_extended_info_t* ssei;
+
+  ssei = calloc(1,sizeof(TSP_sample_symbol_extended_info_t));
+
+  if(NULL!=ssei)
+  {
+    TSP_SSEI_initialize(ssei,pgi,nei);
+  }
+
+
+  return ssei;
+  
+}
+
+int32_t
+TSP_SSEI_delete(TSP_sample_symbol_extended_info_t** ssei) {
+  int32_t ret;
+
+  assert(ssei);
+
+  ret=TSP_STATUS_OK;
+
+  if(NULL!=*ssei)
+    {
+      ret=TSP_SSEI_finalize(*ssei);
+      if(TSP_STATUS_OK!=ret){
+	return ret;
+      }
+
+      free(*ssei);
+      *ssei=NULL;
+    }
+
+    return ret;
+}
+
 int32_t
 TSP_SSEI_initialize(TSP_sample_symbol_extended_info_t* ssei, const int32_t pgi, const int32_t nei) {
   
@@ -245,36 +357,43 @@ TSP_SSEI_initialize(TSP_sample_symbol_extended_info_t* ssei, const int32_t pgi, 
 
   ssei->provider_global_index=pgi;
 
-  TSP_EIList_initialize(&(ssei->info), nei);
-
-  return TSP_STATUS_OK;
+  return TSP_EIList_initialize(&(ssei->info), nei);
 
 }
 
 
 int32_t
 TSP_SSEI_finalize(TSP_sample_symbol_extended_info_t* ssei){
+
   assert(ssei);
 
-  ssei->provider_global_index=-1;
-
-  TSP_EIList_finalize(&(ssei->info));
-
-  return TSP_STATUS_OK;
+  return  TSP_EIList_finalize(&(ssei->info));
+  
 
 }
 
 int32_t
 TSP_SSEI_copy(TSP_sample_symbol_extended_info_t* ssei_dest,
   	      const TSP_sample_symbol_extended_info_t ssei_src){
+  int32_t ret;
 
-  if (NULL==ssei_dest) {
-    return TSP_STATUS_ERROR_UNKNOWN;
+  assert(ssei_dest);
+
+  ret=TSP_STATUS_OK;
+
+  ret=TSP_SSEI_finalize(ssei_dest);
+  if(TSP_STATUS_OK!=ret){
+    return ret;
   }
 
+
+  ret=TSP_SSEI_initialize(ssei_dest,ssei_src. provider_global_index,ssei_src.info.TSP_extended_info_list_t_len);
+  if(TSP_STATUS_OK!=ret){
+    return ret;
+  }
   ssei_dest->provider_global_index=ssei_src.provider_global_index;
 
-  TSP_EIList_copy( &(ssei_dest->info),ssei_src.info);
+  ret=TSP_EIList_copy( &(ssei_dest->info),ssei_src.info);
  
   return TSP_STATUS_OK;
 }
@@ -289,41 +408,82 @@ typedef struct {
 }TSP_sample_symbol_extended_info_list_t;
 */
 
-int32_t
-TSP_SSEIList_create(TSP_sample_symbol_extended_info_list_t** ssei_list){
+TSP_sample_symbol_extended_info_list_t*
+TSP_SSEIList_new(int32_t len) {
+  TSP_sample_symbol_extended_info_list_t* ssei_list;
 
-    *ssei_list = malloc(sizeof(TSP_sample_symbol_extended_info_list_t));
+  ssei_list = calloc(1,sizeof(TSP_sample_symbol_extended_info_list_t));
+  
 
-    TSP_CHECK_ALLOC(ssei_list,TSP_STATUS_ERROR_MEMORY_ALLOCATION);
+  if(NULL!=ssei_list)
+  {    
+    TSP_SSEIList_initialize(ssei_list,len);
+  }
 
-    TSP_SSEIList_initialize(*ssei_list,0);
-
-    return TSP_STATUS_OK;
+  return ssei_list;
 }
 
 int32_t
-TSP_SSEIList_initialize(TSP_sample_symbol_extended_info_list_t* ssei_list,int32_t len){
+TSP_SSEIList_delete(TSP_sample_symbol_extended_info_list_t** ssei_list) {
+
+  int32_t ret;
 
   assert(ssei_list);
 
+  ret=TSP_STATUS_OK;
+
+  if(NULL!=*ssei_list)
+    {
+      ret=TSP_SSEIList_finalize(*ssei_list);
+      free(*ssei_list);
+      *ssei_list=NULL;
+    }
+
+    return ret;
+}
+
+int32_t
+TSP_SSEIList_initialize(TSP_sample_symbol_extended_info_list_t* ssei_list,int32_t len) {
+  int32_t i;
+  int32_t ret;
+
+  assert(ssei_list);
+  ret=TSP_STATUS_OK;
+
+  if(NULL!=ssei_list->TSP_sample_symbol_extended_info_list_t_val)
+  {
+    for(i=0;i<ssei_list->TSP_sample_symbol_extended_info_list_t_len;++i)
+    {
+      ret=TSP_SSEI_finalize(&(ssei_list->TSP_sample_symbol_extended_info_list_t_val[i]));
+    }
+  }
+
   ssei_list->TSP_sample_symbol_extended_info_list_t_len=len;
+  ssei_list->TSP_sample_symbol_extended_info_list_t_val=calloc(len,sizeof(TSP_sample_symbol_extended_info_t));
+  TSP_CHECK_ALLOC(ssei_list->TSP_sample_symbol_extended_info_list_t_val,TSP_STATUS_ERROR_MEMORY_ALLOCATION);
 
-  ssei_list->TSP_sample_symbol_extended_info_list_t_val=malloc(sizeof(TSP_sample_symbol_extended_info_t)*len);
-
-  return TSP_STATUS_OK;
+  return ret;
 
 }
 
 int32_t
 TSP_SSEIList_finalize(TSP_sample_symbol_extended_info_list_t* ssei_list){
-  
-  assert(ssei_list);
+  int32_t ret;
+  int32_t i;
 
-  TSP_SSEI_finalize(ssei_list->TSP_sample_symbol_extended_info_list_t_val);
+  assert(ssei_list);
+  ret=TSP_STATUS_OK;
+
+  for (i=0;i<ssei_list->TSP_sample_symbol_extended_info_list_t_len;++i) {
+    ret=TSP_SSEI_finalize(&(ssei_list->TSP_sample_symbol_extended_info_list_t_val[i]));
+  }
 
   free(ssei_list->TSP_sample_symbol_extended_info_list_t_val);
 
-  return TSP_STATUS_OK;
+  ssei_list->TSP_sample_symbol_extended_info_list_t_val = NULL;
+  ssei_list->TSP_sample_symbol_extended_info_list_t_len = 0;
+
+  return ret;
 }
 
 
@@ -331,34 +491,27 @@ int32_t
 TSP_SSEIList_copy(TSP_sample_symbol_extended_info_list_t* dest_ssei_list,
                   const TSP_sample_symbol_extended_info_list_t src_ssei_list){
 
-  int i;
+  int32_t ret;
+  int32_t i;
 
-  if (NULL==dest_ssei_list) {
-    return TSP_STATUS_ERROR_UNKNOWN;
+  assert(dest_ssei_list);
+ 
+  ret=TSP_SSEIList_finalize(dest_ssei_list);
+  if(TSP_STATUS_OK!=ret){
+    return ret;
   }
 
-  if (0 == src_ssei_list.TSP_sample_symbol_extended_info_list_t_len) {
-    /* quick return nothing to copy from */
-    return TSP_STATUS_ERROR_UNKNOWN;
+  ret= TSP_SSEIList_initialize(dest_ssei_list,src_ssei_list.TSP_sample_symbol_extended_info_list_t_len); 
+  if(TSP_STATUS_OK!=ret){
+    return ret;
   }
-
-  if (0 != dest_ssei_list->TSP_sample_symbol_extended_info_list_t_len) {
-
-    dest_ssei_list->TSP_sample_symbol_extended_info_list_t_len=src_ssei_list.TSP_sample_symbol_extended_info_list_t_len;
-
-    dest_ssei_list->TSP_sample_symbol_extended_info_list_t_val = 
-      malloc(sizeof(TSP_sample_symbol_extended_info_t)*(dest_ssei_list->TSP_sample_symbol_extended_info_list_t_len));
-
-    TSP_CHECK_ALLOC(dest_ssei_list->TSP_sample_symbol_extended_info_list_t_val,TSP_STATUS_ERROR_MEMORY_ALLOCATION);
-
-    /* loop over symbol_info to copy */
-    for (i=0;i<dest_ssei_list->TSP_sample_symbol_extended_info_list_t_len;++i) {
-      TSP_SSEI_copy(&(dest_ssei_list->TSP_sample_symbol_extended_info_list_t_val[i]),
+  /* loop over symbol_info to copy */
+  for (i=0;i<dest_ssei_list->TSP_sample_symbol_extended_info_list_t_len;++i) {
+     ret= TSP_SSEI_copy(&(dest_ssei_list->TSP_sample_symbol_extended_info_list_t_val[i]),
 			  src_ssei_list.TSP_sample_symbol_extended_info_list_t_val[i]);
-    }
   }
 
-  return TSP_STATUS_OK;
+  return ret;
 
 
 }

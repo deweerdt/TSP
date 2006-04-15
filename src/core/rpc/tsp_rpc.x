@@ -1,6 +1,6 @@
 /* -*- idl -*-
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_rpc.x,v 1.29 2006-04-12 15:06:37 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_rpc.x,v 1.30 2006-04-15 10:46:02 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -130,7 +130,11 @@ enum TSP_status_t
 	/**
 	 * Memory Allocation error
 	 */
-	TSP_STATUS_ERROR_MEMORY_ALLOCATION
+	TSP_STATUS_ERROR_MEMORY_ALLOCATION,
+	/**
+	 * Provided channel Id is invalid
+	 */
+	TSP_STATUS_ERROR_INVALID_CHANNEL_ID	
 };
 
 /** TSP Symbols basic types */

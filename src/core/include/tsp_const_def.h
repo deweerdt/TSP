@@ -1,6 +1,6 @@
 /*
  
-$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_const_def.h,v 1.36 2006-03-31 12:55:19 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_const_def.h,v 1.37 2006-04-15 10:46:02 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -281,8 +281,17 @@ typedef struct  TSP_otsp_server_info_t TSP_otsp_server_info_t;
 			STRACE_ERROR(("-->OUT : ERROR : Memory allocation failed"))  \
 			return ret; \
 		} \
-	}	
-	
+	}
+
+#define TSP_CHECK_POINTER(p, ret) \
+	{ \
+		if ( NULL == p ) \
+		{ \
+			STRACE_ERROR(("-->OUT : ERROR : NULL POINTER"))  \
+			return ret; \
+		} \
+	}
+
 #define TSP_CHECK_THREAD(status, ret) \
 	{ \
 		if ( 0 != status ) \
@@ -309,6 +318,14 @@ typedef struct  TSP_otsp_server_info_t TSP_otsp_server_info_t;
 			return ret; \
 		} \
 	}	
+
+#define TSP_CHECK_STATUS_OK(status, ret) \
+  {					 \
+    if (TSP_STATUS_OK != status)         \
+      {		                         \
+	return ret;			 \
+      }					 \
+  }
 
 /*-------- DATA STREAM ENDIAN CONVERSION --------*/
 

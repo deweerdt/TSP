@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.h,v 1.14 2006-02-03 20:46:22 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.h,v 1.15 2006-04-15 10:46:02 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -170,6 +170,14 @@ int TSP_session_get_symbols_global_index_by_channel(channel_id_t channel_id,
  * @return TRUE or FALSE. TRUE = A consumer is connected
  */
 int TSP_session_is_consumer_connected_by_channel(channel_id_t channel_id);
+
+/**
+ * Get the GLU handle of the specified sessions.
+ * @param channel_id the TSP channel id
+ * @return the GLU handle attached to the session
+ *         may be NULL if session is invalid
+ */
+GLU_handle_t* TSP_session_get_GLU_by_channel(channel_id_t channel_id);
 
 /**
  * Returns a session that must be destroyed.

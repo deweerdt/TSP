@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.c,v 1.23 2006-04-12 06:56:03 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.c,v 1.24 2006-04-15 10:46:02 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -181,6 +181,13 @@ void TSP_session_init(void)
     }
 }
 
+GLU_handle_t* TSP_session_get_GLU_by_channel(channel_id_t channel_id) {
+  TSP_LOCK_MUTEX(&X_session_list_mutex,NULL);
+  TSP_session_t* session;
+  TSP_GET_SESSION(session,channel_id,NULL);  
+  TSP_UNLOCK_MUTEX(&X_session_list_mutex,NULL);
+  return session->session_data->glu_h;
+}
 
 void TSP_session_close_session_by_channel(channel_id_t channel_id)
 {
@@ -240,13 +247,9 @@ int TSP_add_session(channel_id_t* new_channel_id, GLU_handle_t* glu_h)
   X_session_t[X_session_nb].session_data->glu_h = glu_h; 
 
   /* Get symbols number */
-  if(!glu_h->get_ssi_list(glu_h,&symbol_list))
-    {
-      STRACE_ERROR(("Function GLU_handle_t::get_ssi_list failed"));
-      return FALSE;
-    }
-    X_session_t[X_session_nb].session_data->symbols_number = symbol_list.TSP_sample_symbol_info_list_t_len; 
-
+  X_session_t[X_session_nb].session_data->symbols_number =
+    X_session_t[X_session_nb].session_data->glu_h->get_nb_symbols( X_session_t[X_session_nb].session_data->glu_h);
+  
   /* OK, there's a new session*/
   X_session_nb++;
   
