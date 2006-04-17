@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_common_ssi.c,v 1.3 2006-04-17 22:27:35 erk Exp $
+$Id: tsp_common_ssi.c,v 1.4 2006-04-17 23:05:48 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -191,7 +191,7 @@ TSP_SSI_initialize_request_full(TSP_sample_symbol_info_t* ssi,
 
 int32_t
 TSP_SSI_copy(TSP_sample_symbol_info_t* dst_ssi, 
-	     TSP_sample_symbol_info_t src_ssi) {
+	     const TSP_sample_symbol_info_t src_ssi) {
   
   int32_t retcode = TSP_STATUS_OK;
 
@@ -293,7 +293,7 @@ TSP_SSIList_finalize(TSP_sample_symbol_info_list_t* ssil) {
 
 int32_t
 TSP_SSIList_copy(TSP_sample_symbol_info_list_t* dst_ssil, 
-		 TSP_sample_symbol_info_list_t  src_ssil) {
+		 const TSP_sample_symbol_info_list_t  src_ssil) {
   int32_t retcode = TSP_STATUS_OK;
   int i;
 
