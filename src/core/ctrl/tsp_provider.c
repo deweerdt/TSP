@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_provider.c,v 1.44 2006-04-15 23:07:34 erk Exp $
+$Id: tsp_provider.c,v 1.45 2006-04-17 22:27:35 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -280,8 +280,8 @@ TSP_provider_request_open(const TSP_request_open_t* req_open,
 	
   TSP_LOCK_MUTEX(&X_tsp_request_mutex,);
 
-  ans_open->version_id = UNDEFINED_VERSION_ID;
-  ans_open->channel_id = UNDEFINED_CHANNEL_ID;
+  ans_open->version_id = TSP_UNDEFINED_VERSION_ID;
+  ans_open->channel_id = TSP_UNDEFINED_CHANNEL_ID;
   ans_open->status     = TSP_STATUS_ERROR_UNKNOWN;
   ans_open->status_str = "";
 
@@ -476,10 +476,8 @@ TSP_provider_request_sample(TSP_request_sample_t* req_sample,
        * Now we shall update answer_sample->symbols in order to indicates
        * to consumer side which symbols are marked as 'unknown'
        */
-      TSP_common_SSIList_create(&(ans_sample->symbols),
-				req_sample->symbols.TSP_sample_symbol_info_list_t_len);
-      TSP_common_SSIList_copy(&(ans_sample->symbols), 
-			      req_sample->symbols);
+      TSP_SSIList_copy(&(ans_sample->symbols), 
+		       req_sample->symbols);
     }
   } else {
     STRACE_WARNING(("TSP ERROR"));

@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.c,v 1.24 2006-04-15 10:46:02 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.c,v 1.25 2006-04-17 22:27:35 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -213,7 +213,7 @@ int TSP_session_get_nb_session(void)
 
 int TSP_add_session(channel_id_t* new_channel_id, GLU_handle_t* glu_h)
 {
-  channel_id_t channel_id = (channel_id_t)(UNDEFINED_CHANNEL_ID);
+  channel_id_t channel_id = (channel_id_t)(TSP_UNDEFINED_CHANNEL_ID);
   
   TSP_sample_symbol_info_list_t symbol_list;
 

@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_common_ssi.h,v 1.2 2006-04-12 13:06:10 erk Exp $
+$Id: tsp_common_ssi.h,v 1.3 2006-04-17 22:27:35 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -56,29 +56,77 @@ Purpose   : Main interface for the producer module
 
 BEGIN_C_DECLS
 
-/**
- * Copy a Sample Symbol Information Structure.
- * @param[in,out] dest_symbol the (preallocated) sample symbol information structure. 
- *                The structure should be allocated but not the member of the structure.
- *                On entry should  be a non NULL pointer to  TSP_sample_symbol_info_t.
- *                On return contains the .
- * @param[in]     src_symbol 
- */
-void
-TSP_common_SSI_copy(TSP_sample_symbol_info_t* dest_symbol, 
-		    TSP_sample_symbol_info_t src_symbol);
+TSP_sample_symbol_info_t*
+TSP_SSI_new(const char* name,
+	    int32_t pgi,
+	    int32_t pgridx,
+	    int32_t pgrank,
+	    int32_t type,
+	    int32_t dimension,
+	    int32_t offset,
+	    int32_t nelem,
+	    int32_t period,
+	    int32_t phase);
+
+int32_t
+TSP_SSI_delete(TSP_sample_symbol_info_t** ssi);
+
+
+int32_t
+TSP_SSI_initialize(TSP_sample_symbol_info_t* ssi,
+		   const char* name,
+		   int32_t pgi,
+		   int32_t pgridx,
+		   int32_t pgrank,
+		   int32_t type,
+		   int32_t dimension,
+		   int32_t offset,
+		   int32_t nelem,
+		   int32_t period,
+		   int32_t phase);
+
+int32_t
+TSP_SSI_finalize(TSP_sample_symbol_info_t* ssi);
 
 /**
- * Initialize a Sample Symbol Information Structure.
+ * Initialize (default value) a Sample Symbol Information Structure.
  * This does provide "reasonable" default values to all field.
  * BEWARE that the name field is nullified too.
  * @param[in,out] ssi the (preallocated) sample symbol information structure. 
  *                The structure should be allocated but not the member of the structure.
  *                On entry should  be a non NULL pointer to  TSP_sample_symbol_info_t.
  *                On return the initialized structure.
+ * @return TSP_STATUS_OK on success
  */
-void 
-TSP_common_SSI_initialize(TSP_sample_symbol_info_t* ssi);
+int32_t 
+TSP_SSI_initialize_default(TSP_sample_symbol_info_t* ssi);
+
+int32_t 
+TSP_SSI_initialize_request_minimal(TSP_sample_symbol_info_t* ssi,
+				   const char* name,
+				   int32_t period);
+
+int32_t 
+TSP_SSI_initialize_request_full(TSP_sample_symbol_info_t* ssi,
+				const char* name,
+				int32_t type,
+				int32_t dimension,
+				int32_t offset,
+				int32_t nelem,
+				int32_t period,
+				int32_t phase);
+
+/**
+ * Copy a Sample Symbol Information Structure.
+ * @param[in,out] dst_ssi the (preallocated) sample symbol information structure. 
+ *                The structure should be allocated but not the member of the structure.
+ *                On entry should  be a non NULL pointer to  TSP_sample_symbol_info_t.
+ *                On return contains the .
+ * @param[in]     src_ssi 
+ */
+int32_t
+TSP_SSI_copy(TSP_sample_symbol_info_t* dst_ssi, 
+	     TSP_sample_symbol_info_t src_ssi);
 
 
 /**
@@ -87,24 +135,31 @@ TSP_common_SSI_initialize(TSP_sample_symbol_info_t* ssi);
  * @param[in]  nbSSI the number of SSI in the to be created list.
  * @return TSP_STATUS_OK if allocation is OK. TSP_STATUS_ALLOC_FAILED otherwise.
  */
-int32_t 
-TSP_common_SSIList_create(TSP_sample_symbol_info_list_t* ssil, int32_t nbSSI);
+TSP_sample_symbol_info_list_t*
+TSP_SSIList_new(int32_t nbSSI);
+
+int32_t
+TSP_SSIList_delete(TSP_sample_symbol_info_list_t** ssi);
 
 /**
  * Initialize a preallocated list of sample symbol information.
  * @param[in] ssil the list to be initialized.
  */
-void 
-TSP_common_SSIList_initialize(TSP_sample_symbol_info_list_t* ssil);
+int32_t 
+TSP_SSIList_initialize(TSP_sample_symbol_info_list_t* ssil,
+		       int32_t nbSSI);
+
+int32_t 
+TSP_SSIList_finalize(TSP_sample_symbol_info_list_t* ssil);
 
 /**
- * Copy a list of symbols from src_symbols to dest_symbols.
- * @param[out] dest_symbols the symbols list copy destination
- * @param[in] src_symbols the symbols list copy source
+ * Copy a list of symbols from src_symbols to dst_ssil.
+ * @param[out] dst_ssil the symbols list copy destination
+ * @param[in] src_ssil the symbols list copy source
  */
-void
-TSP_common_SSIList_copy(TSP_sample_symbol_info_list_t* dest_symbols, 
-			TSP_sample_symbol_info_list_t  src_symbols);
+int32_t
+TSP_SSIList_copy(TSP_sample_symbol_info_list_t* dst_ssil, 
+		 TSP_sample_symbol_info_list_t  src_ssil);
 
 /** @} */
 

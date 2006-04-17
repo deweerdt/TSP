@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.52 2006-04-15 23:07:34 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.53 2006-04-17 22:27:35 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -60,7 +60,7 @@ Purpose   : Main implementation for the TSP consumer library
 			STRACE_ERROR(("The session object is NULL !")) \
 			return (ret); \
 		} \
-		if( UNDEFINED_CHANNEL_ID == session->channel_id) \
+		if( TSP_UNDEFINED_CHANNEL_ID == session->channel_id) \
 		{  \
 			STRACE_ERROR(("No Channel Id available, the session need to be opened first !")) \
 			return (ret); \
@@ -168,7 +168,6 @@ TSP_consumer_store_informations(TSP_otsp_t* otsp, TSP_answer_sample_t* ans_sampl
   int32_t retcode = TSP_STATUS_OK;
   unsigned int symbols_number =
     ans_sample->symbols.TSP_sample_symbol_info_list_t_len;
-  unsigned int i;
 	  
   otsp->information.base_frequency        = ans_sample->base_frequency;
   otsp->information.max_period            = ans_sample->max_period;
@@ -185,7 +184,7 @@ TSP_consumer_store_informations(TSP_otsp_t* otsp, TSP_answer_sample_t* ans_sampl
       (TSP_sample_symbol_info_t* )calloc(symbols_number,sizeof(TSP_sample_symbol_info_t));
     TSP_CHECK_ALLOC(otsp->information.symbols.TSP_sample_symbol_info_list_t_val, FALSE);
     
-    TSP_common_SSIList_copy(&(otsp->information.symbols),ans_sample->symbols);
+    TSP_SSIList_copy(&(otsp->information.symbols),ans_sample->symbols);
   }
   return retcode;
 } /* end of TSP_consumer_store_informations */
@@ -227,7 +226,6 @@ TSP_consumer_store_extended_informations(TSP_otsp_t* otsp, TSP_answer_extended_i
   int32_t retcode = TSP_STATUS_OK;
 
   unsigned int symbols_number = ans_extinfo->extsymbols.TSP_sample_symbol_extended_info_list_t_len;
-  unsigned int i;
  
   TSP_SSEIList_initialize(&(otsp->extended_informations),symbols_number);
   TSP_SSEIList_copy(&(otsp->extended_informations),ans_extinfo->extsymbols);
@@ -252,34 +250,33 @@ TSP_consumer_delete_extended_informations(TSP_otsp_t* otsp) {
  * @param server_info information sent by the provider about itself
  * @return the allocated consumer object
  */ 
-static TSP_otsp_t* TSP_new_object_tsp(	TSP_server_t server,
-					TSP_server_info_string_t server_info)
-{
+static TSP_otsp_t* 
+TSP_new_object_tsp(TSP_server_t server,
+		   TSP_server_info_string_t server_info) {
   TSP_otsp_t* obj;
 	
   obj = (TSP_otsp_t*)calloc(1, sizeof(TSP_otsp_t) );
 	
-  if(0 == obj) { 
+  if(NULL == obj) { 
     printf("ERROR : calloc error\n");
-    return 0;
+    return NULL;
   }
 	
   obj->server = server;
   strncpy(obj->server_info.info, server_info, STRING_SIZE_SERVER_INFO);
 	
   /* Init */
-  obj->channel_id = UNDEFINED_CHANNEL_ID;
-	
+  obj->channel_id                                            = TSP_UNDEFINED_CHANNEL_ID;	
   obj->information.symbols.TSP_sample_symbol_info_list_t_len = 0;
   obj->information.symbols.TSP_sample_symbol_info_list_t_val = 0;
-  obj->requested_sym.TSP_sample_symbol_info_list_t_len = 0;
-  obj->requested_sym.TSP_sample_symbol_info_list_t_val = 0;
+  obj->requested_sym.TSP_sample_symbol_info_list_t_len       = 0;
+  obj->requested_sym.TSP_sample_symbol_info_list_t_val       = 0;
   obj->extended_informations.TSP_sample_symbol_extended_info_list_t_len =0;
   obj->extended_informations.TSP_sample_symbol_extended_info_list_t_val =NULL;
-  obj->groups = 0;
-  obj->receiver = 0;
-  obj->sample_fifo = NULL;
-  obj->data_link_broken=FALSE;
+  obj->groups           = 0;
+  obj->receiver         = 0;
+  obj->sample_fifo      = NULL;
+  obj->data_link_broken = FALSE;
 	
   return obj;
 } /* end of TSP_new_object_tsp */
@@ -678,12 +675,9 @@ TSP_consumer_request_open(TSP_provider_t provider, int custom_argc, char* custom
     }
 
   	
-  if(0 != otsp)
-    {
-      ans_open = TSP_request_open(&req_open, otsp->server);
-      if( NULL != ans_open)
-	{
-
+  if(0 != otsp) {
+    ans_open = TSP_request_open(&req_open, otsp->server);
+    if( NULL != ans_open) {
 	  switch (ans_open->status)
 	    {
 	    case TSP_STATUS_OK :
@@ -704,18 +698,13 @@ TSP_consumer_request_open(TSP_provider_t provider, int custom_argc, char* custom
 	      break;
 	    }
 	}
-      else
-	{
-	  STRACE_ERROR(("Unable to communicate with the provider"));
-
-	}
-		
+      else {
+	STRACE_ERROR(("Unable to communicate with the provider"));
+      }		
     }
-  else
-    {
-      STRACE_ERROR(("This provider need to be remote_opened first"));
-
-    }
+  else {
+    STRACE_ERROR(("This provider need to be tsp_consumer_connect_url first"));    
+  }
 	
   return ret;	
 } /* end of TSP_request_open */
@@ -742,7 +731,7 @@ TSP_consumer_request_close(TSP_provider_t provider)
   STRACE_DEBUG(("TSP_request_close(ing) channel_id=%u", otsp->channel_id));
 	
   TSP_request_close(&req_close, otsp->server);
- 
+  otsp->channel_id = TSP_UNDEFINED_CHANNEL_ID;
   return ret;	
 } /* end of TSP_request_close */
 
@@ -807,7 +796,6 @@ TSP_consumer_request_filtered_information(TSP_provider_t provider, int filter_ki
   TSP_request_information_t req_info;
   TSP_answer_sample_t* ans_sample = 0;
   int ret = FALSE;
-  int32_t i;
 		
   TSP_CHECK_SESSION(otsp, FALSE);
 
@@ -952,7 +940,7 @@ static int TSP_consumer_store_requested_symbols(TSP_sample_symbol_info_list_t* s
 					      sizeof(TSP_sample_symbol_info_t));
   TSP_CHECK_ALLOC(stored_sym->TSP_sample_symbol_info_list_t_val, FALSE);
 
-  TSP_common_SSIList_copy(stored_sym,*new_sym);
+  TSP_SSIList_copy(stored_sym,*new_sym);
 		
   return TRUE;
 }
@@ -965,7 +953,6 @@ TSP_consumer_request_sample(TSP_provider_t provider, TSP_sample_symbol_info_list
   int ret = FALSE;
   TSP_answer_sample_t* ans_sample = 0;
   TSP_request_sample_t req_sample;
-  int i;
 	
   TSP_CHECK_SESSION(otsp, FALSE);
 	
@@ -976,7 +963,7 @@ TSP_consumer_request_sample(TSP_provider_t provider, TSP_sample_symbol_info_list
     (TSP_sample_symbol_info_t*)calloc(symbols->TSP_sample_symbol_info_list_t_len, sizeof(TSP_sample_symbol_info_t));
   TSP_CHECK_ALLOC(req_sample.symbols.TSP_sample_symbol_info_list_t_val, FALSE);
 
-  TSP_common_SSIList_copy(&(req_sample.symbols), *symbols);
+  TSP_SSIList_copy(&(req_sample.symbols), *symbols);
 	
   /* Get the computed ans_sample from the provider */
   ans_sample = TSP_request_sample(&req_sample, otsp->server);
@@ -985,7 +972,7 @@ TSP_consumer_request_sample(TSP_provider_t provider, TSP_sample_symbol_info_list
    * now update provider global index (and other provider-side symbol info)
    * in the requested symbols in case unknown symbols was found on provider side
    */
-  TSP_common_SSIList_copy(symbols, ans_sample->symbols);
+  TSP_SSIList_copy(symbols, ans_sample->symbols);
 		       
   /*free allocated request sample symbol list */
   free(req_sample.symbols.TSP_sample_symbol_info_list_t_val);  
@@ -1289,14 +1276,14 @@ TSP_consumer_request_async_sample_write(TSP_provider_t provider,
   async_write.data.data_val         = async_sample_write->value_ptr;
   async_write.data.data_len         = async_sample_write->value_size;
   
-  /* verification of the structure*/
+  /* verification of the structure */
   	
   if(0 != otsp) { 
     result = TSP_request_async_sample_write(&async_write,otsp->server);
     if (result) {
       ret = *result; 
     } else {
-      STRACE_DEBUG(("result is <0x%X>\n", result));      
+      STRACE_DEBUG(("result is <0x%X>\n", (unsigned int) result));      
     }
   } else {
     STRACE_ERROR(("This provider is not instanciate"));

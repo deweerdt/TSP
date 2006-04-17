@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_common_ssei.c,v 1.6 2006-04-15 10:46:02 erk Exp $
+$Id: tsp_common_ssei.c,v 1.7 2006-04-17 22:27:35 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -44,13 +44,6 @@ Purpose   : Main implementation for the producer module
 #define TSP_COMMON_SSEI_C
 #include <tsp_common_ssei.h>
 
-/* function to use thsi struct
-struct TSP_extended_info_t {
-	char *key;
-	char *value;
-};
-*/
-
 TSP_extended_info_t*
 TSP_EI_new(const char *key,const char *value) {
   TSP_extended_info_t* ei;
@@ -61,7 +54,7 @@ TSP_EI_new(const char *key,const char *value) {
     TSP_EI_initialize(ei,key,value);
 
   return ei;
-}
+}  /* end of TSP_EI_new */
 
 int32_t
 TSP_EI_delete(TSP_extended_info_t** ei) {
@@ -80,7 +73,7 @@ TSP_EI_delete(TSP_extended_info_t** ei) {
   }
 
   return ret;
-} 
+} /* end of TSP_EI_delete */
 
 int32_t
 TSP_EI_initialize(TSP_extended_info_t* ei, const char* key, const char* value) {
@@ -106,14 +99,14 @@ TSP_EI_initialize(TSP_extended_info_t* ei, const char* key, const char* value) {
     ei->value = strdup(value);
 
   return TSP_STATUS_OK;
-} 
+} /* end of TSP_EI_initialize */
 
 int32_t
 TSP_EI_update(TSP_extended_info_t* ei, const char* key, const char* value){
 
   return TSP_EI_initialize(ei,key,value);
 
-}
+} /* end of TSP_EI_update */
 
 int32_t
 TSP_EI_finalize(TSP_extended_info_t* ei) {
@@ -134,7 +127,7 @@ TSP_EI_finalize(TSP_extended_info_t* ei) {
 
   return TSP_STATUS_OK;
 
-} /* end of TSP_EI_initialize */
+} /* end of TSP_EI_finalize */
 
 int32_t
 TSP_EI_copy(TSP_extended_info_t* dest_EI, const TSP_extended_info_t src_EI){
@@ -154,49 +147,38 @@ TSP_EI_copy(TSP_extended_info_t* dest_EI, const TSP_extended_info_t src_EI){
   ret=TSP_EI_initialize(dest_EI,src_EI.key, src_EI.value);
 
   return ret;
-}
+} /* end of TSP_EI_copy */
 
-
-/* function to use this struc
-typedef struct {
-	u_int TSP_extended_info_list_t_len;
-	TSP_extended_info_t *TSP_extended_info_list_t_val;
-} TSP_extended_info_list_t;
-*/
 
 TSP_extended_info_list_t*
-TSP_EIList_new(int32_t len){
+TSP_EIList_new(int32_t len) {
 
   TSP_extended_info_list_t* ei_list;
 
-  ei_list = calloc(1,sizeof(TSP_extended_info_list_t));
+  ei_list = (TSP_extended_info_list_t*) calloc(1,sizeof(TSP_extended_info_list_t));
   if(NULL!=ei_list)
   {
     TSP_EIList_initialize(ei_list,len);
   }
 
   return ei_list;
-}
+} /* end TSP_EIList_new */
 
 int32_t
-TSP_EIList_delete(TSP_extended_info_list_t** eil){
+TSP_EIList_delete(TSP_extended_info_list_t** eil) {
   int32_t ret;
 
   assert(eil);
 
   ret=TSP_STATUS_OK;
 
-  if(NULL!=*eil)
-    {
-      ret=TSP_EIList_finalize(*eil);
-      free(*eil);
-      *eil=NULL;
-    }
-
-
+  if ( NULL!=*eil ) {
+    ret=TSP_EIList_finalize(*eil);
+    free(*eil);
+    *eil=NULL;
+  }
   return ret;
-
-}
+} /* end TSP_EIList_delete */
 
 
 int32_t
@@ -233,16 +215,16 @@ TSP_EIList_initialize(TSP_extended_info_list_t* eil, const int32_t len){
  
   return ret;
  
-}
+} /* end TSP_EIList_initialize */
 
 int32_t
-TSP_EIList_finalize(TSP_extended_info_list_t* eil){
+TSP_EIList_finalize(TSP_extended_info_list_t* eil) {
   int32_t ret;
   int32_t i;
 
   assert(eil);
 
- ret= TSP_STATUS_OK;
+  ret= TSP_STATUS_OK;
 
   for (i=0;i<eil->TSP_extended_info_list_t_len;++i) {
     ret=TSP_EI_finalize(&(eil->TSP_extended_info_list_t_val[i]));
@@ -253,10 +235,10 @@ TSP_EIList_finalize(TSP_extended_info_list_t* eil){
 
   return ret;
 
-}
+} /* end of TSP_EIList_finalize */
 
 const TSP_extended_info_t*
-TSP_EIList_findEIByKey(const TSP_extended_info_list_t* eil, const char* key){
+TSP_EIList_findEIByKey(const TSP_extended_info_list_t* eil, const char* key) {
 
   int32_t i;
 
@@ -268,8 +250,7 @@ TSP_EIList_findEIByKey(const TSP_extended_info_list_t* eil, const char* key){
     }
   }
   return NULL;
-
-}
+} /* end of TSP_EIList_findEIByKey */
 
 int32_t
 TSP_EIList_copy(TSP_extended_info_list_t* eil_dest,
@@ -296,20 +277,8 @@ TSP_EIList_copy(TSP_extended_info_list_t* eil_dest,
       ret=TSP_EI_copy(&(eil_dest->TSP_extended_info_list_t_val[i]),
 			  eil_src.TSP_extended_info_list_t_val[i]);
   }
-  
-
   return ret;
-}
-
-
-
-/* function to use thus struct
-struct TSP_sample_symbol_extended_info_t {
-	int provider_global_index;
-	TSP_extended_info_list_t info;
-};
-typedef struct TSP_sample_symbol_extended_info_t
-*/
+} /* end of TSP_EIList_copy */
 
 TSP_sample_symbol_extended_info_t*
 TSP_SSEI_new(const int32_t pgi, const int32_t nei) {
@@ -322,11 +291,8 @@ TSP_SSEI_new(const int32_t pgi, const int32_t nei) {
   {
     TSP_SSEI_initialize(ssei,pgi,nei);
   }
-
-
   return ssei;
-  
-}
+} /* end of TSP_SSEI_new */
 
 int32_t
 TSP_SSEI_delete(TSP_sample_symbol_extended_info_t** ssei) {
@@ -348,29 +314,24 @@ TSP_SSEI_delete(TSP_sample_symbol_extended_info_t** ssei) {
     }
 
     return ret;
-}
+} /* end of TSP_SSEI_delete */
 
 int32_t
 TSP_SSEI_initialize(TSP_sample_symbol_extended_info_t* ssei, const int32_t pgi, const int32_t nei) {
   
   assert(ssei);
-
   ssei->provider_global_index=pgi;
-
   return TSP_EIList_initialize(&(ssei->info), nei);
 
-}
+} /* end of TSP_SSEI_initialize */
 
 
 int32_t
 TSP_SSEI_finalize(TSP_sample_symbol_extended_info_t* ssei){
 
   assert(ssei);
-
   return  TSP_EIList_finalize(&(ssei->info));
-  
-
-}
+} /* end of TSP_SSEI_finalize */
 
 int32_t
 TSP_SSEI_copy(TSP_sample_symbol_extended_info_t* ssei_dest,
@@ -386,7 +347,6 @@ TSP_SSEI_copy(TSP_sample_symbol_extended_info_t* ssei_dest,
     return ret;
   }
 
-
   ret=TSP_SSEI_initialize(ssei_dest,ssei_src. provider_global_index,ssei_src.info.TSP_extended_info_list_t_len);
   if(TSP_STATUS_OK!=ret){
     return ret;
@@ -396,17 +356,7 @@ TSP_SSEI_copy(TSP_sample_symbol_extended_info_t* ssei_dest,
   ret=TSP_EIList_copy( &(ssei_dest->info),ssei_src.info);
  
   return TSP_STATUS_OK;
-}
-
-
-
-
-/* function to use this struct
-typedef struct {
-	u_int TSP_sample_symbol_extended_info_list_t_len;
-	TSP_sample_symbol_extended_info_t   *TSP_sample_symbol_extended_info_list_t_val;
-}TSP_sample_symbol_extended_info_list_t;
-*/
+} /* end TSP_SSEI_copy */
 
 TSP_sample_symbol_extended_info_list_t*
 TSP_SSEIList_new(int32_t len) {
@@ -419,9 +369,8 @@ TSP_SSEIList_new(int32_t len) {
   {    
     TSP_SSEIList_initialize(ssei_list,len);
   }
-
   return ssei_list;
-}
+} /* end of TSP_SSEIList_new */
 
 int32_t
 TSP_SSEIList_delete(TSP_sample_symbol_extended_info_list_t** ssei_list) {
@@ -440,7 +389,7 @@ TSP_SSEIList_delete(TSP_sample_symbol_extended_info_list_t** ssei_list) {
     }
 
     return ret;
-}
+} /* end of TSP_SSEI_delete */
 
 int32_t
 TSP_SSEIList_initialize(TSP_sample_symbol_extended_info_list_t* ssei_list,int32_t len) {
@@ -464,7 +413,7 @@ TSP_SSEIList_initialize(TSP_sample_symbol_extended_info_list_t* ssei_list,int32_
 
   return ret;
 
-}
+} /* end of TSP_SSEI_initialize */
 
 int32_t
 TSP_SSEIList_finalize(TSP_sample_symbol_extended_info_list_t* ssei_list){
@@ -484,7 +433,7 @@ TSP_SSEIList_finalize(TSP_sample_symbol_extended_info_list_t* ssei_list){
   ssei_list->TSP_sample_symbol_extended_info_list_t_len = 0;
 
   return ret;
-}
+} /* end of TSP_SSEI_finalize */
 
 
 int32_t
@@ -513,8 +462,7 @@ TSP_SSEIList_copy(TSP_sample_symbol_extended_info_list_t* dest_ssei_list,
 
   return ret;
 
-
-}
+} /* end of TSP_SSEI_copy */
 
 
 

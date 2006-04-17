@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/providers/bb_provider/bb_tsp_provider.c,v 1.24 2006-04-05 08:10:31 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/providers/bb_provider/bb_tsp_provider.c,v 1.25 2006-04-17 22:27:35 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -68,6 +68,7 @@ int TSP_provider_rqh_manager_get_nb_running();
  * Some static
  */
 /* The sample symbol list */
+static TSP_sample_symbol_info_list_t* X_sample_symbol_info_list = NULL;
 static TSP_sample_symbol_info_t *X_sample_symbol_info_list_val = NULL;
 
 /* The BB and its shadow BB */
@@ -190,8 +191,8 @@ BB_GLU_init(GLU_handle_t* this, int fallback_argc, char* fallback_argv[]) {
    * Allocate symbol list whose size
    * correspond to number of data (scalar) published in BB
    */
-  TSP_common_SSIList_create(&X_sample_symbol_info_list_val,
-			    i_nb_item_scalaire);
+  X_sample_symbol_info_list = TSP_SSIList_new(i_nb_item_scalaire);
+  X_sample_symbol_info_list_val = &(X_sample_symbol_info_list->TSP_sample_symbol_info_list_t_val);
 
   /* 
    * Allocate array of pointer to data

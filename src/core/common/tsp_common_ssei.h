@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_common_ssei.h,v 1.4 2006-04-13 21:22:46 erk Exp $
+$Id: tsp_common_ssei.h,v 1.5 2006-04-17 22:27:35 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -52,6 +52,12 @@ Purpose   : Main interface for the producer module
 
 BEGIN_C_DECLS
 
+TSP_extended_info_t*
+TSP_EI_new(const char *key,const char *value);
+
+int32_t
+TSP_EI_delete(TSP_extended_info_t** ei);
+
 /**
  * Initialize an extended information item.
  * @param[in,out] ei the extended info structure, the structure should
@@ -92,6 +98,12 @@ TSP_EI_finalize(TSP_extended_info_t* ei);
 int32_t
 TSP_EI_copy(TSP_extended_info_t* dest_EI, const TSP_extended_info_t src_EI);
 
+TSP_extended_info_list_t*
+TSP_EIList_new(int32_t len);
+
+int32_t
+TSP_EIList_delete(TSP_extended_info_list_t** eil);
+
 /**
  * Initialize an extended information list.
  * @param[in,out] eil the extended info list structure, the structure should
@@ -103,6 +115,14 @@ TSP_EI_copy(TSP_extended_info_t* dest_EI, const TSP_extended_info_t src_EI);
  */
 int32_t
 TSP_EIList_initialize(TSP_extended_info_list_t* eil, const int32_t len);
+
+/**
+ * Finalize an extended information list.
+ * @param[in,out] eil the extended info list structure
+ * @return TSP_STATUS_OK on success 
+ */
+int32_t
+TSP_EIList_finalize(TSP_extended_info_list_t* eil);
 
 /**
  * Find a extended information in a list by key.
@@ -123,14 +143,11 @@ int32_t
 TSP_EIList_copy(TSP_extended_info_list_t* eil_dest,
 		const TSP_extended_info_list_t eil_src);
 
+TSP_sample_symbol_extended_info_t*
+TSP_SSEI_new(const int32_t pgi, const int32_t nei);
 
-/**
- * Finalize an extended information list.
- * @param[in,out] eil the extended info list structure
- * @return TSP_STATUS_OK on success 
- */
 int32_t
-TSP_EIList_finalize(TSP_extended_info_list_t* eil);
+TSP_SSEI_delete(TSP_sample_symbol_extended_info_t** ssei);
 
 /**
  * Initialize a TSP Sample Symbol Extended Info structure.
@@ -161,14 +178,11 @@ TSP_SSEI_copy(TSP_sample_symbol_extended_info_t* ssei_dest,
   	      const TSP_sample_symbol_extended_info_t ssei_src);
 
 
+TSP_sample_symbol_extended_info_list_t*
+TSP_SSEIList_new(int32_t len);
 
-/**
- * create a TSP Sample Symbol Extended Info list structure.
- * @param[in,out] ssei_list pointer on the list to create
- * @return TSP_STATUS_OK on success 
- */
 int32_t
-TSP_SSEIList_create(TSP_sample_symbol_extended_info_list_t** ssei_list);
+TSP_SSEIList_delete(TSP_sample_symbol_extended_info_list_t** ssei_list);
 
 /**
  * initialize a TSP Sample Symbol Extended Info list structure.
@@ -180,7 +194,7 @@ int32_t
 TSP_SSEIList_initialize(TSP_sample_symbol_extended_info_list_t* ssei_list,int32_t len);
 
 /**
- * destruction of a TSP Sample Symbol Extended Info list structure.
+ * Destruction of a TSP Sample Symbol Extended Info list structure.
  * @param[in,out] ssei_list list to destroy
  * @return TSP_STATUS_OK on success 
  */

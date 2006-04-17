@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_default_glu.c,v 1.14 2006-04-13 21:22:46 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_default_glu.c,v 1.15 2006-04-17 22:27:35 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -246,13 +246,12 @@ GLU_get_filtered_ssi_list_default(GLU_handle_t* this, int filter_kind, char* fil
     STRACE_INFO(("Nb Match(es) is <%d>",nb_match));
     /* second loop if nb_match > 0 */
     if (nb_match>0) {
-      free(answer_sample->symbols.TSP_sample_symbol_info_list_t_val);
-      answer_sample->symbols.TSP_sample_symbol_info_list_t_val = calloc(nb_match,sizeof(TSP_sample_symbol_info_t));
-      answer_sample->symbols.TSP_sample_symbol_info_list_t_len = nb_match;
+      TSP_SSIList_finalize(&(answer_sample->symbols));
+      TSP_SSIList_initialize(&(answer_sample->symbols),nb_match);
       for (i=0;i<nb_match;i++) {
 	STRACE_DEBUG(("Adding <%s> to answer_sample...",complete_symbol_list.TSP_sample_symbol_info_list_t_val[matched_index[i]].name));
-	TSP_common_SSI_copy(&(answer_sample->symbols.TSP_sample_symbol_info_list_t_val[i]),
-			    complete_symbol_list.TSP_sample_symbol_info_list_t_val[matched_index[i]]);
+	TSP_SSI_copy(&(answer_sample->symbols.TSP_sample_symbol_info_list_t_val[i]),
+		     complete_symbol_list.TSP_sample_symbol_info_list_t_val[matched_index[i]]);
       }
     }
     free(matched_index);
@@ -284,8 +283,8 @@ GLU_get_ssi_list_fromPGI_default(struct GLU_handle_t* this,
   for ( i=0 ; i < pgis_len;++i) {
     
     if(-1!=pgis[i]) {
-      TSP_common_SSI_copy(&(SSI_list->TSP_sample_symbol_info_list_t_val[i]), 
-			  complete_symbol_list.TSP_sample_symbol_info_list_t_val[pgis[i]]);
+      TSP_SSI_copy(&(SSI_list->TSP_sample_symbol_info_list_t_val[i]), 
+		   complete_symbol_list.TSP_sample_symbol_info_list_t_val[pgis[i]]);
       
     }
     else {

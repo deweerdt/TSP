@@ -1,6 +1,6 @@
 /*
  
-$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_const_def.h,v 1.37 2006-04-15 10:46:02 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_const_def.h,v 1.38 2006-04-17 22:27:35 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -158,8 +158,8 @@ typedef uint32_t xdr_and_sync_type_t;
 typedef int time_stamp_t;
 
 /** Init values */
-#define UNDEFINED_CHANNEL_ID (-1)
-#define UNDEFINED_VERSION_ID (-1)
+#define TSP_UNDEFINED_CHANNEL_ID (-1)
+#define TSP_UNDEFINED_VERSION_ID (-1)
 
 /*-------- TSP COMMAND LINE ARGS --------*/
 

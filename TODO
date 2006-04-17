@@ -16,6 +16,18 @@ TODO list:
 - Use TSP on UDP, secure sockets, SHM, ... instead of just TCP/IP	@?
 - Add an asynchronous Mode						@Bob
 - Add tsp_config.h for configuring/document FIFO sizes			@?
+- Handle Request/Answer pair cleanly for all request
+  and think about "req id" for raw stream encoding
+- Add tsp_request_status (no channel id required)
+- Handle multiple session by provider and avoid RPC bias
+  with "connect url". USER consumer API may add URL to Request Open
+  or more simply replace connect_url with 
+  get_provider_handler/release_provider_handle.
+- Use IDL + interface generator for generating helper functions
+  for TSP structures (SSI, SSEI, xxxList etc...)
+- Use CDR instead of XDR encoding (better endianity handling, 
+  less padding etc...)
+
 
 ==========
  PROVIDER

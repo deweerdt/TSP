@@ -1,7 +1,7 @@
 
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/common/tsp_encoder.c,v 1.3 2006-04-07 10:37:17 morvan Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/common/tsp_encoder.c,v 1.4 2006-04-17 22:27:35 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -148,7 +148,7 @@ uint32_t TSP_data_channel_int8_encoder(void* v_int8,uint32_t dimension,  char* o
 {
 
   int8_t *pt_int8;
-  uint32_t taille,i;
+  uint32_t i;
   int32_t  temp[dimension];
 
   pt_int8=(int8_t*)v_int8;
@@ -166,7 +166,7 @@ uint32_t TSP_data_channel_int8_encoder(void* v_int8,uint32_t dimension,  char* o
 uint32_t TSP_data_channel_int16_encoder(void* v_int16,uint32_t dimension,  char* out_buf, uint32_t size)
 {
   int16_t *pt_int16;
-  uint32_t i,taille;
+  uint32_t i;
   int32_t  temp[dimension];
 
   pt_int16=(int16_t*)v_int16;
@@ -274,7 +274,7 @@ uint32_t TSP_data_channel_uint8_encoder(void* v_uint8,uint32_t dimension,  char*
 {
 
   uint8_t *pt_uint8;
-  uint32_t taille,i;
+  uint32_t i;
   uint32_t  temp[dimension];
 
   pt_uint8=(uint8_t*)v_uint8;
@@ -289,7 +289,7 @@ uint32_t TSP_data_channel_uint8_encoder(void* v_uint8,uint32_t dimension,  char*
 uint32_t TSP_data_channel_uint16_encoder(void* v_uint16,uint32_t dimension,  char* out_buf, uint32_t size)
 {
   uint16_t *pt_uint16;
-  uint32_t taille,i;
+  uint32_t i;
   uint32_t  temp[dimension];
 
   pt_uint16=(uint16_t*)v_uint16;
@@ -398,7 +398,7 @@ uint32_t TSP_data_channel_uint64_encoder(void* v_uint64,uint32_t dimension,  cha
 uint32_t TSP_data_channel_char_encoder(void* v_char,uint32_t dimension,  char* out_buf, uint32_t size)
 {
   uint8_t *pt_char;
-  uint32_t taille,i;
+  uint32_t i;
   uint32_t  temp[dimension];
 
   pt_char=(uint8_t*)v_char;
@@ -413,8 +413,8 @@ uint32_t TSP_data_channel_char_encoder(void* v_char,uint32_t dimension,  char* o
 uint32_t TSP_data_channel_uchar_encoder(void* v_uchar,uint32_t dimension,  char* out_buf, uint32_t size)
 {
 
-  uint8_t *pt_uchar;
-  uint32_t taille,i;
+  uint8_t  *pt_uchar;
+  uint32_t  i;
   uint32_t  temp[dimension];
 
   pt_uchar=(uint8_t*)v_uchar;
@@ -430,7 +430,7 @@ uint32_t TSP_data_channel_user_encoder(void* v_user,uint32_t dimension,  char* o
 {
 
   uint8_t *pt_user;
-  uint32_t taille,i;
+  uint32_t  i;
   uint32_t  temp[dimension];
 
   pt_user=(uint8_t*)v_user;
