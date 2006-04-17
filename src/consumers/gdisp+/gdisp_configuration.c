@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_configuration.c,v 1.11 2006-04-07 10:37:17 morvan Exp $
+$Id: gdisp_configuration.c,v 1.12 2006-04-17 16:33:25 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -950,7 +950,7 @@ gdisp_loadProviderSymbolsForSampling ( Kernel_T   *kernel,
       if (symbolIndex != (xmlChar*)NULL && symbolName != (xmlChar*)NULL) {
 
 	symbolInConf->sicIndex = atoi(symbolIndex);
-	symbolInConf->sicName  = strdup(symbolName);
+	symbolInConf->sicName  = gdisp_strDup(symbolName);
 
 	symbolInConf++;
 	provider->pNbSymbolInConfiguration++;

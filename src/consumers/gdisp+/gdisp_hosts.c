@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_hosts.c,v 1.6 2006-02-26 14:08:23 erk Exp $
+$Id: gdisp_hosts.c,v 1.7 2006-04-17 16:33:25 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -161,7 +161,7 @@ gdisp_addUrl ( Kernel_T *kernel,
   /*
    * Duplicate URL name
    */
-  url = strdup(urlName);
+  url = gdisp_strDup(urlName);
   assert(url);
 
   /*

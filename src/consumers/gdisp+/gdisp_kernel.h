@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_kernel.h,v 1.24 2006-04-07 10:37:17 morvan Exp $
+$Id: gdisp_kernel.h,v 1.25 2006-04-17 16:33:25 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -223,7 +223,6 @@ typedef enum {
  * Shorter name for symbol that must be sampled.
  */
 typedef TSP_sample_symbol_info_list_t SampleList_T;
-
 
 /*
  * Thread Status.

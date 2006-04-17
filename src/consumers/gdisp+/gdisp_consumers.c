@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_consumers.c,v 1.14 2006-04-07 10:37:17 morvan Exp $
+$Id: gdisp_consumers.c,v 1.15 2006-04-17 16:33:25 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -567,8 +567,10 @@ gdisp_consumingEnd (Kernel_T *kernel)
   /*
    * Destroy all hosts & URLs.
    */
+#if defined(GD_DESTROY_HOSTS_AND_URLS)
   gdisp_destroyHosts(kernel);
   gdisp_destroyUrls (kernel);
+#endif
 
 
   /*
