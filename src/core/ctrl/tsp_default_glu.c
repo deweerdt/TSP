@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_default_glu.c,v 1.15 2006-04-17 22:27:35 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_default_glu.c,v 1.16 2006-04-18 00:09:14 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -344,6 +344,12 @@ GLU_validate_sample_default( TSP_sample_symbol_info_t* looked_for,
 			     TSP_sample_symbol_info_t* compared,
 			     int* pg_indexes){
 
+  /* Quick return if symbol is already not found */
+  if (-1 == *pg_indexes) {
+    looked_for->provider_global_index = *pg_indexes; 
+    return FALSE;
+  }
+
   /* validate period and phase range */	   
   if(looked_for->period < 1) 
   {
@@ -415,7 +421,7 @@ GLU_validate_sample_default( TSP_sample_symbol_info_t* looked_for,
    looked_for->dimension =compared->dimension;
  }
 
- /* update PGI */
+ /* update PGI after validation */
  looked_for->provider_global_index = *pg_indexes; 
  return TRUE;
 } 

@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_common_ssi.c,v 1.4 2006-04-17 23:05:48 erk Exp $
+$Id: tsp_common_ssi.c,v 1.5 2006-04-18 00:09:14 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -153,7 +153,7 @@ TSP_SSI_initialize_default(TSP_sample_symbol_info_t* ssi) {
 			    NULL,
 			    0,0,0,
 			    TSP_TYPE_DOUBLE,
-			    1,0,0,
+			    1,0,1,
 			    0,0);
 		     
 } /* end of TSP_SSI_initialize_default */

@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/providers/bb_provider/bb_tsp_provider.c,v 1.25 2006-04-17 22:27:35 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/providers/bb_provider/bb_tsp_provider.c,v 1.26 2006-04-18 00:09:14 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -192,7 +192,7 @@ BB_GLU_init(GLU_handle_t* this, int fallback_argc, char* fallback_argv[]) {
    * correspond to number of data (scalar) published in BB
    */
   X_sample_symbol_info_list = TSP_SSIList_new(i_nb_item_scalaire);
-  X_sample_symbol_info_list_val = &(X_sample_symbol_info_list->TSP_sample_symbol_info_list_t_val);
+  X_sample_symbol_info_list_val = &(X_sample_symbol_info_list->TSP_sample_symbol_info_list_t_val[0]);
 
   /* 
    * Allocate array of pointer to data
@@ -237,7 +237,7 @@ BB_GLU_init(GLU_handle_t* this, int fallback_argc, char* fallback_argv[]) {
 				}
 			}
 						
-			/** alisa array */
+			/** alias array */
 			if (indexstack_len){
 				i_temp = strlen(bb_data_desc(shadow_bb)[i].name) + 10*indexstack_len;
 				do {
@@ -354,8 +354,6 @@ BB_GLU_get_pgi(GLU_handle_t* this, TSP_sample_symbol_info_list_t* symbol_list, i
   S_BB_DATADESC_T  aliasstack[MAX_ALIAS_LEVEL];
   int32_t previous_array_ptr;
   void *sym_value;
-
-
   
   STRACE_INFO(("Starting symbol Valid nb_symbol=%u",symbol_list->TSP_sample_symbol_info_list_t_len));
   /* For each requested symbols, check by name, and find the provider global index */
@@ -384,7 +382,7 @@ BB_GLU_get_pgi(GLU_handle_t* this, TSP_sample_symbol_info_list_t* symbol_list, i
 	     STRACE_INFO  (("symbol <%s> not found in BB <%s>",
 			    sym_data_desc.name,
 			    shadow_bb->name));
-	     pg_indexes[i] = -1;
+	     pg_indexes[i] = -1;	     
 	     ret = FALSE;
 	     continue;
 	   }
@@ -399,8 +397,7 @@ BB_GLU_get_pgi(GLU_handle_t* this, TSP_sample_symbol_info_list_t* symbol_list, i
 	     array_index_ptr = array_index_len-1;
 	     aliasstack_size = MAX_ALIAS_LEVEL;
 	     aliasstack[0]=sym_data_desc;
-	     bb_find_aliastack(shadow_bb, aliasstack, &aliasstack_size);
-	     
+	     bb_find_aliastack(shadow_bb, aliasstack, &aliasstack_size);	     
 	     
 	     /* symbol not found skip to next symname */
 	     if (-1==bbidx) {
@@ -460,8 +457,11 @@ BB_GLU_get_pgi(GLU_handle_t* this, TSP_sample_symbol_info_list_t* symbol_list, i
 	     }
 	   }
 	 }
+    GLU_validate_sample_default(&(symbol_list->TSP_sample_symbol_info_list_t_val[i]), 
+				(-1==pg_indexes[i]) ? NULL : &(X_sample_symbol_info_list_val[pg_indexes[i]]),
+				&(pg_indexes[i]));
   }
-  
+
   STRACE_INFO(("End of symbol Valid")); 
   
   return ret;

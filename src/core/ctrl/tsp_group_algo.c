@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_group_algo.c,v 1.17 2006-04-12 06:56:03 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_group_algo.c,v 1.18 2006-04-18 00:09:14 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -291,34 +291,29 @@ void TSP_group_algo_destroy_symbols_table(TSP_groups_t* groups)
 
 }
 
-void TSP_group_algo_create_symbols_table_free_call(TSP_sample_symbol_info_list_t* symbols)
-{
+void 
+TSP_group_algo_create_symbols_table_free_call(TSP_sample_symbol_info_list_t* symbols) {
 
   int i;
 
-   STRACE_IO(("-->IN"));
-   
-   for( i=0 ; i < symbols->TSP_sample_symbol_info_list_t_len ; i++)
-     {
-       free(symbols->TSP_sample_symbol_info_list_t_val[i].name);
-       symbols->TSP_sample_symbol_info_list_t_val[i].name = 0;
-     }
+  for( i=0 ; i < symbols->TSP_sample_symbol_info_list_t_len ; i++) {
+    free(symbols->TSP_sample_symbol_info_list_t_val[i].name);
+    symbols->TSP_sample_symbol_info_list_t_val[i].name = 0;
+  }
+  
+  free(symbols->TSP_sample_symbol_info_list_t_val);
+} /* end of TSP_group_algo_create_symbols_table_free_call */
 
-   free(symbols->TSP_sample_symbol_info_list_t_val);
-
-   STRACE_IO(("-->OUT"));
-}
-
-int TSP_group_algo_create_symbols_table(const TSP_sample_symbol_info_list_t* in_symbols,
-					TSP_sample_symbol_info_list_t* out_symbols,
-					TSP_groups_t* out_groups,
-					TSP_datapool_t datapool)
-{
-       
+int 
+TSP_group_algo_create_symbols_table(const TSP_sample_symbol_info_list_t* in_symbols,
+				    TSP_sample_symbol_info_list_t* out_symbols,
+				    TSP_groups_t* out_groups,
+				    TSP_datapool_t datapool) {
+  
   TSP_algo_table_t* table;
     
-  int rank; /**< rank in a group */
-  int group_id; /**< id for a group */
+  int rank; /* rank in a group */
+  int group_id; /* id for a group */
     
   /* total number of in symbols*/
   uint32_t nb_symbols = in_symbols->TSP_sample_symbol_info_list_t_len;
@@ -327,57 +322,46 @@ int TSP_group_algo_create_symbols_table(const TSP_sample_symbol_info_list_t* in_
   TSP_sample_symbol_info_t* in_info;
   TSP_sample_symbol_info_t* out_info;
     
-  STRACE_IO(("-->IN"));
-
-    
   table = TSP_group_algo_allocate_group_table(in_symbols);
   *out_groups = table;
     
-  if(table)
-    {
-      /* Allocate memory for the out_symbols */
-      out_symbols->TSP_sample_symbol_info_list_t_len = table->groups_summed_size;
-      out_symbols->TSP_sample_symbol_info_list_t_val = 
-	(TSP_sample_symbol_info_t*)calloc(table->groups_summed_size, sizeof(TSP_sample_symbol_info_t));
-      TSP_CHECK_ALLOC(out_symbols->TSP_sample_symbol_info_list_t_val, FALSE);
-        
-      /* For each group...*/
-      for( out_current_info = 0, group_id = 0 ; group_id < table->table_len ; group_id++)
-        {
+  if(table) {
+    /* Allocate memory for the out_symbols */
+    out_symbols->TSP_sample_symbol_info_list_t_len = table->groups_summed_size;
+    out_symbols->TSP_sample_symbol_info_list_t_val = 
+      (TSP_sample_symbol_info_t*)calloc(table->groups_summed_size, sizeof(TSP_sample_symbol_info_t));
+    TSP_CHECK_ALLOC(out_symbols->TSP_sample_symbol_info_list_t_val, FALSE);
+    
+    /* For each group...*/
+    for( out_current_info = 0, group_id = 0 ; group_id < table->table_len ; group_id++)
+      {
+	
+	/* For each symbol, does it belong to the group ? */
+	/* Start at first rank */
+	for(rank = 0, in_current_info = 0 ; in_current_info < nb_symbols ; in_current_info++)
+	  {
+	    out_info = &(out_symbols->TSP_sample_symbol_info_list_t_val[out_current_info]);
+	    in_info = &(in_symbols->TSP_sample_symbol_info_list_t_val[in_current_info]);
+	    
             
-	  /* For each symbol, does it belong to the group ? */
-	  /* Start at first rank */
-	  for(rank = 0, in_current_info = 0 ; in_current_info < nb_symbols ; in_current_info++)
-            {
-	      out_info = &(out_symbols->TSP_sample_symbol_info_list_t_val[out_current_info]);
-	      in_info = &(in_symbols->TSP_sample_symbol_info_list_t_val[in_current_info]);
-
-            
-	      /* Does - it belong to the group */
-	      if(BELONGS_TO_GROUP(in_info->period, in_info->phase , group_id) )
-                {
-		  
-		  /*Yes, we add it*/
-		  STRACE_DEBUG(("Adding provider_global_index %d at group %d and rank %d",
-                                in_info->provider_global_index,
-                                group_id,
-                                rank))
-                    /* 1 - In the out group table */
-		    
-                    /* find the encoder of the data type*/
-                    table->groups[group_id].items[rank].data_encoder = TSP_data_channel_get_encoder(in_info->type);
-		    table->groups[group_id].items[rank].dimension =in_info->dimension;
-		    table->groups[group_id].items[rank].offset =in_info->offset;
-		    table->groups[group_id].items[rank].nelem =in_info->nelem;
- 
-		    /*complete les infos)*/
-
-
-		  
-		  
-		  table->groups[group_id].items[rank].data = 
-		    TSP_datapool_get_symbol_value(datapool, in_info->provider_global_index, 0)
-                    + in_info->offset * TSP_data_channel_get_encoded_size(in_info->type);
+	    /* Does - it belong to the group */
+	    if(BELONGS_TO_GROUP(in_info->period, in_info->phase , group_id) )
+	      {
+		
+		/*Yes, we add it*/
+		STRACE_DEBUG(("Adding provider_global_index %d at group %d and rank %d",in_info->provider_global_index,group_id,rank));
+		/* 1 - In the out group table */
+		
+		/* find the encoder of the data type */
+		table->groups[group_id].items[rank].data_encoder = TSP_data_channel_get_encoder(in_info->type);
+		table->groups[group_id].items[rank].dimension    = in_info->dimension;
+		table->groups[group_id].items[rank].offset       = in_info->offset;
+		table->groups[group_id].items[rank].nelem        = in_info->nelem;
+		
+		    /*complete les infos)*/		  
+		    table->groups[group_id].items[rank].data = 
+		      TSP_datapool_get_symbol_value(datapool, in_info->provider_global_index, 0)
+		      + in_info->offset * TSP_data_channel_get_encoded_size(in_info->type);
 		  
 		  /* 2 - In the out symbol table */
 		  
