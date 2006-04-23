@@ -1,6 +1,6 @@
 /*
 
-$Id: glue_stub.c,v 1.20 2006-04-15 10:46:02 erk Exp $
+$Id: glue_stub.c,v 1.21 2006-04-23 15:38:23 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -547,6 +547,7 @@ STUB_GLU_get_ssei_list_fromPGI(struct GLU_handle_t* this,
    	    TSP_EIList_initialize(&(SSEI_list->TSP_sample_symbol_extended_info_list_t_val[i].info),2);
 	    TSP_EI_update(&(SSEI_list->TSP_sample_symbol_extended_info_list_t_val[i].info.TSP_extended_info_list_t_val[0]), "profil", "2*2*4");
  	    TSP_EI_update(&(SSEI_list->TSP_sample_symbol_extended_info_list_t_val[i].info.TSP_extended_info_list_t_val[1]), "unit", "SI");
+	    TSP_EI_update(&(SSEI_list->TSP_sample_symbol_extended_info_list_t_val[i].info.TSP_extended_info_list_t_val[1]), "ordre", "1");
 	    break;
 	  default:
 	    /* do not forget invalid > 1012 PGIs */
