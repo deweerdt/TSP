@@ -1,6 +1,6 @@
 /*
 
-$Id: glue_res.c,v 1.13 2006-04-23 22:24:58 erk Exp $
+$Id: glue_res.c,v 1.14 2006-04-23 22:28:43 erk Exp $
 
 -----------------------------------------------------------------------
  
@@ -117,6 +117,7 @@ void RES_GLU_loop()
 	      *((double*)item.raw_value) = obj->use_dbl ?
 		((double*)(obj->res_values)) [i] :
 	        ((float*) (obj->res_values)) [i];
+	      item.size                  = tsp_type_size[obj->ssiList->TSP_sample_symbol_info_list_t_val[i].type];
 	      
 	      TSP_datapool_push_next_item(res_GLU->datapool,&item);
 
