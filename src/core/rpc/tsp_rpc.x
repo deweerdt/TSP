@@ -1,6 +1,6 @@
 /* -*- idl -*-
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_rpc.x,v 1.31 2006-04-15 23:07:34 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_rpc.x,v 1.32 2006-04-23 15:45:34 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -134,7 +134,9 @@ enum TSP_status_t
 	/**
 	 * Provided channel Id is invalid
 	 */
-	TSP_STATUS_ERROR_INVALID_CHANNEL_ID	
+	TSP_STATUS_ERROR_INVALID_CHANNEL_ID,
+	TSP_STATUS_ERROR_NO_MORE_GLU,
+	TSP_STATUS_ERROR_NO_MORE_SESSION
 };
 
 /** TSP Symbols basic types */
