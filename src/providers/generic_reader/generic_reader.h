@@ -1,6 +1,6 @@
 /*
 
-$Id: generic_reader.h,v 1.2 2006-03-21 15:20:11 morvan Exp $
+$Id: generic_reader.h,v 1.3 2006-04-23 15:37:48 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -39,6 +39,11 @@ Purpose   : Allow the output of a datapool of symbols from generic file
 #ifndef _GENERIC_READER_H_
 #define _GENERIC_READER_H_
 
+#include <stdio.h>
+#include <tsp_datastruct.h>
+#include <tsp_abs_types.h>
+#include <tsp_glu.h>
+
 /**
  * @defgroup TSP_GenericReaderLib Generic Reader  Library 
  * The TSP generic reader provider library API.
@@ -47,34 +52,42 @@ Purpose   : Allow the output of a datapool of symbols from generic file
  * @{
  */
 
-#define JUSTCOUNT_SIZE_BB 1
-#define ADDSYMBOLE_TO_BB  0
+#define JUSTCOUNT_SIZE 1
+#define ADDSYMBOLE  0
 
 
+#define FICHIER_MACSIM "f"
+#define FICHIER_BACH "b"
 
+/*typedef int   (*add_symbol_ft)(char* symname, int* dimension, int dim_len, int type, char* unit);*/
 
-typedef int   (*add_symbol_ft)(char* symname, int* dimension, int dim_len, int type, char* unit);
+struct GenericReader;
 
-typedef FILE* (*fmtHandler_open_ft)(char* nom_fichier);
+typedef FILE*  (*fmtHandler_open_ft)(char* nom_fichier);
 typedef void  (*fmtHandler_close_ft)(FILE* fichier);
-typedef int   (*fmtHandler_readHeader_ft)(GenericReader_T* genreader, int32_t justcount);
-typedef int   (*fmtHandler_readValue_ft)(GenericReader_T* genreader);
+typedef int32_t   (*fmtHandler_readHeader_ft)(struct GenericReader* genreader, int32_t justcount);
+typedef int32_t   (*fmtHandler_readValue_ft)(struct GenericReader* genreader, glu_item_t* item);
 
 typedef struct FmtHandler {
 		char* fileName;
 		FILE* file;
-		fmtHandler_open_ft* open;
-		fmtHandler_close_ft* close;
-		fmtHandler_readerHeader_ft* read_header;
-		fmtHandler_readValue_ft* read;
+		fmtHandler_open_ft open_file;
+		fmtHandler_close_ft close_file;
+		fmtHandler_readHeader_ft read_header;
+		fmtHandler_readValue_ft read_value;
 } FmtHandler_T;
+
+#define END_SAMPLE_SET       11
+#define END_SAMPLE_STREAM    12
 
 typedef struct GenericReader {
 	  int32_t          nbSymbol;
-	  int32_t          symbolSize;
-	  add_symbol_ft*   add_symbol;
+	  int32_t          max_size_raw_value;
 	  FmtHandler_T*    handler;
-	  S_BB_T*          myBB;
+          
+          TSP_sample_symbol_info_list_t*          ssi_list;
+          TSP_sample_symbol_extended_info_list_t* ssei_list;
+
 } GenericReader_T;
 
 
@@ -95,77 +108,44 @@ FmtHandler_T* genreader_createFmHandler(char* format_file,char* file_name);
  * @param[out] genreader the generic reader to intialize
  * @param[in] fmtHandler the file handler
  *                      
- * @return 0 if OK
+ * @return TSP_STATUS_OK if OK
  */
-int genreader_create(GenericReader_T** genreader,FmtHandler* fmtHandler);
+int32_t genreader_create(GenericReader_T** genreader,FmtHandler_T* fmtHandler);
 
 /**
  * open the file to treat
  * 
  * @param[in] genreader the generic reader who contain the information about the file
  *                      
- * @return 0 if OK
+ * @return TSP_STATUS_OK if OK
  */
-int genreader_open(GenericReader_T* genreader);
+int32_t genreader_open(GenericReader_T* genreader);
 
 /**
- * create the BB
+ * create the symbol info and extended info list
  * 
  * @param[in] genreader the generic reader who contain the information about the file
  *                      
- * @return 0 if OK
+ * @return TSP_STATUS_OK if OK
  */
-int genreader_read_header_create_bb(GenericReader_T* genreader);
+int32_t genreader_read_header(GenericReader_T* genreader);
 
 /**
- * create the symbol read in the file to the BB
+ * add symbol info and extended info to the symbol and extended list
  * 
  * @param[in] genreader the generic reader who contain the information about the file
  *                      
- * @return 0 if OK
+ * @return TSP_STATUS_OK  if OK
  */
-int genreader_read_header_create_symbole(GenericReader_T* genreader);
+int32_t genreader_read_header_create_symbole(GenericReader_T* genreader);
 
-/**
- * add symbol to the BB
- * 
- * @param[in] symbname the symbol name
- * @param[in] dimension the symbol dimension
- * @param[in] type_len  the type size
- * @param[in] type      the BB type
- * @param[in] unit      the symbol unit
- *                      
- * @return 0 if OK
- */
-int genreader_addvar(char* symbname, int dimension, int type_len, E_BB_TYPE_T type, char* unit);
-
-/**
- * open the file to treat
- * 
- * @param[in] genreader the generic reader who contain the information about the file
- * @param[in] data_var  the data read in the file
- * @param[in] indice    index of the corresponding symbol
- *                      
- * @return 0 if OK
- */
-int genreader_write(GenericReader_T* genreader, char* data_var, int indice);
-
-/**
- * send a synchro to the BB
- * 
- * @param[in] genreader the generic reader who contain the information about the file
- *                      
- * @return 0 if OK
- */
-int genreader_synchro(GenericReader_T* genreader);
 
 /**
  * destroy the fmtHandler and generic reader
- * 
- *                      
- * @return 0 if OK
+ *                   
+ * @return TSP_STATUS_OK if OK
  */
-int genreader_finalize();
+int32_t genreader_finalize();
 
 /**
  * Initialize Blackboard TSP provider Library for generic reader.

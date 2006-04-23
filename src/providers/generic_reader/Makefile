@@ -6,6 +6,7 @@ include $(DEVBASE)/make/Makeparams
 
 SOURCES = \
 	macsim_fmt.c \
+	glu_genreader.c \
 	generic_reader.c \
 	generic_reader_main.c
 
@@ -18,7 +19,7 @@ endif
 ADD_LIB =  $(DIRLIB)/libtsp_provider.a $(DIRLIB)/libtsp_common.a $(DIRLIB)/libtsp_services.a  $(DIRLIB)/libtsp_res.a
 
 
-CPPFLAGS += -I../../util/libres
+CPPFLAGS += 
 
 # -----------------------------------------------------------
 # No label all:: because it's in Makeparams and calls build::	

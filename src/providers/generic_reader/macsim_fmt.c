@@ -1,6 +1,6 @@
 /*
 
-$Id: macsim_fmt.c,v 1.1 2006-03-21 09:56:59 morvan Exp $
+$Id: macsim_fmt.c,v 1.2 2006-04-23 15:37:48 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -37,10 +37,15 @@ Purpose   : Manipulation function of macsim file
 
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+#include <malloc.h>
 
 #include <bb_core.h>
+#include <tsp_rpc.h>
+#include <generic_reader.h>
 #include <macsim_fmt.h>
+#include <tsp_common.h>
 
 
 /* suppress spaces
@@ -79,10 +84,17 @@ char *str_strip (const char *string)
       else
       {
          fprintf (stderr, "Not enough memory\n");
-         exit (EXIT_FAILURE);
+         return NULL;
       }
    }
    return strip;
+}
+
+void str_strip_inplace(char* tostrip) {
+
+  char* local = str_strip(tostrip);
+  strcpy(tostrip,local);
+  free(local);
 }
 
 
@@ -91,7 +103,7 @@ char *str_strip (const char *string)
 uint32_t macsim_dimension_data(char* dimension_var)
 {
 	uint32_t valeur=0,
-	    	 total_valeur=1,
+	         total_valeur=1;
 	int 	 i,indice=0;
 	    
 	char 	 nombre[10];
@@ -120,52 +132,45 @@ uint32_t macsim_dimension_data(char* dimension_var)
 	
 }
 
-/* return data size and bb data type
+
+/* return TSP data type
 */
-size_t macsim_size_data(char* type_var,E_BB_TYPE_T* type_var_bb)
+TSP_datatype_t macsim_type_data(char* type_var)
 {
 	if (0==strcmp(type_var,DOUBLE_MACSIM))
 	{
-		*type_var_bb=E_BB_DOUBLE;
-		return((size_t)sizeof(double));
-	
+		return(TSP_TYPE_DOUBLE);
 	}
 	
 	if (0==strcmp(type_var,ENTIER_MACSIM))
 	{
-		*type_var_bb=E_BB_INT32;
-		return((size_t)sizeof(int32_t));
-	
+		return(TSP_TYPE_INT32);
 	}
 	
 	if (0==strcmp(type_var,BOOLEEN_MACSIM))
 	{
-		*type_var_bb=E_BB_INT8;
-		return((size_t)sizeof(int8_t));
-	
+		return(TSP_TYPE_UINT8);
 	}
 	
-	if (0==strcmp(type_var,CHARACTER_MACSIM))
+	if (0==strcmp(type_var,CARACTERE_MACSIM))
 	{
-		*type_var_bb=E_BB_CHAR;
-		return((size_t)sizeof(char));
-	
+		return(TSP_TYPE_CHAR);
 	}
 	
-	return(0);
+	return(TSP_TYPE_UNKNOWN);
 
 }
 
 /*open file macsim
 */
-FILE * macsim_open(char* nom_fichier_macsim)
+FILE* macsim_open(char* nom_fichier_macsim)
 {
 	FILE * fichier;
 	
 	fichier=fopen(nom_fichier_macsim,"r");
 	if(NULL==fichier)
 	{
-		fprinf(stderr,"Invalid file: impossible to open file: %s",nom_fichier_macsim);
+		fprintf(stderr,"Invalid file: impossible to open file: %s",nom_fichier_macsim);
 	}
 	return(fichier);
 }
@@ -180,31 +185,37 @@ void macsim_close(FILE* fichier_macsim)
 
 /* read the beginning of the file, create the BB and create the symbol
 */
-int macsim_read_header(GenericReader_T* genreader, int32_t justcount)
+int32_t macsim_read_header(GenericReader_T* genreader, int32_t justcount)
 {
-	char* 	      pointeur_buffer, pointeur_buffer_bis;
+        char* 	      pointeur_buffer;
+	char*         pointeur_buffer_bis;
 	char  	      buffer[MAX_BUFFER_MACSIM + 1];
 	char  	      nom_var[MAX_NOM_VAR_MACSIM];
 	char  	      dimension_var[MAX_DIMENSION_MACSIM];
 	char  	      type_var[MAX_TYPE_MACSIM];
 	char  	      unite_var[MAX_UNITE_MACSIM];
-	E_BB_TYPE_T   type_var_bb;
 	int   	      continuer=CONTINUE;
 	uint32_t      dimension=0;
 	size_t 	      taille=0;
-	
+	uint32_t      indice_symbol=0;
+	uint32_t      nb_ext_info;
+	TSP_sample_symbol_info_t *ssi;
+	TSP_sample_symbol_extended_info_t *ssei;
 		
 	if(NULL!=genreader->handler->file)
 	{
 		
-		if(JUSTCOUNT_SIZE_BB==justcount)
+		if(JUSTCOUNT_SIZE==justcount)
 		{
-			genreader->nbSymbol=0;
-			genreader->symbolSize=0;
+		  genreader->nbSymbol=0;
+		  genreader->max_size_raw_value=0;
 		}
 		else
 		{
-			rewind(genreader->handler->file);
+		  ssi=genreader->ssi_list->TSP_sample_symbol_info_list_t_val;
+		  ssei=genreader->ssei_list->TSP_sample_symbol_extended_info_list_t_val;
+
+		  rewind(genreader->handler->file);
 		}		
 		
 		while(NULL!=(fgets(buffer,MAX_BUFFER_MACSIM,genreader->handler->file)) && CONTINUE==continuer)
@@ -214,6 +225,10 @@ int macsim_read_header(GenericReader_T* genreader, int32_t justcount)
 			if('='==buffer[0])
 			{
 				continuer=STOP;
+				
+				/*read thle column title*/
+				fgets(buffer,MAX_BUFFER_MACSIM,genreader->handler->file);
+
 			}
 			else
 			{
@@ -225,11 +240,11 @@ int macsim_read_header(GenericReader_T* genreader, int32_t justcount)
 				pointeur_buffer=strchr(buffer,':');
 				*pointeur_buffer='\0';
 				strcpy(nom_var,buffer);
-				nom_var=str_strip(nom_var);
+				str_strip_inplace(nom_var);
 				
 				/*retrieve the dimension
 				*/
-				pointeur_buffer_bis=strchr(pointeur_buffeur + 1,':');
+				pointeur_buffer_bis=strchr((pointeur_buffer+1),':');
 				*pointeur_buffer_bis='\0';
 				strcpy(dimension_var,pointeur_buffer);
 				
@@ -239,33 +254,84 @@ int macsim_read_header(GenericReader_T* genreader, int32_t justcount)
 				
 				/*retrieve the type of the data
 				*/
-				pointeur_buffer=strchr(pointeur_buffeur_bis + 1,':');
+				pointeur_buffer=strchr(pointeur_buffer_bis + 1,':');
 				*pointeur_buffer='\0';
 				strcpy(type_var,pointeur_buffer_bis);
-				type_var=str_strip(type_var);
-				
-				/*determine data size and BB type
-				*/
-				taille=macsim_size_data(type_var,&type_var_bb);
-				
+				str_strip_inplace(type_var);
+
 				
 				/*retrieve the unity
 				*/
 				strcpy(unite_var,pointeur_buffer + 1);
-				unite_var=str_strip(unite_var);
+				str_strip_inplace(unite_var);
 				
-				if(JUSTCOUNT_SIZE_BB==justcount)
+				if(JUSTCOUNT_SIZE==justcount)
 				{
 					/*calculate the memory size of the variable
-					*/
+					 */	
+				        /*determine data size
+					 */
+				        taille=tsp_type_size[macsim_type_data(type_var)];
 					taille*=dimension;
+
+					/*TYPE_CHAR or TYPE_UCHAR is a  string of  LG_MAX_STRING_MACSIM length */
+					if( (TSP_TYPE_CHAR==macsim_type_data(type_var)) || (TSP_TYPE_UCHAR==macsim_type_data(type_var)) )
+					{
+					  taille*=LG_MAX_STRING_MACSIM;
+					}
+
 					
 					genreader->nbSymbol+=1;
-					genreader->symbolSize+=taille;
+
+
+					
+					if(genreader->max_size_raw_value<taille)
+					{
+					   genreader->max_size_raw_value=taille;
+					}
 				}
 				else
 				{
-					genreader->genreader_addvar(nom_var,dimension,taille,type_var_bb,unit_var);
+				  /*add symbol to the symbol list and extended info*/
+				  /*genreader->genreader_addvar(nom_var,dimension,taille,type_var_bb,unit_var);*/
+				  
+				  nb_ext_info=2;
+
+				  /*create ths symbol*/
+				  ssi[indice_symbol].name=(char*)calloc(1,strlen(nom_var)+1);
+				  strcpy(ssi[indice_symbol].name,nom_var);
+
+				  ssi[indice_symbol].provider_global_index=indice_symbol;
+
+				  ssi[indice_symbol].type=macsim_type_data(type_var);
+
+				  ssi[indice_symbol].dimension=dimension;
+
+				  ssi[indice_symbol].period=1;
+
+				  ssi[indice_symbol].phase=0;
+
+
+				  /*create the extended info of the symbol*/
+				  ssei[indice_symbol].provider_global_index=indice_symbol;
+
+				  if(0!=strlen(unite_var))
+				  {
+				    ++nb_ext_info;
+				  }
+
+				  TSP_EIList_initialize(&(ssei[indice_symbol].info), nb_ext_info);
+
+                                  TSP_EI_initialize(&(ssei[indice_symbol].info.TSP_extended_info_list_t_val[0]),"profile",dimension_var);
+
+				  TSP_EI_initialize(&(ssei[indice_symbol].info.TSP_extended_info_list_t_val[1]),"order","1");
+
+				  if(3==nb_ext_info)
+				  {
+				    TSP_EI_initialize(&(ssei[indice_symbol].info.TSP_extended_info_list_t_val[3]),"unit",unite_var);
+				  }
+
+				  ++indice_symbol;
 					
 				}
 				
@@ -274,74 +340,119 @@ int macsim_read_header(GenericReader_T* genreader, int32_t justcount)
 		}
 
 	}
-	return(0);
+	return(TSP_STATUS_OK);
 }
 
 
 /*read the data contain in the file
 */
-int macsim_read(GenericReader_T* genreader)
+int32_t macsim_read(GenericReader_T* genreader,glu_item_t* item)
 {
-	
-	char	      caractere_lu;
-	char  	      data_var[100];
-	int	      i=0,
-		      indice_data=0;
+	char  	      data_var[LG_MAX_STRING_MACSIM];
+	uint32_t      indice_data=0,
+	              rep=END_SAMPLE_STREAM;
+
+	TSP_sample_symbol_info_list_t  ssi_list;
+
+	ssi_list=*genreader->ssi_list;
+
 	
 	if(NULL!=genreader->handler->file)
 	{
-	
-		/* read the column title line
-		*/
-		while('\0'!=(caractere_lu=(char)fgetc(genreader->handler->file)));
-	
-	
-		while(EOF!=(caractere_lu=(char)fgetc(genreader->handler->file)))
-		{
-			if ('\0'!=caractere_lu)
-			{
-			
-				if (CARACTERE_TAB!= caractere_lu)
-				{
-					if (CARACTERE_BLANC!=caractere_lu)
-					{
-						data_var[i]=caractere_lu;
-						++i;
-					}
-				}
-				else
-				{
-					date_var[i]='\0';
-				
-					/* add data to the BB
-					*/	
-					genreader_write(genreader, data_var, indice_data);
-					++indice_data;
-					i=0;
-				}
-				
-				
-			}
-			else
-			{
-				date_var[i]='\0';
-				
-				/* add data to the BB
-				*/	
-				genreader_write(genreader, data_var, indice_data);
-				
-					
-				i=0;
-				indice_data=0;
-			
-				/* send the data to the Bb
-				*/
-				genreader_synchro(genreader);
-			}
-		}
-		
+
+	  memset(data_var,'\0',LG_MAX_STRING_MACSIM);
+
+	  while((END_SAMPLE_STREAM==(rep=read_data_file(genreader->handler->file,data_var))) && 
+                (indice_data<ssi_list.TSP_sample_symbol_info_list_t_val[item->provider_global_index].dimension))
+	  {
+	    rep=read_data_file(genreader->handler->file,data_var);
+
+	    if(0==indice_data)
+	    {
+
+	      /*TYPE_CHAR or TYPE_UCHAR is a  string of  LG_MAX_STRING_MACSIM length */
+	      if( (TSP_TYPE_CHAR==ssi_list.TSP_sample_symbol_info_list_t_val[item->provider_global_index].type)
+		  || (TSP_TYPE_UCHAR==ssi_list.TSP_sample_symbol_info_list_t_val[item->provider_global_index].type) )
+	      {
+		item->size=ssi_list.TSP_sample_symbol_info_list_t_val[item->provider_global_index].dimension*LG_MAX_STRING_MACSIM;
+	      }
+	      else
+	      {
+		item->size=ssi_list.TSP_sample_symbol_info_list_t_val[item->provider_global_index].dimension;
+
+	      }
+	     
+	      item->size*=tsp_type_size[ssi_list.TSP_sample_symbol_info_list_t_val[item->provider_global_index].type];
+
+	     
+
+	    }
+
+	    switch(ssi_list.TSP_sample_symbol_info_list_t_val[item->provider_global_index].type) 
+	    {
+
+	      case TSP_TYPE_DOUBLE :
+		load_double(data_var,item->raw_value,indice_data);
+		break;
+				       
+	      case TSP_TYPE_FLOAT :
+		load_float(data_var,item->raw_value,indice_data);
+		break;
+    
+	      case TSP_TYPE_INT8 :
+		load_int8(data_var,item->raw_value,indice_data);
+		break;
+    
+	      case TSP_TYPE_INT16:
+		load_int16(data_var,item->raw_value,indice_data);
+		break;
+
+	      case TSP_TYPE_INT32 :
+		load_int32(data_var,item->raw_value,indice_data);
+		break;
+      
+	      case TSP_TYPE_INT64 :
+		load_int64(data_var,item->raw_value,indice_data);
+		break;
+    
+	      case TSP_TYPE_UINT8:
+		load_uint8(data_var,item->raw_value,indice_data);
+		break;
+    
+	      case TSP_TYPE_UINT16:
+		load_uint16(data_var,item->raw_value,indice_data);
+		break;
+    
+	      case TSP_TYPE_UINT32:
+		load_uint32(data_var,item->raw_value,indice_data);
+		break;
+    
+	      case TSP_TYPE_UINT64:
+		load_uint64(data_var,item->raw_value,indice_data);
+		break;
+    
+	      case TSP_TYPE_CHAR:
+		load_char(data_var,item->raw_value,indice_data);
+		break;
+    
+	      case TSP_TYPE_UCHAR:
+		load_uchar(data_var,item->raw_value,indice_data);
+		break;
+    
+	      case TSP_TYPE_RAW:
+		load_type_raw(data_var,item->raw_value,indice_data);
+		break;
+    
+	      default:
+		break;
+	    }
+
+	    ++indice_data;
+	    memset(data_var,'\0',LG_MAX_STRING_MACSIM);
+	  }
+	  return(rep);				
 	}
-	return(0);
+	return(EOF);
 }
 
 
@@ -349,14 +460,270 @@ int macsim_read(GenericReader_T* genreader)
 
 /*initialize the handler to read a macsim file
 */
-int macsim_createHandler(FmtHandler_T** fmt_handler)
+int32_t macsim_createHandler(FmtHandler_T** fmt_handler)
 {
 	 (*fmt_handler)=(FmtHandler_T*)malloc(sizeof(FmtHandler_T));
 
-	 (*fmt_handler)->open        = &macsim_open;
- 	 (*fmt_handler)->close       = &macsim_close;
-	 (*fmt_handler)->readHeader  = &macsim_read_header;
-	 (*fmt_handler)->readValue   = &macsim_read;
+	 (*fmt_handler)->open_file        = &macsim_open;
+ 	 (*fmt_handler)->close_file       = &macsim_close;
+	 (*fmt_handler)->read_header  = &macsim_read_header;
+	 (*fmt_handler)->read_value   = &macsim_read;
+
+	 return TSP_STATUS_OK;
 }
 
 
+int32_t read_data_file(FILE *fic,char *data_var)
+{
+	char	      caractere_lu;
+	uint32_t      i=0;
+	             
+	while(EOF!=(caractere_lu=(char)fgetc(fic)))
+	{
+	  if ('\0'!=caractere_lu)
+	  {
+	    if (CARACTERE_TAB!= caractere_lu)
+	    {
+	      if (CARACTERE_BLANC!=caractere_lu)
+	      {
+		data_var[i]=caractere_lu;
+		++i;
+	      }
+	    }
+	    else
+	    {
+	      data_var[i]='\0'; 
+	      return END_SAMPLE_STREAM;
+	    }		
+	  }
+	  else
+	  {
+	    data_var[i]='\0';	
+	    return END_SAMPLE_SET;	
+	  }
+	}
+		
+	return(EOF);
+}
+
+int32_t load_double(char* data_var,void* raw_value,const uint32_t indice_data)
+{
+  double *tab;
+  char** rep;
+
+  tab=(double*)raw_value;
+  tab[indice_data]=strtod(data_var,rep);
+
+  if(data_var==*rep || '\0'!=**rep)
+  {
+    STRACE_ERROR(("Error conversion double\n"));
+    return TSP_STATUS_ERROR_UNKNOWN;
+  }
+
+  
+
+
+  return TSP_STATUS_OK;
+
+}
+
+int32_t load_float(char* data_var,void* raw_value,const uint32_t indice_data)
+{
+  float *tab;
+  char** rep;
+
+  tab=(float*)raw_value;
+
+  /*FIXME: use strtod because can't use strtof*/
+  tab[indice_data]=(float)strtod(data_var,rep);
+
+  if(data_var==*rep || '\0'!=**rep)
+  {
+    STRACE_ERROR(("Error conversion float\n"));
+    return TSP_STATUS_ERROR_UNKNOWN;
+  }
+
+  return TSP_STATUS_OK;
+
+}
+
+int32_t load_int8(char* data_var,void* raw_value,const uint32_t indice_data)
+{
+  int8_t *tab;
+  char** rep;
+
+  tab=(int8_t*)raw_value;
+  tab[indice_data]=(int8_t)strtol(data_var,rep, 10);
+
+  if(data_var==*rep || '\0'!=**rep)
+  {
+    STRACE_ERROR(("Error conversion int8\n"));
+    return TSP_STATUS_ERROR_UNKNOWN;
+  }
+
+  return TSP_STATUS_OK;
+
+}
+
+int32_t load_int16(char* data_var,void* raw_value,const uint32_t indice_data)
+{
+  int16_t *tab;
+  char** rep;
+
+  tab=(int16_t*)raw_value;
+ 
+  tab[indice_data]=(int16_t)strtol(data_var,rep, 10);
+
+  if(data_var==*rep || '\0'!=**rep)
+  {
+    STRACE_ERROR(("Error conversion int16\n"));
+    return TSP_STATUS_ERROR_UNKNOWN;
+  }
+
+  return TSP_STATUS_OK;
+
+}
+
+int32_t load_int32(char* data_var,void* raw_value,const uint32_t indice_data)
+{
+  int32_t *tab;
+  char** rep;
+
+  tab=(int32_t*)raw_value;
+  
+  tab[indice_data]=(int32_t)strtol(data_var,rep, 10);
+
+  if(data_var==*rep || '\0'!=**rep)
+  {
+    STRACE_ERROR(("Error conversion int32\n"));
+    return TSP_STATUS_ERROR_UNKNOWN;
+  }
+  return TSP_STATUS_OK;
+
+}
+
+int32_t load_int64(char* data_var,void* raw_value,const uint32_t indice_data)
+{
+  int64_t *tab;
+  char** rep;
+
+  tab=(int64_t*)raw_value;
+  
+  tab[indice_data]=(int64_t)strtol(data_var,rep, 10);
+
+  if(data_var==*rep || '\0'!=**rep)
+  {
+    STRACE_ERROR(("Error conversion int64\n"));
+    return TSP_STATUS_ERROR_UNKNOWN;
+  }
+  return TSP_STATUS_OK;
+
+}
+
+int32_t load_uint8(char* data_var,void* raw_value,const uint32_t indice_data)
+{
+  uint8_t *tab;
+  char** rep;
+
+  tab=(uint8_t*)raw_value;
+  
+  tab[indice_data]=(uint8_t)strtol(data_var,rep, 10);
+
+  if(data_var==*rep || '\0'!=**rep)
+  {
+    STRACE_ERROR(("Error conversion uint8\n"));
+    return TSP_STATUS_ERROR_UNKNOWN;
+  }
+  return TSP_STATUS_OK;
+
+}
+
+int32_t load_uint16(char* data_var,void* raw_value,const uint32_t indice_data)
+{
+  uint16_t *tab;
+  char** rep;
+
+  tab=(uint16_t*)raw_value;
+  
+  tab[indice_data]=(uint16_t)strtol(data_var,rep, 10);
+
+  if(data_var==*rep || '\0'!=**rep)
+  {
+    STRACE_ERROR(("Error conversion uint16\n"));
+    return TSP_STATUS_ERROR_UNKNOWN;
+  }
+  return TSP_STATUS_OK;
+
+}
+
+int32_t load_uint32(char* data_var,void* raw_value,const uint32_t indice_data)
+{
+  uint32_t *tab;
+  char** rep;
+
+  tab=(uint32_t*)raw_value;
+  
+  tab[indice_data]=(uint32_t)strtol(data_var,rep, 10);
+
+  if(data_var==*rep || '\0'!=**rep)
+  {
+    STRACE_ERROR(("Error conversion uint32\n"));
+    return TSP_STATUS_ERROR_UNKNOWN;
+  }
+  return TSP_STATUS_OK;
+
+}
+
+int32_t load_uint64(char* data_var,void* raw_value,const uint32_t indice_data)
+{
+  uint64_t *tab;
+  char** rep;
+
+  tab=(uint64_t*)raw_value;
+  
+  tab[indice_data]=(uint64_t)strtol(data_var,rep, 10);
+
+  if(data_var==*rep || '\0'!=**rep)
+  {
+    STRACE_ERROR(("Error conversion uint64\n"));
+    return TSP_STATUS_ERROR_UNKNOWN;
+  }
+  return TSP_STATUS_OK;
+
+}
+
+int32_t load_char(char* data_var,void* raw_value,const uint32_t indice_data)
+{
+  char *tab;
+
+  tab=(char*)raw_value;
+ 
+  memcpy(&(tab[indice_data]),data_var,LG_MAX_STRING_MACSIM);
+
+
+  return TSP_STATUS_OK;
+
+}
+
+int32_t load_uchar(char* data_var,void* raw_value,const uint32_t indice_data)
+{
+  unsigned char *tab;
+  
+  tab=(unsigned char *)raw_value;
+  
+  memcpy(&(tab[indice_data]),data_var,LG_MAX_STRING_MACSIM);
+
+  return TSP_STATUS_OK;
+
+}
+
+int32_t load_type_raw(char* data_var,void* raw_value,const uint32_t indice_data)
+{
+  uint8_t *tab;
+
+  tab=(uint8_t*)raw_value;
+  memcpy(&(tab[indice_data]),data_var,strlen(data_var));
+
+  return TSP_STATUS_OK;
+
+}
