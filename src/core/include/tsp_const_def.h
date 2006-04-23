@@ -1,6 +1,6 @@
 /*
  
-$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_const_def.h,v 1.38 2006-04-17 22:27:35 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_const_def.h,v 1.39 2006-04-23 15:47:07 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -42,7 +42,7 @@ Purpose   : definitions and const that must have a program wide scope
 
 
 /** TSP Version */
-#define TSP_PROTOCOL_VERSION 1
+#define TSP_PROTOCOL_VERSION 0x00010001
 
 /* we need abstract types for multi-platform portability */
 #include <tsp_abs_types.h>
