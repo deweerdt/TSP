@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.h,v 1.16 2006-04-23 15:50:42 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.h,v 1.17 2006-04-23 22:24:58 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -70,8 +70,9 @@ void TSP_session_close_session_by_channel(channel_id_t channel_id);
  * @param ans_sample The computed answer
  * @return TRUE or FALSE. TRUE = OK.
  */
-int TSP_session_create_symbols_table_by_channel(const TSP_request_sample_t* req_sample,
-						TSP_answer_sample_t* ans_sample);
+int32_t 
+TSP_session_create_symbols_table_by_channel(const TSP_request_sample_t* req_sample,
+					    TSP_answer_sample_t* ans_sample);
 
 
 /**
@@ -129,19 +130,18 @@ const char* TSP_session_get_data_address_string_by_channel(channel_id_t channel_
 /**
  * Create the data sender object for a session.
  * @param channel_id The session id for which the data sender must be created.
- * @param no_fifo If no_fifo = FALSE, the data sender is created with a ringbuf
- * and a thread to send the data
- * @return TRUE or FALSE. TRUE = OK
+ * @return TSP_STATUS_OK on success.
  */
-int TSP_session_create_data_sender_by_channel(channel_id_t channel_id, int no_fifo);
+int32_t 
+TSP_session_create_data_sender_by_channel(channel_id_t channel_id);
 
 /**
  * Destroy the data sender object for a session.
  * @param channel_id The session id for which the data sender must be destroyed.
- * @param stop_local_thread If TRUE, when the function wait for the ringbuf thread to stop
- * @return TRUE or FALSE. TRUE = OK
+ * @return TSP_STATUS_OK on success.
  */
-int TSP_session_destroy_data_sender_by_channel(channel_id_t channel_id, int stop_local_thread);
+int32_t 
+TSP_session_destroy_data_sender_by_channel(channel_id_t channel_id);
 
 /**
  * Get the whole list of symbols managed by the GLU.

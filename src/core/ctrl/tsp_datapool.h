@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_datapool.h,v 1.15 2006-04-23 20:06:48 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_datapool.h,v 1.16 2006-04-23 22:24:58 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -104,12 +104,11 @@ int TSP_datapool_push_commit(TSP_datapool_t* datapool, time_stamp_t time_stamp, 
 
 /**
  * Allocation of a datapool.
- * Only used when the sample server is a passive one.
- * @param symbols_number Total number of symbols for this datapool
- * @param h_glu Handle for the GLU that mus be linked to this datapool
+ * @param[in] h_glu Handle for the GLU that mus be linked to this datapool
+ *                  datapool size will be GLU provided number of symbol(s).
  * @return The datapool handle
  */ 
-TSP_datapool_t* TSP_datapool_new(int symbols_number, GLU_handle_t* h_glu );
+TSP_datapool_t* TSP_datapool_new(GLU_handle_t* h_glu );
 
 /**
  * Destroy a datapool.
@@ -119,13 +118,39 @@ TSP_datapool_t* TSP_datapool_new(int symbols_number, GLU_handle_t* h_glu );
 void TSP_datapool_delete(TSP_datapool_t** datapool);
 
 /**
- * Get the global datapool instance.
- * Only used when the sample server is an active one.
- * This function work as a singleton. If the global datapool
- * does not exist or was destroyed, a new datapool is created.
+ * Initialize datapool with provided GLU.
+ * This function will allocate internal datapool structure.
+ * After this datapool is ready to be used by the refered GLU.
+ * @param[in,out] datapool the datapool to be initialized
+ * @param[in,out] glu the GLU to be linked with the datapool
+ * @return TSP_STATUS_OK on success.
+ */
+int32_t 
+TSP_datapool_initialize(TSP_datapool_t* datapool, GLU_handle_t* glu);
+
+/**
+ * Initialize datapool with provided GLU.
+ * @param[in,out] datapool the datapool to be finalized
+ * @return TSP_STATUS_OK on success.
+ */
+int32_t 
+TSP_datapool_finalize(TSP_datapool_t* datapool);
+
+/**
+ * Get the datapool instance for this GLU.
+ * <ul>
+ * <li>ACTIVE   GLU will get global datapool singleton instance</li>
+ * <li>PASSIVE  GLU will get their own local datapool instance</li>
+ * </ul>
+ * When the sample server is an active one, this function work as 
+ * a singleton. If the global datapool does not exist or was destroyed, 
+ * a new datapool is created. 
+ * @param[in,out] glu the GLU object. On return the datapool member
+ *                of the GLU is updated with the retrieved datapool.
  * @return The datapool handle
  */ 
-TSP_datapool_t* TSP_global_datapool_instantiate(GLU_handle_t* glu);
+TSP_datapool_t* TSP_datapool_instantiate(GLU_handle_t* glu);
+
 
 /**
  * Get the address of a value in the datapool

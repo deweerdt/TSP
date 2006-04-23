@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_stream_sender.c,v 1.18 2006-02-26 13:36:05 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_stream_sender.c,v 1.19 2006-04-23 22:24:58 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -290,14 +290,11 @@ TSP_stream_sender_t TSP_stream_sender_create(int fifo_size, int buffer_size)
     uint8_t     parts[4];
   } myu;
 
-  STRACE_IO(("-->IN"));
-
-  /*First disable SIGPIPE signal to avoir being crashed by a disconnected client*/
-  if( SIG_ERR == signal(SIGPIPE, SIG_IGN))
-    {
-      STRACE_ERROR(("Unable to disable SIGPIPE signal"));
-      return 0;
-    }
+  /* First disable SIGPIPE signal to avoir being crashed by a disconnected client*/
+  if( SIG_ERR == signal(SIGPIPE, SIG_IGN)) {
+    STRACE_ERROR(("Unable to disable SIGPIPE signal"));
+    return 0;
+  }
   
   if( -1 == gethostname(host, TSP_MAXHOSTNAMELEN))
     {
@@ -463,9 +460,6 @@ TSP_stream_sender_t TSP_stream_sender_create(int fifo_size, int buffer_size)
       TSP_CHECK_THREAD(status, FALSE);      
 
     }
-
-  STRACE_IO(("-->OUT"));
-    
   return sock;
 }
 
@@ -474,8 +468,6 @@ void TSP_stream_sender_destroy(TSP_stream_sender_t sender)
 
    TSP_socket_t* sock = (TSP_socket_t*)sender;
 
-   STRACE_IO(("-->IN"));
-  
    if( sock->fifo_size > 0)
      {
        RINGBUF_PTR_DESTROY(sock->out_ringbuf);
@@ -487,16 +479,12 @@ void TSP_stream_sender_destroy(TSP_stream_sender_t sender)
    sock->out_ringbuf = 0;
    free(sock);     
 
-   STRACE_IO(("-->OUT"));
-
 }
 
-void TSP_stream_sender_stop(TSP_stream_sender_t sender)
-{
+void 
+TSP_stream_sender_stop(TSP_stream_sender_t sender) {
 
    TSP_socket_t* sock = (TSP_socket_t*)sender;
-
-   STRACE_IO(("-->IN"));
    
    sock->is_stopped = TRUE;
 
@@ -506,23 +494,18 @@ void TSP_stream_sender_stop(TSP_stream_sender_t sender)
    close(sock->hClient);
 
    /* Is there was a thread for the fifo, we must wait for it to end */
-   if(sock->fifo_size > 0)
-     {
-       pthread_join(sock->thread_id, NULL);
-     }
-
-   STRACE_IO(("-->OUT"));
+   if(sock->fifo_size > 0) {
+     pthread_join(sock->thread_id, NULL);
+   }
 }
 
-int TSP_stream_sender_send(TSP_stream_sender_t sender, const char *buffer, int bufferLen)
-{
+int 
+TSP_stream_sender_send(TSP_stream_sender_t sender, const char *buffer, int bufferLen) {
   
   int Total;
   int nread;
   TSP_socket_t* sock = (TSP_socket_t*)sender;
   int identSocket = sock->hClient;
-
-  STRACE_IO(("-->IN"));
 
   Total = 0;
   if(identSocket > 0)
@@ -550,8 +533,6 @@ int TSP_stream_sender_send(TSP_stream_sender_t sender, const char *buffer, int b
 	}
     }
   
-  STRACE_IO(("-->OUT"));
-
   return(TRUE);
 }
 

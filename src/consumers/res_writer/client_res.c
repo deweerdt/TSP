@@ -1,6 +1,6 @@
 /*
 
-$Id: client_res.c,v 1.15 2006-04-07 10:37:17 morvan Exp $
+$Id: client_res.c,v 1.16 2006-04-23 22:24:58 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -35,13 +35,15 @@ Purpose   : Simple consummer for testing groups configuration
 -----------------------------------------------------------------------
 */
 
-#include "tsp_sys_headers.h"
+
 #include <signal.h>
 #include <unistd.h>
-#include "tsp_prjcfg.h" 
-#include "tsp_time.h" 
-#include "tsp_consumer.h"
-#include "libUTIL.h"
+
+#include <tsp_sys_headers.h>
+#include <tsp_prjcfg.h> 
+#include <tsp_time.h> 
+#include <tsp_consumer.h>
+#include <libUTIL.h>
 
 
 /*µS*/
@@ -140,13 +142,11 @@ int main(int argc, char *argv[]){
   STRACE_INFO(("Autodetect CPU : %d bits", sizeof(long)*8));
 
   /* TSP Init */
-  if(!TSP_consumer_init(&argc, &argv))
-    {
-      STRACE_ERROR(("TSP init failed"));
-      return -1;
-    }
-    
-  
+  if(!TSP_consumer_init(&argc, &argv)) {
+    STRACE_ERROR(("TSP init failed"));
+    return -1;
+  }
+      
   while ((myopt = getopt(argc, argv, "u:f:t:m:dh")) != -1)
     {
       switch(myopt)
@@ -260,28 +260,24 @@ int main(int argc, char *argv[]){
       /*---------------------*/ 
       /* Ask for sample list */
       /*---------------------*/ 
-      if(!TSP_consumer_request_sample(providers[provider],&symbols[provider]))
-	{
-	  STRACE_ERROR(("TSP_request_provider_sample failed"));
-	  return -1;
-	}
+      if(!TSP_consumer_request_sample(providers[provider],&symbols[provider])) {
+	STRACE_ERROR(("TSP_request_provider_sample failed"));
+	return -1;
+      }
     }
 
   /* in case of stop request, flush N buffers (if any) before stopping */
   buffersBeforeStop = base_frequency * 1 /* seconds */;
 
-
-  for(provider=0; provider<nb_providers; provider++)
-    {
-      /*----------------*/ 
-      /* Start sampling */
-      /*----------------*/ 
-      if(!TSP_consumer_request_sample_init(providers[provider],0,0))
-	{
-	  STRACE_ERROR(("TSP_request_provider_sample_init failed"));
-	  return -1;
-	}
-    }
+  for(provider=0; provider<nb_providers; provider++) {
+    /*----------------*/ 
+    /* Start sampling */
+    /*----------------*/ 
+    if (!TSP_consumer_request_sample_init(providers[provider],0,0)) {
+	STRACE_ERROR(("TSP_request_provider_sample_init failed"));
+	return -1;
+      }
+  }
 
   
   /*-------------------*/ 
@@ -293,18 +289,16 @@ int main(int argc, char *argv[]){
   d_wcom(""); /* No comment */
 
   res_values_nb = 0;
-  for(provider=0; provider<nb_providers; provider++)
-    {
-      for (i = 0; i < symbols[provider].TSP_sample_symbol_info_list_t_len; i++)
-	{
-	  d_wnam(symbols[provider].TSP_sample_symbol_info_list_t_val[i].name, "?"); /* write header with no unit */
-	}
-      res_values_nb += symbols[provider].TSP_sample_symbol_info_list_t_len;
+  for(provider=0; provider<nb_providers; provider++) {
+    for (i = 0; i < symbols[provider].TSP_sample_symbol_info_list_t_len; i++) {
+      d_wnam(symbols[provider].TSP_sample_symbol_info_list_t_val[i].name, "?"); /* write header with no unit */
     }
+    res_values_nb += symbols[provider].TSP_sample_symbol_info_list_t_len;
+  }
   
   res_values = _use_dbl ? 
     calloc(( res_values_nb+1),sizeof(double)) :
-      calloc(( res_values_nb+1),sizeof(float)) ;
+    calloc(( res_values_nb+1),sizeof(float)) ;
   assert(res_values);
   
   res_value_i = 0;
@@ -312,36 +306,34 @@ int main(int argc, char *argv[]){
     {
       for(provider=0; provider<nb_providers; provider++)
 	{
-	  if(!TSP_consumer_read_sample(providers[provider], &sample, &new_sample))
-	    {
-	      stop_end = TRUE;
-	      break;
-	    }
-	  if(new_sample)
-	    {
-	      if(_use_dbl)
-		{
-		  double* d_res_values = (double*)res_values;
-		  d_res_values[res_value_i++] = sample.uvalue.double_value;
-		}
-	      else
-		{
-		  float* f_res_values = (float*)res_values;
-		  f_res_values[res_value_i++] = sample.uvalue.double_value;	      
-		}
-
-	      /* Received complete buffer, need to write */
-	      if( res_value_i == res_values_nb )
-		{
-		  count++;
-		  d_writ(res_values);
-		  res_value_i = 0;
-
-		  /* wait a little before stopping to flush buffers */
-		  if(stop) stop++;
-		  if(stop > buffersBeforeStop) stop_end = TRUE;
-		}
-	    }
+	  if(!TSP_consumer_read_sample(providers[provider], &sample, &new_sample)) {
+	    stop_end = TRUE;
+	    break;
+	  }
+	  if (new_sample) {
+	    if(_use_dbl)
+	      {
+		double* d_res_values = (double*)res_values;
+		d_res_values[res_value_i++] = sample.uvalue.double_value;
+	      }
+	    else
+	      {
+		float* f_res_values = (float*)res_values;
+		f_res_values[res_value_i++] = sample.uvalue.double_value;	      
+	      }
+	    
+	    /* Received complete buffer, need to write */
+	    if( res_value_i == res_values_nb )
+	      {
+		count++;
+		d_writ(res_values);
+		res_value_i = 0;
+		
+		/* wait a little before stopping to flush buffers */
+		if(stop) stop++;
+		if(stop > buffersBeforeStop) stop_end = TRUE;
+	      }
+	  }
 	  else
 	    {
 	      tsp_usleep(TSP_NANOSLEEP_PERIOD_US);

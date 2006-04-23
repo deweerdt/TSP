@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.c,v 1.27 2006-04-23 20:06:48 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.c,v 1.28 2006-04-23 22:24:58 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -235,10 +235,10 @@ TSP_add_session(channel_id_t* new_channel_id, GLU_handle_t* glu_h) {
   X_session_t[X_session_nb].channel_id = *new_channel_id;
   TSP_CHECK_ALLOC(X_session_t[X_session_nb].session_data, TSP_STATUS_ERROR_MEMORY_ALLOCATION);
   
-  /* Intialize members */
+  /* Initialize members */
   X_session_t[X_session_nb].session_data->data_link_broken = FALSE;
-  X_session_t[X_session_nb].session_data->datapool = NULL; 
-  X_session_t[X_session_nb].session_data->glu_h = glu_h; 
+  X_session_t[X_session_nb].session_data->datapool         = NULL; 
+  X_session_t[X_session_nb].session_data->glu_h            = glu_h; 
 
   /* Get symbols number */
   X_session_t[X_session_nb].session_data->symbols_number =
@@ -255,7 +255,8 @@ TSP_add_session(channel_id_t* new_channel_id, GLU_handle_t* glu_h) {
 }
 
 
-void TSP_session_destroy_symbols_table_by_channel(channel_id_t channel_id)
+void 
+TSP_session_destroy_symbols_table_by_channel(channel_id_t channel_id)
 {
   TSP_session_t* session = 0;
    
@@ -269,11 +270,12 @@ void TSP_session_destroy_symbols_table_by_channel(channel_id_t channel_id)
 }
 
 
-int TSP_session_create_symbols_table_by_channel(const TSP_request_sample_t* req_sample,
-						TSP_answer_sample_t* ans_sample)
+int32_t 
+TSP_session_create_symbols_table_by_channel(const TSP_request_sample_t* req_sample,
+					    TSP_answer_sample_t* ans_sample)
 
 {
-  int ret = FALSE;
+  int retcode = TSP_STATUS_ERROR_NO_MORE_SESSION;
   TSP_session_t* session = 0;
   TSP_datapool_t* target_datapool = NULL;    
 
@@ -284,40 +286,44 @@ int TSP_session_create_symbols_table_by_channel(const TSP_request_sample_t* req_
   /* The functions could have been called several time, so clean up first */
   TSP_session_destroy_symbols_table(session);    
     
-  /* Use global datapool */
-  target_datapool = TSP_global_datapool_instantiate(session->session_data->glu_h);
+ 
+  
+  /* 
+   * Get datapool instance for this GLU 
+   * ACTIVE   GLU will get global datapool singleton instance
+   * PASSIVE  GLU will get their own local datapool instance
+   */
+  target_datapool = TSP_datapool_instantiate(session->session_data->glu_h);
 
   /* Creating group table*/
-  ret  = TSP_group_algo_create_symbols_table(&(req_sample->symbols),
-					     &(ans_sample->symbols), 
-					     &(session->session_data->groups),
-					     target_datapool);   
+  retcode  = TSP_group_algo_create_symbols_table(&(req_sample->symbols),
+						 &(ans_sample->symbols), 
+						 &(session->session_data->groups),
+						 target_datapool);   
   
   /* Set total group number */
-  if(ret)
-    {
-      ans_sample->provider_group_number = 
-	TSP_group_algo_get_group_number(session->session_data->groups);
-    }
-  else
-    {
-      STRACE_ERROR(("Function TSP_group_algo_create_symbols_table failed"));
-
-    }
+  if(TSP_STATUS_OK==retcode) {
+    ans_sample->provider_group_number = 
+      TSP_group_algo_get_group_number(session->session_data->groups);
+    retcode = TSP_STATUS_OK;
+  }
+  else {
+    STRACE_ERROR(("Function TSP_group_algo_create_symbols_table failed"));    
+  }
     
   TSP_UNLOCK_MUTEX(&X_session_list_mutex,FALSE);
 
-  return ret;
+  return retcode;
+} /* end of TSP_session_create_symbols_table_by_channel */
+
+void 
+TSP_session_create_symbols_table_by_channel_free_call(TSP_answer_sample_t* ans_sample) {
+  TSP_group_algo_create_symbols_table_free_call(&ans_sample->symbols);
 }
 
-void TSP_session_create_symbols_table_by_channel_free_call(TSP_answer_sample_t* ans_sample)
-{
-    TSP_group_algo_create_symbols_table_free_call(&ans_sample->symbols);
-}
-
-int  TSP_session_get_sample_symbol_info_list_by_channel(channel_id_t channel_id,
-							TSP_sample_symbol_info_list_t* symbol_list)
-{
+int  
+TSP_session_get_sample_symbol_info_list_by_channel(channel_id_t channel_id,
+						   TSP_sample_symbol_info_list_t* symbol_list) {
 
   TSP_session_t* session;
   int ret;
@@ -447,7 +453,7 @@ void TSP_session_all_session_send_msg_ctrl(TSP_msg_ctrl_t msg_ctrl)
 
 
 int32_t
-TSP_session_create_data_sender_by_channel(channel_id_t channel_id, int no_fifo) {
+TSP_session_create_data_sender_by_channel(channel_id_t channel_id) {
 
   TSP_session_t* session;
   int retcode = TSP_STATUS_OK;
@@ -460,12 +466,12 @@ TSP_session_create_data_sender_by_channel(channel_id_t channel_id, int no_fifo) 
   session->session_data->sender = 0;
 
   /* Calculate fifo depth */
-  if (no_fifo) {
-    /* The no fifo case is for PASSIVE GLU for which
+  if (GLU_SERVER_TYPE_PASSIVE==session->session_data->glu_h->type) {
+    /* 
+     * PASSIVE GLU do not need FIFO since
      * there is no RINGBUF between glu and datapool
-     * since the datapool is local (i.e. private) for
-     * each GLU instance. Moreover there is 
-     * one GLU instance by TSP session.
+     * and the datapool is local (i.e. private) for
+     * each GLU instance.
      */
     ringbuf_size = 0;
   }
@@ -492,17 +498,22 @@ TSP_session_create_data_sender_by_channel(channel_id_t channel_id, int no_fifo) 
   if (TSP_STATUS_OK==retcode) {
     int max_group_size = TSP_group_algo_get_biggest_group_size(session->session_data->groups);
     session->session_data->sender = TSP_data_sender_create(ringbuf_size, max_group_size);      
-
     if(NULL != session->session_data->sender) {
       /* If there's no fifo, 
        * we must start a new thread per client, 
        * because there's one datapool per client 
        */
-      if (no_fifo) {
-	/* FIXME INSTANTIATE LOCALDATAPOOL */
-	retcode = TSP_STATUS_OK; /*No more ... TSP_local_datapool_start_thread(session->session_data->datapool);*/
-	if (TSP_STATUS_OK!=retcode) {
-	  STRACE_ERROR(("Unable to launch local datapool worker thread"));
+      if (GLU_SERVER_TYPE_PASSIVE==session->session_data->glu_h->type) {
+	/* 
+	 * Should start GLU now 
+	 * Note that multi-consumer PASSIVE GLU should protect themselves
+	 * against multiple start (this is the case of the default GLU_start_default)
+	 */
+	if (!(session->session_data->glu_h->start(session->session_data->glu_h))) {
+	  retcode = TSP_STATUS_ERROR_GLU_START;
+	  STRACE_ERROR(("Unable to start GLU (PASSIVE case)"));
+	} else {
+	  retcode = TSP_STATUS_OK;
 	}
       }
     }
@@ -516,32 +527,29 @@ TSP_session_create_data_sender_by_channel(channel_id_t channel_id, int no_fifo) 
   return retcode;
 }
 
-int TSP_session_destroy_data_sender_by_channel(channel_id_t channel_id, int stop_local_thread)
-{
+int32_t 
+TSP_session_destroy_data_sender_by_channel(channel_id_t channel_id) {
   TSP_session_t* session;
-  int ret = TRUE;
+  int retcode = TSP_STATUS_OK;
 
-  TSP_LOCK_MUTEX(&X_session_list_mutex,FALSE);
+  TSP_LOCK_MUTEX(&X_session_list_mutex,TSP_STATUS_ERROR_UNKNOWN);
 	
-  TSP_GET_SESSION(session, channel_id, FALSE);
+  TSP_GET_SESSION(session, channel_id, TSP_STATUS_ERROR_INVALID_CHANNEL_ID);
 
   /* Stop the session */
   TSP_data_sender_stop(session->session_data->sender);
 
-  /* For a pasive server we must wait for the session thread to end */
-  if(stop_local_thread)
-    {
-      /*TSP_local_datapool_wait_for_end_thread(session->session_data->datapool);*/
-    }
+  /* For a passive server we must wait for the session thread to end */
+  if (GLU_SERVER_TYPE_PASSIVE==session->session_data->glu_h->type) {
+    /*TSP_local_datapool_wait_for_end_thread(session->session_data->datapool);*/
+  }
   
   TSP_data_sender_destroy(session->session_data->sender);
-  session->session_data->sender = 0;
+  session->session_data->sender = NULL;
 
-  TSP_UNLOCK_MUTEX(&X_session_list_mutex,FALSE);
+  TSP_UNLOCK_MUTEX(&X_session_list_mutex,TSP_STATUS_ERROR_UNKNOWN);
 
-  return ret;
-
-
+  return retcode;
 }
 
 const char* TSP_session_get_data_address_string_by_channel(channel_id_t channel_id)

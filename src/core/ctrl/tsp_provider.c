@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_provider.c,v 1.47 2006-04-23 20:06:48 erk Exp $
+$Id: tsp_provider.c,v 1.48 2006-04-23 22:24:58 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -70,9 +70,6 @@ static int X_tsp_provider_init_ok = FALSE;
  * That is one for tsp_request_open and 1 for each client after that.
  */
 static pthread_mutex_t X_tsp_request_mutex = PTHREAD_MUTEX_INITIALIZER;
-
-/** Tells is the GLU is active or pasive */
-static int X_glu_is_active;
 
 /* polling time for session garbage collector */
 #define TSP_GARBAGE_COLLECTOR_POLL_TIME_US ((int)(5e6))
@@ -244,12 +241,6 @@ TSP_cmd_line_parser(int* argc, char** argv[]) {
 	  STRACE_INFO(("No GLU stream init provided on command line"));
 	}
     }
-
-  /* Memorize GLU type */
-  if (  GLU_SERVER_TYPE_ACTIVE == firstGLU->get_type(firstGLU) )
-    X_glu_is_active = TRUE;
-  else
-    X_glu_is_active = FALSE;
 
   return ret;
 }
@@ -458,16 +449,15 @@ TSP_provider_request_sample(TSP_request_sample_t* req_sample,
   if (TSP_STATUS_OK == ans_sample->status) {
     if(TSP_session_get_symbols_global_index_by_channel(req_sample->channel_id, &(req_sample->symbols) )) {  
       /* The datapool will be created here (if it does not already exist) */
-      if(TSP_session_create_symbols_table_by_channel(req_sample, ans_sample)) {
-	/* FIXME do we need to start glu here for PASSIVE glu 
-	 * instead of TSP_provider_private_run
-	 */
-	ans_sample->status = TSP_STATUS_OK;
-      }
-      else  {
-	ans_sample->status = TSP_STATUS_ERROR_UNKNOWN;
-	STRACE_ERROR(("Function TSP_session_create_symbols_table_by_channel failed"));    
+      ans_sample->status =
+	TSP_session_create_symbols_table_by_channel(req_sample, ans_sample);
+      if (TSP_STATUS_OK!= ans_sample->status) {
+	STRACE_ERROR(("Function TSP_session_create_symbols_table_by_channel failed"));
       }    
+      /* 
+       * DO NOT start PASSIVE GLU here
+       * Start It only upon request_sample_init request.
+       */
     } else {
       STRACE_WARNING(("Function TSP_session_get_symbols_global_index_by_channel failed"));
       ans_sample->status = TSP_STATUS_ERROR_SYMBOLS;
@@ -488,24 +478,20 @@ TSP_provider_request_sample(TSP_request_sample_t* req_sample,
 void  
 TSP_provider_request_sample_init(TSP_request_sample_init_t* req_sample_init, 
 				 TSP_answer_sample_init_t* ans_sample_init) {  
-  int start_local_thread;
+  GLU_handle_t* myGLU;
   TSP_LOCK_MUTEX(&X_tsp_request_mutex,);
     
   ans_sample_init->status = TSP_provider_checkVersionAndChannelId(req_sample_init->version_id,
 								  req_sample_init->channel_id,
-								  NULL);
+								  &myGLU);
   if(TSP_STATUS_OK==ans_sample_init->status) {
     ans_sample_init->version_id = req_sample_init->version_id;
     ans_sample_init->channel_id = req_sample_init->channel_id;
 
-    /* If the sample server is a lazy passive server, we need a thread per session*/
-    start_local_thread = ( X_glu_is_active ? FALSE : TRUE );
+    ans_sample_init->status =
+      TSP_session_create_data_sender_by_channel(req_sample_init->channel_id);
     
-    if(TSP_STATUS_OK==TSP_session_create_data_sender_by_channel(req_sample_init->channel_id, start_local_thread)) {
-      ans_sample_init->status = TSP_STATUS_OK;
-    }
-    else {
-      ans_sample_init->status = TSP_STATUS_ERROR_UNKNOWN;
+    if (TSP_STATUS_OK!=ans_sample_init->status) {
       STRACE_ERROR(("TSP_data_sender_create failed"));
     }
     
@@ -520,8 +506,7 @@ TSP_provider_request_sample_init(TSP_request_sample_init_t* req_sample_init,
 
 static 
 void TSP_provider_request_sample_destroy_priv(channel_id_t channel_id) {
-  int stop_local_thread = ( X_glu_is_active ? FALSE : TRUE );  
-  if(!TSP_session_destroy_data_sender_by_channel(channel_id, stop_local_thread)) {
+  if(TSP_STATUS_OK!=TSP_session_destroy_data_sender_by_channel(channel_id)) {
     STRACE_ERROR(("TSP_session_destroy_data_sender_by_channel failed"));
   }
 }
@@ -591,7 +576,7 @@ TSP_provider_private_init(GLU_handle_t* theGLU, int* argc, char** argv[]) {
   }
 
   if (!ret) {
-    STRACE_INFO(("TSP init error"));
+    STRACE_INFO(("TSP private init error"));
   }
 
   X_tsp_provider_init_ok = ret;
@@ -601,6 +586,7 @@ TSP_provider_private_init(GLU_handle_t* theGLU, int* argc, char** argv[]) {
 
 int 
 TSP_provider_private_run() {
+  int retcode = 0;
   /* 
    * Launch GLU and instantiate global 
    * datapool  iff it is an ACTIVE one.
@@ -610,11 +596,14 @@ TSP_provider_private_run() {
    */
   if (GLU_SERVER_TYPE_ACTIVE == firstGLU->type) {
     /* Instantiate GLOBAL datapool */
-    TSP_global_datapool_instantiate(firstGLU);    
-    /* Start ACTIVE glu */
-    firstGLU->start(firstGLU);
+    TSP_datapool_instantiate(firstGLU);    
+    /* Start GLU now since it is an ACTIVE one */
+    retcode = firstGLU->start(firstGLU);
+    if (!retcode) {
+      STRACE_ERROR(("Cannot start GLU (ACTIVE case)"));
+    }	
   }
-  return 0;
+  return retcode;
 } /* end of TSP_provider_private_run */
 
 

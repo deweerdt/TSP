@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_default_glu.c,v 1.17 2006-04-23 20:06:48 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_default_glu.c,v 1.18 2006-04-23 22:24:58 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -150,12 +150,11 @@ GLU_get_instance_default(GLU_handle_t* this,
 
 
 int32_t
-GLU_start_default(GLU_handle_t* this)
-{
+GLU_start_default(GLU_handle_t* this) {
   if (0==this->tid) {
     return pthread_create(&(this->tid), NULL, this->run, this); 
   } else {
-    return 1;
+    return 0;
   }
 } /* GLU_start_default */
 

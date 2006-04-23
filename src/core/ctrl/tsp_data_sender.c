@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_data_sender.c,v 1.21 2006-04-23 15:50:42 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_data_sender.c,v 1.22 2006-04-23 22:24:58 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -125,16 +125,11 @@ TSP_data_sender_destroy(TSP_data_sender_t sender) {
   free(data_sender);
 }
 
-void TSP_data_sender_stop(TSP_data_sender_t sender)
-{
+void 
+TSP_data_sender_stop(TSP_data_sender_t sender) {
 
   TSP_struct_data_sender_t* data_sender = (TSP_struct_data_sender_t*)sender;
-
-  STRACE_IO(("-->IN"));
-  
   TSP_stream_sender_stop(data_sender->stream_sender);
-
-  STRACE_IO(("-->OUT"));
 }
 
 

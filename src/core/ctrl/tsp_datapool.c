@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_datapool.c,v 1.27 2006-04-23 20:06:48 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_datapool.c,v 1.28 2006-04-23 22:24:58 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -42,6 +42,7 @@ may be unified in this source .
 #include <tsp_datastruct.h>
 #include <tsp_session.h>
 #include <tsp_time.h>
+#include <tsp_common.h>
 
 /* Poll time waiting for  consumer connection (us) */
 #define TSP_LOCAL_WORKER_CONNECTION_POLL_TIME ((int)(1e5))
@@ -91,6 +92,7 @@ TSP_datapool_push_next_item(TSP_datapool_t* datapool, glu_item_t* item) {
 
 int 
 TSP_datapool_push_commit(TSP_datapool_t* datapool, time_stamp_t time_stamp, GLU_get_state_t state) {
+  assert(datapool);
 
   /* Send end status message */
   switch(state) {
@@ -109,14 +111,14 @@ TSP_datapool_push_commit(TSP_datapool_t* datapool, time_stamp_t time_stamp, GLU_
     TSP_session_all_session_send_msg_ctrl(TSP_MSG_CTRL_EOF);
     STRACE_INFO(("GLU sent EOF"));
     /* End of flow. Our datapool is dead */
-    X_global_datapool.terminated = TRUE;
+    datapool->terminated = TRUE;
     break;
     
   case GLU_GET_RECONF :
     TSP_session_all_session_send_msg_ctrl(TSP_MSG_CTRL_RECONF);
     STRACE_INFO(("GLU sent RECONF"));
     /* End of flow. Our datapool is dead */
-    X_global_datapool.terminated = TRUE;
+    datapool->terminated = TRUE;
     break;
     
   case GLU_GET_DATA_LOST :
@@ -131,82 +133,73 @@ TSP_datapool_push_commit(TSP_datapool_t* datapool, time_stamp_t time_stamp, GLU_
   return 0;  
 }
 
-/**
- * Start global datapool thread.
- * Only used when the sample server is an active one
- * @return TRUE = OK
- */ 
-static int TSP_global_datapool_init(GLU_handle_t* glu)
-{
+int32_t 
+TSP_datapool_initialize(TSP_datapool_t* datapool, GLU_handle_t* glu) {
 	 
   TSP_sample_symbol_info_list_t symbols;
   int32_t i;
+  int32_t retcode = TSP_STATUS_OK;
+
+  assert(datapool);
+  assert(glu);
 	
-  /* Here the datapool is global */
-  X_global_datapool.h_glu = glu;   
+  /* Link datapool and glu */
+  datapool->h_glu = glu;   
 
-  glu->get_ssi_list(X_global_datapool.h_glu, &symbols);
+  glu->get_ssi_list(glu,&symbols);
 
-  X_global_datapool.size = symbols.TSP_sample_symbol_info_list_t_len;
+  /* Allocate datapool items */
+  datapool->size  = symbols.TSP_sample_symbol_info_list_t_len;
+  datapool->items = 
+    (TSP_datapool_item_t*)calloc(datapool->size, sizeof(TSP_datapool_item_t));
+  TSP_CHECK_ALLOC(datapool->items, TSP_STATUS_ERROR_MEMORY_ALLOCATION);
 
-  X_global_datapool.items = 
-    (TSP_datapool_item_t*)calloc(X_global_datapool.size, sizeof(TSP_datapool_item_t));
-  TSP_CHECK_ALLOC(X_global_datapool.items, FALSE);
-
-
-  for(i=0;i<symbols.TSP_sample_symbol_info_list_t_len;++i)
-  {
-
-    X_global_datapool.items[i].raw_value = 
-                       calloc(symbols.TSP_sample_symbol_info_list_t_val[i].dimension,sizeof(symbols.TSP_sample_symbol_info_list_t_val[i].type));
-    TSP_CHECK_ALLOC(X_global_datapool.items[i].raw_value, FALSE); 
-
-
+  for(i=0;i<symbols.TSP_sample_symbol_info_list_t_len;++i) {
+    
+    datapool->items[i].raw_value = 
+      calloc(symbols.TSP_sample_symbol_info_list_t_val[i].dimension,
+	     tsp_type_size[symbols.TSP_sample_symbol_info_list_t_val[i].type]);
+    TSP_CHECK_ALLOC(datapool->items[i].raw_value, TSP_STATUS_ERROR_MEMORY_ALLOCATION); 
   }
 
-
-
-  X_global_datapool.reverse_index = (int*)calloc(X_global_datapool.size, sizeof(int));
-  TSP_CHECK_ALLOC(X_global_datapool.reverse_index, FALSE);
-  X_global_datapool.nb_wanted_items = 0;
-  X_global_datapool.initialized = TRUE;
-  X_global_datapool.terminated = FALSE;
+  /* Allocate PGI reverse index */
+  datapool->reverse_index = (int*)calloc(datapool->size, sizeof(int));
+  TSP_CHECK_ALLOC(datapool->reverse_index, TSP_STATUS_ERROR_MEMORY_ALLOCATION);
+  datapool->nb_wanted_items = 0;
+  datapool->initialized     = TRUE;
+  datapool->terminated      = FALSE;
     
-  return TRUE;
-}
+  return retcode;
+} /* end of TSP_datapool_initialize */
 
-static void 
-TSP_datapool_internal_free(TSP_datapool_t* obj_datapool) {
+int32_t
+TSP_datapool_finalize(TSP_datapool_t* obj_datapool) {
      free(obj_datapool->items);
      obj_datapool->items = 0;
      free(obj_datapool->reverse_index);
      obj_datapool->reverse_index = 0;
      obj_datapool->nb_wanted_items = 0;
+     return TSP_STATUS_OK;
 }
 
 void 
 TSP_datapool_delete(TSP_datapool_t** datapool) {
 
-   TSP_datapool_internal_free(*datapool);
+   TSP_datapool_finalize(*datapool);
    free(*datapool);
    *datapool=NULL;
 } /* End of TSP_datapool_delete */
 
 
 TSP_datapool_t* 
-TSP_datapool_new(int symbols_number, GLU_handle_t* h_glu ) {
+TSP_datapool_new(GLU_handle_t* h_glu) {
   TSP_datapool_t* datapool;
+  assert(h_glu);
      
   datapool = (TSP_datapool_t*)calloc(1,sizeof(TSP_datapool_t));
-  TSP_CHECK_ALLOC(datapool, 0);
-	
-  datapool->size = symbols_number;
-  datapool->items = (TSP_datapool_item_t*)calloc(datapool->size,sizeof(TSP_datapool_item_t));
-  TSP_CHECK_ALLOC(datapool->items, 0);
-    
-  datapool->h_glu = h_glu;
-  datapool->initialized = TRUE;
-  datapool->terminated = FALSE;
+  TSP_CHECK_ALLOC(datapool, NULL);
+
+  TSP_datapool_initialize(datapool,h_glu);
     
   return datapool;
 } /* end of TSP_datapool_new */
@@ -234,26 +227,39 @@ TSP_datapool_get_symbol_value(TSP_datapool_t* datapool, int provider_global_inde
 
 
 TSP_datapool_t* 
-TSP_global_datapool_instantiate(GLU_handle_t* glu) {
-  /* Act like a singleton. */ 
+TSP_datapool_instantiate(GLU_handle_t* glu) {
+
+  assert(glu);
+
+  if (GLU_SERVER_TYPE_ACTIVE==glu->type) {
+    /* Act like a singleton. */ 
+    /* Was the datapool terminated ? */
+    if( TRUE == X_global_datapool.terminated ) {
+      /* Yes, clean up previous datapool */
+      TSP_datapool_finalize(&X_global_datapool);
+      /* Now, the datapool is not initialized anymore */
+      X_global_datapool.initialized = FALSE;
+    }
+    
+    /* Was the datapool initialized  ? */
+    if(FALSE == X_global_datapool.initialized) {
+      /* Now initialize */
+      TSP_datapool_initialize(&X_global_datapool,glu);
+    }
   
-  /* Was the datapool terminated ? */
-  if( TRUE == X_global_datapool.terminated ) {
-    /* Yes, clean up previous datapool */
-    TSP_datapool_internal_free(&X_global_datapool);
-    /* Now, the datapool is not initialized anymore */
-    X_global_datapool.initialized = FALSE;
+    /* link to provided GLU */
+    glu->datapool = &X_global_datapool;
+  } else {
+    /* PASSIVE GLU CASE */
+    /* 
+     * do not re-instantiate datapool 
+     * (multi-consumer same datapool case)
+     */
+    if (NULL==glu->datapool) {
+      glu->datapool = TSP_datapool_new(glu);
+    }
   }
 
-  /* Was the datapool initialized  ? */
-  if(FALSE == X_global_datapool.initialized) {
-    /* Now initialize */
-    TSP_global_datapool_init(glu);
-  }
-  
-  /* link to provided GLU */
-  glu->datapool = &X_global_datapool;
-
-  return &X_global_datapool;
-} /* end of TSP_global_datapool_get_instance */
+  return glu->datapool;
+} /* end of TSP_datapool_instantiate */
 

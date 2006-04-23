@@ -1,6 +1,6 @@
 /*
 
-$Id: glue_res.c,v 1.12 2006-04-23 20:06:48 erk Exp $
+$Id: glue_res.c,v 1.13 2006-04-23 22:24:58 erk Exp $
 
 -----------------------------------------------------------------------
  
@@ -78,6 +78,10 @@ void RES_GLU_loop()
   int i;
   GLU_get_state_t state;
   int run = _wait_eof+1;
+  double dbl_value;
+  
+
+  item.raw_value = &dbl_value;
 
   while(!_started)
     sleep(1);
@@ -178,7 +182,8 @@ int RES_GLU_init(GLU_handle_t* this, int fallback_argc, char* fallback_argv[])
 			       i, /* PGI */
 			       0, /* group rank idx */
 			       0, /* group rank */
-			       obj->use_dbl ? TSP_TYPE_DOUBLE : TSP_TYPE_FLOAT,
+			       /* obj->use_dbl ? TSP_TYPE_DOUBLE : TSP_TYPE_FLOAT, */
+			       TSP_TYPE_DOUBLE, /* force DOUBLE for compatibility reason */
 			       1, /* dimension */
 			       0, /* offset */
 			       1, /* nelem */

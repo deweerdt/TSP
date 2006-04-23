@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_group_algo.c,v 1.19 2006-04-23 20:06:48 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_group_algo.c,v 1.20 2006-04-23 22:24:58 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -177,32 +177,24 @@ static int TSP_group_algo_get_group_size(const TSP_sample_symbol_info_list_t* sy
 * @nb_groups Total number of groups
 * @return The summed size of all groups
 */
-static int TSP_group_algo_get_groups_summed_size(const TSP_sample_symbol_info_list_t* symbols,
-						 int nb_groups)
-{
+static int 
+TSP_group_algo_get_groups_summed_size(const TSP_sample_symbol_info_list_t* symbols,
+				      int nb_groups) {
     
   int groups_summed_size = 0;
   int group_id;
 
-  STRACE_IO(("-->IN"));
-
-    
   assert(symbols);
     
   /* For all groups, get the size and sum the result */
-  for( group_id = 0 ; group_id < nb_groups ; group_id++ )
-    {
-        
-      groups_summed_size += TSP_group_algo_get_group_size(symbols, group_id); 
-    }
+  for( group_id = 0 ; group_id < nb_groups ; group_id++ ) {    
+    groups_summed_size += TSP_group_algo_get_group_size(symbols, group_id); 
+  }
     
-  STRACE_IO(("-->OUT groups_summed_size is %d", groups_summed_size));
-
+  STRACE_INFO(("groups_summed_size is %d", groups_summed_size));
     
   return groups_summed_size;
-}
-
-
+} /* end of TSP_group_algo_get_groups_summed_size */
 
 
 /**
@@ -217,28 +209,26 @@ TSP_group_algo_allocate_group_table(const TSP_sample_symbol_info_list_t* symbols
     
   int group_id;
     
-  TSP_algo_table_t* table = 0;
-  TSP_algo_group_item_t* items_table = 0;
+  TSP_algo_table_t* table = NULL;
+  TSP_algo_group_item_t* items_table = NULL;
     
-  STRACE_IO(("-->IN"));
-
   assert(symbols);
     
   table = (TSP_algo_table_t*)calloc(1, sizeof(TSP_algo_table_t));
-  TSP_CHECK_ALLOC(table, 0);
+  TSP_CHECK_ALLOC(table, NULL);
     
   /* Get total number of groups */
   table->table_len = TSP_group_algo_get_nb_groups(symbols);
     
   /*Allocate room for all groups */
   table->groups = (TSP_algo_group_t*)calloc(table->table_len, sizeof(TSP_algo_group_t));
-  TSP_CHECK_ALLOC(table->groups, 0);
+  TSP_CHECK_ALLOC(table->groups, NULL);
     
   /*Allocate room for all group items*/
   table->groups_summed_size = TSP_group_algo_get_groups_summed_size(symbols, table->table_len);
   items_table = (TSP_algo_group_item_t*)calloc(table->groups_summed_size, sizeof(TSP_algo_group_item_t));
   table->all_items = items_table;
-  TSP_CHECK_ALLOC(items_table, 0);
+  TSP_CHECK_ALLOC(items_table, NULL);
         
   /*Initialize groups items*/
   /* And make them point at the right place in the item list */
@@ -258,19 +248,13 @@ TSP_group_algo_allocate_group_table(const TSP_sample_symbol_info_list_t* symbols
 	{
 	  table->max_group_len = table->groups[group_id].group_len;
 	}
-
-      
-                
+                     
       /* Get ready for next round ! */        
       items_table += table->groups[group_id].group_len;
 
     }
-    
-  
+      
   STRACE_DEBUG(("Max group size = %d", table->max_group_len));
-  STRACE_IO(("-->OUT"));
-
-    
   return table;
 }
                                                              
@@ -304,7 +288,7 @@ TSP_group_algo_create_symbols_table_free_call(TSP_sample_symbol_info_list_t* sym
   free(symbols->TSP_sample_symbol_info_list_t_val);
 } /* end of TSP_group_algo_create_symbols_table_free_call */
 
-int 
+int32_t 
 TSP_group_algo_create_symbols_table(const TSP_sample_symbol_info_list_t* in_symbols,
 				    TSP_sample_symbol_info_list_t* out_symbols,
 				    TSP_groups_t* out_groups,
@@ -325,7 +309,7 @@ TSP_group_algo_create_symbols_table(const TSP_sample_symbol_info_list_t* in_symb
   table = TSP_group_algo_allocate_group_table(in_symbols);
   *out_groups = table;
     
-  if(table) {
+  if (NULL!=table) {
     /* Allocate memory for the out_symbols */
     out_symbols->TSP_sample_symbol_info_list_t_len = table->groups_summed_size;
     out_symbols->TSP_sample_symbol_info_list_t_val = 
@@ -387,13 +371,10 @@ TSP_group_algo_create_symbols_table(const TSP_sample_symbol_info_list_t* in_symb
   else
     {
       STRACE_ERROR(("Unable to allocate group table"));
-
+      return TSP_STATUS_ERROR_MEMORY_ALLOCATION;
     }
     
-  STRACE_IO(("-->OUT"));
-
-    
-  return TRUE;
+  return TSP_STATUS_OK;
 }
 
 int TSP_group_algo_get_group_number(TSP_groups_t* groups)
