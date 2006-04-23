@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.c,v 1.26 2006-04-23 15:50:42 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.c,v 1.27 2006-04-23 20:06:48 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -41,12 +41,12 @@ opened session from a client
 #include <machine/endian.h>
 #endif /* __OpenBSD__ */
 
-#include "tsp_sys_headers.h"
+#include <tsp_sys_headers.h>
 
-#include "tsp_session.h"
-#include "tsp_group_algo.h"
-#include "tsp_data_sender.h"
-#include "tsp_datapool.h"
+#include <tsp_session.h>
+#include <tsp_group_algo.h>
+#include <tsp_data_sender.h>
+#include <tsp_datapool.h>
 
 
 #define TSP_GET_SESSION(session, channel_id, ret) \
@@ -68,7 +68,7 @@ struct TSP_session_data_t {
 
   int data_link_broken; /**< If data_link_broken = TRUE, the client is unreachable */
 
-  TSP_datapool_t datapool;
+  TSP_datapool_t* datapool;
 
   /** Handle on glu server instance (could be global or specific to session ) */
   GLU_handle_t* glu_h;
@@ -158,11 +158,9 @@ static void TSP_session_close_session(channel_id_t channel_id)
 static  void TSP_session_destroy_symbols_table(TSP_session_t* session)
 {
   /* If there was a local datapool, we erase it */
-  if(session->session_data->datapool)
-    {
-      TSP_local_datapool_destroy(session->session_data->datapool);
-      session->session_data->datapool = 0;
-    }
+  if(session->session_data->datapool) {
+    TSP_datapool_delete(&(session->session_data->datapool));
+  }
   
   /* erase the group table */
   TSP_group_algo_destroy_symbols_table(session->session_data->groups);
@@ -214,8 +212,6 @@ TSP_add_session(channel_id_t* new_channel_id, GLU_handle_t* glu_h) {
 
   channel_id_t channel_id = (channel_id_t)(TSP_UNDEFINED_CHANNEL_ID);
   
-  TSP_sample_symbol_info_list_t symbol_list;
-
   *new_channel_id = 0;
 	
   TSP_LOCK_MUTEX(&X_session_list_mutex,FALSE);
@@ -241,7 +237,7 @@ TSP_add_session(channel_id_t* new_channel_id, GLU_handle_t* glu_h) {
   
   /* Intialize members */
   X_session_t[X_session_nb].session_data->data_link_broken = FALSE;
-  X_session_t[X_session_nb].session_data->datapool = 0; 
+  X_session_t[X_session_nb].session_data->datapool = NULL; 
   X_session_t[X_session_nb].session_data->glu_h = glu_h; 
 
   /* Get symbols number */
@@ -279,7 +275,7 @@ int TSP_session_create_symbols_table_by_channel(const TSP_request_sample_t* req_
 {
   int ret = FALSE;
   TSP_session_t* session = 0;
-  TSP_datapool_t target_datapool = 0;    
+  TSP_datapool_t* target_datapool = NULL;    
 
   TSP_LOCK_MUTEX(&X_session_list_mutex,FALSE);
 
@@ -289,7 +285,7 @@ int TSP_session_create_symbols_table_by_channel(const TSP_request_sample_t* req_
   TSP_session_destroy_symbols_table(session);    
     
   /* Use global datapool */
-  target_datapool = TSP_global_datapool_get_instance(session->session_data->glu_h);
+  target_datapool = TSP_global_datapool_instantiate(session->session_data->glu_h);
 
   /* Creating group table*/
   ret  = TSP_group_algo_create_symbols_table(&(req_sample->symbols),
@@ -470,6 +466,7 @@ TSP_session_create_data_sender_by_channel(channel_id_t channel_id, int no_fifo) 
      * since the datapool is local (i.e. private) for
      * each GLU instance. Moreover there is 
      * one GLU instance by TSP session.
+     */
     ringbuf_size = 0;
   }
   else {

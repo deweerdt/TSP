@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/providers/bb_provider/bb_tsp_provider.c,v 1.26 2006-04-18 00:09:14 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/providers/bb_provider/bb_tsp_provider.c,v 1.27 2006-04-23 20:06:48 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -476,6 +476,7 @@ void* BB_GLU_thread(void* arg) {
   int nb_consumed_symbols;
   int* ptr_consumed_index;
   int pgi;
+  GLU_handle_t* this = (GLU_handle_t*)arg;
   
   bb_logMsg(BB_LOG_INFO,
 	      "bb_tsp_provider::GLU_thread",
@@ -509,11 +510,11 @@ void* BB_GLU_thread(void* arg) {
      * Refresh the [reverse list of consumed symbols]
      * Must be call at each step in case of new samples wanted 
      */
-    TSP_datapool_get_reverse_list (&nb_consumed_symbols, &ptr_consumed_index); 
+    TSP_datapool_get_reverse_list (this->datapool,&nb_consumed_symbols, &ptr_consumed_index); 
 
-    GLU_handle_t* gh = (GLU_handle_t*)arg;
+
     /* acknowledge copy end if bb_provider was telled to do so */
-    if ( *((int*)(gh->private_data)) ) {
+    if ( *((int*)(this->private_data)) ) {
       bb_simple_synchro_go(the_bb,BB_SIMPLE_MSGID_SYNCHRO_COPY_ACK); 
     }
 
@@ -527,9 +528,9 @@ void* BB_GLU_thread(void* arg) {
        * the blackboard type is different
        * since TSP only knows double ... till now */
       *((double*)item.raw_value) = bb_double_of(value_by_pgi[pgi],bbdatadesc_by_pgi[pgi]->type);
-      TSP_datapool_push_next_item(&item);      
+      TSP_datapool_push_next_item(this->datapool, &item);      
     }
-    TSP_datapool_push_commit(glu_time, GLU_GET_NEW_ITEM);
+    TSP_datapool_push_commit(this->datapool, glu_time, GLU_GET_NEW_ITEM);
       
     ++glu_time;
   }

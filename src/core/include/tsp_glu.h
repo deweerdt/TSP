@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_glu.h,v 1.11 2006-04-13 20:38:25 erk Exp $
+$Id: tsp_glu.h,v 1.12 2006-04-23 20:06:48 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -38,8 +38,11 @@ Purpose   : Interface for the glue server : the data producer
 #ifndef _TSP_GLU_H
 #define _TSP_GLU_H
 
-#include "tsp_prjcfg.h"
-#include "tsp_datastruct.h"  /* FIXME : just for TSP_sample_symbol_info_list_t, and shouldn't use generated rpc struct */
+#include <tsp_prjcfg.h>
+#include <tsp_datastruct.h>  /* FIXME : just for TSP_sample_symbol_info_list_t, and shouldn't use generated rpc struct */
+
+/* forward declare datapool type */
+struct TSP_datapool;
 
 
 /**
@@ -353,8 +356,9 @@ typedef struct GLU_handle_t {
   GLU_server_type_t         type;            /**< The GLU type */  
   double                    base_frequency;  /**< The provider base frequency */
   int32_t                   nb_max_consumer; /**< The provider base frequency */
-  int32_t                  nb_connected_consumer; /**< The number of currently connected consumers using this GLU instance */
+  int32_t                   nb_connected_consumer; /**< The number of currently connected consumers using this GLU instance */
   void*                     private_data;    /**< The opaque pointer extensibility point */
+  struct TSP_datapool*      datapool;
 
   /**
    * Name getter

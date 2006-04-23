@@ -1,6 +1,6 @@
 /*
 
-$Id: glue_stub.c,v 1.21 2006-04-23 15:38:23 erk Exp $
+$Id: glue_stub.c,v 1.22 2006-04-23 20:06:48 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -38,12 +38,12 @@ Purpose   : Implementation for the glue_server, for stub test
 */
 #include <string.h>
 
-#include "tsp_sys_headers.h"
+#include <tsp_sys_headers.h>
 #include <tsp_glu.h>
-#include "tsp_ringbuf.h"
-#include "tsp_time.h"
-#include "tsp_datapool.h"
-#include "calc_func.h"
+#include <tsp_ringbuf.h>
+#include <tsp_time.h>
+#include <tsp_datapool.h>
+#include <calc_func.h>
 #include <tsp_common.h>
 
 /* TSP glue server defines */
@@ -76,7 +76,7 @@ void* STUB_GLU_thread(void* athis)
   while(1)
     {
       /* Must be call at each step in case of new samples wanted */
-      TSP_datapool_get_reverse_list (&symbols_nb, &ptr_index); 
+      TSP_datapool_get_reverse_list(this->datapool,&symbols_nb, &ptr_index); 
       for(i = 0 ; i <  symbols_nb ; i++)
 	{
 	  int index=ptr_index[i];
@@ -187,14 +187,14 @@ void* STUB_GLU_thread(void* athis)
 	      }
 
 
-	      TSP_datapool_push_next_item(&item);
+	      TSP_datapool_push_next_item(this->datapool, &item);
 	    }
 	}
 
 
 
       /* Finalize the datapool state with new time : Ready to send */
-      TSP_datapool_push_commit(my_time, GLU_GET_NEW_ITEM);
+      TSP_datapool_push_commit(this->datapool,my_time, GLU_GET_NEW_ITEM);
 
       if( current_time <= X_lasttime )
 	{ 

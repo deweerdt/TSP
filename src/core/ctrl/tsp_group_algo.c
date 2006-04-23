@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_group_algo.c,v 1.18 2006-04-18 00:09:14 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_group_algo.c,v 1.19 2006-04-23 20:06:48 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -308,7 +308,7 @@ int
 TSP_group_algo_create_symbols_table(const TSP_sample_symbol_info_list_t* in_symbols,
 				    TSP_sample_symbol_info_list_t* out_symbols,
 				    TSP_groups_t* out_groups,
-				    TSP_datapool_t datapool) {
+				    TSP_datapool_t* datapool) {
   
   TSP_algo_table_t* table;
     
@@ -358,10 +358,10 @@ TSP_group_algo_create_symbols_table(const TSP_sample_symbol_info_list_t* in_symb
 		table->groups[group_id].items[rank].offset       = in_info->offset;
 		table->groups[group_id].items[rank].nelem        = in_info->nelem;
 		
-		    /*complete les infos)*/		  
-		    table->groups[group_id].items[rank].data = 
-		      TSP_datapool_get_symbol_value(datapool, in_info->provider_global_index, 0)
-		      + in_info->offset * TSP_data_channel_get_encoded_size(in_info->type);
+		/*complete les infos)*/		  
+		table->groups[group_id].items[rank].data = 
+		  TSP_datapool_get_symbol_value(datapool, in_info->provider_global_index)
+		  + in_info->offset * TSP_data_channel_get_encoded_size(in_info->type);
 		  
 		  /* 2 - In the out symbol table */
 		  

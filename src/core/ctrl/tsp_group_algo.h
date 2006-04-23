@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_group_algo.h,v 1.8 2006-02-26 13:36:05 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_group_algo.h,v 1.9 2006-04-23 20:06:48 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -39,10 +39,10 @@ and use symbols groups
 #ifndef _TSP_GROUP_ALGO_H
 #define _TSP_GROUP_ALGO_H
 
-#include "tsp_prjcfg.h"
+#include <tsp_prjcfg.h>
 
-#include "tsp_datastruct.h"
-#include "tsp_datapool.h"
+#include <tsp_datastruct.h>
+#include <tsp_datapool.h>
 
 typedef  void* TSP_groups_t;
 
@@ -58,7 +58,7 @@ typedef  void* TSP_groups_t;
 int TSP_group_algo_create_symbols_table(const TSP_sample_symbol_info_list_t* symbols,
 					TSP_sample_symbol_info_list_t* out_symbols,
 					TSP_groups_t* out_groups,
-					TSP_datapool_t datapool);
+					TSP_datapool_t* datapool);
 
 /**
  * Free the memory allocated by TSP_group_algo_create_symbols_table for out_symbols

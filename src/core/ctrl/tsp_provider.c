@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_provider.c,v 1.46 2006-04-23 15:50:42 erk Exp $
+$Id: tsp_provider.c,v 1.47 2006-04-23 20:06:48 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -610,7 +610,7 @@ TSP_provider_private_run() {
    */
   if (GLU_SERVER_TYPE_ACTIVE == firstGLU->type) {
     /* Instantiate GLOBAL datapool */
-    TSP_global_datapool_get_instance(firstGLU);    
+    TSP_global_datapool_instantiate(firstGLU);    
     /* Start ACTIVE glu */
     firstGLU->start(firstGLU);
   }

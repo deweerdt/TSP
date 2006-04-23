@@ -1,6 +1,6 @@
 /*
 
-$Id: glu_genreader.c,v 1.1 2006-04-23 20:01:57 erk Exp $
+$Id: glu_genreader.c,v 1.2 2006-04-23 20:06:48 erk Exp $
 
 -----------------------------------------------------------------------
  
@@ -92,13 +92,13 @@ GENREADER_GLU_start(GLU_handle_t* this)
   while(EOF!=(rep=genreader->handler->read_value(genreader,&item)))
   {
 
-    TSP_datapool_push_next_item(&item);
+    TSP_datapool_push_next_item(this->datapool,&item);
   
     ++item.provider_global_index;
 
     if(END_SAMPLE_SET==rep)
     {
-      TSP_datapool_push_commit(item.time, state);  
+      TSP_datapool_push_commit(this->datapool, item.time, state);  
       ++item.time;
       item.provider_global_index=0;
       item.size=0;

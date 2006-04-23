@@ -1,6 +1,6 @@
 /*
 
-$Id: glue_res.c,v 1.11 2006-04-04 12:36:25 morvan Exp $
+$Id: glue_res.c,v 1.12 2006-04-23 20:06:48 erk Exp $
 
 -----------------------------------------------------------------------
  
@@ -38,9 +38,10 @@ Purpose   : Implementation for the glue_server
 
 #include <tsp_sys_headers.h>
 #include <tsp_glu.h>
-#include "tsp_ringbuf.h"
-#include "tsp_time.h"
-#include "tsp_datapool.h"
+#include <tsp_ringbuf.h>
+#include <tsp_time.h>
+#include <tsp_datapool.h>
+#include <tsp_common.h>
 
 
 #define _LIBUTIL_REENTRANT 1
@@ -62,7 +63,7 @@ struct GLU_state_t
   int use_dbl;
   double freq;
   d_rhandle h_res;
-  TSP_sample_symbol_info_t* sample_symbol_info_list_val;
+  TSP_sample_symbol_info_list_t* ssiList;
 };
 
 typedef struct GLU_state_t GLU_state_t;
@@ -113,7 +114,7 @@ void RES_GLU_loop()
 		((double*)(obj->res_values)) [i] :
 	        ((float*) (obj->res_values)) [i];
 	      
-	      TSP_datapool_push_next_item(&item);
+	      TSP_datapool_push_next_item(res_GLU->datapool,&item);
 
 	      if(i==0)
 		STRACE_INFO (("New record : time=%d, val[0]=%g", obj->time_stamp, *((double*)item.raw_value)));
@@ -122,7 +123,7 @@ void RES_GLU_loop()
 	}
 
       /* commit ... */
-      TSP_datapool_push_commit(obj->time_stamp, state);     
+      TSP_datapool_push_commit(res_GLU->datapool,obj->time_stamp, state);     
     }
 
   /* close .res file */
@@ -167,16 +168,23 @@ int RES_GLU_init(GLU_handle_t* this, int fallback_argc, char* fallback_argv[])
 	  STRACE_INFO(("Total number of variables = %d", obj->nbvar));
 	  STRACE_INFO(("Data type = %s", obj->use_dbl ? "DOUBLE" : "FLOAT" ));
 
-	  obj->sample_symbol_info_list_val = calloc (obj->nbvar+1, sizeof (TSP_sample_symbol_info_t)) ;
-	  assert(obj->sample_symbol_info_list_val);
-	  for (i=0; i<obj->nbvar; i++)
-	    {      
-	      d_rnam_r(obj->h_res, namev, descv, i);
+	  obj->ssiList = TSP_SSIList_new(obj->nbvar+1);
+	  assert(obj->ssiList);
 
-	      obj->sample_symbol_info_list_val[i].name = strdup(namev);
-	      obj->sample_symbol_info_list_val[i].provider_global_index = i;
-	      obj->sample_symbol_info_list_val[i].period = 1;
-	    }
+	  for (i=0; i<obj->nbvar; i++) {      
+	    d_rnam_r(obj->h_res, namev, descv, i);
+	    TSP_SSI_initialize(&(obj->ssiList->TSP_sample_symbol_info_list_t_val[i]),
+			       namev,
+			       i, /* PGI */
+			       0, /* group rank idx */
+			       0, /* group rank */
+			       obj->use_dbl ? TSP_TYPE_DOUBLE : TSP_TYPE_FLOAT,
+			       1, /* dimension */
+			       0, /* offset */
+			       1, /* nelem */
+			       1, /* period */
+			       0); /* phase */
+	  }
   
 	  obj->res_values = obj->use_dbl ?
 	    calloc((obj->nbvar+1),sizeof(double))
@@ -220,7 +228,7 @@ int  RES_GLU_get_sample_symbol_info_list(GLU_handle_t* h_glu,TSP_sample_symbol_i
   GLU_state_t* obj = &glu_handler;
 
   symbol_list->TSP_sample_symbol_info_list_t_len = obj->nbvar;
-  symbol_list->TSP_sample_symbol_info_list_t_val = obj->sample_symbol_info_list_val;
+  symbol_list->TSP_sample_symbol_info_list_t_val = obj->ssiList->TSP_sample_symbol_info_list_t_val;
 	    
   return TRUE;
 }
