@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.c,v 1.25 2006-04-17 22:27:35 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.c,v 1.26 2006-04-23 15:50:42 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -58,8 +58,7 @@ opened session from a client
 	} \
 }
 
-struct TSP_session_data_t 
-{
+struct TSP_session_data_t {
 	
   version_id_t version_id;
     
@@ -82,8 +81,7 @@ struct TSP_session_data_t
 typedef struct TSP_session_data_t TSP_session_data_t;
 
 /* OBJET SESSION */
-struct TSP_session_t 
-{
+struct TSP_session_t {
 	
   channel_id_t channel_id;
 	
@@ -106,8 +104,8 @@ static int X_initialized = FALSE;
 static pthread_mutex_t X_session_list_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 
-static TSP_session_t* TSP_get_session(channel_id_t channel_id)
-{
+static TSP_session_t* 
+TSP_get_session(channel_id_t channel_id) {
 	
   TSP_session_t* session = 0;
   int i = 0;
@@ -211,8 +209,9 @@ int TSP_session_get_nb_session(void)
   return client_number;
 }
 
-int TSP_add_session(channel_id_t* new_channel_id, GLU_handle_t* glu_h)
-{
+int32_t
+TSP_add_session(channel_id_t* new_channel_id, GLU_handle_t* glu_h) {
+
   channel_id_t channel_id = (channel_id_t)(TSP_UNDEFINED_CHANNEL_ID);
   
   TSP_sample_symbol_info_list_t symbol_list;
@@ -222,12 +221,10 @@ int TSP_add_session(channel_id_t* new_channel_id, GLU_handle_t* glu_h)
   TSP_LOCK_MUTEX(&X_session_list_mutex,FALSE);
 
   /* Is there room left for the new session ? */
-  if( X_session_nb == TSP_MAX_CLIENT_NUMBER)
-    {
-      STRACE_ERROR(("Max session number reached : %d", TSP_MAX_CLIENT_NUMBER));
-      return FALSE;
-    }
-
+  if( X_session_nb == TSP_MAX_CLIENT_NUMBER) {
+    STRACE_ERROR(("Max session number reached : %d", TSP_MAX_CLIENT_NUMBER));
+    return TSP_STATUS_ERROR_NO_MORE_SESSION;
+  }
   
   /* Create a new channel Id*/
   channel_id = X_count_channel_id++;
@@ -235,11 +232,12 @@ int TSP_add_session(channel_id_t* new_channel_id, GLU_handle_t* glu_h)
   STRACE_DEBUG(("I've found room in X_session_t for the new session. Id in X_session_t is %d", X_session_nb));
   *new_channel_id = channel_id;
   
-  /* The position is always X_session_nb, 'coz' any holes in array are filled during session removal 
-   see : TSP_close_session_by_channel */
+  /* The position is always X_session_nb, 
+   * 'coz' any holes in array are filled during session removal 
+   * see : TSP_close_session_by_channel */
   X_session_t[X_session_nb].session_data = calloc(1, sizeof(TSP_session_data_t));
   X_session_t[X_session_nb].channel_id = *new_channel_id;
-  TSP_CHECK_ALLOC(X_session_t[X_session_nb].session_data, FALSE);
+  TSP_CHECK_ALLOC(X_session_t[X_session_nb].session_data, TSP_STATUS_ERROR_MEMORY_ALLOCATION);
   
   /* Intialize members */
   X_session_t[X_session_nb].session_data->data_link_broken = FALSE;
@@ -257,7 +255,7 @@ int TSP_add_session(channel_id_t* new_channel_id, GLU_handle_t* glu_h)
   	
   TSP_UNLOCK_MUTEX(&X_session_list_mutex,FALSE);
 
-  return TRUE;
+  return TSP_STATUS_OK;
 }
 
 
@@ -452,77 +450,73 @@ void TSP_session_all_session_send_msg_ctrl(TSP_msg_ctrl_t msg_ctrl)
 }
 
 
-int TSP_session_create_data_sender_by_channel(channel_id_t channel_id, int no_fifo)
-{
+int32_t
+TSP_session_create_data_sender_by_channel(channel_id_t channel_id, int no_fifo) {
 
   TSP_session_t* session;
-  int ret = TRUE;
+  int retcode = TSP_STATUS_OK;
   int ringbuf_size;
 
-  TSP_LOCK_MUTEX(&X_session_list_mutex,FALSE);
+  TSP_LOCK_MUTEX(&X_session_list_mutex,TSP_STATUS_ERROR_UNKNOWN);
 	
-  TSP_GET_SESSION(session, channel_id, FALSE);
+  TSP_GET_SESSION(session, channel_id, TSP_STATUS_ERROR_INVALID_CHANNEL_ID);
 
   session->session_data->sender = 0;
 
   /* Calculate fifo depth */
-  if(no_fifo)
-    {
-      ringbuf_size = 0;
+  if (no_fifo) {
+    /* The no fifo case is for PASSIVE GLU for which
+     * there is no RINGBUF between glu and datapool
+     * since the datapool is local (i.e. private) for
+     * each GLU instance. Moreover there is 
+     * one GLU instance by TSP session.
+    ringbuf_size = 0;
+  }
+  else {
+    /* There is one single data pool, ask for a ringbuf to the socket layer */
+    /* We calculate it with the server frequency */
+    double base_frequency = (session->session_data->glu_h)->get_base_frequency(session->session_data->glu_h);
+    if ( base_frequency > 0.0 ) {
+      ringbuf_size = TSP_STREAM_SENDER_RINGBUF_SIZE * base_frequency;
+      
+      STRACE_DEBUG(("Stream sender ringbuf size will be : %d items (i.e. %d secondes)",
+		    ringbuf_size,
+		    TSP_STREAM_SENDER_RINGBUF_SIZE));
     }
-  else
-    {
-      /* There is one single data pool, ask for a ringbuf to the socket layer */
-      /* We calculate it with the server frequency */
-      double base_frequency = (session->session_data->glu_h)->get_base_frequency(session->session_data->glu_h);
-       if( base_frequency > 0 )
-	{
-	  ringbuf_size = TSP_STREAM_SENDER_RINGBUF_SIZE * base_frequency;
-	  
-	  STRACE_DEBUG(("Stream sender ringbuf size will be : %d items (i.e. %d secondes)",
-		       ringbuf_size,
-		       TSP_STREAM_SENDER_RINGBUF_SIZE));
-	}
-      else
-	{
-	  STRACE_ERROR(("GLU return base frequency = %f", base_frequency));
-	  ret = FALSE;
-	}
+    else {
+      STRACE_ERROR(("GLU return base frequency = %f", base_frequency));
+      retcode = TSP_STATUS_ERROR_UNKNOWN;
     }
-
+  }
+  
   /*--------------------*/
   /* Create data sender */
   /*--------------------*/
-  if(ret)
-    {
-      int max_group_size = TSP_group_algo_get_biggest_group_size(session->session_data->groups);
-      session->session_data->sender = TSP_data_sender_create(ringbuf_size, max_group_size);      
+  if (TSP_STATUS_OK==retcode) {
+    int max_group_size = TSP_group_algo_get_biggest_group_size(session->session_data->groups);
+    session->session_data->sender = TSP_data_sender_create(ringbuf_size, max_group_size);      
 
-      if(0 != session->session_data->sender)
-	{
-	  /* If there's no fifo, we must start a new thread per client, because there's one
-	     datapool per client */
-	  if (no_fifo)
-	    {
-	      ret = TRUE; /*No more ... TSP_local_datapool_start_thread(session->session_data->datapool);*/
-	      if(!ret)
-		{
-		  STRACE_ERROR(("Unable to launch local datapool worker thread"));
-		}
-	    }
+    if(NULL != session->session_data->sender) {
+      /* If there's no fifo, 
+       * we must start a new thread per client, 
+       * because there's one datapool per client 
+       */
+      if (no_fifo) {
+	/* FIXME INSTANTIATE LOCALDATAPOOL */
+	retcode = TSP_STATUS_OK; /*No more ... TSP_local_datapool_start_thread(session->session_data->datapool);*/
+	if (TSP_STATUS_OK!=retcode) {
+	  STRACE_ERROR(("Unable to launch local datapool worker thread"));
 	}
-      else
-	{
-	  ret = FALSE;
-	  STRACE_ERROR(("function TSP_data_sender_create failed"));
-      
-	}
+      }
     }
+    else {
+      retcode = TSP_STATUS_ERROR_UNKNOWN;
+      STRACE_ERROR(("function TSP_data_sender_create failed"));      
+    }
+  }
   
-  TSP_UNLOCK_MUTEX(&X_session_list_mutex,FALSE);
-  
-  return ret;
-
+  TSP_UNLOCK_MUTEX(&X_session_list_mutex,FALSE);  
+  return retcode;
 }
 
 int TSP_session_destroy_data_sender_by_channel(channel_id_t channel_id, int stop_local_thread)

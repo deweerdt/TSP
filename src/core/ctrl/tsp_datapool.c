@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_datapool.c,v 1.25 2006-04-04 12:36:24 morvan Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_datapool.c,v 1.26 2006-04-23 15:50:42 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -257,8 +257,8 @@ void TSP_local_datapool_destroy(TSP_datapool_t datapool)
 }
 
 
-TSP_datapool_t TSP_local_datapool_allocate(int symbols_number, GLU_handle_t* h_glu )
-{
+TSP_datapool_t 
+TSP_local_datapool_allocate(int symbols_number, GLU_handle_t* h_glu ) {
   TSP_datapool_table_t* datapool;
      
   datapool = (TSP_datapool_table_t*)calloc(1,sizeof(TSP_datapool_table_t));

@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_provider.c,v 1.45 2006-04-17 22:27:35 erk Exp $
+$Id: tsp_provider.c,v 1.46 2006-04-23 15:50:42 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -285,7 +285,7 @@ TSP_provider_request_open(const TSP_request_open_t* req_open,
   ans_open->status     = TSP_STATUS_ERROR_UNKNOWN;
   ans_open->status_str = "";
 
-  if(req_open->argv.TSP_argv_t_len) {
+  if (req_open->argv.TSP_argv_t_len) {
     for( i = 0; i< req_open->argv.TSP_argv_t_len ;i++) {
       STRACE_DEBUG(("arg %d is '%s'", i,  req_open->argv.TSP_argv_t_val[i]));
     }
@@ -318,9 +318,10 @@ TSP_provider_request_open(const TSP_request_open_t* req_open,
 				   &error_info);
   }
    
-  if(glu_h) {
-    if(TSP_add_session(&(ans_open->channel_id), glu_h)) {
-      if(req_open->version_id == TSP_PROTOCOL_VERSION) {
+  if (NULL != glu_h) {
+    ans_open->status = TSP_add_session(&(ans_open->channel_id), glu_h);
+    if (TSP_STATUS_OK==ans_open->status) {
+      if (req_open->version_id == TSP_PROTOCOL_VERSION) {
 	ans_open->version_id  = TSP_PROTOCOL_VERSION;
 	ans_open->status      = TSP_STATUS_OK;
       }
@@ -337,10 +338,8 @@ TSP_provider_request_open(const TSP_request_open_t* req_open,
     STRACE_INFO(("Unable to get first GLU instance"));
     ans_open->status = TSP_STATUS_ERROR_SEE_STRING;
     ans_open->status_str = error_info;
-  }
-  
-  TSP_UNLOCK_MUTEX(&X_tsp_request_mutex,);	
-  
+  }  
+  TSP_UNLOCK_MUTEX(&X_tsp_request_mutex,);  
 } /* End of TSP_provider_request_open */
 
 
@@ -486,8 +485,9 @@ TSP_provider_request_sample(TSP_request_sample_t* req_sample,
   TSP_UNLOCK_MUTEX(&X_tsp_request_mutex,);
 } /* End of TSP_provider_request_sample */
 
-void  TSP_provider_request_sample_init(TSP_request_sample_init_t* req_sample_init, 
-				       TSP_answer_sample_init_t* ans_sample_init) {  
+void  
+TSP_provider_request_sample_init(TSP_request_sample_init_t* req_sample_init, 
+				 TSP_answer_sample_init_t* ans_sample_init) {  
   int start_local_thread;
   TSP_LOCK_MUTEX(&X_tsp_request_mutex,);
     
@@ -498,10 +498,10 @@ void  TSP_provider_request_sample_init(TSP_request_sample_init_t* req_sample_ini
     ans_sample_init->version_id = req_sample_init->version_id;
     ans_sample_init->channel_id = req_sample_init->channel_id;
 
-    /* If the sample server is a lazy pasive server, we need a thread per session*/
+    /* If the sample server is a lazy passive server, we need a thread per session*/
     start_local_thread = ( X_glu_is_active ? FALSE : TRUE );
     
-    if(TSP_session_create_data_sender_by_channel(req_sample_init->channel_id, start_local_thread)) {
+    if(TSP_STATUS_OK==TSP_session_create_data_sender_by_channel(req_sample_init->channel_id, start_local_thread)) {
       ans_sample_init->status = TSP_STATUS_OK;
     }
     else {
@@ -601,16 +601,19 @@ TSP_provider_private_init(GLU_handle_t* theGLU, int* argc, char** argv[]) {
 
 int 
 TSP_provider_private_run() {
-  /* instantiate datapool */
-  TSP_global_datapool_get_instance(firstGLU);
-  /* Launch GLU now 
+  /* 
+   * Launch GLU and instantiate global 
+   * datapool  iff it is an ACTIVE one.
+   * PASSIVE GLU should not be launched by TSP_provider_run
+   * since the should only when a consumer 'request_sample_init'
+   * moreover they have a local datapool.
    */
-  /* FIXME do we need to differentiate 
-   * PASSIVE and ACTIVE GLU ?
-   */
-  /*  if (GLU_SERVER_TYPE_ACTIVE == firstGLU->type) { */
+  if (GLU_SERVER_TYPE_ACTIVE == firstGLU->type) {
+    /* Instantiate GLOBAL datapool */
+    TSP_global_datapool_get_instance(firstGLU);    
+    /* Start ACTIVE glu */
     firstGLU->start(firstGLU);
-    /* } */
+  }
   return 0;
 } /* end of TSP_provider_private_run */
 

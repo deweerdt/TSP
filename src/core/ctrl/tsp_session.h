@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.h,v 1.15 2006-04-15 10:46:02 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.h,v 1.16 2006-04-23 15:50:42 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -39,12 +39,10 @@ opened session from a client
 #ifndef _TSP_SESSION_H
 #define _TSP_SESSION_H
 
-#include "tsp_prjcfg.h"
+#include <tsp_prjcfg.h>
 
-#include "tsp_datastruct.h"
+#include <tsp_datastruct.h>
 #include <tsp_glu.h>
-
-
 
 /**
  * Add a new session.

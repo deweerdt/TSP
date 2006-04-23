@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl_init/tsp_provider_init.c,v 1.15 2006-04-03 16:07:36 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl_init/tsp_provider_init.c,v 1.16 2006-04-23 15:50:42 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -50,8 +50,7 @@ Purpose   : Function calls to launch a TSP Provider program
 #endif
 
 int 
-TSP_provider_init(GLU_handle_t* theGLU, int* argc, char** argv[])
-{
+TSP_provider_init(GLU_handle_t* theGLU, int* argc, char** argv[]) {
 
   int ret;
 

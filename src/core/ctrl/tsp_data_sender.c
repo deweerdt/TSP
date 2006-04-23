@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_data_sender.c,v 1.20 2006-04-12 06:56:03 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_data_sender.c,v 1.21 2006-04-23 15:50:42 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -80,13 +80,11 @@ struct TSP_struct_data_sender_t
 typedef struct TSP_struct_data_sender_t TSP_struct_data_sender_t;
 
 
-TSP_data_sender_t TSP_data_sender_create(int fifo_size, int max_group_size)
-{
-    
+TSP_data_sender_t 
+TSP_data_sender_create(int fifo_size, int max_group_size) {
+  
   TSP_struct_data_sender_t* sender;
-    
-  STRACE_IO(("-->IN"));
-
+  
   sender = (TSP_struct_data_sender_t*)calloc(1, sizeof(TSP_struct_data_sender_t));
   TSP_CHECK_ALLOC(sender, 0);
 
@@ -96,51 +94,35 @@ TSP_data_sender_t TSP_data_sender_create(int fifo_size, int max_group_size)
 
   /* Create the sender stream with its fifo size*/
   sender->stream_sender = (TSP_data_sender_t)TSP_stream_sender_create(fifo_size, sender->buffer_size);
-  if(sender->stream_sender)
-    {      
-      /* Check if the user wants any fifo */
-      sender->use_fifo = fifo_size > 0 ? TRUE : FALSE ;
-      if(sender->use_fifo)
-	{
-	  sender->out_item = 0;
-	  sender->out_fifo = TSP_stream_sender_get_ringbuf(sender->stream_sender);
-	  assert( sender->out_fifo);
-	}
-      else
-	{
-	  sender->out_fifo = 0;
-	  sender->out_item = TSP_stream_sender_get_buffer(sender->stream_sender);
-	  assert(sender->out_item);
-	 
-	}
+  if (sender->stream_sender) {      
+    /* Check if the user wants any fifo */
+    sender->use_fifo = fifo_size > 0 ? TRUE : FALSE ;
+    if (sender->use_fifo) {
+      sender->out_item = 0;
+      sender->out_fifo = TSP_stream_sender_get_ringbuf(sender->stream_sender);
+      assert( sender->out_fifo);
     }
-  else
-    {
-      STRACE_ERROR(("Function TSP_stream_sender_create failed"));
-      free(sender);
-      sender = 0;
+    else {
+      sender->out_fifo = 0;
+      sender->out_item = TSP_stream_sender_get_buffer(sender->stream_sender);
+      assert(sender->out_item);
+      
     }
-  
-
-    
-  STRACE_IO(("-->OUT"));
-
-    
+  }
+  else {
+    STRACE_ERROR(("Function TSP_stream_sender_create failed"));
+    free(sender);
+    sender = 0;
+  }
   return sender;
+} /* end of TSP_data_sender_create */
 
-}
-
-void TSP_data_sender_destroy(TSP_data_sender_t sender)
-{
+void 
+TSP_data_sender_destroy(TSP_data_sender_t sender) {
 
   TSP_struct_data_sender_t* data_sender = (TSP_struct_data_sender_t*)sender;
-
-  STRACE_IO(("-->IN"));
-  
   TSP_stream_sender_destroy(data_sender->stream_sender);
   free(data_sender);
-
-  STRACE_IO(("-->OUT"));
 }
 
 void TSP_data_sender_stop(TSP_data_sender_t sender)

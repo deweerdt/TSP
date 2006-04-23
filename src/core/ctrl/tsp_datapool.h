@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_datapool.h,v 1.13 2006-02-26 13:36:05 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_datapool.h,v 1.14 2006-04-23 15:50:42 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -109,7 +109,7 @@ void* TSP_datapool_get_symbol_value(TSP_datapool_t datapool,
 
 /**
  * For a local datapool, starts the associated thread.
- * Only used when the GLU is pasive
+ * Only used when the GLU is passive
  * @param datapool The datapool handle
  * @return TRUE or FALSE. TRUE = OK
  */ 
