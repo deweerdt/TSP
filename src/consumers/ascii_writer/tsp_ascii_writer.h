@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer.h,v 1.11 2006-04-12 06:58:15 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer.h,v 1.12 2006-04-23 15:40:34 erk Exp $
 
 ------------------------------------------------------------------------
 
@@ -215,6 +215,15 @@ tsp_ascii_writer_finalise();
 int32_t 
 tsp_ascii_writer_display_value(FILE* sfile,TSP_sample_t sample);
 
+/**
+ * edit the column title for the array.
+ * @param[in] libelle libelle to display
+ * @param[in] profil  profil of the array (5*3*2)
+ * @param[in] ordre   order of the indice (2,1) or (1,2)
+ * @param[in] recursif if it's recursif or no
+ * @return pinter on the different label
+ */
+char* new_array_label(const char* libelle,const char* profil, const char* ordre, const int recursif);
 
 /** @} */
 

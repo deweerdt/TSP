@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer.c,v 1.19 2006-04-15 10:46:02 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer.c,v 1.20 2006-04-23 15:40:34 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -594,13 +594,14 @@ tsp_ascii_writer_start(FILE* sfile, int32_t nb_sample_max_infile, OutputFileForm
   const TSP_sample_symbol_extended_info_list_t* extended_symbols;
   const TSP_extended_info_t* ext_info_profil;
   const TSP_extended_info_t* ext_info_unit;
+  const TSP_extended_info_t* ext_info_ordre;
+  char* array_label;
 
   int             complete_line;
   char            charbuf[MAX_VAR_NAME_SIZE];
   int             symbol_dim;
   int             nb_sample;
   int		  indice;
-  char		  indice_char[5];
   int32_t         nb_data_receive=0;
   
   char** tab_colonne=NULL;
@@ -667,15 +668,10 @@ tsp_ascii_writer_start(FILE* sfile, int32_t nb_sample_max_infile, OutputFileForm
 			       "unit");
 
 	ext_info_profil=TSP_EIList_findEIByKey(&(extended_symbols->TSP_sample_symbol_extended_info_list_t_val[symbol_index].info),
-			       "profil");
+			       "profile");
 
-	/* for MACSIM file, we must have a profil data*/
-	if(NULL==ext_info_profil)
-        {
-	  /*STRACE_ERROR(("Error extended info: NO PROFIL for MACSIM file..."));
-	  retcode = -1;
-	  return retcode;*/
-	}
+	ext_info_ordre=TSP_EIList_findEIByKey(&(extended_symbols->TSP_sample_symbol_extended_info_list_t_val[symbol_index].info),
+			       "order");
  
 
 	/* 
@@ -683,28 +679,27 @@ tsp_ascii_writer_start(FILE* sfile, int32_t nb_sample_max_infile, OutputFileForm
 	 * la taille de ce tableau
 	 */
 	strncpy(charbuf,symbols->TSP_sample_symbol_info_list_t_val[symbol_index].name,MAX_VAR_NAME_SIZE);
-	if (NULL != index(charbuf,'[')) 
-	  {
-	    *(index(charbuf,'[')) = '\0';
+
+
+	if (!(strcmp(ext_info_profil->value,"1")))
+	{
+
+	    array_label=new_array_label(charbuf,ext_info_profil->value,ext_info_ordre->value,0);
+
+	    
+	    *(tab_colonne + symbol_index)=(char*)malloc(strlen(charbuf)+strlen(array_label)+1);
+	    sprintf(*(tab_colonne + symbol_index),"%s",array_label);
+	    free(array_label);
+	   
 	    symbol_dim   = tsp_ascii_writer_validate_symbol_requested(charbuf,symbols);
-	    
-	    /*
-	     *  write variable name with n dimension in this array
-	     */
-	    for(indice=0;indice<symbol_dim;++indice) {
-	      
-	      sprintf(indice_char,"%d",indice+1);
-	      *(tab_colonne + symbol_index + indice)=(char*)malloc(strlen(charbuf)+strlen(indice_char)+3);
-	      sprintf(*(tab_colonne + symbol_index + indice),"%s(%s)",charbuf,indice_char);
-	      
-	    }
-	    
+	  
+
 	    symbol_index += symbol_dim - 1;
 	    
 	    
-	  }
+	}
 	else
-	  {
+	{
 	    symbol_dim = 1;
 	    
 	    /*
@@ -713,7 +708,7 @@ tsp_ascii_writer_start(FILE* sfile, int32_t nb_sample_max_infile, OutputFileForm
 	    *(tab_colonne + symbol_index)=(char*)malloc(strlen(charbuf)+1);
 	    strcpy(*(tab_colonne + symbol_index),charbuf);
 	    
-	  }
+	}
 
 
 	fprintf(sfile,"%s : %s : %s : %s \n", 
@@ -916,4 +911,91 @@ tsp_ascii_writer_display_value(FILE* sfile,TSP_sample_t sample)
   }
 
   return 0;
+}
+
+char* new_array_label(const char* libelle,const char* profil, const char* ordre, const int recursif)
+{
+
+  uint8_t indice_etoile;
+  uint8_t rang;
+  uint32_t dimension;
+  uint32_t i;
+  char *chaine_lib;
+  char *nouveau_libelle;
+  char *nouveau_profil;
+  char* reponse;
+  char indice[10];
+
+
+  if(!recursif)
+  {
+    chaine_lib=(char*)calloc(1,strlen(libelle)+2);
+    sprintf(chaine_lib,"%s(",libelle);
+  }
+  else
+  {
+    chaine_lib=(char*)calloc(1,strlen(libelle)+1);
+    sprintf(chaine_lib,"%s",libelle);
+  }
+
+
+  rang=strspn(profil,"*")+1;
+
+  if(1==rang)
+  {
+    dimension=(int32_t)atoi(profil);
+
+    for(i=0;i<dimension;++i)
+    {
+      sprintf(indice,"%d",dimension+1); 
+
+      if(NULL==reponse)
+      {
+	reponse=(char*)calloc(1,strlen(chaine_lib)+strlen(indice)+3);
+        sprintf(reponse,"%s%s) ",chaine_lib,indice);
+      }
+      else
+      {
+	reponse=(char*)realloc(reponse,strlen(reponse)+strlen(chaine_lib)+strlen(indice)+3);
+	sprintf(&(reponse[strlen(reponse)+1]),"%s%s) ",chaine_lib,indice);
+      }
+
+    }
+
+  }
+  else
+  {
+    indice_etoile=(int32_t)strstr(profil,"*");
+   
+    nouveau_profil=(char*)calloc(1,strlen(&(profil[indice_etoile+1]))+1);
+    strcpy(nouveau_profil,&(profil[indice_etoile+1]));
+
+    dimension=(int32_t)atoi(profil);
+
+    strcpy(profil,&profil[indice_etoile+1]);
+
+    for(i=0;i<dimension;++i)
+    {
+      sprintf(indice,"%d",dimension+1); 
+
+      nouveau_libelle=(char*)calloc(1,strlen(chaine_lib)+strlen(indice)+2);
+      
+      sprintf(nouveau_libelle,"%s%s,",chaine_lib,indice);
+
+      reponse= new_array_label(nouveau_libelle,nouveau_profil,ordre,1);
+
+      free(nouveau_libelle);
+
+    }
+
+    free(nouveau_profil);
+
+
+  }
+
+  free(chaine_lib);  
+
+  return(reponse);
+
+
 }
