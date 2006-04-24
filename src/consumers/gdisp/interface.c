@@ -158,7 +158,7 @@ redraw_widgets (gpointer data)
   animation_next(anim_data); 
 
   /* now get variables from TSP and refresh data for all widget for each variables */
-  while(TSP_consumer_read_sample(tsp, &sample, &new_sample) && new_sample )
+  while(TSP_STATUS_OK==TSP_consumer_read_sample(tsp, &sample, &new_sample) && new_sample )
     {
       for( ptr_var = index2vars[sample.provider_global_index]; (*ptr_var) != 0 ; ptr_var++)
 	{

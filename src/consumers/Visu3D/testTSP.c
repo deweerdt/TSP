@@ -1,6 +1,6 @@
 /*
 
-$Id: testTSP.c,v 1.3 2006-04-07 10:37:16 morvan Exp $
+$Id: testTSP.c,v 1.4 2006-04-24 22:17:47 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -290,7 +290,7 @@ void tspinit(int argc, char* argv[])
   
 
   tsp_symbol_list = &symbol_list;
-  if (!TSP_consumer_init(&argc, &argv))
+  if (TSP_STATUS_OK!=TSP_consumer_init(&argc, &argv))
     {
       printf("tsp error init\n\n");
       if (phase) free(phase);
@@ -326,7 +326,7 @@ void tspinit(int argc, char* argv[])
 	}
       if (name) free(name);
       exit(0);
-    } else if (!TSP_consumer_request_open(myproviders[0], 0, 0 )) {
+    } else if (TSP_STATUS_OK!=TSP_consumer_request_open(myproviders[0], 0, 0 )) {
       printf("Cannot connect to provider <%s> (TSP_request_open failed.)",TSP_consumer_get_connected_name(myproviders[0]));
       if (phase) free(phase);
       if (period) free(period);
@@ -339,7 +339,7 @@ void tspinit(int argc, char* argv[])
     }
   }
   /* send request info for getting symbols list */
-  if(!TSP_consumer_request_information(myproviders[0])) {
+  if(TSP_STATUS_OK!=TSP_consumer_request_information(myproviders[0])) {
     printf("TSP_request_information failed");
     if (phase) free(phase);
     if (period) free(period);
@@ -432,7 +432,7 @@ void tspinit(int argc, char* argv[])
   
   
   /* Now send request sample */
-    if (!TSP_consumer_request_sample(myproviders[0],tsp_symbol_list)) {
+    if (TSP_STATUS_OK!=TSP_consumer_request_sample(myproviders[0],tsp_symbol_list)) {
       printf("TSP request sample refused by the provider?...\n");
       if (phase) free(phase);
       if (period) free(period);
@@ -447,7 +447,7 @@ void tspinit(int argc, char* argv[])
     /* Get previously configured symbols */
     symbols = TSP_consumer_get_requested_sample(myproviders[0]);
 
-    if(!TSP_consumer_request_sample_init(myproviders[0],0,0)) {
+    if(TSP_STATUS_OK!=TSP_consumer_request_sample_init(myproviders[0],0,0)) {
       printf("Sample init refused by the provider??...\n\n");
       if (phase) free(phase);
       if (period) free(period);
@@ -495,7 +495,7 @@ void myGlutDisplay()
   /*get the last info to draw*/
   /*cause the server may send more than one line during the last 3d draw*/
   /* write loop */
-    while(stop_it && TSP_consumer_read_sample(myproviders[0],&sample, &new_sample)) {
+  while(stop_it && (TSP_STATUS_OK==TSP_consumer_read_sample(myproviders[0],&sample, &new_sample))) {
       if (new_sample) {
 	//printf("%16.9E ",sample.user_value);
 	lastinfo[complete_line]=sample.uvalue.double_value;

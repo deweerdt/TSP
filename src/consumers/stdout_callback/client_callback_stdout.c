@@ -1,6 +1,6 @@
 /*
 
-$Id: client_callback_stdout.c,v 1.4 2006-04-07 10:37:17 morvan Exp $
+$Id: client_callback_stdout.c,v 1.5 2006-04-24 22:17:47 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -117,11 +117,10 @@ int main(int argc, char *argv[]){
   printf ("# Launching <stdout_client> for printing symbols received (callback active) #\n");
   printf ("#===========================================================================#\n");
  
-  if(!TSP_consumer_init(&argc, &argv))
-    {
-      STRACE_ERROR(("TSP init failed"));
-      return -1;
-    }
+  if (TSP_STATUS_OK!=TSP_consumer_init(&argc, &argv)) {
+    STRACE_ERROR(("TSP init failed"));
+    return -1;
+  }
 
   if (argc>2)
     {   
@@ -175,7 +174,7 @@ int main(int argc, char *argv[]){
   /*-------------------------------------------------------------------------------------------------------*/ 
   /* Le 1er provider existe puisqu'il y en a au moins 1 */
 
-  if(!TSP_consumer_request_open(providers[0], 0, 0))
+  if(TSP_STATUS_OK!=TSP_consumer_request_open(providers[0], 0, 0))
     {
       STRACE_ERROR(("TSP_request_provider_open failed"));
       STRACE_TEST(("STAGE 001 | STEP 002 : FAILED"));
@@ -187,7 +186,7 @@ int main(int argc, char *argv[]){
   /*-------------------------------------------------------------------------------------------------------*/ 
   /* TEST : STAGE 001 | STEP 003 */
   /*-------------------------------------------------------------------------------------------------------*/ 
-  if(!TSP_consumer_request_information(providers[0]))
+  if(TSP_STATUS_OK!=TSP_consumer_request_information(providers[0]))
     {
       STRACE_ERROR(("TSP_request_provider_information failed"));
       STRACE_TEST(("STAGE 001 | STEP 003 : FAILED"));
@@ -195,7 +194,7 @@ int main(int argc, char *argv[]){
     }
   
   /* be wild, ask twice to try to trigger mem leak  */
-  if(!TSP_consumer_request_information(providers[0]))
+  if(TSP_STATUS_OK!=TSP_consumer_request_information(providers[0]))
     {
       STRACE_ERROR(("TSP_request_provider_information failed"));
       STRACE_TEST(("STAGE 001 | STEP 003 : FAILED"));
@@ -241,14 +240,14 @@ int main(int argc, char *argv[]){
   /*-------------------------------------------------------------------------------------------------------*/ 
   /* TEST : STAGE 001 | STEP 004 */
   /*-------------------------------------------------------------------------------------------------------*/ 
-  if(!TSP_consumer_request_sample(providers[0], &symbols))
+  if(TSP_STATUS_OK!=TSP_consumer_request_sample(providers[0], &symbols))
     {
       STRACE_ERROR(("TSP_request_provider_sample failed"));
       STRACE_TEST(("STAGE 001 | STEP 004 : FAILED"));
       return -1;
     }
   /* be wild, ask twice to try to trigger mem leak  */
-  if(!TSP_consumer_request_sample(providers[0], &symbols))
+  if(TSP_STATUS_OK!=TSP_consumer_request_sample(providers[0], &symbols))
     {
       STRACE_ERROR(("TSP_request_provider_sample failed"));
       STRACE_TEST(("STAGE 001 | STEP 004 : FAILED"));
@@ -261,7 +260,7 @@ int main(int argc, char *argv[]){
   /*-------------------------------------------------------------------------------------------------------*/ 
   /* TEST : STAGE 001 | STEP 005 */
   /*-------------------------------------------------------------------------------------------------------*/ 
-  if(!TSP_consumer_request_sample_init(providers[0], test_callback, (void*)(USER_DATA) ))
+  if(TSP_STATUS_OK!=TSP_consumer_request_sample_init(providers[0], test_callback, (void*)(USER_DATA) ))
     {
       STRACE_ERROR(("TSP_request_provider_sample_init failed"));
       STRACE_TEST(("STAGE 001 | STEP 005 : FAILED"));
@@ -287,12 +286,12 @@ int main(int argc, char *argv[]){
               /* --------------- */
               /* Close providers */
               /* --------------- */
-              if(!TSP_consumer_request_sample_destroy(providers[0]))
+              if(TSP_STATUS_OK!=TSP_consumer_request_sample_destroy(providers[0]))
                 {
                   STRACE_ERROR(("Function TSP_consumer_request_sample_destroy failed" ));	 
                 }
               
-              if(!TSP_consumer_request_close(providers[0]))
+              if(TSP_STATUS_OK!=TSP_consumer_request_close(providers[0]))
                 {
                   STRACE_ERROR(("Function TSP_consumer_request_close failed" ));			    
                 }

@@ -1,6 +1,6 @@
 /*
 
-$Id: generic_consumer_main.c,v 1.8 2006-04-13 22:28:25 erk Exp $
+$Id: generic_consumer_main.c,v 1.9 2006-04-24 22:17:47 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -111,7 +111,7 @@ main(int argc, char *argv[]){
   my_action.sa_flags = SA_RESTART;
   sigaction(SIGINT,&my_action,&old_action);    
 
-  if(!TSP_consumer_init(&argc, &argv)) {
+  if(TSP_STATUS_OK!=TSP_consumer_init(&argc, &argv)) {
       STRACE_ERROR(("TSP init failed"));
       return -1;
   }

@@ -1,6 +1,6 @@
 /*
 
-$Id: client_res.c,v 1.16 2006-04-23 22:24:58 erk Exp $
+$Id: client_res.c,v 1.17 2006-04-24 22:17:47 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -142,7 +142,7 @@ int main(int argc, char *argv[]){
   STRACE_INFO(("Autodetect CPU : %d bits", sizeof(long)*8));
 
   /* TSP Init */
-  if(!TSP_consumer_init(&argc, &argv)) {
+  if(TSP_STATUS_OK!=TSP_consumer_init(&argc, &argv)) {
     STRACE_ERROR(("TSP init failed"));
     return -1;
   }
@@ -190,11 +190,10 @@ int main(int argc, char *argv[]){
       /*-------------------------*/ 
       /* Open requested provider */
       /*-------------------------*/ 
-      if(!TSP_consumer_request_open(providers[provider], 0, 0 ))
-	{
-	  STRACE_ERROR(("TSP_request_provider_open failed"));
-	  return -1;
-	}
+      if (TSP_STATUS_OK!=TSP_consumer_request_open(providers[provider], 0, 0 )) {
+	STRACE_ERROR(("TSP_request_provider_open failed"));
+	return -1;
+      }
  
 
       /*-----------------------------*/ 
@@ -202,7 +201,7 @@ int main(int argc, char *argv[]){
       /*-----------------------------*/
       do
 	{
-	  if(!TSP_consumer_request_information(providers[provider]))
+	  if(TSP_STATUS_OK!=TSP_consumer_request_information(providers[provider]))
 	    {
 	      STRACE_ERROR(("TSP_request_provider_information failed"));
 	      return -1;
@@ -260,7 +259,7 @@ int main(int argc, char *argv[]){
       /*---------------------*/ 
       /* Ask for sample list */
       /*---------------------*/ 
-      if(!TSP_consumer_request_sample(providers[provider],&symbols[provider])) {
+      if(TSP_STATUS_OK!=TSP_consumer_request_sample(providers[provider],&symbols[provider])) {
 	STRACE_ERROR(("TSP_request_provider_sample failed"));
 	return -1;
       }
@@ -273,7 +272,7 @@ int main(int argc, char *argv[]){
     /*----------------*/ 
     /* Start sampling */
     /*----------------*/ 
-    if (!TSP_consumer_request_sample_init(providers[provider],0,0)) {
+    if (TSP_STATUS_OK!=TSP_consumer_request_sample_init(providers[provider],0,0)) {
 	STRACE_ERROR(("TSP_request_provider_sample_init failed"));
 	return -1;
       }
@@ -306,7 +305,7 @@ int main(int argc, char *argv[]){
     {
       for(provider=0; provider<nb_providers; provider++)
 	{
-	  if(!TSP_consumer_read_sample(providers[provider], &sample, &new_sample)) {
+	  if(TSP_STATUS_OK!=TSP_consumer_read_sample(providers[provider], &sample, &new_sample)) {
 	    stop_end = TRUE;
 	    break;
 	  }

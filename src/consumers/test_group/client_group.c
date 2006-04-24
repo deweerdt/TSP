@@ -1,6 +1,6 @@
 /*
 
-$Id: client_group.c,v 1.6 2006-04-07 10:37:17 morvan Exp $
+$Id: client_group.c,v 1.7 2006-04-24 22:17:47 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -138,7 +138,7 @@ int main(int argc, char *argv[]){
   printf ("#=========================================================#\n");
  
 
-  if(!TSP_consumer_init(&argc, &argv))
+  if(TSP_STATUS_OK!=TSP_consumer_init(&argc, &argv))
     {
       STRACE_ERROR(("TSP init failed"));
       return -1;
@@ -192,17 +192,16 @@ int main(int argc, char *argv[]){
   /*-------------------------------------------------------------------------------------------------------*/ 
   /* Le 1er provider existe puisqu'il y en a au moins 1 */
 
-  if(!TSP_consumer_request_open(providers[0], 0, 0))
-    {
-      STRACE_ERROR(("TSP_request_provider_open failed"));
-      return -1;
-    }
+  if(TSP_STATUS_OK!=TSP_consumer_request_open(providers[0], 0, 0)) {
+    STRACE_ERROR(("TSP_request_provider_open failed"));
+    return -1;
+  }
   
 
   /*-------------------------------------------------------------------------------------------------------*/ 
   /* TEST : STAGE 002 | STEP 003 */
   /*-------------------------------------------------------------------------------------------------------*/ 
-  if(!TSP_consumer_request_information(providers[0]))
+  if(TSP_STATUS_OK!=TSP_consumer_request_information(providers[0]))
     {
       STRACE_ERROR(("TSP_request_provider_information failed"));
       return -1;
@@ -226,7 +225,7 @@ int main(int argc, char *argv[]){
   /*-------------------------------------------------------------------------------------------------------*/ 
   /* TEST : STAGE 002 | STEP 004 */
   /*-------------------------------------------------------------------------------------------------------*/ 
-  if(!TSP_consumer_request_sample(providers[0], &symbols))
+  if(TSP_STATUS_OK!=TSP_consumer_request_sample(providers[0], &symbols))
     {
       STRACE_ERROR(("TSP_request_provider_sample failed"));
       return -1;

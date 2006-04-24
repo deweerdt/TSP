@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_consumers.c,v 1.15 2006-04-17 16:33:25 esteban Exp $
+$Id: gdisp_consumers.c,v 1.16 2006-04-24 22:17:47 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -152,7 +152,7 @@ gdisp_insertProvider ( Kernel_T *kernel,
 					      (gint)NULL,
 					      (gchar**)NULL);
 
-    if (requestStatus == TRUE) {
+    if (TSP_STATUS_OK==requestStatus) {
       
       /*
        * Now the session is opened, get back all available information.
@@ -169,7 +169,7 @@ gdisp_insertProvider ( Kernel_T *kernel,
 						    MINIMAL_STRING);
       }
 
-      if (requestStatus == TRUE) {
+      if (TSP_STATUS_OK == requestStatus) {
 	
 	/* Do not free 'providerInfo' structure */
 	providerInfo = TSP_consumer_get_information(newProvider->pHandle);
@@ -374,7 +374,7 @@ gdisp_consumingInit (Kernel_T *kernel)
   hostStatus = TSP_consumer_init(&kernel->argCounter,
 				 &kernel->argTable);
 
-  if (hostStatus == FALSE) {
+  if (TSP_STATUS_OK != hostStatus) {
 
     messageString = g_string_new((gchar*)NULL);
     g_string_sprintf(messageString,"TSP Initialisation failed.");

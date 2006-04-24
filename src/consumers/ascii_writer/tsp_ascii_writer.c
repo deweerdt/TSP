@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer.c,v 1.20 2006-04-23 15:40:34 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer.c,v 1.21 2006-04-24 22:17:47 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -131,7 +131,7 @@ tsp_ascii_writer_initialise(int* argc, char** argv[]) {
   
   int32_t retcode;
 
-  if (!TSP_consumer_init(argc, argv)) {
+  if (TSP_STATUS_OK!=TSP_consumer_init(argc, argv)) {
     STRACE_ERROR(("TSP init failed"));    
     retcode = -1;
   } else {
@@ -387,7 +387,7 @@ tsp_ascii_writer_new_validate_symbols(TSP_sample_symbol_info_t*  tsp_symbols,
     if (0==myproviders[0]) {
       STRACE_ERROR(("No provider found?!?"));
       retcode = -1;
-    } else if (!TSP_consumer_request_open(myproviders[0], 0, 0 )) {
+    } else if (TSP_STATUS_OK!=TSP_consumer_request_open(myproviders[0], 0, 0 )) {
       STRACE_ERROR(("Cannot connect to provider <%s> (TSP_request_open failed.)",TSP_consumer_get_connected_name(myproviders[0])));
       retcode = -1;
     }
@@ -402,7 +402,7 @@ tsp_ascii_writer_new_validate_symbols(TSP_sample_symbol_info_t*  tsp_symbols,
 
   STRACE_INFO(("Initial number of asked symbol = %d",nb_symbols));
   /* send the initial request_sample for obtaining provider-side validation */  
-  if (!TSP_consumer_request_sample(myproviders[0],&current_requested_symbols_list))
+  if (TSP_STATUS_OK!=TSP_consumer_request_sample(myproviders[0],&current_requested_symbols_list))
   {
     /* now build request filtered info to handle invalid symbols */
     nb_scalar_symbol = 0;
@@ -538,7 +538,7 @@ tsp_ascii_writer_new_validate_symbols(TSP_sample_symbol_info_t*  tsp_symbols,
   
   /* Now send request sample */
   if (0==retcode) {
-    if (!TSP_consumer_request_sample(myproviders[0],tsp_symbol_list)) {
+    if (TSP_STATUS_OK!=TSP_consumer_request_sample(myproviders[0],tsp_symbol_list)) {
       TSP_consumer_print_invalid_symbols(stderr,&tsp_symbol_list,tsp_provider_url);
       STRACE_ERROR(("TSP request sample refused by the provider?huh?..."));
       retcode = -1;
@@ -745,7 +745,7 @@ tsp_ascii_writer_start(FILE* sfile, int32_t nb_sample_max_infile, OutputFileForm
 
 
   /* Demarrage des sample au niveau provider */
-  if(!TSP_consumer_request_sample_init(myproviders[0],0,0)) {
+  if(TSP_STATUS_OK!=TSP_consumer_request_sample_init(myproviders[0],0,0)) {
     STRACE_ERROR(("Sample init refused by the provider??..."));
     retcode = -1;
   }
@@ -757,7 +757,7 @@ tsp_ascii_writer_start(FILE* sfile, int32_t nb_sample_max_infile, OutputFileForm
     complete_line = 0;
     nb_sample     = 0;
     /* write loop */
-    while (TSP_consumer_read_sample(myproviders[0],&sample, &new_sample) && !stop_it) 
+    while (TSP_STATUS_OK==TSP_consumer_read_sample(myproviders[0],&sample, &new_sample) && !stop_it) 
     {
       if (new_sample) 
       {
@@ -834,17 +834,15 @@ tsp_ascii_writer_finalise() {
   
   int32_t retcode;
 
-  STRACE_IO(("-->IN"));  
   if (NULL != myproviders) {
     if (tsp_ascii_writer_sample_running) {
-      if (!TSP_consumer_request_sample_destroy(myproviders[0])) {
+      if (TSP_STATUS_OK!=TSP_consumer_request_sample_destroy(myproviders[0])) {
 	STRACE_ERROR(("TSP_request_sample_destroy en erreur??..."));
       }  
     }
   }
   TSP_consumer_end();
   retcode = 0;    
-  STRACE_IO(("-->OUT"));   
   return retcode;
 } /* end of tsp_ascii_writer_finalise */
 

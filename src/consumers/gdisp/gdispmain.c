@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/consumers/gdisp/gdispmain.c,v 1.11 2006-04-07 10:37:17 morvan Exp $
+$Header: /home/def/zae/tsp/tsp/src/consumers/gdisp/gdispmain.c,v 1.12 2006-04-24 22:17:47 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -267,18 +267,18 @@ static int main_window_start(char* conf_file, char* tsp_prov_url)
       tsp = TSP_consumer_connect_url(tsp_prov_url);
       if(tsp)
 	{
-	  if(TSP_consumer_request_open(tsp, 0, 0))
+	  if(TSP_STATUS_OK==TSP_consumer_request_open(tsp, 0, 0))
 	    {
-	      if(TSP_consumer_request_filtered_information(tsp,TSP_FILTER_MINIMAL,MINIMAL_STRING))
+	      if(TSP_STATUS_OK==TSP_consumer_request_filtered_information(tsp,TSP_FILTER_MINIMAL,MINIMAL_STRING))
 		{
 		
-		  if(TSP_consumer_request_sample(tsp, &conf_data.tsp_requested))
+		  if(TSP_STATUS_OK==TSP_consumer_request_sample(tsp, &conf_data.tsp_requested))
 		    {		  
 		    
 		      /* Create the list of variable per provider global id */
 		      init_index2vars();
 		    
-		      if(TSP_consumer_request_sample_init(tsp,0,0))
+		      if(TSP_STATUS_OK==TSP_consumer_request_sample_init(tsp,0,0))
 			{
 			  sprintf(name, "%s @ %s", conf_file, TSP_consumer_get_connected_name(tsp));
 			  create_mainwin(&conf_data, name);
@@ -332,7 +332,7 @@ main (int argc, char **argv)
 
   gtk_init(&argc, &argv);
 
-  if(!TSP_consumer_init(&argc, &argv))
+  if(TSP_STATUS_OK!=TSP_consumer_init(&argc, &argv))
     return -1;
 			
   while ((myopt = getopt(argc, argv, "u:x:h")) != -1)

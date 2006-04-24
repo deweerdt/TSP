@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_common_ssi.c,v 1.5 2006-04-18 00:09:14 erk Exp $
+$Id: tsp_common_ssi.c,v 1.6 2006-04-24 22:17:47 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -217,7 +217,6 @@ TSP_sample_symbol_info_list_t*
 TSP_SSIList_new(int32_t nbSSI) {
  
   TSP_sample_symbol_info_list_t* ssil;
-  assert(ssil);
 
   ssil = (TSP_sample_symbol_info_list_t*) calloc(1,sizeof(TSP_sample_symbol_info_list_t));
   if (NULL!=ssil) {

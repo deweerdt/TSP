@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_sampling.c,v 1.16 2006-04-07 10:37:17 morvan Exp $
+$Id: gdisp_sampling.c,v 1.17 2006-04-24 22:17:47 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -605,7 +605,7 @@ gdisp_samplingThread (void *data )
   requestStatus = TSP_consumer_request_sample(provider->pHandle,
 					      &provider->pSampleList);
 
-  if (requestStatus == 0) {
+  if (TSP_STATUS_OK!=requestStatus) {
 
     provider->pSamplingThreadStatus = GD_THREAD_REQUEST_SAMPLE_ERROR;
     pthread_exit((void*)FALSE);
@@ -664,7 +664,7 @@ gdisp_samplingThread (void *data )
 				     (TSP_sample_callback_t)NULL,
 				     (void*)NULL);
 
-  if (requestStatus == 0) {
+  if (TSP_STATUS_OK != requestStatus) {
 
     provider->pSamplingThreadStatus = GD_THREAD_SAMPLE_INIT_ERROR;
     pthread_exit((void*)FALSE);
@@ -693,7 +693,7 @@ gdisp_samplingThread (void *data )
 					     &sampleValue,
 					     &sampleHasArrived);
 
-    if (requestStatus == FALSE) {
+    if (TSP_STATUS_OK != requestStatus) {
 
       /*
        * Out of "while" loop.
@@ -798,7 +798,7 @@ gdisp_samplingThread (void *data )
     requestStatus = TSP_consumer_request_sample_destroy(provider->pHandle);
   }
 
-  if (requestStatus == 0) {
+  if (TSP_STATUS_OK != requestStatus) {
 
     provider->pSamplingThreadStatus = GD_THREAD_SAMPLE_DESTROY_ERROR;
 

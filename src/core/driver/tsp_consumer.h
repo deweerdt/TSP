@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_consumer.h,v 1.32 2006-04-24 19:53:32 erk Exp $
+$Id: tsp_consumer.h,v 1.33 2006-04-24 22:17:47 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -53,16 +53,6 @@ Purpose   : Main interface for the TSP consumer library
 
 /*------------------------------ ENUM ---------------------------------*/
  
-/**
- * Status for a futur get_last_error function.
- * FIXME : not used for now. Anyway, this enum
- * must be completed
- */
-enum TSP_consumer_status_t {
-	TSP_CONSUMER_STATUS_OK,
-	TSP_CONSUMER_STATUS_ERROR_UNKNOWN,
-	TSP_CONSUMER_STATUS_ERROR_VERSION
-};
 
 /*-------------------------- STRUCTURES -------------------------------*/
 
@@ -141,16 +131,18 @@ BEGIN_C_DECLS
  * This function must be called once.
  * @param argc Use the argc main arg before using it
  * @param argv Use the argv main arg before using it
- * @return TRUE = OK
+ * @return TSP_STATUS_OK on success TSP_STATUS_ERROR_xxx on error.
  */
-int TSP_consumer_init(int* argc, char** argv[]);
+int32_t 
+TSP_consumer_init(int* argc, char** argv[]);
 
 /**
-* End of TSP library use
-* call this function when you are done with the librairy.
-* This function must be called once.
-*/
-void TSP_consumer_end();
+ * End of TSP library use
+ * call this function when you are done with the librairy.
+ * This function must be called once.
+ */
+void 
+TSP_consumer_end();
 
 
 /*----
@@ -168,8 +160,8 @@ void TSP_consumer_end();
 * @param nb_providers Total number of providers in 'providers' array
 */
 void TSP_consumer_connect_all(const char* host_name,
-			   TSP_provider_t** providers,
-			   int* nb_providers);
+			      TSP_provider_t** providers,
+			      int* nb_providers);
 
 /**
 * Disconnected all found providers.
@@ -223,7 +215,7 @@ void TSP_consumer_disconnect_one(TSP_provider_t provider);
  * @param provider The provider handle
  * @param custom_argc Custom provider data stream initialisation (optional : set 0)
  * @param custom_argv Custom provider data stream initialisation (optional : set 0)
- * @return TRUE or FALSE. TRUE = OK.
+ * @return TSP_STATUS_OK on success TSP_STATUS_ERROR_xxx on error.
  * custom_argc and custom_argv works like main argc and argv :
  * - custom_argv[0] is ignored but a real string must be provided 
  * (any string will do, but there MUST be a string, even an empty
@@ -241,7 +233,8 @@ void TSP_consumer_disconnect_one(TSP_provider_t provider);
  * It is a way to prevent the user from providing initialisation parameters thrue the command
  * line.
  */
-int TSP_consumer_request_open(TSP_provider_t provider, int custom_argc, char* custom_argv[]);
+int32_t 
+TSP_consumer_request_open(TSP_provider_t provider, int custom_argc, char* custom_argv[]);
 
 /**
  * Return the TSP channel Id associated with this
@@ -256,9 +249,10 @@ TSP_consumer_get_channel_id(TSP_provider_t provider);
 /**
  * Close the session.
  * @param provider The provider handle
- * @return TRUE or FALSE. TRUE = OK.
+ * @return TSP_STATUS_OK on success TSP_STATUS_ERROR_xxx on error.
  */
-int TSP_consumer_request_close(TSP_provider_t provider);
+int32_t
+TSP_consumer_request_close(TSP_provider_t provider);
 
 
 /** 
@@ -268,9 +262,10 @@ int TSP_consumer_request_close(TSP_provider_t provider);
  * This function should be called multiple times only to refresh
  * the structure returned by the TSP_consumer_get_information function.
  * @param provider The provider handle
- * @return TRUE or FALSE. TRUE = OK.
+ * @return TSP_STATUS_OK on success TSP_STATUS_ERROR_xxx on error.
  */				  
-int TSP_consumer_request_information(TSP_provider_t provider);
+int32_t 
+TSP_consumer_request_information(TSP_provider_t provider);
 
 /** 
  * Request provider information.
@@ -281,9 +276,10 @@ int TSP_consumer_request_information(TSP_provider_t provider);
  * @param provider The provider handle
  * @param filter_kind the kind of filter
  * @param filter_string the filter string
- * @return TRUE or FALSE. TRUE = OK.
+ * @return TSP_STATUS_OK on success TSP_STATUS_ERROR_xxx on error.
  */				  
-int TSP_consumer_request_filtered_information(TSP_provider_t provider, int filter_kind, char* filter_string);
+int32_t 
+TSP_consumer_request_filtered_information(TSP_provider_t provider, int filter_kind, char* filter_string);
 
 /** 
  * Request provider extended information.
@@ -293,7 +289,7 @@ int TSP_consumer_request_filtered_information(TSP_provider_t provider, int filte
  * @param[in] provider The provider handle
  * @param[in] pgis the list of PGI for which we want extended informations
  * @param[in] pgis_len the length of the pgis array
- * @return TRUE or FALSE. TRUE = OK.
+ * @return TSP_STATUS_OK on success TSP_STATUS_ERROR_xxx on error.
  */
 int32_t 
 TSP_consumer_request_extended_information(TSP_provider_t provider, int32_t* pgis, int32_t pgis_len);
@@ -329,10 +325,11 @@ const TSP_answer_sample_t* TSP_consumer_get_information(TSP_provider_t provider)
  * the structure returned by the TSP_consumer_get_requested_sample function.
  * @param provider The provider handle
  * @param symbols The request symbols list
- * @return TRUE or FALSE. TRUE = OK.
+ * @return TSP_STATUS_OK on success TSP_STATUS_ERROR_xxx on error.
  */				  
-int TSP_consumer_request_sample(TSP_provider_t provider,
-				TSP_sample_symbol_info_list_t* symbols);
+int32_t 
+TSP_consumer_request_sample(TSP_provider_t provider,
+			    TSP_sample_symbol_info_list_t* symbols);
 
 /** 
  * Retrieve the symbols requested list.
@@ -352,16 +349,18 @@ const TSP_sample_symbol_info_list_t* TSP_consumer_get_requested_sample(TSP_provi
  * function instead. DO NOT USE BOTH. Using the TSP_consumer_read_sample function
  * is easier as you do not have to deal with multi-thread problems, but the callback
  * function is CPU friendlier (theoricaly at least...)
- * @return TRUE or FALSE. TRUE = OK.
+ * @return TSP_STATUS_OK on success TSP_STATUS_ERROR_xxx on error.
  */				      
-int TSP_consumer_request_sample_init(TSP_provider_t provider, TSP_sample_callback_t callback, void* user_data);    
+int32_t 
+TSP_consumer_request_sample_init(TSP_provider_t provider, TSP_sample_callback_t callback, void* user_data);    
 
 /** 
  * Stop and destroy the sampling sequence
  * @param provider The provider handle
- * @return TRUE or FALSE. TRUE = OK.
+ * @return TSP_STATUS_OK on success TSP_STATUS_ERROR_xxx on error.
  */				      
-int TSP_consumer_request_sample_destroy(TSP_provider_t provider);    
+int32_t
+TSP_consumer_request_sample_destroy(TSP_provider_t provider);    
 
 /** 
  * Read a sample symbol.
@@ -369,16 +368,17 @@ int TSP_consumer_request_sample_destroy(TSP_provider_t provider);
  * @param sample The returned symbol if there is one
  * @param new_sample When TRUE, there is a new sample, else the sample value is
  *                    meaningless
- * @return TRUE or FALSE. FALSE = There is an error (but we can not know it for now).
+ * @return TSP_STATUS_OK on success TSP_STATUS_ERROR_xxx on error.
  * @todo
  *  - Some kind of get_last_error func must be implemented to read
  *    the error codes (EOF, RECONF ... ).
  *  - When the other types will be implemented (RAW, STRING) the TSP_sample_t
  *    type will not work anymore as it is double specific for now.
  */				          
-int TSP_consumer_read_sample(TSP_provider_t provider,
-			     TSP_sample_t* sample,
-			     int* new_sample);
+int32_t 
+TSP_consumer_read_sample(TSP_provider_t provider,
+			 TSP_sample_t* sample,
+			 int* new_sample);
 
 
 /**

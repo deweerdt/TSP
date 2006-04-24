@@ -1,6 +1,6 @@
 /*
 
-$Id: generic_consumer.c,v 1.13 2006-04-15 10:46:02 erk Exp $
+$Id: generic_consumer.c,v 1.14 2006-04-24 22:17:47 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -185,7 +185,7 @@ generic_consumer(generic_consumer_request_t* req) {
       }
       return -1;
     } else {
-      if (TSP_consumer_request_open(req->the_provider, 0, 0)) {
+      if (TSP_STATUS_OK==TSP_consumer_request_open(req->the_provider, 0, 0)) {
 	fprintf(req->stream,
 		"Request Open successfully sent to : <%s>\n",
 		TSP_consumer_get_connected_name(req->the_provider));
@@ -242,7 +242,7 @@ generic_consumer(generic_consumer_request_t* req) {
   /* Be nice close the session */
   if (NULL != req->the_provider) {
     
-    if (TSP_consumer_request_close(req->the_provider)) {
+    if (TSP_STATUS_OK==TSP_consumer_request_close(req->the_provider)) {
       fprintf(req->stream,
 	      "Request Close successfully sent to :%s\n",
 	      TSP_consumer_get_connected_name(req->the_provider));
@@ -405,7 +405,7 @@ generic_consumer_information(generic_consumer_request_t* req) {
     retval = -1;
     return retval;
   }
-  if (FALSE==TSP_consumer_request_information(req->the_provider)) {
+  if (TSP_STATUS_OK!=TSP_consumer_request_information(req->the_provider)) {
     generic_consumer_logMsg(req->stream,"%s: TSP request failed\n",
 			    tsp_reqname_tab[E_TSP_REQUEST_INFORMATION]);
   } else {
@@ -427,7 +427,7 @@ generic_consumer_filtered_information(generic_consumer_request_t* req) {
     return retval;
   }
 
-  if (FALSE==TSP_consumer_request_filtered_information(req->the_provider,TSP_FILTER_SIMPLE,req->argv[2])) {
+  if (TSP_STATUS_OK!=TSP_consumer_request_filtered_information(req->the_provider,TSP_FILTER_SIMPLE,req->argv[2])) {
     generic_consumer_logMsg(req->stream,"%s: TSP request failed\n",
 			    tsp_reqname_tab[E_TSP_REQUEST_FILTERED_INFORMATION]);
 			    

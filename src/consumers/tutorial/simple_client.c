@@ -1,6 +1,6 @@
 /*
 
-$Id: simple_client.c,v 1.6 2006-04-07 10:37:17 morvan Exp $
+$Id: simple_client.c,v 1.7 2006-04-24 22:17:47 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -64,7 +64,7 @@ int main(int argc, char *argv[])
   printf ("#=========================================================#\n");
 
   /* Initialisation for TSP library. */
-  if(!TSP_consumer_init(&argc, &argv))
+  if(TSP_STATUS_OK!=TSP_consumer_init(&argc, &argv))
       perror_and_exit("TSP init failed");
  
   if (argc==2)
@@ -82,12 +82,12 @@ int main(int argc, char *argv[])
       perror_and_exit("TSP_consumer_connect_all found no provider on host");
   
   /* Ask the provider for a new consumer session.*/
-  if(!TSP_consumer_request_open(providers[0], 0, 0))
+  if(TSP_STATUS_OK!=TSP_consumer_request_open(providers[0], 0, 0))
     perror_and_exit("TSP_request_provider_open failed");
 
   /* Ask the provider informations about several parameters, including
    * the available symbol list that can be asked. */
-  if(!TSP_consumer_request_information(providers[0]))
+  if(TSP_STATUS_OK!=TSP_consumer_request_information(providers[0]))
     perror_and_exit("TSP_request_provider_information failed");
 
   /* Get the provider information asked by TSP_consumer_request_information */
@@ -109,11 +109,11 @@ int main(int argc, char *argv[])
 
   /*-------------------------------------------------------------------------------------------------------*/ 
   /* Ask the provider for sampling this  list of symbols. Should check if all symbols are OK*/
-  if(!TSP_consumer_request_sample(providers[0], &symbols))
+  if(TSP_STATUS_OK!=TSP_consumer_request_sample(providers[0], &symbols))
     perror_and_exit("TSP_request_provider_sample failed");
 
   /* Start the sampling sequence. */
-  if(!TSP_consumer_request_sample_init(providers[0], 0, 0))
+  if(TSP_STATUS_OK!=TSP_consumer_request_sample_init(providers[0], 0, 0))
     perror_and_exit("TSP_request_provider_sample_init failed");
   
   /* Loop on data read */
@@ -123,7 +123,7 @@ int main(int argc, char *argv[])
       TSP_sample_t sample;
       
       /* Read a sample symbol.*/
-      if (TSP_consumer_read_sample(providers[0], &sample, &new_sample))
+      if (TSP_STATUS_OK==TSP_consumer_read_sample(providers[0], &sample, &new_sample))
 	{
 	  if(new_sample)
 	    {
@@ -152,11 +152,11 @@ int main(int argc, char *argv[])
 
   /*-------------------------------------------------------------------------------------------------------*/ 
   /* Stop and destroy the sampling sequence*/
-  if(!TSP_consumer_request_sample_destroy(providers[0]))
+  if(TSP_STATUS_OK!=TSP_consumer_request_sample_destroy(providers[0]))
     perror_and_exit("Function TSP_consumer_request_sample_destroy failed" );	 
 
   /* Close the session.*/
-  if(!TSP_consumer_request_close(providers[0]))
+  if(TSP_STATUS_OK!=TSP_consumer_request_close(providers[0]))
     perror_and_exit("Function TSP_consumer_request_close failed" );			    
 
   /* Disconnected all found providers.*/

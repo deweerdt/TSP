@@ -203,11 +203,11 @@ static void tspfs_destroy(void *unused)
 			free(tspfs.formats[i]);
 	}
 
-	if (tspfs.sync && !TSP_consumer_request_sample_destroy(tspfs.provider)) {
+	if (tspfs.sync && (TSP_STATUS_OK!=TSP_consumer_request_sample_destroy(tspfs.provider))) {
 		STRACE_ERROR(("Function TSP_consumer_request_sample_destroy failed"));
 	}
 
-	if (!TSP_consumer_request_close(tspfs.provider)) {
+	if (TSP_STATUS_OK!=TSP_consumer_request_close(tspfs.provider)) {
 		STRACE_ERROR(("Function TSP_consumer_request_close failed"));
 	}
 
@@ -234,7 +234,7 @@ static void *data_collector(void *unused)
 		    TSP_consumer_read_sample(tspfs.provider,
 					     tspfs.samples[i],
 					     &new_sample);
-		if (!ret) {
+		if (TSP_STATUS_OK!=ret) {
 			printf
 			    ("Error while reading data from provider, exiting.\n");
 			return NULL;
@@ -252,18 +252,30 @@ static int tspfs_init_connect(int argc, char **argv, char *url)
 
 	int i;
 
-	TSP_consumer_init(&argc, &argv);
+	if (TSP_STATUS_OK!=TSP_consumer_init(&argc, &argv)) {
+	  printf("TSP Initialization failed\n");
+	  exit(-1);
+	}
 	tspfs.provider = TSP_consumer_connect_url(url);
 	if (tspfs.provider == NULL) {
 		printf("Could not connect to provider %s\n", url);
 		exit(-1);
 	}
-	TSP_consumer_request_open(tspfs.provider, 0, 0);
+	if (TSP_STATUS_OK!=TSP_consumer_request_open(tspfs.provider, 0, 0)) {
+	  printf("TSP Request Open failed\n");
+	  exit(-1);
+	}
 
-	TSP_consumer_request_information(tspfs.provider);
+	if (TSP_STATUS_OK!=TSP_consumer_request_information(tspfs.provider)) {
+	   printf("TSP Request Information failed\n");
+	   exit(-1);
+	}
 
 	if (tspfs.filter) {
-		TSP_consumer_request_filtered_information(tspfs.provider, TSP_FILTER_SIMPLE, tspfs.filter);
+	  if (TSP_STATUS_OK!=TSP_consumer_request_filtered_information(tspfs.provider, TSP_FILTER_SIMPLE, tspfs.filter)) {
+	    printf("TSP Request Filtered Information failed\n");
+	    exit(-1);
+	  }
 	}
 
 	tspfs.information = TSP_consumer_get_information(tspfs.provider);
