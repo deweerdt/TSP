@@ -1,6 +1,6 @@
 /*
 
-$Id: server_main.c,v 1.5 2006-02-26 13:36:06 erk Exp $
+$Id: server_main.c,v 1.6 2006-04-24 21:05:34 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -72,11 +72,12 @@ int main(int argc, char *argv[])
 
   GLU_handle_t* GLU_resreader = GLU_resreader_create();
 
-  if (TSP_provider_init(GLU_resreader,&my_argc, &my_argv))
-    {
-      TSP_provider_run(TSP_ASYNC_REQUEST_SIMPLE | TSP_ASYNC_REQUEST_NON_BLOCKING);
-      RES_GLU_loop();
-     }
+  if (TSP_STATUS_OK==TSP_provider_init(GLU_resreader,&my_argc, &my_argv)) {
+    if (TSP_STATUS_OK!=TSP_provider_run(TSP_ASYNC_REQUEST_SIMPLE | TSP_ASYNC_REQUEST_NON_BLOCKING)) {
+      return -1;
+    }
+    RES_GLU_loop();
+  }
 
   return 0;
 }

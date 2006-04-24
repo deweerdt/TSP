@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl_init/tsp_provider_init.h,v 1.13 2006-04-03 16:07:36 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl_init/tsp_provider_init.h,v 1.14 2006-04-24 21:05:34 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -59,16 +59,18 @@ BEGIN_C_DECLS
  * @param[in,out] theGLU the GLU object to be used by this provider.
  * @param[in,out] argc You must provide the real argc before using it
  * @param[in,out] argv You must provide the real argv before using it
- * @return TRUE or FALSE. OK = TRUE.
+ * @return TSP_STATUS_OK on success other code on failure.
  */
-int TSP_provider_init(GLU_handle_t* theGLU, int* argc, char** argv[]);
+int32_t
+TSP_provider_init(GLU_handle_t* theGLU, int* argc, char** argv[]);
 
 /**
  * Finalize the TSP provider library.
  * After this call the TSP provider library should
  * not be called anymore.
  */
-void TSP_provider_end(void);
+void 
+TSP_provider_end(void);
 
 /**
  * The different value of the TSP
@@ -94,9 +96,10 @@ void TSP_provider_end(void);
  *              TSP asynchronous request channel (ONC RPC, XML RPC, SOAP, CORBA,...).
  *              The number of thread launched may vary dynamically.
  *       - 0x11 dynamic blocking mode, this function will block forever.
- * @return TRUE or FALSE. OK = TRUE.
+ * @return TSP_STATUS_OK on success other code on failure.
  */
-int TSP_provider_run(int spawn_mode);
+int32_t
+TSP_provider_run(int spawn_mode);
 
 
 /**
@@ -118,10 +121,12 @@ int TSP_provider_run(int spawn_mode);
  *       - 0x0100 publish to local SNMP agent (TODO).
  * @return String table or NULL.
  */
-char **TSP_provider_urls(int pub_mode);
+char**
+TSP_provider_urls(int pub_mode);
 
 
-void TSP_provider_print_usage(void);
+void 
+TSP_provider_print_usage(void);
 
 /**  @} */
 

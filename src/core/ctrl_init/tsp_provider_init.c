@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl_init/tsp_provider_init.c,v 1.16 2006-04-23 15:50:42 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl_init/tsp_provider_init.c,v 1.17 2006-04-24 21:05:34 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -37,41 +37,43 @@ Purpose   : Function calls to launch a TSP Provider program
  */
 #include <string.h>
 
-#include "tsp_sys_headers.h"
+#include <tsp_sys_headers.h>
 
-#include "tsp_provider.h"
-#include "tsp_request_handler.h"
-#include "tsp_provider_init.h"
+#include <tsp_provider.h>
+#include <tsp_request_handler.h>
+#include <tsp_provider_init.h>
 
 #ifdef BUILD_XMLRPC
-#include "tsp_xmlrpc_server.h"
+#include <tsp_xmlrpc_server.h>
 #else
-#include "tsp_server.h"
+#include <tsp_server.h>
 #endif
 
-int 
+int32_t 
 TSP_provider_init(GLU_handle_t* theGLU, int* argc, char** argv[]) {
 
-  int ret;
+  int32_t retcode = TSP_STATUS_OK;
 
-  ret = TSP_provider_private_init(theGLU,argc, argv);
+  retcode = TSP_provider_private_init(theGLU,argc, argv);
   
   /* Initialize tsp request handlers structures */
-  ret = TSP_provider_rqh_manager_init();
+  if (TSP_STATUS_OK==retcode) {
+    if (TRUE != TSP_provider_rqh_manager_init()) {
+      retcode = TSP_STATUS_ERROR_UNKNOWN;
+    } else {
+      /* install atexit handler to close properly */
+      atexit(TSP_provider_end);
+    }  
+  }
 
-  /* install atexit handler to close properly */
-  atexit(TSP_provider_end);
-
-  return ret;
-
+  return retcode;
 } /* End of TSP_provider_init */
 
-int 
+int32_t 
 TSP_provider_run(int spawn_mode) {
-  int ret = FALSE;
+  int32_t retcode = TSP_STATUS_OK;
 
-  if(TSP_provider_is_initialized())
-    {            
+  if (TSP_provider_is_initialized()) {            
       /* build and install default request handler (RPC) */
 #ifdef BUILD_XMLRPC
       TSP_provider_rqh_manager_install(0,TSP_xmlrpc_request);
@@ -90,28 +92,37 @@ TSP_provider_run(int spawn_mode) {
 	   & other protocols (XML, CORBA, ...) */
       }
 
-      ret = TSP_provider_rqh_manager_refresh();
+      if (TRUE != TSP_provider_rqh_manager_refresh()) {
+	retcode = TSP_STATUS_ERROR_UNKNOWN;
+      }
       
-      ret &= TSP_provider_private_run();
-      /* If we are launched in a blocking mode 
+      if (TSP_STATUS_OK==retcode) {
+	retcode = TSP_provider_private_run();
+      }
+
+      /* 
+       * If we are launched in a blocking mode 
        * Wait for every request handler thread to terminate
-       * !!! Thread MUST NOT DETACHED themslevs though !!!
+       * !!! Thread MUST NOT DETACHED themselves though !!!
        */
-      if (spawn_mode & TSP_ASYNC_REQUEST_BLOCKING) {
+      if ((TSP_STATUS_OK==retcode) && 
+	  (spawn_mode & TSP_ASYNC_REQUEST_BLOCKING)
+	  ) {
 	TSP_provider_rqh_manager_waitend();
       }
     }
   else {
     STRACE_ERROR(("Call TSP_provider_init first, and then call TSP_provider_run ! "));
+    retcode = TSP_STATUS_ERROR_UNKNOWN;
   }
   
-  return ret;  
+  return retcode;  
   
 } /* TSP_provider_run */
 
 
-void TSP_provider_end(void)
-{
+void 
+TSP_provider_end(void) {
   /* TODO : call flush on streams */
 
   /* remove any published URL */
@@ -123,15 +134,15 @@ void TSP_provider_end(void)
 
   /* Call handlers end function */
   TSP_provider_rqh_manager_end();
-}
+} /* end of TSP_provider_end */
 
-void TSP_provider_print_usage(void)
-{
+void 
+TSP_provider_print_usage(void) {
    printf(TSP_ARG_PROVIDER_USAGE"\n");
-}
+} /* TSP_provider_print_usage */
 
-char **TSP_provider_urls(int pub_mode)
-{
+char**
+TSP_provider_urls(int pub_mode) {
   int rank, nb;
   char **urls = NULL, *url;
 
@@ -168,5 +179,5 @@ char **TSP_provider_urls(int pub_mode)
 	}
     }
   return urls;
-}
+} /* TSP_provider_urls */
 

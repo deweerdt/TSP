@@ -1,6 +1,6 @@
 /*
 
-$Id: server_main.c,v 1.3 2006-02-26 13:36:06 erk Exp $
+$Id: server_main.c,v 1.4 2006-04-24 21:05:34 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -54,11 +54,12 @@ char *tableau[] ={"TSP_launcher"} ;
 
   GLU_handle_t* GLU_stub = GLU_stub_create();
   /* Init server */
-  if(TSP_provider_init(GLU_stub,&argc, &argv))
-    {
-      TSP_provider_run(TSP_ASYNC_REQUEST_SIMPLE | TSP_ASYNC_REQUEST_NON_BLOCKING);
+  if (TSP_STATUS_OK==TSP_provider_init(GLU_stub,&argc, &argv)) {
+    if (TSP_STATUS_OK!=TSP_provider_run(TSP_ASYNC_REQUEST_SIMPLE | TSP_ASYNC_REQUEST_NON_BLOCKING)) {
+      return (int)-1;
     }
-return (int)0 ;
+  }
+  return (int)0 ;
 }
    
 void smallTester (int *arg) ;

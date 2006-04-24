@@ -210,10 +210,9 @@ int main(int argc, char *argv[])
   GLU_handle_t* GLU_stub = GLU_stub_create();
 
   /* Init server */
-  if(!TSP_provider_init(GLU_stub,&argc, &argv))
-    {
-      exit (-1);
-    }
+  if(TSP_STATUS_OK!=TSP_provider_init(GLU_stub,&argc, &argv)) {
+    exit (-1);
+  }
   
   while ((myopt = getopt(argc, argv, "hr:m:i:")) != -1) {
     switch(myopt) {
@@ -239,10 +238,12 @@ int main(int argc, char *argv[])
       rt_memory_lock(0);
     }
   
-  /* Can use kill -2 for stopping prog */
+  /* Can use kill -INT for stopping prog */
   signal(SIGINT, signalled);
   
-  TSP_provider_run(TSP_ASYNC_REQUEST_SIMPLE | TSP_ASYNC_REQUEST_BLOCKING);
+  if (TSP_STATUS_OK!=TSP_provider_run(TSP_ASYNC_REQUEST_SIMPLE | TSP_ASYNC_REQUEST_BLOCKING)) {
+    return -1;
+  }
   
   return 0;
 }

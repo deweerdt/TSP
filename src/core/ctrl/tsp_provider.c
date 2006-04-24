@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_provider.c,v 1.49 2006-04-24 19:53:32 erk Exp $
+$Id: tsp_provider.c,v 1.50 2006-04-24 21:05:34 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -551,9 +551,9 @@ TSP_provider_garbage_collector_thread(void* dummy) {
    return (void*)NULL;
 } /* end of TSP_provider_garbage_collector_thread */
 
-int 
+int32_t 
 TSP_provider_private_init(GLU_handle_t* theGLU, int* argc, char** argv[]) {
-  int ret = TRUE;
+  int retcode = TSP_STATUS_OK;
   int status;
   pthread_t thread;
   assert(argc);
@@ -562,31 +562,34 @@ TSP_provider_private_init(GLU_handle_t* theGLU, int* argc, char** argv[]) {
 
   firstGLU = theGLU;
   
-  ret = TSP_cmd_line_parser(argc, argv);
-  if (ret) {
+  if (TSP_cmd_line_parser(argc, argv)) {
     /* init sessions */
     TSP_session_init();
     
     /* Initialise GLU server */
-    ret = theGLU->initialize(theGLU, X_glu_argc, X_glu_argv);
+    if (TRUE!=theGLU->initialize(theGLU, X_glu_argc, X_glu_argv)) {
+      retcode = TSP_STATUS_ERROR_GLU_INITIALIZE;
+    } else {
     
-    /* Launch garbage collection for sessions */
-    status = pthread_create(&thread, NULL, TSP_provider_garbage_collector_thread,  NULL);
-    TSP_CHECK_THREAD(status, FALSE);      
+      /* Launch garbage collection for sessions */
+      status = pthread_create(&thread, NULL, TSP_provider_garbage_collector_thread,  NULL);
+      TSP_CHECK_THREAD(status, TSP_STATUS_ERROR_UNKNOWN);      
+    }
   }
 
-  if (!ret) {
+  if (TSP_STATUS_OK!=retcode) {
     STRACE_INFO(("TSP private init error"));
+    X_tsp_provider_init_ok = FALSE;
+  } else {
+    X_tsp_provider_init_ok = TRUE;
   }
-
-  X_tsp_provider_init_ok = ret;
   
-  return ret;
+  return retcode;
 } /* End of TSP_provider_private_init */
 
-int 
+int32_t
 TSP_provider_private_run() {
-  int retcode = 0;
+  int32_t retcode = TSP_STATUS_ERROR_UNKNOWN;
   /* 
    * Launch GLU and instantiate global 
    * datapool  iff it is an ACTIVE one.
@@ -596,12 +599,18 @@ TSP_provider_private_run() {
    */
   if (GLU_SERVER_TYPE_ACTIVE == firstGLU->type) {
     /* Instantiate GLOBAL datapool */
-    TSP_datapool_instantiate(firstGLU);    
+    if (NULL==TSP_datapool_instantiate(firstGLU)) {
+      retcode = TSP_STATUS_ERROR_DATAPOOL_INSTANTIATE;
+    }
     /* Start GLU now since it is an ACTIVE one */
-    retcode = firstGLU->start(firstGLU);
-    if (retcode) {
+    if (firstGLU->start(firstGLU)) {
       STRACE_ERROR(("Cannot start GLU (ACTIVE case)"));
+      retcode = TSP_STATUS_ERROR_GLU_START;
     }	
+    retcode = TSP_STATUS_OK;
+  }
+  if (GLU_SERVER_TYPE_PASSIVE == firstGLU->type) {
+    retcode = TSP_STATUS_OK;
   }
   return retcode;
 } /* end of TSP_provider_private_run */

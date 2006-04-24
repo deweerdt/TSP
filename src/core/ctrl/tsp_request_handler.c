@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_request_handler.c,v 1.4 2006-02-26 13:36:05 erk Exp $
+$Id: tsp_request_handler.c,v 1.5 2006-04-24 21:05:34 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -141,7 +141,6 @@ TSP_provider_rqh_manager_init(void) {
 
   int retval = TRUE;
   int i;
-  STRACE_IO(("-->IN"));
 
   /* Initialise rqh manager data structure, mutex, cond var... 
    * Note that we do not test returned code from those
@@ -166,7 +165,6 @@ TSP_provider_rqh_manager_init(void) {
   }
   
   TSP_UNLOCK_MUTEX(&rqh_manager_if.mutex,-1);
-  STRACE_IO(("-->OUT"));
   return retval;
 } /* End of TSP_provider_rqh_manager_init */
 
@@ -182,7 +180,6 @@ TSP_provider_rqh_manager_refresh(void) {
    * configure and run all TSP request handlers
    * which are installed, but not running
    */
-  STRACE_IO(("-->IN"));
   TSP_LOCK_MUTEX(&rqh_manager_if.mutex,FALSE);
 
   nb = TSP_provider_rqh_manager_get_max_nb();
@@ -225,7 +222,6 @@ TSP_provider_rqh_manager_refresh(void) {
     } /* End while loop over configured request handlers */
 
   TSP_UNLOCK_MUTEX(&rqh_manager_if.mutex,FALSE);
-  STRACE_IO(("-->OUT"));
   return retval;
 }  /* End of TSP_provider_rqh_manager_refresh */
 

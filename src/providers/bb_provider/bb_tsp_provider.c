@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/providers/bb_provider/bb_tsp_provider.c,v 1.27 2006-04-23 20:06:48 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/providers/bb_provider/bb_tsp_provider.c,v 1.28 2006-04-24 21:05:34 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -693,12 +693,17 @@ bb_tsp_provider_initialise(int* argc, char** argv[],int TSPRunMode, const char* 
   bb_tsp_provider_setbbname(bbname);
   
   /* Init LibTSP provider */
-  if (FALSE==TSP_provider_init(bbGLU,argc, argv)) {
+  if (TSP_STATUS_OK!=TSP_provider_init(bbGLU,argc, argv)) {
     retcode = BB_NOK;
     return retcode;
   }
-  /* demarrage provider */
-  TSP_provider_run(TSPRunMode);
+
+  /* Start-up provider Lib */
+  if (TSP_STATUS_OK!=TSP_provider_run(TSPRunMode)) {
+    retcode = BB_NOK;
+    return retcode;
+  }
+
   /* 
    * Si demarrage en mode non bloquant 
    * attendre demarrage thread provider

@@ -1,6 +1,6 @@
 /* -*- idl -*-
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_rpc.x,v 1.34 2006-04-24 19:53:32 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_rpc.x,v 1.35 2006-04-24 21:05:34 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -138,7 +138,9 @@ enum TSP_status_t
 	TSP_STATUS_ERROR_NO_MORE_GLU,
 	TSP_STATUS_ERROR_NO_MORE_SESSION,
 	TSP_STATUS_ERROR_GLU_START,
-	TSP_STATUS_ERROR_BAD_REQUEST_ORDER
+	TSP_STATUS_ERROR_GLU_INITIALIZE,
+	TSP_STATUS_ERROR_BAD_REQUEST_ORDER,
+	TSP_STATUS_ERROR_DATAPOOL_INSTANTIATE
 };
 
 /** TSP Symbols basic types */

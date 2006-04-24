@@ -1,6 +1,6 @@
 /*
 
-$Id: generic_reader_main.c,v 1.2 2006-04-23 15:37:48 erk Exp $
+$Id: generic_reader_main.c,v 1.3 2006-04-24 21:05:34 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -98,10 +98,12 @@ int main(int argc, char *argv[])
   assert(GLU_genreader);
 
 
-  if (TSP_provider_init(GLU_genreader,&my_argc, &my_argv)) {
+  if (TSP_STATUS_OK==TSP_provider_init(GLU_genreader,&my_argc, &my_argv)) {
         
     /* Start provider */
-    TSP_provider_run(TSP_ASYNC_REQUEST_SIMPLE | TSP_ASYNC_REQUEST_NON_BLOCKING);
+    if (TSP_STATUS_OK!=TSP_provider_run(TSP_ASYNC_REQUEST_SIMPLE | TSP_ASYNC_REQUEST_NON_BLOCKING)) {
+      return -1;
+    }
     /* 
      * Wait for provider thread start-up
      * FIXME ce mode "d'attente" est pourlingue il faut une
