@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_data_sender.c,v 1.22 2006-04-23 22:24:58 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_data_sender.c,v 1.23 2006-04-24 19:53:32 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -185,30 +185,28 @@ static TSP_stream_sender_item_t* TSP_data_sender_get_out_item(TSP_struct_data_se
 }
 
 static int TSP_data_sender_to_stream_sender(TSP_struct_data_sender_t* data_sender,
-						   TSP_stream_sender_item_t* tosend)
-{
+					    TSP_stream_sender_item_t* tosend) {
 
   /* First check for a valid connection */
   int ret = TSP_stream_sender_is_connection_ok(data_sender->stream_sender);
-  if(ret)
-    {
-      if(data_sender->use_fifo)
-	{
-	  /* we use a fifo */
-	  RINGBUF_PTR_PUTBYADDR_COMMIT(data_sender->out_fifo);
-	}
-      else
-	{            
-	  /* no fifo. send data now */
-	  if(!TSP_stream_sender_send(data_sender->stream_sender,
-				     TSP_STREAM_SENDER_ITEM_BUF(tosend),
-				     tosend->len) )
-	    {
-	      STRACE_WARNING(("Function TSP_stream_sender_send failed "));
-	      ret = FALSE;
-	    }  
-	}
+  if(ret) {
+    if (data_sender->use_fifo) {
+      /* we use a fifo */
+      RINGBUF_PTR_PUTBYADDR_COMMIT(data_sender->out_fifo);
     }
+    else {            
+      /* 
+       * no fifo. send data now (SEND should block if socket buffer is full) 
+       * this should be the case for PASSIVE GLU.
+       */
+      if(!TSP_stream_sender_send(data_sender->stream_sender,
+				 TSP_STREAM_SENDER_ITEM_BUF(tosend),
+				 tosend->len) ) {
+	  STRACE_WARNING(("Function TSP_stream_sender_send failed "));
+	  ret = FALSE;
+	}  
+    }
+  }
   return ret;
 }
 
@@ -274,15 +272,15 @@ int TSP_data_sender_send_msg_ctrl(TSP_data_sender_t sender, TSP_msg_ctrl_t msg_c
  
 }
 
-/**
+/*
  * For a given time stamp, send data to a client.
  * @param _sender sender used to send the data
  * @param _groups groups used to calculate the data
  * @param time_stamp sent with the data
  * @return TRUE = OK
  */
-int TSP_data_sender_send(TSP_data_sender_t _sender, TSP_groups_t _groups, time_stamp_t time_stamp) 
-{    
+int 
+TSP_data_sender_send(TSP_data_sender_t _sender, TSP_groups_t _groups, time_stamp_t time_stamp) {    
 
   TSP_struct_data_sender_t* data_sender = (TSP_struct_data_sender_t*)_sender;
   TSP_algo_table_t* groups_table = (TSP_algo_table_t*) _groups;
@@ -297,8 +295,6 @@ int TSP_data_sender_send(TSP_data_sender_t _sender, TSP_groups_t _groups, time_s
   int size;
   TSP_stream_sender_item_t* tosend;
 
-  STRACE_IO(("-->IN"));
-
   group_index = time_stamp % groups_table->table_len;
   group = &(groups_table->groups[group_index]);
 
@@ -308,49 +304,46 @@ int TSP_data_sender_send(TSP_data_sender_t _sender, TSP_groups_t _groups, time_s
   /* If it is not available, try net time */
 
   /* FIXME : uses packet format as described in the protocol spec */
-  if(tosend)
-    {
+  if (tosend) {
       buf_main = TSP_STREAM_SENDER_ITEM_BUF(tosend);
       buf_int = (int*)(buf_main);
       *( buf_int++ ) = TSP_ENCODE_INT(time_stamp);
       *( buf_int++ ) = TSP_ENCODE_INT(group_index);
       buf_char = (char*)(buf_int);
-
   
-      if( group->group_len > 0)
-	{
-	  for( i = 0 ; i < group->group_len ; i++)
-	    {
-	      /* FIXME : gerer tous les types */
-	      /* avec la fonction d'encodage */
-	      STRACE_DEBUG(("Gr=%d V=%f", group_index, *(double*)(group->items[i].data)));
-
-	      /* Call encode function */
-	      assert(group->items[i].data_encoder);
-	      size = (group->items[i].data_encoder)(group->items[i].data,
-						    group->items[i].nelem,
-						    buf_char,
-						    data_sender->buffer_size - ( buf_char - buf_main) );
-	      if ( 0 == size )
-		{
-		  STRACE_ERROR(("data_encoder failed"));	    
-		  ret = FALSE;
-		  break;
-		}
+      if( group->group_len > 0) {
+	for ( i = 0 ; i < group->group_len ; i++) {
+	  /* 
+	   * FIXME : we cannot STRACE_DEBUG value simply due
+	   * to multi-type handling 
+	   */
+	  /* STRACE_DEBUG(("Gr=%d V=%f", group_index, *(double*)(group->items[i].data))); */
+	  STRACE_DEBUG(("Gr=%d Ne=%d", group_index, group->items[i].nelem));
 	  
-	      buf_char += size;
-
-	    } /*for*/
-
+	  /* Call encode function */
+	  assert(group->items[i].data_encoder);
+	  size = (group->items[i].data_encoder)(group->items[i].data,
+						group->items[i].nelem,
+						buf_char,
+						data_sender->buffer_size - ( buf_char - buf_main) );
+	  if ( 0 == size ) {
+	    STRACE_ERROR(("data_encoder failed"));	    
+	    ret = FALSE;
+	    break;
+	  }
+	  
+	  buf_char += size;
+	  
+	} /*for*/
+	
 	  /* We send it */
-	  tosend->len = buf_char - buf_main;
-	  ret = TSP_data_sender_to_stream_sender(data_sender, tosend);
-	}
-    }
-    
-  STRACE_IO(("-->OUT"));
+	tosend->len = buf_char - buf_main;
+	ret = TSP_data_sender_to_stream_sender(data_sender, tosend);
+      }
+  }
+  
   return ret;        
-}
+} /* TSP_data_sender_send */
 
 const char* TSP_data_sender_get_data_address_string(TSP_data_sender_t sender)
 {

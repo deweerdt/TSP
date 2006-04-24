@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_consumer.h,v 1.31 2006-04-13 23:05:18 erk Exp $
+$Id: tsp_consumer.h,v 1.32 2006-04-24 19:53:32 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -287,13 +287,12 @@ int TSP_consumer_request_filtered_information(TSP_provider_t provider, int filte
 
 /** 
  * Request provider extended information.
- * Ask the provider informations about several parameters, including
- * the available symbol list that can be asked.
+ * Ask the provider for extended informations for the specified PGI.
  * This function should be called multiple times only to refresh
  * the structure returned by the TSP_consumer_get_extended_information function.
- * @param provider The provider handle
- * @param filter_kind the kind of filter
- * @param filter_string the filter string
+ * @param[in] provider The provider handle
+ * @param[in] pgis the list of PGI for which we want extended informations
+ * @param[in] pgis_len the length of the pgis array
  * @return TRUE or FALSE. TRUE = OK.
  */
 int32_t 
@@ -408,7 +407,7 @@ TSP_consumer_request_async_sample_read(TSP_provider_t provider,
  * Print the symbols flagged as invalid
  * in the provided sample symbol info list.
  * @param[in]  fs the STDIO file stream
- * @param[in]  symbol the list of symbol to analyse
+ * @param[in]  symbols the list of symbol to analyse
  * @param[in]  tsp_provider_url the provider TSP URL.
  */
 void TSP_consumer_print_invalid_symbols(FILE* fs, 

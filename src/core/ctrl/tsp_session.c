@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.c,v 1.28 2006-04-23 22:24:58 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.c,v 1.29 2006-04-24 19:53:32 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -399,31 +399,29 @@ int TSP_session_send_data_by_channel(channel_id_t channel_id, time_stamp_t t)
 
 }
 
-void TSP_session_all_session_send_data(time_stamp_t t)
-{
+void 
+TSP_session_all_session_send_data(time_stamp_t t) {
   int i;
 
   TSP_LOCK_MUTEX(&X_session_list_mutex,);
 
-  for( i = 0 ; i< X_session_nb ; i++)
-    {
+  for (i = 0 ; i< X_session_nb ; ++i) {
     
-      if( X_session_t[i].session_data->groups /* The sample request was done */
-	  && X_session_t[i].session_data->sender /* The sample request init was done */
-	  && (X_session_t[i].session_data->data_link_broken == FALSE))
-	{
-	  if(!TSP_data_sender_send(X_session_t[i].session_data->sender, 
-				   X_session_t[i].session_data->groups, 
-				   t))
-	    {
-	      STRACE_WARNING(("Data link broken for session No %d",X_session_t[i].channel_id ));
-	      X_session_t[i].session_data->data_link_broken = TRUE;		  
-	    }
-	}
-    }
+    if( X_session_t[i].session_data->groups /* The request sample was done */
+	&& X_session_t[i].session_data->sender /* The request sample init was done */
+	&& (X_session_t[i].session_data->data_link_broken == FALSE))
+      {
+	if(!TSP_data_sender_send(X_session_t[i].session_data->sender, 
+				 X_session_t[i].session_data->groups, 
+				 t))
+	  {
+	    STRACE_WARNING(("Data link broken for session No %d",X_session_t[i].channel_id ));
+	    X_session_t[i].session_data->data_link_broken = TRUE;		  
+	  }
+      }
+  }
 
   TSP_UNLOCK_MUTEX(&X_session_list_mutex,);
-
 }
 
 
@@ -463,7 +461,16 @@ TSP_session_create_data_sender_by_channel(channel_id_t channel_id) {
 	
   TSP_GET_SESSION(session, channel_id, TSP_STATUS_ERROR_INVALID_CHANNEL_ID);
 
-  session->session_data->sender = 0;
+  /* 
+   * Quick return since No Request Sample has been done on this session 
+   * FIX bug #16430 
+   */
+  if (NULL==session->session_data->groups) {
+    retcode = TSP_STATUS_ERROR_BAD_REQUEST_ORDER;
+    return retcode;
+  }
+
+  session->session_data->sender = NULL;
 
   /* Calculate fifo depth */
   if (GLU_SERVER_TYPE_PASSIVE==session->session_data->glu_h->type) {

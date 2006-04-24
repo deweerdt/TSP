@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_datapool.h,v 1.16 2006-04-23 22:24:58 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_datapool.h,v 1.17 2006-04-24 19:53:32 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -43,6 +43,14 @@ Purpose   : Datapool implementation
 #include "tsp_datastruct.h"
 #include <tsp_glu.h>
 
+/**
+ * @defgroup TSP_DatapoolLib Datapool Library
+ * @ingroup TSP_ProviderLib
+ * The datapool library is an internal provider-side TSP API
+ * which is used by the GLU in order to push sample data
+ * to the \ref TSP_ProviderLib.
+ * @{
+ */
 
 typedef struct TSP_datapool_item  {
   /** One Item in the datapool.
@@ -83,58 +91,66 @@ BEGIN_C_DECLS
 
 /**
  * Get the reverse list of global_index wanted by some consumers
- * @param nb   : pointer on where to store the number of items
- * @param list : pointer on list of global_index
+ * @param[in] this the datapool object
+ * @param[in]  nb   pointer on where to store the number of items
+ * @param[out] list pointer on list of global_index
  */ 
-void TSP_datapool_get_reverse_list (TSP_datapool_t* datapool, int *nb, int **list);
+void TSP_datapool_get_reverse_list (TSP_datapool_t* this, int *nb, int **list);
 
 /**
- * Instead of thread created, we push directly the data
- * @param item : what to push
+ * Push GLU data into datapool.
+ * @param[in,out] this  the datapool object
+ * @param[in]     item  the GLU item to push in the datapool. The item is copied
+ *                      and may be re-used on return.
  */ 
-/*inline*/ int TSP_datapool_push_next_item(TSP_datapool_t* datapool, glu_item_t* item);
+int TSP_datapool_push_next_item(TSP_datapool_t* this, glu_item_t* item);
 
 /**
  * End of push, we commit the whole
- * @param time : date of datapool items
- * @param state: ok or error (reconf,eof, ...)
+ * @param[in,out] this the datapool object to commit in.
+ * @param[in] time_stamp  date of datapool items
+ * @param[in] state ok or error (reconf,eof, ...)
  */ 
-int TSP_datapool_push_commit(TSP_datapool_t* datapool, time_stamp_t time_stamp, GLU_get_state_t state);
+int TSP_datapool_push_commit(TSP_datapool_t* this, time_stamp_t time_stamp, GLU_get_state_t state);
 
 
 /**
  * Allocation of a datapool.
- * @param[in] h_glu Handle for the GLU that mus be linked to this datapool
+ * @param[in] glu Handle for the GLU that mus be linked to this datapool
  *                  datapool size will be GLU provided number of symbol(s).
- * @return The datapool handle
+ * @return The datapool object created on success, NULL on failure.
  */ 
-TSP_datapool_t* TSP_datapool_new(GLU_handle_t* h_glu );
+TSP_datapool_t* TSP_datapool_new(GLU_handle_t* glu);
 
 /**
  * Destroy a datapool.
  * Only used when the sample server is a passive one.
- * @param datapool The datapool handle
+ * @pre pthis != NULL
+ * @pre (*pthis) != NULL
+ * @param[in,out] pthis Pointer to the datapool object to be destroyed. The pointee
+ *                      will be nullified on return.
+ * @post (*pthis) == NULL.
  */ 
-void TSP_datapool_delete(TSP_datapool_t** datapool);
+void TSP_datapool_delete(TSP_datapool_t** pthis);
 
 /**
  * Initialize datapool with provided GLU.
  * This function will allocate internal datapool structure.
  * After this datapool is ready to be used by the refered GLU.
- * @param[in,out] datapool the datapool to be initialized
+ * @param[in,out] this the datapool to be initialized
  * @param[in,out] glu the GLU to be linked with the datapool
  * @return TSP_STATUS_OK on success.
  */
 int32_t 
-TSP_datapool_initialize(TSP_datapool_t* datapool, GLU_handle_t* glu);
+TSP_datapool_initialize(TSP_datapool_t* this, GLU_handle_t* glu);
 
 /**
  * Initialize datapool with provided GLU.
- * @param[in,out] datapool the datapool to be finalized
+ * @param[in,out] this the datapool to be finalized
  * @return TSP_STATUS_OK on success.
  */
 int32_t 
-TSP_datapool_finalize(TSP_datapool_t* datapool);
+TSP_datapool_finalize(TSP_datapool_t* this);
 
 /**
  * Get the datapool instance for this GLU.
@@ -154,15 +170,17 @@ TSP_datapool_t* TSP_datapool_instantiate(GLU_handle_t* glu);
 
 /**
  * Get the address of a value in the datapool
- * @param datapool The datapool handle
+ * @param this The datapool handle
  * @param provider_global_index The index of the symbol that is searched
  * @return The data address
  */ 
 void* 
-TSP_datapool_get_symbol_value(TSP_datapool_t* datapool, 
+TSP_datapool_get_symbol_value(TSP_datapool_t* this, 
 			      int provider_global_index);
 
  
 END_C_DECLS
+
+/** @} */
 
 #endif /* _TSP_DATAPOOL_H */

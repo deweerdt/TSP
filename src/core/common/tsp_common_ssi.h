@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_common_ssi.h,v 1.4 2006-04-17 23:05:48 erk Exp $
+$Id: tsp_common_ssi.h,v 1.5 2006-04-24 19:53:32 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -42,7 +42,7 @@ Purpose   : Main interface for the producer module
 #include <tsp_datastruct.h>
 
 /**
- * @defgroup TSP_CommonLib_SSI Sample Symbol Information Handling
+ * @defgroup TSP_CommonLib_SSI Sample Symbol Information Library Handling
  * The Sample Symbol Information Handling part of the @ref TSP_CommonLib
  * regroup a set of functions which should be used to manipulate
  * the Sample Symbol Information object and list of them.
@@ -131,9 +131,8 @@ TSP_SSI_copy(TSP_sample_symbol_info_t* dst_ssi,
 
 /**
  * Allocate a list of sample symbol information and initialize it.
- * @param[out] ssil pointer to the list to be create.
- * @param[in]  nbSSI the number of SSI in the to be created list.
- * @return TSP_STATUS_OK if allocation is OK. TSP_STATUS_ALLOC_FAILED otherwise.
+ * @param[in]  nbSSI the number of SSI in the to be created in the list.
+ * @return the allocated list on success NULL on failure.
  */
 TSP_sample_symbol_info_list_t*
 TSP_SSIList_new(int32_t nbSSI);
@@ -143,7 +142,12 @@ TSP_SSIList_delete(TSP_sample_symbol_info_list_t** ssi);
 
 /**
  * Initialize a preallocated list of sample symbol information.
- * @param[in] ssil the list to be initialized.
+ * @pre ssil must not be NULL.
+ * @param[in,out] ssil the list to be initialized.
+ * @param[in] nbSSI the number of Sample Symbol Information to be
+ *                  contained in the SSIList
+ * @post ssil contains the description of a SSIList with 
+ *       nbSSI symbols. Each item of the list has been default initialized. 
  */
 int32_t 
 TSP_SSIList_initialize(TSP_sample_symbol_info_list_t* ssil,

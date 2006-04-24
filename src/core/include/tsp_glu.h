@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_glu.h,v 1.12 2006-04-23 20:06:48 erk Exp $
+$Id: tsp_glu.h,v 1.13 2006-04-24 19:53:32 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -462,7 +462,7 @@ int32_t GLU_handle_destroy(GLU_handle_t** glu);
  *     <li> try to detect unwanted circular reference between 
  *          provided and default member function(s) </li> 
  * </ul>
- * @param[IN] glu the GLU_handle object to be checked.
+ * @param[in] glu the GLU_handle object to be checked.
  * @return TRUE if ok FALSE otherwise
  */
 int32_t GLU_handle_check(GLU_handle_t* glu);

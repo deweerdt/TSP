@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_common_ssei.h,v 1.5 2006-04-17 22:27:35 erk Exp $
+$Id: tsp_common_ssei.h,v 1.6 2006-04-24 19:53:32 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -42,6 +42,10 @@ Purpose   : Main interface for the producer module
 #include <tsp_datastruct.h>
 
 /**
+ * @defgroup TSP_CommonLib_SSEI Sample Symbol Extended Information Library Handling
+ * The Sample Symbol Extended Information Library part of the @ref TSP_CommonLib
+ * regroup a set of functions which should be used to manipulate
+ * the Sample Symbol Extended Information object and list of them.
  * @ingroup TSP_CommonLib
  * @{
  */
@@ -111,6 +115,7 @@ TSP_EIList_delete(TSP_extended_info_list_t** eil);
  *                On input the pre-allocated structure
  *                On output the content of the structure has been allocated 
  *                and initialized.
+ * @param[in] len the length of the extended info list
  * @return TSP_STATUS_OK on success 
  */
 int32_t

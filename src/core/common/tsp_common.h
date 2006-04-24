@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_common.h,v 1.10 2006-04-12 07:29:47 erk Exp $
+$Id: tsp_common.h,v 1.11 2006-04-24 19:53:32 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -49,6 +49,7 @@ Purpose   : Main interface for the producer module
 
 /**
  * @defgroup TSP_CommonLib TSP Common Library
+ * @ingroup TSP_CoreLib
  * The common librarie is the part of the TSP Core library
  * which is shared by provider and consumer.
  * It contains TSP datatypes definitions and helper functions.

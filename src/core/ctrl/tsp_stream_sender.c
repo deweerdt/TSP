@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_stream_sender.c,v 1.19 2006-04-23 22:24:58 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_stream_sender.c,v 1.20 2006-04-24 19:53:32 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -34,7 +34,6 @@ Purpose   : Implementation for the low level functions that send the data
 stream  to the consumers. 
 -----------------------------------------------------------------------
  */
- 
 
 #include <unistd.h>  
 #include <netdb.h>
@@ -503,38 +502,34 @@ int
 TSP_stream_sender_send(TSP_stream_sender_t sender, const char *buffer, int bufferLen) {
   
   int Total;
-  int nread;
+  int nwrite;
   TSP_socket_t* sock = (TSP_socket_t*)sender;
   int identSocket = sock->hClient;
 
   Total = 0;
-  if(identSocket > 0)
-    {      
-      while (bufferLen > 0)
-	{
-	  if( (nread = write(identSocket,  &buffer[Total], bufferLen)) <= 0 )
-	    {
-	      if( errno == EINTR )
-		{
-		  /* The write might have been interrupted by a signal */
-		  nread = 0;
-		}
-	      else 
-		{
-		  
-		  STRACE_DEBUG(("send failed"));
-		  sock->connection_ok = FALSE;
-		  return FALSE;
-		}
-	    }
-	  
-	  Total += nread;
-	  bufferLen -= nread;
+  if (identSocket > 0) {      
+    while (bufferLen > 0) {
+      /* FIXME is it really an error to get 0 as nwrite? */
+      if( (nwrite = write(identSocket,  &buffer[Total], bufferLen)) <= 0 ) {
+	if( errno == EINTR ) {
+	  /* The write might have been interrupted by a signal */
+	  nwrite = 0;
 	}
-    }
-  
+	else {		  
+	  STRACE_DEBUG(("send failed"));
+	  sock->connection_ok = FALSE;
+	  return FALSE;
+	}
+      }      
+      Total += nwrite;
+      bufferLen -= nwrite;
+    } /* end while buffer not written fully */ 
+  } else {
+    return (FALSE);
+  }
+
   return(TRUE);
-}
+} /* end of TSP_stream_sender_send */
 
 
 /**
@@ -542,30 +537,30 @@ TSP_stream_sender_send(TSP_stream_sender_t sender, const char *buffer, int buffe
  * If a client crashes this still returns TRUE
  * @return TRUE if the client was connected
  */
-int TSP_stream_sender_is_client_connected(TSP_stream_sender_t sender)
-{
+int 
+TSP_stream_sender_is_client_connected(TSP_stream_sender_t sender) {
   TSP_socket_t* sock = (TSP_socket_t*)sender;
 
   return sock->client_is_connected;
 }
 
-int TSP_stream_sender_is_connection_ok(TSP_stream_sender_t sender)
-{
+int 
+TSP_stream_sender_is_connection_ok(TSP_stream_sender_t sender) {
   TSP_socket_t* sock = (TSP_socket_t*)sender;
-
+  
   return sock->connection_ok;
 }
 
 
-TSP_stream_sender_ringbuf_t* TSP_stream_sender_get_ringbuf(TSP_stream_sender_t sender)
-{
+TSP_stream_sender_ringbuf_t* 
+TSP_stream_sender_get_ringbuf(TSP_stream_sender_t sender) {
   TSP_socket_t* sock = (TSP_socket_t*)sender;
-
+  
   return sock->out_ringbuf;
 }
 
-TSP_stream_sender_item_t* TSP_stream_sender_get_buffer(TSP_stream_sender_t sender)
-{
+TSP_stream_sender_item_t* 
+TSP_stream_sender_get_buffer(TSP_stream_sender_t sender) {
   TSP_socket_t* sock = (TSP_socket_t*)sender;
 
   return sock->out_item;

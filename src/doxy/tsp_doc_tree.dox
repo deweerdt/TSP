@@ -45,9 +45,130 @@ Purpose   : Define the TSP main doxygen modules
  * </ul>
  * 
  * \section tsp_sdk Installing and using TSP SDK
+ * 
+ * TSP SDK comes as either RPM (source or binary) or compressed tar archives.
+ * The primary format of distribution is gzip compressed tar archive (.tar.gz)
+ * and may be found on Savannah TSP download area: <a href="http://download.savannah.nongnu.org/releases/tsp/"> http://download.savannah.nongnu.org/releases/tsp/ </a>.
  *
- * <em>will come soon</em>
+ * \subsection tsp_sdk_RPM RPM based SDK
+ *
+ * If you get a binary TSP distribution such as pre-packaged RPM for your 
+ * favorite Linux distribution, you may install it as usual, for example:
+ * \verbatim
+ rpm -i tsp-0.7.3-1.i586.rpm \endverbatim
+ *
+ * If you did get a Source RPM you may rebuild the binary RPM before installing by doing:
+ * \verbatim
+ rpm -i tsp-0.7.3-1.src.rpm
+ rpmbuild -bb /usr/src/RPM/SPECS/tsp.spec
+ rpm -i /usr/src/RPM/RPMS/i586/tsp-0.7.3-1.i586.rpm \endverbatim
+ *
+ * The exact path for \c /usr/src/RPM may vary depending on 
+ * your distribution.
+ *  The resulting binary RPM does depend on your target architecture too.
+ *
+ * \subsection tsp_sdk_TARGZ Tarball based SDK
+ * 
+ * If you get a tarball source TSP distribution such as you may found in the download 
+ * section of the Savannah project 
+ * <a>http://download.savannah.nongnu.org/releases/tsp/</a>, 
+ * you should follow these steps: 
+ * <ol>
+ * <li>untar the archive: tar zxvf tsp-\<version\>.tar.gz 
+ *     this should create a tsp  directory
+ * </li>
+ * \verbatim
+ tar zxvf tsp-0.7.3.tar.gz
+ ... wait for tar ending ... \endverbatim
+ * <li>configure your TSP (configure --help for more options)
+ * </li>
+ * \verbatim
+ cd tsp
+ ./configure
+ ... wait for configure ending ... \endverbatim
+ * <li>
+ * set-up some environment variables as indicated at the end of the configure scripts.
+ * The tsp_dev.login.sh script sets-up some environment variables. When you are using 
+ * a TSP source toolkit, you need to source this file in each shell you want to use the
+ * TSP source kit. The environment variable defined or modified by the script are:
+ * <ul>
+ * <li>TSP_BASE is the variable defining the 'base' directory of
+ *     your TSP development source toolkit,</li>
+ * <li>STRACE_DEBUG, is the variable which controls the amount of trace 
+ *     the TSP libraries are sending to standard output when running a program 
+ *     using the TSP libraries.
+ * </li>
+ * <li>PATH which is updated in order to include the path to the 
+ *     TSP binary executable when they are built
+ * </li>
+ * </ul>
+ * </li>
+ * \verbatim
+ source src/scripts/tsp_dev.login.sh
+ Using host target <linux>
+ Using TSP_BASE=/home/noularde/TSP/tsp_all/tsp
+ Using DEVBASE=/home/noularde/TSP/tsp_all/tsp
+ Using STRACE_DEBUG=1 \endverbatim
+ * <li>compile your TSP</li>
+ * \verbatim
+ make
+ ... wait the compilation end ... \endverbatim
+ * </ol>
+ * After that you will have a compiled and usable TSP source kit.
+ *  
+ * \section tsp_objectModel The TSP C Object model and API
+ *
+ * Most of the TSP external and internal C API is object-oriented, this
+ * is true for the \ref TSP_GLULib API or for Datapool internal API
+ * or for the \ref TSP_CommonLib objects.
+ * The pattern of the TSP Object API is the following:
+ * <ul>
+ *  <li> The object is a C structure which should be declared like this:
+ * \verbatim
+ typedef struct Type {
+ } Type_T; \endverbatim
+ *  </li>
+ *  <li> Every function (i.e. method) on object should take a pointer
+ *       to the object \c Type* as first argument whose name is \c this.
+ *       Constructor and destructor functions are the only function which
+ *       does not follow this rule (see below).
+ *  </li>
+ *  <li> Method returning an object pointer should return a valid pointer on
+ *       success and \c NULL on error
+ *  </li>
+ *  <li>
+ *       Method not returning an object pointer should return an
+ *       \c int32_t whose value should be either \c TSP_STATUS_OK or any
+ *       \c TSP_STATUS_ERROR_xxxx code.
+ *  </li>
+ *  <li> Here is the list of <em> Normalized API </em> on \c Type_T
+ *  <ul>
+ *    <li> Constructor/Destructor pair 
+ *  \verbatim 
+ Type*    TSP_Type_new(...argslist...);
+ int32_t  TSP_Type_delete(Type**); \endverbatim
+ *        Constructor returns the newly allocated object on success and
+ *        \c NULL on failure. Destructor will deeply deallocate the pointed
+ *        object and nullify (*Type) before return.
+ *    </li>
+ *    <li> Initialiser/Finalizer pair
+ * \verbatim
+ int32_t TSP_Type_initialize(Type* this, ...argslist...);
+ int32_t TSP_Type_finalize(Type* this); \endverbatim
+ *    </li>
+ *    <li> Copy:
+ * \verbatim
+ int32_t TSP_Type_Copy(Type* dst, const Type src); \endverbatim
+ *    </li>
+ *    <li> Other functions:
+ * \verbatim
+ int32_t TSP_Type_<Action>(Type* this, ...argslist...); \endverbatim
+ *    </li>
+ *  </ul>
+ *  </li>
+ * </ul>
  */
+
 /**
  * @defgroup TSP The Transport Sample Protocol
  * The Transport Sample Protocol (TSP).

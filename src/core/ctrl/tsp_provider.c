@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_provider.c,v 1.48 2006-04-23 22:24:58 erk Exp $
+$Id: tsp_provider.c,v 1.49 2006-04-24 19:53:32 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -42,7 +42,7 @@ Purpose   : Main implementation for the producer module
 #include <tsp_glu.h>	
 #include <tsp_time.h>
 #include <tsp_common.h>
-#include "tsp_datapool.h"
+#include <tsp_datapool.h>
 
 /** modified argc and argv, will be returned to user code after init */
 static  char** X_argv = 0;
@@ -493,12 +493,12 @@ TSP_provider_request_sample_init(TSP_request_sample_init_t* req_sample_init,
     
     if (TSP_STATUS_OK!=ans_sample_init->status) {
       STRACE_ERROR(("TSP_data_sender_create failed"));
+    } else {      
+      /* send data address to client */
+      ans_sample_init->data_address =
+	(char*)TSP_session_get_data_address_string_by_channel(req_sample_init->channel_id);  
+      STRACE_DEBUG(("ANSWER SAMPLE INIT data_address = '%s'", ans_sample_init->data_address));
     }
-    
-    /* send data address to client */
-    ans_sample_init->data_address =
-      (char*)TSP_session_get_data_address_string_by_channel(req_sample_init->channel_id);  
-    STRACE_DEBUG(("ANSWER SAMPLE INIT data_address = '%s'", ans_sample_init->data_address));
   }
   
   TSP_UNLOCK_MUTEX(&X_tsp_request_mutex,);
@@ -599,7 +599,7 @@ TSP_provider_private_run() {
     TSP_datapool_instantiate(firstGLU);    
     /* Start GLU now since it is an ACTIVE one */
     retcode = firstGLU->start(firstGLU);
-    if (!retcode) {
+    if (retcode) {
       STRACE_ERROR(("Cannot start GLU (ACTIVE case)"));
     }	
   }
