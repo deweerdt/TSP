@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.22 2006-03-10 22:21:04 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.23 2006-04-25 21:08:17 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -1354,10 +1354,11 @@ bb_rcv_msg(volatile S_BB_T *bb,
 
 
 int32_t
-get_array_name(char * array_name,
-	       int array_name_size_max,
-	       S_BB_DATADESC_T * aliasstack, int32_t aliasstack_size,
-	       int32_t * indexstack, int32_t indexstack_len) {
+bb_get_array_name(char * array_name,
+		  int array_name_size_max,
+		  S_BB_DATADESC_T * aliasstack, int32_t aliasstack_size,
+		  int32_t * indexstack, int32_t indexstack_len) {
+
   char * part_of_name;
   int32_t indexstack_curr;
   int j;
