@@ -57,7 +57,7 @@ date, time and user name.
               <tar destfile="${dist.dir}/tsp-${tsp.version}.tar">
                  <tarfileset mode="755" defaultexcludes="yes" dir="${tsp.home.dir}" prefix="tsp/">
                       <include name="config*" />
-                      <include name="AUTHOR" />
+                      <include name="AUTHORS" />
                       <include name="COPYING" />
                       <include name="*.xml" />
                       <include name="INSTALL" />
