@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bbtools/bb_simu.c,v 1.9 2006-02-26 13:36:06 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bbtools/bb_simu.c,v 1.10 2006-04-25 21:09:51 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -55,6 +55,7 @@ typedef struct MyType {
   double          d;
   uint8_t         byte;
   MyInsiderType_t insider;
+  MyInsiderType_t insider_array[2];
 } MyType_t;
 
 double *DYN_0_d_qsat;		/* 4 elems */
@@ -139,9 +140,11 @@ main (int argc, char ** argv) {
 			  sizeof(double),1,offsetof(MyType_t,d));
   bb_simple_alias_publish(mybb,"byte","MyType_t_var",basename(argv[0]),-1,E_BB_UINT8,
 			  sizeof(uint8_t),1,offsetof(MyType_t,byte));
-  /* you may even specify USER type in USER type */
+
+  /* You may specify USER type in USER type */
   bb_simple_alias_publish(mybb,"insider","MyType_t_var",basename(argv[0]),-1,E_BB_USER,
 			  sizeof(MyInsiderType_t),1,offsetof(MyType_t,insider));
+
   /* Now the (in)famous structure in structure i.e. alias of alias example */
   bb_simple_alias_publish(mybb,"ai","MyType_t_var.insider",basename(argv[0]),-1,E_BB_INT32,
 			  sizeof(int32_t),2,offsetof(MyInsiderType_t,ai));
@@ -149,6 +152,16 @@ main (int argc, char ** argv) {
   bb_simple_alias_publish(mybb,"f","MyType_t_var.insider",basename(argv[0]),-1,E_BB_DOUBLE,
 			  sizeof(double),1,offsetof(MyInsiderType_t,f));
 
+  /* You may even specify ARRAY of USER type in USER type */
+  bb_simple_alias_publish(mybb,"insider_array","MyType_t_var",basename(argv[0]),-1,E_BB_USER,
+			  sizeof(MyInsiderType_t),2,offsetof(MyType_t,insider_array));
+
+  /* Then you should re-specify alias of alias where target alias is an array */
+  bb_simple_alias_publish(mybb,"ai","MyType_t_var.insider_array",basename(argv[0]),-1,E_BB_INT32,
+			  sizeof(int32_t),2,offsetof(MyInsiderType_t,ai));
+
+  bb_simple_alias_publish(mybb,"f","MyType_t_var.insider_array",basename(argv[0]),-1,E_BB_DOUBLE,
+			  sizeof(double),1,offsetof(MyInsiderType_t,f));
   myvar->a = 1;
   myvar->d = 3.14159;
   myvar->byte = 0xFF;
