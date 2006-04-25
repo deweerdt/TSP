@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_utils.h,v 1.9 2006-03-31 12:55:19 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_utils.h,v 1.10 2006-04-25 21:09:08 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -182,11 +182,11 @@ bb_utils_parseone_array(const char* provided_symname,
 			char** remaining_symname, int32_t remaining_symname_len);
 
 int32_t
-bb_untils_parsearrayname(const char* provided_symname, 
-			 char* parsed_symname,
-			 const int32_t parsed_symname_maxlen,
-			 int32_t* array_index, 
-			 int32_t* array_index_len);
+bb_utils_parsearrayname(const char* provided_symname, 
+			char* parsed_symname,
+			const int32_t parsed_symname_maxlen,
+			int32_t* array_index, 
+			int32_t* array_index_len);
 
 /** @} */
 
