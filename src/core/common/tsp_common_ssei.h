@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_common_ssei.h,v 1.6 2006-04-24 19:53:32 erk Exp $
+$Id: tsp_common_ssei.h,v 1.7 2006-04-25 21:15:05 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -56,9 +56,20 @@ Purpose   : Main interface for the producer module
 
 BEGIN_C_DECLS
 
+/**
+ * create a new ei
+ * @param[in] key key of the ei
+ * @param[in] value value of the extended info
+ * @return the new ei
+ */
 TSP_extended_info_t*
 TSP_EI_new(const char *key,const char *value);
 
+/**
+ * destruct an ei
+ * @param[in] ei ei to destruct
+ * @return  TSP_STATUS_OK if ok
+ */
 int32_t
 TSP_EI_delete(TSP_extended_info_t** ei);
 
@@ -102,9 +113,19 @@ TSP_EI_finalize(TSP_extended_info_t* ei);
 int32_t
 TSP_EI_copy(TSP_extended_info_t* dest_EI, const TSP_extended_info_t src_EI);
 
+/**
+ * create a new eil
+ * @param[in] len length of the eil
+ * @return the new eil
+ */
 TSP_extended_info_list_t*
 TSP_EIList_new(int32_t len);
 
+/**
+ * destruct an eil
+ * @param[in] eil eil to destruct
+ * @return  TSP_STATUS_OK if ok
+ */
 int32_t
 TSP_EIList_delete(TSP_extended_info_list_t** eil);
 
@@ -148,9 +169,20 @@ int32_t
 TSP_EIList_copy(TSP_extended_info_list_t* eil_dest,
 		const TSP_extended_info_list_t eil_src);
 
+/**
+ * create a new ssei
+ * @param[in] pgi pgi of the ei
+ * @param[in] nei number of extended info
+ * @return the new ssei
+ */
 TSP_sample_symbol_extended_info_t*
 TSP_SSEI_new(const int32_t pgi, const int32_t nei);
 
+/**
+ * destruct an ssei
+ * @param[in] ssei ssei to destruct
+ * @return TSP_STATUS_OK if ok
+ */
 int32_t
 TSP_SSEI_delete(TSP_sample_symbol_extended_info_t** ssei);
 
@@ -182,10 +214,19 @@ int32_t
 TSP_SSEI_copy(TSP_sample_symbol_extended_info_t* ssei_dest,
   	      const TSP_sample_symbol_extended_info_t ssei_src);
 
-
+/**
+ * create a new sseil
+ * @param[in] len length of the sseil
+ * @return the new sseil
+ */
 TSP_sample_symbol_extended_info_list_t*
 TSP_SSEIList_new(int32_t len);
 
+/**
+ * destruct an sseil
+ * @param[in] ssei_list  sseil to destruct
+ * @return  TSP_STATUS_OK if ok
+ */
 int32_t
 TSP_SSEIList_delete(TSP_sample_symbol_extended_info_list_t** ssei_list);
 

@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/common/tsp_encoder.h,v 1.2 2006-04-07 10:37:17 morvan Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/common/tsp_encoder.h,v 1.3 2006-04-25 21:15:05 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -41,7 +41,14 @@ Purpose   :  Implementation for the functions used to encode the type
 #include <tsp_abs_types.h>
 #include <tsp_rpc.h>
 
-
+/**
+ * @defgroup TSP_CommonLib_Encode Sample Symbol Information Handling
+ * The Sample Symbol Information Handling part of the @ref TSP_CommonLib
+ * regroup a set of functions which should be used to encode
+ * the Sample Symbol Information object and list of them.
+ * @ingroup TSP_CommonLib
+ * @{
+ */
 
 /**
  * Generic function to encode data
@@ -192,5 +199,7 @@ uint32_t TSP_data_channel_user_encoder(void* v_user,uint32_t dimension,  char* o
  * @return The data type encoder function
  */
 TSP_data_encoder_t TSP_data_channel_get_encoder(TSP_datatype_t type);
+
+/** @} */
 
 #endif /* _TSP_ENCODER_H */

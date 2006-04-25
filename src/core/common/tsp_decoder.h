@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/common/tsp_decoder.h,v 1.2 2006-04-07 10:37:17 morvan Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/common/tsp_decoder.h,v 1.3 2006-04-25 21:15:05 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -55,6 +55,15 @@ Purpose   :  Implementation for the functions used to decode the data received
 #define TSP_SIZEOF_ENCODED_CHAR RNDUP(sizeof(char))
 #define TSP_SIZEOF_ENCODED_UCHAR RNDUP(sizeof(uint8_t))
 #define TSP_SIZEOF_ENCODED_USER RNDUP(sizeof(uint8_t))
+
+/**
+ * @defgroup TSP_CommonLib_Decode Sample Symbol Information Handling
+ * The Sample Symbol Information Handling part of the @ref TSP_CommonLib
+ * regroup a set of functions which should be used to decode
+ * the Sample Symbol Information object and list of them.
+ * @ingroup TSP_CommonLib
+ * @{
+ */
 
 /**
  * Generic function to decode data
@@ -200,7 +209,7 @@ TSP_data_decoder_t TSP_data_channel_get_decoder(TSP_datatype_t type);
  */
 int32_t TSP_data_channel_get_encoded_size(TSP_datatype_t type);
 
-
+/** @} */
 
 #endif /* _TSP_DECODER_H */
 
