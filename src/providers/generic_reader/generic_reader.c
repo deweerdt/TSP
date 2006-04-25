@@ -1,6 +1,6 @@
 /*
 
-$Id: generic_reader.c,v 1.2 2006-04-23 15:37:48 erk Exp $
+$Id: generic_reader.c,v 1.3 2006-04-25 22:21:37 erk Exp $
 
 -----------------------------------------------------------------------
  
@@ -43,3 +43,93 @@ Purpose   : Implementation for the generic reader
 #include <macsim_fmt.h>
 #include <tsp_common.h>
 #include <tsp_provider_init.h>
+
+FmtHandler_T* genreader_createFmHandler(char* format_file,char* file_name)
+{
+	FmtHandler_T* fmt_handler;
+		
+	if(0==strcmp(format_file,FICHIER_MACSIM))
+   {
+		 macsim_createHandler(&fmt_handler);					
+   }
+   else
+   {
+		if(0==strcmp(format_file,FICHIER_BACH))
+	   	fmt_handler=NULL;			
+		else
+	   	fmt_handler=NULL;
+   }
+	
+	fmt_handler->fileName=(char*)malloc(strlen(file_name) + 1);
+	strcpy(fmt_handler->fileName,file_name);
+	
+	return(fmt_handler);
+}
+
+/* create generique handler for treatement file
+*/
+GenericReader_T* genreader_create(FmtHandler_T * fmtHandler)
+{
+
+  GenericReader_T* genreader;
+
+  genreader=(GenericReader_T*)malloc(sizeof(GenericReader_T));
+  genreader->handler=fmtHandler;
+
+	
+  return(genreader);
+	
+}
+
+/* open file
+*/
+int32_t genreader_open(GenericReader_T* genreader)
+{
+	/* open the file*/
+	genreader->handler->file=genreader->handler->open_file(genreader->handler->fileName);
+	
+	return(TSP_STATUS_OK);
+	
+}
+
+/* first read for count sybol number
+*/
+int32_t genreader_read_header(GenericReader_T* genreader)
+{
+
+	genreader->handler->read_header(genreader,JUSTCOUNT_SIZE);
+		
+	return(TSP_STATUS_OK);
+	
+}
+
+
+/*second read for create symbol
+*/
+int32_t genreader_read_header_create_symbole(GenericReader_T* genreader)
+{
+
+        genreader->ssi_list=TSP_SSIList_new(genreader->nbsymbol);
+
+	genreader->ssei_list=TSP_SSEIList_new(genreader->nbsymbol);
+
+	genreader->handler->read_header(genreader,ADDSYMBOLE);
+	
+	return(TSP_STATUS_OK);
+	
+}
+
+
+int32_t genreader_finalize(GenericReader_T* genreader)
+{
+	genreader->handler->close_file(genreader->handler->file);
+	free(genreader->handler->fileName);
+	free(genreader->handler);
+
+	TSP_SSIList_finalize(genreader->ssi_list);
+
+        TSP_SSEIList_finalize(genreader->ssei_list);
+
+	free(genreader);
+	return(TSP_STATUS_OK);
+}

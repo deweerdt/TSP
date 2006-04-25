@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_common_ssi.h,v 1.6 2006-04-25 21:15:05 erk Exp $
+$Id: tsp_common_ssi.h,v 1.7 2006-04-25 22:21:37 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -85,7 +85,7 @@ TSP_SSI_new(const char* name,
 /**
  * delete the data.
  * @param[in] ssi the symbols list to destruct
- * return  TSP_STATUS_OK ik ok
+ * return  TSP_STATUS_OK if ok
  */
 int32_t
 TSP_SSI_delete(TSP_sample_symbol_info_t** ssi);
@@ -103,7 +103,7 @@ TSP_SSI_delete(TSP_sample_symbol_info_t** ssi);
  * @param[in] nelem the number of symbol to obtain
  * @param[in] period the symbol perid
  * @param[in] phase the symbol phase
- * return  TSP_STATUS_OK ik ok
+ * return  TSP_STATUS_OK if ok
  */
 int32_t
 TSP_SSI_initialize(TSP_sample_symbol_info_t* ssi,
@@ -121,7 +121,7 @@ TSP_SSI_initialize(TSP_sample_symbol_info_t* ssi,
 /**
  * delete the data and his contain.
  * @param[in] ssi the symbols list to destruct
- * return  TSP_STATUS_OK ik ok
+ * return  TSP_STATUS_OK if ok
  */
 int32_t
 TSP_SSI_finalize(TSP_sample_symbol_info_t* ssi);
@@ -144,7 +144,7 @@ TSP_SSI_initialize_default(TSP_sample_symbol_info_t* ssi);
  * @param[in,out] ssi  the symbol to request
  * @param[in] name the symbol name
  * @param[in] phase the symbol phase
- * return  TSP_STATUS_OK ik ok
+ * return  TSP_STATUS_OK if ok
  */
 int32_t 
 TSP_SSI_initialize_request_minimal(TSP_sample_symbol_info_t* ssi,
@@ -160,7 +160,7 @@ TSP_SSI_initialize_request_minimal(TSP_sample_symbol_info_t* ssi,
  * @param[in] nelem the number of symbol to obtain
  * @param[in] period the symbol perid
  * @param[in] phase the symbol phase
- * return  TSP_STATUS_OK ik ok
+ * return  TSP_STATUS_OK if ok
  */
 int32_t 
 TSP_SSI_initialize_request_full(TSP_sample_symbol_info_t* ssi,
@@ -179,7 +179,7 @@ TSP_SSI_initialize_request_full(TSP_sample_symbol_info_t* ssi,
  *                On entry should  be a non NULL pointer to  TSP_sample_symbol_info_t.
  *                On return contains the .
  * @param[in]     src_ssi
- * return  TSP_STATUS_OK ik ok 
+ * return  TSP_STATUS_OK if ok 
  */
 int32_t
 TSP_SSI_copy(TSP_sample_symbol_info_t* dst_ssi, 
@@ -197,7 +197,7 @@ TSP_SSIList_new(int32_t nbSSI);
 /**
  * delete the data.
  * @param[in] ssi the symbols list to destruct
- * return  TSP_STATUS_OK ik ok
+ * return  TSP_STATUS_OK if ok
  */
 int32_t
 TSP_SSIList_delete(TSP_sample_symbol_info_list_t** ssi);
@@ -219,7 +219,7 @@ TSP_SSIList_initialize(TSP_sample_symbol_info_list_t* ssil,
 /**
  * delete the contain of the data.
  * @param[in] ssil the symbols list to destruct
- * return  TSP_STATUS_OK ik ok
+ * return  TSP_STATUS_OK if ok
  */
 int32_t 
 TSP_SSIList_finalize(TSP_sample_symbol_info_list_t* ssil);
@@ -228,7 +228,7 @@ TSP_SSIList_finalize(TSP_sample_symbol_info_list_t* ssil);
  * Copy a list of symbols from src_symbols to dst_ssil.
  * @param[out] dst_ssil the symbols list copy destination
  * @param[in] src_ssil the symbols list copy source
- * return  TSP_STATUS_OK ik ok
+ * return  TSP_STATUS_OK if ok
  */
 int32_t
 TSP_SSIList_copy(TSP_sample_symbol_info_list_t* dst_ssil, 

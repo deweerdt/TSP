@@ -1,6 +1,6 @@
 /*
 
-$Id: generic_reader_main.c,v 1.3 2006-04-24 21:05:34 erk Exp $
+$Id: generic_reader_main.c,v 1.4 2006-04-25 22:21:37 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -77,6 +77,10 @@ int main(int argc, char *argv[])
     opt_ok  = 0;
     retcode = -1;
     fprintf(stderr,"%s: Insufficient number of options\n",argv[0]);
+    fprintf(stderr,"Usage: %s -x=<source_file> [-f <format]>\n", argv[0]);
+    fprintf(stderr,"   -x   determine the source file\n");
+    fprintf(stderr,"   -f   specifying the format of source file\n");
+    return -1;
   }
 
   my_argc= argc+2;

@@ -1,6 +1,6 @@
 /*
 
-$Id: generic_reader.h,v 1.3 2006-04-23 15:37:48 erk Exp $
+$Id: generic_reader.h,v 1.4 2006-04-25 22:21:37 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -56,8 +56,8 @@ Purpose   : Allow the output of a datapool of symbols from generic file
 #define ADDSYMBOLE  0
 
 
-#define FICHIER_MACSIM "f"
-#define FICHIER_BACH "b"
+#define FICHIER_MACSIM "macsim"
+#define FICHIER_BACH "bach"
 
 /*typedef int   (*add_symbol_ft)(char* symname, int* dimension, int dim_len, int type, char* unit);*/
 
@@ -81,7 +81,7 @@ typedef struct FmtHandler {
 #define END_SAMPLE_STREAM    12
 
 typedef struct GenericReader {
-	  int32_t          nbSymbol;
+	  int32_t          nbsymbol;
 	  int32_t          max_size_raw_value;
 	  FmtHandler_T*    handler;
           
@@ -105,12 +105,11 @@ FmtHandler_T* genreader_createFmHandler(char* format_file,char* file_name);
 /**
  * create the generic reader
  * 
- * @param[out] genreader the generic reader to intialize
  * @param[in] fmtHandler the file handler
  *                      
- * @return TSP_STATUS_OK if OK
+ * @return the generic reader
  */
-int32_t genreader_create(GenericReader_T** genreader,FmtHandler_T* fmtHandler);
+GenericReader_T* genreader_create(FmtHandler_T * fmtHandler);
 
 /**
  * open the file to treat
@@ -146,16 +145,6 @@ int32_t genreader_read_header_create_symbole(GenericReader_T* genreader);
  * @return TSP_STATUS_OK if OK
  */
 int32_t genreader_finalize();
-
-/**
- * Initialize Blackboard TSP provider Library for generic reader.
- * 
- * @param[in] TSPRunMode running mode, 0 = non blocking, 1 = blocking (never return).
- *
- * @return E_OK if initialization is successfull  E_NOK otherwise.
- */		   
-int32_t 
-genreader_run(int TSPRunMode);
 
 /** @} */
 

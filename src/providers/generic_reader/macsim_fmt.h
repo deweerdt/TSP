@@ -1,6 +1,6 @@
 /*
 
-$Id: macsim_fmt.h,v 1.3 2006-04-23 15:37:48 erk Exp $
+$Id: macsim_fmt.h,v 1.4 2006-04-25 22:21:37 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -48,6 +48,8 @@ Purpose   : function for file with format of macsim
 
 #define CARACTERE_TAB        '	'
 #define CARACTERE_BLANC      ' '
+#define CARACTERE_RETURN     '\r'
+#define CARACTERE_ENDLINE    '\n'
 
 #define MAX_DATA_LEN         100
 

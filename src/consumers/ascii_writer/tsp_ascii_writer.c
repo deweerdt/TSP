@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer.c,v 1.21 2006-04-24 22:17:47 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer.c,v 1.22 2006-04-25 22:21:37 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -681,7 +681,8 @@ tsp_ascii_writer_start(FILE* sfile, int32_t nb_sample_max_infile, OutputFileForm
 	strncpy(charbuf,symbols->TSP_sample_symbol_info_list_t_val[symbol_index].name,MAX_VAR_NAME_SIZE);
 
 
-	if (!(strcmp(ext_info_profil->value,"1")))
+	/*test if dimension is 1 or more*/
+	if (strcmp(ext_info_profil->value,"1"))
 	{
 
 	    array_label=new_array_label(charbuf,ext_info_profil->value,ext_info_ordre->value,0);
@@ -705,6 +706,7 @@ tsp_ascii_writer_start(FILE* sfile, int32_t nb_sample_max_infile, OutputFileForm
 	    /*
 	     * write variable name with 1 dimension in this array
 	     */
+	    strcat(charbuf,"\t");
 	    *(tab_colonne + symbol_index)=(char*)malloc(strlen(charbuf)+1);
 	    strcpy(*(tab_colonne + symbol_index),charbuf);
 	    
@@ -919,15 +921,15 @@ char* new_array_label(const char* libelle,const char* profil, const char* ordre,
   uint32_t dimension;
   uint32_t i;
   char *chaine_lib;
-  char *nouveau_libelle;
-  char *nouveau_profil;
-  char* reponse;
+  char *nouveau_libelle=NULL;
+  char *nouveau_profil=NULL;
+  char* reponse=NULL;
   char indice[10];
 
 
   if(!recursif)
   {
-    chaine_lib=(char*)calloc(1,strlen(libelle)+2);
+    chaine_lib=(char*)calloc(sizeof(char),strlen(libelle)+2);
     sprintf(chaine_lib,"%s(",libelle);
   }
   else
@@ -945,17 +947,17 @@ char* new_array_label(const char* libelle,const char* profil, const char* ordre,
 
     for(i=0;i<dimension;++i)
     {
-      sprintf(indice,"%d",dimension+1); 
+      sprintf(indice,"%d",i+1); 
 
       if(NULL==reponse)
       {
-	reponse=(char*)calloc(1,strlen(chaine_lib)+strlen(indice)+3);
-        sprintf(reponse,"%s%s) ",chaine_lib,indice);
+	reponse=(char*)calloc(sizeof(char),strlen(chaine_lib)+strlen(indice)+3);
+        sprintf(reponse,"%s%s)\t",chaine_lib,indice);
       }
       else
       {
-	reponse=(char*)realloc(reponse,strlen(reponse)+strlen(chaine_lib)+strlen(indice)+3);
-	sprintf(&(reponse[strlen(reponse)+1]),"%s%s) ",chaine_lib,indice);
+	reponse=(char*)realloc(reponse,(strlen(reponse)+strlen(chaine_lib)+strlen(indice)+3)*sizeof(char));
+	sprintf(&(reponse[strlen(reponse)]),"%s%s)\t",chaine_lib,indice);
       }
 
     }
@@ -965,7 +967,7 @@ char* new_array_label(const char* libelle,const char* profil, const char* ordre,
   {
     indice_etoile=(int32_t)strstr(profil,"*");
    
-    nouveau_profil=(char*)calloc(1,strlen(&(profil[indice_etoile+1]))+1);
+    nouveau_profil=(char*)calloc(sizeof(char),strlen(&(profil[indice_etoile+1]))+1);
     strcpy(nouveau_profil,&(profil[indice_etoile+1]));
 
     dimension=(int32_t)atoi(profil);
@@ -976,7 +978,7 @@ char* new_array_label(const char* libelle,const char* profil, const char* ordre,
     {
       sprintf(indice,"%d",dimension+1); 
 
-      nouveau_libelle=(char*)calloc(1,strlen(chaine_lib)+strlen(indice)+2);
+      nouveau_libelle=(char*)calloc(sizeof(char),strlen(chaine_lib)+strlen(indice)+2);
       
       sprintf(nouveau_libelle,"%s%s,",chaine_lib,indice);
 

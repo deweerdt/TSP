@@ -1,6 +1,6 @@
 /*
 
-$Id: macsim_fmt.c,v 1.2 2006-04-23 15:37:48 erk Exp $
+$Id: macsim_fmt.c,v 1.3 2006-04-25 22:21:37 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -40,6 +40,7 @@ Purpose   : Manipulation function of macsim file
 #include <stdlib.h>
 #include <string.h>
 #include <malloc.h>
+#include <ctype.h>
 
 #include <bb_core.h>
 #include <tsp_rpc.h>
@@ -56,37 +57,44 @@ char *str_strip (const char *string)
 
    if (string)
    {
-      strip = malloc (sizeof (*strip) * (strlen (string) + 1));
-      if (strip)
-      {
-         int i, j;
-         int ps = 0;
+     int i,j,k=0;
 
-         for (i = 0, j = 0; string[i]; i++)
-         {
-            if (' '==string[i])
-            {
-               if (!ps)
-               {
-                  strip[j] = string[i];
-                  ps = 1;
-                  j++;
-               }
-            }
-            else
-            {
-               strip[j] = string[i];
-               ps = 0;
-               j++;
-            }
-         }
-      }
-      else
-      {
-         fprintf (stderr, "Not enough memory\n");
-         return NULL;
-      }
+     strip =(char*) malloc (sizeof (char) * (strlen (string) + 1));
+
+     /*find first charactere*/
+     for(i=0;i<strlen(string);++i)
+     {
+       if(!(isspace(string[i])))
+       {
+	 break;
+       }
+     }
+     
+     /*find last character*/
+     for(j=strlen(string)-1;j>0;--j)
+     {
+       if(!(isspace(string[j])))
+       {
+	 break;
+       }
+     }
+
+     /*copy*/
+     for(;i<=j;++i)
+     {
+
+       strip[k]=string[i];
+
+       ++k;
+     }
+     strip[k]='\0';
    }
+   else
+   {
+     fprintf (stderr, "Not enough memory\n");
+     return NULL;
+   }
+
    return strip;
 }
 
@@ -109,7 +117,7 @@ uint32_t macsim_dimension_data(char* dimension_var)
 	char 	 nombre[10];
 	
 	
-	dimension_var=str_strip(dimension_var);
+	str_strip_inplace(dimension_var);
 	
 	for(i=0;i<strlen(dimension_var);++i)
 	{
@@ -128,6 +136,11 @@ uint32_t macsim_dimension_data(char* dimension_var)
 			++indice;
 		}
 	}
+
+	nombre[indice]='\0';
+	valeur=(uint32_t)atoi(nombre);
+	total_valeur*=valeur;
+	
 	return(total_valeur);
 	
 }
@@ -207,7 +220,7 @@ int32_t macsim_read_header(GenericReader_T* genreader, int32_t justcount)
 		
 		if(JUSTCOUNT_SIZE==justcount)
 		{
-		  genreader->nbSymbol=0;
+		  genreader->nbsymbol=0;
 		  genreader->max_size_raw_value=0;
 		}
 		else
@@ -246,7 +259,7 @@ int32_t macsim_read_header(GenericReader_T* genreader, int32_t justcount)
 				*/
 				pointeur_buffer_bis=strchr((pointeur_buffer+1),':');
 				*pointeur_buffer_bis='\0';
-				strcpy(dimension_var,pointeur_buffer);
+				strcpy(dimension_var,(pointeur_buffer+1));
 				
 				/*calculate the dimension of the variable (si 2*3*5 = 30)
 				*/
@@ -256,7 +269,7 @@ int32_t macsim_read_header(GenericReader_T* genreader, int32_t justcount)
 				*/
 				pointeur_buffer=strchr(pointeur_buffer_bis + 1,':');
 				*pointeur_buffer='\0';
-				strcpy(type_var,pointeur_buffer_bis);
+				strcpy(type_var,(pointeur_buffer_bis+1));
 				str_strip_inplace(type_var);
 
 				
@@ -281,7 +294,7 @@ int32_t macsim_read_header(GenericReader_T* genreader, int32_t justcount)
 					}
 
 					
-					genreader->nbSymbol+=1;
+					genreader->nbsymbol+=1;
 
 
 					
@@ -306,21 +319,21 @@ int32_t macsim_read_header(GenericReader_T* genreader, int32_t justcount)
 				  ssi[indice_symbol].type=macsim_type_data(type_var);
 
 				  ssi[indice_symbol].dimension=dimension;
+				  ssi[indice_symbol].nelem=dimension;
 
 				  ssi[indice_symbol].period=1;
 
 				  ssi[indice_symbol].phase=0;
 
 
-				  /*create the extended info of the symbol*/
-				  ssei[indice_symbol].provider_global_index=indice_symbol;
-
+				  /*test if extended info "unint" exist*/
 				  if(0!=strlen(unite_var))
 				  {
 				    ++nb_ext_info;
 				  }
 
-				  TSP_EIList_initialize(&(ssei[indice_symbol].info), nb_ext_info);
+				  /*create the extended info of the symbol*/
+				  TSP_SSEI_initialize(&(ssei[indice_symbol]), indice_symbol,nb_ext_info);
 
                                   TSP_EI_initialize(&(ssei[indice_symbol].info.TSP_extended_info_list_t_val[0]),"profile",dimension_var);
 
@@ -328,7 +341,7 @@ int32_t macsim_read_header(GenericReader_T* genreader, int32_t justcount)
 
 				  if(3==nb_ext_info)
 				  {
-				    TSP_EI_initialize(&(ssei[indice_symbol].info.TSP_extended_info_list_t_val[3]),"unit",unite_var);
+				    TSP_EI_initialize(&(ssei[indice_symbol].info.TSP_extended_info_list_t_val[2]),"unit",unite_var);
 				  }
 
 				  ++indice_symbol;
@@ -350,7 +363,9 @@ int32_t macsim_read(GenericReader_T* genreader,glu_item_t* item)
 {
 	char  	      data_var[LG_MAX_STRING_MACSIM];
 	uint32_t      indice_data=0,
-	              rep=END_SAMPLE_STREAM;
+	              rep=EOF;
+	uint8_t       continuer=1;
+	
 
 	TSP_sample_symbol_info_list_t  ssi_list;
 
@@ -360,99 +375,110 @@ int32_t macsim_read(GenericReader_T* genreader,glu_item_t* item)
 	if(NULL!=genreader->handler->file)
 	{
 
-	  memset(data_var,'\0',LG_MAX_STRING_MACSIM);
-
-	  while((END_SAMPLE_STREAM==(rep=read_data_file(genreader->handler->file,data_var))) && 
+	  while( continuer  && 
                 (indice_data<ssi_list.TSP_sample_symbol_info_list_t_val[item->provider_global_index].dimension))
 	  {
-	    rep=read_data_file(genreader->handler->file,data_var);
 
-	    if(0==indice_data)
-	    {
-
-	      /*TYPE_CHAR or TYPE_UCHAR is a  string of  LG_MAX_STRING_MACSIM length */
-	      if( (TSP_TYPE_CHAR==ssi_list.TSP_sample_symbol_info_list_t_val[item->provider_global_index].type)
-		  || (TSP_TYPE_UCHAR==ssi_list.TSP_sample_symbol_info_list_t_val[item->provider_global_index].type) )
-	      {
-		item->size=ssi_list.TSP_sample_symbol_info_list_t_val[item->provider_global_index].dimension*LG_MAX_STRING_MACSIM;
-	      }
-	      else
-	      {
-		item->size=ssi_list.TSP_sample_symbol_info_list_t_val[item->provider_global_index].dimension;
-
-	      }
-	     
-	      item->size*=tsp_type_size[ssi_list.TSP_sample_symbol_info_list_t_val[item->provider_global_index].type];
-
-	     
-
-	    }
-
-	    switch(ssi_list.TSP_sample_symbol_info_list_t_val[item->provider_global_index].type) 
-	    {
-
-	      case TSP_TYPE_DOUBLE :
-		load_double(data_var,item->raw_value,indice_data);
-		break;
-				       
-	      case TSP_TYPE_FLOAT :
-		load_float(data_var,item->raw_value,indice_data);
-		break;
-    
-	      case TSP_TYPE_INT8 :
-		load_int8(data_var,item->raw_value,indice_data);
-		break;
-    
-	      case TSP_TYPE_INT16:
-		load_int16(data_var,item->raw_value,indice_data);
-		break;
-
-	      case TSP_TYPE_INT32 :
-		load_int32(data_var,item->raw_value,indice_data);
-		break;
-      
-	      case TSP_TYPE_INT64 :
-		load_int64(data_var,item->raw_value,indice_data);
-		break;
-    
-	      case TSP_TYPE_UINT8:
-		load_uint8(data_var,item->raw_value,indice_data);
-		break;
-    
-	      case TSP_TYPE_UINT16:
-		load_uint16(data_var,item->raw_value,indice_data);
-		break;
-    
-	      case TSP_TYPE_UINT32:
-		load_uint32(data_var,item->raw_value,indice_data);
-		break;
-    
-	      case TSP_TYPE_UINT64:
-		load_uint64(data_var,item->raw_value,indice_data);
-		break;
-    
-	      case TSP_TYPE_CHAR:
-		load_char(data_var,item->raw_value,indice_data);
-		break;
-    
-	      case TSP_TYPE_UCHAR:
-		load_uchar(data_var,item->raw_value,indice_data);
-		break;
-    
-	      case TSP_TYPE_RAW:
-		load_type_raw(data_var,item->raw_value,indice_data);
-		break;
-    
-	      default:
-		break;
-	    }
-
-	    ++indice_data;
 	    memset(data_var,'\0',LG_MAX_STRING_MACSIM);
+	    rep=read_data_file(genreader->handler->file,data_var);
+              
+	    if(EOF!=rep)
+	    {
+	      /*end of line*/
+	      if(END_SAMPLE_SET==rep)
+	      {
+		continuer=0;
+	      }
+
+	      if(0==indice_data)
+	      {
+
+		/*TYPE_CHAR or TYPE_UCHAR is a  string of  LG_MAX_STRING_MACSIM length */
+		if( (TSP_TYPE_CHAR==ssi_list.TSP_sample_symbol_info_list_t_val[item->provider_global_index].type)
+		    || (TSP_TYPE_UCHAR==ssi_list.TSP_sample_symbol_info_list_t_val[item->provider_global_index].type) )
+		{
+		  item->size=ssi_list.TSP_sample_symbol_info_list_t_val[item->provider_global_index].dimension*LG_MAX_STRING_MACSIM;
+		}
+		else
+		{
+		  item->size=ssi_list.TSP_sample_symbol_info_list_t_val[item->provider_global_index].dimension;
+
+		}
+	     
+		item->size*=tsp_type_size[ssi_list.TSP_sample_symbol_info_list_t_val[item->provider_global_index].type];
+
+	      }
+
+	      switch(ssi_list.TSP_sample_symbol_info_list_t_val[item->provider_global_index].type) 
+	      {
+
+	        case TSP_TYPE_DOUBLE :
+		  load_double(data_var,item->raw_value,indice_data);
+		  break;
+				       
+	        case TSP_TYPE_FLOAT :
+		  load_float(data_var,item->raw_value,indice_data);
+		  break;
+    
+	        case TSP_TYPE_INT8 :
+		  load_int8(data_var,item->raw_value,indice_data);
+		  break;
+    
+	        case TSP_TYPE_INT16:
+		  load_int16(data_var,item->raw_value,indice_data);
+		  break;
+
+	        case TSP_TYPE_INT32 :
+		  load_int32(data_var,item->raw_value,indice_data);
+		  break;
+      
+	        case TSP_TYPE_INT64 :
+		  load_int64(data_var,item->raw_value,indice_data);
+		  break;
+    
+	        case TSP_TYPE_UINT8:
+		  load_uint8(data_var,item->raw_value,indice_data);
+		  break;
+    
+	        case TSP_TYPE_UINT16:
+		  load_uint16(data_var,item->raw_value,indice_data);
+		  break;
+    
+	        case TSP_TYPE_UINT32:
+		  load_uint32(data_var,item->raw_value,indice_data);
+		  break;
+    
+	        case TSP_TYPE_UINT64:
+		  load_uint64(data_var,item->raw_value,indice_data);
+		  break;
+    
+	        case TSP_TYPE_CHAR:
+		  load_char(data_var,item->raw_value,indice_data);
+		  break;
+    
+	        case TSP_TYPE_UCHAR:
+		  load_uchar(data_var,item->raw_value,indice_data);
+		  break;
+    
+	        case TSP_TYPE_RAW:
+		  load_type_raw(data_var,item->raw_value,indice_data);
+		  break;
+    
+	        default:
+		  break;
+	      }
+
+	      ++indice_data;
+	    
+	    }
+	    else
+	    {
+	      continuer=0;
+	    }
+
 	  }
-	  return(rep);				
 	}
-	return(EOF);
+         return(rep);
 }
 
 
@@ -477,67 +503,74 @@ int32_t read_data_file(FILE *fic,char *data_var)
 {
 	char	      caractere_lu;
 	uint32_t      i=0;
+	uint8_t       begin_data=0;
 	             
 	while(EOF!=(caractere_lu=(char)fgetc(fic)))
 	{
-	  if ('\0'!=caractere_lu)
+
+	  if(!begin_data)
 	  {
-	    if (CARACTERE_TAB!= caractere_lu)
+	    if(!isspace(caractere_lu))
 	    {
-	      if (CARACTERE_BLANC!=caractere_lu)
-	      {
-		data_var[i]=caractere_lu;
-		++i;
-	      }
+	      begin_data=1;
+	      data_var[i]=caractere_lu;
+	      ++i;
 	    }
-	    else
-	    {
-	      data_var[i]='\0'; 
-	      return END_SAMPLE_STREAM;
-	    }		
+	      
 	  }
 	  else
 	  {
-	    data_var[i]='\0';	
-	    return END_SAMPLE_SET;	
+	    if(isspace(caractere_lu))
+	    {
+	      if(CARACTERE_BLANC!=caractere_lu)
+	      {
+		if(CARACTERE_TAB==caractere_lu)
+		{
+		  data_var[i]='\0'; 
+		  return END_SAMPLE_STREAM;
+		}
+		else
+		{
+		  data_var[i]='\0';	
+		  return END_SAMPLE_SET;
+		}
+	      }
+	    }
+	    data_var[i]=caractere_lu;
+	    ++i;
 	  }
 	}
-		
 	return(EOF);
 }
 
 int32_t load_double(char* data_var,void* raw_value,const uint32_t indice_data)
 {
   double *tab;
-  char** rep;
+  char   *rep;
 
   tab=(double*)raw_value;
-  tab[indice_data]=strtod(data_var,rep);
+  tab[indice_data]=strtod(data_var,&rep);
 
-  if(data_var==*rep || '\0'!=**rep)
+  if(data_var==rep || '\0'!=*rep)
   {
     STRACE_ERROR(("Error conversion double\n"));
     return TSP_STATUS_ERROR_UNKNOWN;
   }
 
-  
-
-
   return TSP_STATUS_OK;
-
 }
 
 int32_t load_float(char* data_var,void* raw_value,const uint32_t indice_data)
 {
   float *tab;
-  char** rep;
+  char  *rep;
 
   tab=(float*)raw_value;
 
   /*FIXME: use strtod because can't use strtof*/
-  tab[indice_data]=(float)strtod(data_var,rep);
+  tab[indice_data]=(float)strtod(data_var,&rep);
 
-  if(data_var==*rep || '\0'!=**rep)
+  if(data_var==rep || '\0'!=*rep)
   {
     STRACE_ERROR(("Error conversion float\n"));
     return TSP_STATUS_ERROR_UNKNOWN;
@@ -550,12 +583,12 @@ int32_t load_float(char* data_var,void* raw_value,const uint32_t indice_data)
 int32_t load_int8(char* data_var,void* raw_value,const uint32_t indice_data)
 {
   int8_t *tab;
-  char** rep;
+  char* rep;
 
   tab=(int8_t*)raw_value;
-  tab[indice_data]=(int8_t)strtol(data_var,rep, 10);
+  tab[indice_data]=(int8_t)strtol(data_var,&rep, 10);
 
-  if(data_var==*rep || '\0'!=**rep)
+  if(data_var==rep || '\0'!=*rep)
   {
     STRACE_ERROR(("Error conversion int8\n"));
     return TSP_STATUS_ERROR_UNKNOWN;
@@ -568,13 +601,13 @@ int32_t load_int8(char* data_var,void* raw_value,const uint32_t indice_data)
 int32_t load_int16(char* data_var,void* raw_value,const uint32_t indice_data)
 {
   int16_t *tab;
-  char** rep;
+  char* rep;
 
   tab=(int16_t*)raw_value;
  
-  tab[indice_data]=(int16_t)strtol(data_var,rep, 10);
+  tab[indice_data]=(int16_t)strtol(data_var,&rep, 10);
 
-  if(data_var==*rep || '\0'!=**rep)
+  if(data_var==rep || '\0'!=*rep)
   {
     STRACE_ERROR(("Error conversion int16\n"));
     return TSP_STATUS_ERROR_UNKNOWN;
@@ -587,13 +620,13 @@ int32_t load_int16(char* data_var,void* raw_value,const uint32_t indice_data)
 int32_t load_int32(char* data_var,void* raw_value,const uint32_t indice_data)
 {
   int32_t *tab;
-  char** rep;
+  char* rep;
 
   tab=(int32_t*)raw_value;
   
-  tab[indice_data]=(int32_t)strtol(data_var,rep, 10);
+  tab[indice_data]=(int32_t)strtol(data_var,&rep, 10);
 
-  if(data_var==*rep || '\0'!=**rep)
+  if(data_var==rep || '\0'!=*rep)
   {
     STRACE_ERROR(("Error conversion int32\n"));
     return TSP_STATUS_ERROR_UNKNOWN;
@@ -605,13 +638,13 @@ int32_t load_int32(char* data_var,void* raw_value,const uint32_t indice_data)
 int32_t load_int64(char* data_var,void* raw_value,const uint32_t indice_data)
 {
   int64_t *tab;
-  char** rep;
+  char* rep;
 
   tab=(int64_t*)raw_value;
   
-  tab[indice_data]=(int64_t)strtol(data_var,rep, 10);
+  tab[indice_data]=(int64_t)strtol(data_var,&rep, 10);
 
-  if(data_var==*rep || '\0'!=**rep)
+  if(data_var==rep || '\0'!=*rep)
   {
     STRACE_ERROR(("Error conversion int64\n"));
     return TSP_STATUS_ERROR_UNKNOWN;
@@ -623,13 +656,13 @@ int32_t load_int64(char* data_var,void* raw_value,const uint32_t indice_data)
 int32_t load_uint8(char* data_var,void* raw_value,const uint32_t indice_data)
 {
   uint8_t *tab;
-  char** rep;
+  char* rep;
 
   tab=(uint8_t*)raw_value;
   
-  tab[indice_data]=(uint8_t)strtol(data_var,rep, 10);
+  tab[indice_data]=(uint8_t)strtol(data_var,&rep, 10);
 
-  if(data_var==*rep || '\0'!=**rep)
+  if(data_var==rep || '\0'!=*rep)
   {
     STRACE_ERROR(("Error conversion uint8\n"));
     return TSP_STATUS_ERROR_UNKNOWN;
@@ -641,13 +674,13 @@ int32_t load_uint8(char* data_var,void* raw_value,const uint32_t indice_data)
 int32_t load_uint16(char* data_var,void* raw_value,const uint32_t indice_data)
 {
   uint16_t *tab;
-  char** rep;
+  char* rep;
 
   tab=(uint16_t*)raw_value;
   
-  tab[indice_data]=(uint16_t)strtol(data_var,rep, 10);
+  tab[indice_data]=(uint16_t)strtol(data_var,&rep, 10);
 
-  if(data_var==*rep || '\0'!=**rep)
+  if(data_var==rep || '\0'!=*rep)
   {
     STRACE_ERROR(("Error conversion uint16\n"));
     return TSP_STATUS_ERROR_UNKNOWN;
@@ -659,13 +692,13 @@ int32_t load_uint16(char* data_var,void* raw_value,const uint32_t indice_data)
 int32_t load_uint32(char* data_var,void* raw_value,const uint32_t indice_data)
 {
   uint32_t *tab;
-  char** rep;
+  char* rep;
 
   tab=(uint32_t*)raw_value;
   
-  tab[indice_data]=(uint32_t)strtol(data_var,rep, 10);
+  tab[indice_data]=(uint32_t)strtol(data_var,&rep, 10);
 
-  if(data_var==*rep || '\0'!=**rep)
+  if(data_var==rep || '\0'!=*rep)
   {
     STRACE_ERROR(("Error conversion uint32\n"));
     return TSP_STATUS_ERROR_UNKNOWN;
@@ -677,13 +710,13 @@ int32_t load_uint32(char* data_var,void* raw_value,const uint32_t indice_data)
 int32_t load_uint64(char* data_var,void* raw_value,const uint32_t indice_data)
 {
   uint64_t *tab;
-  char** rep;
+  char* rep;
 
   tab=(uint64_t*)raw_value;
   
-  tab[indice_data]=(uint64_t)strtol(data_var,rep, 10);
+  tab[indice_data]=(uint64_t)strtol(data_var,&rep, 10);
 
-  if(data_var==*rep || '\0'!=**rep)
+  if(data_var==rep || '\0'!=*rep)
   {
     STRACE_ERROR(("Error conversion uint64\n"));
     return TSP_STATUS_ERROR_UNKNOWN;

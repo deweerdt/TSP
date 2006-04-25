@@ -1,6 +1,6 @@
 /*
 
-$Id: glu_genreader.c,v 1.2 2006-04-23 20:06:48 erk Exp $
+$Id: glu_genreader.c,v 1.3 2006-04-25 22:21:37 erk Exp $
 
 -----------------------------------------------------------------------
  
@@ -35,6 +35,7 @@ Purpose   : Implementation for the glue_server
 -----------------------------------------------------------------------
 */
 #include <string.h>
+#include <unistd.h>
 
 #include <tsp_sys_headers.h>
 #include <tsp_glu.h>
@@ -42,7 +43,8 @@ Purpose   : Implementation for the glue_server
 #include <tsp_time.h>
 #include <tsp_datapool.h>
 #include <generic_reader.h>
-
+#include <tsp_common.h>
+#include <glu_genreader.h>
 
 #define _LIBUTIL_REENTRANT 1
 #include "libUTIL.h"
@@ -51,35 +53,27 @@ Purpose   : Implementation for the glue_server
 #define GLU_RES_FILE_ARG_NUMBER 1
 #define GLU_RES_WAIT_EOF       	3
 
-static int _wait_eof=0;
-static int _started = FALSE;
 static GLU_handle_t* gen_GLU = NULL;
 
-struct GLU_state_t
+int32_t 
+GENREADER_GLU_init(GLU_handle_t* this, int32_t fallback_argc, char* fallback_argv[])
 {
-  void* res_values;
-  int time_stamp;
-  int nbvar;
-  int use_dbl;
-  double freq;
-  d_rhandle h_res;
-  TSP_sample_symbol_info_t* sample_symbol_info_list_val;
-};
+  
+  /* FIXME may store fallback_argc / char* fallback_argv */
 
-typedef struct GLU_state_t GLU_state_t;
+  return TRUE;
 
-GLU_state_t glu_handler;
+  
+}
 
-
-int 
-GENREADER_GLU_start(GLU_handle_t* this)
+void* 
+GENREADER_GLU_run(void* arg)
 {
   int32_t rep;
-  uint32_t indice_pgi=0;
   glu_item_t  item;
+  GLU_handle_t* this = (GLU_handle_t*) arg;
 
   GenericReader_T* genreader = (GenericReader_T*) (this->private_data);
-
 
   item.time=0;
   item.provider_global_index=0;
@@ -91,14 +85,14 @@ GENREADER_GLU_start(GLU_handle_t* this)
   /* lire le fichier et envoyer au GLU */
   while(EOF!=(rep=genreader->handler->read_value(genreader,&item)))
   {
-
+    /*size renseigné dans le read_value*/
     TSP_datapool_push_next_item(this->datapool,&item);
   
     ++item.provider_global_index;
 
     if(END_SAMPLE_SET==rep)
     {
-      TSP_datapool_push_commit(this->datapool, item.time, state);  
+      TSP_datapool_push_commit(this->datapool, item.time, GLU_GET_NEW_ITEM);  
       ++item.time;
       item.provider_global_index=0;
       item.size=0;
@@ -106,19 +100,11 @@ GENREADER_GLU_start(GLU_handle_t* this)
     }
   }
 
+  TSP_datapool_push_commit(this->datapool, item.time, GLU_GET_EOF);  
+
   free(item.raw_value);
 
-  return TRUE;
-}
-
-GLU_handle_t*
-GENREADER_GLU_init(GLU_handle_t* this, int fallback_argc, char* fallback_argv[])
-{
-
-  char *error_info;
-
-  return GENREADER_GLU_get_instance(this, fallback_argc,fallback_argv,&error_info);
-  
+  return NULL;
 }
 
 
@@ -146,10 +132,9 @@ int32_t  GENREADER_GLU_get_sample_symbol_extended_info_list(GLU_handle_t* h_glu,
   GenericReader_T* genreader = (GenericReader_T*) (h_glu->private_data);
 
   assert(ssei_list);
-  
-  ssei_list->TSP_sample_symbol_extended_info_list_t_len=pgis_len;
-  ssei_list->TSP_sample_symbol_extended_info_list_t_val=
-    (TSP_sample_symbol_extended_info_t *)calloc(1,sizeof(TSP_sample_symbol_extended_info_t)*pgis_len);
+
+ 
+  TSP_SSEIList_initialize(ssei_list,pgis_len);
 
   for(i=0;i<genreader->ssei_list->TSP_sample_symbol_extended_info_list_t_len;++i)
   {
@@ -158,7 +143,7 @@ int32_t  GENREADER_GLU_get_sample_symbol_extended_info_list(GLU_handle_t* h_glu,
       if(genreader->ssei_list->TSP_sample_symbol_extended_info_list_t_val[i].provider_global_index==pgis[j])
       {
 
-	TSP_SSEI_copy(ssei_list->TSP_sample_symbol_extended_info_list_t_val[nb_info],
+	TSP_SSEI_copy(&(ssei_list->TSP_sample_symbol_extended_info_list_t_val[nb_info]),
 		      genreader->ssei_list->TSP_sample_symbol_extended_info_list_t_val[i]);
 	++nb_info;
 	break;
@@ -168,42 +153,37 @@ int32_t  GENREADER_GLU_get_sample_symbol_extended_info_list(GLU_handle_t* h_glu,
 
   }
     
-  return TRUE;
+  return TSP_STATUS_OK;
 }
 
-
-double GENREADER_GLU_get_base_frequency(GLU_handle_t* this)
-{
-  GLU_state_t* obj = &glu_handler;
-  /* Server is passive, frequency is computed in GLU_init */
-  return obj->freq;
-}
 
 GLU_handle_t* 
 GENREADER_GLU_get_instance(GLU_handle_t* this,
-		     int custom_argc,
-		     char* custom_argv[],
-		     char** error_info) {
+			   int custom_argc,
+			   char* custom_argv[],
+			   char** error_info) {
   
-  int ret = TRUE;
-  GLU_state_t* obj = &glu_handler;
-  int i;
-  double t1, t2;
-  int nbrec;  
-  char namev[RES_NAME_LEN];
-  char descv[RES_DESC_LEN];
   int  opt_ok=1;
   char c_opt;
+  char * input_filename;
+  char * format_file;
+  FmtHandler_T* fmt_handler;
+  GenericReader_T* genreader;
+  GLU_handle_t*    new_glu;
 
 
-  if (argc < 2) {
+  new_glu = GENREADER_GLU_create();
+
+
+  if (custom_argc < 2) {
     opt_ok  = 0;
-    retcode = -1;
-    fprintf(stderr,"%s: Insufficient number of options\n",argv[0]);
+    fprintf(stderr,"%s: Insufficient number of options\n",custom_argv[0]);   
   }
 
+  optind = 0;
+
   /* Analyse command line parameters */
-  c_opt = getopt(argc,argv,"x:f");
+  c_opt = getopt(custom_argc,custom_argv,"x:f:");
 
   if(opt_ok && EOF != c_opt)
   {
@@ -216,11 +196,11 @@ GENREADER_GLU_get_instance(GLU_handle_t* this,
       {
     	case 'x':
       		input_filename = strdup(optarg);
-      		fprintf(stdout,"%s: source file is <%s>\n",argv[0],input_filename);
+      		fprintf(stdout,"%s: source file is <%s>\n",custom_argv[0],input_filename);
       		break;
 	case 'f':
       		format_file = strdup(optarg);
-      		fprintf(stdout,"%s: format file is <%s>\n",argv[0],format_file);
+      		fprintf(stdout,"%s: format file is <%s>\n",custom_argv[0],format_file);
       		break;
     	case '?':
       		fprintf(stderr,"Invalid command line option(s), correct it and rerun\n");
@@ -230,7 +210,7 @@ GENREADER_GLU_get_instance(GLU_handle_t* this,
       		opt_ok = 0;
       		break;
       } /* end of switch */    
-      c_opt = getopt(argc,argv,"x:f");  
+      c_opt = getopt(custom_argc,custom_argv,"x:f:");  
     }
     while (opt_ok && (EOF != c_opt));
   }
@@ -241,22 +221,28 @@ GENREADER_GLU_get_instance(GLU_handle_t* this,
 	 
   if (!opt_ok) 
   {
-    	printf("Usage: %s -x=<source_file> [-f <format]>\n", argv[0]);
+    	printf("Usage: %s -x=<source_file> [-f <format]>\n", custom_argv[0]);
     	printf("   -x   determine the source file\n");
    	printf("   -f   specifying the format of source file\n");
     	return NULL;
   }
 
   fmt_handler=genreader_createFmHandler(format_file,input_filename);
-		
-  genreader_create(&(this->private_data),fmt_handler);	
-  genreader_open((GenericReader_T*)(this->private_data));	
-  genreader_read_header(generic_reader);	
-  genreader_read_header_create_symbole(generic_reader);
- 
-  return this;
+  /* Associate GLU with uit generic reader instance */
+  new_glu->private_data = genreader_create(fmt_handler);	
+  
+  genreader = (GenericReader_T*)  new_glu->private_data;
 
-} /* end of GLU_get_instance_default */
+  genreader_open(genreader);	
+  genreader_read_header(genreader);	
+  genreader_read_header_create_symbole(genreader);
+
+  new_glu->base_frequency= 1.0;  /* FIXME */
+ 
+  return new_glu;
+
+} /* end of GLU_get_instance */
+
 
 GLU_handle_t* GENREADER_GLU_create() {
   
@@ -265,10 +251,9 @@ GLU_handle_t* GENREADER_GLU_create() {
   
   gen_GLU->initialize         = &GENREADER_GLU_init;
   gen_GLU->get_ssi_list       = &GENREADER_GLU_get_sample_symbol_info_list;
-  gen_GLU->get_ssei_list       = &GENREADER_GLU_get_sample_symbol_extended_info_list;
+  gen_GLU-> get_ssei_list_fromPGI = &GENREADER_GLU_get_sample_symbol_extended_info_list;
   /* override default method */
-  gen_GLU->get_base_frequency = &GENREADER_GLU_get_base_frequency;
-  gen_GLU->start              = &GENREADER_GLU_start;
+  gen_GLU->run                = &GENREADER_GLU_run;
   /* FIXME seems that resreader should have been multi-instance but has never been? */
   gen_GLU->get_instance       = &GENREADER_GLU_get_instance;
 
