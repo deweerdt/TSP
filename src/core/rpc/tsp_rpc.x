@@ -1,6 +1,6 @@
 /* -*- idl -*-
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_rpc.x,v 1.36 2006-04-24 22:17:47 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_rpc.x,v 1.37 2006-04-25 21:05:49 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -135,12 +135,36 @@ enum TSP_status_t
 	 * Provided channel Id is invalid
 	 */
 	TSP_STATUS_ERROR_INVALID_CHANNEL_ID,
+	/**
+	 * Cannot instantiate a new GLU
+	 */
 	TSP_STATUS_ERROR_NO_MORE_GLU,
+	/**
+	 * Cannot create new TSP Session
+	 * Maximum reached.
+	 */
 	TSP_STATUS_ERROR_NO_MORE_SESSION,
+	/**
+	 * Cannot start the GLU 
+	 */
 	TSP_STATUS_ERROR_GLU_START,
+	/**
+	 * Cannot initialize GLU
+	 */
 	TSP_STATUS_ERROR_GLU_INITIALIZE,
+	/**
+	 * The logical ordering of TSP Request was
+	 * not respected. E.g. Request Sample Initialize
+	 * before Request Sample.
+	 */
 	TSP_STATUS_ERROR_BAD_REQUEST_ORDER,
+	/**
+	 * Cannot instantiate new Datapool.
+	 */
 	TSP_STATUS_ERROR_DATAPOOL_INSTANTIATE,
+	/**
+	 * Cannot create new thread.
+	 */
 	TSP_STATUS_ERROR_THREAD_CREATE
 };
 
