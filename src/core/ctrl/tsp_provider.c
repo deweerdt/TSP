@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_provider.c,v 1.50 2006-04-24 21:05:34 erk Exp $
+$Id: tsp_provider.c,v 1.51 2006-04-26 07:53:52 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -603,7 +603,7 @@ TSP_provider_private_run() {
       retcode = TSP_STATUS_ERROR_DATAPOOL_INSTANTIATE;
     }
     /* Start GLU now since it is an ACTIVE one */
-    if (firstGLU->start(firstGLU)) {
+    if (0!=firstGLU->start(firstGLU)) {
       STRACE_ERROR(("Cannot start GLU (ACTIVE case)"));
       retcode = TSP_STATUS_ERROR_GLU_START;
     }	

@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_glu.h,v 1.13 2006-04-24 19:53:32 erk Exp $
+$Id: tsp_glu.h,v 1.14 2006-04-26 07:53:52 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -251,9 +251,10 @@ typedef int32_t                (* GLU_init_ft              )(struct GLU_handle_t
  */
 typedef void*              (* GLU_run_ft               )(void* this);
 /**
- * Start the loop that will push data to datapool with push_next_item
- * 
- * @return status 
+ * Start push datapool GLU activity AS A SEPARATE thread.
+ * The start function should NOT block, the defaut implementation
+ * is to start a new thread running the 'GLU_run_ft' of the GLU. 
+ * @return 0 on success and other value on error.
  */
 typedef int32_t                (* GLU_start_ft             )(struct GLU_handle_t* this);
 /** 

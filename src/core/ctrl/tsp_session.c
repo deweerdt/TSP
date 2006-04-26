@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.c,v 1.29 2006-04-24 19:53:32 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.c,v 1.30 2006-04-26 07:53:52 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -516,7 +516,7 @@ TSP_session_create_data_sender_by_channel(channel_id_t channel_id) {
 	 * Note that multi-consumer PASSIVE GLU should protect themselves
 	 * against multiple start (this is the case of the default GLU_start_default)
 	 */
-	if (!(session->session_data->glu_h->start(session->session_data->glu_h))) {
+	if (0!=(session->session_data->glu_h->start(session->session_data->glu_h))) {
 	  retcode = TSP_STATUS_ERROR_GLU_START;
 	  STRACE_ERROR(("Unable to start GLU (PASSIVE case)"));
 	} else {
