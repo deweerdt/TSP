@@ -1,6 +1,6 @@
 /*
 
-$Id: macsim_fmt.c,v 1.3 2006-04-25 22:21:37 erk Exp $
+$Id: macsim_fmt.c,v 1.4 2006-04-27 00:13:15 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -240,7 +240,7 @@ int32_t macsim_read_header(GenericReader_T* genreader, int32_t justcount)
 				continuer=STOP;
 				
 				/*read thle column title*/
-				fgets(buffer,MAX_BUFFER_MACSIM,genreader->handler->file);
+				/*fgets(buffer,MAX_BUFFER_MACSIM,genreader->handler->file);*/
 
 			}
 			else

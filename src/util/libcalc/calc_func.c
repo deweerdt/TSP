@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libcalc/calc_func.c,v 1.4 2006-04-04 14:26:04 morvan Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libcalc/calc_func.c,v 1.5 2006-04-27 00:13:15 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -124,4 +124,4 @@ char calc_func_char (int index, double my_time)
 
   }
   return ret;
-}	    
+}	

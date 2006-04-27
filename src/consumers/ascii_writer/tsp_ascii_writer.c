@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer.c,v 1.22 2006-04-25 22:21:37 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer.c,v 1.23 2006-04-27 00:13:15 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -682,7 +682,7 @@ tsp_ascii_writer_start(FILE* sfile, int32_t nb_sample_max_infile, OutputFileForm
 
 
 	/*test if dimension is 1 or more*/
-	if (strcmp(ext_info_profil->value,"1"))
+	if((NULL==ext_info_profil)?0:strcmp(ext_info_profil->value,"1"))
 	{
 
 	    array_label=new_array_label(charbuf,ext_info_profil->value,ext_info_ordre->value,0);
@@ -711,7 +711,6 @@ tsp_ascii_writer_start(FILE* sfile, int32_t nb_sample_max_infile, OutputFileForm
 	    strcpy(*(tab_colonne + symbol_index),charbuf);
 	    
 	}
-
 
 	fprintf(sfile,"%s : %s : %s : %s \n", 
 		charbuf, 
