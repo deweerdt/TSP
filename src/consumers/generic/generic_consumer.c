@@ -1,6 +1,6 @@
 /*
 
-$Id: generic_consumer.c,v 1.14 2006-04-24 22:17:47 erk Exp $
+$Id: generic_consumer.c,v 1.15 2006-04-27 00:00:33 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -244,7 +244,7 @@ generic_consumer(generic_consumer_request_t* req) {
     
     if (TSP_STATUS_OK==TSP_consumer_request_close(req->the_provider)) {
       fprintf(req->stream,
-	      "Request Close successfully sent to :%s\n",
+	      "Request Close successfully sent to <%s>\n",
 	      TSP_consumer_get_connected_name(req->the_provider));
     } else {
       generic_consumer_logMsg(req->stream,
