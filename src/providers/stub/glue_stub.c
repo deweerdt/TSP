@@ -1,6 +1,6 @@
 /*
 
-$Id: glue_stub.c,v 1.22 2006-04-23 20:06:48 erk Exp $
+$Id: glue_stub.c,v 1.23 2006-04-27 00:11:44 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -59,9 +59,10 @@ static time_stamp_t my_time = 0;
 static GLU_handle_t* stub_GLU = NULL;
 static int32_t taille_max_symbol=0;
 
+
 void* STUB_GLU_thread(void* athis)
 {
-  int i, symbols_nb, *ptr_index;
+  int i,j, symbols_nb, *ptr_index;
   tsp_hrtime_t current_time;
   glu_item_t item;
   double memo_val[GLU_MAX_SYMBOLS_DOUBLE]; /*for debug informatin */
@@ -75,10 +76,12 @@ void* STUB_GLU_thread(void* athis)
   /* infinite loop for symbols generation */
   while(1)
     {
+
       /* Must be call at each step in case of new samples wanted */
       TSP_datapool_get_reverse_list(this->datapool,&symbols_nb, &ptr_index); 
       for(i = 0 ; i <  symbols_nb ; i++)
 	{
+	 
 	  int index=ptr_index[i];
 	  if(my_time%X_sample_symbol_info_list_val[index].period == 0)
 	    {
@@ -86,6 +89,10 @@ void* STUB_GLU_thread(void* athis)
  
 	      item.time = my_time;
 	      item.provider_global_index = index;
+	      
+	      for(j=0;j<X_sample_symbol_info_list_val[index].dimension;++j)
+	      {
+	       
 
 	      switch(X_sample_symbol_info_list_val[index].type)
 	      {
@@ -101,12 +108,12 @@ void* STUB_GLU_thread(void* athis)
 		if (index!=0)
 		  *((float*)item.raw_value) = 1.102;  /* (float)calc_func(index, my_time);*/
 		else
-		  *((float*)item.raw_value) = (float)(my_time) / (float)(TSP_STUB_FREQ);
+		  *((float*)item.raw_value) =  (float)(my_time) / (float)(TSP_STUB_FREQ);
 		break;
 	
 	      case TSP_TYPE_INT8:
 		if (index!=0)
-		  *((int8_t*)item.raw_value) = 2; /*  (int8_t)calc_func(index, my_time);*/
+		  ((int8_t*)item.raw_value)[j] = 2+j; /*  (int8_t)calc_func(index, my_time);*/
 		else
 		  *((int8_t*)item.raw_value) = (int8_t)(my_time) / (int8_t)(TSP_STUB_FREQ);
 		break;
@@ -184,6 +191,7 @@ void* STUB_GLU_thread(void* athis)
 	      default:
 		STRACE_ERROR(("Unhandled TSP datatype =%d",X_sample_symbol_info_list_val[index].type));
 	 
+	      }
 	      }
 
 
@@ -545,9 +553,9 @@ STUB_GLU_get_ssei_list_fromPGI(struct GLU_handle_t* this,
 	    break;
 	  case 1011:
    	    TSP_EIList_initialize(&(SSEI_list->TSP_sample_symbol_extended_info_list_t_val[i].info),2);
-	    TSP_EI_update(&(SSEI_list->TSP_sample_symbol_extended_info_list_t_val[i].info.TSP_extended_info_list_t_val[0]), "profil", "2*2*4");
+	    TSP_EI_update(&(SSEI_list->TSP_sample_symbol_extended_info_list_t_val[i].info.TSP_extended_info_list_t_val[0]), "profile", "10");
  	    TSP_EI_update(&(SSEI_list->TSP_sample_symbol_extended_info_list_t_val[i].info.TSP_extended_info_list_t_val[1]), "unit", "SI");
-	    TSP_EI_update(&(SSEI_list->TSP_sample_symbol_extended_info_list_t_val[i].info.TSP_extended_info_list_t_val[1]), "ordre", "1");
+	    TSP_EI_update(&(SSEI_list->TSP_sample_symbol_extended_info_list_t_val[i].info.TSP_extended_info_list_t_val[1]), "order", "1");
 	    break;
 	  default:
 	    /* do not forget invalid > 1012 PGIs */
