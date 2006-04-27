@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_data_receiver.c,v 1.22 2006-04-12 06:56:03 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_data_receiver.c,v 1.23 2006-04-27 00:10:11 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -244,6 +244,7 @@ int TSP_data_receiver_receive(TSP_data_receiver_t _receiver,
 
 		      /* FIXME boucle à partir d'offset pour nelem element () sur sample->dimension pour affectation de groups[group_index].decode_buffer
 		       * dans sample->uvalue.TYPE_value = decode_buffer[i]
+		       * for scalar offset should be 0 and nelem = dimension = 1
 		       * 
 		       */
 		      for(i=groups[group_index].items[rank].symbol_info->offset;
