@@ -1,6 +1,6 @@
 /*
 
-$Id: glu_genreader.c,v 1.3 2006-04-25 22:21:37 erk Exp $
+$Id: glu_genreader.c,v 1.4 2006-04-28 07:52:01 erk Exp $
 
 -----------------------------------------------------------------------
  
@@ -80,7 +80,9 @@ GENREADER_GLU_run(void* arg)
   item.raw_value=calloc(1,genreader->max_size_raw_value);
 
   assert(item.raw_value);
- 
+
+  memset(item.raw_value,'\0',genreader->max_size_raw_value);
+
   /*  tant qu'il y a des valeurs */
   /* lire le fichier et envoyer au GLU */
   while(EOF!=(rep=genreader->handler->read_value(genreader,&item)))
