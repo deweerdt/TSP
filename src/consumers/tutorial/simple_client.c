@@ -1,6 +1,6 @@
 /*
 
-$Id: simple_client.c,v 1.7 2006-04-24 22:17:47 erk Exp $
+$Id: simple_client.c,v 1.8 2006-04-28 09:40:16 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -38,8 +38,8 @@ Purpose   : Simple consummer tutorial
 #include <stdio.h>
 #include <stdlib.h>
 /* All what you need for creating a TSP consumer */
-#include "tsp_consumer.h"
-#include "tsp_time.h"
+#include <tsp_consumer.h>
+#include <tsp_time.h>
 
 
 /* Just for fast exit */
@@ -55,9 +55,9 @@ int main(int argc, char *argv[])
 {
   const TSP_answer_sample_t*  information;
   TSP_sample_symbol_info_list_t symbols;
-  int i, count_frame, nb_providers, wanted_sym=10, t = -1;
-  TSP_provider_t* providers;
-  char* name;
+  int i, count_frame, wanted_sym=10, t = -1;
+  TSP_provider_t provider;
+  char* url;
 
   printf ("#=========================================================#\n");
   printf ("# Launching tutorial client\n");
@@ -68,30 +68,30 @@ int main(int argc, char *argv[])
       perror_and_exit("TSP init failed");
  
   if (argc==2)
-    name = argv[1];
+    url = argv[1];
   else
     {
-      printf("USAGE %s : server_name \n", argv[0]);
+      printf("USAGE %s : TSP_url \n", argv[0]);
       return -1;
     }
 
   /*-------------------------------------------------------------------------------------------------------*/   
   /* Connects to all found providers on the given host. */
-  TSP_consumer_connect_all(name, &providers, &nb_providers);
-  if(!nb_providers)
-      perror_and_exit("TSP_consumer_connect_all found no provider on host");
-  
+  provider = TSP_consumer_connect_url(url);
+  if(0==provider)
+    perror_and_exit("TSP_consumer_connect_url failed ");
+
   /* Ask the provider for a new consumer session.*/
-  if(TSP_STATUS_OK!=TSP_consumer_request_open(providers[0], 0, 0))
+  if(TSP_STATUS_OK!=TSP_consumer_request_open(provider, 0, 0))
     perror_and_exit("TSP_request_provider_open failed");
 
   /* Ask the provider informations about several parameters, including
    * the available symbol list that can be asked. */
-  if(TSP_STATUS_OK!=TSP_consumer_request_information(providers[0]))
+  if(TSP_STATUS_OK!=TSP_consumer_request_information(provider))
     perror_and_exit("TSP_request_provider_information failed");
 
   /* Get the provider information asked by TSP_consumer_request_information */
-  information = TSP_consumer_get_information(providers[0]);
+  information = TSP_consumer_get_information(provider);
   if (wanted_sym > information->symbols.TSP_sample_symbol_info_list_t_len)
 	wanted_sym = information->symbols.TSP_sample_symbol_info_list_t_len;
 
@@ -109,11 +109,11 @@ int main(int argc, char *argv[])
 
   /*-------------------------------------------------------------------------------------------------------*/ 
   /* Ask the provider for sampling this  list of symbols. Should check if all symbols are OK*/
-  if(TSP_STATUS_OK!=TSP_consumer_request_sample(providers[0], &symbols))
+  if(TSP_STATUS_OK!=TSP_consumer_request_sample(provider, &symbols))
     perror_and_exit("TSP_request_provider_sample failed");
 
   /* Start the sampling sequence. */
-  if(TSP_STATUS_OK!=TSP_consumer_request_sample_init(providers[0], 0, 0))
+  if(TSP_STATUS_OK!=TSP_consumer_request_sample_init(provider, 0, 0))
     perror_and_exit("TSP_request_provider_sample_init failed");
   
   /* Loop on data read */
@@ -123,7 +123,7 @@ int main(int argc, char *argv[])
       TSP_sample_t sample;
       
       /* Read a sample symbol.*/
-      if (TSP_STATUS_OK==TSP_consumer_read_sample(providers[0], &sample, &new_sample))
+      if (TSP_STATUS_OK==TSP_consumer_read_sample(provider, &sample, &new_sample))
 	{
 	  if(new_sample)
 	    {
@@ -152,16 +152,13 @@ int main(int argc, char *argv[])
 
   /*-------------------------------------------------------------------------------------------------------*/ 
   /* Stop and destroy the sampling sequence*/
-  if(TSP_STATUS_OK!=TSP_consumer_request_sample_destroy(providers[0]))
+  if(TSP_STATUS_OK!=TSP_consumer_request_sample_destroy(provider))
     perror_and_exit("Function TSP_consumer_request_sample_destroy failed" );	 
 
   /* Close the session.*/
-  if(TSP_STATUS_OK!=TSP_consumer_request_close(providers[0]))
+  if(TSP_STATUS_OK!=TSP_consumer_request_close(provider))
     perror_and_exit("Function TSP_consumer_request_close failed" );			    
 
-  /* Disconnected all found providers.*/
-  TSP_consumer_disconnect_all(providers);
-  
   /* call this function when you are done with the librairy.*/
   TSP_consumer_end();			
 
