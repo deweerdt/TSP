@@ -1,6 +1,6 @@
 /*
 
-$Id: glue_stub.c,v 1.23 2006-04-27 00:11:44 erk Exp $
+$Id: glue_stub.c,v 1.24 2006-05-03 21:15:04 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -74,126 +74,92 @@ void* STUB_GLU_thread(void* athis)
   assert(item.raw_value);
 
   /* infinite loop for symbols generation */
-  while(1)
-    {
+  while(1) {
 
       /* Must be call at each step in case of new samples wanted */
       TSP_datapool_get_reverse_list(this->datapool,&symbols_nb, &ptr_index); 
-      for(i = 0 ; i <  symbols_nb ; i++)
-	{
+
+      for (i = 0 ; i <  symbols_nb ; i++) {
 	 
 	  int index=ptr_index[i];
-	  if(my_time%X_sample_symbol_info_list_val[index].period == 0)
-	    {
+	  if (my_time%X_sample_symbol_info_list_val[index].period == 0) {
 	      item.size = X_sample_symbol_info_list_val[index].dimension * tsp_type_size[X_sample_symbol_info_list_val[index].type];
  
 	      item.time = my_time;
 	      item.provider_global_index = index;
+
+	      /* PGI 0 is a pseudo time */
+	      if (0==index) {
+		*((double*)item.raw_value) = (double)(my_time) / (double)(TSP_STUB_FREQ);
+		/* PUSH to DP and go to next for (over requested symbols) iteration */
+		TSP_datapool_push_next_item(this->datapool, &item);
+		memo_val[index]=*((double*)item.raw_value);
+		continue;
+	      }
 	      
 	      for(j=0;j<X_sample_symbol_info_list_val[index].dimension;++j)
 	      {
 	       
-
 	      switch(X_sample_symbol_info_list_val[index].type)
 	      {
 	      case TSP_TYPE_DOUBLE:
-		if (index!=0)
-		  *((double*)item.raw_value) = calc_func(index, my_time);
-		else
-		  *((double*)item.raw_value) = (double)(my_time) / (double)(TSP_STUB_FREQ);
+		*((double*)item.raw_value) = calc_func(index, my_time);
 		memo_val[index]=*((double*)item.raw_value);
 		break;
 
 	      case TSP_TYPE_FLOAT:
-		if (index!=0)
-		  *((float*)item.raw_value) = 1.102;  /* (float)calc_func(index, my_time);*/
-		else
-		  *((float*)item.raw_value) =  (float)(my_time) / (float)(TSP_STUB_FREQ);
+		*((float*)item.raw_value) = 1.102;  /* (float)calc_func(index, my_time);*/
 		break;
 	
 	      case TSP_TYPE_INT8:
-		if (index!=0)
-		  ((int8_t*)item.raw_value)[j] = 2+j; /*  (int8_t)calc_func(index, my_time);*/
-		else
-		  *((int8_t*)item.raw_value) = (int8_t)(my_time) / (int8_t)(TSP_STUB_FREQ);
+		((int8_t*)item.raw_value)[j] = 2+j; /*  (int8_t)calc_func(index, my_time);*/
 		break;
 	
-
 	      case TSP_TYPE_INT16:
-		if (index!=0)
-		  *((int16_t*)item.raw_value) = 3; /*(int16_t) calc_func(index, my_time);*/
-		else
-		  *((int16_t*)item.raw_value) = (int16_t)(my_time) / (int16_t)(TSP_STUB_FREQ);
+		*((int16_t*)item.raw_value) = 3; /*(int16_t) calc_func(index, my_time);*/
 		break;
 	
-
 	      case TSP_TYPE_INT32:
-		if (index!=0)
-		  *((int32_t*)item.raw_value) =  4; /*(int32_t)calc_func(index, my_time);*/
-		else
-		  *((int32_t*)item.raw_value) = (int32_t)(my_time) / (int32_t)(TSP_STUB_FREQ);
+		*((int32_t*)item.raw_value) =  4; /*(int32_t)calc_func(index, my_time);*/
 		break;
 	
 
 	      case TSP_TYPE_INT64:
-		if (index!=0)
-		  *((int64_t*)item.raw_value) = 5; /* (int64_t)calc_func(index, my_time);*/
-		else
-		  *((int64_t*)item.raw_value) = (int64_t)(my_time) / (int64_t)(TSP_STUB_FREQ);
+		*((int64_t*)item.raw_value) = 5; /* (int64_t)calc_func(index, my_time);*/
 		break;
 	
 	      case TSP_TYPE_UINT8:
-		if (index!=0)
-		  *((uint8_t*)item.raw_value) = 6; /* (uint8_t)calc_func(index, my_time);*/
-		else
-		  *((uint8_t*)item.raw_value) = (uint8_t)(my_time) / (uint8_t)(TSP_STUB_FREQ);
+		*((uint8_t*)item.raw_value) = 6; /* (uint8_t)calc_func(index, my_time);*/
 		break;
 	
-
-	      case TSP_TYPE_UINT16:
-		if (index!=0)
-		  *((uint16_t*)item.raw_value) = 7; /* (uint16_t)calc_func(index, my_time);*/
-		else
-		  *((uint16_t*)item.raw_value) = (uint16_t)(my_time) / (uint16_t)(TSP_STUB_FREQ);
+	      case TSP_TYPE_UINT16:	       
+		*((uint16_t*)item.raw_value) = 7; /* (uint16_t)calc_func(index, my_time);*/
 		break;
 	
-
 	      case TSP_TYPE_UINT32:
-		if (index!=0)
-		  *((uint32_t*)item.raw_value) = 8; /* (uint32_t)calc_func(index, my_time);*/
-		else
-		  *((uint32_t*)item.raw_value) = (uint32_t)(my_time) / (uint32_t)(TSP_STUB_FREQ);
+		*((uint32_t*)item.raw_value) = 8; /* (uint32_t)calc_func(index, my_time);*/
 		break;
 	
 	      case TSP_TYPE_UINT64:
-		if (index!=0)
-		  *((uint64_t*)item.raw_value) = 9; /* (uint64_t)calc_func(index, my_time);*/
-		else
-		  *((uint64_t*)item.raw_value) = (uint64_t)(my_time) / (uint64_t)(TSP_STUB_FREQ);
+		*((uint64_t*)item.raw_value) = 9; /* (uint64_t)calc_func(index, my_time);*/
 		break;
 	
-	      case TSP_TYPE_CHAR:
-	
-		*((char*)item.raw_value) = 'A'; /* calc_func_char(index, my_time);*/
-		  break;
+	      case TSP_TYPE_CHAR:	
+		*((char*)item.raw_value) = 'C'; /* calc_func_char(index, my_time);*/
+		break;
 			
-	      case TSP_TYPE_UCHAR:
-		
-		*((unsigned char*)item.raw_value) = 'B'; /* (unsigned char)calc_func_char(index, my_time);*/
-		  break;
-	
+	      case TSP_TYPE_UCHAR:		
+		*((unsigned char*)item.raw_value) = 'U'; /* (unsigned char)calc_func_char(index, my_time);*/
+		break;
+		  
 	      case TSP_TYPE_RAW:
-		if (index!=0)
-		  *((uint8_t*)item.raw_value) = 10; /* (uint8_t)calc_func(index, my_time);*/
-		else
-		  *((uint8_t*)item.raw_value) = (uint8_t)(my_time) / (uint8_t)(TSP_STUB_FREQ);
+		*((uint8_t*)item.raw_value) = 10; /* (uint8_t)calc_func(index, my_time);*/
 		break;
 	      default:
 		STRACE_ERROR(("Unhandled TSP datatype =%d",X_sample_symbol_info_list_val[index].type));
 	 
 	      }
 	      }
-
 
 	      TSP_datapool_push_next_item(this->datapool, &item);
 	    }
@@ -211,13 +177,6 @@ void* STUB_GLU_thread(void* athis)
 
       X_lasttime += TSP_USLEEP_PERIOD_US*1000;
       current_time = tsp_gethrtime();
-      /*      
-      if(last_missed!=RINGBUF_PTR_MISSED(glu_ring))
-	{
-	  last_missed = RINGBUF_PTR_MISSED(glu_ring);
-	  data_missed = TRUE;
-	  }*/
-      
       my_time++;    
       
       if (!(my_time%1000))  STRACE_INFO(("TOP %d : %s=%g \t%s=%g \t%s=%g \t%s=%g", my_time,
@@ -452,13 +411,22 @@ int STUB_GLU_init(GLU_handle_t* this, int fallback_argc, char* fallback_argv[])
 	taille_max_symbol= size;
       }
 
+      /*TAB CHAR*/
+      sprintf(symbol_buf, "TAB_CHAR_Symbol%d",i);
+      X_sample_symbol_info_list_val[i].name = strdup(symbol_buf);
+      X_sample_symbol_info_list_val[i].provider_global_index = i;
+      X_sample_symbol_info_list_val[i].period = 1;
+      X_sample_symbol_info_list_val[i].type =  TSP_TYPE_CHAR;
+      X_sample_symbol_info_list_val[i].dimension = 2*10;
+
+      size=X_sample_symbol_info_list_val[i].dimension * tsp_type_size[X_sample_symbol_info_list_val[i].type];
+      if(taille_max_symbol< size)
+      {
+	taille_max_symbol= size;
+      }
+
       ++i;
   }
-
-  
-
-  
-
 
   /*overide first name*/
   X_sample_symbol_info_list_val[0].name = strdup("t");
@@ -557,6 +525,12 @@ STUB_GLU_get_ssei_list_fromPGI(struct GLU_handle_t* this,
  	    TSP_EI_update(&(SSEI_list->TSP_sample_symbol_extended_info_list_t_val[i].info.TSP_extended_info_list_t_val[1]), "unit", "SI");
 	    TSP_EI_update(&(SSEI_list->TSP_sample_symbol_extended_info_list_t_val[i].info.TSP_extended_info_list_t_val[1]), "order", "1");
 	    break;
+	   case 1012:
+	     TSP_EIList_initialize(&(SSEI_list->TSP_sample_symbol_extended_info_list_t_val[i].info),2);
+	     TSP_EI_update(&(SSEI_list->TSP_sample_symbol_extended_info_list_t_val[i].info.TSP_extended_info_list_t_val[0]), "profile", "2*10");
+	     TSP_EI_update(&(SSEI_list->TSP_sample_symbol_extended_info_list_t_val[i].info.TSP_extended_info_list_t_val[1]), "unit", "None");
+	     TSP_EI_update(&(SSEI_list->TSP_sample_symbol_extended_info_list_t_val[i].info.TSP_extended_info_list_t_val[1]), "order", "2");
+	     break; 
 	  default:
 	    /* do not forget invalid > 1012 PGIs */
 	    SSEI_list->TSP_sample_symbol_extended_info_list_t_val[i].provider_global_index=-1;      
