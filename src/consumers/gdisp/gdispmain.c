@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/consumers/gdisp/gdispmain.c,v 1.12 2006-04-24 22:17:47 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/consumers/gdisp/gdispmain.c,v 1.13 2006-05-03 21:18:59 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -249,8 +249,8 @@ void init_index2vars(void)
 }
 
 
-static int main_window_start(char* conf_file, char* tsp_prov_url)
-{
+static int 
+main_window_start(char* conf_file, char* tsp_prov_url) {
   int		        i, j, nitem, ts_ok;
   char		        *f, name[1024];
   GdkGCValues	        gcvalues;
@@ -262,63 +262,53 @@ static int main_window_start(char* conf_file, char* tsp_prov_url)
 
   printf("Loading '%s' conf file\n", conf_file);
   /* Load configuration file  and initialise list of asked symbols */
-  if (load_config(conf_file, &conf_data)) 
-    {
-      tsp = TSP_consumer_connect_url(tsp_prov_url);
-      if(tsp)
-	{
-	  if(TSP_STATUS_OK==TSP_consumer_request_open(tsp, 0, 0))
-	    {
-	      if(TSP_STATUS_OK==TSP_consumer_request_filtered_information(tsp,TSP_FILTER_MINIMAL,MINIMAL_STRING))
-		{
+  if (load_config(conf_file, &conf_data)) {
+    tsp = TSP_consumer_connect_url(tsp_prov_url);
+    if(NULL!=tsp) {
+      if(TSP_STATUS_OK==TSP_consumer_request_open(tsp, 0, 0)) {
+	if(TSP_STATUS_OK==TSP_consumer_request_filtered_information(tsp,TSP_FILTER_MINIMAL,MINIMAL_STRING)) {
 		
-		  if(TSP_STATUS_OK==TSP_consumer_request_sample(tsp, &conf_data.tsp_requested))
-		    {		  
-		    
-		      /* Create the list of variable per provider global id */
-		      init_index2vars();
-		    
-		      if(TSP_STATUS_OK==TSP_consumer_request_sample_init(tsp,0,0))
-			{
-			  sprintf(name, "%s @ %s", conf_file, TSP_consumer_get_connected_name(tsp));
-			  create_mainwin(&conf_data, name);
-			
-			  ret = TRUE;
-			}
-		      else
-			{
-			  fprintf(stderr, "Error while initializing data stream '%s'\n", tsp_prov_url);
-			}
-		    }
-		  else
-		    {		      
-		      fprintf(stderr, "Error while asking for TSP symbols session on host '%s'\n", tsp_prov_url);
-		      TSP_consumer_print_invalid_symbols(stderr,&conf_data.tsp_requested,tsp_prov_url);
-		      fprintf(stderr, "Check your configuration file <%s>.\n", conf_file);
-		    }
-		}
-	      else
-		{
-		  fprintf(stderr, "Error while asking for TSP information on host '%s'\n", tsp_prov_url);
-		}
-		
+	  if(TSP_STATUS_OK==TSP_consumer_request_sample(tsp, &conf_data.tsp_requested)) {	      
+	    /* Create the list of variable per provider global id */
+	    init_index2vars();
+	    
+	    if(TSP_STATUS_OK==TSP_consumer_request_sample_init(tsp,0,0)) {
+	      sprintf(name, "%s @ %s", conf_file, TSP_consumer_get_connected_name(tsp));
+	      create_mainwin(&conf_data, name);
+	      
+	      ret = TRUE;
 	    }
-	  else
-	    {
-	      fprintf(stderr, "Error while opening TSP session on host '%s'\n", tsp_prov_url);
-	    }	      
+	    else {
+	      fprintf(stderr, "Error while initializing data stream '%s'\n", tsp_prov_url);
+	    }
+	  }
+	  else {		      
+	    fprintf(stderr, "Error while asking for TSP symbols session on host '%s'\n", tsp_prov_url);
+	    TSP_consumer_print_invalid_symbols(stderr,&conf_data.tsp_requested,tsp_prov_url);
+	    fprintf(stderr, "Check your configuration file <%s>.\n", conf_file);
+	  }
 	}
+	else
+	  {
+	    fprintf(stderr, "Error while asking for TSP information on host '%s'\n", tsp_prov_url);
+	  }
+	
+      }
       else
 	{
-	  fprintf(stderr, "unable to find any TSP provider on host '%s'\n", tsp_prov_url);
-	}
+	  fprintf(stderr, "Error while opening TSP session on host '%s'\n", tsp_prov_url);
+	}	      
     }
-  
+    else
+      {
+	fprintf(stderr, "unable to find any TSP provider on host '%s'\n", tsp_prov_url);
+      }
+  }  
   return ret;
 }
 
-void usage(char *txt)
-{
+void 
+usage(char *txt) {
   printf("\nUSAGE : %s -x fileconf.xml [-u tsp_serverURL]\n\n", txt);
   printf(TSP_URL_FORMAT_USAGE);
 }

@@ -8,7 +8,7 @@ typedef struct _variable {
   GtkWidget *widget;
   gchar *text;
   gchar *legend;
-  double double_value;
+  TSP_sample_t sample;
   int provider_global_index;
   int period;
   double duration; /**< meaningless for text widget */

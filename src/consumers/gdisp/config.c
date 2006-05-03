@@ -170,7 +170,13 @@ load_config (gchar *filename, conf_data_t* data)
 		if(!found)
 		  {
 		    int current = data->tsp_requested.TSP_sample_symbol_info_list_t_len++;
-		    data->tsp_requested.TSP_sample_symbol_info_list_t_val[current].name = var.name;
+		    /* 
+		     * The TSP_requested symbol list may be freed and re-allocated
+		     * by a TSP_consumer_request_sample call
+		     * so be careful to strdup the shared var.name
+		     * which is referenced by new_var
+		     */
+		    data->tsp_requested.TSP_sample_symbol_info_list_t_val[current].name = strdup(var.name);
 		    data->tsp_requested.TSP_sample_symbol_info_list_t_val[current].period = var.period;
 		    data->tsp_requested.TSP_sample_symbol_info_list_t_val[current].phase = 0;
 		  }

@@ -158,26 +158,26 @@ redraw_widgets (gpointer data)
   animation_next(anim_data); 
 
   /* now get variables from TSP and refresh data for all widget for each variables */
-  while(TSP_STATUS_OK==TSP_consumer_read_sample(tsp, &sample, &new_sample) && new_sample )
-    {
-      for( ptr_var = index2vars[sample.provider_global_index]; (*ptr_var) != 0 ; ptr_var++)
-	{
-	  var = *ptr_var;
+  while(TSP_STATUS_OK==TSP_consumer_read_sample(tsp, &sample, &new_sample) && new_sample ) {
+    
+    for( ptr_var = index2vars[sample.provider_global_index]; 
+	 (*ptr_var) != 0 ; 
+	 ptr_var++) {
 
-	  if(var->widget_type == WIDGET_VIEW)
-	    {
-	      var->double_value = sample.uvalue.double_value;
-	    }
-	  else
-	    {
-	      assert( var->widget_type == WIDGET_DRAW );
-	      pt.x = ((gdouble)sample.time)/(tsp_info->base_frequency ? tsp_info->base_frequency : 1);
-	      pt.y = sample.uvalue.double_value;
-	      add_point(PLOTWINDOW(var->widget),&pt);
-	    }
-	}		       
-    }
-
+      var = *ptr_var;
+      
+      if(var->widget_type == WIDGET_VIEW) {
+	var->sample = sample;
+      }
+      else {
+	assert( var->widget_type == WIDGET_DRAW );
+	pt.x = ((gdouble)sample.time)/(tsp_info->base_frequency ? tsp_info->base_frequency : 1);
+	pt.y = TSP_sample2double(sample);
+	add_point(PLOTWINDOW(var->widget),&pt);
+      }
+    }		       
+  }
+  
   /* Refresh all variables in all the windows */
   for (i=0; i < conf_data.nb_page; i++) {
     for (j=0; j < pages[i].variables->len; j++) {
@@ -197,9 +197,9 @@ redraw_widgets (gpointer data)
 	  {
 	    label = GTK_LABEL(var->widget);
 	    if(var->legend)
-	      sprintf(buffer, LABEL_DOUBLE_FORMAT, var->legend, var->double_value);
+	      sprintf(buffer, LABEL_DOUBLE_FORMAT, var->legend, TSP_sample2double(var->sample));
 	    else
-	      sprintf(buffer, LABEL_DOUBLE_FORMAT, var->text, var->double_value);
+	      sprintf(buffer, LABEL_DOUBLE_FORMAT, var->text, TSP_sample2double(var->sample));
 	    gtk_label_set_text(label, buffer);
 	       
 	  }
@@ -214,12 +214,12 @@ redraw_widgets (gpointer data)
 	break;
       case VAR_HEXA:
 	label = GTK_LABEL(var->widget);
-	sprintf(buffer, LABEL_HEXA_FORMAT, var->legend == NULL ? var->text : var->legend, (unsigned long) rint(var->double_value));
+	sprintf(buffer, LABEL_HEXA_FORMAT, var->legend == NULL ? var->text : var->legend, (unsigned long) rint(TSP_sample2double(var->sample)));
 	gtk_label_set_text(label, buffer);
 	break;
       case VAR_BIN:
 	/*TODO*/
-	myuint32 = (unsigned long) rint(var->double_value);	
+	myuint32 = (unsigned long) rint(TSP_sample2double(var->sample));	
         convert_to_bin(myuint32,myuint32str);
 	label = GTK_LABEL(var->widget);
 	sprintf(buffer, LABEL_BIN_FORMAT, var->legend == NULL ? var->text : var->legend, 
