@@ -40,6 +40,8 @@ cd %{name}
 source src/scripts/tsp_dev.login.sh
 make distclean
 make
+# second make necessary for tsp_rpc_cleanup
+make
   
 %install 
 cd %{name}
@@ -92,6 +94,8 @@ rm -rf %{prefix}/doc
 %attr(0644, root, root) %{prefix}/doc/api/html/*
 
 %changelog
+* Fri Apr 28 2006 Erk
+  - Add second make call for tsp_rpc_cleanup
 * Wed Mar 22 2006 Erk
   - Ready to tag 0.7.3
   - Make postun scripts for main package and apidoc package
