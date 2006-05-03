@@ -207,8 +207,12 @@ V-0.7.3: Creation 22/03/2006    tag TSP_0_7_3
 	- TSPFS a User Space File System for TSP		- FredD
 	- Change Install prefix from /opt/tsp to 
           /opt/tsp-<version>                                    - Erk
-V-0.8.0: Creation ??/03/2006    tag TSP_0_8_0
+V-0.8.0: Creation ??/05/2006    tag TSP_0_8_0
 	- TSP Core multiple type handling			- Erk+AM->Erk
 	- Generic Reader Provider				- AM+Erk
 	- Consumer and Provider update for multi-type           - Erk+AM
-	
+        - TSP_STATUS_xxxx wider usage                           - Erk
+        - Internal API clean-up                                 - Erk
+        - Doxygen documentation Improvement                     - Erk+All
+V-0.8.x: Creation ??/??/2006    tag TSP_0_8_0
+	- XML-RPC command channel in mainstream                 - FredD
