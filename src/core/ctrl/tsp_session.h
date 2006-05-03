@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.h,v 1.17 2006-04-23 22:24:58 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.h,v 1.18 2006-05-03 21:16:38 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -74,14 +74,6 @@ int32_t
 TSP_session_create_symbols_table_by_channel(const TSP_request_sample_t* req_sample,
 					    TSP_answer_sample_t* ans_sample);
 
-
-/**
- * Calculate the symbol table.
- * FIXME : remove thoses RPC struct for this function
- * @param ans_sample The computed answer
- * @return TRUE or FALSE. TRUE = OK.
- */
-void TSP_session_create_symbols_table_by_channel_free_call(TSP_answer_sample_t* ans_sample);
 
 /**
  * destroy a session.

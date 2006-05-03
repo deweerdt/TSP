@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_consumer.h,v 1.33 2006-04-24 22:17:47 erk Exp $
+$Id: tsp_consumer.h,v 1.34 2006-05-03 21:16:38 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -59,7 +59,7 @@ Purpose   : Main interface for the TSP consumer library
 
 
 /** Structure to get each sample */
-struct TSP_sample_t
+typedef struct TSP_sample
 {
   int time;
   int provider_global_index;
@@ -82,9 +82,8 @@ struct TSP_sample_t
     int8_t        raw_value;
   } uvalue;
 
-};
+} TSP_sample_t;
 
-typedef struct TSP_sample_t TSP_sample_t;
 
 /** Callback function type used to receive a sample item.
 FIXME : The callback function should transmit the error code
@@ -413,6 +412,18 @@ TSP_consumer_request_async_sample_read(TSP_provider_t provider,
 void TSP_consumer_print_invalid_symbols(FILE* fs, 
 					TSP_sample_symbol_info_list_t* symbols, 
 					const char* tsp_provider_url);
+
+/**
+ * Convert a sample value to double.
+ * This is a convenient for easy simple double type
+ * to multi-type transition.
+ * Numeric sample value a translated to numeric double values
+ * whereas char, uchar and raw are translated to 0.
+ * @param sample the sample to convert
+ * @return the double value of the sample
+ */
+double 
+TSP_sample2double(TSP_sample_t sample);
 
 /** @} end group TSP_ConsumerLib */ 
 

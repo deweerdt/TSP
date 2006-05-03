@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.c,v 1.30 2006-04-26 07:53:52 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.c,v 1.31 2006-05-03 21:16:38 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -155,20 +155,19 @@ static void TSP_session_close_session(channel_id_t channel_id)
 
 }
 
-static  void TSP_session_destroy_symbols_table(TSP_session_t* session)
-{
+static void 
+TSP_session_destroy_symbols_table(TSP_session_t* session) {
   /* If there was a local datapool, we erase it */
   if(session->session_data->datapool) {
     TSP_datapool_delete(&(session->session_data->datapool));
   }
   
-  /* erase the group table */
+  /* Erase the group table */
   TSP_group_algo_destroy_symbols_table(session->session_data->groups);
-}
+} /* end of TSP_session_destroy_symbols_table */
 
-
-void TSP_session_init(void)
-{
+void 
+TSP_session_init(void) {
   if( FALSE == X_initialized )
     {
       /* Mise a 0 de la zone memoire */
@@ -285,9 +284,7 @@ TSP_session_create_symbols_table_by_channel(const TSP_request_sample_t* req_samp
 
   /* The functions could have been called several time, so clean up first */
   TSP_session_destroy_symbols_table(session);    
-    
- 
-  
+      
   /* 
    * Get datapool instance for this GLU 
    * ACTIVE   GLU will get global datapool singleton instance
@@ -315,11 +312,6 @@ TSP_session_create_symbols_table_by_channel(const TSP_request_sample_t* req_samp
 
   return retcode;
 } /* end of TSP_session_create_symbols_table_by_channel */
-
-void 
-TSP_session_create_symbols_table_by_channel_free_call(TSP_answer_sample_t* ans_sample) {
-  TSP_group_algo_create_symbols_table_free_call(&ans_sample->symbols);
-}
 
 int  
 TSP_session_get_sample_symbol_info_list_by_channel(channel_id_t channel_id,

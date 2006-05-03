@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.54 2006-04-24 22:17:47 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.55 2006-05-03 21:16:38 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -1030,20 +1030,16 @@ const TSP_sample_symbol_info_list_t* TSP_consumer_get_requested_sample(TSP_provi
 	
   TSP_otsp_t* otsp = (TSP_otsp_t*)provider;
 	
-  STRACE_IO(("-->IN"));
-	
   TSP_CHECK_SESSION(otsp, 0);
 	
-  STRACE_IO(("-->OUT"));
-  
-  if(otsp->requested_sym.TSP_sample_symbol_info_list_t_val)
+  if(otsp->requested_sym.TSP_sample_symbol_info_list_t_val) {
     return &(otsp->requested_sym);
-  else
-    {
-      STRACE_ERROR(("TSP_consumer_request_sample must be called first"));
-      return 0;
-    }
-}
+  }
+  else {
+    STRACE_ERROR(("TSP_consumer_request_sample must be called first"));
+    return NULL;
+  }
+} /* TSP_consumer_get_requested_sample */
 
 static void* TSP_request_provider_thread_receiver(void* arg)
 {
@@ -1356,3 +1352,55 @@ TSP_consumer_print_invalid_symbols(FILE* stream,
     }
   }
 }
+
+
+double 
+TSP_sample2double(TSP_sample_t sample) {
+  double retval = 0.0;
+
+  switch (sample.type) {    
+  case TSP_TYPE_DOUBLE:
+    retval = sample.uvalue.double_value;
+    break;
+  case TSP_TYPE_FLOAT:
+    retval = sample.uvalue.float_value;
+    break;    
+  case TSP_TYPE_INT8:
+    retval = sample.uvalue.int8_value;
+    break;    
+  case TSP_TYPE_INT16:
+    retval = sample.uvalue.int16_value;
+    break;    
+  case TSP_TYPE_INT32:
+    retval = sample.uvalue.int32_value;
+    break;    
+  case TSP_TYPE_INT64:
+    retval = sample.uvalue.int64_value;
+    break;    
+  case TSP_TYPE_UINT8:
+    retval = sample.uvalue.uint8_value;
+    break;    
+  case TSP_TYPE_UINT16:
+    retval = sample.uvalue.uint16_value;
+    break;    
+  case TSP_TYPE_UINT32:
+    retval = sample.uvalue.uint32_value;
+    break;    
+  case TSP_TYPE_UINT64:
+    retval = sample.uvalue.uint64_value;
+    break;    
+    /*
+      case TSP_TYPE_CHAR:
+      break;    
+      case TSP_TYPE_UCHAR:
+      break;    
+      case TSP_TYPE_RAW:
+      break;    
+    */
+  default:
+    /* nothing to do 0 */
+    STRACE_WARNING(("No possible conversion for type <%d>", sample.type));
+    break;
+  }
+  return retval;
+} /* end of TSP_sample2double */

@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_group_algo.c,v 1.20 2006-04-23 22:24:58 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_group_algo.c,v 1.21 2006-05-03 21:16:38 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -84,51 +84,39 @@ number group_number */
 int TSP_group_algo_get_nb_groups(const TSP_sample_symbol_info_list_t* symbols)
 {
 	
-  uint32_t nb_symbols = symbols->TSP_sample_symbol_info_list_t_len;
+  uint32_t nb_symbols ;
   uint32_t i;
-  int nb_groups = 0;
+  int nb_groups       = 0;
    
-    
-  STRACE_IO(("-->IN"));
-
-    
   assert(symbols);
+
+  nb_symbols  = symbols->TSP_sample_symbol_info_list_t_len;
     
-  if( nb_symbols > 0 )
-    {
-        
-      /* We calculate the LCM for the period of all symbols */
-      int ppcm = (symbols->TSP_sample_symbol_info_list_t_val[0].period);
-      STRACE_DEBUG(("frequency_ratio No0= %d", ppcm));
-
-      for( i = 1 ; i < nb_symbols ; i++)
-	{
-                
-                 
-	  int frequency_ratio =
-	    (symbols->TSP_sample_symbol_info_list_t_val[i].period);
-                  
-	  STRACE_DEBUG(("frequency_ratio No%u= %d", i, frequency_ratio));
-
-         /* LCM */         
-	  PPCM(ppcm,frequency_ratio, ppcm); 
-	}
-        
-      nb_groups = ppcm;
-        
-    }
-  else
-    {
-      STRACE_WARNING(("No symbols in list !"));
-
-    }
-
-  STRACE_DEBUG(("Nombre de groupes = %d", nb_groups));
-
-  STRACE_IO(("-->OUT"));
-
-  return nb_groups;
+  if( nb_symbols > 0 ) {
     
+    /* We calculate the LCM for the period of all symbols */
+    int ppcm = (symbols->TSP_sample_symbol_info_list_t_val[0].period);
+    STRACE_DEBUG(("Frequency_ratio No0= %d", ppcm));
+    
+    for( i = 1 ; i < nb_symbols ; i++) {	
+      
+      int frequency_ratio =
+	(symbols->TSP_sample_symbol_info_list_t_val[i].period);
+      
+      STRACE_DEBUG(("Frequency_ratio No%u= %d", i, frequency_ratio));
+      
+      /* LCM */         
+      PPCM(ppcm,frequency_ratio, ppcm); 
+    }
+    
+    nb_groups = ppcm;
+    
+  }
+  else {
+    STRACE_WARNING(("No symbols in list !"));    
+  }
+  STRACE_INFO(("Found <%d> group(s) for request with <%d> symbol(s)",nb_groups,nb_symbols));
+  return nb_groups;    
 }
 
 /**
@@ -137,37 +125,28 @@ int TSP_group_algo_get_nb_groups(const TSP_sample_symbol_info_list_t* symbols)
 * @group_id Id of the group that must be processed
 * @return Number of symbols in the group group_id;
 */
-static int TSP_group_algo_get_group_size(const TSP_sample_symbol_info_list_t* symbols, 
-					 int group_id)
-
-{
+static int 
+TSP_group_algo_get_group_size(const TSP_sample_symbol_info_list_t* symbols, 
+			      int group_id) {
     
   int group_size = 0;
   uint32_t nb_symbols = symbols->TSP_sample_symbol_info_list_t_len;
   uint32_t i;
 
-  STRACE_IO(("-->IN"));
-
-    
   assert(symbols);
     
   /* We search all symbols that belong to the group group_number*/
-  for( i = 0 ; i < nb_symbols ; i++ )
-    {
+  for( i = 0 ; i < nb_symbols ; i++ ) {
       int frequency_ratio = symbols->TSP_sample_symbol_info_list_t_val[i].period;
-      int phase = symbols->TSP_sample_symbol_info_list_t_val[i].phase;
+      int phase           = symbols->TSP_sample_symbol_info_list_t_val[i].phase;
       /* Does - it belong to the group */
-      if(BELONGS_TO_GROUP(frequency_ratio, phase , group_id) )
-        {
-	  /*Yes ! */
-	  group_size++;
-        }
-        
+      if(BELONGS_TO_GROUP(frequency_ratio, phase , group_id) ) {
+	/*Yes ! */
+	group_size++;
+      }      
     }
     
-  STRACE_IO(("-->OUT group_size for group[%d] is %d", group_id, group_size));
-
-    
+  STRACE_INFO(("Group_size for group[%d] is %d", group_id, group_size));    
   return group_size;
 }
 
@@ -191,18 +170,18 @@ TSP_group_algo_get_groups_summed_size(const TSP_sample_symbol_info_list_t* symbo
     groups_summed_size += TSP_group_algo_get_group_size(symbols, group_id); 
   }
     
-  STRACE_INFO(("groups_summed_size is %d", groups_summed_size));
+  STRACE_INFO(("Groups_summed_size is %d", groups_summed_size));
     
   return groups_summed_size;
 } /* end of TSP_group_algo_get_groups_summed_size */
 
 
 /**
-* Allocate the group table.
-* This function initialize several size informations located in the structures
-* @symbols list of symbols on which the group table must be calculated
-* @return The allocated table of groups
-*/
+ * Allocate the group table.
+ * This function initialize several size informations located in the structures
+ * @symbols list of symbols on which the group table must be calculated
+ * @return The allocated table of groups
+ */
 static TSP_algo_table_t*
 TSP_group_algo_allocate_group_table(const TSP_sample_symbol_info_list_t* symbols)
 {
@@ -219,7 +198,7 @@ TSP_group_algo_allocate_group_table(const TSP_sample_symbol_info_list_t* symbols
     
   /* Get total number of groups */
   table->table_len = TSP_group_algo_get_nb_groups(symbols);
-    
+
   /*Allocate room for all groups */
   table->groups = (TSP_algo_group_t*)calloc(table->table_len, sizeof(TSP_algo_group_t));
   TSP_CHECK_ALLOC(table->groups, NULL);
@@ -258,35 +237,17 @@ TSP_group_algo_allocate_group_table(const TSP_sample_symbol_info_list_t* symbols
   return table;
 }
                                                              
-void TSP_group_algo_destroy_symbols_table(TSP_groups_t* groups)
-{
+void 
+TSP_group_algo_destroy_symbols_table(TSP_groups_t* groups) {
 
    TSP_algo_table_t* table = (TSP_algo_table_t*)groups;
 
-   STRACE_IO(("-->IN"));
-   if(table)
-     {
+   if (NULL!=table) {
        free(table->all_items);
        free(table->groups);
        free(table);
-     }
-
-   STRACE_IO(("-->OUT"));
-
-}
-
-void 
-TSP_group_algo_create_symbols_table_free_call(TSP_sample_symbol_info_list_t* symbols) {
-
-  int i;
-
-  for( i=0 ; i < symbols->TSP_sample_symbol_info_list_t_len ; i++) {
-    free(symbols->TSP_sample_symbol_info_list_t_val[i].name);
-    symbols->TSP_sample_symbol_info_list_t_val[i].name = 0;
-  }
-  
-  free(symbols->TSP_sample_symbol_info_list_t_val);
-} /* end of TSP_group_algo_create_symbols_table_free_call */
+   }
+} /* TSP_group_algo_destroy_symbols_table */
 
 int32_t 
 TSP_group_algo_create_symbols_table(const TSP_sample_symbol_info_list_t* in_symbols,
@@ -317,21 +278,21 @@ TSP_group_algo_create_symbols_table(const TSP_sample_symbol_info_list_t* in_symb
     TSP_CHECK_ALLOC(out_symbols->TSP_sample_symbol_info_list_t_val, FALSE);
     
     /* For each group...*/
-    for( out_current_info = 0, group_id = 0 ; group_id < table->table_len ; group_id++)
-      {
+    for( out_current_info = 0, group_id = 0 ; 
+	 group_id < table->table_len ; 
+	 group_id++) {
 	
 	/* For each symbol, does it belong to the group ? */
 	/* Start at first rank */
-	for(rank = 0, in_current_info = 0 ; in_current_info < nb_symbols ; in_current_info++)
-	  {
+	for(rank = 0, in_current_info = 0 ; 
+	    in_current_info < nb_symbols ; 
+	    in_current_info++) {
+
 	    out_info = &(out_symbols->TSP_sample_symbol_info_list_t_val[out_current_info]);
 	    in_info = &(in_symbols->TSP_sample_symbol_info_list_t_val[in_current_info]);
-	    
-            
+	                
 	    /* Does - it belong to the group */
-	    if(BELONGS_TO_GROUP(in_info->period, in_info->phase , group_id) )
-	      {
-		
+	    if (BELONGS_TO_GROUP(in_info->period, in_info->phase , group_id) ) {		
 		/*Yes, we add it*/
 		STRACE_DEBUG(("Adding provider_global_index %d at group %d and rank %d",in_info->provider_global_index,group_id,rank));
 		/* 1 - In the out group table */
@@ -368,41 +329,28 @@ TSP_group_algo_create_symbols_table(const TSP_sample_symbol_info_list_t* in_symb
             }
         }
     }
-  else
-    {
-      STRACE_ERROR(("Unable to allocate group table"));
-      return TSP_STATUS_ERROR_MEMORY_ALLOCATION;
-    }
+  else {
+    STRACE_ERROR(("Unable to allocate group table"));
+    return TSP_STATUS_ERROR_MEMORY_ALLOCATION;
+  }
     
   return TSP_STATUS_OK;
-}
+} /* end of TSP_group_algo_create_symbols_table */
 
-int TSP_group_algo_get_group_number(TSP_groups_t* groups)
-{
+int 
+TSP_group_algo_get_group_number(TSP_groups_t* groups) {
        
-  TSP_algo_table_t* group_table = (TSP_algo_table_t*)groups;
-    
-  STRACE_IO(("-->IN"));
-
-    
+  TSP_algo_table_t* group_table = (TSP_algo_table_t*)groups;    
   assert(groups);
-    
-  STRACE_IO(("-->OUT"));
-
-    
   return group_table->table_len;
 }
 
-int TSP_group_algo_get_biggest_group_size(TSP_groups_t* groups)
-{
+int 
+TSP_group_algo_get_biggest_group_size(TSP_groups_t* groups) {
     
   TSP_algo_table_t* group_table = (TSP_algo_table_t*)groups;
     
-  STRACE_IO(("-->IN"));
-    
   assert(groups);
-    
-  STRACE_IO(("-->OUT"));
     
   return group_table->max_group_len;
 

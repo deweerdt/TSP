@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_group_algo.h,v 1.9 2006-04-23 20:06:48 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_group_algo.h,v 1.10 2006-05-03 21:16:38 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -59,13 +59,6 @@ int TSP_group_algo_create_symbols_table(const TSP_sample_symbol_info_list_t* sym
 					TSP_sample_symbol_info_list_t* out_symbols,
 					TSP_groups_t* out_groups,
 					TSP_datapool_t* datapool);
-
-/**
- * Free the memory allocated by TSP_group_algo_create_symbols_table for out_symbols
- * @param old_out_symbols List allocated by TSP_group_algo_create_symbols_table
- */
-void TSP_group_algo_create_symbols_table_free_call(TSP_sample_symbol_info_list_t* old_out_symbols);
-
 /**
  * Destroy the group table
  * @param groups List allocated by TSP_group_algo_create_symbols_table

@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/include/Attic/tsp_simple_trace.h,v 1.17 2006-02-26 13:36:05 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/Attic/tsp_simple_trace.h,v 1.18 2006-05-03 21:16:38 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -63,7 +63,7 @@ Purpose   : Some trace macro
 				  
 #ifdef  USE_STRACE
 # define STRACE_IO(text) SIMPLE_TRACE(8, "i/o", text)
-# define STRACE_DEBUG(text) SIMPLE_TRACE(4, "debug", text)
+# define STRACE_DEBUG(text) SIMPLE_TRACE(4, "Debug", text)
 # define STRACE_INFO(text) SIMPLE_TRACE(2, "Info", text)
 # define STRACE_TEST(text) SIMPLE_TRACE(1, "TEST", text)
 #else

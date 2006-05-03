@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_data_sender.c,v 1.23 2006-04-24 19:53:32 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_data_sender.c,v 1.24 2006-05-03 21:16:38 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -36,25 +36,19 @@ stream  for the asked symbols
 -----------------------------------------------------------------------
  */
 
-#include "tsp_sys_headers.h"
+#include <tsp_sys_headers.h>
 #include <rpc/types.h>
 #include <rpc/xdr.h>
-
- 
-#include "tsp_data_sender.h"
-
-#include "tsp_datastruct.h"
-
-#include "tsp_group_algo.h"
-#include "tsp_group_algo_data.h"
-
-#include "tsp_stream_sender.h"
-#include "tsp_const_def.h"
+#include <tsp_data_sender.h>
+#include <tsp_datastruct.h>
+#include <tsp_group_algo.h>
+#include <tsp_group_algo_data.h>
+#include <tsp_stream_sender.h>
+#include <tsp_const_def.h>
 
 #define TSP_XDR_BUF_SIZE 8192
 
-struct TSP_struct_data_sender_t
-{
+struct TSP_struct_data_sender_t {
   /** The stream sender object used to send data thrue the network*/
   TSP_stream_sender_t stream_sender;  
 
@@ -72,8 +66,6 @@ struct TSP_struct_data_sender_t
 
   /** flag that tells if data were lost for the consumer 'coz' the fifo was full */
   int fifo_full;
-
-
   
 };
 

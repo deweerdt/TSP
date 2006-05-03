@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_default_glu.c,v 1.18 2006-04-23 22:24:58 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_default_glu.c,v 1.19 2006-05-03 21:16:38 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -181,7 +181,10 @@ GLU_get_pgi_default(GLU_handle_t* this, TSP_sample_symbol_info_list_t* symbol_li
 	looked_for->provider_global_index = compared->provider_global_index;
 	pg_indexes[i]=looked_for->provider_global_index;
       }
-      if(found) break;
+      if(found) {
+	STRACE_INFO(("Found symbol <%s> pgi=<%d> ",  looked_for->name, looked_for->provider_global_index));	   
+	break;
+      }
       
     }
     if(!found) {

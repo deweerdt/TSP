@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/xmlrpc/tsp_xmlrpc_server.c,v 1.4 2006-02-07 21:10:41 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/xmlrpc/tsp_xmlrpc_server.c,v 1.5 2006-05-03 21:16:38 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -181,28 +181,16 @@ xmlrpc_value * tsp_request_information_xmlrpc (xmlrpc_env *env, xmlrpc_value *pa
 
 xmlrpc_value * tsp_request_sample_xmlrpc (xmlrpc_env *env, xmlrpc_value *param_array, void *user_data)
 {
-  static int first_call = TRUE;
-  static TSP_answer_sample_t ans_sample;
+  static TSP_answer_sample_t ans_sample = TSP_AS_STATIC_INITIALIZER;
   TSP_request_sample_t *req_sample;
   xmlrpc_value *xmlrpc_req_sample;
   xmlrpc_value *xmlrpc_ans_sample;
   xmlrpc_value *value;
   int i;
 
-  STRACE_IO(("-->IN"));
-
   req_sample = xmlrpc_value_to_TSP_request_sample(env, param_array);
 
-  /* For each call memory was allocate by TSP_provider_request_sample */
-  if(!first_call)
-    {
-      TSP_provider_request_sample_free_call(&ans_sample);    
-    }
-  first_call = FALSE;
-
-
   TSP_provider_request_sample(req_sample, &ans_sample);
-
 
   /* Build TSP_answer_sample_t xmlrpc */
   
@@ -238,7 +226,6 @@ xmlrpc_value * tsp_request_sample_xmlrpc (xmlrpc_env *env, xmlrpc_value *param_a
 	xmlrpc_array_append_item(env, value, symbol);
   }
 
-  STRACE_IO(("-->OUT"));
 	
   return value;
 

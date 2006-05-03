@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_server.c,v 1.30 2006-04-03 16:07:36 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_server.c,v 1.31 2006-05-03 21:16:38 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -16,8 +16,7 @@ version 2.1 of the License, or (at your option) any later version.
 
 This library is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-Lesser General Public License for more details.
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNULesser General Public License for more details.
 
 You should have received a copy of the GNU Lesser General Public
 License along with this library; if not, write to the Free Software
@@ -45,14 +44,25 @@ Purpose   :
 
 #include <tsp_sys_headers.h>
 #include <tsp_glu.h>
-/* FIXME RP : beurk, RPC is compiled before CTRL could export this include, how sould I call Request Manager and GLU then ? */
+/* 
+ * FIXME RP : beurk, RPC is compiled before CTRL 
+ * could export this include, how should I call 
+ * Request Manager and GLU then ? 
+ * All our troubles comes from using tsp_rpc.h
+ * in tsp_datastruct.h
+ * As soon as we have clean IDL generator
+ * we will get rid of those circular include problem
+ * We need 2 passes compile here, 
+ * the first for IDL and the second for C compilation.
+ */
 #include "../ctrl/tsp_provider.h"
 #include "../ctrl/tsp_request_handler.h"
+/* same FIXME IDL <--> C dependency */
+#include "../common/tsp_common_macros.h"
 
-
-#include "tsp_server.h"
-#include "tsp_rpc.h"
-#include "tsp_rpc_confprogid.h"
+#include <tsp_server.h>
+#include <tsp_rpc.h>
+#include <tsp_rpc_confprogid.h>
 
 void
 tsp_rpc_1(struct svc_req *rqstp, register SVCXPRT *transp) ;
@@ -70,9 +80,7 @@ typedef struct {
 TSP_provider_info_t* tsp_provider_information_1_svc(struct svc_req *rqstp)
 {
   static TSP_provider_info_t server_info;	
-  STRACE_IO(("-->IN"));    
   server_info.info = (char*) TSP_provider_get_name();    
-  STRACE_IO(("-->OUT"));
   return &server_info;
 }
 
@@ -81,9 +89,7 @@ TSP_answer_open_t* tsp_request_open_1_svc(TSP_request_open_t req_open, struct sv
 
   static TSP_answer_open_t ans_open;
 	
-  STRACE_IO(("-->IN"));	
   TSP_provider_request_open(&req_open, &ans_open);	
-  STRACE_IO(("-->OUT"));	
   return &ans_open;
 
 }
@@ -138,57 +144,31 @@ TSP_answer_feature_t* tsp_request_feature_1_svc(TSP_request_feature_t req_featur
 
 }
 
-TSP_answer_sample_t* tsp_request_sample_1_svc(TSP_request_sample_t req_sample, struct svc_req * rqstp)
-{
+TSP_answer_sample_t* 
+tsp_request_sample_1_svc(TSP_request_sample_t req_sample, struct svc_req * rqstp) {
 
-  static int first_call = TRUE;
-  static TSP_answer_sample_t ans_sample;
+  static TSP_answer_sample_t as = TSP_AS_STATIC_INITIALIZER ;
 
-  STRACE_IO(("-->IN"));
-  /* For each call memory was allocate by TSP_provider_request_sample */
-  if(!first_call)
-    {
-      TSP_provider_request_sample_free_call(&ans_sample);    
-    }
-  first_call = FALSE;
-
-  TSP_provider_request_sample(&req_sample, &ans_sample);
-
-  STRACE_IO(("-->OUT"));
-	
-  return &ans_sample;
-
+  TSP_provider_request_sample(&req_sample, &as);
+  return &as;
 }
  
-TSP_answer_sample_init_t* tsp_request_sample_init_1_svc(TSP_request_sample_init_t req_sample, struct svc_req * rqstp)
-{
+TSP_answer_sample_init_t* 
+tsp_request_sample_init_1_svc(TSP_request_sample_init_t req_sample, struct svc_req * rqstp) {
+  
+  static TSP_answer_sample_init_t asi = TSP_ASI_STATIC_INITIALIZER;
 
-  static TSP_answer_sample_init_t ans_sample;
+  TSP_provider_request_sample_init(&req_sample, &asi);
 
-  STRACE_IO(("-->IN"));
-    
-  /*TBD FIXME Desallouer l'appel precedent*/
-  /*if( 0 != ans_sample)
-    {
-    TSP_session_free_create_symbols_table_call(&ans_sample);
-    }*/
-    
-  TSP_provider_request_sample_init(&req_sample, &ans_sample);
-  STRACE_IO(("-->OUT"));
-
-  return &ans_sample;
-
+  return &asi;
 }
 
 TSP_answer_sample_destroy_t* tsp_request_sample_destroy_1_svc(TSP_request_sample_destroy_t req_sample, struct svc_req * rqstp)
 {
 
-  static TSP_answer_sample_destroy_t ans_sample;
+  static TSP_answer_sample_destroy_t ans_sample = TSP_ASD_STATIC_INITIALIZER;
 	
-  STRACE_IO(("-->IN"));
   TSP_provider_request_sample_destroy(&req_sample, &ans_sample);
-  STRACE_IO(("-->OUT"));
-
 	
   return &ans_sample;
 
@@ -198,9 +178,6 @@ int* tsp_exec_feature_1_svc(TSP_exec_feature_t exec_feature, struct svc_req * rq
 {
 
   static int retcode = 0;	
-  STRACE_IO(("-->IN"));
-
-  STRACE_IO(("-->OUT"));
 
   return &retcode;
 }
@@ -209,7 +186,6 @@ int * tsp_request_async_sample_write_1_svc(TSP_async_sample_t async_sample_write
 {
   static int ret = TRUE;
   
-  STRACE_IO(("-->IN"));	
 
   /* endianity managment*/
 /*   STRACE_DEBUG(("Len=%d,  pgi = %d value = %f et ret = %d", async_sample_write.data.data_len, async_sample_write.provider_global_index,(double*)(async_sample_write.data.data_val),ret)); */
@@ -233,7 +209,6 @@ int * tsp_request_async_sample_write_1_svc(TSP_async_sample_t async_sample_write
   
   ret = TSP_provider_request_async_sample_write(&async_sample_write);	
   
-  STRACE_IO(("-->OUT"));
   STRACE_DEBUG(("TSP_SERVER After async_write : pgi %d value %s return %d ",async_sample_write.provider_global_index,async_sample_write.data.data_val,ret ));
 
   return &ret;
@@ -244,8 +219,6 @@ TSP_async_sample_t * tsp_request_async_sample_read_1_svc(TSP_async_sample_t asyn
 {
   static TSP_async_sample_t ret;
   
-  STRACE_IO(("-->IN"));	
-
   /* endianity managment*/
 /*   STRACE_DEBUG(("Len=%d,  pgi = %d value = %f et ret = %d", async_sample_read.data.data_len, async_sample_read.provider_global_index,(double*)(async_sample_read.data.data_val),ret)); */
 
@@ -271,8 +244,6 @@ TSP_async_sample_t * tsp_request_async_sample_read_1_svc(TSP_async_sample_t asyn
     ret.provider_global_index = -1;
   }	
 
-  STRACE_IO(("-->OUT"));
-
   return &ret;
   
 }
@@ -281,8 +252,6 @@ TSP_async_sample_t * tsp_request_async_sample_read_1_svc(TSP_async_sample_t asyn
 static int TSP_rpc_init(TSP_rpc_request_config_t *config)
 {
   int rpcport = -1;
-
-  STRACE_IO(("-->IN"));
 
   /* look for a free port */
   while(rpcport && config->server_number<TSP_MAX_SERVER_NUMBER)
@@ -294,8 +263,6 @@ static int TSP_rpc_init(TSP_rpc_request_config_t *config)
 
   if(rpcport && config->server_number >= TSP_MAX_SERVER_NUMBER)
       config->server_number = -1;
-
-  STRACE_IO(("-->OUT "));
 
   return config->server_number;
 }

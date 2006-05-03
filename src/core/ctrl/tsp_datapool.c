@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_datapool.c,v 1.28 2006-04-23 22:24:58 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_datapool.c,v 1.29 2006-05-03 21:16:38 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -252,7 +252,7 @@ TSP_datapool_instantiate(GLU_handle_t* glu) {
   } else {
     /* PASSIVE GLU CASE */
     /* 
-     * do not re-instantiate datapool 
+     * Do not re-instantiate datapool 
      * (multi-consumer same datapool case)
      */
     if (NULL==glu->datapool) {

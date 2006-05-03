@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_provider.c,v 1.51 2006-04-26 07:53:52 erk Exp $
+$Id: tsp_provider.c,v 1.52 2006-05-03 21:16:38 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -427,18 +427,14 @@ TSP_provider_request_filtered_information(TSP_request_information_t* req_info,
 } /* End of TSP_provider_request_filtered_information */
 
 
-void 
-TSP_provider_request_sample_free_call(TSP_answer_sample_t* ans_sample) {
-  TSP_session_create_symbols_table_by_channel_free_call(ans_sample);
-}
-
 void  
 TSP_provider_request_sample(TSP_request_sample_t* req_sample, 
 			    TSP_answer_sample_t* ans_sample) {
 
   TSP_LOCK_MUTEX(&X_tsp_request_mutex,);	
   GLU_handle_t* myGLU;
-
+  /* Always re-init answer_sample */
+  TSP_AS_finalize(ans_sample);
   TSP_provider_update_answer_with_minimalinfo(req_sample->version_id,
 					      req_sample->channel_id,
 					      ans_sample,

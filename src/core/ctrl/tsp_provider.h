@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_provider.h,v 1.20 2006-04-23 20:06:48 erk Exp $
+$Id: tsp_provider.h,v 1.21 2006-05-03 21:16:38 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -81,7 +81,6 @@ void  TSP_provider_request_filtered_information(TSP_request_information_t* req_i
 
 void  TSP_provider_request_sample(TSP_request_sample_t* req_sample, 
 				  TSP_answer_sample_t* ans_sample);
-void TSP_provider_request_sample_free_call(TSP_answer_sample_t* ans_sample);
 
 void  TSP_provider_request_sample_init(TSP_request_sample_init_t* req_sample_init, 
 				       TSP_answer_sample_init_t* ans_sample);
