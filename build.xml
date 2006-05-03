@@ -21,8 +21,8 @@
 
             <echo>
 This is a ANT build file for the TSP which 
-is used by developper to automated some
-packaging task which are painful to be done
+is used by developper in order to automate some
+packaging tasks which are painful to be done
 with make or other ancient but respectable unix tools.
 For now you may use target
          ant [-Dtsp.version="x.y.z"] tar
@@ -66,21 +66,27 @@ date, time and user name.
                       <include name="README" />
                       <include name="ROADMAP" />
                       <include name="TODO" />
+                      <exclude name="core.*"/>
                  </tarfileset>
                  <tarfileset defaultexcludes="yes" dir="${src.dir}" prefix="tsp/src">
                      <exclude name="${src.dir}/**/*~"/>
+                     <exclude name="${src.dir}/**/core.*"/>
                  </tarfileset>
                  <tarfileset defaultexcludes="yes" dir="${external.dir}" prefix="tsp/external">
                      <exclude name="${external.dir}/**/*~"/>
+                     <exclude name="${external.dir}/**/core.*"/>
                  </tarfileset>
                  <tarfileset defaultexcludes="yes" dir="${skeleton.dir}" prefix="tsp/skeleton">
                      <exclude name="${skeleton.dir}/**/*~"/>
+                     <exclude name="${skeleton.dir}/**/core.*"/>
                  </tarfileset>
                  <tarfileset defaultexcludes="yes" dir="${make.dir}" prefix="tsp/make">
                      <exclude name="${make.dir}/**/*~"/>
+                     <exclude name="${make.dir}/**/core.*"/>
                  </tarfileset>
                  <tarfileset defaultexcludes="yes" dir="${tests.dir}" prefix="tsp/tests">
                      <exclude name="${tests.dir}/**/*~"/>
+                     <exclude name="${tests.dir}/**/core.*"/>
                  </tarfileset>
               </tar>
         </target>
@@ -97,7 +103,7 @@ date, time and user name.
               <zip destfile="${dist.dir}/tsp-${tsp.version}.zip">
                  <zipfileset defaultexcludes="yes" dir="${tsp.home.dir}" prefix="tsp/">
                       <include name="config*" />
-                      <include name="AUTHOR" />
+                      <include name="AUTHORS" />
                       <include name="COPYING" />
                       <include name="*.xml" />
                       <include name="INSTALL" />
@@ -106,21 +112,27 @@ date, time and user name.
                       <include name="README" />
                       <include name="ROADMAP" />
                       <include name="TODO" />
+                      <exclude name="core.*"/>
                  </zipfileset>
                  <zipfileset defaultexcludes="yes" dir="${src.dir}" prefix="tsp/src">
                      <exclude name="${src.dir}/**/*~"/>
+                     <exclude name="${src.dir}/**/core.*"/>
                  </zipfileset>
                  <zipfileset defaultexcludes="yes" dir="${external.dir}" prefix="tsp/external">
                      <exclude name="${external.dir}/**/*~"/>
+                     <exclude name="${external.dir}/**/core.*"/>
                  </zipfileset>
                  <zipfileset defaultexcludes="yes" dir="${skeleton.dir}" prefix="tsp/skeleton">
                      <exclude name="${skeleton.dir}/**/*~"/>
+                     <exclude name="${skeleton.dir}/**/core.*"/>
                  </zipfileset>
                  <zipfileset defaultexcludes="yes" dir="${make.dir}" prefix="tsp/make">
                      <exclude name="${make.dir}/**/*~"/>
+                     <exclude name="${make.dir}/**/core.*"/>
                  </zipfileset>
                  <zipfileset defaultexcludes="yes" dir="${tests.dir}" prefix="tsp/tests">
                      <exclude name="${tests.dir}/**/*~"/>
+                     <exclude name="${tests.dir}/**/core.*"/>
                  </zipfileset>
               </zip>
         </target>
@@ -157,7 +169,7 @@ date, time and user name.
 	    <rpm specFile="tsp.spec" topDir="${rpm.topdir}" command="-bs -vv"/>
         </target>
 
-        <target name="apidoc" depends="init"  description="o Generate API documentation using doxygen">           
+        <target name="apidoc" depends="init"  description="o Generate API documentation using doxygen">
             <mkdir dir="${doc.outputdir}" />  
             <exec executable="make" dir="${src.dir}/doxy">
             </exec>
