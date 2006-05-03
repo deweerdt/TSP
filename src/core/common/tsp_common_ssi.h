@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_common_ssi.h,v 1.7 2006-04-25 22:21:37 erk Exp $
+$Id: tsp_common_ssi.h,v 1.8 2006-05-03 21:13:34 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -217,7 +217,7 @@ TSP_SSIList_initialize(TSP_sample_symbol_info_list_t* ssil,
 		       int32_t nbSSI);
 
 /**
- * delete the contain of the data.
+ * Delete the contain of the data.
  * @param[in] ssil the symbols list to destruct
  * return  TSP_STATUS_OK if ok
  */
@@ -233,6 +233,13 @@ TSP_SSIList_finalize(TSP_sample_symbol_info_list_t* ssil);
 int32_t
 TSP_SSIList_copy(TSP_sample_symbol_info_list_t* dst_ssil, 
 		 const TSP_sample_symbol_info_list_t  src_ssil);
+
+
+TSP_sample_symbol_info_t*
+TSP_SSIList_getSSI(TSP_sample_symbol_info_list_t ssil, uint32_t index);
+
+uint32_t
+TSP_SSIList_getSize(const TSP_sample_symbol_info_list_t ssil);
 
 /** @} */
 

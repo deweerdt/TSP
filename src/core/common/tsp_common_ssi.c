@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_common_ssi.c,v 1.6 2006-04-24 22:17:47 erk Exp $
+$Id: tsp_common_ssi.c,v 1.7 2006-05-03 21:13:34 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -317,3 +317,18 @@ TSP_SSIList_copy(TSP_sample_symbol_info_list_t* dst_ssil,
 
   return retcode;
 } /* end of TSP_SSIList_copy */
+
+TSP_sample_symbol_info_t*
+TSP_SSIList_getSSI(TSP_sample_symbol_info_list_t ssil, uint32_t index) {
+  if ((index >= 0) &&
+      (index < ssil.TSP_sample_symbol_info_list_t_len)) {
+    return &(ssil.TSP_sample_symbol_info_list_t_val[index]);
+  } else {
+    return NULL;
+  }
+} /* end of TSP_SSIList_getSSI */
+
+uint32_t
+TSP_SSIList_getSize(const TSP_sample_symbol_info_list_t ssil) {
+  return ssil.TSP_sample_symbol_info_list_t_len;
+}

@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_common_ssei.h,v 1.7 2006-04-25 21:15:05 erk Exp $
+$Id: tsp_common_ssei.h,v 1.8 2006-05-03 21:13:34 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -256,6 +256,10 @@ TSP_SSEIList_finalize(TSP_sample_symbol_extended_info_list_t* ssei_list);
 int32_t
 TSP_SSEIList_copy(TSP_sample_symbol_extended_info_list_t* dest_ssei_list,
                   const TSP_sample_symbol_extended_info_list_t src_ssei_list);
+
+
+TSP_extended_info_list_t*
+TSP_SSEIList_getEIList(const TSP_sample_symbol_extended_info_list_t SSEIList, uint32_t index);
 
 END_C_DECLS
 

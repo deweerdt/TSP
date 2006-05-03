@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_common_ssei.c,v 1.7 2006-04-17 22:27:35 erk Exp $
+$Id: tsp_common_ssei.c,v 1.8 2006-05-03 21:13:34 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -464,6 +464,16 @@ TSP_SSEIList_copy(TSP_sample_symbol_extended_info_list_t* dest_ssei_list,
 
 } /* end of TSP_SSEI_copy */
 
+TSP_extended_info_list_t*
+TSP_SSEIList_getEIList(const TSP_sample_symbol_extended_info_list_t SSEIList, uint32_t index) {
+
+  if ((index >= 0) &&
+      (index < SSEIList.TSP_sample_symbol_extended_info_list_t_len)) {
+    return &(SSEIList.TSP_sample_symbol_extended_info_list_t_val[index].info);
+  } else {
+    return NULL;
+  }
+}
 
 
 

@@ -5,6 +5,7 @@ XINC    = tsp_common.h \
 	tsp_common_filter.h \
 	tsp_common_ssi.h \
 	tsp_common_ssei.h \
+	tsp_common_as.h \
 	tsp_decoder.h \
 	tsp_encoder.h
 SOURCES = \
@@ -12,6 +13,7 @@ SOURCES = \
 	tsp_common_request.c \
 	tsp_common_ssi.c \
 	tsp_common_ssei.c \
+	tsp_common_as.c \
 	tsp_encoder.c \
 	tsp_decoder.c
 

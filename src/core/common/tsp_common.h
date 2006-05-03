@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_common.h,v 1.11 2006-04-24 19:53:32 erk Exp $
+$Id: tsp_common.h,v 1.12 2006-05-03 21:13:34 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -46,6 +46,7 @@ Purpose   : Main interface for the producer module
 #include <tsp_common_filter.h>
 #include <tsp_common_ssi.h>
 #include <tsp_common_ssei.h>
+#include <tsp_common_as.h>
 
 /**
  * @defgroup TSP_CommonLib TSP Common Library
