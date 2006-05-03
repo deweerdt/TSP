@@ -1,6 +1,6 @@
 /* -*- idl -*-
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_rpc.x,v 1.37 2006-04-25 21:05:49 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_rpc.x,v 1.38 2006-05-03 21:12:11 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -165,7 +165,15 @@ enum TSP_status_t
 	/**
 	 * Cannot create new thread.
 	 */
-	TSP_STATUS_ERROR_THREAD_CREATE
+	TSP_STATUS_ERROR_THREAD_CREATE,
+	
+	TSP_STATUS_ERROR_NOT_INITIALIZED,
+	/**
+	 * Value greater than TSP_STATUS_ERROR_CUSTOM_BEGIN
+	 * may be used by custom TSP providers of consumers
+	 * without core TSP_STATUS_ERROR_ collision.
+	 */
+	TSP_STATUS_ERROR_CUSTOM_BEGIN=16384
 };
 
 /** TSP Symbols basic types */
