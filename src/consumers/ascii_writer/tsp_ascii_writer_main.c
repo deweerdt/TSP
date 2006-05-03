@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer_main.c,v 1.12 2006-04-12 13:04:25 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer_main.c,v 1.13 2006-05-03 21:17:48 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -87,10 +87,10 @@ main (int argc, char* argv[]) {
   
   struct sigaction my_action;
   struct sigaction old_action;
-  int32_t                               retcode=0;
-  int32_t                               nb_symbols;
- TSP_sample_symbol_info_list_t      symbol_list;
-  TSP_sample_symbol_info_t*         mysymbols;
+  int32_t                             retcode=0;
+  uint32_t                            nbUniqueSymbols;
+  TSP_sample_symbol_info_list_t       validatedSymbolList;
+  TSP_sample_symbol_info_list_t       configSymbolList;
   char*   input_filename  = NULL;
   char*   output_filename = NULL;
   char*   file_format     = NULL;
@@ -194,8 +194,12 @@ main (int argc, char* argv[]) {
   }
   
   fprintf(stdout,"%s: selected output file format is <%s>\n",argv[0],OutputFileFormat_desc_tab[header_style]);
+  retcode = tsp_ascii_writer_initialise(&argc,&argv);
 
-  tsp_ascii_writer_initialise(&argc,&argv);
+  if (TSP_STATUS_OK!=retcode) {
+    fprintf(stderr,"%s: Initialise failed: <%d>\n",argv[0],retcode);
+    exit(-1);
+  }
     
   /* install SIGINT handler (POSIX way) */
   my_action.sa_handler = &my_sighandler;  
@@ -203,33 +207,46 @@ main (int argc, char* argv[]) {
   my_action.sa_flags = SA_RESTART;
   sigaction(SIGINT,&my_action,&old_action);    
 
-  fprintf(stdout,"%s: Load config file...\n",argv[0]);
-  retcode = tsp_ascii_writer_load_config(input_filename,&mysymbols,&nb_symbols);
+  /* reset config list */
+  TSP_SSIList_initialize(&configSymbolList,1);
+  TSP_SSIList_finalize(&configSymbolList);
 
-  if (0!=retcode) {
+  fprintf(stdout,"%s: Load config file...\n",argv[0]);
+  retcode = tsp_ascii_writer_load_config(input_filename,
+					 &(configSymbolList.TSP_sample_symbol_info_list_t_val),
+					 &(configSymbolList.TSP_sample_symbol_info_list_t_len));
+  if (TSP_STATUS_OK!=retcode) {
     fprintf(stderr,"<%s>: Invalid configuration file (%d parse error(s)).\n",
 	    input_filename, tsp_ascii_writer_parse_error);
     tsp_ascii_writer_stop();
   }
 
-  if (0==retcode && no_duplicate) {
-    retcode = tsp_ascii_writer_make_unique(&mysymbols,&nb_symbols);
+  nbUniqueSymbols = TSP_SSIList_getSize(configSymbolList);
 
-    if (0!=retcode) {
-      fprintf(stderr,"<%s>: configuration file contains duplicate symbols with different period, please correct and re-run.\n",
-	      input_filename);
-      fprintf(stderr,"Seems to be symbol <%s>\n",mysymbols[retcode].name);
+  if (TSP_STATUS_OK==retcode && no_duplicate) {
+    retcode = tsp_ascii_writer_make_unique(&(configSymbolList.TSP_sample_symbol_info_list_t_val),
+					   &(nbUniqueSymbols));
+
+    if (TSP_STATUS_OK!=retcode) {
+      fprintf(stderr,
+	      "Configuration file contains duplicate symbols with different period,\n");
+      fprintf(stderr,"  --> Please fix your config file <%s> and re-run.\n",input_filename);
+      fprintf(stderr,"  --> It seems to be symbol <%s>\n",
+	      TSP_SSIList_getSSI(configSymbolList,nbUniqueSymbols)->name);
       tsp_ascii_writer_stop();
+    } else {
+      configSymbolList.TSP_sample_symbol_info_list_t_len = nbUniqueSymbols;
     }
   }
 
-  if (0==retcode) {
+  if (TSP_STATUS_OK==retcode) {
     fprintf(stdout,"%s: Validate symbols against provider info...\n",argv[0]);
     fflush(stdout);
-    retcode = tsp_ascii_writer_validate_symbols(mysymbols,nb_symbols,provider_url,&symbol_list);
+    retcode = tsp_ascii_writer_validate_symbols(&configSymbolList,provider_url,
+						&validatedSymbolList);
   }
 
-  if (0==retcode) {
+  if (TSP_STATUS_OK==retcode) {
     fprintf(stdout,"%s: Ascii writer running...\n",argv[0]);
     fflush(stdout);  
     if (NULL == output_filename) {
@@ -239,13 +256,13 @@ main (int argc, char* argv[]) {
       output_stream = fopen(output_filename,"w");
       if ((FILE*)NULL == output_stream) {
 	fprintf(stderr,"Cannot open output file <%s> for writing\n",output_filename);
-	retcode = -1;
+	retcode = TSP_STATUS_ERROR_AW_OUTPUT_FILE_ERROR;
       }    
     }
   }
   
-  if (0 == retcode) {
-    retcode = tsp_ascii_writer_start(output_stream,output_limit,header_style);
+  if (TSP_STATUS_OK == retcode) {
+    retcode = tsp_ascii_writer_start(output_stream,output_limit,header_style,&validatedSymbolList);
   }
 
   fprintf(stdout,"%s: Ascii writer stopped...\n",argv[0]);

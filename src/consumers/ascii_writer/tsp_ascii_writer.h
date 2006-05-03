@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer.h,v 1.12 2006-04-23 15:40:34 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer.h,v 1.13 2006-05-03 21:17:48 erk Exp $
 
 ------------------------------------------------------------------------
 
@@ -95,6 +95,14 @@ extern const char* OutputFileFormat_desc_tab[];
 #endif
 
 /**
+ * Defines Ascii writer specific error codes 
+ */
+#define TSP_STATUS_ERROR_AW_CONFIG_FILE_INVALID      TSP_STATUS_ERROR_CUSTOM_BEGIN+1
+#define TSP_STATUS_ERROR_AW_CONFIG_FILE_PARSE_ERROR  TSP_STATUS_ERROR_CUSTOM_BEGIN+2
+#define TSP_STATUS_ERROR_AW_DUPLICATE_SYMBOLS        TSP_STATUS_ERROR_CUSTOM_BEGIN+3
+#define TSP_STATUS_ERROR_AW_OUTPUT_FILE_ERROR        TSP_STATUS_ERROR_CUSTOM_BEGIN+4
+
+/**
  * Initialise ascii TSP consumer.
  * We must pass main arguments to TSP lib for
  * specific TSP arg handling.
@@ -102,7 +110,7 @@ extern const char* OutputFileFormat_desc_tab[];
  * 
  * @param argc The main 'argc' argument
  * @param argv The main 'argv' argument
- * @return 0 if init OK  -1 otherwise.
+ * @return TSP_STATUS_OK on success TSP_STATUS_ERROR_xxx  otherwise.
  */
 int32_t 
 tsp_ascii_writer_initialise(int* argc, char** argv[]);
@@ -128,60 +136,61 @@ tsp_ascii_writer_add_comment(char* comment);
  * @param[out] tsp_symbols  pointer to the array of symbols found in config file.
  *                         the array is allocated by the function.
  * @param[out] nb_symbols  the number of symbols found in file
- * @return 0 if config file loaded properly (no syntax error) -1 otherwise.
+ * @return TSP_STATUS_OK if config file loaded properly (no syntax 
+ *         TSP_STATUS_ERROR_xxx otherwise.
  */
 int32_t 
 tsp_ascii_writer_load_config(const char* conffilename, 
 			     TSP_sample_symbol_info_t**  tsp_symbols,
-			     int32_t* nb_symbols);
+			     uint32_t* nb_symbols);
 
 /**
  * Make the requested symbol unique in the provided list.
  * The unicity may be enforced by reducing the number 
  * of requested symbols if ever duplicate symbols have
  * same name, period and phase.
- * @param tsp_symbols INOUT, pointer to the array of symbols 
+ * @param[in,out] tsp_symbols pointer to the array of symbols 
  *                           to be checked for unicity on entry,
  *                           the array of unique symbols on return.
- * @param nb_symbols INOUT, the number of symbols in the provided array on entry
+ * @param[in,out] nb_symbols the number of symbols in the provided array on entry
  *                          the number of remaining (unique) symbols on return.
- * @return 0 if uniticy may be enforced or the rank of non-unique
- *           symbol otherwise.
+ *                          If ERROR nb_symbols contains the rank of the first
+ *                          wrong duplicate.
+ * @return TSP_STATUS_OK if uniticy may be enforced or TSP_STATUS_ERROR_AW_DUPLICATE_SYMBOLS.
  */
 int32_t 
 tsp_ascii_writer_make_unique(TSP_sample_symbol_info_t**  tsp_symbols,
-			     int32_t* nb_symbols);
+			     uint32_t* nb_symbols);
 
 /**
- * Validate the requested symbol against the TSP provider 
- * located on tsp_provider_hostname.
+ * Validate the requested symbol against the TSP provider specified by tsp_url.
  * If symbol name match an array symbol all element aoff the array
  * are requested.
- * @param tsp_symbols IN/OUT,  array of symbols to be validated.
- * @param nb_symbols IN, the size of the tsp_symbols array.
- * @param tsp_provider_hostname IN, TSP provider hostname used for validating symbols.
- * @param tsp_symbol_list TSP IN/OUT, TSP validated symbol list.
- * @return 0 OK -1 otherwise.
+ * @param[in] requestedSSIL  the requested symbols list to be validated.
+ * @param[in] tsp_url   The TSP url of the provider to be used for validating symbols.
+ * @param[out] validatedSSIL  the validated symbol list.
+ * @return TSP_STATUS_OK on success TSP_STATUS_ERROR_xxx otherwise.
  */
 int32_t 
-tsp_ascii_writer_validate_symbols(TSP_sample_symbol_info_t*  tsp_symbols,
-				  int32_t nb_symbols,
-				  const char* tsp_provider_hostname,
-				  TSP_sample_symbol_info_list_t* tsp_symbol_list);
+tsp_ascii_writer_validate_symbols(TSP_sample_symbol_info_list_t* requestedSSIL,
+				  const char* tsp_url,
+				  TSP_sample_symbol_info_list_t* validatedSSIL);
 
 /**
  * Start TSP data receive and archive.
  * Should have called tsp_ascii_writer_validate_symbols first.
- * @param sfile IN, the stream file used for data saving.
- * @param nb_sample_max_infile IN, the maximum number of sample stored in the file
+ * @param[in] sfile the stream file used for data saving.
+ * @param[in] nb_sample_max_infile the maximum number of sample stored in the file
  *                                 if 0<= then no limit, if >0 then when about
  *                                 to save the nb_sample_max_infile-th sample
  *                                 we rewind the file.
- * @param file_format IN, the header style to be used for the output. 
+ * @param[in] file_format  the header style to be used for the output. 
+ * @param[in] validatedSSIL the validated list of symbols to retrieve
  * @return 0 OK -1 otherwise.
  */
 int32_t 
-tsp_ascii_writer_start(FILE* sfile, int32_t nb_sample_max_infile, OutputFileFormat_t file_format);
+tsp_ascii_writer_start(FILE* sfile, int32_t nb_sample_max_infile, OutputFileFormat_t file_format,
+		       TSP_sample_symbol_info_list_t* validatedSSIL);
 
 
 /**

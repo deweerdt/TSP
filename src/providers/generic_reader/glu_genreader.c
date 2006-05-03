@@ -1,6 +1,6 @@
 /*
 
-$Id: glu_genreader.c,v 1.4 2006-04-28 07:52:01 erk Exp $
+$Id: glu_genreader.c,v 1.5 2006-05-03 21:17:48 erk Exp $
 
 -----------------------------------------------------------------------
  
@@ -87,7 +87,7 @@ GENREADER_GLU_run(void* arg)
   /* lire le fichier et envoyer au GLU */
   while(EOF!=(rep=genreader->handler->read_value(genreader,&item)))
   {
-    /*size renseigné dans le read_value*/
+    /* size renseigné dans le read_value */
     TSP_datapool_push_next_item(this->datapool,&item);
   
     ++item.provider_global_index;
