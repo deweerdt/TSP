@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_stream_sender.c,v 1.20 2006-04-24 19:53:32 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_stream_sender.c,v 1.21 2006-05-04 21:44:47 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -240,6 +240,7 @@ static void* TSP_streamer_sender_connector(void* arg)
     
   TSP_socket_t* sock = (TSP_socket_t*)arg;
   socklen_t Len = 0;
+  sock->client_is_connected = FALSE;
     
   pthread_detach(pthread_self());
     
@@ -247,19 +248,16 @@ static void* TSP_streamer_sender_connector(void* arg)
   STRACE_DEBUG(("Thread acceptor started waiting for client to connect %d", sock->hClient));
   sock->hClient = accept(sock->socketId, NULL, &Len);
 
-  if(sock->hClient > 0)
-    {
-
-      /* OK, the client is connected */
-      sock->client_is_connected = TRUE;
-      STRACE_DEBUG(("New connection accepted on socket client socket %d", sock->hClient));
-    }
-  else
-    {
-      STRACE_ERROR(("Accept error"));
-      close(sock->socketId);
-      return 0;
-    }
+  if(sock->hClient > 0) {
+    /* OK, the client is connected */
+    sock->client_is_connected = TRUE;
+    STRACE_DEBUG(("New connection accepted on socket client socket %d", sock->hClient));
+  }
+  else {
+    STRACE_ERROR(("Accept error"));
+    close(sock->socketId);
+    return 0;
+  }
     
   return 0;
 }
@@ -269,8 +267,7 @@ const char* TSP_stream_sender_get_data_address_string(TSP_stream_sender_t sender
     
   TSP_socket_t* sock = (TSP_socket_t*)sender;
     
-  STRACE_IO(("-->IN"));
-  STRACE_IO(("-->OUT address='%s'", sock->data_address));
+  STRACE_INFO(("-->address='%s'", sock->data_address));
 
   return sock->data_address;
 }
@@ -509,6 +506,7 @@ TSP_stream_sender_send(TSP_stream_sender_t sender, const char *buffer, int buffe
   Total = 0;
   if (identSocket > 0) {      
     while (bufferLen > 0) {
+      errno = 0;
       /* FIXME is it really an error to get 0 as nwrite? */
       if( (nwrite = write(identSocket,  &buffer[Total], bufferLen)) <= 0 ) {
 	if( errno == EINTR ) {
@@ -516,7 +514,7 @@ TSP_stream_sender_send(TSP_stream_sender_t sender, const char *buffer, int buffe
 	  nwrite = 0;
 	}
 	else {		  
-	  STRACE_DEBUG(("send failed"));
+	  STRACE_DEBUG(("send failed with errno = %d : <%s>",errno,strerror(errno)));
 	  sock->connection_ok = FALSE;
 	  return FALSE;
 	}
@@ -525,6 +523,7 @@ TSP_stream_sender_send(TSP_stream_sender_t sender, const char *buffer, int buffe
       bufferLen -= nwrite;
     } /* end while buffer not written fully */ 
   } else {
+    STRACE_ERROR(("identSocket = %d",identSocket));
     return (FALSE);
   }
 

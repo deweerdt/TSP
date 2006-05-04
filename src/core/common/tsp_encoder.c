@@ -1,7 +1,7 @@
 
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/common/tsp_encoder.c,v 1.4 2006-04-17 22:27:35 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/common/tsp_encoder.c,v 1.5 2006-05-04 21:44:47 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -85,7 +85,7 @@ uint32_t TSP_data_channel_double_encoder(void* v_double, uint32_t dimension,  ch
     for(i=0;i<dimension;++i)
     {
       ((uint64_t*)out_buf)[i] = TSP_ENCODE_DOUBLE_TO_UINT64(pt_double+i);
-      STRACE_DEBUG(("DOUBLE = %f, encoded DOUBLE=0x%08llx",*pt_double,((uint64_t*)out_buf)[i]));
+      STRACE_IO(("DOUBLE = %f, encoded DOUBLE=0x%08llx",*pt_double,((uint64_t*)out_buf)[i]));
     }
 
 

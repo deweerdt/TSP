@@ -1,6 +1,6 @@
 /*
  
-$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_const_def.h,v 1.40 2006-04-27 00:07:20 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_const_def.h,v 1.41 2006-05-04 21:44:47 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -89,7 +89,7 @@ Purpose   : definitions and const that must have a program wide scope
 /** used to calculate the socket buffer size */
 #define TSP_DATA_STREAM_MAX_HEADER_SIZE 1024
 /* till now, all elements are doubles, but there will be strings, raw, etc ... */
-#define TSP_DATA_STREAM_MAX_ITEM_SIZE sizeof(double)
+#define TSP_DATA_STREAM_MAX_ITEM_SIZE sizeof(double)*8096
 #define TSP_DATA_STREAM_MAX_BUFFER_SIZE(max_nb_items) \
              ( (max_nb_items) * TSP_DATA_STREAM_MAX_ITEM_SIZE \
                               + TSP_DATA_STREAM_MAX_HEADER_SIZE)

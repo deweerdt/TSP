@@ -1,6 +1,6 @@
 /*
 
-$Id: macsim_fmt.c,v 1.5 2006-04-28 07:53:41 erk Exp $
+$Id: macsim_fmt.c,v 1.6 2006-05-04 21:44:47 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -475,6 +475,7 @@ int32_t macsim_read(GenericReader_T* genreader,glu_item_t* item)
 	    }
 
 	  }
+   
 	}
          return(rep);
 }
@@ -729,7 +730,7 @@ int32_t load_char(char* data_var,void* raw_value,const uint32_t indice_data)
 
   tab=(char*)raw_value;
  
-  memcpy(&(tab[indice_data]),data_var,LG_MAX_STRING_MACSIM);
+  memcpy(&(tab[indice_data*LG_MAX_STRING_MACSIM]),data_var,LG_MAX_STRING_MACSIM);
  /* memcpy(&(tab[indice_data]),data_var,strlen(data_var)+1);*/
 
   return TSP_STATUS_OK;
@@ -743,7 +744,7 @@ int32_t load_uchar(char* data_var,void* raw_value,const uint32_t indice_data)
   tab=(unsigned char *)raw_value;
   
 /*  memcpy(&(tab[indice_data]),data_var,strlen(data_var)+1);*/
-  memcpy(&(tab[indice_data]),data_var,LG_MAX_STRING_MACSIM);
+  memcpy(&(tab[indice_data*LG_MAX_STRING_MACSIM]),data_var,LG_MAX_STRING_MACSIM);
 
   return TSP_STATUS_OK;
 

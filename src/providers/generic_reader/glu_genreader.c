@@ -1,6 +1,6 @@
 /*
 
-$Id: glu_genreader.c,v 1.5 2006-05-03 21:17:48 erk Exp $
+$Id: glu_genreader.c,v 1.6 2006-05-04 21:44:47 erk Exp $
 
 -----------------------------------------------------------------------
  
@@ -92,10 +92,17 @@ GENREADER_GLU_run(void* arg)
   
     ++item.provider_global_index;
 
-    if(END_SAMPLE_SET==rep)
+    if(END_SAMPLE_SET==rep || item.provider_global_index>=genreader->ssi_list->TSP_sample_symbol_info_list_t_len)
     {
       TSP_datapool_push_commit(this->datapool, item.time, GLU_GET_NEW_ITEM);  
       ++item.time;
+
+      if(END_SAMPLE_SET!=rep && item.provider_global_index>=genreader->ssi_list->TSP_sample_symbol_info_list_t_len)
+      {
+	STRACE_ERROR(("ERROR: file format is not good (not enough or too much symbol or end of line no good\n"));
+	break;
+      }
+
       item.provider_global_index=0;
       item.size=0;
       memset(item.raw_value,'\0',genreader->max_size_raw_value);

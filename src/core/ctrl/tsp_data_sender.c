@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_data_sender.c,v 1.24 2006-05-03 21:16:38 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_data_sender.c,v 1.25 2006-05-04 21:44:47 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -97,8 +97,7 @@ TSP_data_sender_create(int fifo_size, int max_group_size) {
     else {
       sender->out_fifo = 0;
       sender->out_item = TSP_stream_sender_get_buffer(sender->stream_sender);
-      assert(sender->out_item);
-      
+      assert(sender->out_item);      
     }
   }
   else {
@@ -123,7 +122,6 @@ TSP_data_sender_stop(TSP_data_sender_t sender) {
   TSP_struct_data_sender_t* data_sender = (TSP_struct_data_sender_t*)sender;
   TSP_stream_sender_stop(data_sender->stream_sender);
 }
-
 
 
 static TSP_stream_sender_item_t* TSP_data_sender_get_out_item(TSP_struct_data_sender_t* data_sender)
@@ -176,8 +174,9 @@ static TSP_stream_sender_item_t* TSP_data_sender_get_out_item(TSP_struct_data_se
   return ret_item;
 }
 
-static int TSP_data_sender_to_stream_sender(TSP_struct_data_sender_t* data_sender,
-					    TSP_stream_sender_item_t* tosend) {
+static int 
+TSP_data_sender_to_stream_sender(TSP_struct_data_sender_t* data_sender,
+				 TSP_stream_sender_item_t* tosend) {
 
   /* First check for a valid connection */
   int ret = TSP_stream_sender_is_connection_ok(data_sender->stream_sender);
@@ -200,7 +199,7 @@ static int TSP_data_sender_to_stream_sender(TSP_struct_data_sender_t* data_sende
     }
   }
   return ret;
-}
+} /* end of TSP_data_sender_to_stream_sender */
 
 
 /**
@@ -258,10 +257,7 @@ int TSP_data_sender_send_msg_ctrl(TSP_data_sender_t sender, TSP_msg_ctrl_t msg_c
       ret = TSP_data_sender_to_stream_sender(data_sender, tosend);
     }
   
-  STRACE_IO(("-->OUT"));
-  
-  return ret;
- 
+  return ret; 
 }
 
 /*

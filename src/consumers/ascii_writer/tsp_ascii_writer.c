@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer.c,v 1.24 2006-05-03 21:17:48 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer.c,v 1.25 2006-05-04 21:44:47 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -51,7 +51,9 @@ Purpose   : TSP ascii writer consumer
 #include <tsp_simple_trace.h>
 #include <tsp_const_def.h>
 #include <tsp_time.h>
-
+/*#include <macsim_fmt.h>*/
+/*FIXME: this data can be retrieve with extended info*/
+#define LG_MAX_STRING_MACSIM 1025
 
 int yyrestart(FILE*);
 int yyparse (void);
@@ -63,29 +65,29 @@ static TSP_provider_t myprovider;
 static char tc_output_buffer[OUTPUT_STREAM_BUFFER_SIZE];
 static int stop_it = 0;
 const static char* fmt_tab[] = { 0,
-			      "%16.9F ",
-			      "%16.9F ",
-			      "%d ",
-			      "%d ",
-			      "%d ",
-			      "%d ",
-			      "%d ",
-			      "%d ",
-			      "%d ",
-			      "%d ",
-			      "%c ",
-			      "%c ",
-			      "%c ",
+			      "%1.15G\t",
+			      "%1.15G\t",
+			      "%d\t",
+			      "%d\t",
+			      "%d\t",
+			      "%d\t",
+			      "%d\t",
+			      "%d\t",
+			      "%d\t",
+			      "%d\t",
+			      "%s\t",
+			      "%s\t",
+			      "%c\t",
 			      0				
 };
-const static char* libelle_type_tab[] = { "unknown",
+const static char* libelle_type_tab_macsim[] = { "unknown",
 			      "double",
 			      "float",
 			      "entier",
 			      "entier",
 			      "entier",
 			      "entier",
-			      "entier",
+			      "booleen",
 			      "entier",
 			      "entier",
 			      "entier",
@@ -104,6 +106,9 @@ int tsp_ascii_writer_header_style   =  0;
 int tsp_ascii_writer_sample_running =  0;
 TSP_sample_symbol_info_t*  g_tsp_symbols = NULL; 
 static tsp_ascii_writer_logMsg_ft my_logMsg = tsp_ascii_writer_logMsg_stdout; 
+
+static char * tsp_ascii_writer_tab_char=NULL; 
+static char * tsp_ascii_writer_tab_uchar=NULL; 
 
 void tsp_ascii_writer_set_logMsgCB(tsp_ascii_writer_logMsg_ft logMsgCB) {
   my_logMsg = logMsgCB;
@@ -468,6 +473,70 @@ tsp_ascii_writer_validate_symbols(TSP_sample_symbol_info_list_t* requestedSSIL,
   return retcode;  
 } /* end of tsp_ascii_writer_validate_symbols */
 
+
+
+int32_t 
+TSP_asciiwriter_read_sample(TSP_provider_t provider,
+			 TSP_sample_t* sample,
+			 int* new_sample)
+{
+  int32_t retcode = TSP_STATUS_OK;
+  int32_t indice=0;
+
+  /* write loop */
+  while (TSP_STATUS_OK==(retcode =TSP_consumer_read_sample(myprovider,sample, new_sample)) && !stop_it) 
+  {
+      if (new_sample) 
+      {
+	/*test if macsim file*/
+	if (tsp_ascii_writer_header_style==1) 
+	{
+	    
+	  /*TYPE_CHAR or TYPE_UCHAR is a  string of  LG_MAX_STRING_MACSIM length */
+	  /* each character of a string is send in one sample*/
+	  /* so we must retrieve all character of the string before display*/
+	  if( TSP_TYPE_CHAR==sample->type
+	      || TSP_TYPE_UCHAR==sample->type )
+	  {
+
+	    if(TSP_TYPE_CHAR==sample->type)
+	    {
+	      tsp_ascii_writer_tab_char[indice]=sample->uvalue.char_value;
+	    }
+	    else
+	    {
+	      tsp_ascii_writer_tab_uchar[indice]=sample->uvalue.uchar_value;
+	    }
+
+
+	    ++indice;
+	      
+	    if(indice>=LG_MAX_STRING_MACSIM)
+	    {
+	      return retcode;
+	    }
+
+	  } 
+	  else
+	  {
+	    return retcode;
+	  }
+	} 
+	else
+	{
+	  return retcode;
+	}
+      } 
+      else 
+      {
+	tsp_usleep(1000);
+      }
+  } /* end of while ecriture */
+
+  return retcode;
+
+}
+
 int32_t 
 tsp_ascii_writer_start(FILE* sfile, 
 		       int32_t nb_sample_max_infile, 
@@ -500,6 +569,10 @@ tsp_ascii_writer_start(FILE* sfile,
   assert(validatedSSIL);
 
   retcode = 0;
+
+  /*vaiable where data string are loaded*/
+  tsp_ascii_writer_tab_char=(char*)calloc(LG_MAX_STRING_MACSIM,sizeof(char));
+  tsp_ascii_writer_tab_uchar=(unsigned char*)calloc(LG_MAX_STRING_MACSIM,sizeof(unsigned char));
 
   /* buf RAZ  */
   memset(tc_output_buffer,'\0',OUTPUT_STREAM_BUFFER_SIZE);
@@ -580,16 +653,16 @@ tsp_ascii_writer_start(FILE* sfile,
 	fprintf(sfile,"%s : %s : %s : %s \n", 
 		charbuf, 
 		(NULL==ext_info_profil)?"1":ext_info_profil->value,
-		libelle_type_tab[symbols->TSP_sample_symbol_info_list_t_val[symbol_index].type],
+		libelle_type_tab_macsim[symbols->TSP_sample_symbol_info_list_t_val[symbol_index].type],
 		(NULL==ext_info_unit)?" ":ext_info_unit->value);
 	
       } /*end for*/
-    fprintf(sfile," ==========================================\n");   
+    fprintf(sfile,"==========================================\n");   
     /*
      * write the column title
      */
     for (symbol_index=0;symbol_index<symbols->TSP_sample_symbol_info_list_t_len;++symbol_index) {
-      fprintf(sfile,"%s	", *(tab_colonne + symbol_index));
+      fprintf(sfile,"%s", *(tab_colonne + symbol_index));
       free(*(tab_colonne + symbol_index));
     }  /* For each requested symbol, we store it */
     free(tab_colonne);    
@@ -605,7 +678,26 @@ tsp_ascii_writer_start(FILE* sfile,
   /*calculate the total data receive: simple + table*/
   for(indice=0;indice<symbols->TSP_sample_symbol_info_list_t_len;++indice)
   {
-    nb_data_receive+=symbols->TSP_sample_symbol_info_list_t_val[indice].nelem;
+    /*for MACSIM file nelem= nb symbol + size max of string * nb string symbol*/
+    /*so  we must change nb data receive*/
+    if (tsp_ascii_writer_header_style==1) 
+    {
+      /*TYPE_CHAR or TYPE_UCHAR is a  string of  LG_MAX_STRING_MACSIM length */
+      if( TSP_TYPE_CHAR==symbols->TSP_sample_symbol_info_list_t_val[indice].type
+	  || TSP_TYPE_UCHAR==symbols->TSP_sample_symbol_info_list_t_val[indice].type )
+      {
+	  nb_data_receive+=(symbols->TSP_sample_symbol_info_list_t_val[indice].nelem / LG_MAX_STRING_MACSIM);
+      }
+      else
+      {
+	nb_data_receive+=symbols->TSP_sample_symbol_info_list_t_val[indice].nelem;
+      
+      }
+    }
+    else
+    {
+	nb_data_receive+=symbols->TSP_sample_symbol_info_list_t_val[indice].nelem;
+    }
   }
 
   /* Demarrage des sample au niveau provider */
@@ -621,7 +713,7 @@ tsp_ascii_writer_start(FILE* sfile,
     complete_line = 0;
     nb_sample     = 0;
     /* write loop */
-    while (TSP_STATUS_OK==TSP_consumer_read_sample(myprovider,&sample, &new_sample) && !stop_it) 
+    while (TSP_STATUS_OK==TSP_asciiwriter_read_sample(myprovider,&sample, &new_sample) && !stop_it) 
     {
       if (new_sample) 
       {
@@ -668,6 +760,12 @@ tsp_ascii_writer_start(FILE* sfile,
       }
     } /* end of while ecriture */
   } /* end of if 0 */
+
+  free(tsp_ascii_writer_tab_char);
+  tsp_ascii_writer_tab_char=NULL;
+
+  free(tsp_ascii_writer_tab_uchar);
+  tsp_ascii_writer_tab_uchar=NULL;
   return retcode;
 } /* tsp_ascii_writer_start */
 
@@ -755,11 +853,13 @@ tsp_ascii_writer_display_value(FILE* sfile,TSP_sample_t sample)
     break;
     
   case TSP_TYPE_CHAR:
-    fprintf(sfile,fmt_tab[sample.type],sample.uvalue.char_value);
+    /*fprintf(sfile,fmt_tab[sample.type],sample.uvalue.char_value);*/
+    fprintf(sfile,fmt_tab[sample.type],tsp_ascii_writer_tab_char);
     break;
     
   case TSP_TYPE_UCHAR:
-    fprintf(sfile,fmt_tab[sample.type],sample.uvalue.uchar_value);
+    /*fprintf(sfile,fmt_tab[sample.type],sample.uvalue.uchar_value);*/
+    fprintf(sfile,fmt_tab[sample.type],tsp_ascii_writer_tab_uchar);
     break;
     
   case TSP_TYPE_RAW:
@@ -776,7 +876,7 @@ tsp_ascii_writer_display_value(FILE* sfile,TSP_sample_t sample)
 char* new_array_label(const char* libelle,const char* profil, const char* ordre, const int recursif)
 {
 
-  uint8_t indice_etoile;
+  char * ptr_etoile;
   uint8_t rang;
   uint32_t dimension;
   uint32_t i;
@@ -784,6 +884,7 @@ char* new_array_label(const char* libelle,const char* profil, const char* ordre,
   char *nouveau_libelle=NULL;
   char *nouveau_profil=NULL;
   char* reponse=NULL;
+  char* reponse_bis=NULL;
   char indice[10];
 
 
@@ -799,7 +900,15 @@ char* new_array_label(const char* libelle,const char* profil, const char* ordre,
   }
 
 
-  rang=strspn(profil,"*")+1;
+  rang=1;
+  for(i=0;i<strlen(profil);++i)
+  {
+    if('*'==profil[i])
+    {
+      ++rang;
+    }
+  }
+
 
   if(1==rang)
   {
@@ -825,24 +934,38 @@ char* new_array_label(const char* libelle,const char* profil, const char* ordre,
   }
   else
   {
-    indice_etoile=(int32_t)strstr(profil,"*");
+    ptr_etoile=strstr(profil,"*");
    
-    nouveau_profil=(char*)calloc(sizeof(char),strlen(&(profil[indice_etoile+1]))+1);
-    strcpy(nouveau_profil,&(profil[indice_etoile+1]));
+    nouveau_profil=(char*)calloc(sizeof(char),strlen(&(ptr_etoile[1]))+1);
+    strcpy(nouveau_profil,&(ptr_etoile[1]));
 
+    *ptr_etoile='\0';
     dimension=(int32_t)atoi(profil);
-
-    strcpy(profil,&profil[indice_etoile+1]);
+    *ptr_etoile='*';
 
     for(i=0;i<dimension;++i)
     {
-      sprintf(indice,"%d",dimension+1); 
+      sprintf(indice,"%d",i+1); 
 
       nouveau_libelle=(char*)calloc(sizeof(char),strlen(chaine_lib)+strlen(indice)+2);
       
       sprintf(nouveau_libelle,"%s%s,",chaine_lib,indice);
 
-      reponse= new_array_label(nouveau_libelle,nouveau_profil,ordre,1);
+
+      if(NULL==reponse)
+      { 
+	reponse= new_array_label(nouveau_libelle,nouveau_profil,ordre,1);
+	
+      }
+      else
+      {
+	reponse_bis= new_array_label(nouveau_libelle,nouveau_profil,ordre,1);
+	reponse=(char*)realloc(reponse,(strlen(reponse)+strlen(reponse_bis)+1)*sizeof(char));
+	sprintf(&(reponse[strlen(reponse)]),"%s",reponse_bis);
+	free(reponse_bis);
+	reponse_bis=NULL;
+      }
+
 
       free(nouveau_libelle);
 

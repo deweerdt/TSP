@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.c,v 1.31 2006-05-03 21:16:38 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.c,v 1.32 2006-05-04 21:44:47 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -42,7 +42,7 @@ opened session from a client
 #endif /* __OpenBSD__ */
 
 #include <tsp_sys_headers.h>
-
+#include <tsp_time.h>
 #include <tsp_session.h>
 #include <tsp_group_algo.h>
 #include <tsp_data_sender.h>
@@ -129,24 +129,26 @@ TSP_get_session(channel_id_t channel_id) {
   return session ;
 }
 
-static void TSP_session_close_session(channel_id_t channel_id)
-{
+static void 
+TSP_session_close_session(channel_id_t channel_id) {
   int i;
   int ret = FALSE;
 
-  for( i = 0 ;  i < X_session_nb ; i++)
-    {
-      if( X_session_t[i].channel_id == channel_id )
-	{
-	  assert(X_session_t[i].session_data);
-	  free(X_session_t[i].session_data);
-	  /* Fill the hole with latest element */
-	  X_session_t[i] = X_session_t[X_session_nb - 1];
-	  X_session_nb--;
-	  ret = TRUE;
-	  break;			
-	}
-    }	
+  STRACE_DEBUG(("Request Closing session channel_id = %d", channel_id));
+
+  for( i = 0 ;  i < X_session_nb ; i++) {
+    if( X_session_t[i].channel_id == channel_id ) {
+      STRACE_DEBUG(("Channel_id = <%d> was session Idx <%d>", channel_id,i));
+      assert(X_session_t[i].session_data);
+      free(X_session_t[i].session_data);
+      /* Fill the hole with latest element */
+      X_session_t[i] = X_session_t[X_session_nb - 1];
+      X_session_nb--;
+      STRACE_DEBUG(("X_session_nb now = %d.", X_session_nb));
+      ret = TRUE;
+      break;			
+    }
+  }	
 
   if(!ret)
     {
@@ -158,7 +160,7 @@ static void TSP_session_close_session(channel_id_t channel_id)
 static void 
 TSP_session_destroy_symbols_table(TSP_session_t* session) {
   /* If there was a local datapool, we erase it */
-  if(session->session_data->datapool) {
+  if(NULL != session->session_data->datapool) {
     TSP_datapool_delete(&(session->session_data->datapool));
   }
   
@@ -397,12 +399,51 @@ TSP_session_all_session_send_data(time_stamp_t t) {
 
   TSP_LOCK_MUTEX(&X_session_list_mutex,);
 
+  /* Loop over all ACTIVE sessions */
   for (i = 0 ; i< X_session_nb ; ++i) {
+    /* 
+     * If GLU is PASSIVE this should block until 
+     * socket is ready or session is garbage collected.
+     */
+    if ( GLU_SERVER_TYPE_PASSIVE == X_session_t[i].session_data->glu_h->type) {
+      int32_t waitconsumer = 1;
+
+      while (1==waitconsumer) {
+	TSP_UNLOCK_MUTEX(&X_session_list_mutex,);
+	tsp_usleep(10000);	
+	TSP_LOCK_MUTEX(&X_session_list_mutex,);
+
+	if (TRUE==X_session_t[i].session_data->data_link_broken) {
+	  STRACE_DEBUG(("Data link broken (during wait loop) for session = %d / idx = %d.",X_session_t[i].channel_id,i));
+	  waitconsumer = 0;
+	  continue;
+	}
+	
+	if (NULL == X_session_t[i].session_data->groups) {
+	  STRACE_DEBUG(("Waiting for request sample (session = %d / idx = %d)...",X_session_t[i].channel_id,i));
+	  continue;
+	} 
+
+	if (NULL == X_session_t[i].session_data->sender) {
+	  STRACE_DEBUG(("Waiting for request sample init (session = %d / idx = %d)...",X_session_t[i].channel_id,i));
+	  continue;
+	}	
+	
+	if (FALSE==TSP_data_sender_is_consumer_connected(X_session_t[i].session_data->sender)) {
+	  STRACE_DEBUG(("Waiting for consumer to connect... <%d>",TSP_data_sender_is_consumer_connected(X_session_t[i].session_data->sender)));
+	  continue;
+	}
+
+	/* go out of wait loop */
+	waitconsumer = 0;
+      }
+    }
     
-    if( X_session_t[i].session_data->groups /* The request sample was done */
-	&& X_session_t[i].session_data->sender /* The request sample init was done */
-	&& (X_session_t[i].session_data->data_link_broken == FALSE))
-      {
+    /* we go for real send */
+    if ((NULL != X_session_t[i].session_data->groups) && /* The request sample was done */
+	(NULL != X_session_t[i].session_data->sender) && /* The request sample init was done */
+	(X_session_t[i].session_data->data_link_broken == FALSE) /* Session is valid */
+	) {
 	if(!TSP_data_sender_send(X_session_t[i].session_data->sender, 
 				 X_session_t[i].session_data->groups, 
 				 t))
@@ -417,26 +458,25 @@ TSP_session_all_session_send_data(time_stamp_t t) {
 }
 
 
-void TSP_session_all_session_send_msg_ctrl(TSP_msg_ctrl_t msg_ctrl)
-{
+void 
+TSP_session_all_session_send_msg_ctrl(TSP_msg_ctrl_t msg_ctrl) {
   int i;
 
   TSP_LOCK_MUTEX(&X_session_list_mutex,);
 
-  for( i = 0 ; i< X_session_nb ; i++)
-    {
-      if( X_session_t[i].session_data->groups /* The sample request was done */
-	  && X_session_t[i].session_data->sender /* The sample request init was done */
-	  && (X_session_t[i].session_data->data_link_broken == FALSE))
-	{
-
-	  if(!TSP_data_sender_send_msg_ctrl(X_session_t[i].session_data->sender, msg_ctrl))
-	    {
-	      STRACE_WARNING(("Data link broken for session No %d",X_session_t[i].channel_id ));
-	      X_session_t[i].session_data->data_link_broken = TRUE;	      
-	    }	  
-	}
-    }
+  for( i = 0 ; i< X_session_nb ; i++) {
+    if( X_session_t[i].session_data->groups /* The sample request was done */
+	&& X_session_t[i].session_data->sender /* The sample request init was done */
+	&& (X_session_t[i].session_data->data_link_broken == FALSE))
+      {
+	
+	if(!TSP_data_sender_send_msg_ctrl(X_session_t[i].session_data->sender, msg_ctrl))
+	  {
+	    STRACE_WARNING(("Data link broken for session No %d",X_session_t[i].channel_id ));
+	    X_session_t[i].session_data->data_link_broken = TRUE;	      
+	  }	  
+      }
+  }
 
   TSP_UNLOCK_MUTEX(&X_session_list_mutex,);
 }
@@ -512,6 +552,7 @@ TSP_session_create_data_sender_by_channel(channel_id_t channel_id) {
 	  retcode = TSP_STATUS_ERROR_GLU_START;
 	  STRACE_ERROR(("Unable to start GLU (PASSIVE case)"));
 	} else {
+	  STRACE_DEBUG(("PASSIVE GLU started."));
 	  retcode = TSP_STATUS_OK;
 	}
       }
@@ -621,25 +662,26 @@ int TSP_session_get_symbols_global_index_by_channel(channel_id_t channel_id,
 
 }
 
-int TSP_session_get_garbage_session(channel_id_t* channel_id)
-{
+int 
+TSP_session_get_garbage_session(channel_id_t* channel_id) {
   int i;
   int found = FALSE;
 	
   TSP_LOCK_MUTEX(&X_session_list_mutex,FALSE);
+  /* There is multiple criterion for session garbage collection */
   
-  for( i = 0 ;  i < X_session_nb ; i++)
-    {
-      /* FIXME : here the criteria for a dirty session is 'the data
-	 link is broken', but there are plenty of criteria that should be
-	 added (like 'timeout on idle consumer', and so on) */
-      if( X_session_t[i].session_data->data_link_broken == TRUE )
-	{
-	  found = TRUE;
-	  *channel_id = X_session_t[i].channel_id;
-	  break;
-	}
-    }
+  for( i = 0 ;  i < X_session_nb ; i++) {
+    /* Dirty session is 'the data link is broken' */
+    if (X_session_t[i].session_data->data_link_broken == TRUE ) {
+      found = TRUE;
+      *channel_id = X_session_t[i].channel_id;
+      break;
+    } 
+
+    /* FIXME datapool terminated */
+
+    /* FIXME to be added like 'timeout on idle consumer' */
+  }
 	
   TSP_UNLOCK_MUTEX(&X_session_list_mutex,FALSE);
 

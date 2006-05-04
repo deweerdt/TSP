@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer.h,v 1.13 2006-05-03 21:17:48 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer.h,v 1.14 2006-05-04 21:44:47 erk Exp $
 
 ------------------------------------------------------------------------
 
@@ -233,6 +233,24 @@ tsp_ascii_writer_display_value(FILE* sfile,TSP_sample_t sample);
  * @return pinter on the different label
  */
 char* new_array_label(const char* libelle,const char* profil, const char* ordre, const int recursif);
+
+/** 
+ * Read a sample symbol.
+ * @param provider The provider handle
+ * @param sample The returned symbol if there is one
+ * @param new_sample When TRUE, there is a new sample, else the sample value is
+ *                    meaningless
+ * @return TSP_STATUS_OK on success TSP_STATUS_ERROR_xxx on error.
+ * @todo
+ *  - Some kind of get_last_error func must be implemented to read
+ *    the error codes (EOF, RECONF ... ).
+ *  - When the other types will be implemented (RAW, STRING) the TSP_sample_t
+ *    type will not work anymore as it is double specific for now.
+ */				          
+int32_t 
+TSP_asciiwriter_read_sample(TSP_provider_t provider,
+			 TSP_sample_t* sample,
+			 int* new_sample);
 
 /** @} */
 
