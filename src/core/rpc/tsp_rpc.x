@@ -1,6 +1,6 @@
 /* -*- idl -*-
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_rpc.x,v 1.39 2006-05-05 07:22:44 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_rpc.x,v 1.40 2006-05-05 07:27:17 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -172,6 +172,11 @@ enum TSP_status_t
 	 * The TSP Request content is invalid.
 	 */
 	TSP_STATUS_ERROR_INVALID_REQUEST,
+	/**
+	 * The TSP Request sample is empty.
+	 * i.e. no symbol requested.
+	 */
+	TSP_STATUS_ERROR_EMPTY_REQUEST_SAMPLE,
 	/**
 	 * Value greater than TSP_STATUS_ERROR_CUSTOM_BEGIN
 	 * may be used by custom TSP providers of consumers
