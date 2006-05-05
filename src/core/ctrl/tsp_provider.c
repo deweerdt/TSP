@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_provider.c,v 1.54 2006-05-05 07:27:17 erk Exp $
+$Id: tsp_provider.c,v 1.55 2006-05-05 15:18:05 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -268,6 +268,8 @@ TSP_provider_request_open(const TSP_request_open_t* req_open,
   GLU_handle_t* glu_h;
   char* error_info;
   int i;
+
+  STRACE_REQUEST(("OPEN"));
 	
   TSP_LOCK_MUTEX(&X_tsp_request_mutex,);
 
@@ -313,6 +315,7 @@ TSP_provider_request_open(const TSP_request_open_t* req_open,
     ans_open->status = TSP_add_session(&(ans_open->channel_id), glu_h);
     if (TSP_STATUS_OK==ans_open->status) {
       if (req_open->version_id == TSP_PROTOCOL_VERSION) {
+	TSP_session_change_stateTo_byChannel(ans_open->channel_id,TSP_SESSION_STATE_OPENED);
 	ans_open->version_id  = TSP_PROTOCOL_VERSION;
 	ans_open->status      = TSP_STATUS_OK;
       }
@@ -324,8 +327,7 @@ TSP_provider_request_open(const TSP_request_open_t* req_open,
     else {
       STRACE_ERROR(("TSP_add_session failed"));
     }
-  }
-  else {
+  } else {
     STRACE_INFO(("Unable to get first GLU instance"));
     ans_open->status = TSP_STATUS_ERROR_SEE_STRING;
     ans_open->status_str = error_info;
@@ -338,10 +340,12 @@ static void
 TSP_provider_request_close_priv(channel_id_t channel_id) {
   TSP_session_destroy_symbols_table_by_channel(channel_id);
   TSP_session_close_session_by_channel(channel_id);
-}
+} /* TSP_provider_request_close_priv */
 
 void 
 TSP_provider_request_close(const TSP_request_close_t* req_close) {
+
+  STRACE_REQUEST(("CLOSE channel_id=<%d>",req_close->channel_id));
   TSP_LOCK_MUTEX(&X_tsp_request_mutex,);
   
   if (TSP_STATUS_OK==TSP_provider_checkVersionAndChannelId(req_close->version_id,
@@ -360,6 +364,7 @@ TSP_provider_request_close(const TSP_request_close_t* req_close) {
 void  
 TSP_provider_request_information(TSP_request_information_t* req_info, 
 				 TSP_answer_sample_t* ans_sample) {
+  STRACE_REQUEST(("INFORMATIONS channel_id=<%d>",req_info->channel_id));
   TSP_provider_request_filtered_information(req_info,TSP_FILTER_NONE,NULL,ans_sample);  
   STRACE_DEBUG(("Nb symbol = %d",ans_sample->symbols.TSP_sample_symbol_info_list_t_len));
 } /* End of TSP_provider_request_information */
@@ -391,6 +396,7 @@ TSP_provider_request_filtered_information(TSP_request_information_t* req_info,
 					  int filter_kind, char* filter_string,
 					  TSP_answer_sample_t* ans_sample) {
 
+  STRACE_REQUEST(("FILTERED INFORMATIONS channel_id=<%d>",req_info->channel_id));
   TSP_LOCK_MUTEX(&X_tsp_request_mutex,);  
   GLU_handle_t* myGLU = NULL;
   
@@ -431,6 +437,7 @@ void
 TSP_provider_request_sample(TSP_request_sample_t* req_sample, 
 			    TSP_answer_sample_t* ans_sample) {
 
+  STRACE_REQUEST(("SAMPLE channel_id=<%d>",req_sample->channel_id));
   TSP_LOCK_MUTEX(&X_tsp_request_mutex,);	
   GLU_handle_t* myGLU;
   /* Always re-init answer_sample */
@@ -453,11 +460,13 @@ TSP_provider_request_sample(TSP_request_sample_t* req_sample,
 	TSP_session_create_symbols_table_by_channel(req_sample, ans_sample);
       if (TSP_STATUS_OK!= ans_sample->status) {
 	STRACE_ERROR(("Function TSP_session_create_symbols_table_by_channel failed"));
-      }    
+      }  else {
+	TSP_session_change_stateTo_byChannel(req_sample->channel_id,TSP_SESSION_STATE_REQUEST_SAMPLE_OK);
+      }
       /* 
        * DO NOT start PASSIVE GLU here
        * Start It only upon request_sample_init request.
-       */
+       */      
     } else {
       STRACE_WARNING(("Function TSP_session_get_symbols_global_index_by_channel failed"));
       ans_sample->status = TSP_STATUS_ERROR_SYMBOLS;
@@ -479,6 +488,8 @@ void
 TSP_provider_request_sample_init(TSP_request_sample_init_t* req_sample_init, 
 				 TSP_answer_sample_init_t* ans_sample_init) {  
   GLU_handle_t* myGLU;
+
+  STRACE_REQUEST(("SAMPLE_INIT channel_id=<%d>",req_sample_init->channel_id));
   TSP_LOCK_MUTEX(&X_tsp_request_mutex,);
     
   ans_sample_init->status = TSP_provider_checkVersionAndChannelId(req_sample_init->version_id,
@@ -498,6 +509,7 @@ TSP_provider_request_sample_init(TSP_request_sample_init_t* req_sample_init,
       ans_sample_init->data_address =
 	(char*)TSP_session_get_data_address_string_by_channel(req_sample_init->channel_id);  
       STRACE_DEBUG(("ANSWER SAMPLE INIT data_address = '%s'", ans_sample_init->data_address));
+      TSP_session_change_stateTo_byChannel(req_sample_init->channel_id,TSP_SESSION_STATE_REQUEST_SAMPLE_INIT_OK);
     }
   }
   
@@ -509,12 +521,14 @@ void TSP_provider_request_sample_destroy_priv(channel_id_t channel_id) {
   if(TSP_STATUS_OK!=TSP_session_destroy_data_sender_by_channel(channel_id)) {
     STRACE_ERROR(("TSP_session_destroy_data_sender_by_channel failed"));
   }
+  TSP_session_change_stateTo_byChannel(channel_id,TSP_SESSION_STATE_REQUEST_SAMPLE_DESTROY_OK);
 }
 
 void  
 TSP_provider_request_sample_destroy(TSP_request_sample_destroy_t* req_sample_destroy, 
 				    TSP_answer_sample_destroy_t*  ans_sample_destroy) {
 
+  STRACE_REQUEST(("SAMPLE DESTROY channel_id=<%d>",req_sample_destroy->channel_id));
   TSP_LOCK_MUTEX(&X_tsp_request_mutex,);
 
   ans_sample_destroy->status = TSP_provider_checkVersionAndChannelId(req_sample_destroy->version_id,
@@ -533,15 +547,35 @@ TSP_provider_request_sample_destroy(TSP_request_sample_destroy_t* req_sample_des
 void* 
 TSP_provider_garbage_collector_thread(void* dummy) {
    channel_id_t channel_id;
+   int32_t state = TSP_SESSION_STATE_UNKNOWN;
 
    /* Save memory ! */
    pthread_detach(pthread_self());
 
    while(TRUE) {
-     while(TSP_session_get_garbage_session(&channel_id)) {
-       /* Do what some rude consumer should have done itself */
-       TSP_provider_request_sample_destroy_priv(channel_id);
-       TSP_provider_request_close_priv(channel_id);
+     while(TRUE==TSP_session_get_garbage_session(&channel_id)) {
+       /* get the state of the garbage session */
+       state = TSP_session_get_state(channel_id);
+       STRACE_INFO(("Will garbage collect session channel_id <%d> in state <%d>",channel_id,state));
+       /* 
+	* If the session is garbage this means that the consumer
+	* did not close the session properly so do it.
+	*/
+
+       /* Simulate request sample destroy */       
+       if ((TSP_SESSION_STATE_SAMPLING          == state) ||
+	   (TSP_SESSION_STATE_BROKEN_LINK       == state)) {
+	 STRACE_INFO(("Sending missing SAMPLE DESTROY to channel_id <%d> in state <%d>",channel_id,state));
+	 TSP_provider_request_sample_destroy_priv(channel_id);
+	 /* update state */
+	 state = TSP_session_get_state(channel_id);
+       }
+
+       /* Simulate request close if consumer did not send it */
+       if (TSP_SESSION_STATE_REQUEST_SAMPLE_DESTROY_OK == state) {
+	 STRACE_INFO(("Sending missing REQUEST CLOSE to channel_id <%d> in state <%d>",channel_id,state));
+	 TSP_provider_request_close_priv(channel_id);
+       }
        STRACE_INFO(("Session No %d 'garbage-collected'", channel_id));
      }
      tsp_usleep(TSP_GARBAGE_COLLECTOR_POLL_TIME_US);
@@ -619,7 +653,8 @@ TSP_provider_private_run() {
 int32_t 
 TSP_provider_request_async_sample_write(TSP_async_sample_t* async_sample_write) {
   int32_t ret = TSP_STATUS_OK;
-  
+
+  STRACE_REQUEST(("ASYNC WRITE")); 
   STRACE_DEBUG(("TSP_PROVIDER Before async_write: pgi %d value %s return %d ",async_sample_write->provider_global_index,async_sample_write->data.data_val,ret ));
 
   /* FIXME should check channel id and get GLU from session object */
@@ -638,6 +673,7 @@ int32_t
 TSP_provider_request_async_sample_read(TSP_async_sample_t* async_sample_read) {
   int32_t ret = TSP_STATUS_OK;
 
+  STRACE_REQUEST(("ASYNC READ")); 
   STRACE_DEBUG(("TSP_PROVIDER Before async_read: pgi %d value %s return %d ",async_sample_read->provider_global_index,async_sample_read->data.data_val,ret ));
   
   /* FIXME should check channel id and get GLU from session object */
@@ -658,6 +694,7 @@ void
 TSP_provider_request_extended_information(TSP_request_extended_information_t* req_extinfo, 
 					  TSP_answer_extended_information_t* ans_extinfo) {
   GLU_handle_t* myGLU;
+  STRACE_REQUEST(("EXTENDED INFORMATION channel_id=<%d>",req_extinfo->channel_id));
   TSP_LOCK_MUTEX(&X_tsp_request_mutex,);  
 
   ans_extinfo->status= TSP_provider_checkVersionAndChannelId(req_extinfo->version_id,

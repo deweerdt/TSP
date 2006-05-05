@@ -23,6 +23,8 @@ TARGET=$(DIRLIB)/libtsp_provider.a
 
 CPPFLAGS += -I../rpc -I ../misc_utils
 
+CFLAGS += -Werror
+
 # -----------------------------------------------------------
 # No label all:: because it's in Makeparams and calls build::	
 # same thing for clean:: that calls destroy::

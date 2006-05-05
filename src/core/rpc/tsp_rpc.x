@@ -1,6 +1,6 @@
 /* -*- idl -*-
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_rpc.x,v 1.40 2006-05-05 07:27:17 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_rpc.x,v 1.41 2006-05-05 15:18:05 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -184,6 +184,46 @@ enum TSP_status_t
 	 */
 	TSP_STATUS_ERROR_CUSTOM_BEGIN=16384
 };
+
+/**
+ * The different status of a TSP session.
+ * A TSP session is a link between one consumer
+ * and one provider.
+ */
+enum TSP_session_state_t {
+  /** This session is probably not initialized */
+  TSP_SESSION_STATE_UNKNOWN,
+  /** This session has accepted a valid request open */
+  TSP_SESSION_STATE_OPENED,
+  /** This session has received a valid request close */
+  TSP_SESSION_STATE_CLOSED,
+  /** This session has accepted a valid request sample */
+  TSP_SESSION_STATE_REQUEST_SAMPLE_OK,
+  /** 
+   * This session has accepted a valid request sample init
+   * but sampling did not began (yet) because consumer
+   * is not connected yet. 
+   */
+  TSP_SESSION_STATE_REQUEST_SAMPLE_INIT_OK,
+  /**
+   * Consumer connected and provdier is sending sampling
+   * for this session.
+   */
+  TSP_SESSION_STATE_SAMPLING,
+  /** 
+   * This session has accepted a valid request sample destroy.
+   */
+  TSP_SESSION_STATE_REQUEST_SAMPLE_DESTROY_OK,
+  /**
+   * Was in sampling state but link goes to broken.
+   * May be a network failure or either party (provider or consumer)
+   * crashed or terminate itself without sending
+   * request sample destroy and/or request close.
+   */
+  TSP_SESSION_STATE_BROKEN_LINK,
+  TSP_SESSION_STATE_CLOSE_ON_EOF
+};
+			 
 
 /** TSP Symbols basic types */
 enum TSP_datatype_t 

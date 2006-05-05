@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.56 2006-05-05 07:22:44 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.57 2006-05-05 15:18:05 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -653,9 +653,11 @@ TSP_consumer_request_open(TSP_provider_t provider,
   TSP_request_open_t req_open;
   TSP_answer_open_t* ans_open = 0;
   int32_t retcode = TSP_STATUS_OK;
+
+  STRACE_REQUEST(("OPEN"));
        
   assert(X_tsp_init_ok);
-	
+  
   req_open.version_id = TSP_PROTOCOL_VERSION;
 
   /* Default argv to command line (may be empty) */
@@ -667,13 +669,15 @@ TSP_consumer_request_open(TSP_provider_t provider,
       /* Check if a command line exists and trace a warning */
       if( 0 != X_tsp_argv.TSP_argv_t_len )
 	{
-	  STRACE_WARNING(("Overiding command line stream initialisation by custom stream initialisation")); 
+	  STRACE_WARNING(("Overriding command line stream initialisation by custom stream initialisation")); 
 	}
       req_open.argv.TSP_argv_t_val = custom_argv;
       req_open.argv.TSP_argv_t_len = custom_argc;
     }
 
-  	
+ 
+
+  
   if(0 != otsp) {
     ans_open = TSP_request_open(&req_open, otsp->server);
     if( NULL != ans_open) {
@@ -721,7 +725,9 @@ TSP_consumer_request_close(TSP_provider_t provider)
   TSP_otsp_t* otsp = (TSP_otsp_t*)provider;
   TSP_request_close_t req_close;
   int32_t retcode = TSP_STATUS_OK;
-	
+
+  STRACE_REQUEST(("CLOSE"));	
+
   TSP_CHECK_SESSION(otsp, TSP_STATUS_ERROR_INVALID_CHANNEL_ID);
 	
   req_close.version_id = TSP_PROTOCOL_VERSION;
@@ -742,6 +748,7 @@ TSP_consumer_request_information(TSP_provider_t provider) {
   TSP_answer_sample_t* ans_sample = 0;
   int32_t retcode = TSP_STATUS_ERROR_UNKNOWN;
 	
+  STRACE_REQUEST(("INFORMATION"));	
   TSP_CHECK_SESSION(otsp, TSP_STATUS_ERROR_INVALID_CHANNEL_ID);
 
   /* Delete allocation of any previous call */
@@ -797,6 +804,7 @@ TSP_consumer_request_filtered_information(TSP_provider_t provider, int filter_ki
   TSP_answer_sample_t* ans_sample = 0;
   int32_t retcode = TSP_STATUS_ERROR_UNKNOWN;
 		
+  STRACE_REQUEST(("FILTERED INFORMATION"));	
   TSP_CHECK_SESSION(otsp, TSP_STATUS_ERROR_INVALID_CHANNEL_ID);
 
   /* Delete allocation of any previous call */
@@ -852,7 +860,8 @@ TSP_consumer_request_extended_information(TSP_provider_t provider, int32_t* pgis
   TSP_request_extended_information_t req_extinfo;
   TSP_answer_extended_information_t* ans_extinfo;
   int32_t i;
-  
+
+  STRACE_REQUEST(("EXTENDED INFORMATION"));	
   TSP_CHECK_SESSION(otsp, FALSE);  
   TSP_consumer_delete_extended_informations(otsp);
 
@@ -953,7 +962,8 @@ TSP_consumer_request_sample(TSP_provider_t provider, TSP_sample_symbol_info_list
   int32_t retcode = TSP_STATUS_ERROR_UNKNOWN;
   TSP_answer_sample_t* ans_sample = 0;
   TSP_request_sample_t req_sample;
-	
+  
+  STRACE_REQUEST(("SAMPLE"));		
   TSP_CHECK_SESSION(otsp, TSP_STATUS_ERROR_INVALID_CHANNEL_ID);
 	
   req_sample.version_id = TSP_PROTOCOL_VERSION;
@@ -1044,13 +1054,13 @@ const TSP_sample_symbol_info_list_t* TSP_consumer_get_requested_sample(TSP_provi
   }
 } /* TSP_consumer_get_requested_sample */
 
-static void* TSP_request_provider_thread_receiver(void* arg)
+static void* 
+TSP_request_provider_thread_receiver(void* arg)
 {
     
   TSP_otsp_t* otsp = (TSP_otsp_t*)arg;
   int is_fifo_full;  
                     
-  STRACE_IO(("-->IN"));
   STRACE_INFO(("Receiver thread started. Id=%u", (uint32_t)pthread_self())); 
 
   while(TRUE)
@@ -1071,19 +1081,18 @@ static void* TSP_request_provider_thread_receiver(void* arg)
  
     }
   
-  STRACE_IO(("-->OUT"));
   return (void*)NULL;
-}
+} /* TSP_request_provider_thread_receiver */
 
 int32_t 
-TSP_consumer_request_sample_init(TSP_provider_t provider, TSP_sample_callback_t callback, void* user_data)
-{
+TSP_consumer_request_sample_init(TSP_provider_t provider, TSP_sample_callback_t callback, void* user_data) {
 	
   TSP_otsp_t* otsp = (TSP_otsp_t*)provider;
   int32_t retcode = TSP_STATUS_ERROR_UNKNOWN;
   TSP_answer_sample_init_t* ans_sample = 0;
   TSP_request_sample_init_t req_sample;
-	
+
+  STRACE_REQUEST(("SAMPLE INIT"));	
   TSP_CHECK_SESSION(otsp, TSP_STATUS_ERROR_INVALID_CHANNEL_ID);
   
   req_sample.version_id = TSP_PROTOCOL_VERSION;
@@ -1132,7 +1141,7 @@ TSP_consumer_request_sample_init(TSP_provider_t provider, TSP_sample_callback_t 
     }
   
   return retcode;
-}
+} /* end of TSP_consumer_request_sample_init */
 
 int32_t
 TSP_consumer_request_sample_destroy(TSP_provider_t provider) {
@@ -1142,6 +1151,8 @@ TSP_consumer_request_sample_destroy(TSP_provider_t provider) {
   TSP_answer_sample_destroy_t* ans_sample = 0;
   TSP_request_sample_destroy_t req_sample;
 	
+  STRACE_REQUEST(("SAMPLE DESTROY"));
+
   TSP_CHECK_SESSION(otsp, FALSE);
   
   req_sample.version_id = TSP_PROTOCOL_VERSION;
@@ -1262,7 +1273,7 @@ TSP_consumer_request_async_sample_write(TSP_provider_t provider,
   TSP_async_sample_t async_write;
   int32_t ret = TSP_STATUS_ERROR_UNKNOWN;
   TSP_otsp_t* otsp = (TSP_otsp_t*)provider;
- 
+   STRACE_REQUEST(("ASYNC WRITE")); 
   /* As there are a two level structure for hidding all RPC stuff, we need to copy the struct fields */
   
   async_write.provider_global_index = async_sample_write->provider_global_index;
@@ -1296,7 +1307,7 @@ TSP_consumer_request_async_sample_read(TSP_provider_t provider,
   
   int32_t ret = TSP_STATUS_ERROR_UNKNOWN;
   TSP_otsp_t* otsp = (TSP_otsp_t*)provider;
- 
+  STRACE_REQUEST(("ASYNC READ")); 
   /* update internal RPC structure */
   async_read_param.provider_global_index  = async_sample_read->provider_global_index;
   async_read_param.data.data_val = async_sample_read->value_ptr;

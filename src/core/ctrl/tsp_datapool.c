@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_datapool.c,v 1.29 2006-05-03 21:16:38 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_datapool.c,v 1.30 2006-05-05 15:18:05 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -88,7 +88,7 @@ TSP_datapool_push_next_item(TSP_datapool_t* datapool, glu_item_t* item) {
 	 item->raw_value,
 	 item->size);
   return 0;
-}
+} /* end of TSP_datapool_push_next_item */
 
 int 
 TSP_datapool_push_commit(TSP_datapool_t* datapool, time_stamp_t time_stamp, GLU_get_state_t state) {
@@ -131,7 +131,7 @@ TSP_datapool_push_commit(TSP_datapool_t* datapool, time_stamp_t time_stamp, GLU_
     assert(0);
   }    
   return 0;  
-}
+} /* end of TSP_datapool_push_commit */
 
 int32_t 
 TSP_datapool_initialize(TSP_datapool_t* datapool, GLU_handle_t* glu) {

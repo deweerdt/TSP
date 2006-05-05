@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_data_receiver.c,v 1.24 2006-05-05 14:24:56 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_data_receiver.c,v 1.25 2006-05-05 15:18:05 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -353,7 +353,7 @@ int TSP_data_receiver_receive(TSP_data_receiver_t _receiver,
 	    }
 	  else
 	    {
-	      /* Hum...Strange groupe index, may be it is a reserved on */
+	      /* Hum...Strange group index, may be it is a reserved on */
 	      ret = TSP_data_receiver_process_reserved_group_id(group_index, sample_fifo);
 	      if(!ret)
 		{

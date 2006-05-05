@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.h,v 1.18 2006-05-03 21:16:38 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.h,v 1.19 2006-05-05 15:18:05 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -95,14 +95,6 @@ void TSP_session_all_session_send_data(time_stamp_t t);
 void TSP_session_all_session_send_msg_ctrl(TSP_msg_ctrl_t msg_ctrl);
 
 /**
- * Send data to one client.
- * @param channel_id Session id for this client
- * @param t current time stamp sent with the data
- * @return TRUE or FALSE. TRUE = OK
- */
-int TSP_session_send_data_by_channel(channel_id_t channel_id, time_stamp_t t);
-
-/**
  * Send control message to one client.
  * @param channel_id Session id for this client
  * @param msg_ctrl Control message to that must be sent
@@ -184,5 +176,17 @@ int TSP_session_get_garbage_session(channel_id_t* channel_id);
  * @return Total number of session
  */
 int TSP_session_get_nb_session(void);
+
+/**
+ * Change session state to target newState.
+ * @param channel_id the TSP channel id
+ * @param newState the new state for the concerned session
+ *  @return TSP_STATUS_OK on success TSP_STATUS_ERROR_xxxx on failure.
+ */ 
+int32_t 
+TSP_session_change_stateTo_byChannel(channel_id_t channel_id, TSP_session_state_t newState);
+
+TSP_session_state_t 
+TSP_session_get_state(channel_id_t channel_id);
 
 #endif /* _TSP_SESSION_H */

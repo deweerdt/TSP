@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer.c,v 1.26 2006-05-05 14:24:56 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer.c,v 1.27 2006-05-05 15:18:05 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -807,8 +807,11 @@ tsp_ascii_writer_finalise() {
   if (NULL != myprovider) {
     if (tsp_ascii_writer_sample_running) {
       if (TSP_STATUS_OK!=TSP_consumer_request_sample_destroy(myprovider)) {
-	STRACE_ERROR(("TSP_request_sample_destroy en erreur??..."));
+	STRACE_ERROR(("TSP_request_sample_destroy ERROR??..."));
       }  
+    }
+    if (TSP_STATUS_OK!=TSP_consumer_request_close(myprovider)) {
+      STRACE_ERROR(("TSP_request_close ERROR??..."));
     }
   }
   TSP_consumer_end();
