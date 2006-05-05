@@ -1,6 +1,6 @@
 /* -*- idl -*-
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_rpc.x,v 1.38 2006-05-03 21:12:11 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_rpc.x,v 1.39 2006-05-05 07:22:44 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -168,6 +168,10 @@ enum TSP_status_t
 	TSP_STATUS_ERROR_THREAD_CREATE,
 	
 	TSP_STATUS_ERROR_NOT_INITIALIZED,
+	/**
+	 * The TSP Request content is invalid.
+	 */
+	TSP_STATUS_ERROR_INVALID_REQUEST,
 	/**
 	 * Value greater than TSP_STATUS_ERROR_CUSTOM_BEGIN
 	 * may be used by custom TSP providers of consumers

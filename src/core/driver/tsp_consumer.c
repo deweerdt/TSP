@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.55 2006-05-03 21:16:38 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.56 2006-05-05 07:22:44 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -992,6 +992,9 @@ TSP_consumer_request_sample(TSP_provider_t provider, TSP_sample_symbol_info_list
 	case TSP_STATUS_ERROR_SYMBOLS :
 	  STRACE_WARNING(("Provider symbols error"));
 	  break;
+	case TSP_STATUS_ERROR_INVALID_REQUEST :
+	  STRACE_WARNING(("Provider says request is invalid"));
+	  break;
 	default:
 	  STRACE_ERROR(("The provider sent an unreferenced error. It looks like a bug."));
 	  break;
@@ -1351,7 +1354,7 @@ TSP_consumer_print_invalid_symbols(FILE* stream,
 	      provider_url);
     }
   }
-}
+} /* end of TSP_consumer_print_invalid_symbols */
 
 
 double 

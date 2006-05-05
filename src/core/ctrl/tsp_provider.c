@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_provider.c,v 1.52 2006-05-03 21:16:38 erk Exp $
+$Id: tsp_provider.c,v 1.53 2006-05-05 07:22:44 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -441,6 +441,10 @@ TSP_provider_request_sample(TSP_request_sample_t* req_sample,
 					      &myGLU);
   
   STRACE_INFO(("Consumer No %d asked for %d symbols",req_sample->channel_id,req_sample->symbols.TSP_sample_symbol_info_list_t_len  ));
+
+  if (0>=req_sample->symbols.TSP_sample_symbol_info_list_t_len) {
+    ans_sample->status = TSP_STATUS_ERROR_INVALID_REQUEST;
+  }
   
   if (TSP_STATUS_OK == ans_sample->status) {
     if(TSP_session_get_symbols_global_index_by_channel(req_sample->channel_id, &(req_sample->symbols) )) {  
