@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_request_handler.h,v 1.5 2006-02-26 13:36:05 erk Exp $
+$Id: tsp_request_handler.h,v 1.6 2006-05-05 12:30:33 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -78,7 +78,7 @@ typedef int   (* tsp_request_handler_config_ft)(struct TSP_provider_request_hand
  * taken from the configuration step. This function should not return unless
  * it terminates.
  */
-typedef void* (* tsp_request_handler_run_ft)   (struct TSP_provider_request_handler_t*);
+typedef void* (* tsp_request_handler_run_ft)   (void *);
 /**
  * The TSP Request stop object method, it will be called
  * to stop the request handler.
