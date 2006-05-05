@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_common_as.h,v 1.1 2006-05-03 21:13:34 erk Exp $
+$Id: tsp_common_as.h,v 1.2 2006-05-05 07:10:07 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -42,7 +42,7 @@ Purpose   : Main interface for the producer module
 #include <tsp_datastruct.h>
 
 /**
- * @defgroup TSP_CommonLib_SSI Answer Sample Library Handling
+ * @defgroup TSP_CommonLib_AS Answer Sample Library Handling
  * The Answer Sample  Handling part of the @ref TSP_CommonLib
  * regroup a set of functions which should be used to manipulate
  * the Answer Sample object.
