@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl_init/tsp_provider_init.c,v 1.17 2006-04-24 21:05:34 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl_init/tsp_provider_init.c,v 1.18 2006-05-05 14:24:56 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -149,7 +149,8 @@ TSP_provider_urls(int pub_mode) {
   /* Check running handlers and copy their URLs */
   nb = TSP_provider_rqh_manager_get_nb_running();
   if(nb > 0)
-    {      urls = (char**)calloc(nb,sizeof(char*));
+    {     
+      urls = (char**)calloc(nb,sizeof(char*));
       for(rank = 0; rank < nb; rank ++)
 	{
 	  url = TSP_provider_rqh_manager_get_url(rank);

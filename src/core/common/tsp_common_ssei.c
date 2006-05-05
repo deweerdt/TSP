@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_common_ssei.c,v 1.8 2006-05-03 21:13:34 erk Exp $
+$Id: tsp_common_ssei.c,v 1.9 2006-05-05 14:24:56 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -231,6 +231,7 @@ TSP_EIList_finalize(TSP_extended_info_list_t* eil) {
   }
 
   eil->TSP_extended_info_list_t_len=0;
+  free(eil->TSP_extended_info_list_t_val);
   eil->TSP_extended_info_list_t_val=NULL;
 
   return ret;

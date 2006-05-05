@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer.c,v 1.25 2006-05-04 21:44:47 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer.c,v 1.26 2006-05-05 14:24:56 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -64,6 +64,8 @@ static TSP_provider_t myprovider;
 #define MAX_VAR_NAME_SIZE 256
 static char tc_output_buffer[OUTPUT_STREAM_BUFFER_SIZE];
 static int stop_it = 0;
+
+/*format to print macsim value in the different type*/
 const static char* fmt_tab[] = { 0,
 			      "%1.15G\t",
 			      "%1.15G\t",
@@ -80,6 +82,8 @@ const static char* fmt_tab[] = { 0,
 			      "%c\t",
 			      0				
 };
+
+/*type macsim name*/
 const static char* libelle_type_tab_macsim[] = { "unknown",
 			      "double",
 			      "float",
@@ -107,7 +111,10 @@ int tsp_ascii_writer_sample_running =  0;
 TSP_sample_symbol_info_t*  g_tsp_symbols = NULL; 
 static tsp_ascii_writer_logMsg_ft my_logMsg = tsp_ascii_writer_logMsg_stdout; 
 
-static char * tsp_ascii_writer_tab_char=NULL; 
+/*stock a char macsim data before print*/
+static char * tsp_ascii_writer_tab_char=NULL;
+
+/*stock a uchar macsilm data before print*/
 static char * tsp_ascii_writer_tab_uchar=NULL; 
 
 void tsp_ascii_writer_set_logMsgCB(tsp_ascii_writer_logMsg_ft logMsgCB) {
@@ -474,7 +481,7 @@ tsp_ascii_writer_validate_symbols(TSP_sample_symbol_info_list_t* requestedSSIL,
 } /* end of tsp_ascii_writer_validate_symbols */
 
 
-
+/*retrieve the sample*/
 int32_t 
 TSP_asciiwriter_read_sample(TSP_provider_t provider,
 			 TSP_sample_t* sample,
@@ -650,6 +657,7 @@ tsp_ascii_writer_start(FILE* sfile,
 	  
 	}
 	
+	/*print symbol name*/
 	fprintf(sfile,"%s : %s : %s : %s \n", 
 		charbuf, 
 		(NULL==ext_info_profil)?"1":ext_info_profil->value,
@@ -719,6 +727,7 @@ tsp_ascii_writer_start(FILE* sfile,
       {
 			if (tsp_ascii_writer_header_style==2) 
 			{
+			  /*bach file*/
 				tsp_ascii_writer_display_value(sfile,sample);
 
 				++complete_line;
@@ -737,6 +746,7 @@ tsp_ascii_writer_start(FILE* sfile,
 			} 
 			else 
 			{
+			  /*macsim file*/
 			        tsp_ascii_writer_display_value(sfile,sample);
 
 				++complete_line;
@@ -806,6 +816,8 @@ tsp_ascii_writer_finalise() {
   return retcode;
 } /* end of tsp_ascii_writer_finalise */
 
+
+/*display value*/
 int32_t 
 tsp_ascii_writer_display_value(FILE* sfile,TSP_sample_t sample)
 {
@@ -873,6 +885,8 @@ tsp_ascii_writer_display_value(FILE* sfile,TSP_sample_t sample)
   return 0;
 }
 
+
+/*build the column title for the array*/
 char* new_array_label(const char* libelle,const char* profil, const char* ordre, const int recursif)
 {
 

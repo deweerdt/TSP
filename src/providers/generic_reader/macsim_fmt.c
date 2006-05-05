@@ -1,6 +1,6 @@
 /*
 
-$Id: macsim_fmt.c,v 1.6 2006-05-04 21:44:47 erk Exp $
+$Id: macsim_fmt.c,v 1.7 2006-05-05 14:24:56 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -49,7 +49,7 @@ Purpose   : Manipulation function of macsim file
 #include <tsp_common.h>
 
 
-/* suppress spaces
+/* delete space before and after
 */
 char *str_strip (const char *string)
 {
@@ -98,6 +98,7 @@ char *str_strip (const char *string)
    return strip;
 }
 
+/*delete space before and after in the same data*/
 void str_strip_inplace(char* tostrip) {
 
   char* local = str_strip(tostrip);
@@ -106,7 +107,7 @@ void str_strip_inplace(char* tostrip) {
 }
 
 
-/*calculate the dimension of the data
+/*calculate the dimension of the data 2*2*3=12
 */
 uint32_t macsim_dimension_data(char* dimension_var)
 {
@@ -220,6 +221,7 @@ int32_t macsim_read_header(GenericReader_T* genreader, int32_t justcount)
 		
 		if(JUSTCOUNT_SIZE==justcount)
 		{
+		  /*count nb symbol and max size of symbol*/
 		  genreader->nbsymbol=0;
 		  genreader->max_size_raw_value=0;
 		}
@@ -228,6 +230,7 @@ int32_t macsim_read_header(GenericReader_T* genreader, int32_t justcount)
 		  ssi=genreader->ssi_list->TSP_sample_symbol_info_list_t_val;
 		  ssei=genreader->ssei_list->TSP_sample_symbol_extended_info_list_t_val;
 
+	          /*return to the beginning of the file*/
 		  rewind(genreader->handler->file);
 		}		
 		
@@ -237,11 +240,9 @@ int32_t macsim_read_header(GenericReader_T* genreader, int32_t justcount)
 			*/
 			if('='==buffer[0])
 			{
+			        /*line '========' indicate the end of the declaration of the symbol*/
 				continuer=STOP;
 				
-				/*read thle column title*/
-				/*fgets(buffer,MAX_BUFFER_MACSIM,genreader->handler->file);*/
-
 			}
 			else
 			{
@@ -305,7 +306,6 @@ int32_t macsim_read_header(GenericReader_T* genreader, int32_t justcount)
 				else
 				{
 				  /*add symbol to the symbol list and extended info*/
-				  /*genreader->genreader_addvar(nom_var,dimension,taille,type_var_bb,unit_var);*/
 				  
 				  nb_ext_info=2;
 
@@ -349,6 +349,11 @@ int32_t macsim_read_header(GenericReader_T* genreader, int32_t justcount)
 				
 			}
 		
+		} /*end while*/
+		/*read the column header line*/
+		while(NULL==strchr(buffer,'\n'))
+		{
+		  fgets(buffer,MAX_BUFFER_MACSIM,genreader->handler->file);
 		}
 
 	}
@@ -380,6 +385,7 @@ int32_t macsim_read(GenericReader_T* genreader,glu_item_t* item)
 	      || (TSP_TYPE_UCHAR==ssi_list.TSP_sample_symbol_info_list_t_val[item->provider_global_index].type) )
 	  {
 	    item->size=ssi_list.TSP_sample_symbol_info_list_t_val[item->provider_global_index].dimension;
+	    /*calculate the real dimension for the string symbol*/
 	    dimension=ssi_list.TSP_sample_symbol_info_list_t_val[item->provider_global_index].dimension/LG_MAX_STRING_MACSIM;
 	  }
 	  else
@@ -397,6 +403,8 @@ int32_t macsim_read(GenericReader_T* genreader,glu_item_t* item)
 	  {
 
 	    memset(data_var,'\0',LG_MAX_STRING_MACSIM);
+
+	    /*read one data of the file*/
 	    rep=read_data_file(genreader->handler->file,data_var);
               
 	    if(EOF!=rep)
@@ -407,6 +415,7 @@ int32_t macsim_read(GenericReader_T* genreader,glu_item_t* item)
 		continuer=0;
 	      }
 
+	      /*load retrieve data in the raw value*/
 	      switch(ssi_list.TSP_sample_symbol_info_list_t_val[item->provider_global_index].type) 
 	      {
 
@@ -526,11 +535,13 @@ int32_t read_data_file(FILE *fic,char *data_var)
 		if(CARACTERE_TAB==caractere_lu)
 		{
 		  data_var[i]='\0'; 
+		  /*end of a line*/
 		  return END_SAMPLE_STREAM;
 		}
 		else
 		{
-		  data_var[i]='\0';	
+		  data_var[i]='\0';
+		  /*end of one data*/
 		  return END_SAMPLE_SET;
 		}
 	      }

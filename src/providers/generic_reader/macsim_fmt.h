@@ -1,6 +1,6 @@
 /*
 
-$Id: macsim_fmt.h,v 1.4 2006-04-25 22:21:37 erk Exp $
+$Id: macsim_fmt.h,v 1.5 2006-05-05 14:24:56 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -53,6 +53,7 @@ Purpose   : function for file with format of macsim
 
 #define MAX_DATA_LEN         100
 
+/*file type*/
 #define BOOLEEN_MACSIM       "booleen"
 #define ENTIER_MACSIM        "entier"
 #define CARACTERE_MACSIM     "character"
@@ -69,7 +70,7 @@ Purpose   : function for file with format of macsim
  */
 
 /**
- * extract the space from a string.
+ * extract the space from a string before and after.
  * 
  * @param[in] string the string to modify
  *                      
@@ -78,7 +79,7 @@ Purpose   : function for file with format of macsim
 char *str_strip (const char *string);
 
 /**
- * extract the space from a string.
+ * extract the space from a string before and after, in and out data in the same variable.
  * 
  * @param[in] tostrip the string to modify
  *                      

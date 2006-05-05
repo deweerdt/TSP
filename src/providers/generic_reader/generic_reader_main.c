@@ -1,6 +1,6 @@
 /*
 
-$Id: generic_reader_main.c,v 1.4 2006-04-25 22:21:37 erk Exp $
+$Id: generic_reader_main.c,v 1.5 2006-05-05 14:24:56 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -102,10 +102,13 @@ int main(int argc, char *argv[])
   assert(GLU_genreader);
 
 
-  if (TSP_STATUS_OK==TSP_provider_init(GLU_genreader,&my_argc, &my_argv)) {
+  if (TSP_STATUS_OK==TSP_provider_init(GLU_genreader,&my_argc, &my_argv)) 
+  {
         
     /* Start provider */
     if (TSP_STATUS_OK!=TSP_provider_run(TSP_ASYNC_REQUEST_SIMPLE | TSP_ASYNC_REQUEST_NON_BLOCKING)) {
+      free(my_argv);
+      my_argv=NULL;
       return -1;
     }
     /* 
@@ -128,10 +131,17 @@ int main(int argc, char *argv[])
     sigwait(&allsigs, &whatsig);
     TSP_provider_end();
     retcode = TSP_STATUS_OK;    
-  } else {
+  } 
+  else 
+  {
+    free(my_argv);
+    my_argv=NULL;
     /* TSP_provider_init FAILED */
     return -1;
   }
+
+  free(my_argv);
+  my_argv=NULL;
 
   return 0;
 } /* end of main */

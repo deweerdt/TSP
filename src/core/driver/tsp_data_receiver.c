@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_data_receiver.c,v 1.23 2006-04-27 00:10:11 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_data_receiver.c,v 1.24 2006-05-05 14:24:56 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -231,8 +231,8 @@ int TSP_data_receiver_receive(TSP_data_receiver_t _receiver,
 
 		      /* Call registered function to decode data */
 		      
-		      /* FIXME decoder TOUT le groupe dans un buffer groups[group_index].decode_buffer pre-alloue
-		       * de taille MAX a La construction du groupe */
+		     
+		       /* decode received data */
 		      ret = (groups[group_index].items[rank].data_decoder)(groups[group_index].decode_buffer,
 									   groups[group_index].items[rank].symbol_info->nelem,
 									   in_buf);

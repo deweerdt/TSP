@@ -1,6 +1,6 @@
 /*
 
-$Id: generic_reader.c,v 1.3 2006-04-25 22:21:37 erk Exp $
+$Id: generic_reader.c,v 1.4 2006-05-05 14:24:56 erk Exp $
 
 -----------------------------------------------------------------------
  
@@ -46,24 +46,24 @@ Purpose   : Implementation for the generic reader
 
 FmtHandler_T* genreader_createFmHandler(char* format_file,char* file_name)
 {
-	FmtHandler_T* fmt_handler;
+  FmtHandler_T* fmt_handler;
 		
-	if(0==strcmp(format_file,FICHIER_MACSIM))
-   {
-		 macsim_createHandler(&fmt_handler);					
-   }
-   else
-   {
-		if(0==strcmp(format_file,FICHIER_BACH))
-	   	fmt_handler=NULL;			
-		else
-	   	fmt_handler=NULL;
-   }
+  if(0==strcmp(format_file,FICHIER_MACSIM))
+  {
+    macsim_createHandler(&fmt_handler);					
+  }
+  else
+  {
+    if(0==strcmp(format_file,FICHIER_BACH))
+      fmt_handler=NULL;			
+    else
+      fmt_handler=NULL;
+  }
 	
-	fmt_handler->fileName=(char*)malloc(strlen(file_name) + 1);
-	strcpy(fmt_handler->fileName,file_name);
+  fmt_handler->fileName=(char*)malloc(strlen(file_name) + 1);
+  strcpy(fmt_handler->fileName,file_name);
 	
-	return(fmt_handler);
+  return(fmt_handler);
 }
 
 /* create generique handler for treatement file
@@ -119,7 +119,7 @@ int32_t genreader_read_header_create_symbole(GenericReader_T* genreader)
 	
 }
 
-
+/*destruction*/
 int32_t genreader_finalize(GenericReader_T* genreader)
 {
 	genreader->handler->close_file(genreader->handler->file);

@@ -1,6 +1,6 @@
 /*
 
-$Id: glu_genreader.c,v 1.6 2006-05-04 21:44:47 erk Exp $
+$Id: glu_genreader.c,v 1.7 2006-05-05 14:24:56 erk Exp $
 
 -----------------------------------------------------------------------
  
@@ -83,20 +83,22 @@ GENREADER_GLU_run(void* arg)
 
   memset(item.raw_value,'\0',genreader->max_size_raw_value);
 
-  /*  tant qu'il y a des valeurs */
-  /* lire le fichier et envoyer au GLU */
+  /* read until EOF */
   while(EOF!=(rep=genreader->handler->read_value(genreader,&item)))
   {
-    /* size renseigné dans le read_value */
+    /* push data ti send in the data pool, the size is in the read_value */
     TSP_datapool_push_next_item(this->datapool,&item);
   
     ++item.provider_global_index;
 
+    /*end of line or end of total symbol of a line*/
     if(END_SAMPLE_SET==rep || item.provider_global_index>=genreader->ssi_list->TSP_sample_symbol_info_list_t_len)
     {
+      /*valid the data pool and send the data to the consumer*/
       TSP_datapool_push_commit(this->datapool, item.time, GLU_GET_NEW_ITEM);  
       ++item.time;
 
+      /*end of line no good*/
       if(END_SAMPLE_SET!=rep && item.provider_global_index>=genreader->ssi_list->TSP_sample_symbol_info_list_t_len)
       {
 	STRACE_ERROR(("ERROR: file format is not good (not enough or too much symbol or end of line no good\n"));
@@ -233,6 +235,13 @@ GENREADER_GLU_get_instance(GLU_handle_t* this,
     	printf("Usage: %s -x=<source_file> [-f <format]>\n", custom_argv[0]);
     	printf("   -x   determine the source file\n");
    	printf("   -f   specifying the format of source file\n");
+
+	free(input_filename);
+	input_filename=NULL;
+
+	free(format_file);
+	format_file=NULL;
+
     	return NULL;
   }
 
@@ -248,6 +257,12 @@ GENREADER_GLU_get_instance(GLU_handle_t* this,
 
   new_glu->base_frequency= 1.0;  /* FIXME */
  
+  free(input_filename);
+  input_filename=NULL;
+
+  free(format_file);
+  format_file=NULL;
+
   return new_glu;
 
 } /* end of GLU_get_instance */
