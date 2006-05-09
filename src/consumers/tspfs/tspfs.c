@@ -89,6 +89,15 @@
 #define MAX_URL_SIZE 512
 
 
+typedef enum {
+	BEFORE_LAUNCH,
+	RUNNING,
+	REQUEST_STOP,
+	STOPPED,
+} sync_thread_state_t;
+/* True when where about to quit tspfs, only used in sync mode */
+static volatile sync_thread_state_t thread_state = BEFORE_LAUNCH;
+
 static inline int is_tsp_symbol(const char *path);
 static char *get_symname_from_path(const char *path);
 
@@ -211,9 +220,10 @@ static inline struct tspfs_sample *get_tsp_symbol_value(int index)
 		 * Beware that PGI is not the tspfs local 'index' since
 		 *      - filtered info may gives you non-contiguous PGI
 		 */
-  		s->async.provider_global_index = tspfs.information->symbols
+  		s->async.provider_global_index = tspfs.symbols
 							.TSP_sample_symbol_info_list_t_val[index]
 							.provider_global_index; 
+		printf("%d\n\n", s->async.provider_global_index);
     		s->async.value_ptr  = &s->value.d;
       		s->async.value_size = sizeof(s->value.d);
 		ret = TSP_consumer_request_async_sample_read(tspfs.provider,&(s->async));	
@@ -224,9 +234,9 @@ static int get_tsp_symbol_index(const char *symbol_name)
 {
 	int i;
 	/* Compare symbols names */
-	for (i = 0; i < tspfs.information->symbols.TSP_sample_symbol_info_list_t_len; i++) {
+	for (i = 0; i < tspfs.symbols.TSP_sample_symbol_info_list_t_len; i++) {
 		if (!strcmp (symbol_name,
-		     tspfs.information->symbols.TSP_sample_symbol_info_list_t_val[i].name)) {
+		     tspfs.symbols.TSP_sample_symbol_info_list_t_val[i].name)) {
 			return i;
 		}
 
@@ -244,6 +254,14 @@ static void tspfs_destroy(void *unused)
 {
 	int i;
 
+	/* In sync mode we need to stop the collecting
+	 * thread before shutting down */
+	if (tspfs.sync) {
+		thread_state = REQUEST_STOP;
+		while (thread_state != STOPPED) {
+			usleep(100);
+		}
+	}
 	for (i = 0; i < tspfs.nr_samples; i++) {
 		free(tspfs.samples[i]);
 	}
@@ -260,8 +278,7 @@ static void tspfs_destroy(void *unused)
 		STRACE_ERROR(("Function TSP_consumer_request_close failed"));
 	}
 
-	TSP_consumer_disconnect_one(tspfs.provider);
-
+	/*TSP_consumer_disconnect_one(tspfs.provider);*/
 	TSP_consumer_end();
 }
 
@@ -274,8 +291,8 @@ static void *data_collector(void *unused)
 
 	TSP_consumer_request_sample(tspfs.provider, &tspfs.symbols);
 	TSP_consumer_request_sample_init(tspfs.provider, 0, 0);
-
-	while (1) {
+	thread_state = RUNNING;
+	while (thread_state == RUNNING) {
 		int new_sample;
 		int ret;
 
@@ -292,6 +309,7 @@ static void *data_collector(void *unused)
 		if (i == 0)
 			usleep(usleep_length);
 	}
+	thread_state = STOPPED;
 	return NULL;
 }
 
@@ -337,8 +355,10 @@ static int tspfs_init_connect(int argc, char **argv, char *url)
 		return -1;
 
 	for (i = 0; i < tspfs.symbols.TSP_sample_symbol_info_list_t_len; i++) {
+		tspfs.symbols.TSP_sample_symbol_info_list_t_val[i] =
+		    tspfs.information->symbols.TSP_sample_symbol_info_list_t_val[i];
 		tspfs.symbols.TSP_sample_symbol_info_list_t_val[i].name =
-		    tspfs.information->symbols.TSP_sample_symbol_info_list_t_val[i].name;
+		    strdup(tspfs.information->symbols.TSP_sample_symbol_info_list_t_val[i].name);
 		tspfs.symbols.TSP_sample_symbol_info_list_t_val[i].period = tspfs.sync;
 		tspfs.symbols.TSP_sample_symbol_info_list_t_val[i].phase = 0;
 	}
@@ -416,22 +436,22 @@ static int tspfs_readdir(const char *path, void *buf,
 	filler(buf, ".", NULL, 0);
 	filler(buf, "..", NULL, 0);
 
-	for (i = 0; i < tspfs.information->symbols.TSP_sample_symbol_info_list_t_len; i++) {
+	for (i = 0; i < tspfs.symbols.TSP_sample_symbol_info_list_t_len; i++) {
 		char *fullname;
 		if (tspfs.ext) {
 			fullname = 
 				(char *)malloc(sizeof(char)
-				*strlen(tspfs.information->symbols.TSP_sample_symbol_info_list_t_val[i].name)
+				*strlen(tspfs.symbols.TSP_sample_symbol_info_list_t_val[i].name)
 				+strlen(tspfs.ext)+2);
 			if (!fullname)
 				return -ENOMEM;
 			sprintf(fullname, "%s%s",
-				tspfs.information->symbols.TSP_sample_symbol_info_list_t_val[i].name, 
+				tspfs.symbols.TSP_sample_symbol_info_list_t_val[i].name, 
 				tspfs.ext);
 			filler(buf, fullname, NULL, 0);
 			free(fullname);
 		} else {
-			fullname = tspfs.information->symbols.TSP_sample_symbol_info_list_t_val[i].name;
+			fullname = tspfs.symbols.TSP_sample_symbol_info_list_t_val[i].name;
 			filler(buf, fullname, NULL, 0);
 		}
 	}
@@ -473,7 +493,7 @@ static int tspfs_write(const char *path, const char *buf, size_t size,
 	}
 
 	value = strtod(buf, NULL);
-  	s.async.provider_global_index = tspfs.information->symbols
+  	s.async.provider_global_index = tspfs.symbols
 					.TSP_sample_symbol_info_list_t_val[idx].provider_global_index; 
     	s.async.value_ptr  = &value;
       	s.async.value_size = sizeof(value);
@@ -482,6 +502,7 @@ static int tspfs_write(const char *path, const char *buf, size_t size,
 	free(sym_name);
 	return size;
 }
+
 static int tspfs_read(const char *path, char *buf, size_t size,
 		      off_t offset, struct fuse_file_info *fi)
 {
@@ -503,9 +524,67 @@ static int tspfs_read(const char *path, char *buf, size_t size,
 	idx = get_tsp_symbol_index(sym_name);
 	sample = get_tsp_symbol_value(idx);
 	if (tspfs.sync) {
-		sprintf(sym_display, get_sym_format(idx), sample->sync.time,
-			sample->sync.uvalue);
+		char *format;
+		format = "";
+		printf("Symbol is : %s type: %d\n", sym_name, sample->sync.type);
+		switch (sample->sync.type) {
+			case TSP_TYPE_DOUBLE:
+				sprintf(sym_display, "t=%d v=%e %%e\n", sample->sync.time,
+					sample->sync.uvalue.double_value);
+				break;
+			case TSP_TYPE_FLOAT:
+				sprintf(sym_display, "t=%d v=%e %%e\n", sample->sync.time,
+					sample->sync.uvalue.float_value);
+				break;
+			case TSP_TYPE_INT8:
+				sprintf(sym_display, "t=%d v=%d %%d\n", sample->sync.time,
+					sample->sync.uvalue.int8_value);
+				break;
+			case TSP_TYPE_INT16:
+				sprintf(sym_display, "t=%d v=%d %%d\n", sample->sync.time,
+					sample->sync.uvalue.int16_value);
+				break;
+			case TSP_TYPE_INT32:
+				sprintf(sym_display, "t=%d v=%d %%d\n", sample->sync.time,
+					sample->sync.uvalue.int32_value);
+				break;
+			case TSP_TYPE_INT64:
+				sprintf(sym_display, "t=%d v=%lld %%lld\n", sample->sync.time,
+					sample->sync.uvalue.int64_value);
+				break;
+			case TSP_TYPE_UINT8:
+				sprintf(sym_display, "t=%d v=%u %%u\n", sample->sync.time,
+					sample->sync.uvalue.uint8_value);
+				break;
+			case TSP_TYPE_UINT16:
+				sprintf(sym_display, "t=%d v=%u %%u\n", sample->sync.time,
+					sample->sync.uvalue.uint16_value);
+				break;
+			case TSP_TYPE_UINT32:
+				sprintf(sym_display, "t=%d v=%u %%u\n", sample->sync.time,
+					sample->sync.uvalue.uint32_value);
+				break;
+			case TSP_TYPE_UINT64:
+				sprintf(sym_display, "t=%d v=%llu %%llu\n", sample->sync.time,
+					sample->sync.uvalue.uint64_value);
+				break;
+			case TSP_TYPE_CHAR:
+				sprintf(sym_display, "t=%d v=%c %%c\n", sample->sync.time,
+					sample->sync.uvalue.char_value);
+				break;
+			case TSP_TYPE_UCHAR:
+				sprintf(sym_display, "t=%d v=%c %%c\n", sample->sync.time,
+					sample->sync.uvalue.uchar_value);
+				break;
+			case TSP_TYPE_RAW:
+			case TSP_TYPE_LAST:
+			case TSP_TYPE_UNKNOWN:
+			default:
+				sprintf(sym_display, "unknow type");
+				break;
+		}
 	} else {
+		/* async case */
 		sprintf(sym_display, get_sym_format(idx), 0,
 			*((double *)(sample->async.value_ptr)));
 	}
@@ -665,7 +744,8 @@ static void usage()
 \t\t--url\t\t\tthe url to connect to, default: rpc://localhost\n\
 \t\t--sync=<period>\t\tuse synchronous mode to read the sample values with a period <period>\n\
 \t\t--async\t\t\tuse asynchronous mode to read the sample values, this is the default\n\
-\t\t--filter\t\tbasic filter used to match the symbol names\n",
+\t\t--filter\t\tbasic filter used to match the symbol names\n\
+\t\t--ext=<ext>\t\tSuffix file names with <ext>, handy for windows browsing\n",
 	       PROGNAME);
 }
 
