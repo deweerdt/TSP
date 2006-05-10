@@ -191,10 +191,23 @@ fi
 #
 AC_ARG_ENABLE(tspfs,[  --enable-tspfs               build tspfs consumer],
 	      BUILD_TSPFS=$enableval,
-	      BUILD_TSPFS="no")
+	      BUILD_TSPFS="yes")
+
 if test ${BUILD_TSPFS} != "no"; then
-	    AC_CHECK_LIB(fuse, fuse_main, [], [
-		        echo "Error! You need to install FUSE."; exit -1 ])
+  AC_CHECK_LIB(fuse, fuse_main, [FUSE_OK="Fuse OK"], [FUSE_OK="Fuse MISSING"])
+  AC_CHECK_HEADERS([attr/xattr.h],[XATTR_OK="attr/xattr.h OK"],[XATTR_OK="attr/xattr.h MISSING"])
+  if test "$XATTR_OK" = "attr/xattr.h OK" -a "$FUSE_OK" = "Fuse OK"; then
+     TSPFS_OK="OK"
+  else
+     TSPFS_OK="$FUSE_OK, $XATTR_OK"
+  fi
+  AC_MSG_CHECKING([TSPfs verification...])
+  if test "$TSPFS_OK" = "OK"; then
+    AC_MSG_RESULT([OK])
+  else
+    AC_MSG_RESULT([$TSPFS_OK : TSPfs automatically disabled ])
+    BUILD_TSPFS="no"
+  fi
 fi
 #
 # end of TSPfs checks
