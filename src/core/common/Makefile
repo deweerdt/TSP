@@ -6,6 +6,7 @@ XINC    = tsp_common.h \
 	tsp_common_ssi.h \
 	tsp_common_ssei.h \
 	tsp_common_as.h \
+	tsp_common_status.h \
 	tsp_decoder.h \
 	tsp_encoder.h
 SOURCES = \
@@ -14,6 +15,7 @@ SOURCES = \
 	tsp_common_ssi.c \
 	tsp_common_ssei.c \
 	tsp_common_as.c \
+	tsp_common_status.c \
 	tsp_encoder.c \
 	tsp_decoder.c
 
@@ -22,6 +24,7 @@ OBJECTS=$(SOURCES:%.c=$(DIROBJ)/%.o)
 TARGET=$(DIRLIB)/libtsp_common.a
 
 CPPFLAGS += -I. #./rpc -I../misc_utils -I../driver -I../ctrl -I../include 
+CFLAGS += -Wall -Werror
 
 # -----------------------------------------------------------
 # No label all:: because it's in Makeparams and calls build::	

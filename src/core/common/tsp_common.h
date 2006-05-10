@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_common.h,v 1.12 2006-05-03 21:13:34 erk Exp $
+$Id: tsp_common.h,v 1.13 2006-05-10 12:11:40 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -90,9 +90,26 @@ const char* tsp_type_name[] = { "TSP_TYPE_UNKNOWN",
 				"TSP_TYPE_RAW",
 				"TSP_TYPE_LAST"
 };
+const char* tsp_type_fmt[] = { "TSP_TYPE_UNKNOWN",
+			       "%1.15G",
+			       "%1.15G",
+			       "%d",
+			       "%d",
+			       "%d",
+			       "%ld",
+			       "%u",
+			       "%u",
+			       "%u",
+			       "%lu",
+			       "%s",
+			       "%s",
+			       "%c",
+			       "TSP_TYPE_LAST"	
+};
 #else
-extern const int tsp_type_size[];
+extern const int   tsp_type_size[];
 extern const char* tsp_type_name[];
+extern const char* tsp_type_fmt[];
 #endif
 
 BEGIN_C_DECLS
