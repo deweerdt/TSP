@@ -80,9 +80,9 @@
 #include <getopt.h>
 
 
-#include "tsp_sys_headers.h"
-#include "tsp_prjcfg.h"
-#include "tsp_consumer.h"
+#include <tsp_sys_headers.h>
+#include <tsp_prjcfg.h>
+#include <tsp_consumer.h>
 
 #define MAX_SYM_DISP_SIZE 512
 #define MAX_FORMAT_SIZE 512
