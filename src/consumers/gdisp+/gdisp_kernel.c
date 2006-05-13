@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_kernel.c,v 1.15 2006-02-26 14:08:23 erk Exp $
+$Id: gdisp_kernel.c,v 1.16 2006-05-13 20:55:02 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -318,6 +318,7 @@ gdisp_createKernel (gint    argc,
   /*
    * Defaults.
    */
+  kernel->asyncWriteIsAllowed    = FALSE;
   kernel->isThreadSafe           = FALSE;
   kernel->sortingMethod          = GD_SORT_BY_PROVIDER;
   kernel->dndScope               = GD_DND_UNICAST;
@@ -430,9 +431,11 @@ gdisp_createKernel (gint    argc,
    * Remember :
    *  -  how to assign symbols to providers for sampling purpose.
    *  -  how to get plot type from plot name.
+   *  -  how to perform an asynchronous write operation of a symbol.
    */
   kernel->assignSymbolsToProviders = gdisp_affectRequestedSymbolsToProvider;
   kernel->getPlotTypeFromPlotName  = gdisp_getPlotTypeFromPlotName;
+  kernel->asyncWriteSymbol         = gdisp_asyncWriteSymbol;
 
   /*
    * Read user preference file.

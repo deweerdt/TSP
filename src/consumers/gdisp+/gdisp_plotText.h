@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_plotText.h,v 1.4 2006-02-26 14:08:24 erk Exp $
+$Id: gdisp_plotText.h,v 1.5 2006-05-13 20:55:02 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -50,7 +50,8 @@ enum {
 
   GD_SYMBOL_NAME_COLUMN  = 0,
   GD_SYMBOL_VALUE_COLUMN = 1,
-  GD_SYMBOL_MAX_COLUMNS  = 2
+  GD_SYMBOL_WRITE_COLUMN = 2,
+  GD_SYMBOL_MAX_COLUMNS  = 3
 
 };
 
@@ -89,8 +90,10 @@ typedef struct PlotText_T_ {
   guint                pttCListWidth;
   guint                pttCListHeight;
   gfloat               pttColumnRatio;
+  gboolean             pttShowWriteColumn;
   guchar               pttIsSizeAllocating;
-  guint                pttSelectedRow;
+  gint                 pttSelectedRow;
+  gint                 pttSelectedColumn;
 
   /*
    * Popup menus.

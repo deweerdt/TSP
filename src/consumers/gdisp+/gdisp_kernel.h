@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_kernel.h,v 1.25 2006-04-17 16:33:25 esteban Exp $
+$Id: gdisp_kernel.h,v 1.26 2006-05-13 20:55:02 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -57,8 +57,8 @@ File      : Graphic Tool Kernel Interface.
 #include "gdisp_doubleArray.h"
 
 /** 
- * @defgroup TSP_GDispPlus_Kernel Kernel API
- * @ingroup TSP_GDispPlusLib
+ * @defgroup TSP_Targa_Kernel Kernel API
+ * @ingroup TSP_TargaLib
  * @{
  */
 
@@ -73,6 +73,10 @@ File      : Graphic Tool Kernel Interface.
 #undef  GD_LOAD_CONFIGURATION_WITH_ALL_SYMBOLS
 #define GD_UNREF_THINGS
 
+#define GD_MIN(a,b)          ((a) < (b) ? (a) :  (b))
+#define GD_MAX(a,b)          ((a) > (b) ? (a) :  (b))
+#define GD_ABS(a)            ((a) >  0  ? (a) : -(a))
+#define GD_TOGGLE_BOOLEAN(b) ((b) == FALSE ? TRUE : FALSE)
 
 /*
  * 10 out of 170 colors.
@@ -151,6 +155,9 @@ typedef enum {
 
 } ProviderStatus_T;
 
+/* FIXME : the following three definitions must be dynamic */
+#define TSP_PROVIDER_FREQ     100   /* Hz                */
+
 
 /*
  * Ha Ha...
@@ -159,18 +166,12 @@ typedef enum {
  *                  a graphic plot. It is up to graphic plots to increment
  *                  the 'sReference' variable, and to decrement it each time
  *                  the symbol is no longer requested by the plot.
- *  - sConfIndex  : identity within the configuration.
+ *  - sPgi        : symbol producer general index.
  *  - sInfo       : structure coming from TSP core.
  *                  contains : name, index, period and phase.
  *  - sLastValue  : the double precision value of the symbol.
  *  - sTimeTag    : the time tag of the symbol value.
- *  - sHasChanged : has this symbol evolved since last frame ?
  */
-
-/* FIXME : the following three definitions must be dynamic */
-#define TSP_PROVIDER_FREQ     100   /* Hz                */
-#define GDISP_REFRESH_FREQ     10   /* Hz                */
-#define GDISP_WIN_T_DURATION   60   /* Seconds on X Axis */
 
 typedef struct Symbol_T_ {
 
@@ -179,7 +180,6 @@ typedef struct Symbol_T_ {
   TSP_sample_symbol_info_t         sInfo;
   guint                            sTimeTag;
   gdouble                          sLastValue;
-  gboolean                         sHasChanged;
 
   /*
    * Graphic.
@@ -567,6 +567,7 @@ typedef struct Kernel_T_ {
   /*
    * Definition of the multi-threaded environment.
    */
+  gboolean           asyncWriteIsAllowed;
   gboolean           isThreadSafe;
   void            *(*mutexNew)    (void);
   void             (*mutexLock)   (Kernel_T_Ptr,void*);
@@ -594,6 +595,9 @@ typedef struct Kernel_T_ {
   PlotType_T       (*getPlotTypeFromPlotName) (Kernel_T_Ptr,gchar*);
   void             (*startSamplingProcess)    (Kernel_T_Ptr);
   void             (*stopSamplingProcess)     (Kernel_T_Ptr);
+  gboolean         (*asyncWriteSymbol)        (Kernel_T_Ptr,
+					       Symbol_T*,
+					       gchar*);
 
   /*
    * Host/URL management.

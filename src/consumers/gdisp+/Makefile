@@ -55,7 +55,7 @@ ADD_LIB =  $(DIRLIB)/libtsp_consumer.a \
 	   $(DIRLIB)/libtsp_common.a  \
 	   $(DIRLIB)/libgtk_1.2_utils.a
 
-TARGET=$(DIRBIN)/tsp_gdisp+
+TARGET=$(DIRBIN)/targa
 
 CPPFLAGS += `gtk-config --cflags gtk`  
 CPPFLAGS += `xml2-config --cflags`

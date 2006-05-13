@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_consumers.c,v 1.16 2006-04-24 22:17:47 erk Exp $
+$Id: gdisp_consumers.c,v 1.17 2006-05-13 20:55:02 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -104,6 +104,13 @@ gdisp_insertProvider ( Kernel_T *kernel,
                                   (const TSP_answer_sample_t*)NULL;
 
   /*
+   * Check the original url is not known yet.
+   */
+  if (gdisp_getProviderByOriginalUrl(kernel,url) != (Provider_T*)NULL) {
+    return -1;
+  }
+
+  /*
    * Try to connect to the URL.
    */
   provider = TSP_consumer_connect_url(url);
@@ -152,7 +159,7 @@ gdisp_insertProvider ( Kernel_T *kernel,
 					      (gint)NULL,
 					      (gchar**)NULL);
 
-    if (TSP_STATUS_OK==requestStatus) {
+    if (TSP_STATUS_OK == requestStatus) {
       
       /*
        * Now the session is opened, get back all available information.
@@ -218,7 +225,6 @@ gdisp_insertProvider ( Kernel_T *kernel,
 	    /* Default is : at maximum frequency without offset */
 	    newProvider->pSymbolList[symbolCpt].sInfo.period = 1;
 	    newProvider->pSymbolList[symbolCpt].sInfo.phase  = 0;
-	    newProvider->pSymbolList[symbolCpt].sHasChanged  = FALSE;
 
 	    hash_append(newProvider->pSymbolHashTable,
 			newProvider->pSymbolList[symbolCpt].sInfo.name,
@@ -259,6 +265,7 @@ gdisp_insertProvider ( Kernel_T *kernel,
     } /* requestStatus == TRUE (TSP_consumer_request_open) */
 
     else {
+
       messageString = g_string_new((gchar*)NULL);
       g_string_sprintf(messageString,"Cannot open a session towards");
       kernel->outputFunc(kernel,messageString,GD_ERROR);
@@ -361,8 +368,6 @@ gdisp_consumingInit (Kernel_T *kernel)
    */
   assert(kernel);
 
-
-
   /* --------------------- TSP INITIALISATION ---------------------- */
 
   /*
@@ -442,6 +447,7 @@ gdisp_consumingInit (Kernel_T *kernel)
     hostList = g_list_next(hostList);
 
   }
+
 }
 
 
@@ -513,7 +519,6 @@ gdisp_consumingEnd (Kernel_T *kernel)
   guint       symbolCpt    = 0;
 
   assert(kernel);
-
 
   /*
    * Release all providers.

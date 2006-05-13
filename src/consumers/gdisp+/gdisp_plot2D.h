@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_plot2D.h,v 1.11 2006-02-26 14:08:23 erk Exp $
+$Id: gdisp_plot2D.h,v 1.12 2006-05-13 20:55:02 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -43,6 +43,9 @@ File      : Definition of 'F2T 2D plot' private structures.
 #define __2D_PLOT_H__
 
 #include "gdisp_pointArray.h"
+
+/* FIXME : the following three definitions must be dynamic */
+#define GDISP_WIN_T_DURATION   60   /* Seconds on X Axis */
 
 /*
  * Main principle of Y=f(t) Drawing :

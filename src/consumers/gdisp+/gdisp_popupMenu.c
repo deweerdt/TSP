@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_popupMenu.c,v 1.3 2006-02-26 14:08:24 erk Exp $
+$Id: gdisp_popupMenu.c,v 1.4 2006-05-13 20:55:02 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -160,17 +160,60 @@ gdisp_menuGeneralHandler ( GtkWidget *widget,
  */
 void*
 gdisp_addMenuItem ( PopupMenu_T *menu,
+		    ItemType_T   itemType,
 		    gchar       *itemLabel,
 		    gpointer     itemData )
 {
 
   GtkWidget *menuItem = (GtkWidget*)NULL;
+  GtkWidget *label    = (GtkWidget*)NULL;
 
   /*
    * Create a menu-item... and add it to the popup menu.
    * Connect a signal for handling the menu when "activated".
    */
-  menuItem = gtk_menu_item_new_with_label(itemLabel);
+  switch (itemType) {
+
+  case GD_POPUP_ITEM :
+
+    menuItem = gtk_menu_item_new_with_label(itemLabel);
+
+    break;
+
+  case GD_POPUP_TITLE :
+
+    menuItem = gtk_menu_item_new();
+
+    label = gtk_label_new(itemLabel);
+
+    gtk_label_set_justify(GTK_LABEL(label),
+			  GTK_JUSTIFY_CENTER);
+
+    gtk_widget_show(label);
+
+    gtk_container_add(GTK_CONTAINER(menuItem),
+		      label);
+
+    gtk_widget_set_sensitive(menuItem,
+			     FALSE);
+    
+
+    break;
+
+  case GD_POPUP_SEPARATOR :
+
+    /*
+     * CAUTION : do not use a hSeparator widget in popup-menu.
+     * Create instead an empty menu-item and simply add it to the menu.
+     */
+    menuItem = gtk_menu_item_new();
+
+    break;
+
+  default :
+    break;
+
+  }
 
   gtk_menu_append(GTK_MENU(menu->menu),
 		  menuItem);
@@ -216,13 +259,11 @@ gdisp_destroyMenu ( PopupMenu_T *menu )
 PopupMenu_T*
 gdisp_createMenu ( Kernel_T           *kernel,
 		   GtkWidget          *parentWidget,
-		   gchar              *title,
 		   PopupMenuHandler_T  userHandler,
 		   gpointer            userData )
 {
 
-  PopupMenu_T *menu     = (PopupMenu_T*)NULL;
-  GtkWidget   *menuItem = (GtkWidget*)NULL;
+  PopupMenu_T *menu = (PopupMenu_T*)NULL;
 
   /* ------------------- ALLOCATE MEMORY ------------------- */
 
@@ -246,20 +287,6 @@ gdisp_createMenu ( Kernel_T           *kernel,
    * up when you click on the output list.
    */
   menu->menu = gtk_menu_new ();
-
-  /*
-   * Create a menu-item with as a title... and add it to the popup menu.
-   */
-  if (title != (gchar*)NULL) {
-
-    menuItem = gtk_menu_item_new_with_label(title);
-    gtk_menu_append(GTK_MENU(menu->menu),
-		    menuItem);
-
-    gtk_widget_show(menuItem);
-    gtk_widget_set_sensitive(menuItem,FALSE);
-
-  }
 
   /*
    * If parent widget is a menu item, connect the new menu

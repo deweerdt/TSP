@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_format.h,v 1.3 2006-02-26 14:08:23 erk Exp $
+$Id: gdisp_format.h,v 1.4 2006-05-13 20:55:02 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -72,7 +72,7 @@ File      : Definition of all formats.
  */
 typedef enum {
 
-  GD_DEFAULT_FORMAT,
+  GD_DEFAULT_FORMAT = 0,
   GD_HEXADECIMAL_1,
   GD_HEXADECIMAL_2,
   GD_HEXADECIMAL_4,

@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_prototypes.h,v 1.18 2006-02-26 14:08:24 erk Exp $
+$Id: gdisp_prototypes.h,v 1.19 2006-05-13 20:55:02 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -56,6 +56,9 @@ void       gdisp_destroyKernel   (Kernel_T *kernel);
 gboolean   gdisp_startSamplingProcess             (Kernel_T *kernel);
 void       gdisp_stopSamplingProcess              (Kernel_T *kernel);
 void       gdisp_affectRequestedSymbolsToProvider (Kernel_T *kernel);
+gboolean   gdisp_asyncWriteSymbol                 (Kernel_T *kernel,
+						   Symbol_T *symbol,
+						   gchar    *valueAsString);
 
 
 /*
@@ -263,6 +266,16 @@ gchar     *gdisp_strDup (gchar *string);
 gchar     *gdisp_uIntToStr (guint value, gchar *ptr);
 void       gdisp_updateWholeGui (void);
 
+void       gdisp_showInputWindow (Kernel_T *kernel,
+				  gchar    *title,
+				  gchar    *subTitle,
+				  Symbol_T *symbol,
+				  gpointer  userData,
+				  void    (*userHandler)(Kernel_T*,
+							 Symbol_T*,
+							 gchar*,
+							 gpointer),
+				  gboolean  onlyNumbers);
 
 /*
  * From gdisp_preferences.c

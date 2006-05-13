@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_pixmaps.h,v 1.3 2006-02-26 14:08:23 erk Exp $
+$Id: gdisp_pixmaps.h,v 1.4 2006-05-13 20:55:02 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -84,6 +84,9 @@ typedef enum {
   GD_PIX_NbPixmaps /* Pixmap total number */
 
 } Pixmap_ID;
+
+#define GD_PIX_success GD_PIX_applyButton
+#define GD_PIX_error   GD_PIX_doneButton
 
 /*
  * Pixmap type definition.

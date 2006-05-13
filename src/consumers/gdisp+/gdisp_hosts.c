@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_hosts.c,v 1.7 2006-04-17 16:33:25 esteban Exp $
+$Id: gdisp_hosts.c,v 1.8 2006-05-13 20:55:02 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -94,6 +94,22 @@ gdisp_findHostByName ( Kernel_T *kernel,
 
 
 /*
+ * Compare 2 URLs.
+ */
+static gint
+gdisp_compareUrl ( gconstpointer vUrl1,
+		   gconstpointer vUrl2 )
+{
+
+  gchar *url1 = (gchar*)vUrl1;
+  gchar *url2 = (gchar*)vUrl2;
+
+  return strcmp(url1,url2);
+
+}
+
+
+/*
  --------------------------------------------------------------------
                              PUBLIC ROUTINES
  --------------------------------------------------------------------
@@ -158,17 +174,23 @@ gdisp_addUrl ( Kernel_T *kernel,
     return;
   }
 
-  /*
-   * Duplicate URL name
-   */
-  url = gdisp_strDup(urlName);
-  assert(url);
+  if (g_list_find_custom(kernel->urlList,
+			 (gpointer)urlName,
+			 gdisp_compareUrl) == (GList*)NULL) {
 
-  /*
-   * Insert this new URL into the kernel URL list.
-   */
-  kernel->urlList = g_list_append(kernel->urlList,
-				  (gpointer)url);
+    /*
+     * Duplicate URL name
+     */
+    url = gdisp_strDup(urlName);
+    assert(url);
+
+    /*
+     * Insert this new URL into the kernel URL list.
+     */
+    kernel->urlList = g_list_append(kernel->urlList,
+				    (gpointer)url);
+
+  }
 
 }
 

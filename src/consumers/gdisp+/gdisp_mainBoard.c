@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_mainBoard.c,v 1.11 2006-02-26 14:08:23 erk Exp $
+$Id: gdisp_mainBoard.c,v 1.12 2006-05-13 20:55:02 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -551,6 +551,7 @@ gdisp_manageAction ( gpointer factoryData,
     gdisp_chooseFilename(kernel);
   }
   else {
+    kernel->widgets.fileSelector = (GtkWidget*)NULL;
     gdisp_launchAction((GtkObject*)NULL,
 		       (gpointer)kernel);
   }
@@ -692,7 +693,7 @@ gdisp_createMainBoard (Kernel_T *kernel)
 		       150 /* height */);
 
   gtk_window_set_title(GTK_WINDOW(kernel->widgets.mainBoardWindow),
-		       "GDISP+ Copyright (c) 2005.");
+		       "TARGA Copyright (c) 2006.");
 
   gtk_container_set_border_width(
 			   GTK_CONTAINER(kernel->widgets.mainBoardWindow),

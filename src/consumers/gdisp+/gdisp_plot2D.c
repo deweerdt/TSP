@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_plot2D.c,v 1.19 2006-02-26 14:08:23 erk Exp $
+$Id: gdisp_plot2D.c,v 1.20 2006-05-13 20:55:02 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -2166,7 +2166,6 @@ gdisp_showPlot2D (Kernel_T  *kernel,
    */
   plot->p2dMainMenu = gdisp_createMenu(kernel,
 				       plot->p2dArea,
-				       (gchar*)NULL /* no title */,
 				       gdisp_popupMenuHandler,
 				       (gpointer)plot);
 
@@ -2175,11 +2174,13 @@ gdisp_showPlot2D (Kernel_T  *kernel,
      */
   /*
   gdisp_addMenuItem(plot->p2dMainMenu,
+		    GD_POPUP_ITEM,
 		    "clear",
 		    (gpointer)GUINT_TO_POINTER(GD_2D_CLEAR));
   */
 
   gdisp_addMenuItem(plot->p2dMainMenu,
+		    GD_POPUP_ITEM,
 		    "snapshot",
 		    (gpointer)GUINT_TO_POINTER(GD_2D_SNAPSHOT));
 

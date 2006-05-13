@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_plotText.c,v 1.10 2006-02-26 14:08:24 erk Exp $
+$Id: gdisp_plotText.c,v 1.11 2006-05-13 20:55:02 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -67,6 +67,39 @@ File      : Text plot system.
 */
 
 #undef GD_DEBUG_TEXT
+#define GD_ASYNC_WRITE_ITEM (GD_MAX_FORMATS+1)
+
+
+/*
+ * Get list row from symbol adress.
+ */
+static guint
+gdisp_getRowFromSymbol (PlotText_T *plot,
+			Symbol_T   *targetSymbol)
+{
+
+  GList *symbolItem = (GList*)NULL;
+  gint   rowNumber  = 0;
+
+  /*
+   * Loop over all symbols.
+   */
+  symbolItem = g_list_first(plot->pttSymbolList);
+  while (symbolItem != (GList*)NULL) {
+
+    if (targetSymbol == (Symbol_T*)symbolItem->data) {
+      return rowNumber;
+    }
+
+    rowNumber++;
+
+    symbolItem = g_list_next(symbolItem);
+
+  }
+
+  return 0; /* should never happen */
+
+}
 
 
 /*
@@ -87,6 +120,53 @@ gdisp_sortSymbolByName(gconstpointer data1,
 
 
 /*
+ * Input Window User Handler.
+ */
+static void
+gdisp_asyncWriteInputValueHandler (Kernel_T *kernel,
+				   Symbol_T *symbol,
+				   gchar    *valueAsString,
+				   gpointer  userData)
+{
+
+  PlotText_T *plot             = (PlotText_T*)userData;
+  gboolean    asyncWriteStatus = TRUE;
+  Pixmap_T   *pixmap           = (Pixmap_T*)NULL;
+  guint       row              = 0;
+
+  /*
+   * Get back row from symbol address.
+   */
+  row = gdisp_getRowFromSymbol(plot,
+			       symbol);
+
+  /*
+   * Perform the async-write operation via the kernel.
+   */
+  asyncWriteStatus = (*kernel->asyncWriteSymbol)(kernel,
+						 symbol,
+						 valueAsString);
+
+  /*
+   * Now, Choose the right pixmap according to the async-write status.
+   */
+  pixmap = gdisp_getPixmapById(kernel,
+			       asyncWriteStatus == TRUE ?
+			       GD_PIX_success : GD_PIX_error,
+			       plot->pttCList);
+
+  gtk_clist_set_pixtext(GTK_CLIST(plot->pttCList),
+			row,
+			GD_SYMBOL_WRITE_COLUMN,
+			valueAsString,
+			5, /* spacing */
+			pixmap->pixmap,
+			pixmap->mask);
+
+}
+
+
+/*
  * Callback when a row is selected into the list.
  */
 static void
@@ -100,7 +180,10 @@ gdisp_selectPlotTextRow (GtkCList       *cList,
   /*
    * Info : Kernel_T *kernel = (Kernel_T*)userData;
    */
-  PlotText_T *plot = (PlotText_T*)NULL;
+  Kernel_T          *kernel     = (Kernel_T*)userData;
+  PlotText_T        *plot       = (PlotText_T*)NULL;
+  PlotTextRowData_T *rowData    = (PlotTextRowData_T*)NULL;
+  GString           *iwSubTitle = (GString*)NULL;
   
   /*
    * Get back the plot instance.
@@ -109,9 +192,44 @@ gdisp_selectPlotTextRow (GtkCList       *cList,
 			     "plotPointer");
 
   /*
-   * Only line number is interesting.
+   * Line & Column number is interesting.
+   *    Line number from 0 to N-Line.
+   *    If 'simple click' -> column number is always -1 (strange !!).
+   *    If 'double click' -> column number is from 0 to N-Column.
    */
-   plot->pttSelectedRow = row;
+   plot->pttSelectedRow    = row;
+   plot->pttSelectedColumn = column;
+
+   if (plot->pttSelectedColumn == GD_SYMBOL_WRITE_COLUMN) {
+
+      /*
+       * Return all attributes of the current selected line.
+       */
+      rowData =
+	(PlotTextRowData_T*)gtk_clist_get_row_data(GTK_CLIST(plot->pttCList),
+						   plot->pttSelectedRow);
+
+      if (rowData != (PlotTextRowData_T*)NULL) {
+
+	iwSubTitle = g_string_new((gchar*)NULL);
+
+	g_string_sprintf(iwSubTitle,
+			 " Enter new value for %s ",
+			 rowData->symbol->sInfo.name);
+
+	gdisp_showInputWindow(kernel,
+			      "Asynchronous Write Window", /* title */
+			      iwSubTitle->str, /* sub title */
+			      rowData->symbol,
+			      (gpointer)plot,
+			      gdisp_asyncWriteInputValueHandler,
+			      TRUE /* only numbers are allowed */);
+
+	g_string_free(iwSubTitle,TRUE);
+
+      }
+
+   } /* third column has been clicked */
 
 }
 
@@ -168,8 +286,10 @@ gdisp_sizeAllocate (GtkWidget     *widget,
    * For information :
    * Kernel_T   *kernel   = (Kernel_T*)userData;
    */
-  PlotText_T *plot     = (PlotText_T*)NULL;
-  gfloat      newWidth = (gfloat)0;
+  PlotText_T *plot              = (PlotText_T*)NULL;
+  gfloat      firstColumnWidth  = (gfloat)0;
+  gfloat      secondColumnWidth = (gfloat)0;
+  gfloat      thirdColumnWidth  = (gfloat)0;
 
   /*
    * Get back the plot instance.
@@ -196,13 +316,34 @@ gdisp_sizeAllocate (GtkWidget     *widget,
     /*
      * What however is important, is that we set the column widths as
      * they will never be right otherwise.
-     * Note that the columns are numbered from 0 and up (to 2 in our case).
+     * Note that the columns are numbered from 0 and up (to 3 in our case).
      */
-    newWidth = plot->pttColumnRatio * allocation->width;
+    if (plot->pttShowWriteColumn == FALSE) {
+
+      firstColumnWidth  = plot->pttColumnRatio * allocation->width;
+      secondColumnWidth = allocation->width - firstColumnWidth;
+      thirdColumnWidth  = 0;
+
+    }
+    else {
+
+      firstColumnWidth  = plot->pttColumnRatio * allocation->width;
+      secondColumnWidth = (allocation->width - firstColumnWidth) / 2;
+      thirdColumnWidth  = secondColumnWidth;
+
+    }
 
     gtk_clist_set_column_width(GTK_CLIST(plot->pttCList),
 			       GD_SYMBOL_NAME_COLUMN, /* first column */
-			       (gint)newWidth);
+			       (gint)firstColumnWidth);
+
+    gtk_clist_set_column_width(GTK_CLIST(plot->pttCList),
+			       GD_SYMBOL_VALUE_COLUMN, /* second column */
+			       (gint)secondColumnWidth);
+
+    gtk_clist_set_column_width(GTK_CLIST(plot->pttCList),
+			       GD_SYMBOL_WRITE_COLUMN, /* third column */
+			       (gint)thirdColumnWidth);
 
     /*
      * In order to avoid recursive calls to that handler.
@@ -280,8 +421,9 @@ gdisp_createPlotText (Kernel_T *kernel)
   /*
    * Few initialisations.
    */
-  plot->pttType        = GD_PLOT_TEXT;
-  plot->pttColumnRatio = (gfloat)0.66;
+  plot->pttType            = GD_PLOT_TEXT;
+  plot->pttColumnRatio     = (gfloat)0.66;
+  plot->pttShowWriteColumn = FALSE;
 
   /*
    * Create a CList with 2 columns.
@@ -293,12 +435,20 @@ gdisp_createPlotText (Kernel_T *kernel)
 
   gtk_clist_set_column_title(GTK_CLIST(plot->pttCList),
 			     GD_SYMBOL_NAME_COLUMN, /* first column */
-			     "Symbols");
+			     "Symbol");
 
   gtk_clist_set_column_title(GTK_CLIST(plot->pttCList),
 			     GD_SYMBOL_VALUE_COLUMN, /* second column */
-			     "Values");
+			     "Value");
 
+  gtk_clist_set_column_title(GTK_CLIST(plot->pttCList),
+			     GD_SYMBOL_WRITE_COLUMN, /* third column */
+			     "New Value");
+
+  gtk_clist_set_column_visibility(GTK_CLIST(plot->pttCList),
+				  GD_SYMBOL_WRITE_COLUMN, /* third column */
+				  plot->pttShowWriteColumn);
+    
   gtk_clist_set_sort_column(GTK_CLIST(plot->pttCList),
 			    GD_SYMBOL_NAME_COLUMN); /* first column */
 
@@ -472,7 +622,10 @@ gdisp_setPlotTextInitialDimensions (Kernel_T *kernel,
 				    guint     height)
 {
 
-  PlotText_T *plot = (PlotText_T*)data;
+  PlotText_T *plot              = (PlotText_T*)data;
+  guint       firstColumnWidth  = 0;
+  guint       secondColumnWidth = 0;
+  guint       thirdColumnWidth  = 0;
 
   /*
    * Remember my initial width and height.
@@ -485,15 +638,34 @@ gdisp_setPlotTextInitialDimensions (Kernel_T *kernel,
     /*
      * What however is important, is that we set the column widths as
      * they will never be right otherwise.
-     * Note that the columns are numbered from 0 and up (to 2 in our case).
+     * Note that the columns are numbered from 0 and up (to 3 in our case).
      */
+    if (plot->pttShowWriteColumn == FALSE) {
+
+      firstColumnWidth  = 2 * width / 3;
+      secondColumnWidth = 1 * width / 3;
+      thirdColumnWidth  = 0;
+
+    }
+    else {
+
+      firstColumnWidth  = width / 2;
+      secondColumnWidth = width / 4;
+      thirdColumnWidth  = width / 4;
+
+    }
+
     gtk_clist_set_column_width(GTK_CLIST(plot->pttCList),
 			       GD_SYMBOL_NAME_COLUMN, /* first column */
-			       2 * width / 3);
+			       firstColumnWidth);
 
     gtk_clist_set_column_width(GTK_CLIST(plot->pttCList),
 			       GD_SYMBOL_VALUE_COLUMN, /* second column */
-			       1 * width / 3);
+			       secondColumnWidth);
+
+    gtk_clist_set_column_width(GTK_CLIST(plot->pttCList),
+			       GD_SYMBOL_WRITE_COLUMN, /* third column */
+			       thirdColumnWidth);
 
   }
 
@@ -534,18 +706,39 @@ gdisp_popupMenuHandler ( Kernel_T    *kernel,
 {
 
   PlotText_T        *plot    = (PlotText_T*)menuData;
-  Format_T           format  = (Format_T)GPOINTER_TO_UINT(itemData);
+  guint              item    = GPOINTER_TO_UINT(itemData);
+  Format_T           format  = (Format_T)GD_DEFAULT_FORMAT;
   PlotTextRowData_T *rowData = (PlotTextRowData_T*)NULL;
+
+
+  /*
+   * Asynchronous write operation.
+   */
+  if (item == GD_ASYNC_WRITE_ITEM) {
+
+    plot->pttShowWriteColumn = GD_TOGGLE_BOOLEAN(plot->pttShowWriteColumn);
+
+    gtk_clist_set_column_visibility(GTK_CLIST(plot->pttCList),
+				    GD_SYMBOL_WRITE_COLUMN, /* third column */
+				    plot->pttShowWriteColumn);
+
+  }
 
   /*
    * Look for the current selected row and change its display format.
    */
-  rowData =
-    (PlotTextRowData_T*)gtk_clist_get_row_data(GTK_CLIST(plot->pttCList),
-					       plot->pttSelectedRow);
+  else {
 
-  if (rowData != (PlotTextRowData_T*)NULL) {
-    rowData->format = format;
+    format  = (Format_T)item;
+
+    rowData =
+      (PlotTextRowData_T*)gtk_clist_get_row_data(GTK_CLIST(plot->pttCList),
+						 plot->pttSelectedRow);
+
+    if (rowData != (PlotTextRowData_T*)NULL) {
+      rowData->format = format;
+    }
+
   }
 
 }
@@ -560,9 +753,10 @@ gdisp_showPlotText (Kernel_T  *kernel,
 		    void      *data)
 {
 
-  PlotText_T  *plot      = (PlotText_T*)data;
-  void        *menuItem  = (void*)NULL;
-  Format_T     cptFormat = GD_FLOATING_FIXED_1;
+  PlotText_T  *plot          = (PlotText_T*)data;
+  void        *menuItem      = (void*)NULL;
+  Format_T     cptFormat     = GD_FLOATING_FIXED_1;
+  guint        asyncItemData = 0;
 
 #if defined(GD_DEBUG_TEXT)
   fprintf(stdout,"Showing text plot.\n");
@@ -580,14 +774,50 @@ gdisp_showPlotText (Kernel_T  *kernel,
    */
   plot->pttMainMenu = gdisp_createMenu(kernel,
 				       plot->pttCList,
-				       "             Format" /* title */,
 				       gdisp_popupMenuHandler,
 				       (gpointer)plot);
+
+  /*
+   * Insert a label for asynchronous write operation.
+   */
+  if (kernel->asyncWriteIsAllowed == TRUE) {
+
+    gdisp_addMenuItem(plot->pttMainMenu,
+		      GD_POPUP_TITLE,
+		      "Asynchronous Write",
+		      (gpointer)NULL);
+
+    asyncItemData = GD_ASYNC_WRITE_ITEM;
+    gdisp_addMenuItem(plot->pttMainMenu,
+		      GD_POPUP_ITEM,
+		      "Show / Hide Column",
+		      (gpointer)GUINT_TO_POINTER(asyncItemData));
+
+
+    /*
+     * Insert a horizontal separator.
+     */
+    gdisp_addMenuItem(plot->pttMainMenu,
+		      GD_POPUP_SEPARATOR,
+		      (gchar*)NULL,
+		      (gpointer)NULL);
+
+  }
+
+  /*
+   * Insert a label.
+   */
+  gdisp_addMenuItem(plot->pttMainMenu,
+		    GD_POPUP_TITLE,
+		    "Display Format",
+		    (gpointer)NULL);
+
 
   /*
    * Choose useful formats among all available.
    */
   gdisp_addMenuItem(plot->pttMainMenu,
+		    GD_POPUP_ITEM,
 		    gdisp_getFormatLabel(GD_DEFAULT_FORMAT),
 		    (gpointer)GUINT_TO_POINTER(GD_DEFAULT_FORMAT));
 
@@ -595,20 +825,26 @@ gdisp_showPlotText (Kernel_T  *kernel,
    * Create the sub-menu specific to floating fixed decimal format.
    */
   menuItem = gdisp_addMenuItem(plot->pttMainMenu,
+			       GD_POPUP_ITEM,
 			       "Floating Fixed Decimal",
 			       (gpointer)NULL);
 
   plot->pttFloatingFixedMenu = gdisp_createMenu(kernel,
 						menuItem,
-						"Floating Fixed Decimal",
 						gdisp_popupMenuHandler,
 						(gpointer)plot);
+
+  gdisp_addMenuItem(plot->pttFloatingFixedMenu,
+		    GD_POPUP_TITLE,
+		    "Floating Fixed Decimal", /* title */
+		    (gpointer)NULL);
 
   for (cptFormat = GD_FLOATING_FIXED_1;
        cptFormat <= GD_FLOATING_FIXED_10;
        cptFormat++) {
 
     gdisp_addMenuItem(plot->pttFloatingFixedMenu,
+		      GD_POPUP_ITEM,
 		      gdisp_getFormatLabel(cptFormat),
 		      (gpointer)GUINT_TO_POINTER(cptFormat));
 
@@ -618,6 +854,7 @@ gdisp_showPlotText (Kernel_T  *kernel,
    * Create the item for scientif format.
    */
   gdisp_addMenuItem(plot->pttMainMenu,
+		    GD_POPUP_ITEM,
 		    gdisp_getFormatLabel(GD_SCIENTIFIC),
 		    (gpointer)GUINT_TO_POINTER(GD_SCIENTIFIC));
 
@@ -625,6 +862,7 @@ gdisp_showPlotText (Kernel_T  *kernel,
    * Create the item for binary format.
    */
   gdisp_addMenuItem(plot->pttMainMenu,
+		    GD_POPUP_ITEM,
 		    gdisp_getFormatLabel(GD_BINARY),
 		    (gpointer)GUINT_TO_POINTER(GD_BINARY));
 
@@ -632,28 +870,37 @@ gdisp_showPlotText (Kernel_T  *kernel,
    * Create the sub-menu specific to hexadecimal format.
    */
   menuItem = gdisp_addMenuItem(plot->pttMainMenu,
+			       GD_POPUP_ITEM,
 			       "Hexadecimal",
 			       (gpointer)NULL);
 
   plot->pttHexadecimalMenu = gdisp_createMenu(kernel,
 					      menuItem,
-					      "Hexadecimal" /* title */,
 					      gdisp_popupMenuHandler,
 					      (gpointer)plot);
 
   gdisp_addMenuItem(plot->pttHexadecimalMenu,
+		    GD_POPUP_TITLE,
+		    "Hexadecimal" /* title */,
+		    (gpointer)NULL);
+
+  gdisp_addMenuItem(plot->pttHexadecimalMenu,
+		    GD_POPUP_ITEM,
 		    gdisp_getFormatLabel(GD_HEXADECIMAL_1),
 		    (gpointer)GUINT_TO_POINTER(GD_HEXADECIMAL_1));
 
   gdisp_addMenuItem(plot->pttHexadecimalMenu,
+		    GD_POPUP_ITEM,
 		    gdisp_getFormatLabel(GD_HEXADECIMAL_2),
 		    (gpointer)GUINT_TO_POINTER(GD_HEXADECIMAL_2));
 
   gdisp_addMenuItem(plot->pttHexadecimalMenu,
+		    GD_POPUP_ITEM,
 		    gdisp_getFormatLabel(GD_HEXADECIMAL_4),
 		    (gpointer)GUINT_TO_POINTER(GD_HEXADECIMAL_4));
 
   gdisp_addMenuItem(plot->pttHexadecimalMenu,
+		    GD_POPUP_ITEM,
 		    gdisp_getFormatLabel(GD_HEXADECIMAL_8),
 		    (gpointer)GUINT_TO_POINTER(GD_HEXADECIMAL_8));
 
@@ -661,6 +908,7 @@ gdisp_showPlotText (Kernel_T  *kernel,
    * End up with Ascii format.
    */
   gdisp_addMenuItem(plot->pttMainMenu,
+		    GD_POPUP_ITEM,
 		    gdisp_getFormatLabel(GD_ASCII),
 		    (gpointer)GUINT_TO_POINTER(GD_ASCII));
 
@@ -716,6 +964,7 @@ gdisp_addSymbolsToPlotText (Kernel_T *kernel,
    * Incoming symbols are to be attached to the list.
    */
   rowInfo[1] = (gchar*)sValue;
+  rowInfo[2] = "";
   gtk_clist_freeze(GTK_CLIST(plot->pttCList));
 
   /*

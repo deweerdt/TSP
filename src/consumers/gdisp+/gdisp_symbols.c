@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_symbols.c,v 1.9 2006-04-07 10:37:17 morvan Exp $
+$Id: gdisp_symbols.c,v 1.10 2006-05-13 20:55:02 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -614,8 +614,9 @@ gdisp_symbolApplyCallback (GtkWidget *applyButtonWidget,
    * Turn the filter (a coma-separated string list) into a string table.
    */
   filter = gtk_entry_get_text(GTK_ENTRY(kernel->widgets.filterEntry));
-  if (strlen(filter) == 0)
+  if (strlen(filter) == 0) {
     filter = (gchar*)NULL;
+  }
 
   gdisp_getStringTableFromStringList(filter,
 				     &stringTable,

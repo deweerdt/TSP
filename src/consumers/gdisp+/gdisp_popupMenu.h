@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_popupMenu.h,v 1.3 2006-02-26 14:08:24 erk Exp $
+$Id: gdisp_popupMenu.h,v 1.4 2006-05-13 20:55:02 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -54,6 +54,14 @@ typedef void (*PopupMenuHandler_T)(Kernel_T*,
 				   gpointer,
 				   gpointer);
 
+typedef enum {
+
+  GD_POPUP_TITLE = 0,
+  GD_POPUP_ITEM,
+  GD_POPUP_SEPARATOR
+
+} ItemType_T;
+
 /*
  * Dynamic PopupMenu.
  */
@@ -83,6 +91,7 @@ typedef struct PopupMenu_T_ {
  * Prototypes.
  */
 void*        gdisp_addMenuItem ( PopupMenu_T        *menu,
+				 ItemType_T          itemType,
 				 gchar              *itemLabel,
 				 gpointer            itemData );
 
@@ -90,7 +99,6 @@ void         gdisp_destroyMenu ( PopupMenu_T        *menu );
 
 PopupMenu_T *gdisp_createMenu  ( Kernel_T           *kernel,
 				 GtkWidget          *parentWidget,
-				 gchar              *title,
 				 PopupMenuHandler_T  userHandler,
 				 gpointer            userData );
 

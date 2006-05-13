@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_sampling.c,v 1.17 2006-04-24 22:17:47 erk Exp $
+$Id: gdisp_sampling.c,v 1.18 2006-05-13 20:55:02 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -148,6 +148,46 @@ gdisp_createThread ( Kernel_T               *kernel,
 
 
 /*
+ * Get provider by symbol.
+ */
+static Provider_T*
+gdisp_getProviderBySymbol ( Kernel_T *kernel,
+			    Symbol_T *symbol )
+{
+
+  GList      *providerItem = (GList*)NULL;
+  Provider_T *provider     = (Provider_T*)NULL;
+
+  /*
+   * Loop over all providers, and look for the provider
+   * the given symbol belongs to.
+   */
+  providerItem = g_list_first(kernel->providerList);
+  while (providerItem != (GList*)NULL) {
+
+    provider = (Provider_T*)providerItem->data;
+
+    /*
+     * The symbol belongs to the current provider because its
+     * address is in the good address interval.
+     */
+    if (provider->pSymbolList <= symbol &&
+	symbol < provider->pSymbolList + provider->pSymbolNumber) {
+
+      return provider;
+
+    }
+
+    providerItem = g_list_next(providerItem);
+
+  }
+
+  return (Provider_T*)NULL;
+
+}
+
+
+/*
  * Main callback routine to perform timer period computation.
  */
 static void
@@ -166,7 +206,12 @@ gdisp_computeTimerPeriod ( Kernel_T         *kernel,
   plotPeriod = (*plotSystemData->plotSystem->psGetPeriod)
                                       (kernel,plotSystemData->plotData);
 
-  *timerPeriod = gdisp_computePgcd(*timerPeriod,plotPeriod);
+  if (*timerPeriod == G_MAXINT) {
+    *timerPeriod = plotPeriod;
+  }
+  else {
+    *timerPeriod = gdisp_computePgcd(*timerPeriod,plotPeriod);
+  }
 
 }
 
@@ -605,7 +650,7 @@ gdisp_samplingThread (void *data )
   requestStatus = TSP_consumer_request_sample(provider->pHandle,
 					      &provider->pSampleList);
 
-  if (TSP_STATUS_OK!=requestStatus) {
+  if (TSP_STATUS_OK != requestStatus) {
 
     provider->pSamplingThreadStatus = GD_THREAD_REQUEST_SAMPLE_ERROR;
     pthread_exit((void*)FALSE);
@@ -635,12 +680,16 @@ gdisp_samplingThread (void *data )
 
   tmpHashTable = hash_open('.','z');
 
-  for (sampleCpt=0; sampleCpt<sampleList->TSP_sample_symbol_info_list_t_len; sampleCpt++) {
+  for (sampleCpt=0;
+       sampleCpt<sampleList->TSP_sample_symbol_info_list_t_len;
+       sampleCpt++) {
 
-    symbol = (Symbol_T*)hash_get(provider->pSymbolHashTable,
-				 sampleList->TSP_sample_symbol_info_list_t_val[sampleCpt].name);
+    symbol = (Symbol_T*)
+      hash_get(provider->pSymbolHashTable,
+	       sampleList->TSP_sample_symbol_info_list_t_val[sampleCpt].name);
 
-    symbol->sPgi = sampleList->TSP_sample_symbol_info_list_t_val[sampleCpt].provider_global_index;
+    symbol->sPgi =
+      sampleList->TSP_sample_symbol_info_list_t_val[sampleCpt].provider_global_index;
 
     /* I can use 'sprintf' because sampling has not started yet */
     sprintf(samplePGIasStringBuffer,
@@ -682,8 +731,10 @@ gdisp_samplingThread (void *data )
    * As load is concerned, only "double" values are supported by TSP.
    */
   provider->pLoad    = 0;
-  provider->pMaxLoad = provider->pBaseFrequency  *
-                       provider->pSampleList.TSP_sample_symbol_info_list_t_len * sizeof(gdouble);
+  provider->pMaxLoad =
+    provider->pBaseFrequency  *
+    provider->pSampleList.TSP_sample_symbol_info_list_t_len *
+    sizeof(gdouble);
 
   provider->pSamplingThreadStatus = GD_THREAD_RUNNING;
 
@@ -765,10 +816,6 @@ gdisp_samplingThread (void *data )
 #endif
 
       symbol->sTimeTag    = (guint)sampleValue.time;
-
-      symbol->sHasChanged =
-	sampleValue.uvalue.double_value == symbol->sLastValue ? FALSE : TRUE;
-
       symbol->sLastValue  = sampleValue.uvalue.double_value;
 
     } /* sampleHasArrived == TRUE */
@@ -1224,5 +1271,42 @@ gdisp_affectRequestedSymbolsToProvider ( Kernel_T *kernel )
    * Release ressource.
    */
   g_list_free(symbolList);
+
+}
+
+
+/*
+ * Async Write Method.
+ * Returns TRUE if success, FALSE otherwise.
+ */
+gboolean
+gdisp_asyncWriteSymbol ( Kernel_T *kernel,
+			 Symbol_T *symbol,
+			 gchar    *valueAsString )
+
+{
+
+  Provider_T *provider = (Provider_T*)NULL;
+
+  /*
+   * Check if an async-write operation is allowed.
+   */
+  if (kernel->asyncWriteIsAllowed == FALSE) {
+    return FALSE;
+  }
+
+  /*
+   * Try to get back the provider the symbol belongs to.
+   */
+  provider = gdisp_getProviderBySymbol(kernel,
+				       symbol);
+
+  if (provider == (Provider_T*)NULL) {
+    return FALSE;
+  }
+
+  /* status = TSP_consumer_request_async_sample_write(...); */
+
+  return TRUE;
 
 }

@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_main.c,v 1.13 2006-03-31 12:55:19 erk Exp $
+$Id: gdisp_main.c,v 1.14 2006-05-13 20:55:02 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -56,12 +56,12 @@ File      : Graphic Tool main part.
 #include "gdisp_prototypes.h"
 
 /**
- * @defgroup TSP_GDispPlus GDisp+
+ * @defgroup TSP_Targa Targa
  * @ingroup  TSP_Consumers
- * tsp_gdisp+ is the second generation TSP consumer GUI.
+ * targa is the second generation TSP consumer GUI.
  * This a gtk+1.2 (which should evolve to gtk+2.x), 
  * GUI which may be used to efficiently draw or view TSP sample symbol. 
- * GDisp+ includes following features:
+ * Targa includes following features:
  * <ul>
  *   <li> Multi Y vs X graphing capability </li>
  *   <li> Graph snapshot </li>
@@ -70,22 +70,22 @@ File      : Graphic Tool main part.
  *   <li> Save/Restore sampling configuration </li>
  *   <li> many more to come... </li>
  * </ul>
- * The gdisp command lines options are the following:
- * \par  tsp_gdisp+ [-u TSPurl ] [-h host ] [-x config.xml]
+ * The targa command lines options are the following:
+ * \par  targa [-u TSPurl ] [-h host ] [-x config.xml]
  * <ul>
  *   <li> \b -u TSPurl the TSP URL @ref TSP_URL_FORMAT_USAGE</li>   
  *   <li> \b -h host the hostname or IP address </li>
- *   <li> \b -x config.xml the GDisp+ xml configuration file </li>
+ *   <li> \b -x config.xml the Targa xml configuration file </li>
  * </ul>
- * @section gdispPlus_Design GDisp+ Design
- * GDisp+ is a TSP consumer which is designed as a modular graphical object renderer.
+ * @section targa_Design Targa Design
+ * Targa is a TSP consumer which is designed as a modular graphical object renderer.
  * You can display the TSP symbols in XY Graph or textual view or with
  * the other graphical object renderer.
  * 
- * @subsection gdispPlus_plugins Graphical plugins
- * GDisp+ map TSP symbols onto graphical object renderer which are 
- * structured as GDisp+ plugins.
- * @subsubsection gdispPlus_plottext Text Plot
+ * @subsection targa_plugins Graphical plugins
+ * Targa map TSP symbols onto graphical object renderer which are 
+ * structured as Targa plugins.
+ * @subsubsection targa_plottext Text Plot
  * The text viewer module is able to display textual values
  * of symbols with different rendering:
  *       <ul>
@@ -94,16 +94,16 @@ File      : Graphic Tool main part.
  *         <li> scientific  </li>
  *         <li> ... </li>
  *       </ul>
- * @subsubsection gdispPlus_graph 2D Graph Plot
+ * @subsubsection targa_graph 2D Graph Plot
  * The 2D grapher module is able to plot Y versus X curves with
  * mutiple Y. You may drag'n'drop TSP symbols onto the graph widget
  * in order to chose X and Y's data.
  */
 
 /**
- * @defgroup TSP_GDispPlusLib GDisp+ Library
- * The GDisp+ libraries.
- * @ingroup TSP_GDispPlus
+ * @defgroup TSP_TargaLib Targa Library
+ * The Targa libraries.
+ * @ingroup TSP_Targa
  */
 
 /*
@@ -127,8 +127,14 @@ gdisp_usage ( Kernel_T *kernel,
 	  "------------------------------------------------------------\n");
 
   fprintf(stdout,
-	  "Usage : %s [ -u url1 [ -u url2 ... ] ] [ -h host1 [ -h host2 ... ] ]\n",
+	  "Usage : %s [ -x cnf.xml ] [ -w ] [ -u url1 [ -u url2 ... ] ] [ -h host1 [ -h host2 ... ] ]\n",
 	  basename(applicationName));
+
+  fprintf(stdout,
+	  "  -x : automatically load the specified configuration.\n");
+
+  fprintf(stdout,
+	  "  -w : allow asynchronous write operation on symbols.\n");
 
   fprintf(stdout,
 	  "  -u : insert one or several specific URLs.\n");
@@ -162,7 +168,7 @@ gdisp_analyseUserArguments ( Kernel_T *kernel )
    */
   while ((opt = getopt(kernel->argCounter,
 		       kernel->argTable,
-		       "h:u:x:")) != EOF) {
+		       "h:u:x:w")) != EOF) {
 
     switch (opt) {
 
@@ -172,6 +178,10 @@ gdisp_analyseUserArguments ( Kernel_T *kernel )
 
     case 'u' :
       gdisp_addUrl(kernel,optarg);
+      break;
+
+    case 'w' :
+      kernel->asyncWriteIsAllowed = TRUE;
       break;
 
     case 'x' :
@@ -277,11 +287,6 @@ main (int argc, char **argv)
 
 
   /*
-   * Initialize consuming environment.
-   */
-  gdisp_consumingInit(gdispKernel);
-
-  /*
    * Restore configuration if a configuration in
    * file was provided on command line.
    * We may not restore it before GUI is built.
@@ -294,8 +299,14 @@ main (int argc, char **argv)
      */
     gdisp_usage(gdispKernel,argv[0]);
 
-  } else {
+  }
+  else {
   
+    /*
+     * Initialize consuming environment.
+     */
+    gdisp_consumingInit(gdispKernel);
+
     /*
      * Enter GTK main processing loop.
      * Sleep waiting for X events (such as button or key presses), timeouts,

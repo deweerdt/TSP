@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_utils.c,v 1.10 2006-02-26 14:08:24 erk Exp $
+$Id: gdisp_utils.c,v 1.11 2006-05-13 20:55:02 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -838,3 +838,306 @@ gdisp_updateWholeGui ( void )
   }
 
 }
+
+/********************** INPUT WINDOW MANAGEMENT ***********************/
+
+/*
+ * Type definition.
+ */
+typedef struct InputWindowData_T_ {
+
+  Kernel_T   *kernel;
+  Symbol_T   *symbol;
+  GtkWidget  *fieldWindow;
+  GtkWidget  *fieldEntry;
+  GtkWidget  *applyButton;
+  gpointer    userData;
+  void      (*userHandler)(Kernel_T*,Symbol_T*,gchar*,gpointer);
+
+} InputWindowData_T;
+
+/*
+ * The "delete_event" occurs when the window manager sens this event
+ * to the application, usually by the "close" option, or on the titlebar.
+ * Returning TRUE means that we do not want to have the "destroy" event 
+ * emitted, keeping GDISP+ running. Returning FALSE, we ask that "destroy"
+ * be emitted, which in turn will call the "destroy" signal handler.
+ */
+static gint
+gdisp_inputWindowManageDeleteEventFromWM (GtkWidget *fieldWindow,
+					  GdkEvent  *event,
+					  gpointer   data)
+{
+
+  /*
+   * Emit "destroy" event.
+   */
+  return FALSE;
+
+}
+
+
+/*
+ * The "destroy" event occurs when we call "gtk_widget_destroy" on
+ * the top-level window, of if we return FALSE in the "delete_event"
+ * callback (see above).
+ */
+static void
+gdisp_inputWindowDestroySignalHandler (GtkWidget *fieldWindow,
+				       gpointer   data)
+{
+
+  InputWindowData_T *iwData = (InputWindowData_T*)data;
+
+  /*
+   * Release memory.
+   */
+  g_free(iwData);
+
+}
+
+/*
+ * Input Window : Close button callback.
+ */
+static void
+gdisp_inputWindowCloseCallback (GtkWidget *closeButtonWidget,
+				gpointer   data )
+{
+
+  InputWindowData_T *iwData = (InputWindowData_T*)data;
+
+  /*
+   * Tells GTK+ that it has to exit from the GTK+ main processing loop.
+   */
+  gtk_widget_destroy(iwData->fieldWindow);
+
+}
+
+
+/*
+ * Input Window : Apply button callback.
+ */
+static void
+gdisp_inputWindowApplyCallback (GtkWidget *applyButtonWidget,
+				gpointer   data )
+{
+
+  InputWindowData_T *iwData        = (InputWindowData_T*)data;
+  gchar             *valueAsString = (gchar*)NULL;
+
+  /*
+   * Get back input value.
+   */
+  valueAsString = gtk_entry_get_text(GTK_ENTRY(iwData->fieldEntry));
+  if (strlen(valueAsString) == 0) {
+    return;
+  }
+
+  if (iwData->userHandler !=
+      (void(*)(Kernel_T*,Symbol_T*,gchar*,gpointer))NULL) {
+
+    (*iwData->userHandler)(iwData->kernel,
+			   iwData->symbol,
+			   valueAsString,
+			   iwData->userData);
+
+  }
+
+}
+
+
+/*
+ * Input Window : Handler whenever the field content changes.
+ */
+static void
+gdisp_fieldContentChangedCallback (GtkEditable *editableField,
+				   gpointer     userData)
+{
+
+  InputWindowData_T *iwData        = (InputWindowData_T*)userData;
+  gchar             *valueAsString = (gchar*)NULL;
+
+  /*
+   * Get back input value.
+   */
+  valueAsString = gtk_entry_get_text(GTK_ENTRY(iwData->fieldEntry));
+  if (strlen(valueAsString) == 0) {
+
+    gtk_widget_set_sensitive(iwData->applyButton,
+			     FALSE); /* cannot apply */
+
+    return;
+
+  }
+
+  /*
+   * Check that content is a correct number.
+   * Allowed are '0' to '9', '.', '+', '-', 'e', 'E'
+   */
+  while (*valueAsString != '\0') {
+
+    if ((*valueAsString < '0' || *valueAsString > '9') &&
+	*valueAsString != '.'                          &&
+	*valueAsString != '+'                          &&
+	*valueAsString != '-'                          &&
+	*valueAsString != 'e'                          &&
+	*valueAsString != 'E') {
+
+      gtk_widget_set_sensitive(iwData->applyButton,
+			       FALSE); /* cannot apply */
+
+      return;
+
+    }
+
+    valueAsString++;
+
+  }
+
+  /*
+   * Fallback : 'apply button' is sensitive.
+   */
+  gtk_widget_set_sensitive(iwData->applyButton,
+			   TRUE);
+
+}
+
+
+/*
+ * Input label standalone window.
+ */
+void
+gdisp_showInputWindow (Kernel_T *kernel,
+		       gchar    *title,
+		       gchar    *subTitle,
+		       Symbol_T *symbol,
+		       gpointer  userData,
+		       void    (*userHandler)(Kernel_T*,
+					      Symbol_T*,
+					      gchar*,
+					      gpointer),
+		       gboolean  onlyNumbers)
+{
+
+  GtkWidget         *fieldWindow = (GtkWidget*)NULL;
+  GtkWidget         *fieldFrame  = (GtkWidget*)NULL;
+  GtkWidget         *fieldEntry  = (GtkWidget*)NULL;
+  GtkWidget         *fieldHbox   = (GtkWidget*)NULL;
+  GtkWidget         *applyButton = (GtkWidget*)NULL;
+  GtkWidget         *doneButton  = (GtkWidget*)NULL;
+  InputWindowData_T *iwData      = (InputWindowData_T*)NULL;
+
+  /*
+   * Allocate memory for callbacks.
+   */
+  iwData = (InputWindowData_T*)g_malloc0(sizeof(InputWindowData_T));
+
+  if (iwData == (InputWindowData_T*)NULL) {
+    return; /* should never happen ... */
+  }
+
+  /*
+   * Create a top-level window.
+   * Its name is the symbol name.
+   */
+  fieldWindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+
+  gtk_window_set_title(GTK_WINDOW(fieldWindow),
+		       title != (gchar*)NULL ? title : " Input Window ");
+
+  gtk_window_set_position(GTK_WINDOW(fieldWindow),
+			  GTK_WIN_POS_MOUSE);
+
+  gtk_container_set_border_width(GTK_CONTAINER(fieldWindow),
+				 5);
+
+  gtk_signal_connect(GTK_OBJECT(fieldWindow),
+		     "delete_event",
+		     GTK_SIGNAL_FUNC(gdisp_inputWindowManageDeleteEventFromWM),
+		     (gpointer)NULL);
+
+  gtk_signal_connect(GTK_OBJECT(fieldWindow),
+		     "destroy",
+		     GTK_SIGNAL_FUNC(gdisp_inputWindowDestroySignalHandler),
+		     (gpointer)iwData);
+
+  /*
+   * Create a frame and add it to the top-level window.
+   */
+  fieldFrame = gtk_frame_new(subTitle != (gchar*)NULL ?
+			     subTitle : " Enter new value ");
+
+  gtk_frame_set_label_align(GTK_FRAME(fieldFrame),0.1,0.0);
+
+  gtk_frame_set_shadow_type(GTK_FRAME(fieldFrame),GTK_SHADOW_ETCHED_IN);
+
+  gtk_container_add(GTK_CONTAINER(fieldWindow),fieldFrame);
+
+  /*
+   * Recursively show all widgets.
+   */
+  gtk_widget_show_all(fieldWindow);
+
+  /*
+   * Create the two 'apply' and 'done' buttons.
+   */
+  fieldHbox = gdisp_createButtonBar(kernel,
+				    fieldWindow,
+				    &applyButton,
+				    &doneButton);
+
+  gtk_container_add(GTK_CONTAINER(fieldFrame),
+		    fieldHbox);
+
+  gtk_signal_connect(GTK_OBJECT(applyButton),
+		     "clicked",
+		     GTK_SIGNAL_FUNC(gdisp_inputWindowApplyCallback),
+		     (gpointer)iwData);
+
+  if (onlyNumbers == TRUE) {
+    gtk_widget_set_sensitive(applyButton,
+			     FALSE);
+  }
+
+  gtk_signal_connect(GTK_OBJECT(doneButton),
+		     "clicked",
+		     GTK_SIGNAL_FUNC(gdisp_inputWindowCloseCallback),
+		     (gpointer)iwData);
+
+  /*
+   * Create a field entry in order to get back symbol new value.
+   * Add this field to the top-level window.
+   */
+  fieldEntry = gtk_entry_new();
+
+  gtk_box_pack_start(GTK_BOX(fieldHbox),
+		     fieldEntry,
+		     FALSE /* expand  */,
+		     FALSE /* fill    */,
+		     3     /* padding */);
+
+  if (onlyNumbers == TRUE) {
+
+    gtk_signal_connect(GTK_OBJECT(fieldEntry),
+		       "changed",
+		       GTK_SIGNAL_FUNC(gdisp_fieldContentChangedCallback),
+		       (gpointer)iwData);
+
+  }
+
+  gtk_widget_show(fieldEntry);
+
+  /*
+   * Store information within structure.
+   */
+  iwData->kernel      = kernel;
+  iwData->symbol      = symbol;
+  iwData->fieldWindow = fieldWindow;
+  iwData->fieldEntry  = fieldEntry;
+  iwData->applyButton = applyButton;
+  iwData->userData    = userData;
+  iwData->userHandler = userHandler;
+
+}
+
+/********************* INPUT WINDOW MANAGEMENT END **********************/
