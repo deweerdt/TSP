@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_glu.h,v 1.14 2006-04-26 07:53:52 erk Exp $
+$Id: tsp_glu.h,v 1.15 2006-05-18 18:32:07 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -260,8 +260,8 @@ typedef int32_t                (* GLU_start_ft             )(struct GLU_handle_t
 /** 
  * GLU_get_provider_global_indexes provider global indexes corresponding
  * to given symbol list. Used to validate client provided symbol list
- * @param symbol_list IN the symbol list to validate
- * @param pg_indexes OUT array containing corresponding provider global indexes or -1 if not found 
+ * @param[in] symbol_list the symbol list to validate
+ * @param[out] pg_indexes array containing corresponding provider global indexes or -1 if not found 
  * @return TRUE if all symbol found, else return FALSE 
  */
 typedef int32_t                (* GLU_get_pgi_ft           )(struct GLU_handle_t* this, TSP_sample_symbol_info_list_t* symbol_list, int* pg_indexes);
@@ -275,10 +275,10 @@ typedef int32_t                (* GLU_get_ssi_list_ft  )(struct GLU_handle_t* th
 
 /**
  * Filtered list of symbols managed by the GLU.
- * @param this Handle for the GLU (when the GLU is ACTIVE, it is always equal to GLU_GLOBAL_HANDLE)
- * @param filter_kind the filter kind
- * @param filter_string the filter string
- * @param ans_sample the answer_sample to be filled-in by the GLU.
+ * @param[in] this Handle for the GLU (when the GLU is ACTIVE, it is always equal to GLU_GLOBAL_HANDLE)
+ * @param[in] filter_kind the filter kind
+ * @param[in] filter_string the filter string
+ * @param[out] ans_sample the answer_sample to be filled-in by the GLU.
  * @return TRUE of FALSE. TRUE = OK;
  */
 typedef int32_t                (* GLU_get_filtered_ssi_list_ft)(struct GLU_handle_t* this, int32_t filter_kind, char* filter_string, TSP_answer_sample_t* symbol_list);
@@ -317,9 +317,9 @@ typedef int32_t                (* GLU_get_nb_symbols_ft  )(struct GLU_handle_t* 
  * represented by its provider_global_index (correct pgi and authorization by
  * the GLU), the number returned is >0; else the number returned is <= 0
  *
- * @param pgi        IN, the index of the symbol concerned by the writing
- * @param value_ptr  IN, the new value of the symbol
- * @param value_size IN, the size of the value.
+ * @param[in] pgi        the index of the symbol concerned by the writing
+ * @param[in] value_ptr  the new value of the symbol
+ * @param[in] value_size the size of the value.
  * @return >0 on success <=0 on failure
  */
 typedef int32_t                (* GLU_async_sample_write_ft)(struct GLU_handle_t* this, int32_t pgi, void* value_ptr, uint32_t value_size);
@@ -331,9 +331,9 @@ typedef int32_t                (* GLU_async_sample_write_ft)(struct GLU_handle_t
  * represented by its provider_global_index (correct pgi and authorization by
  * the GLU), the number returned is >0; else the number returned is <= 0
  *
- * @param pgi        IN,  the index of the symbol concerned by the writing
- * @param value_ptr  OUT, the new value of the symbol
- * @param value_size INOUT, the size of the value.
+ * @param[in] pgi        the index of the symbol concerned by the writing
+ * @param[in] value_ptr  the new value of the symbol
+ * @param[in,out] value_size the size of the value.
  * @return >0 on success <=0 on failure
  */
 typedef int32_t                (* GLU_async_sample_read_ft)(struct GLU_handle_t* this, int32_t pgi, void* value_ptr, uint32_t* value_size);
