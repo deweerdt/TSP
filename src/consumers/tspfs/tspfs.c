@@ -5,61 +5,78 @@
  *
  * (c) Frederik Deweerdt, Eric Noulard 2006
  *
- *
- * ==========================
- * == Sample tspfs session ==
- * ==========================
- *
- * # Start a sample bb
- * $ bb_simu -s > /dev/null 2>&1 &
- *
- * # TSPize the bb's data
- * $ bb_tsp_provide bb_simu 10 &
- *
- * # Create the mount point, mount the tspfs filesystem
- * $ mkdir mp/
- * $ tspfs --ext=.txt --url=rpc://localhost/bb_simu --sync=1 mp/
- *
- * # List the symbols
- * $ ls -l mp/
- * total 0
- * -rw-rw-rw-  1 root root 512 jan  1  1970 bb_simu_1_HugeArray[0].txt
- * [...]
- * -rw-rw-rw-  1 root root 512 jan  1  1970 ECLA_0_d_ecl_lune.txt
- * -rw-rw-rw-  1 root root 512 jan  1  1970 ECLA_0_d_ecl_sol.txt
- * -rw-rw-rw-  1 root root 512 jan  1  1970 ORBT_0_d_possat_m[0].txt
- * -rw-rw-rw-  1 root root 512 jan  1  1970 ORBT_0_d_possat_m[1].txt
- * -rw-rw-rw-  1 root root 512 jan  1  1970 ORBT_0_d_possat_m[2].txt
- * -rw-rw-rw-  1 root root 512 jan  1  1970 POSA_0_d_DirLun[0].txt
- * -rw-rw-rw-  1 root root 512 jan  1  1970 POSA_0_d_DirLun[1].txt
- * -rw-rw-rw-  1 root root 512 jan  1  1970 POSA_0_d_DirLun[2].txt
- * -rw-rw-rw-  1 root root 512 jan  1  1970 POSA_0_d_DirSol[0].txt
- * -rw-rw-rw-  1 root root 512 jan  1  1970 POSA_0_d_DirSol[1].txt
- * -rw-rw-rw-  1 root root 512 jan  1  1970 POSA_0_d_DirSol[2].txt
- * -rw-rw-rw-  1 root root 512 jan  1  1970 Sequenceur_0_d_t_s.txt
- *
- * # Display a particular value
- * $ cat mp/Sequenceur_0_d_t_s.txt
- * time=197600 value=3961.280000
- * $ cat mp/Sequenceur_0_d_t_s.txt
- * time=197680 value=3962.880000
- *
- * # Change the display format (notice we use \012, not \n, this needs to be fixed)
- * $ setfattr -n format -v 't=%d v=%e\012' ECLA_0_d_ecl_sol.txt
- * $ cat ECLA_0_d_ecl_sol.txt
- * t=208880 v=1.000000e+00
- *
- * # Get the format from a symbol
- * $ getfattr -n format bb_simu_int8\[0\]
- * # file: bb_simu_int8[0]
- * format="time=%d value=%f\012"
- *
- * # Go wild, umount the filesystem
- * $ fusermount -u mp/
- *
- *
  * This program is distributed under the terms of the GNU LGPL.
  * See COPYING.
+ */
+
+/* 
+ * @defgroup TSPFS tspfs
+ * @ingroup TSP_Consumers
+ *
+ * tspfs: is a usermode filesystem that uses fuse
+ * (see http://fuse.sourceforge.net) to export TSP
+ * symbols as files in a directory.
+ *
+ * \par usage: tspfs [--url=<tsp_provider_url>] [--sync=<sampling period>]|[--async] [--filter] <mount_point>
+                --url                   the url to connect to, default: rpc://localhost
+                --sync=<period>         use synchronous mode to read the sample values with a period <period>
+                --async                 use asynchronous mode to read the sample values, this is the default
+                --filter                basic filter used to match the symbol names
+                --ext=<ext>             Suffix file names with <ext>, handy for windows browsing
+
+ *
+ * \section Sample tspfs session
+ * \verbatim
+ 
+ # Start a sample bb
+ $ bb_simu -s > /dev/null 2>&1 &
+ 
+ # TSPize the bb's data
+ $ bb_tsp_provide bb_simu 10 &
+ 
+ # Create the mount point, mount the tspfs filesystem
+ $ mkdir mp/
+ $ tspfs --ext=.txt --url=rpc://localhost/bb_simu --sync=1 mp/
+ 
+ # List the symbols
+ $ ls -l mp/
+ total 0
+ -rw-rw-rw-  1 root root 512 jan  1  1970 bb_simu_1_HugeArray[0].txt
+ [...]
+ -rw-rw-rw-  1 root root 512 jan  1  1970 ECLA_0_d_ecl_lune.txt
+ -rw-rw-rw-  1 root root 512 jan  1  1970 ECLA_0_d_ecl_sol.txt
+ -rw-rw-rw-  1 root root 512 jan  1  1970 ORBT_0_d_possat_m[0].txt
+ -rw-rw-rw-  1 root root 512 jan  1  1970 ORBT_0_d_possat_m[1].txt
+ -rw-rw-rw-  1 root root 512 jan  1  1970 ORBT_0_d_possat_m[2].txt
+ -rw-rw-rw-  1 root root 512 jan  1  1970 POSA_0_d_DirLun[0].txt
+ -rw-rw-rw-  1 root root 512 jan  1  1970 POSA_0_d_DirLun[1].txt
+ -rw-rw-rw-  1 root root 512 jan  1  1970 POSA_0_d_DirLun[2].txt
+ -rw-rw-rw-  1 root root 512 jan  1  1970 POSA_0_d_DirSol[0].txt
+ -rw-rw-rw-  1 root root 512 jan  1  1970 POSA_0_d_DirSol[1].txt
+ -rw-rw-rw-  1 root root 512 jan  1  1970 POSA_0_d_DirSol[2].txt
+ -rw-rw-rw-  1 root root 512 jan  1  1970 Sequenceur_0_d_t_s.txt
+ 
+ # Display a particular value
+ $ cat mp/Sequenceur_0_d_t_s.txt
+ time=197600 value=3961.280000
+ $ cat mp/Sequenceur_0_d_t_s.txt
+ time=197680 value=3962.880000
+ 
+ # Change the display format (notice we use \012, not \n, this needs to be fixed)
+ $ setfattr -n format -v 't=%d v=%e\012' ECLA_0_d_ecl_sol.txt
+ $ cat ECLA_0_d_ecl_sol.txt
+ t=208880 v=1.000000e+00
+ 
+ # Get the format from a symbol
+ $ getfattr -n format bb_simu_int8\[0\]
+ # file: bb_simu_int8[0]
+ format="time=%d value=%f\012"
+ 
+ # Go wild, umount the filesystem
+ $ fusermount -u mp/
+ \endverbatim
+ *
+ *
  */
 
 #include <sys/types.h>
@@ -88,15 +105,7 @@
 #define MAX_FORMAT_SIZE 512
 #define MAX_URL_SIZE 512
 
-
-typedef enum {
-	BEFORE_LAUNCH,
-	RUNNING,
-	REQUEST_STOP,
-	STOPPED,
-} sync_thread_state_t;
-/* True when where about to quit tspfs, only used in sync mode */
-static volatile sync_thread_state_t thread_state = BEFORE_LAUNCH;
+#define TSPFS_DEBUG 0
 
 static inline int is_tsp_symbol(const char *path);
 static char *get_symname_from_path(const char *path);
@@ -163,6 +172,9 @@ struct tspfs {
 	/* optional file extension */
 	char *ext;
 	int ext_len;
+	/* pgi -> internal index conversion table */
+	int *idx_to_pgi;
+	int idx_to_pgi_len;
 };
 
 static struct tspfs tspfs;
@@ -208,12 +220,20 @@ static char *get_symname_from_path(const char *path)
 
 static inline struct tspfs_sample *get_tsp_symbol_value(int index)
 {
-	struct tspfs_sample *s;
+	struct tspfs_sample *s = NULL;
 	assert(index >= 0 && index < tspfs.nr_samples);
 
 	s = (struct tspfs_sample *)malloc(sizeof(struct tspfs_sample));
 	if (tspfs.sync) {
-		s->sync = *tspfs.samples[index]; 
+		int new_sample;	
+#ifdef TSPFS_DEBUG
+		fprintf(stderr, "QSD:get_value: idx = %d, pgi = %d\n", index,
+				tspfs.samples[index]->provider_global_index);
+#endif
+		TSP_consumer_read_sample(tspfs.provider,
+					 tspfs.samples[index],
+					 &new_sample);
+		s->sync = *tspfs.samples[index];
 	} else {
 		int ret;
 		/* 
@@ -223,7 +243,6 @@ static inline struct tspfs_sample *get_tsp_symbol_value(int index)
   		s->async.provider_global_index = tspfs.symbols
 							.TSP_sample_symbol_info_list_t_val[index]
 							.provider_global_index; 
-		printf("%d\n\n", s->async.provider_global_index);
     		s->async.value_ptr  = &s->value.d;
       		s->async.value_size = sizeof(s->value.d);
 		ret = TSP_consumer_request_async_sample_read(tspfs.provider,&(s->async));	
@@ -237,6 +256,11 @@ static int get_tsp_symbol_index(const char *symbol_name)
 	for (i = 0; i < tspfs.symbols.TSP_sample_symbol_info_list_t_len; i++) {
 		if (!strcmp (symbol_name,
 		     tspfs.symbols.TSP_sample_symbol_info_list_t_val[i].name)) {
+#ifdef TSPFS_DEBUG
+			fprintf(stderr, "AZE:Matched: %s, %d\n", 
+				tspfs.symbols.TSP_sample_symbol_info_list_t_val[i].name, 
+				tspfs.symbols.TSP_sample_symbol_info_list_t_val[i].provider_global_index); 
+#endif
 			return i;
 		}
 
@@ -254,14 +278,6 @@ static void tspfs_destroy(void *unused)
 {
 	int i;
 
-	/* In sync mode we need to stop the collecting
-	 * thread before shutting down */
-	if (tspfs.sync) {
-		thread_state = REQUEST_STOP;
-		while (thread_state != STOPPED) {
-			usleep(100);
-		}
-	}
 	for (i = 0; i < tspfs.nr_samples; i++) {
 		free(tspfs.samples[i]);
 	}
@@ -269,6 +285,9 @@ static void tspfs_destroy(void *unused)
 		if (!tspfs.formats[i])
 			free(tspfs.formats[i]);
 	}
+
+	if (tspfs.sync) 
+		free(tspfs.idx_to_pgi);
 
 	if (tspfs.sync && (TSP_STATUS_OK!=TSP_consumer_request_sample_destroy(tspfs.provider))) {
 		STRACE_ERROR(("Function TSP_consumer_request_sample_destroy failed"));
@@ -278,40 +297,10 @@ static void tspfs_destroy(void *unused)
 		STRACE_ERROR(("Function TSP_consumer_request_close failed"));
 	}
 
-	/*TSP_consumer_disconnect_one(tspfs.provider);*/
 	TSP_consumer_end();
 }
 
 
-
-static void *data_collector(void *unused)
-{
-	int i = 0;
-	int usleep_length = 1e6 / tspfs.sync;
-
-	TSP_consumer_request_sample(tspfs.provider, &tspfs.symbols);
-	TSP_consumer_request_sample_init(tspfs.provider, 0, 0);
-	thread_state = RUNNING;
-	while (thread_state == RUNNING) {
-		int new_sample;
-		int ret;
-
-		ret =
-		    TSP_consumer_read_sample(tspfs.provider,
-					     tspfs.samples[i],
-					     &new_sample);
-		if (TSP_STATUS_OK!=ret) {
-			printf
-			    ("Error while reading data from provider, exiting.\n");
-			return NULL;
-		}
-		i = (i + 1) % tspfs.nr_samples;
-		if (i == 0)
-			usleep(usleep_length);
-	}
-	thread_state = STOPPED;
-	return NULL;
-}
 
 
 static int tspfs_init_connect(int argc, char **argv, char *url)
@@ -367,6 +356,14 @@ static int tspfs_init_connect(int argc, char **argv, char *url)
 	tspfs.samples =
 	    (TSP_sample_t **) malloc(sizeof(TSP_sample_t *) *
 				     tspfs.nr_samples);
+	if (tspfs.sync) {
+		int i;
+		tspfs.idx_to_pgi = (int *)malloc(sizeof(int)*tspfs.nr_samples);
+		for (i=0; i < tspfs.nr_samples; i++) {
+			tspfs.idx_to_pgi[i] = -1;
+		}
+		tspfs.idx_to_pgi_len = 0;
+	}
 	if (!tspfs.samples) {
 		free(tspfs.symbols.TSP_sample_symbol_info_list_t_val);
 		return -1;
@@ -396,30 +393,45 @@ static int tspfs_init_connect(int argc, char **argv, char *url)
 	return 1;
 }
 
+/*
+ * TODO: this really wants to be a hashtable. 
+ * Find a portable implementation
+ */
+static int pgi_to_idx(int pgi) {
+	int i;
+	for (i=0; tspfs.idx_to_pgi[i] != -1 && i < tspfs.nr_samples; i++) {
+		if (tspfs.idx_to_pgi[i] == pgi) {
+			return i;
+		}
+	}
+	/* shouldn't happen */
+	assert(1==1);
+	return -1;
+}
+/*
+ * Called back each time a symbol's value changes. 
+ * Only used in sync mode 
+ */
+static void tspfs_sync_read_sample_cb (TSP_sample_t* s, void* user_data)
+{
+	if (tspfs.nr_samples != tspfs.idx_to_pgi_len && pgi_to_idx(s->provider_global_index) == -1) {
+		tspfs.idx_to_pgi[tspfs.idx_to_pgi_len] = s->provider_global_index;
+		tspfs.idx_to_pgi_len++;
+	}
+	*tspfs.samples[pgi_to_idx(s->provider_global_index)] = *s;
+	return;
+}
+
+
 static void *tspfs_init(void)
 {
-	int err;
-	pthread_t pthread_data_collector;
-	sigset_t oldset;
-	sigset_t newset;
-
-	/* We only lauch the data_collector thread in sync mode */
-	if (!tspfs.sync)
-		return NULL;
-
-	sigemptyset(&newset);
-	sigaddset(&newset, SIGINT);
-	sigaddset(&newset, SIGHUP);
-	sigaddset(&newset, SIGQUIT);
-	pthread_sigmask(SIG_BLOCK, &newset, &oldset);
-	err = pthread_create(&pthread_data_collector, NULL, data_collector, NULL);
-	if (err) {
-		fprintf(stderr, "failed to create thread: %s\n",
-		strerror(err));
-		return NULL;
+	/* Do specific sync mode initialization */
+	if (tspfs.sync) {
+		TSP_consumer_request_sample(tspfs.provider, &tspfs.symbols);
+		TSP_consumer_request_sample_init(tspfs.provider, 
+						 tspfs_sync_read_sample_cb, 
+						 0);
 	}
-	pthread_detach(pthread_data_collector);
-	pthread_sigmask(SIG_SETMASK, &oldset, NULL);
 
 	return NULL;
 }
@@ -526,7 +538,9 @@ static int tspfs_read(const char *path, char *buf, size_t size,
 	if (tspfs.sync) {
 		char *format;
 		format = "";
-		printf("Symbol is : %s type: %d\n", sym_name, sample->sync.type);
+#ifdef TSPFS_DEBUG
+		fprintf(stderr,"AZE:Symbol is : %s type: %d pgi: %d, idx: %d\n", sym_name, sample->sync.type, sample->sync.provider_global_index, idx);
+#endif
 		switch (sample->sync.type) {
 			case TSP_TYPE_DOUBLE:
 				sprintf(sym_display, "t=%d v=%e %%e\n", sample->sync.time,
