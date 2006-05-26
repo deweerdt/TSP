@@ -9,7 +9,7 @@
  * See COPYING.
  */
 
-/* 
+/** 
  * @defgroup TSPFS tspfs
  * @ingroup TSP_Consumers
  *
