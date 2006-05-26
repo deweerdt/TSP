@@ -170,7 +170,7 @@ Purpose   : Define the TSP main doxygen modules
  */
 
 /**
- * @defgroup TSP The Transport Sample Protocol
+ * @defgroup TSP Transport Sample Protocol (TSP)
  * The Transport Sample Protocol (TSP).
  * TSP is a networked enabled  multi-consumer multi-provider
  * protocol for sampling data, TSP is designed for efficiency
@@ -211,7 +211,7 @@ Purpose   : Define the TSP main doxygen modules
  * @defgroup TSP_Consumers TSP Consumers
  * The TSP consumer applications.
  * A set of ready-to-use TSP consumer such as
- * @ref TSP_AsciiWriter, @ref TSP_GDisp, @ref TSP_GDispPlus...
+ * @ref TSP_AsciiWriter, @ref TSP_GDisp, @ref TSPFS TSP_Targa...
  * @ingroup TSP_Applications
  */
 
