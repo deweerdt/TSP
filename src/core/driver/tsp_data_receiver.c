@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_data_receiver.c,v 1.25 2006-05-05 15:18:05 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_data_receiver.c,v 1.26 2006-05-26 14:12:06 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -262,61 +262,66 @@ int TSP_data_receiver_receive(TSP_data_receiver_t _receiver,
 
 
 		        sample->type=groups[group_index].items[rank].symbol_info->type;
-		        switch( groups[group_index].items[rank].symbol_info->type)
-			{
-			   case TSP_TYPE_DOUBLE :
-			        sample->uvalue.double_value= ((double *)groups[group_index].decode_buffer)[i];
-				break;
-    
-			   case TSP_TYPE_FLOAT :
-			        sample->uvalue.float_value= ((float *)groups[group_index].decode_buffer)[i];
-				break;
-			   case TSP_TYPE_INT8 :
-			        sample->uvalue.int8_value= ((int8_t *)groups[group_index].decode_buffer)[i];
-				break;
-
-			   case TSP_TYPE_INT16:
-			        sample->uvalue.int16_value= ((int16_t *)groups[group_index].decode_buffer)[i];
-				break;
-
-			   case TSP_TYPE_INT32 :
-			        sample->uvalue.int32_value= ((int32_t *)groups[group_index].decode_buffer)[i];
-				break;
-
-			   case TSP_TYPE_INT64 :
-			        sample->uvalue.int64_value= ((int64_t *)groups[group_index].decode_buffer)[i];
-				break;
-
-			   case TSP_TYPE_UINT8:
-			        sample->uvalue.uint8_value= ((uint8_t *)groups[group_index].decode_buffer)[i];
-				break;
-
-			   case TSP_TYPE_UINT16:
-			        sample->uvalue.uint16_value= ((uint16_t *)groups[group_index].decode_buffer)[i];
-				break;
-
-			   case TSP_TYPE_UINT32:
-			        sample->uvalue.uint32_value= ((uint32_t *)groups[group_index].decode_buffer)[i];
-				break;
-
-			   case TSP_TYPE_UINT64:
-			        sample->uvalue.uint64_value= ((uint64_t *)groups[group_index].decode_buffer)[i];
-				break;
-
-			   case TSP_TYPE_CHAR:
-			        sample->uvalue.char_value= ((char *)groups[group_index].decode_buffer)[i];
-				break;
-
-			   case TSP_TYPE_UCHAR:
-			        sample->uvalue.uchar_value= ((unsigned char *)groups[group_index].decode_buffer)[i];
-				break;
-
-			   case TSP_TYPE_RAW:
-			        sample->uvalue.uint8_value= ((uint8_t *)groups[group_index].decode_buffer)[i];
-				break;
-
+		        switch( groups[group_index].items[rank].symbol_info->type) {
+			case TSP_TYPE_DOUBLE :
+			  sample->uvalue.double_value= ((double *)groups[group_index].decode_buffer)[i];
+			  break;
+			  
+			case TSP_TYPE_FLOAT :
+			  sample->uvalue.float_value= ((float *)groups[group_index].decode_buffer)[i];
+			  break;
+			case TSP_TYPE_INT8 :
+			  sample->uvalue.int8_value= ((int8_t *)groups[group_index].decode_buffer)[i];
+			  break;
+			  
+			case TSP_TYPE_INT16:
+			  sample->uvalue.int16_value= ((int16_t *)groups[group_index].decode_buffer)[i];
+			  break;
+			  
+			case TSP_TYPE_INT32 :
+			  sample->uvalue.int32_value= ((int32_t *)groups[group_index].decode_buffer)[i];
+			  break;
+			  
+			case TSP_TYPE_INT64 :
+			  sample->uvalue.int64_value= ((int64_t *)groups[group_index].decode_buffer)[i];
+			  break;
+			  
+			case TSP_TYPE_UINT8:
+			  sample->uvalue.uint8_value= ((uint8_t *)groups[group_index].decode_buffer)[i];
+			  break;
+			  
+			case TSP_TYPE_UINT16:
+			  sample->uvalue.uint16_value= ((uint16_t *)groups[group_index].decode_buffer)[i];
+			  break;
+			  
+			case TSP_TYPE_UINT32:
+			  sample->uvalue.uint32_value= ((uint32_t *)groups[group_index].decode_buffer)[i];
+			  break;
+			  
+			case TSP_TYPE_UINT64:
+			  sample->uvalue.uint64_value= ((uint64_t *)groups[group_index].decode_buffer)[i];
+			  break;
+			  
+			case TSP_TYPE_CHAR:
+			  sample->uvalue.char_value= ((char *)groups[group_index].decode_buffer)[i];
+			  break;
+			  
+			case TSP_TYPE_UCHAR:
+			  sample->uvalue.uchar_value= ((unsigned char *)groups[group_index].decode_buffer)[i];
+			  break;
+			  
+			case TSP_TYPE_RAW:
+			  sample->uvalue.uint8_value= ((uint8_t *)groups[group_index].decode_buffer)[i];
+			  break;
+			  /* FIXME should not reach this */
+			case TSP_TYPE_UNKNOWN:
+			  
+			default:
+			  STRACE_WARNING(("Impossible TSP TYPE in decode??"));
+			  sample->uvalue.raw_value= ((uint8_t*)groups[group_index].decode_buffer)[i];
+                               break;
+			       
 			}
-
 
 			/* add time stamp */
 			sample->time = time_stamp;
