@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.h,v 1.20 2006-04-25 21:08:17 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.h,v 1.21 2006-05-26 14:12:33 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -60,7 +60,7 @@ union semun {
 
 
 /**
- * @defgroup BlackBoard The BlackBoard (BB)
+ * @defgroup BlackBoard BlackBoard (BB)
  * BlackBoard idiom definition and functions.
  * A BlackBoard is an inter-process communication mean based
  * on the publish/subscribe principle. It is implemented using
