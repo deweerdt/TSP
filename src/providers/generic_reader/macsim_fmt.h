@@ -1,6 +1,6 @@
 /*
 
-$Id: macsim_fmt.h,v 1.5 2006-05-05 14:24:56 erk Exp $
+$Id: macsim_fmt.h,v 1.6 2006-05-28 14:37:13 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -133,20 +133,21 @@ FILE * macsim_open(char * nom_fichier_macsim);
 void macsim_close(FILE * fichier_macsim);
 
 /**
- * Count the size of the BB for this creation and create the symbol of the BB by reading the header file.
+ * Read the MACSIM header.
+ * If justcount is 1 then only count the number of symbols of this macsim file.
  * 
- * @param[in] genreader the generic reader ( contain data information (pointer file...)
- * @param[in] justcount Indicate if we want count the size of the BB or create the symbol of the BB
+ * @param[in] genreader the generic reader (contain data information (pointer file...)
+ * @param[in] justcount indicate we just want to count the number of symbol in the file.
  *                      
  * @return TSP_STATUS_OK if OK 
  */
 int32_t macsim_read_header(GenericReader_T * genreader, int32_t justcount);
 
 /**
- * Read the data containing in the file and send it to the BB.
+ * Read the data contained in the file into a GLU item.
  * 
  * @param[in] genreader the generic reader (contain data information (pointer file....)
- * @param[in,out] GLU item the item to load                     
+ * @param[in,out] item the GLU item where the data will be put
  * @return EOF if end of file
  */
 int32_t macsim_read(GenericReader_T * genreader,glu_item_t* item);

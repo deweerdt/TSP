@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_common_ssi.h,v 1.8 2006-05-03 21:13:34 erk Exp $
+$Id: tsp_common_ssi.h,v 1.9 2006-05-28 14:37:13 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -143,7 +143,7 @@ TSP_SSI_initialize_default(TSP_sample_symbol_info_t* ssi);
  * initialize the minimal request for a sample symbol info.
  * @param[in,out] ssi  the symbol to request
  * @param[in] name the symbol name
- * @param[in] phase the symbol phase
+ * @param[in] period the symbol period
  * return  TSP_STATUS_OK if ok
  */
 int32_t 

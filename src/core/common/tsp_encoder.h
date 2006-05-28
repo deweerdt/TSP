@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/common/tsp_encoder.h,v 1.3 2006-04-25 21:15:05 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/common/tsp_encoder.h,v 1.4 2006-05-28 14:37:13 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -54,7 +54,7 @@ Purpose   :  Implementation for the functions used to encode the type
  * Generic function to encode data
  * @param[in] datavalue2encode data to encode.
  * @param[in]  dimension of the data
- * @param(out] out_buf buffer to write the data
+ * @param[out] out_buf buffer to write the data
  * @param[in]  out_buf_size size of the buffer
  * @return TRUE or FALSE. TRUE = OK
  */
@@ -64,131 +64,131 @@ typedef uint32_t(*TSP_data_encoder_t)(void* datavalue2encode, uint32_t dimension
  * function to encode double
  * @param[in] v_double data to encode.
  * @param[in]  dimension of the data
- * @param(out] out_buf buffer to write the data
+ * @param[out] out_buf buffer to write the data
  * @param[in]  out_buf_size size of the buffer
  * @return TRUE or FALSE. TRUE = OK
  */
-uint32_t TSP_data_channel_double_encoder(void* v_double,uint32_t dimension,  char* out_buf, uint32_t size);
+uint32_t TSP_data_channel_double_encoder(void* v_double,uint32_t dimension,  char* out_buf, uint32_t out_buf_size);
 
 /**
  * function to encode float
  * @param[in] v_float data to encode.
  * @param[in]  dimension of the data
- * @param(out] out_buf buffer to write the data
+ * @param[out] out_buf buffer to write the data
  * @param[in]  out_buf_size size of the buffer
  * @return TRUE or FALSE. TRUE = OK
  */
-uint32_t TSP_data_channel_float_encoder(void* v_float,uint32_t dimension,  char* out_buf, uint32_t size);
+uint32_t TSP_data_channel_float_encoder(void* v_float,uint32_t dimension,  char* out_buf, uint32_t out_buf_size);
 
 /**
  * function to encode int8
  * @param[in] v_int8 data to encode.
  * @param[in]  dimension of the data
- * @param(out] out_buf buffer to write the data
+ * @param[out] out_buf buffer to write the data
  * @param[in]  out_buf_size size of the buffer
  * @return TRUE or FALSE. TRUE = OK
  */
-uint32_t TSP_data_channel_int8_encoder(void* v_int8,uint32_t dimension,  char* out_buf, uint32_t size);
+uint32_t TSP_data_channel_int8_encoder(void* v_int8,uint32_t dimension,  char* out_buf, uint32_t out_buf_size);
 
 /**
  * function to encode int16
  * @param[in] v_int16 data to encode.
  * @param[in]  dimension of the data
- * @param(out] out_buf buffer to write the data
+ * @param[out] out_buf buffer to write the data
  * @param[in]  out_buf_size size of the buffer
  * @return TRUE or FALSE. TRUE = OK
  */
-uint32_t TSP_data_channel_int16_encoder(void* v_int16,uint32_t dimension,  char* out_buf, uint32_t size);
+uint32_t TSP_data_channel_int16_encoder(void* v_int16,uint32_t dimension,  char* out_buf, uint32_t out_buf_size);
 
 /**
  * function to encode int32
  * @param[in] v_int32 data to encode.
  * @param[in]  dimension of the data
- * @param(out] out_buf buffer to write the data
+ * @param[out] out_buf buffer to write the data
  * @param[in]  out_buf_size size of the buffer
  * @return TRUE or FALSE. TRUE = OK
  */
-uint32_t TSP_data_channel_int32_encoder(void* v_int32,uint32_t dimension,  char* out_buf, uint32_t size);
+uint32_t TSP_data_channel_int32_encoder(void* v_int32,uint32_t dimension,  char* out_buf, uint32_t out_buf_size);
 
 /**
  * function to encode int64
  * @param[in] v_int64 data to encode.
  * @param[in]  dimension of the data
- * @param(out] out_buf buffer to write the data
+ * @param[out] out_buf buffer to write the data
  * @param[in]  out_buf_size size of the buffer
  * @return TRUE or FALSE. TRUE = OK
  */
-uint32_t TSP_data_channel_int64_encoder(void* v_int64,uint32_t dimension,  char* out_buf, uint32_t size);
+uint32_t TSP_data_channel_int64_encoder(void* v_int64,uint32_t dimension,  char* out_buf, uint32_t out_buf_size);
 
 /**
  * function to encode uint8
  * @param[in] v_uint8 data to encode.
  * @param[in]  dimension of the data
- * @param(out] out_buf buffer to write the data
+ * @param[out] out_buf buffer to write the data
  * @param[in]  out_buf_size size of the buffer
  * @return TRUE or FALSE. TRUE = OK
  */
-uint32_t TSP_data_channel_uint8_encoder(void* v_uint8,uint32_t dimension,  char* out_buf, uint32_t size);
+uint32_t TSP_data_channel_uint8_encoder(void* v_uint8,uint32_t dimension,  char* out_buf, uint32_t out_buf_size);
 
 /**
  * function to encode uint16
  * @param[in] v_uint16 data to encode.
  * @param[in]  dimension of the data
- * @param(out] out_buf buffer to write the data
+ * @param[out] out_buf buffer to write the data
  * @param[in]  out_buf_size size of the buffer
  * @return TRUE or FALSE. TRUE = OK
  */
-uint32_t TSP_data_channel_uint16_encoder(void* v_uint16,uint32_t dimension,  char* out_buf, uint32_t size);
+uint32_t TSP_data_channel_uint16_encoder(void* v_uint16,uint32_t dimension,  char* out_buf, uint32_t out_buf_size);
 
 /**
  * function to encode uint32
  * @param[in] v_uint32 data to encode.
  * @param[in]  dimension of the data
- * @param(out] out_buf buffer to write the data
+ * @param[out] out_buf buffer to write the data
  * @param[in]  out_buf_size size of the buffer
  * @return TRUE or FALSE. TRUE = OK
  */
-uint32_t TSP_data_channel_uint32_encoder(void* v_uint32,uint32_t dimension,  char* out_buf, uint32_t size);
+uint32_t TSP_data_channel_uint32_encoder(void* v_uint32,uint32_t dimension,  char* out_buf, uint32_t out_buf_size);
 
 /**
  * function to encode uint64
  * @param[in] v_uint64 data to encode.
  * @param[in]  dimension of the data
- * @param(out] out_buf buffer to write the data
+ * @param[out] out_buf buffer to write the data
  * @param[in]  out_buf_size size of the buffer
  * @return TRUE or FALSE. TRUE = OK
  */
-uint32_t TSP_data_channel_uint64_encoder(void* v_uint64,uint32_t dimension,  char* out_buf, uint32_t size);
+uint32_t TSP_data_channel_uint64_encoder(void* v_uint64,uint32_t dimension,  char* out_buf, uint32_t out_buf_size);
 
 /**
  * function to encode char
  * @param[in] v_char data to encode.
  * @param[in]  dimension of the data
- * @param(out] out_buf buffer to write the data
+ * @param[out] out_buf buffer to write the data
  * @param[in]  out_buf_size size of the buffer
  * @return TRUE or FALSE. TRUE = OK
  */
-uint32_t TSP_data_channel_char_encoder(void* v_char,uint32_t dimension,  char* out_buf, uint32_t size);
+uint32_t TSP_data_channel_char_encoder(void* v_char,uint32_t dimension,  char* out_buf, uint32_t out_buf_size);
 
 /**
  * function to encode uchar
  * @param[in] v_uchar data to encode.
  * @param[in]  dimension of the data
- * @param(out] out_buf buffer to write the data
+ * @param[out] out_buf buffer to write the data
  * @param[in]  out_buf_size size of the buffer
  * @return TRUE or FALSE. TRUE = OK
  */
-uint32_t TSP_data_channel_uchar_encoder(void* v_uchar,uint32_t dimension,  char* out_buf, uint32_t size);
+uint32_t TSP_data_channel_uchar_encoder(void* v_uchar,uint32_t dimension,  char* out_buf, uint32_t out_buf_size);
 
 /**
  * function to encode user
  * @param[in] v_user data to encode.
  * @param[in]  dimension of the data
- * @param(out] out_buf buffer to write the data
+ * @param[out] out_buf buffer to write the data
  * @param[in]  out_buf_size size of the buffer
  * @return TRUE or FALSE. TRUE = OK
  */
-uint32_t TSP_data_channel_user_encoder(void* v_user,uint32_t dimension,  char* out_buf, uint32_t size);
+uint32_t TSP_data_channel_user_encoder(void* v_user,uint32_t dimension,  char* out_buf, uint32_t out_buf_size);
 
 
 /**

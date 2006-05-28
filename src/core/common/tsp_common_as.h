@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_common_as.h,v 1.2 2006-05-05 07:10:07 erk Exp $
+$Id: tsp_common_as.h,v 1.3 2006-05-28 14:37:13 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -90,16 +90,16 @@ TSP_AS_delete(TSP_answer_sample_t** as);
 
 /**
  * Initialize an Answer Sample.
- * @param[in,out] ssi  the Answer Sample to initialize
+ * @param[in,out] as the Answer Sample to initialize
  * @param[in] version_id the TSP protocol version identifier
- * @param[in] channel_id
- * @param[in] p_timeout
- * @param[in] pgn 
- * @param[in] base_frequency 
- * @param[in] max_period 
- * @param[in] max_consumer_number
- * @param[in] current_consumer_number 
- * @param[in] status
+ * @param[in] channel_id the TSP Channel ID
+ * @param[in] p_timeout the provider timeout
+ * @param[in] pgn the provider group number, number of group(s) included in Answer. 
+ * @param[in] base_frequency  the base frequency of the provider.
+ * @param[in] max_period the maximum period the provider is able to handle
+ * @param[in] max_consumer_number the maximum number of consumer the provider is able to handle.
+ * @param[in] current_consumer_number the current number of connected consumer.
+ * @param[in] status the TSP STATUS of the answer.
  * return  TSP_STATUS_OK if ok
  */
 int32_t
