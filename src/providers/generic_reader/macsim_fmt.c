@@ -1,6 +1,6 @@
 /*
 
-$Id: macsim_fmt.c,v 1.7 2006-05-05 14:24:56 erk Exp $
+$Id: macsim_fmt.c,v 1.8 2006-05-29 19:26:26 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -150,28 +150,31 @@ uint32_t macsim_dimension_data(char* dimension_var)
 /* return TSP data type
 */
 TSP_datatype_t macsim_type_data(char* type_var)
-{
-	if (0==strcmp(type_var,DOUBLE_MACSIM))
-	{
-		return(TSP_TYPE_DOUBLE);
-	}
+{ 
+  if(NULL!=type_var)
+  {
+
+    if (0==strcmp(type_var,DOUBLE_MACSIM))
+    {
+      return(TSP_TYPE_DOUBLE);
+    }
 	
-	if (0==strcmp(type_var,ENTIER_MACSIM))
-	{
-		return(TSP_TYPE_INT32);
-	}
+    if (0==strcmp(type_var,ENTIER_MACSIM))
+    {
+      return(TSP_TYPE_INT32);
+    }
 	
-	if (0==strcmp(type_var,BOOLEEN_MACSIM))
-	{
-		return(TSP_TYPE_UINT8);
-	}
+    if (0==strcmp(type_var,BOOLEEN_MACSIM))
+    {
+      return(TSP_TYPE_UINT8);
+    }
 	
-	if (0==strcmp(type_var,CARACTERE_MACSIM))
-	{
-		return(TSP_TYPE_CHAR);
-	}
-	
-	return(TSP_TYPE_UNKNOWN);
+    if (0==strcmp(type_var,CARACTERE_MACSIM))
+    {
+      return(TSP_TYPE_CHAR);
+    }
+  }
+  return(TSP_TYPE_UNKNOWN);
 
 }
 
@@ -208,11 +211,14 @@ int32_t macsim_read_header(GenericReader_T* genreader, int32_t justcount)
 	char  	      dimension_var[MAX_DIMENSION_MACSIM];
 	char  	      type_var[MAX_TYPE_MACSIM];
 	char  	      unite_var[MAX_UNITE_MACSIM];
+	char  	      buffer_sizestring[10];
 	int   	      continuer=CONTINUE;
 	uint32_t      dimension=0;
 	size_t 	      taille=1;
 	uint32_t      indice_symbol=0;
 	uint32_t      nb_ext_info;
+	uint32_t      EI_chaine=0;
+	uint32_t      EI_unit=0;
 	TSP_sample_symbol_info_t *ssi;
 	TSP_sample_symbol_extended_info_t *ssei;
 		
@@ -328,7 +334,15 @@ int32_t macsim_read_header(GenericReader_T* genreader, int32_t justcount)
 				  /*test if extended info "unint" exist*/
 				  if(0!=strlen(unite_var))
 				  {
+				    EI_unit=1;
 				    ++nb_ext_info;
+				  }
+				  /*TYPE_CHAR or TYPE_UCHAR is a  string of  LG_MAX_STRING_MACSIM length */
+				  if( (TSP_TYPE_CHAR==macsim_type_data(type_var)) || (TSP_TYPE_UCHAR==macsim_type_data(type_var)) )
+				  {
+				    EI_chaine=1;
+				    ++nb_ext_info;
+
 				  }
 
 				  /*create the extended info of the symbol*/
@@ -338,10 +352,19 @@ int32_t macsim_read_header(GenericReader_T* genreader, int32_t justcount)
 
 				  TSP_EI_initialize(&(ssei[indice_symbol].info.TSP_extended_info_list_t_val[1]),"order","1");
 
-				  if(3==nb_ext_info)
+				  if(1==EI_unit)
 				  {
 				    TSP_EI_initialize(&(ssei[indice_symbol].info.TSP_extended_info_list_t_val[2]),"unit",unite_var);
+				    EI_unit=0;
 				  }
+
+				  if(1==EI_chaine)
+				  {
+				    sprintf(buffer_sizestring,"%d",LG_MAX_STRING_MACSIM);
+				    TSP_EI_initialize(&(ssei[indice_symbol].info.TSP_extended_info_list_t_val[3]),"sizestring",buffer_sizestring);
+				    EI_chaine=0;
+				  }
+
 
 				  ++indice_symbol;
 					
