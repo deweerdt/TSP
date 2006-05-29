@@ -10,16 +10,17 @@ SOURCES = \
 	generic_reader.c \
 	generic_reader_main.c
 
+OBJECTS = $(SOURCES:%.c=$(DIROBJ)/%.o)
+
 ifeq (${TSP_TARGET},vxworks)
 #TARGET = nothing to do 
 else
 TARGET=$(DIRBIN)/tsp_generic_reader
 endif
 
-ADD_LIB =  $(DIRLIB)/libtsp_provider.a $(DIRLIB)/libtsp_common.a $(DIRLIB)/libtsp_services.a  $(DIRLIB)/libtsp_res.a
+ADD_LIB =  $(DIRLIB)/libtsp_provider.a $(DIRLIB)/libtsp_common.a $(DIRLIB)/libtsp_services.a 
 
-
-CPPFLAGS += 
+CPPFLAGS += -Werror
 
 # -----------------------------------------------------------
 # No label all:: because it's in Makeparams and calls build::	
@@ -28,12 +29,14 @@ CPPFLAGS +=
 
 build:: $(TARGET) 
 
-$(TARGET): $(SOURCES)
-	$(LINK.c) -o $@ $(SOURCES) $(ADD_LIB) $(LDLIBS)
+$(OBJECTS) : $(ADD_LIB)
+
+$(TARGET): $(OBJECTS) $(ADD_LIB)
+	$(LINK.c) -o $@ $(OBJECTS) $(ADD_LIB) $(LDLIBS)
 
 
 destroy::
-	$(RM) 	 $(TARGET) *.o
+	$(RM) $(TARGET) $(OBJECTS) 
 
 include $(DEVBASE)/make/Makerules
 

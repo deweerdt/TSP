@@ -1,6 +1,6 @@
 /*
 
-$Id: generic_reader_main.c,v 1.5 2006-05-05 14:24:56 erk Exp $
+$Id: generic_reader_main.c,v 1.6 2006-05-29 19:27:06 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -39,10 +39,19 @@ Purpose   : Allow the output of a datapool of symbols from generic file
 #include <strings.h>
 #include <signal.h>
 #include <assert.h>
+#include <sched.h>
+#include <unistd.h>
 
 #include <glu_genreader.h>
 #include <generic_reader.h>
 #include <tsp_provider_init.h>
+
+/*
+ * Ugly declare for smooth TSP startup
+ * FIXME.
+ */
+int TSP_provider_rqh_manager_get_nb_running();
+
 
 FmtHandler_T*	  fmt_handler;
 GenericReader_T* generic_reader;
