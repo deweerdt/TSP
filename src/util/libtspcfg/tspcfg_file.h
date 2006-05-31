@@ -1,6 +1,6 @@
 /*
 
-$Id: tspcfg_file.h,v 1.1 2006-05-31 11:54:54 erk Exp $
+$Id: tspcfg_file.h,v 1.2 2006-05-31 12:13:06 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -299,25 +299,14 @@ TSP_TspCfg_finalize(TspCfg_T* tspConfig);
 
 
 /**
- * open and parse xml config File
+ * Open and parse xml config File
  * 
- * @param[in] tspConfig the xmlconfig who contain the information about the file
+ * @param[in,out] tspConfig the xmlconfig which contains the information about the TSP configuration
  * @param[in] filename  xml file
  *                      
  * @return TSP_STATUS_OK if OK
  */
-int32_t TSP_TspCfg_load(TspCfg_T* tspConfig,char* filename);
-
-
-/**
- * open and parse xml config File
- * 
- * @param[in] tspConfig the xmlconfig who contain the information about the file
- * @param[in] filename  xml file
- *                      
- * @return TSP_STATUS_OK if OK
- */
-int32_t TSP_TspCfg_load(TspCfg_T* tspConfig,char* filename);
+int32_t TSP_TspCfg_load(TspCfg_T* tspConfig, char* filename);
 
 /**
  * save the xml tree in the outpu file
@@ -348,16 +337,6 @@ TspCfgProviderList_T* TSP_TspCfg_getProviderList(TspCfg_T* tspConfig);
  * @return the sample list of the provider
  */
 TSP_sample_symbol_info_list_t* TSP_TspCfg_getProviderSampleList(TspCfg_T* tspConfig,char* provider_name);
-
-/**
- * write the config file in another file
- * 
- * @param[in] tspConfig the xmlconfig file who contain the information about the providers and sample
- * @param[in] provider_name name of the config file to write
- *                      
- * @return TSP_STATUS_OK if OK
- */
-int32_t TSP_TspCfg_save(TspCfg_T* tspConfig,char* file_name);
 
 /**
  * load the providers in the structure
