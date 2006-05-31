@@ -7,15 +7,16 @@ SUBDIRS = \
 	test_group \
 	res_writer \
 	tutorial \
-	ascii_writer \
 	generic
 
 ifeq (${BUILD_TSPFS},yes)
-	SUBDIRS+=tspfs
+	SUBDIRS += tspfs
 endif
 
-ifeq (${BUILD_GTK_BASED_CONSUMER},yes)
+
 ifeq (${BUILD_XML2_CONFIG_USER},yes)
+	SUBDIRS += ascii_writer
+ifeq (${BUILD_GTK_BASED_CONSUMER},yes)
 	SUBDIRS += gdisp gdisp+
 endif
 endif

@@ -1,6 +1,6 @@
 /*
 
-$Id: tspcfg_file.c,v 1.1 2006-05-31 11:54:54 erk Exp $
+$Id: tspcfg_file.c,v 1.2 2006-05-31 12:23:23 erk Exp $
 
 -----------------------------------------------------------------------
  
@@ -642,8 +642,8 @@ int32_t TSP_TspCfg_save(TspCfg_T* tspConfig,char* output_filename)
 }
 
 
-TspCfgProviderList_T* TSP_TspCfg_getProviderList(TspCfg_T* tspConfig)
-{
+TspCfgProviderList_T* 
+TSP_TspCfg_getProviderList(TspCfg_T* tspConfig) {
   assert(tspConfig);
   
   return(&(tspConfig->cfg_provider_list));
@@ -651,14 +651,14 @@ TspCfgProviderList_T* TSP_TspCfg_getProviderList(TspCfg_T* tspConfig)
 }
 
 
-TSP_sample_symbol_info_list_t* TSP_TspCfg_getProviderSampleList(TspCfg_T* tspConfig,char* provider_name)
-{
+TSP_sample_symbol_info_list_t* 
+TSP_TspCfg_getProviderSampleList(TspCfg_T* tspConfig,char* provider_name) {
   int32_t i;
 
   assert(tspConfig);
   assert(provider_name);
   
-  for(i=0;tspConfig->cfg_provider_list.length;++i)
+  for(i=0;i<tspConfig->cfg_provider_list.length;++i)
   {
     if(!(strcmp(provider_name,tspConfig->cfg_provider_list.providers[i].name)))
     {
@@ -666,11 +666,10 @@ TSP_sample_symbol_info_list_t* TSP_TspCfg_getProviderSampleList(TspCfg_T* tspCon
     }
   }
   return(NULL);
-
 }
 
-int32_t load_provider(TspCfg_T* tspConfig)
-{
+int32_t 
+load_provider(TspCfg_T* tspConfig) {
   xmlNode *root_element = NULL;
 
   xmlNode *cur_node = NULL;

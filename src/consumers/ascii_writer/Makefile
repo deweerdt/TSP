@@ -12,8 +12,10 @@ SOURCES = \
 
 OBJECTS = $(SOURCES:%.c=$(DIROBJ)/%.o)
 
-ADD_LIB = $(DIRLIB)/libtsp_ascii_writer.a $(DIRLIB)/libtsp_consumer.a  $(DIRLIB)/libtsp_services.a $(DIRLIB)/libtsp_common.a
-LDLIBS += $(LEXLIB)
+CPPFLAGS += `xml2-config --cflags`
+ADD_LIB = $(DIRLIB)/libtsp_ascii_writer.a $(DIRLIB)/libtsp_consumer.a  $(DIRLIB)/libtsp_services.a $(DIRLIB)/libtsp_common.a $(DIRLIB)/libtsp_cfg.a
+LDLIBS += $(LEXLIB) `xml2-config --libs`
+ 
 
 ifeq (${BUILD_CONSUMER},yes)
     TARGET=$(DIRLIB)/libtsp_ascii_writer.a

@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer_main.c,v 1.13 2006-05-03 21:17:48 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer_main.c,v 1.14 2006-05-31 12:23:23 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -40,8 +40,9 @@ Purpose   : TSP ascii writer consumer (main)
 #include <stdlib.h>
 #include <string.h>
 
-#include "tsp_ascii_writer.h"
-#include "tsp_consumer.h"
+#include <tsp_ascii_writer.h>
+#include <tsp_consumer.h>
+#include <tspcfg_file.h>
 
 /**
  * @defgroup TSP_AsciiWriter ASCII Writer
@@ -59,6 +60,7 @@ Purpose   : TSP ascii writer consumer (main)
  * <ul>
  *   <li> \b -n  (optional) will check and enforce no duplicate symbols</li>
  *   <li> \b -x  the file specifying the list of symbols to be sampled</li>
+ *   <li> \b -m  the file specifying the list of symbols to be sampled is in XML format</li>
  *   <li> \b -f  (optional) specifying the format of output file. Recognized file format are
  *               <ul>
  *                 <li> \b simple_ascii  tabulated ascii no header</li>
@@ -67,7 +69,7 @@ Purpose   : TSP ascii writer consumer (main)
  *               </ul>
  *               Default is \b simple_ascii.
  *   </li>
- *   <li> \b -o  (optional) the name of the output file. If not specified standard out is used</li>
+ *   <li> \b -o  (optional) the name of the output file. If not specified standard out is used.</li>
  *   <li> \b -l  (optional) the maximum number of sample to be stored in file. Unlimited if not specified.</li>
  *   <li> \b -u  (optional) the TSP provider URL. If not specified default is localhost.</li>
  * </ul>
@@ -91,6 +93,9 @@ main (int argc, char* argv[]) {
   uint32_t                            nbUniqueSymbols;
   TSP_sample_symbol_info_list_t       validatedSymbolList;
   TSP_sample_symbol_info_list_t       configSymbolList;
+
+  TSP_sample_symbol_info_list_t       *configXMLSymbolList;
+
   char*   input_filename  = NULL;
   char*   output_filename = NULL;
   char*   file_format     = NULL;
@@ -98,6 +103,9 @@ main (int argc, char* argv[]) {
   int32_t output_limit    = 0;
   char*   provider_url    = "rpc://localhost/";
   int32_t no_duplicate    = 0;
+
+  int32_t  is_xml_config  = 0;
+  TspCfg_T xmlconfig;
 
   /* set up default output file format */
   int header_style  		  = SimpleAsciiTabulated_FileFmt;
@@ -125,6 +133,15 @@ main (int argc, char* argv[]) {
       case 'x':
 	input_filename = strdup(optarg);
 	fprintf(stdout,"%s: sample config file is <%s>\n",argv[0],input_filename);
+	/* poor auto-detect file format
+	 * FIXME: should check first line of file for xml encoding line 
+	 */
+	if ((NULL != strstr(input_filename,".xml")) || 
+	    (NULL != strstr(input_filename,".XML"))
+	    ) {
+	  is_xml_config=1;
+	  fprintf(stdout,"%s: XML config file format detected\n",argv[0]);
+	}
 	break;
       case 'o':
 	output_filename = strdup(optarg);
@@ -178,7 +195,8 @@ main (int argc, char* argv[]) {
 
 
   if (!opt_ok) {
-    printf("Usage: %s [-n] -x=<sample_config_file> [-o=<output_filename>] [-f=<output file format] [-l=<nb sample>] [-u=<TSP_URL>]\n", argv[0]);
+    printf("Usage: %s [-n] -x=<sample_config_file> [-o=<output_filename>] [-f=<output file format] [-l=<nb sample>] [-u=<TSP_URL>]\n",
+	   argv[0]);
     printf("   -n   will check and enforce no duplicate symbols\n");
     printf("   -x   the file specifying the list of symbols to be sampled\n");
     printf("   -f   (optional) specifying the format of output file\n");
@@ -186,7 +204,7 @@ main (int argc, char* argv[]) {
     printf("           simple_ascii : tabulated ascii no header \n");
     printf("           bach         : tabulated ascii with BACH header\n");
     printf("           macsim       : tabulated ascii with MACSIM header\n");
-    printf("   -o   the name of the output file\n");
+    printf("   -o   (optional) the name of the output file\n");
     printf("   -l   (optional) the maximum number of sample to be stored in file\n");
     printf("   -u   (optional) the  TSP provider URL <TSP_URL> \n");
     printf("%s",TSP_URL_FORMAT_USAGE);
@@ -208,17 +226,38 @@ main (int argc, char* argv[]) {
   sigaction(SIGINT,&my_action,&old_action);    
 
   /* reset config list */
+
+  fprintf(stdout,"%s: Load config file...\n",argv[0]);
+
   TSP_SSIList_initialize(&configSymbolList,1);
   TSP_SSIList_finalize(&configSymbolList);
 
-  fprintf(stdout,"%s: Load config file...\n",argv[0]);
-  retcode = tsp_ascii_writer_load_config(input_filename,
-					 &(configSymbolList.TSP_sample_symbol_info_list_t_val),
-					 &(configSymbolList.TSP_sample_symbol_info_list_t_len));
+  if(0==is_xml_config)
+  {
+   
+    retcode = tsp_ascii_writer_load_config(input_filename,
+					   &(configSymbolList.TSP_sample_symbol_info_list_t_val),
+					   &(configSymbolList.TSP_sample_symbol_info_list_t_len));
+  }
+  else
+  {
+    retcode=TSP_TspCfg_load(&xmlconfig,input_filename);
+
+  }
+
+
   if (TSP_STATUS_OK!=retcode) {
     fprintf(stderr,"<%s>: Invalid configuration file (%d parse error(s)).\n",
 	    input_filename, tsp_ascii_writer_parse_error);
     tsp_ascii_writer_stop();
+  }
+
+  if(1==is_xml_config)
+  {
+    configXMLSymbolList=TSP_TspCfg_getProviderSampleList(&xmlconfig,input_filename);
+
+    TSP_SSIList_copy(&configSymbolList,*configXMLSymbolList);
+	       
   }
 
   nbUniqueSymbols = TSP_SSIList_getSize(configSymbolList);
@@ -270,4 +309,4 @@ main (int argc, char* argv[]) {
   tsp_ascii_writer_finalise();
 
   return (retcode);
-}
+} /* end of main */
