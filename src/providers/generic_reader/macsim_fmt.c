@@ -1,6 +1,6 @@
 /*
 
-$Id: macsim_fmt.c,v 1.8 2006-05-29 19:26:26 erk Exp $
+$Id: macsim_fmt.c,v 1.9 2006-05-31 11:21:39 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -312,7 +312,8 @@ int32_t macsim_read_header(GenericReader_T* genreader, int32_t justcount)
 				else
 				{
 				  /*add symbol to the symbol list and extended info*/
-				  
+				  EI_unit=0;
+				  EI_chaine=0;
 				  nb_ext_info=2;
 
 				  /*create ths symbol*/
@@ -355,14 +356,15 @@ int32_t macsim_read_header(GenericReader_T* genreader, int32_t justcount)
 				  if(1==EI_unit)
 				  {
 				    TSP_EI_initialize(&(ssei[indice_symbol].info.TSP_extended_info_list_t_val[2]),"unit",unite_var);
-				    EI_unit=0;
+				   
 				  }
 
 				  if(1==EI_chaine)
 				  {
 				    sprintf(buffer_sizestring,"%d",LG_MAX_STRING_MACSIM);
-				    TSP_EI_initialize(&(ssei[indice_symbol].info.TSP_extended_info_list_t_val[3]),"sizestring",buffer_sizestring);
-				    EI_chaine=0;
+				    /*3-EI_chaine+EI_unit: because the indice can be 2 or 3*/
+				    TSP_EI_initialize(&(ssei[indice_symbol].info.TSP_extended_info_list_t_val[3-EI_chaine+EI_unit]),"sizestring",buffer_sizestring);
+				    
 				  }
 
 
