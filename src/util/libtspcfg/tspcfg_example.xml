@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="ISO-8859-1" standalone="yes"?>
+
+<TSP_sample_config version="TSPcfg-1.0">
+
+<Comment>This is an example for a unified consumer sample configuration file.This file specifies: * a list of sample source provider * a list of sample [symbols] * a list of layout for displaying samples This example is an EXPLICIT example one with MAXIMAL information to provide. Consumer will have almost no information to complete.</Comment>
+
+
+<!-- We should describe providers from which samples are coming from -->
+<!--  * each providers has a name, a TSP url and optionnally -->
+<!--    a default period for sample symbols -->
+<!--  * we may say that the TSP providers list is implicit -->
+<!--    in this case the consumer should find the providers -->
+<!--    using another way  -->
+<!--  * if we specify implicit="none" the consumer will only -->
+<!--    try to connect to specified providers -->
+
+
+<TSP_providers>
+	<provider name="LOCAL" url="rpc://localhost/StubbedServer" implicit_period="32" >
+		Localhost  StubbedServer provider
+	</provider>
+
+	<provider name="PROV2" url="rpc://PROV2" implicit_period="30" >
+		provider 2
+	</provider>
+
+	<provider name="PROV3" url="rpc://PROV3" implicit_period="40" >
+		provider 3
+	</provider>
+
+</TSP_providers>
+
+	<TSP_samples implicit_period="10" implicit_type="double" implicit_access="sync" implicit_provider="LOCAL" implicit_phase="9">
+
+	<sample name="t" renamed="Temps" phase="0"  provider="LOCAL" type="double" access="sync" period="1">
+	C'est le temps
+	</sample>
+	<sample name="Symbol1" renamed="symbol 1" phase ="1" provider="LOCAL" type="double" access="sync" period="2">
+		C'est le symbol 1
+	</sample>
+	<sample name="Symbol2" renamed="symbol 2" phase ="1" >
+		C'est le symbol 2
+	</sample>
+
+	<sample name="Symbol3" renamed="symbol 3">
+		C'est le symbol 3
+	</sample>
+
+	<sample name="Symbol4" renamed="symbol 4" phase ="3" provider="LOCAL" type="double" access="sync" period="3" >
+		C'est le symbol 4
+	</sample>
+
+	<sample name="t" renamed="Temps" phase="0"  provider="PROV2" type="double" access="sync" period="1">
+		C'est le temps
+	</sample>
+
+	<sample name="Symbol10" renamed="symbol 10" phase ="0" provider="PROV2" type="double" access="sync" period="1" >
+		C'est le symbol 10
+	</sample>
+
+	<sample name="Symbol11" renamed="symbol 11" phase ="1" provider="PROV2" type="double" access="sync" period="2" >
+		C'est le symbol 11</sample>
+
+	<sample name="Symbol5" renamed="symbol 5" phase ="1" >
+		C'est le symbol 5
+	</sample>
+
+	</TSP_samples>
+</TSP_sample_config>
