@@ -17,13 +17,14 @@
  * (see http://fuse.sourceforge.net) to export TSP
  * symbols as files in a directory.
  *
- * \par usage: tspfs [--url=<tsp_provider_url>] [--sync=<sampling period>]|[--async] [--filter] <mount_point>
-                --url                   the url to connect to, default: rpc://localhost
-                --sync=<period>         use synchronous mode to read the sample values with a period <period>
-                --async                 use asynchronous mode to read the sample values, this is the default
-                --filter                basic filter used to match the symbol names
-                --ext=<ext>             Suffix file names with <ext>, handy for windows browsing
-
+ * \par usage: tspfs [--url=\<tsp_provider_url\>] [--sync=\<sampling period\>]|[--async] [--filter] \<mount_point\>
+ * \par 
+ * <ul>
+ *   <li> \b --url                   the url to connect to, default: rpc://localhost </li>
+ *   <li> \b --sync=\<period\>         use synchronous mode to read the sample values with a period \<period\> </li>
+ *   <li> \b --async                 use asynchronous mode to read the sample values, this is the default </li>
+ *   <li> \b --filter                basic filter used to match the symbol names </li>
+ *   <li> \b --ext=\<ext\>             Suffix file names with \<ext\>, handy for windows browsing </li>
  *
  * \section Sample tspfs session
  * \verbatim
