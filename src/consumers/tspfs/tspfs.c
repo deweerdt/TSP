@@ -25,7 +25,7 @@
  *   <li> \b --async                 use asynchronous mode to read the sample values, this is the default </li>
  *   <li> \b --filter                basic filter used to match the symbol names </li>
  *   <li> \b --ext=\<ext\>             Suffix file names with \<ext\>, handy for windows browsing </li>
- *
+ * </ul>
  * \section Sample tspfs session
  * \verbatim
  
