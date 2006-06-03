@@ -217,7 +217,9 @@ V-0.8.0: Creation ??/06/2006    tag TSP_0_8_0
         - Unified library for TSP configuration file (XML)
           src/util/libtspcfg                                    - AM+Erk
         - Bug Corrections
-               
+               * bug #16521 : Request Sample with 0 symbols core dumps 
+               * bug #16430 : tsp_stub_server died prematurely
+
 V-0.8.x: Creation ??/??/2006    tag TSP_0_8_x
 	- XML-RPC command channel in mainstream                 - FredD
         - Change build system from GNU Autotools to CMake       - FredD
