@@ -1,6 +1,6 @@
 /*
 
-$Id: tspcfg_file_main.c,v 1.2 2006-06-03 21:42:04 erk Exp $
+$Id: tspcfg_file_main.c,v 1.3 2006-06-03 21:58:59 erk Exp $
 
 -----------------------------------------------------------------------
  
@@ -77,13 +77,16 @@ print_element_names(xmlNode * a_node)
 
 
 /**
- * Simple example to parse a file called "file.xml", 
- * walk down the DOM, and print the name of the 
- * xml elements nodes.
+ * @defgroup TSP_ConfigFileTool TSP config file tool
+ * A simple command line tool used to display
+ * TSP configuration files.
  *
- *command line:  test_xml nom_xml_file
- * 
- * the main test parse the xml file and display for each provider,all the data provider and all the data sample
+ * \par tsp_cfg \<xmlfile\>
+ *
+ * Will parse the config file and display for each provider, 
+ * all the data provider and all the data sample
+ * @ingroup TSP_Applications
+ * @ingroup TSP_ConfigFileLib
  */
 int
 main(int argc, char **argv)
