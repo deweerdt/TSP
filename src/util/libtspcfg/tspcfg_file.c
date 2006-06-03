@@ -1,6 +1,6 @@
 /*
 
-$Id: tspcfg_file.c,v 1.2 2006-05-31 12:23:23 erk Exp $
+$Id: tspcfg_file.c,v 1.3 2006-06-03 21:42:04 erk Exp $
 
 -----------------------------------------------------------------------
  
@@ -30,7 +30,9 @@ Component : lib
 
 -----------------------------------------------------------------------
 
-Purpose   : Implementation for read a xml config file
+Purpose   : Use an XML file to parameter a consumer
+            For ask some symbol to a provider the consumer can be parameter with an XML file
+	    This XML file contain the list of the provider and the list of provider's sample
 
 -----------------------------------------------------------------------
 */
@@ -65,7 +67,7 @@ TspCfgSampleList_T * TSP_TspCfgSampleList_new(int32_t implicit_period,
 					    char    *implicit_access,
 					    char    *implicit_provider,
 					    char    *renamed,
-					    char    *named)
+					    char    *name)
 {
   TspCfgSampleList_T *sample;
 
@@ -80,7 +82,7 @@ TspCfgSampleList_T * TSP_TspCfgSampleList_new(int32_t implicit_period,
 				    implicit_access,
 				    implicit_provider,
 				    renamed,
-				    named);
+				    name);
   }
   return sample;
 
@@ -114,7 +116,7 @@ int32_t TSP_TspCfgSampleList_initialize(TspCfgSampleList_T *tspCfgSampleList,
 					char    *implicit_access,
 					char    *implicit_provider,
 					char    *renamed,
-					char    *named)
+					char    *name)
 {
  assert(tspCfgSampleList);
 
@@ -200,17 +202,6 @@ int32_t TSP_TspCfgSampleList_initialize(TspCfgSampleList_T *tspCfgSampleList,
  tspCfgSampleList->implicit_period= implicit_period;				
  tspCfgSampleList->implicit_phase= implicit_phase;
  
-/* retcode=TSP_SSI_initialize(&(tspCfgSampleList->ssi),
-			    named,
-			    -1,
-			    -1,
-			    -1,
-			     macsim_type_data(implicit_type),
-			    0,
-			    0,
-			    0,
-			    implicit_period,
-			    implicit_phase);*/
 
  return(retcode);
 }
@@ -591,85 +582,15 @@ TSP_TspCfg_finalize(TspCfg_T* tspConfig)
 } 
 
 
-/* open file and parse xml file
-*/
-int32_t TSP_TspCfg_load(TspCfg_T* tspConfig,char* filename)
-{
-  assert(tspConfig);
-  assert(filename);  
-
-  /*
-   * this initialize the library and check potential ABI mismatches
-   * between the version it was compiled for and the actual shared
-   * library used.
-   */
-  LIBXML_TEST_VERSION
-
-  /*parse the file and get the DOM */
-  tspConfig->cfg_tree = xmlReadFile(filename, NULL,XML_PARSE_RECOVER);
-
-  if (NULL==tspConfig->cfg_tree) {
-    printf("error: could not parse file %s\n", filename);
-    return(TSP_STATUS_NOK);
-  }
-
-  /*chargement providers*/
-  load_provider(tspConfig);
-
-
-  /*chargement symbol list des providers*/
-  load_sample(tspConfig);
-
-
-  return(TSP_STATUS_OK);
-	
-}
-
-int32_t TSP_TspCfg_save(TspCfg_T* tspConfig,char* output_filename)
-{
-  int32_t ret;
-
-  assert(output_filename);
-  assert(tspConfig);
-
-  ret=xmlSaveFormatFileEnc(output_filename,tspConfig->cfg_tree,NULL,0);
-  if(-1==ret)
-  {
-    return(TSP_STATUS_NOK);
-  }
-
-  return(TSP_STATUS_OK);
-}
-
-
-TspCfgProviderList_T* 
-TSP_TspCfg_getProviderList(TspCfg_T* tspConfig) {
-  assert(tspConfig);
-  
-  return(&(tspConfig->cfg_provider_list));
-
-}
-
-
-TSP_sample_symbol_info_list_t* 
-TSP_TspCfg_getProviderSampleList(TspCfg_T* tspConfig,char* provider_name) {
-  int32_t i;
-
-  assert(tspConfig);
-  assert(provider_name);
-  
-  for(i=0;i<tspConfig->cfg_provider_list.length;++i)
-  {
-    if(!(strcmp(provider_name,tspConfig->cfg_provider_list.providers[i].name)))
-    {
-      return(&(tspConfig->cfg_provider_list.providers[i].ssi_list));
-    }
-  }
-  return(NULL);
-}
-
+/*
+ * load the providers in the structure
+ * 
+ * @param[in] tspConfig the xmlconfig file who contain the information about the providers and sample
+ *                      
+ * @return TSP_STATUS_OK if OK
+ */
 int32_t 
-load_provider(TspCfg_T* tspConfig) {
+TSP_TspCfg_load_provider(TspCfg_T* tspConfig) {
   xmlNode *root_element = NULL;
 
   xmlNode *cur_node = NULL;
@@ -757,7 +678,15 @@ load_provider(TspCfg_T* tspConfig) {
   return(TSP_STATUS_OK);
 }
 
-int32_t load_sample(TspCfg_T* tspConfig)
+
+/*
+ * load the provider's sample  in the structure
+ * 
+ * @param[in] tspConfig the xmlconfig file who contain the inforargv[1]mation about the providers and sample
+ *                      
+ * @return TSP_STATUS_OK if OK
+ */
+int32_t TSP_TspCfg_load_sample(TspCfg_T* tspConfig)
 {
   xmlNode *root_element = NULL;
 
@@ -912,7 +841,7 @@ int32_t load_sample(TspCfg_T* tspConfig)
 	                                         (char*)calloc(strlen((char*)data)+1,sizeof(char));
 	    strcpy(tspConfig->cfg_provider_list.providers[indice_provider].cfg_sample_list[nb_sample].implicit_provider,(char*)data);
 
-	    load_data_sample(cur_node,
+	    TSP_TspCfg_load_data_sample(cur_node,
 			     &(tspConfig->cfg_provider_list.providers[indice_provider]), 
 			     implicit_period,
 			     implicit_phase,
@@ -934,7 +863,7 @@ int32_t load_sample(TspCfg_T* tspConfig)
 		   implicit_provider);
 
 	    
-	    load_data_sample(cur_node,
+	    TSP_TspCfg_load_data_sample(cur_node,
 			     &(tspConfig->cfg_provider_list.providers[indice_provider]), 
 			     implicit_period,
 			     implicit_phase,
@@ -989,8 +918,20 @@ TSP_datatype_t TSP_datatype_fromString(char* type_var)
 
 }
 
-
-void  load_data_sample(xmlNode *cur_node,
+/*
+ * load the data sample in the structure
+ * 
+ * @param[in] tspConfig the xmlconfig file who contain the information about the providers and sample
+ * @param[in,out] provider sample to load in this provider
+ * @param[in] implicit_period implicit period
+ * @param[in] implicit_phase implicit phase
+ * @param[in] implicit_type implicit type
+ * @param[in] implicit_access implcit access 
+ * @param[in] indice_sample indice sample 
+ *                      
+ * @return nothing
+ */
+void  TSP_TspCfg_load_data_sample(xmlNode *cur_node,
 		       TspCfgProvider_T *provider, 
 		       int32_t  implicit_period,
 		       int32_t  implicit_phase,
@@ -1067,4 +1008,82 @@ void  load_data_sample(xmlNode *cur_node,
 		     provider->cfg_sample_list[indice_sample].implicit_period,
 		     provider->cfg_sample_list[indice_sample].implicit_phase);
   
+}
+
+
+/* open file and parse xml file
+*/
+int32_t TSP_TspCfg_load(TspCfg_T* tspConfig,char* filename)
+{
+  assert(tspConfig);
+  assert(filename);  
+
+  /*
+   * this initialize the library and check potential ABI mismatches
+   * between the version it was compiled for and the actual shared
+   * library used.
+   */
+  LIBXML_TEST_VERSION
+
+  /*parse the file and get the DOM */
+  tspConfig->cfg_tree = xmlReadFile(filename, NULL,XML_PARSE_RECOVER);
+
+  if (NULL==tspConfig->cfg_tree) {
+    printf("error: could not parse file %s\n", filename);
+    return(TSP_STATUS_NOK);
+  }
+
+  /*chargement providers*/
+  TSP_TspCfg_load_provider(tspConfig);
+
+
+  /*chargement symbol list des providers*/
+  TSP_TspCfg_load_sample(tspConfig);
+
+
+  return(TSP_STATUS_OK);
+	
+}
+
+int32_t TSP_TspCfg_save(TspCfg_T* tspConfig,char* output_filename)
+{
+  int32_t ret;
+
+  assert(output_filename);
+  assert(tspConfig);
+
+  ret=xmlSaveFormatFileEnc(output_filename,tspConfig->cfg_tree,NULL,0);
+  if(-1==ret)
+  {
+    return(TSP_STATUS_NOK);
+  }
+
+  return(TSP_STATUS_OK);
+}
+
+
+TspCfgProviderList_T* 
+TSP_TspCfg_getProviderList(TspCfg_T* tspConfig) {
+  assert(tspConfig);
+  
+  return(&(tspConfig->cfg_provider_list));
+
+}
+
+
+TSP_sample_symbol_info_list_t* 
+TSP_TspCfg_getProviderSampleList(TspCfg_T* tspConfig,char* provider_name) {
+  int32_t i;
+
+  assert(tspConfig);
+  assert(provider_name);
+  
+  for(i=0;i<tspConfig->cfg_provider_list.length;++i)
+  {
+    if(!(strcmp(provider_name,tspConfig->cfg_provider_list.providers[i].name)))
+    {
+      return(&(tspConfig->cfg_provider_list.providers[i].ssi_list));
+    }
+  }
+  return(NULL);
 }

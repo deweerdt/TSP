@@ -1,6 +1,6 @@
 /*
 
-$Id: tspcfg_file_main.c,v 1.1 2006-05-31 11:54:54 erk Exp $
+$Id: tspcfg_file_main.c,v 1.2 2006-06-03 21:42:04 erk Exp $
 
 -----------------------------------------------------------------------
  
@@ -80,6 +80,10 @@ print_element_names(xmlNode * a_node)
  * Simple example to parse a file called "file.xml", 
  * walk down the DOM, and print the name of the 
  * xml elements nodes.
+ *
+ *command line:  test_xml nom_xml_file
+ * 
+ * the main test parse the xml file and display for each provider,all the data provider and all the data sample
  */
 int
 main(int argc, char **argv)
@@ -94,7 +98,15 @@ main(int argc, char **argv)
  
   xmlconfig=TSP_TspCfg_new(NULL);
 
+  if (argc < 2) {
+    printf("%s: Insufficient number of options\n",argv[0]);
+    printf("Usage: %s XML_config_FILE_name \n",argv[0]);
+    fflush(stdout);
+    exit(-1);
+  }
 
+
+  /*parse the XML file and load the dat in the TSP config stucture*/
   rep=TSP_TspCfg_load(xmlconfig,argv[1]);
 
   if (TSP_STATUS_NOK==rep) {
@@ -102,11 +114,13 @@ main(int argc, char **argv)
   }
 
 
+  /*retrieve the provider list*/
   provider_list=TSP_TspCfg_getProviderList(xmlconfig);
     
   printf("Provider_list, Length: %d\n\n",provider_list->length);
   fflush(stdout);
 
+  /*for each provider, we display all this data*/
   for(i=0;i<provider_list->length;++i)
   {
     printf("************************\n");
@@ -117,6 +131,7 @@ main(int argc, char **argv)
 
     provider=provider_list->providers[i];
 
+    /*retrieve the sample symbol info list of the provider*/
     ssi_list=TSP_TspCfg_getProviderSampleList(xmlconfig,provider_list->providers[i].name);
 
     printf("Provider, Name: %s\n", provider.name);
@@ -125,6 +140,7 @@ main(int argc, char **argv)
     printf("\tSample List, Length: %d\n\n",provider.length);
     fflush(stdout);
 
+    
     for(j=0;j<provider.length;++j)
     {
       printf("\tSample List, Renamed: %s\n",provider.cfg_sample_list[j].renamed);

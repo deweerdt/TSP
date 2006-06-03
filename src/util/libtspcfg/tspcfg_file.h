@@ -1,10 +1,10 @@
 /*
 
-$Id: tspcfg_file.h,v 1.2 2006-05-31 12:13:06 erk Exp $
+$Id: tspcfg_file.h,v 1.3 2006-06-03 21:42:04 erk Exp $
 
 -----------------------------------------------------------------------
 
-TSP Library - core components for a generic Transport Sampling Protocol.
+TSP Library - TspCfg components for read an XML file.
 
 Copyright (c) 2006 Eric NOULARD and Arnaud MORVAN 
 
@@ -30,7 +30,9 @@ Component : Provider
 
 -----------------------------------------------------------------------
 
-Purpose   : Allow the output of a datapool of symbols from generic file
+Purpose   : Use an XML file to parameter a consumer
+            For ask some symbol to a provider the consumer can be parameter with an XML file
+	    This XML file contain the list of the provider and the list of provider's sample
 
 -----------------------------------------------------------------------
 */
@@ -54,37 +56,73 @@ Purpose   : Allow the output of a datapool of symbols from generic file
 #define TSP_CONFIG_DEFAULT_PERIOD 1
 #define TSP_CONFIG_DEFAULT_PHASE 1
 
+/**
+ * TspCfgSampleProviderList_T.
+ * a TSP config structure: describe the data and parameter of a sample
+ * this data are extract from the XML file
+ */
 typedef struct TspCfgSampleList {
+  /** the implicit_period */
    int32_t              implicit_period;
+  /** the implicit phase */
    int32_t              implicit_phase;
+  /** the implicit type */
    char                 *implicit_type;
+  /** the implicit access */
    char                 *implicit_access;
+  /** the implicit provider */
    char                 *implicit_provider;
+  /** the implicit rename */
    char                 *renamed;
 
 }  TspCfgSampleList_T;
 
+/**
+ * TspCfgProvider_T.
+ * a TSP config structure: describe a provider
+ * this data are extract from the XML file
+ */
 typedef struct TspCfgProvider {
+  /** the provider name */
    char*                name;
+  /** the url of the provider */
    char*                url;
+  /** the implicit period of the provider */
    int32_t              implicit_period;
 
+  /** the number of sample */
    int32_t              length;
+  /** the sample list (data of the xml file) */
    TspCfgSampleList_T   *cfg_sample_list;
 
+  /** the sample symbol info list */
    TSP_sample_symbol_info_list_t ssi_list;
 
 
 } TspCfgProvider_T;
 
+/**
+ * TspCfgProvider_list_T.
+ * a TSP config structure: contain the provider list
+ */
 typedef struct TspCfgProviderList {
+  /** the number of provider */
    int32_t              length;
+  /** the provider list */
    TspCfgProvider_T*    providers;
 } TspCfgProviderList_T;
 
+/**
+ * TspCfg_T.
+ * a TSP config structure: contain the data of the xml file after parse an XML config file
+ * load by the function: TSP_TspCfg_load
+ */
 typedef struct TspCfg {
+  /** Contain the XML tree */
   xmlDoc                *cfg_tree;
+  /** the provider list, load by the load function*/
   TspCfgProviderList_T  cfg_provider_list;
+  /** the implicit provider, load by the load function*/
   TspCfgProvider_T      *implicit_provider;
 
 } TspCfg_T;
@@ -109,7 +147,7 @@ TspCfgSampleList_T * TSP_TspCfgSampleList_new(int32_t implicit_period,
 					      char    *implicit_access,
 					      char    *implicit_provider,
 					      char    *renamed,
-					      char    *named);
+					      char    *name);
 
 
 /**
@@ -144,7 +182,7 @@ int32_t TSP_TspCfgSampleList_initialize(TspCfgSampleList_T *tspCfgSampleList,
 					char    *implicit_access,
 					char    *implicit_provider,
 					char    *renamed,
-					char    *named);
+					char    *name);
 
 
 /**
@@ -224,7 +262,7 @@ TspCfgProviderList_T* TSP_TspCfgProviderList_new(int32_t length);
 /**
  * destroy provider list
  *
- * @param[in,out] tspConfig  provider list to destroy
+ * @param[in,out] provider_list  provider list to destroy
  *                  
  * @return TSP_STATUS_OK if OK
  */
@@ -290,7 +328,7 @@ int32_t TSP_TspCfg_initialize(TspCfg_T* tspConfig,
 /**
  * destroy the tspconfig
  *
- * @param[in,out tspConfig the xmlconfig who contain the information about the file                   
+ * @param[in,out] tspConfig the xmlconfig who contain the information about the file                   
  *
  * @return TSP_STATUS_OK if OK
  */
@@ -299,7 +337,7 @@ TSP_TspCfg_finalize(TspCfg_T* tspConfig);
 
 
 /**
- * Open and parse xml config File
+ * Open and parse xml config File, and load in the TSP  config structure all the provider and all the sample describe in the XML file
  * 
  * @param[in,out] tspConfig the xmlconfig which contains the information about the TSP configuration
  * @param[in] filename  xml file
@@ -309,7 +347,7 @@ TSP_TspCfg_finalize(TspCfg_T* tspConfig);
 int32_t TSP_TspCfg_load(TspCfg_T* tspConfig, char* filename);
 
 /**
- * save the xml tree in the outpu file
+ * save the xml tree in the output file
  * 
  * @param[in] tspConfig the xmlconfig who contain the information about the file
  * @param[in] output_filename  the xml output file
@@ -338,45 +376,6 @@ TspCfgProviderList_T* TSP_TspCfg_getProviderList(TspCfg_T* tspConfig);
  */
 TSP_sample_symbol_info_list_t* TSP_TspCfg_getProviderSampleList(TspCfg_T* tspConfig,char* provider_name);
 
-/**
- * load the providers in the structure
- * 
- * @param[in] tspConfig the xmlconfig file who contain the information about the providers and sample
- *                      
- * @return TSP_STATUS_OK if OK
- */
-int32_t load_provider(TspCfg_T* tspConfig);
-
-
-/**
- * load the provider's sample  in the structure
- * 
- * @param[in] tspConfig the xmlconfig file who contain the information about the providers and sample
- *                      
- * @return TSP_STATUS_OK if OK
- */
-int32_t load_sample(TspCfg_T* tspConfig);
-
-/**
- * load the data sample in the structure
- * 
- * @param[in] tspConfig the xmlconfig file who contain the information about the providers and sample
- * @param[in,out] provider sample to load in this provider
- * @param[in] implicit_period implicit period
- * @param[in] implicit_phase implicit phase
- * @param[in] implicit_type implicit type
- * @param[in] implicit_access implcit access 
- * @param[in] indice_sample indice sample 
- *                      
- * @return nothing
- */
-void  load_data_sample(xmlNode *cur_node,
-		       TspCfgProvider_T *provider, 
-		       int32_t  implicit_period,
-		       int32_t  implicit_phase,
-		       char    *implicit_type,
-		       char    *implicit_access,
-		       int32_t  indice_sample);
 
 
 /** @} */

@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer_main.c,v 1.14 2006-05-31 12:23:23 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer_main.c,v 1.15 2006-06-03 21:42:03 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -60,7 +60,6 @@ Purpose   : TSP ascii writer consumer (main)
  * <ul>
  *   <li> \b -n  (optional) will check and enforce no duplicate symbols</li>
  *   <li> \b -x  the file specifying the list of symbols to be sampled</li>
- *   <li> \b -m  the file specifying the list of symbols to be sampled is in XML format</li>
  *   <li> \b -f  (optional) specifying the format of output file. Recognized file format are
  *               <ul>
  *                 <li> \b simple_ascii  tabulated ascii no header</li>
@@ -104,8 +103,12 @@ main (int argc, char* argv[]) {
   char*   provider_url    = "rpc://localhost/";
   int32_t no_duplicate    = 0;
 
+  int32_t  continu=1;
+  int32_t  indice_provider=0;
   int32_t  is_xml_config  = 0;
   TspCfg_T xmlconfig;
+  TspCfgProviderList_T* provider_list=NULL;
+
 
   /* set up default output file format */
   int header_style  		  = SimpleAsciiTabulated_FileFmt;
@@ -198,7 +201,7 @@ main (int argc, char* argv[]) {
     printf("Usage: %s [-n] -x=<sample_config_file> [-o=<output_filename>] [-f=<output file format] [-l=<nb sample>] [-u=<TSP_URL>]\n",
 	   argv[0]);
     printf("   -n   will check and enforce no duplicate symbols\n");
-    printf("   -x   the file specifying the list of symbols to be sampled\n");
+    printf("   -x   the file specifying the list of symbols to be sampled (.dat or .XML)\n");
     printf("   -f   (optional) specifying the format of output file\n");
     printf("        possible formats are:\n");
     printf("           simple_ascii : tabulated ascii no header \n");
@@ -252,37 +255,103 @@ main (int argc, char* argv[]) {
     tsp_ascii_writer_stop();
   }
 
+
+  /* we use an XML config file, so we must search a provider which can be reach by your computer,
+   * so we search the fisrt provider tha can be reach
+   */
   if(1==is_xml_config)
   {
-    configXMLSymbolList=TSP_TspCfg_getProviderSampleList(&xmlconfig,input_filename);
-
-    TSP_SSIList_copy(&configSymbolList,*configXMLSymbolList);
-	       
-  }
-
-  nbUniqueSymbols = TSP_SSIList_getSize(configSymbolList);
-
-  if (TSP_STATUS_OK==retcode && no_duplicate) {
-    retcode = tsp_ascii_writer_make_unique(&(configSymbolList.TSP_sample_symbol_info_list_t_val),
-					   &(nbUniqueSymbols));
-
-    if (TSP_STATUS_OK!=retcode) {
-      fprintf(stderr,
-	      "Configuration file contains duplicate symbols with different period,\n");
-      fprintf(stderr,"  --> Please fix your config file <%s> and re-run.\n",input_filename);
-      fprintf(stderr,"  --> It seems to be symbol <%s>\n",
-	      TSP_SSIList_getSSI(configSymbolList,nbUniqueSymbols)->name);
+    /* retrieve the provider list contain in the xml file*/
+    provider_list=TSP_TspCfg_getProviderList(&xmlconfig);
+    if (NULL==provider_list) {
+      fprintf(stderr,"There are no provider in the XML file.\n");
+      fflush(stdout);      
       tsp_ascii_writer_stop();
-    } else {
-      configSymbolList.TSP_sample_symbol_info_list_t_len = nbUniqueSymbols;
+      retcode=TSP_STATUS_NOK;
+      
     }
-  }
+    else
+    {
+      /*for each provider we look that he could be reach*/
+      continu=1;
+      for(indice_provider=0;indice_provider<provider_list->length && continu;++indice_provider)
+      {
+	retcode=TSP_STATUS_OK;
 
-  if (TSP_STATUS_OK==retcode) {
-    fprintf(stdout,"%s: Validate symbols against provider info...\n",argv[0]);
-    fflush(stdout);
-    retcode = tsp_ascii_writer_validate_symbols(&configSymbolList,provider_url,
+	/*retrieve the sample list of the provider*/
+	configXMLSymbolList=TSP_TspCfg_getProviderSampleList(&xmlconfig,provider_list->providers[indice_provider].name);
+
+	TSP_SSIList_copy(&configSymbolList,*configXMLSymbolList);
+
+	nbUniqueSymbols = TSP_SSIList_getSize(configSymbolList);
+    
+	if(0!=nbUniqueSymbols)
+	{
+	  if (TSP_STATUS_OK==retcode && no_duplicate) {
+	    retcode = tsp_ascii_writer_make_unique(&(configSymbolList.TSP_sample_symbol_info_list_t_val),
+						   &(nbUniqueSymbols));
+
+	    if (TSP_STATUS_OK!=retcode) {
+	      fprintf(stderr,
+		      "Configuration file contains duplicate symbols with different period,\n");
+	      fprintf(stderr,"  --> Please fix your config file <%s> and re-run.\n",input_filename);
+	      fprintf(stderr,"  --> It seems to be symbol <%s>\n",
+		      TSP_SSIList_getSSI(configSymbolList,nbUniqueSymbols)->name);
+	      tsp_ascii_writer_stop();
+	      continu=0;
+	    } else {
+	      configSymbolList.TSP_sample_symbol_info_list_t_len = nbUniqueSymbols;
+	    }
+	  }
+	  
+	  if (TSP_STATUS_OK==retcode) {
+	    fprintf(stdout,"%s: Validate symbols against provider info...\n",argv[0]);
+	    fflush(stdout);
+	    
+	    retcode = tsp_ascii_writer_validate_symbols(&configSymbolList,provider_list->providers[indice_provider].url,
+							&validatedSymbolList);
+	    if(TSP_STATUS_OK!=retcode) {
+	      fprintf(stdout,"The provider %s: can be reach, try with the next...\n",provider_list->providers[indice_provider].name);
+	      fflush(stdout);
+	  }
+	    else
+	      {
+		/*the provider can be reach*/
+		continu=0;
+	      }
+	  }
+	}
+      }
+    }       
+  }
+  else
+  {
+      nbUniqueSymbols = TSP_SSIList_getSize(configSymbolList);
+
+      if (TSP_STATUS_OK==retcode && no_duplicate) {
+	retcode = tsp_ascii_writer_make_unique(&(configSymbolList.TSP_sample_symbol_info_list_t_val),
+					       &(nbUniqueSymbols));
+
+	if (TSP_STATUS_OK!=retcode) {
+	  fprintf(stderr,
+		  "Configuration file contains duplicate symbols with different period,\n");
+	  fprintf(stderr,"  --> Please fix your config file <%s> and re-run.\n",input_filename);
+	  fprintf(stderr,"  --> It seems to be symbol <%s>\n",
+		  TSP_SSIList_getSSI(configSymbolList,nbUniqueSymbols)->name);
+	  tsp_ascii_writer_stop();
+	} else {
+	  configSymbolList.TSP_sample_symbol_info_list_t_len = nbUniqueSymbols;
+	}
+      }
+
+
+      if (TSP_STATUS_OK==retcode) {
+	fprintf(stdout,"%s: Validate symbols against provider info...\n",argv[0]);
+	fflush(stdout);
+	retcode = tsp_ascii_writer_validate_symbols(&configSymbolList,provider_url,
 						&validatedSymbolList);
+      }
+
   }
 
   if (TSP_STATUS_OK==retcode) {
@@ -303,6 +372,8 @@ main (int argc, char* argv[]) {
   if (TSP_STATUS_OK == retcode) {
     retcode = tsp_ascii_writer_start(output_stream,output_limit,header_style,&validatedSymbolList);
   }
+
+
 
   fprintf(stdout,"%s: Ascii writer stopped...\n",argv[0]);
   fflush(stdout);  
