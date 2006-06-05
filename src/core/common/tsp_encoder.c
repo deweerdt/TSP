@@ -1,7 +1,7 @@
 
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/common/tsp_encoder.c,v 1.5 2006-05-04 21:44:47 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/common/tsp_encoder.c,v 1.6 2006-06-05 14:31:03 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -203,7 +203,7 @@ uint32_t TSP_data_channel_int32_encoder(void* v_int32,uint32_t dimension,  char*
   {
     if( xdr_int(&xhandle, pt_int32+i) != TRUE)
     {
-       STRACE_ERROR(("Function xdr_double failed"));
+       STRACE_ERROR(("Function xdr_int failed"));
        return 0;
     }
   }
@@ -249,7 +249,7 @@ uint32_t TSP_data_channel_int64_encoder(void* v_int64,uint32_t dimension,  char*
   {
     if( xdr_long(&xhandle, pt_int64+i) != TRUE)
     {
-       STRACE_ERROR(("Function xdr_double failed"));
+       STRACE_ERROR(("Function xdr_long failed"));
        return 0;
     }
   }
@@ -326,7 +326,7 @@ uint32_t TSP_data_channel_uint32_encoder(void* v_uint32,uint32_t dimension,  cha
   {
     if( xdr_int(&xhandle, pt_uint32+i) != TRUE)
     {
-       STRACE_ERROR(("Function xdr_double failed"));
+       STRACE_ERROR(("Function xdr_int failed"));
        return 0;
     }
   }
@@ -373,7 +373,7 @@ uint32_t TSP_data_channel_uint64_encoder(void* v_uint64,uint32_t dimension,  cha
   {
     if( xdr_long(&xhandle, pt_uint64+i) != TRUE)
     {
-       STRACE_ERROR(("Function xdr_double failed"));
+       STRACE_ERROR(("Function xdr_long failed"));
        return 0;
     }
   }
