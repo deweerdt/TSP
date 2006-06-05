@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_abs_types.h,v 1.23 2006-03-31 12:55:19 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_abs_types.h,v 1.24 2006-06-05 12:27:31 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -106,7 +106,7 @@ Purpose   : Type abstraction : Stolen from GLIB public headers
 
 
 /* Linux / Intel */
-#if defined (__linux__) &&  defined (__i386__) 
+#if defined (__linux__) &&  ( defined (__i386__)  || defined (__x86_64__) )
 # include <stdint.h>
 # define TSP_BYTE_ORDER TSP_LITTLE_ENDIAN
 # define TSP_INT64_CONSTANT(val)  (val##LL)

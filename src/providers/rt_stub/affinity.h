@@ -37,6 +37,11 @@ __syscall_return(type,__res); \
 #define __NR_sched_getaffinity	242
 #endif
 
+#if defined(__x86_64__)
+#define __NR_sched_setaffinity	203
+#define __NR_sched_getaffinity	204
+#endif
+
 #if defined(__powerpc__)
 #define __NR_sched_setaffinity	223
 #define __NR_sched_getaffinity	222
