@@ -1,6 +1,6 @@
 /*
 
-$Id: tspcfg_file.h,v 1.3 2006-06-03 21:42:04 erk Exp $
+$Id: tspcfg_file.h,v 1.4 2006-06-06 17:11:24 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -377,6 +377,26 @@ TspCfgProviderList_T* TSP_TspCfg_getProviderList(TspCfg_T* tspConfig);
 TSP_sample_symbol_info_list_t* TSP_TspCfg_getProviderSampleList(TspCfg_T* tspConfig,char* provider_name);
 
 
+/*
+ * load the data sample in the structure
+ * 
+ * @param[in] tspConfig the xmlconfig file who contain the information about the providers and sample
+ * @param[in,out] provider sample to load in this provider
+ * @param[in] implicit_period implicit period
+ * @param[in] implicit_phase implicit phase
+ * @param[in] implicit_type implicit type
+ * @param[in] implicit_access implcit access 
+ * @param[in] indice_sample indice sample 
+ *                      
+ * @return nothing
+ */
+void  TSP_TspCfg_load_data_sample(xmlNode *cur_node,
+		       TspCfgProvider_T *provider, 
+		       int32_t  implicit_period,
+		       int32_t  implicit_phase,
+		       char    *implicit_type,
+		       char    *implicit_access,
+		       int32_t  indice_sample);
 
 /** @} */
 
