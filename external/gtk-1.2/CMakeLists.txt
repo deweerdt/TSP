@@ -1,0 +1,10 @@
+SET(LIBGTK1.2_SRC
+gtk/gtkdatabox.c)
+
+INCLUDE_DIRECTORIES(.)
+
+ADD_LIBRARY(gtk_1.2_utils ${LIBGTK1.2_SRC})
+
+ADD_DEFINITIONS(${GTK_FLAGS})
+
+TARGET_LINK_LIBRARIES(gtk_1.2_utils ${GTK_LIBS} pthread)

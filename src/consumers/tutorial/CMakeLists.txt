@@ -1,0 +1,2 @@
+ADD_EXECUTABLE(tsp_tutorial_client simple_client.c)
+TARGET_LINK_LIBRARIES(tsp_tutorial_client pthread tsp_consumer tsp_common tsp_services)

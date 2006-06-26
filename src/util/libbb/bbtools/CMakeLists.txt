@@ -1,0 +1,10 @@
+SET(SIMU_SRC bb_simu)
+SET(TOOLS_SRC bb_tools_main)
+
+INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/src/util/libbb)
+
+ADD_EXECUTABLE(bb_simu ${SIMU_SRC})
+ADD_EXECUTABLE(bb_tools ${TOOLS_SRC})
+TARGET_LINK_LIBRARIES(bb_simu bb m)
+TARGET_LINK_LIBRARIES(bb_tools bb)
+

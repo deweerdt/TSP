@@ -1,0 +1,7 @@
+SET(LIBPAGES_SRC
+page_config.c)
+
+ADD_DEFINITIONS(${XML2_FLAGS})
+
+ADD_LIBRARY(tsp_page_config ${LIBPAGES_SRC})
+TARGET_LINK_LIBRARIES(tsp_page_config ${XML2_LIBS})

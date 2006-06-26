@@ -1,0 +1,4 @@
+ADD_DEFINITIONS(-D_FILE_OFFSET_BITS=64 -DFUSE_USE_VERSION=25 -Wall -Werror)
+
+ADD_EXECUTABLE(tspfs tspfs.c)
+TARGET_LINK_LIBRARIES(tspfs fuse tsp_consumer tsp_common tsp_services)

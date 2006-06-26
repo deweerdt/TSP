@@ -1,0 +1,6 @@
+SET(LIBCALC_SRC
+calc_func.c)
+
+INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/src/util/libcalc)
+ADD_LIBRARY(tsp_calc ${LIBCALC_SRC})
+
