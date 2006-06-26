@@ -1,5 +1,11 @@
 PROJECT(TSP)
 
+OPTION(BUILD_PROVIDER
+  "Build providers" ON)
+
+OPTION(BUILD_CONSUMER
+  "Build consumers" ON)
+
 SET(PACKAGE_VERSION "TSP-0.8.0cvs")
 INCLUDE(CheckFunctionExists)
 
