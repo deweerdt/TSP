@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_default_glu.c,v 1.19 2006-05-03 21:16:38 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_default_glu.c,v 1.20 2006-06-28 12:59:04 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -43,6 +43,7 @@ Purpose   : Implementation for the object GLU_handle_t
 
 #include <tsp_glu.h>
 #include <tsp_common.h>
+#include <tsp_sys_headers.h>
 #include <tsp_default_glu.h>
 
 
@@ -162,7 +163,7 @@ int32_t
 GLU_get_pgi_default(GLU_handle_t* this, TSP_sample_symbol_info_list_t* symbol_list, int* pg_indexes) {
   int retcode = TRUE;
   TSP_sample_symbol_info_list_t complete_symbol_list;
-  TSP_sample_symbol_info_t* compared;
+  TSP_sample_symbol_info_t* compared=NULL;
   int i;
   int j;
 

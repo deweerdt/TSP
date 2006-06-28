@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_filter_symbol.c,v 1.2 2006-02-26 13:36:05 erk Exp $
+$Id: tsp_filter_symbol.c,v 1.3 2006-06-28 12:59:04 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -35,6 +35,7 @@ Purpose   : Symbol filtering module
 -----------------------------------------------------------------------
  */
 
+#include <tsp_sys_headers.h>
 #include <tsp_filter_symbol.h>
 #include <tsp_session.h>
 #include <tsp_common.h>
