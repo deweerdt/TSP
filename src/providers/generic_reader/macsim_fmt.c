@@ -1,6 +1,6 @@
 /*
 
-$Id: macsim_fmt.c,v 1.9 2006-05-31 11:21:39 erk Exp $
+$Id: macsim_fmt.c,v 1.10 2006-06-28 13:00:48 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -64,7 +64,7 @@ char *str_strip (const char *string)
      /*find first charactere*/
      for(i=0;i<strlen(string);++i)
      {
-       if(!(isspace(string[i])))
+       if(!(isspace((int)string[i])))
        {
 	 break;
        }
@@ -73,7 +73,7 @@ char *str_strip (const char *string)
      /*find last character*/
      for(j=strlen(string)-1;j>0;--j)
      {
-       if(!(isspace(string[j])))
+       if(!(isspace((int)string[j])))
        {
 	 break;
        }
@@ -219,8 +219,8 @@ int32_t macsim_read_header(GenericReader_T* genreader, int32_t justcount)
 	uint32_t      nb_ext_info;
 	uint32_t      EI_chaine=0;
 	uint32_t      EI_unit=0;
-	TSP_sample_symbol_info_t *ssi;
-	TSP_sample_symbol_extended_info_t *ssei;
+	TSP_sample_symbol_info_t *ssi=NULL;
+	TSP_sample_symbol_extended_info_t *ssei=NULL;
 		
 	if(NULL!=genreader->handler->file)
 	{
@@ -543,7 +543,7 @@ int32_t read_data_file(FILE *fic,char *data_var)
 
 	  if(!begin_data)
 	  {
-	    if(!isspace(caractere_lu))
+	    if(!isspace((int)caractere_lu))
 	    {
 	      begin_data=1;
 	      data_var[i]=caractere_lu;
@@ -553,7 +553,7 @@ int32_t read_data_file(FILE *fic,char *data_var)
 	  }
 	  else
 	  {
-	    if(isspace(caractere_lu))
+	    if(isspace((int)caractere_lu))
 	    {
 	      if(CARACTERE_BLANC!=caractere_lu)
 	      {

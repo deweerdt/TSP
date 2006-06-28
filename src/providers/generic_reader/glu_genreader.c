@@ -1,6 +1,6 @@
 /*
 
-$Id: glu_genreader.c,v 1.7 2006-05-05 14:24:56 erk Exp $
+$Id: glu_genreader.c,v 1.8 2006-06-28 13:00:48 erk Exp $
 
 -----------------------------------------------------------------------
  
@@ -176,8 +176,8 @@ GENREADER_GLU_get_instance(GLU_handle_t* this,
   
   int  opt_ok=1;
   char c_opt;
-  char * input_filename;
-  char * format_file;
+  char * input_filename=NULL;
+  char * format_file=NULL;
   FmtHandler_T* fmt_handler;
   GenericReader_T* genreader;
   GLU_handle_t*    new_glu;
