@@ -223,4 +223,5 @@ V-0.8.0: Creation 09/06/2006    tag TSP_0_8_0
 V-0.8.x: Creation ??/??/2006    tag TSP_0_8_x
 	- XML-RPC command channel in mainstream                 - FredD
         - Change build system from GNU Autotools to CMake       - FredD
-        -
+        - Applyed Patches:
+           patch #5208 : V-0.8 doesn't compile under Solaris 2.8
