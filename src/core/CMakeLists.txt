@@ -119,10 +119,6 @@ IF(BUILD_PROVIDER)
 	rpc/tsp_server
 	rpc/tsp_rpc_confprogid)
 
-	SET(PROVIDER_LIB_SRCS
-	${PROVIDER_LIB_SRCS}
-	${RPCGEN_OUTPUT_SRV})
-
 	ADD_LIBRARY(tsp_provider ${PROVIDER_LIB_SRCS})
 
 ENDIF(BUILD_PROVIDER)
