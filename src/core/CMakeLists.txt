@@ -27,12 +27,14 @@ ADD_DEPENDENCIES(tsp_common tsp_consumer)
 
 SET(RPCGEN_OUTPUT_CNLT
 ${CMAKE_CURRENT_BINARY_DIR}/rpc/tsp_rpc_clnt
-${CMAKE_CURRENT_BINARY_DIR}/rpc/tsp_rpc_xdr)
+${CMAKE_CURRENT_BINARY_DIR}/rpc/tsp_rpc_xdr
+${CMAKE_CURRENT_BINARY_DIR}/rpc/tsp_rpc.h)
 
 
 SET(RPCGEN_OUTPUT_SRV
 ${CMAKE_CURRENT_BINARY_DIR}/rpc/tsp_rpc_svc.c
-${CMAKE_CURRENT_BINARY_DIR}/rpc/tsp_rpc_xdr.c)
+${CMAKE_CURRENT_BINARY_DIR}/rpc/tsp_rpc_xdr.c
+${CMAKE_CURRENT_BINARY_DIR}/rpc/tsp_rpc.h)
 
 SET(RPCGEN_OUTPUT
 ${RPCGEN_OUTPUT_CNLT}
