@@ -7,7 +7,7 @@ tsp_request_information
 tsp_request_filtered_information
 tsp_request_extended_information)
 
-INCLUDE_DIRECTORIES(.)
+INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/src/consumers/generic)
 
 ADD_CUSTOM_COMMAND(OUTPUT ${GENERIC_SCRIPTS}
 COMMAND sh -c 'for i in ${GENERIC_SCRIPTS}; do echo $i; done')

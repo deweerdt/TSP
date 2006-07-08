@@ -1,7 +1,7 @@
 SET(LIBGTK1.2_SRC
 gtk/gtkdatabox.c)
 
-INCLUDE_DIRECTORIES(.)
+INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/external/gtk-1.2/)
 
 ADD_LIBRARY(gtk_1.2_utils ${LIBGTK1.2_SRC})
 
