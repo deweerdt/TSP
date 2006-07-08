@@ -5,16 +5,22 @@ RPC=NONE
 XINC    = tsp_hash.h
 
 
-SOURCES = \
+SOURCES1 = \
 	tsp_hash.c
 
-OBJECTS=$(SOURCES:%.c=$(DIROBJ)/%.o) 
+
+SOURCES2 = \
+	tsp_hash.c \
+	tsp_hash_main.c
+
+OBJECTS1=$(SOURCES1:%.c=$(DIROBJ)/%.o) 
+OBJECTS2=$(SOURCES2:%.c=$(DIROBJ)/%.o) 
 
 TARGET1=$(DIRLIB)/libtsp_util.a
 TARGET2=$(DIRBIN)/tsp_hash_dump
 TARGET3=$(DIRBIN)/tsp_check_host_and_ip
 
-TARGETS=$(TARGET2) $(TARGET3)
+TARGETS=$(TARGET1) $(TARGET2) $(TARGET3) 
 
 # -----------------------------------------------------------
 # No label all:: because it's in Makeparams and calls build::	
@@ -22,12 +28,9 @@ TARGETS=$(TARGET2) $(TARGET3)
 # -----------------------------------------------------------
 
 ifneq (${TSP_TARGET},vxworks)
-build:: $(TARGETS) $(TARGET1)($(OBJECTS))
+build:: $(TARGET3) $(TARGET2)($(OBJECTS2)) $(TARGET1)($(OBJECTS1))
 	$(MAKE) export_include
 
-$(TARGET2): tsp_hash.c
-	@echo "@@@ Specific Linking  $(TARGET2) ..."
-	$(LINK.c) -DMAIN $< -o $(TARGET2)
 
 destroy:: remove_include
 	$(RM) $(TARGETS) $(OBJECTS)
