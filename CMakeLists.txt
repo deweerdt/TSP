@@ -136,9 +136,9 @@ ENDIF (XML2_CONFIG_PROGRAM)
 
 ################ FUSE Check ####################
 MESSAGE(STATUS "Looking for FUSE headers ...")
-FIND_PATH(FUSE_INCLUDE
-  NAMES fuse.h 
-  PATHS /usr/include /usr/local/include
+FIND_PATH(FUSE_INCLUDE 
+  fuse.h 
+  /usr/include /usr/local/include
   DOC "The FUSE header")
 IF(FUSE_INCLUDE)
 	MESSAGE(STATUS "Looking for FUSE headers - found : ${FUSE_INCLUDE}")
@@ -147,9 +147,8 @@ ELSE(FUSE_INCLUDE)
 ENDIF(FUSE_INCLUDE)
 
 FIND_PATH(XATTR_INCLUDE
-  NAMES xattr.h 
-  PATH_SUFFIXES attr
-  PATHS /usr/include /usr/local/include
+  xattr.h 
+  /usr/include/attr /usr/local/include/attr
   DOC "The xattr header")
 
 IF(XATTR_INCLUDE)
