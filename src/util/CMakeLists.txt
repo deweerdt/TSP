@@ -1,1 +1,10 @@
-SUBDIRS(libpages libutil libres libcalc libbb libtspcfg)
+
+IF (XML2_FOUND)
+  ADD_SUBDIRECTORY(libpages)
+  ADD_SUBDIRECTORY(libtspcfg)
+ENDIF (XML2_FOUND)
+
+ADD_SUBDIRECTORY(libutil)
+ADD_SUBDIRECTORY(libres)
+ADD_SUBDIRECTORY(libcalc)
+ADD_SUBDIRECTORY(libbb)

@@ -73,3 +73,11 @@ TODO list:
 ==========
 - look in src/jcore/TODO
 
+=============
+Build system
+=============
+- improve usage of CMake
+- see if we can share/develop our
+  FindXXX.cmake / UseXXX.cmake with KDE
+  http://websvn.kde.org/trunk/KDE/kdelibs/cmake/modules/
+  http://websvn.kde.org/trunk/KDE/*/cmake/modules

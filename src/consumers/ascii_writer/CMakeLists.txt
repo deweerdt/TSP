@@ -1,4 +1,4 @@
-ADD_DEFINITIONS(-DYY_NO_UNPUT ${XML2_FLAGS})
+ADD_DEFINITIONS(-DYY_NO_UNPUT ${XML2_CFLAGS})
 SET(ASCII_SRC
 tsp_ascii_writer.c
 tsp_ascii_writer_main.c
@@ -35,5 +35,5 @@ ADD_EXECUTABLE(tsp_ascii_writer ${ASCII_SRC})
 ADD_LIBRARY(tsp_ascii_writer ${ASCII_SRC})
 	
 TARGET_LINK_LIBRARIES(tsp_ascii_writer tsp_consumer tsp_common tsp_services
-pthread tspcfg ${XML2_LIBS})
+pthread tspcfg ${XML2_LIBRARY})
 

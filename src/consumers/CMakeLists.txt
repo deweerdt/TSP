@@ -1,6 +1,26 @@
-SUBDIRS(Visu3D ascii_writer
-gdisp gdisp+
-generic res_writer
-stdout stdout_callback
-test_group tspfs
-tutorial)
+
+## Add compilable consumer sub-directories
+
+ADD_SUBDIRECTORY(generic)
+ADD_SUBDIRECTORY(stdout)
+ADD_SUBDIRECTORY(stdout_callback)
+ADD_SUBDIRECTORY(test_group)
+ADD_SUBDIRECTORY(tutorial)
+
+IF (FUSE_FOUND)
+  ADD_SUBDIRECTORY(tspfs)
+ENDIF (FUSE_FOUND)
+
+ADD_SUBDIRECTORY(ascii_writer)
+ADD_SUBDIRECTORY(res_writer)
+
+IF (GTK_FOUND)
+  ADD_SUBDIRECTORY(gdisp)
+  ADD_SUBDIRECTORY(gdisp+)
+ENDIF (GTK_FOUND)
+
+IF (OPENGL_FOUND AND OPENGL_GLU_FOUND AND GLUT_FOUND)
+  ADD_SUBDIRECTORY(Visu3D)
+ELSE (OPENGL_FOUND AND OPENGL_GLU_FOUND AND GLUT_FOUND)
+  MESSAGE("Cannot build Visu3D some lib is missing")
+ENDIF (OPENGL_FOUND AND OPENGL_GLU_FOUND AND GLUT_FOUND)

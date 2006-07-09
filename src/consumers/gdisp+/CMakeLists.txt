@@ -24,9 +24,9 @@ ENDIF(USABLE_OPENGL)
 
 ADD_EXECUTABLE(targa ${TARGA_SRC})
 
-ADD_DEFINITIONS(${GTK_FLAGS})
-ADD_DEFINITIONS(${XML2_FLAGS})
-TARGET_LINK_LIBRARIES(targa ${XML2_LIBS} ${GTK_LIBS} tsp_consumer tsp_common tsp_services
+ADD_DEFINITIONS(${GTK_CFLAGS})
+ADD_DEFINITIONS(${XML2_CFLAGS})
+TARGET_LINK_LIBRARIES(targa ${XML2_LIBRARY} ${GTK_LIBRARY} tsp_consumer tsp_common tsp_services
 tsp_util gtk_1.2_utils)
 ADD_DEPENDENCIES(targa tsp_consumer tsp_common tsp_services tsp_util
 gtk_1.2_utils)

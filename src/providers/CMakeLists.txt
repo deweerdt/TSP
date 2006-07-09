@@ -1,7 +1,9 @@
-SUBDIRS(
-bb_provider
-#generic_reader
-#res_reader rt_stub
-#stub vxstub
-)
+
+ADD_SUBDIRECTORY(bb_provider)
+ADD_SUBDIRECTORY(generic_reader)
+ADD_SUBDIRECTORY(res_reader)
+ADD_SUBDIRECTORY(rt_stub)
+ADD_SUBDIRECTORY(stub)
+ADD_SUBDIRECTORY(vxstub)
+
 
