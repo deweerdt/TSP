@@ -2,9 +2,9 @@
 # Services library
 #
 SET(SERVICES_LIB_SRCS
-${SERVICES_LIB_SRCS}
-misc_utils/tsp_time
-misc_utils/tsp_mtgprof)
+  ${SERVICES_LIB_SRCS}
+  misc_utils/tsp_time
+  misc_utils/tsp_mtgprof)
 
 ADD_LIBRARY(tsp_services ${SERVICES_LIB_SRCS})
 
@@ -12,67 +12,62 @@ ADD_LIBRARY(tsp_services ${SERVICES_LIB_SRCS})
 # Common library
 #
 SET(COMMON_LIB_SRCS
-${COMMON_LIB_SRCS}
-common/tsp_common
-common/tsp_common_request
-common/tsp_common_ssi
-common/tsp_common_ssei
-common/tsp_common_as
-common/tsp_common_status
-common/tsp_encoder
-common/tsp_decoder)
+  ${COMMON_LIB_SRCS}
+  common/tsp_common
+  common/tsp_common_request
+  common/tsp_common_ssi
+  common/tsp_common_ssei
+  common/tsp_common_as
+  common/tsp_common_status
+  common/tsp_encoder
+  common/tsp_decoder)
 
 ADD_LIBRARY(tsp_common ${COMMON_LIB_SRCS})
 ADD_DEPENDENCIES(tsp_common tsp_consumer)
 
 SET(RPCGEN_OUTPUT_CNLT
-${CMAKE_CURRENT_BINARY_DIR}/rpc/tsp_rpc_clnt
-${CMAKE_CURRENT_BINARY_DIR}/rpc/tsp_rpc_xdr
-${CMAKE_CURRENT_BINARY_DIR}/rpc/tsp_rpc.h)
-
+  ${CMAKE_CURRENT_BINARY_DIR}/rpc/tsp_rpc_clnt
+  ${CMAKE_CURRENT_BINARY_DIR}/rpc/tsp_rpc_xdr
+  ${CMAKE_CURRENT_BINARY_DIR}/rpc/tsp_rpc.h)
 
 SET(RPCGEN_OUTPUT_SRV
-${CMAKE_CURRENT_BINARY_DIR}/rpc/tsp_rpc_svc.c
-${CMAKE_CURRENT_BINARY_DIR}/rpc/tsp_rpc_xdr.c
-${CMAKE_CURRENT_BINARY_DIR}/rpc/tsp_rpc.h)
+  ${CMAKE_CURRENT_BINARY_DIR}/rpc/tsp_rpc_svc.c
+  ${CMAKE_CURRENT_BINARY_DIR}/rpc/tsp_rpc_xdr.c
+  ${CMAKE_CURRENT_BINARY_DIR}/rpc/tsp_rpc.h)
 
 SET(RPCGEN_OUTPUT
-${RPCGEN_OUTPUT_CNLT}
-${RPCGEN_OUTPUT_SRV})
+  ${RPCGEN_OUTPUT_CNLT}
+  ${RPCGEN_OUTPUT_SRV})
 
-#Generate tsp_prjcfg header
-ADD_CUSTOM_COMMAND(
-OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/include/tsp_prjcfg.h
-COMMAND sed -e 's/__PACKAGE_VERSION__/${PACKAGE_VERSION}/g'
-include/tsp_prjcfg.h.in > ${CMAKE_CURRENT_BINARY_DIR}/include/tsp_prjcfg.h
-)
+# Generate tsp_prjcfg header
+CONFIGURE_FILE(include/tsp_prjcfg.h.in ${CMAKE_CURRENT_BINARY_DIR}/include/tsp_prjcfg.h)
 
 #Exec rpcgen
 SET(RPCGEN "rpcgen")
 SET(RPC "rpc/tsp_rpc")
 ADD_CUSTOM_COMMAND(
-OUTPUT 
-${CMAKE_CURRENT_BINARY_DIR}/rpc/tsp_rpc_svc.c 
-COMMAND ${RPCGEN} -N -C -m ${RPC}.x >> ${RPC}_svc.c
-DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/include/tsp_prjcfg.h)
+  OUTPUT 
+  ${CMAKE_CURRENT_BINARY_DIR}/rpc/tsp_rpc_svc.c 
+  COMMAND ${RPCGEN} -N -C -m ${RPC}.x >> ${RPC}_svc.c
+  DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/include/tsp_prjcfg.h)
 
 ADD_CUSTOM_COMMAND(
-OUTPUT 
-${CMAKE_CURRENT_BINARY_DIR}/rpc/tsp_rpc_clnt.c 
-COMMAND ${RPCGEN} -N -C -l ${RPC}.x > ${RPC}_clnt.c
-DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/include/tsp_prjcfg.h)
+  OUTPUT 
+  ${CMAKE_CURRENT_BINARY_DIR}/rpc/tsp_rpc_clnt.c 
+  COMMAND ${RPCGEN} -N -C -l ${RPC}.x > ${RPC}_clnt.c
+  DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/include/tsp_prjcfg.h)
 
 ADD_CUSTOM_COMMAND(
-OUTPUT 
-${CMAKE_CURRENT_BINARY_DIR}/rpc/tsp_rpc_xdr.c
-COMMAND ${RPCGEN} -N -C -c ${RPC}.x > ${RPC}_xdr.c
-DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/include/tsp_prjcfg.h)
+  OUTPUT 
+  ${CMAKE_CURRENT_BINARY_DIR}/rpc/tsp_rpc_xdr.c
+  COMMAND ${RPCGEN} -N -C -c ${RPC}.x > ${RPC}_xdr.c
+  DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/include/tsp_prjcfg.h)
 
 ADD_CUSTOM_COMMAND(
-OUTPUT 
-${CMAKE_CURRENT_BINARY_DIR}/rpc/tsp_rpc.h
-COMMAND ${RPCGEN} -N -C -h ${RPC}.x > ${RPC}.h
-DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/include/tsp_prjcfg.h)
+  OUTPUT 
+  ${CMAKE_CURRENT_BINARY_DIR}/rpc/tsp_rpc.h
+  COMMAND ${RPCGEN} -N -C -h ${RPC}.x > ${RPC}.h
+  DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/include/tsp_prjcfg.h)
 
 #
 #Consumer library
