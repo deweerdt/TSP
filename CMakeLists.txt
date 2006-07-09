@@ -134,6 +134,50 @@ ELSE (XML2_CONFIG_PROGRAM)
   MESSAGE(STATUS "Looking for xml2-config - NOT found") 
 ENDIF (XML2_CONFIG_PROGRAM)
 
+################ FUSE Check ####################
+MESSAGE(STATUS "Looking for FUSE headers ...")
+FIND_PATH(FUSE_INCLUDE
+  NAMES fuse.h 
+  PATHS /usr/include /usr/local/include
+  DOC "The FUSE header")
+IF(FUSE_INCLUDE)
+	MESSAGE(STATUS "Looking for FUSE headers - found : ${FUSE_INCLUDE}")
+ELSE(FUSE_INCLUDE)
+	MESSAGE(STATUS "Looking for FUSE headers - NOT found")
+ENDIF(FUSE_INCLUDE)
+
+FIND_PATH(XATTR_INCLUDE
+  NAMES xattr.h 
+  PATH_SUFFIXES attr
+  PATHS /usr/include /usr/local/include
+  DOC "The xattr header")
+
+IF(XATTR_INCLUDE)
+	MESSAGE(STATUS "Looking for XATTR headers - found : ${XATTR_INCLUDE}")
+ELSE(XATTR_INCLUDE)
+	MESSAGE(STATUS "Looking for XATTR headers - NOT found")
+ENDIF(XATTR_INCLUDE)
+
+MESSAGE(STATUS "Looking for FUSE library ...")
+FIND_LIBRARY(FUSE_LIBRARY
+  NAMES fuse 
+  PATHS /usr/lib /usr/local/lib
+  DOC "The FUSE library")
+
+IF(FUSE_LIBRARY)
+	MESSAGE(STATUS "Looking for FUSE library - found : ${FUSE_LIBRARY}")
+ELSE(FUSE_LIBRARY)
+	MESSAGE(STATUS "Looking for FUSE library - NOT found")
+ENDIF(FUSE_LIBRARY)
+
+IF(FUSE_INCLUDE AND XATTR_INCLUDE AND FUSE_LIBRARY)
+	SET(FUSE_FOUND "YES")
+	MESSAGE(STATUS "FUSE consumer enabled")
+ELSE(FUSE_INCLUDE AND XATTR_INCLUDE AND FUSE_LIBRARY)
+	SET(FUSE_FOUND "NO")
+	MESSAGE(STATUS "FUSE consumer disabled")
+ENDIF(FUSE_INCLUDE AND XATTR_INCLUDE AND FUSE_LIBRARY)
+
 ################ BUILD related config ############################
 IF (NOT CMAKE_BUILD_TYPE)
  SET(CMAKE_BUILD_TYPE "Debug")
