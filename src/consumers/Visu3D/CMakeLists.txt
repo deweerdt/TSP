@@ -5,6 +5,6 @@ ENDIF(GLUT_FOUND)
 
 ADD_EXECUTABLE(Visu3D ${VISU3D_SRC})
 	
-TARGET_LINK_LIBRARIES(Visu3D m GL GLU glut X11 Xmu tsp_consumer tsp_common tsp_services)
+TARGET_LINK_LIBRARIES(Visu3D m GL GLU glut X11 Xmu tsp_consumer tsp_common tsp_services pthread)
 
 ADD_DEPENDENCIES(Visu3D libtsp_common libtsp_consumer libtsp_services)
