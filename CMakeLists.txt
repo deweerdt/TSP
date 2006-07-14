@@ -16,8 +16,9 @@ OPTION(BUILD_CONSUMER
 OPTION(BUILD_API_DOC
   "Build doxygen documentation" ON)
 
-SET(PACKAGE_NAME "tsp")
-SET(PACKAGE_VERSION "0.8.cvs")
+SET(PACKAGE_NAME      "tsp")
+SET(PACKAGE_VERSION   "0.8.cvs")
+SET(PACKAGE_BUGREPORT "tsp@astrium.eads.net")
 
 MESSAGE(STATUS "Configuring ${PACKAGE_NAME} version ${PACKAGE_VERSION}")
 INCLUDE(CheckFunctionExists)
@@ -143,6 +144,19 @@ TSP_CONFIGURE_FILE_AUTOTOOLS_COMPAT(
 ## Now add subdirectories
 ADD_SUBDIRECTORY(external)
 ADD_SUBDIRECTORY(src)
-
 MESSAGE(STATUS "Configuring ${PACKAGE_NAME} version ${PACKAGE_VERSION}...Done.")
+
+MESSAGE("***********************************************************")
+MESSAGE("*  TSP has been successfully configured.                  *")
+MESSAGE("*  you should now do either                               *")
+MESSAGE("*     source src/scripts/tsp_dev.login  [csh/tcsh]        *")
+MESSAGE("*     . src/scripts/tsp_dev.login.sh    [sh/bash/zsh/...] *")
+MESSAGE("*  And then you may build with a simple                   *")
+MESSAGE("*     make                                                *")  
+MESSAGE("*                                                         *")
+MESSAGE("*  Enjoy TSP !!!                                          *")
+MESSAGE("*  The TSP Team -- ${PACKAGE_BUGREPORT}                   *")
+MESSAGE("***********************************************************")
+
+
 
