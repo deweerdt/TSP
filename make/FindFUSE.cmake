@@ -8,7 +8,6 @@ IF (NOT CMAKE_SYSTEM_NAME STREQUAL "Linux")
   MESSAGE(STATUS "FUSE not available on non-Linux platform")
   SET(FUSE_FOUND "NO")
 ELSE (NOT CMAKE_SYSTEM_NAME STREQUAL "Linux")
-  
   MESSAGE(STATUS "Looking for FUSE headers ...")
   FIND_PATH(FUSE_INCLUDE_DIR 
     fuse.h 
