@@ -40,7 +40,9 @@ SET(RPCGEN_OUTPUT
   ${RPCGEN_OUTPUT_SRV})
 
 # Generate tsp_prjcfg header
-CONFIGURE_FILE(include/tsp_prjcfg.h.in ${CMAKE_CURRENT_BINARY_DIR}/include/tsp_prjcfg.h)
+TSP_CONFIGURE_FILE_AUTOTOOLS_COMPAT(
+  include/tsp_prjcfg.h.in 
+  ${CMAKE_CURRENT_BINARY_DIR}/include/tsp_prjcfg.h)
 
 #Exec rpcgen
 SET(RPCGEN "rpcgen")
