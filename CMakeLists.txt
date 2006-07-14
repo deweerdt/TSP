@@ -114,6 +114,29 @@ ADD_CUSTOM_TARGET(cmake_clean
   COMMAND sh -c "rm -f  ${CMAKE_SOURCE_DIR}/CMakeCache.txt"
   COMMAND sh -c "${CMAKE_SOURCE_DIR}/src/scripts/purge_CMakeFiles.sh ${CMAKE_SOURCE_DIR}")
 
+################ TSP SDK related config ###########################
+SET(HOST_TARGET ${CMAKE_SYSTEM_NAME})
+SET(TSP_BASE  ${PROJECT_SOURCE_DIR})
+
+MARK_AS_ADVANCED(
+  HOST_TARGET
+  TSP_BASE)
+
+TSP_CONFIGURE_FILE_AUTOTOOLS_COMPAT(
+  src/scripts/tsp_dev.login.in
+  src/scripts/tsp_dev.login
+  @ONLY)
+
+TSP_CONFIGURE_FILE_AUTOTOOLS_COMPAT(
+  src/scripts/tsp_dev.login.sh.in 
+  src/scripts/tsp_dev.login.sh 
+  @ONLY)
+
+TSP_CONFIGURE_FILE_AUTOTOOLS_COMPAT(
+  src/scripts/tsp.pc.in
+  src/scripts/tsp.pc
+  @ONLY)
+
 ## Now add subdirectories
 ADD_SUBDIRECTORY(external)
 ADD_SUBDIRECTORY(src)
