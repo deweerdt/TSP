@@ -1,2 +1,2 @@
 #!/bin/sh
-bb_tools `basename $0` $@
+bb_tools  `basename $0` $@
