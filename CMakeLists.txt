@@ -2,6 +2,11 @@ PROJECT(TSP)
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.2)
 
+# Use TSP specific CMake modules first
+SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/make)
+# Load TSP Specific CMake macros (TSP_XSCRIPT, TSP_XINCLUDE)
+INCLUDE(TSPCMakeTools)
+
 OPTION(BUILD_PROVIDER
   "Build providers" ON)
 
@@ -39,6 +44,12 @@ INCLUDE_DIRECTORIES(
 
 #
 # Be nice use FIND PACKAGE for searching library
+# if there is no predefined CMake FindXXX module
+# for your needs please write one
+# and put it in {TSP_BASE}/make directory
+# see  
+# http://www.cmake.org/Wiki/CMake_HowToFindInstalledSoftware
+# for building your own CMake module
 #
 
 ################ Open GL Check ####################
@@ -71,143 +82,27 @@ ELSE (GLUT_FOUND)
 ENDIF (GLUT_FOUND)
 
 ################ LEX/YACC Check ####################
-MESSAGE(STATUS "Looking for lex...")
-FIND_PROGRAM(LEX_PROGRAM 
-  NAMES lex flex 
-  PATHS /usr/local/bin /usr/bin
-  DOC "A lex-compatible lexer generator")
-IF (LEX_PROGRAM) 
-  MESSAGE(STATUS "Looking for lex... - found lex is ${LEX_PROGRAM}")
-ELSE (LEX_PROGRAM) 
-  MESSAGE(STATUS "Looking for lex... - NOT found")
-ENDIF (LEX_PROGRAM) 
-
-MESSAGE(STATUS "Looking for yacc...")
-FIND_PROGRAM(YACC_PROGRAM 
-  NAMES yacc bison
-  PATHS /usr/local/bin /usr/bin
-  DOC "A yacc-compatible parser generator")
-IF (YACC_PROGRAM) 
-  MESSAGE(STATUS "Looking for yacc... - found yacc is ${YACC_PROGRAM}")
-ELSE (YACC_PROGRAM)
-  MESSAGE(STATUS "Looking for yacc... - NOT found")
-ENDIF (YACC_PROGRAM)
-
-
-MESSAGE(STATUS "Looking for gtk-config...")
-FIND_PROGRAM(GTK_CONFIG_PROGRAM 
-  NAMES gtk-config 
-  PATHS /usr/local/bin /usr/bin
-  DOC "The gtk+1.2 configuration tool")
-IF (GTK_CONFIG_PROGRAM) 
-  MESSAGE(STATUS "Looking for gtk-config - found : ${GTK_CONFIG_PROGRAM}")
-  SET(GTK_FOUND "YES")
-  SET(GTK_LIBRARY "`${GTK_CONFIG_PROGRAM} --libs`")
-  SET(GTK_CFLAGS "`${GTK_CONFIG_PROGRAM} --cflags`")
-ELSE (GTK_CONFIG_PROGRAM)
-  MESSAGE(STATUS "Looking for gtk-config - NOT found") 
-ENDIF (GTK_CONFIG_PROGRAM)
-
-MESSAGE(STATUS "Looking for xml2-config...")
-FIND_PROGRAM(XML2_CONFIG_PROGRAM
-  NAMES xml2-config 
-  PATHS /usr/local/bin /usr/bin
-  DOC "The libxml2 (www.xmlsoft.org) configuration tool")
-IF (XML2_CONFIG_PROGRAM)
-  MESSAGE(STATUS "Looking for xml2-config - found : ${XML2_CONFIG_PROGRAM}")
-  SET(XML2_FOUND "YES")
-  SET(XML2_LIBRARY "`${XML2_CONFIG_PROGRAM} --libs`")
-  SET(XML2_CFLAGS "`${XML2_CONFIG_PROGRAM} --cflags`")
-
-  EXEC_PROGRAM(${XML2_CONFIG_PROGRAM} 
-    ARGS "--version"
-    OUTPUT_VARIABLE XML2_VERSION)
-
-  SET(XML2_MINIMAL_VERSION "2.6.0")
-
-  IF (XML2_VERSION STRGREATER XML2_MINIMAL_VERSION)
-    MESSAGE(STATUS "Checking libxml2 version ${XML2_VERSION} > ${XML2_MINIMAL_VERSION}, XML Writer API Supported")
-    SET(XML2_XMLWRITER_SUPPORTED "YES")
-  ELSE (XML2_VERSION STRGREATER XML2_MINIMAL_VERSION)
-    MESSAGE(STATUS "Checking libxml2 version ${XML2_VERSION} < ${XML2_MINIMAL_VERSION}, XML Writer API NOT Supported")
-    SET(XML2_XMLWRITER_SUPPORTED "NO")
-  ENDIF (XML2_VERSION STRGREATER XML2_MINIMAL_VERSION)
-ELSE (XML2_CONFIG_PROGRAM)
-  SET(XML2_FOUND "NO")
-  MESSAGE(STATUS "Looking for xml2-config - NOT found") 
-ENDIF (XML2_CONFIG_PROGRAM)
+FIND_PACKAGE(LexYacc)
+################ GTK+1 Check ####################
+FIND_PACKAGE(GTK)
+################ XML2 Check ####################
+FIND_PACKAGE(XML2)
 
 ################ FUSE Check ####################
-MESSAGE(STATUS "Looking for FUSE headers ...")
-FIND_PATH(FUSE_INCLUDE 
-  fuse.h 
-  /usr/include /usr/local/include
-  DOC "The FUSE header")
-IF(FUSE_INCLUDE)
-	MESSAGE(STATUS "Looking for FUSE headers - found : ${FUSE_INCLUDE}")
-ELSE(FUSE_INCLUDE)
-	MESSAGE(STATUS "Looking for FUSE headers - NOT found")
-ENDIF(FUSE_INCLUDE)
-
-FIND_PATH(XATTR_INCLUDE
-  xattr.h 
-  /usr/include/attr /usr/local/include/attr
-  DOC "The xattr header")
-
-IF(XATTR_INCLUDE)
-	MESSAGE(STATUS "Looking for XATTR headers - found : ${XATTR_INCLUDE}")
-ELSE(XATTR_INCLUDE)
-	MESSAGE(STATUS "Looking for XATTR headers - NOT found")
-ENDIF(XATTR_INCLUDE)
-
-MESSAGE(STATUS "Looking for FUSE library ...")
-FIND_LIBRARY(FUSE_LIBRARY
-  NAMES fuse 
-  PATHS /usr/lib /usr/local/lib
-  DOC "The FUSE library")
-
-IF(FUSE_LIBRARY)
-	MESSAGE(STATUS "Looking for FUSE library - found : ${FUSE_LIBRARY}")
-ELSE(FUSE_LIBRARY)
-	MESSAGE(STATUS "Looking for FUSE library - NOT found")
-ENDIF(FUSE_LIBRARY)
-
-IF(FUSE_INCLUDE AND XATTR_INCLUDE AND FUSE_LIBRARY)
-	SET(FUSE_FOUND "YES")
-	MESSAGE(STATUS "FUSE consumer enabled")
-ELSE(FUSE_INCLUDE AND XATTR_INCLUDE AND FUSE_LIBRARY)
-	SET(FUSE_FOUND "NO")
-	MESSAGE(STATUS "FUSE consumer disabled")
-ENDIF(FUSE_INCLUDE AND XATTR_INCLUDE AND FUSE_LIBRARY)
+FIND_PACKAGE(FUSE)
+IF(FUSE_FOUND)
+  MESSAGE(STATUS "FUSE consumer enabled")
+ELSE(FUSE_FOUND)
+  MESSAGE(STATUS "FUSE consumer disabled")
+ENDIF(FUSE_FOUND)
 
 ################ BUILD related config ############################
 IF (NOT CMAKE_BUILD_TYPE)
  SET(CMAKE_BUILD_TYPE "Debug")
 ENDIF (NOT CMAKE_BUILD_TYPE)
 
-SET(LIBRARY_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/exec/${CMAKE_SYSTEM_NAME}/${CMAKE_BUILD_TYPE}/lib)
+SET(LIBRARY_OUTPUT_PATH    ${CMAKE_SOURCE_DIR}/exec/${CMAKE_SYSTEM_NAME}/${CMAKE_BUILD_TYPE}/lib)
 SET(EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/exec/${CMAKE_SYSTEM_NAME}/${CMAKE_BUILD_TYPE}/bin)
-
-SET(XSCRIPT_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/exec/${CMAKE_SYSTEM_NAME}/${CMAKE_BUILD_TYPE}/scripts)
-MAKE_DIRECTORY(${XSCRIPT_OUTPUT_PATH})
-# define TSP_XSCRIPT MACRO
-MACRO(TSP_XSCRIPT)
-  FOREACH(SCRIPT_FILE ${ARGV})
-    GET_FILENAME_COMPONENT(FN ${SCRIPT_FILE} NAME)
-    CONFIGURE_FILE(${SCRIPT_FILE} ${XSCRIPT_OUTPUT_PATH}/${FN} COPYONLY)
-  ENDFOREACH(SCRIPT_FILE)
-ENDMACRO(TSP_XSCRIPT)
-
-SET(XINCLUDE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/exec/${CMAKE_SYSTEM_NAME}/${CMAKE_BUILD_TYPE}/include)
-MAKE_DIRECTORY(${XINCLUDE_OUTPUT_PATH})
-# define TSP_XINCLUDE MACRO
-MACRO(TSP_XINCLUDE)
-  FOREACH(INCLUDE_FILE ${ARGV})
-    GET_FILENAME_COMPONENT(FN ${INCLUDE_FILE} NAME)
-    CONFIGURE_FILE(${INCLUDE_FILE} ${XINCLUDE_OUTPUT_PATH}/${FN} COPYONLY)
-  ENDFOREACH(INCLUDE_FILE)
-ENDMACRO(TSP_XINCLUDE)
-
 
 LINK_DIRECTORIES(${LIBRARY_OUTPUT_PATH})
 
@@ -215,8 +110,8 @@ LINK_DIRECTORIES(${LIBRARY_OUTPUT_PATH})
 SET(CMAKE_INSTALL_PREFIX /opt/${PACKAGE_NAME}-${PACKAGE_VERSION})
 
 ADD_CUSTOM_TARGET(cmake_clean
-  COMMAND sh -c "rm -rf  ${CMAKE_SOURCE_DIR}/exec"
-  COMMAND sh -c "rm -f ${CMAKE_SOURCE_DIR}/CMakeCache.txt"
+  COMMAND sh -c "rm -rf ${CMAKE_SOURCE_DIR}/exec"
+  COMMAND sh -c "rm -f  ${CMAKE_SOURCE_DIR}/CMakeCache.txt"
   COMMAND sh -c "${CMAKE_SOURCE_DIR}/src/scripts/purge_CMakeFiles.sh ${CMAKE_SOURCE_DIR}")
 
 ## Now add subdirectories
