@@ -14,7 +14,7 @@ OPTION(BUILD_CONSUMER
   "Build consumers" ON)
 
 OPTION(BUILD_API_DOC
-  "Build doxygen documentation" OFF)
+  "Build doxygen documentation" ON)
 
 SET(PACKAGE_NAME "tsp")
 SET(PACKAGE_VERSION "0.8.cvs")
