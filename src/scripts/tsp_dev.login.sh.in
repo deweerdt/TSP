@@ -24,7 +24,7 @@ export HOME_EXEC_CURRENT=$HOME_EXEC_BASE/current
 ##############################
 
 
-export PATH=${TSP_BASE}/src/scripts:${HOME_EXEC_CURRENT}/${HOST_ARCH}/debug/bin:${HOME_EXEC_CURRENT}/scripts:${PATH}
+export PATH=${TSP_BASE}/src/scripts:${HOME_EXEC_BASE}/${HOST_ARCH}/Debug/bin:${HOME_EXEC_BASE}/scripts:${HOME_EXEC_CURRENT}/${HOST_ARCH}/debug/bin:${HOME_EXEC_CURRENT}/scripts:${PATH}
 
 
 ##############################
