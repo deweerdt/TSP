@@ -35,21 +35,21 @@ SET(RPCGEN_OUTPUT_SRV
   ${CMAKE_CURRENT_BINARY_DIR}/rpc/tsp_rpc_xdr.c
   ${CMAKE_CURRENT_BINARY_DIR}/rpc/tsp_rpc.h)
 
-SET(RPCGEN_OUTPUT
-  ${RPCGEN_OUTPUT_CNLT}
-  ${RPCGEN_OUTPUT_SRV})
-
 # Generate tsp_prjcfg header
 TSP_CONFIGURE_FILE_AUTOTOOLS_COMPAT(
   include/tsp_prjcfg.h.in 
   ${CMAKE_CURRENT_BINARY_DIR}/include/tsp_prjcfg.h)
 
-#Exec rpcgen
+# FIXME Should write FindRPC CMake module
+# Exec rpcgen
 SET(RPCGEN "rpcgen")
 SET(RPC "rpc/tsp_rpc")
 ADD_CUSTOM_COMMAND(
   OUTPUT 
   ${CMAKE_CURRENT_BINARY_DIR}/rpc/tsp_rpc_svc.c 
+  COMMAND echo "#ifdef VXWORKS" > ${RPC}_svc.c
+  COMMAND echo "#define static extern" >> ${RPC}_svc.c
+  COMMAND echo "#endif /* !VXWORKS */" >> ${RPC}_svc.c
   COMMAND ${RPCGEN} -N -C -m ${RPC}.x >> ${RPC}_svc.c
   DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/include/tsp_prjcfg.h)
 
