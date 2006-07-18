@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/xmlrpc/tsp_xmlrpc_server.c,v 1.5 2006-05-03 21:16:38 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/xmlrpc/tsp_xmlrpc_server.c,v 1.6 2006-07-18 23:59:19 sgalles Exp $
 
 -----------------------------------------------------------------------
 
@@ -35,27 +35,33 @@ Purpose   :
 -----------------------------------------------------------------------
 */
 
-#include "tsp_sys_headers.h"
-
-#include <string.h>
+#include <rpc/rpc.h>
 #include <netdb.h>
+#include <rpc/pmap_clnt.h>
 #include <stdio.h>
-#include <unistd.h>
+#include <unistd.h> 
 
-#include <xmlrpc.h>
-#include <xmlrpc_abyss.h>
-#include <xmlrpc_server_abyss.h>
-
+#include <tsp_sys_headers.h>
 #include <tsp_glu.h>
 /* FIXME RP : beurk, RPC is compiled before CTRL could export this include, how sould I call Request Manager and GLU then ? */
 #include "../ctrl/tsp_provider.h"
 #include "../ctrl/tsp_request_handler.h"
+#include "tsp_rpc.h"
+
+
+#include <string.h>
+#include <xmlrpc.h>
+#include <xmlrpc_server_abyss.h>
+
+/*#include "tsp_request_handler.h"*/
 
 
 #include "tsp_xmlrpc_util.h"
 #include "tsp_xmlrpc_server.h"
 #include "tsp_xmlrpc_config.h"
 
+/* same FIXME IDL <--> C dependency */
+#include "../common/tsp_common_macros.h"
 
 #define TSP_URL_MAXLENGTH 256
 #define TSP_FILECONF_MAXLENGTH 256
@@ -67,7 +73,12 @@ typedef struct {
   char config_file[TSP_FILECONF_MAXLENGTH];
 } TSP_xmlrpc_request_config_t;
 
-
+char *strdup(const char *s);
+char *GLU_get_server_name()
+{
+	static char ret[]="localhost";
+	return ret;
+}
 
 xmlrpc_value *tsp_provider_information_xmlrpc(xmlrpc_env *env, xmlrpc_value *param_array, void *user_data) {
   TSP_provider_info_t server_info;
@@ -83,7 +94,6 @@ xmlrpc_value * tsp_request_open_xmlrpc(xmlrpc_env *env, xmlrpc_value *param_arra
   TSP_answer_open_t ans_open;
   TSP_request_open_t req_open;
   xmlrpc_value *result;
-  int test;
 	
   STRACE_IO(("-->IN"));	
   
@@ -161,14 +171,12 @@ xmlrpc_value * tsp_request_information_xmlrpc (xmlrpc_env *env, xmlrpc_value *pa
   for (i=0; i < ans_sample.symbols.TSP_sample_symbol_info_list_t_len; i++) {
 	xmlrpc_value *symbol;
 
-	strcpy(ans_sample.symbols.TSP_sample_symbol_info_list_t_val[i].xdr_tsp_t, "");
-
-	symbol = xmlrpc_build_value(env, "{s:s,s:i,s:i,s:i,s:s,s:i,s:i,s:i}",
+	symbol = xmlrpc_build_value(env, "{s:s,s:i,s:i,s:i,s:i,s:i,s:i}",
 								"name", ans_sample.symbols.TSP_sample_symbol_info_list_t_val[i].name,
 								"provider_global_index", ans_sample.symbols.TSP_sample_symbol_info_list_t_val[i].provider_global_index,
 								"provider_group_index", ans_sample.symbols.TSP_sample_symbol_info_list_t_val[i].provider_group_index,
 								"provider_group_rank", ans_sample.symbols.TSP_sample_symbol_info_list_t_val[i].provider_group_rank,
-								"xdr_tsp_t", ans_sample.symbols.TSP_sample_symbol_info_list_t_val[i].xdr_tsp_t,
+								/*"xdr_tsp_t", ans_sample.symbols.TSP_sample_symbol_info_list_t_val[i].xdr_tsp_t,*/
 								"dimension", ans_sample.symbols.TSP_sample_symbol_info_list_t_val[i].dimension,
 								"period", ans_sample.symbols.TSP_sample_symbol_info_list_t_val[i].period,
 								"phase", ans_sample.symbols.TSP_sample_symbol_info_list_t_val[i].phase);
@@ -183,7 +191,6 @@ xmlrpc_value * tsp_request_sample_xmlrpc (xmlrpc_env *env, xmlrpc_value *param_a
 {
   static TSP_answer_sample_t ans_sample = TSP_AS_STATIC_INITIALIZER;
   TSP_request_sample_t *req_sample;
-  xmlrpc_value *xmlrpc_req_sample;
   xmlrpc_value *xmlrpc_ans_sample;
   xmlrpc_value *value;
   int i;
@@ -212,14 +219,13 @@ xmlrpc_value * tsp_request_sample_xmlrpc (xmlrpc_env *env, xmlrpc_value *param_a
   for (i=0; i < ans_sample.symbols.TSP_sample_symbol_info_list_t_len; i++) {
 	xmlrpc_value *symbol;
 
-	strcpy(ans_sample.symbols.TSP_sample_symbol_info_list_t_val[i].xdr_tsp_t, "");
 
-	symbol = xmlrpc_build_value(env, "{s:s,s:i,s:i,s:i,s:s,s:i,s:i,s:i}",
+	symbol = xmlrpc_build_value(env, "{s:s,s:i,s:i,s:i,s:i,s:i,s:i}",
 								"name", ans_sample.symbols.TSP_sample_symbol_info_list_t_val[i].name,
 								"provider_global_index", ans_sample.symbols.TSP_sample_symbol_info_list_t_val[i].provider_global_index,
 								"provider_group_index", ans_sample.symbols.TSP_sample_symbol_info_list_t_val[i].provider_group_index,
 								"provider_group_rank", ans_sample.symbols.TSP_sample_symbol_info_list_t_val[i].provider_group_rank,
-								"xdr_tsp_t", ans_sample.symbols.TSP_sample_symbol_info_list_t_val[i].xdr_tsp_t,
+								/* "xdr_tsp_t", ans_sample.symbols.TSP_sample_symbol_info_list_t_val[i].xdr_tsp_t, */
 								"dimension", ans_sample.symbols.TSP_sample_symbol_info_list_t_val[i].dimension,
 								"period", ans_sample.symbols.TSP_sample_symbol_info_list_t_val[i].period,
 								"phase", ans_sample.symbols.TSP_sample_symbol_info_list_t_val[i].phase);
@@ -297,7 +303,7 @@ int TSP_xmlrpc_request(TSP_provider_request_handler_t* this)
   this->url                = TSP_xmlrpc_request_url;
   this->tid                = (pthread_t)-1;
 
-  this->config_param       = calloc(1, sizeof(*this->config_param));
+  this->config_param       = calloc(1, sizeof(TSP_xmlrpc_request_config_t));    
 
   this->status             = TSP_RQH_STATUS_IDLE;
   return TRUE;

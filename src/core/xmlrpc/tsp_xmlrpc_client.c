@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/xmlrpc/Attic/tsp_xmlrpc_client.c,v 1.3 2006-02-07 21:10:41 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/xmlrpc/Attic/tsp_xmlrpc_client.c,v 1.4 2006-07-18 23:59:19 sgalles Exp $
 
 -----------------------------------------------------------------------
 
@@ -94,11 +94,6 @@ int TSP_remote_open_server( const char *protocol,
   (*server)->name = strdup(server_name);
   (*server)->url = (char *)malloc(TSP_MAX_URL_LENGTH);
   sprintf((*server)->url, "http://%s/RPC2", target_name);
-
-  if(strcmp(protocol, TSP_XMLRPC_PROTOCOL) != 0) {
-		  STRACE_ERROR(("Protocol %s not handled, use %s", protocol, TSP_XMLRPC_PROTOCOL));
-		  return FALSE;
-  } 
 
   /*  On recupere la chaine d'info du serveur) */
   server_info_t = tsp_provider_information(*server);
@@ -312,5 +307,22 @@ TSP_request_sample_destroy(const TSP_request_sample_destroy_t* req_sample_destro
 	
   return ans_sample_destroy;
 }
-
 	
+TSP_answer_sample_t * TSP_request_filtered_information(const TSP_request_information_t* req_info, int filter_kind, char* filter_string, TSP_server_t server)
+{
+    STRACE_ERROR(("TSP_request_filtered_information unimplemented in XMLRPC"));
+	return NULL;
+}
+
+int* TSP_request_async_sample_write(const TSP_async_sample_t* async_sample_write, TSP_server_t server)
+{
+    STRACE_ERROR(("TSP_request_async_sample_write unimplemented in XMLRPC"));
+	return NULL;
+}
+TSP_async_sample_t* TSP_request_async_sample_read(const TSP_async_sample_t* async_sample_read, 
+						  TSP_server_t server)
+{
+    STRACE_ERROR(("TSP_request_async_sample_read unimplemented in XMLRPC"));
+	return NULL;
+}
+

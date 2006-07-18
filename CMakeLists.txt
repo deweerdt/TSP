@@ -13,6 +13,9 @@ OPTION(BUILD_PROVIDER
 OPTION(BUILD_CONSUMER
   "Build consumers" ON)
 
+OPTION(BUILD_XMLRPC
+  "Build with XMLRPC support" OFF)
+
 OPTION(BUILD_API_DOC
   "Build doxygen documentation" ON)
 
@@ -35,6 +38,7 @@ INCLUDE_DIRECTORIES(
   ${CMAKE_SOURCE_DIR}/src/core/driver
   ${CMAKE_SOURCE_DIR}/src/core/common
   ${CMAKE_SOURCE_DIR}/src/core/rpc
+  ${CMAKE_SOURCE_DIR}/src/core/xmlrpc
   ${CMAKE_SOURCE_DIR}/src/core/misc_utils
   ${CMAKE_SOURCE_DIR}/src/util/libpages
   ${CMAKE_SOURCE_DIR}/src/util/libutil
@@ -96,6 +100,12 @@ IF(FUSE_FOUND)
 ELSE(FUSE_FOUND)
   MESSAGE(STATUS "FUSE consumer disabled")
 ENDIF(FUSE_FOUND)
+
+################ xmlrpc-c check ####################
+IF (BUILD_XMLRPC)
+    FIND_PACKAGE(XMLRPCC REQUIRED)
+    FIND_PACKAGE(libwww REQUIRED)
+ENDIF (BUILD_XMLRPC)
 
 ################ BUILD related config ############################
 IF (NOT CMAKE_BUILD_TYPE)

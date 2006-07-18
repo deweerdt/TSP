@@ -96,6 +96,18 @@ ENDIF(BUILD_CONSUMER)
 #Provider library
 #
 IF(BUILD_PROVIDER)
+
+    #XMLRPC
+    IF (BUILD_XMLRPC)
+        ADD_DEFINITIONS( ${XMLRPCC_CFLAGS} )        
+        SET(PROVIDER_LIB_SRCS
+            ${PROVIDER_LIB_SRCS}
+            xmlrpc/tsp_xmlrpc_server
+            xmlrpc/tsp_xmlrpc_util)	
+        ADD_DEFINITIONS(-DBUILD_XMLRPC)        
+    ENDIF (BUILD_XMLRPC)  
+      
+    # PROVIDER SRC
 	SET(PROVIDER_LIB_SRCS
 	${PROVIDER_LIB_SRCS}
 	ctrl/tsp_default_glu
@@ -115,7 +127,8 @@ IF(BUILD_PROVIDER)
 	${RPCGEN_OUTPUT_SRV}
 	rpc/tsp_server
 	rpc/tsp_rpc_confprogid)
-
+    
+    # PROVIDER LIB
 	ADD_LIBRARY(tsp_provider ${PROVIDER_LIB_SRCS})
 
 ENDIF(BUILD_PROVIDER)

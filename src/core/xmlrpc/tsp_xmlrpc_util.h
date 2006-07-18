@@ -16,14 +16,14 @@
 
 /* TSP => XMLRPC */
 
-xmlrpc_value* TSP_answer_sample_to_xmlrpc_value (const xmlrpc_env *env, const TSP_answer_sample_t *ans_sample);
-xmlrpc_value* TSP_request_sample_to_xmlrpc_value (const xmlrpc_env *env, const TSP_request_sample_t *req_sample);
+xmlrpc_value* TSP_answer_sample_to_xmlrpc_value (xmlrpc_env *env, TSP_answer_sample_t *ans_sample);
+xmlrpc_value* TSP_request_sample_to_xmlrpc_value (xmlrpc_env *env, TSP_request_sample_t *req_sample);
 
 /* XMLRPC => TSP */
 
-TSP_provider_info_t* xmlrpc_value_to_TSP_provider_info (const xmlrpc_env* env, const xmlrpc_value *xr_prov_info);
-TSP_answer_open_t * xmlrpc_value_to_TSP_answer_open (const xmlrpc_env *env, const xmlrpc_value *xr_ans_open);
-TSP_answer_sample_t* xmlrpc_value_to_TSP_answer_sample (const xmlrpc_env *env, const xmlrpc_value *array);
-TSP_request_sample_t* xmlrpc_value_to_TSP_request_sample (const xmlrpc_env *env, const xmlrpc_value *param_array);
+TSP_provider_info_t* xmlrpc_value_to_TSP_provider_info (xmlrpc_env* env, xmlrpc_value *xr_prov_info);
+TSP_answer_open_t * xmlrpc_value_to_TSP_answer_open (xmlrpc_env *env, xmlrpc_value *xr_ans_open);
+TSP_answer_sample_t* xmlrpc_value_to_TSP_answer_sample (xmlrpc_env *env, xmlrpc_value *array);
+TSP_request_sample_t* xmlrpc_value_to_TSP_request_sample (xmlrpc_env *env, xmlrpc_value *param_array);
 
 #endif /* _TSP_XMLRPC_UTIL_H_ */

@@ -7,9 +7,9 @@
  * TSP => XMLRPC 
  */
 
-TSP_answer_sample_destroy_t*
-TSP_answer_sample_destroy_to_xmlrpc_value(const xmlrpc_env *env,
-										  const TSP_answer_sample_destroy_t *ans_sample_destroy)
+xmlrpc_value*
+TSP_answer_sample_destroy_to_xmlrpc_value(xmlrpc_env *env,
+										  TSP_answer_sample_destroy_t *ans_sample_destroy)
 {
   xmlrpc_value* xr_ans_sample_destroy;
 
@@ -23,8 +23,8 @@ TSP_answer_sample_destroy_to_xmlrpc_value(const xmlrpc_env *env,
 }
 
 xmlrpc_value* 
-TSP_request_sample_to_xmlrpc_value (const xmlrpc_env *env, 
-									const TSP_request_sample_t *req_sample) 
+TSP_request_sample_to_xmlrpc_value (xmlrpc_env *env, 
+									TSP_request_sample_t *req_sample) 
 {
   xmlrpc_value *xr_req_sample, *xr_array;
   int i;
@@ -45,14 +45,12 @@ TSP_request_sample_to_xmlrpc_value (const xmlrpc_env *env,
   for (i=0; i < req_sample->symbols.TSP_sample_symbol_info_list_t_len; i++) {
 	xmlrpc_value *symbol;
 
-	strcpy(req_sample->symbols.TSP_sample_symbol_info_list_t_val[i].xdr_tsp_t, "");
-
-	symbol = xmlrpc_build_value(env, "{s:s,s:i,s:i,s:i,s:s,s:i,s:i,s:i}",
+	symbol = xmlrpc_build_value(env, "{s:s,s:i,s:i,s:i,s:i,s:i,s:i}",
 								"name", req_sample->symbols.TSP_sample_symbol_info_list_t_val[i].name,
 								"provider_global_index", req_sample->symbols.TSP_sample_symbol_info_list_t_val[i].provider_global_index,
 								"provider_group_index", req_sample->symbols.TSP_sample_symbol_info_list_t_val[i].provider_group_index,
 								"provider_group_rank", req_sample->symbols.TSP_sample_symbol_info_list_t_val[i].provider_group_rank,
-								"xdr_tsp_t", req_sample->symbols.TSP_sample_symbol_info_list_t_val[i].xdr_tsp_t,
+								/* "xdr_tsp_t", req_sample->symbols.TSP_sample_symbol_info_list_t_val[i].xdr_tsp_t, */
 								"dimension", req_sample->symbols.TSP_sample_symbol_info_list_t_val[i].dimension,
 								"period", req_sample->symbols.TSP_sample_symbol_info_list_t_val[i].period,
 								"phase", req_sample->symbols.TSP_sample_symbol_info_list_t_val[i].phase);
@@ -65,7 +63,7 @@ TSP_request_sample_to_xmlrpc_value (const xmlrpc_env *env,
 }
 
 xmlrpc_value* 
-TSP_answer_sample_init_to_xmlrpc_value (const xmlrpc_env *env, 
+TSP_answer_sample_init_to_xmlrpc_value (xmlrpc_env *env, 
 										TSP_answer_sample_init_t *ans_sample_init)
 {
   xmlrpc_value *xr_ans_sample_init;
@@ -80,7 +78,7 @@ TSP_answer_sample_init_to_xmlrpc_value (const xmlrpc_env *env,
 }
 
 xmlrpc_value* 
-TSP_request_sample_init_to_xmlrpc_value (const xmlrpc_env *env, 
+TSP_request_sample_init_to_xmlrpc_value (xmlrpc_env *env, 
 										 TSP_request_sample_init_t *req_sample_init)
 {
   xmlrpc_value *xr_req_sample_init;
@@ -98,12 +96,12 @@ TSP_request_sample_init_to_xmlrpc_value (const xmlrpc_env *env,
  */
 
 TSP_provider_info_t* 
-xmlrpc_value_to_TSP_provider_info (const xmlrpc_env* env, 
-								   const xmlrpc_value *xr_prov_info)
+xmlrpc_value_to_TSP_provider_info (xmlrpc_env* env, 
+								   xmlrpc_value *xr_prov_info)
 {
   TSP_provider_info_t *prov_info;
 
-  prov_info = (TSP_answer_open_t *)malloc(sizeof(*prov_info));
+  prov_info = (TSP_provider_info_t *)malloc(sizeof(*prov_info));
 
   if (prov_info != NULL) {
 	xmlrpc_parse_value(env, xr_prov_info, "{s:s,*}", "info", &prov_info->info);
@@ -116,8 +114,8 @@ xmlrpc_value_to_TSP_provider_info (const xmlrpc_env* env,
 }
 
 TSP_answer_open_t * 
-xmlrpc_value_to_TSP_answer_open (const xmlrpc_env *env, 
-								 const xmlrpc_value *xr_ans_open)
+xmlrpc_value_to_TSP_answer_open (xmlrpc_env *env, 
+								 xmlrpc_value *xr_ans_open)
 {
   TSP_answer_open_t *ans_open;
 
@@ -142,8 +140,8 @@ xmlrpc_value_to_TSP_answer_open (const xmlrpc_env *env,
 }
 
 TSP_answer_sample_t* 
-xmlrpc_value_to_TSP_answer_sample (const xmlrpc_env *env, 
-								   const xmlrpc_value *array)
+xmlrpc_value_to_TSP_answer_sample (xmlrpc_env *env, 
+								   xmlrpc_value *array)
 {
   TSP_answer_sample_t *ans_sample;
   xmlrpc_value *xr_ans_sample;
@@ -178,12 +176,12 @@ xmlrpc_value_to_TSP_answer_sample (const xmlrpc_env *env,
 
 	xmlrpc_array_read_item(env, array, i+1, &symbol);
 	  
-	xmlrpc_parse_value(env, symbol, "{s:s,s:i,s:i,s:i,s:s,s:i,s:i,s:i,*}",
+	xmlrpc_parse_value(env, symbol, "{s:s,s:i,s:i,s:i,s:i,s:i,s:i,*}",
 					   "name", &ans_sample->symbols.TSP_sample_symbol_info_list_t_val[i].name,
 					   "provider_global_index", &ans_sample->symbols.TSP_sample_symbol_info_list_t_val[i].provider_global_index,
 					   "provider_group_index", &ans_sample->symbols.TSP_sample_symbol_info_list_t_val[i].provider_group_index,
 					   "provider_group_rank", &ans_sample->symbols.TSP_sample_symbol_info_list_t_val[i].provider_group_rank,
-					   "xdr_tsp_t", &ans_sample->symbols.TSP_sample_symbol_info_list_t_val[i].xdr_tsp_t,
+					   /* "xdr_tsp_t", &ans_sample->symbols.TSP_sample_symbol_info_list_t_val[i].xdr_tsp_t, */
 					   "dimension", &ans_sample->symbols.TSP_sample_symbol_info_list_t_val[i].dimension,
 					   "period", &ans_sample->symbols.TSP_sample_symbol_info_list_t_val[i].period,
 					   "phase", &ans_sample->symbols.TSP_sample_symbol_info_list_t_val[i].phase);
@@ -200,8 +198,8 @@ xmlrpc_value_to_TSP_answer_sample (const xmlrpc_env *env,
 }
 
 TSP_request_sample_t* 
-xmlrpc_value_to_TSP_request_sample (const xmlrpc_env *env, 
-									const xmlrpc_value *param_array)
+xmlrpc_value_to_TSP_request_sample (xmlrpc_env *env, 
+									xmlrpc_value *param_array)
 {
   TSP_request_sample_t *req_sample;
   xmlrpc_value *xr_req_sample;
@@ -241,17 +239,25 @@ xmlrpc_value_to_TSP_request_sample (const xmlrpc_env *env,
 	
 	xmlrpc_array_read_item(env, param_array, i+1, &symbol);
 	  
-	xmlrpc_parse_value(env, symbol, "{s:s,s:i,s:i,s:i,s:s,s:i,s:i,s:i,*}",
+	xmlrpc_parse_value(env, symbol, "{s:s,s:i,s:i,s:i,s:i,s:i,s:i,*}",
 					   "name", &req_sample->symbols.TSP_sample_symbol_info_list_t_val[i].name,
 					   "provider_global_index", &req_sample->symbols.TSP_sample_symbol_info_list_t_val[i].provider_global_index,
 					   "provider_group_index", &req_sample->symbols.TSP_sample_symbol_info_list_t_val[i].provider_group_index,
 					   "provider_group_rank", &req_sample->symbols.TSP_sample_symbol_info_list_t_val[i].provider_group_rank,
-					   "xdr_tsp_t", &req_sample->symbols.TSP_sample_symbol_info_list_t_val[i].xdr_tsp_t,
+					   /* "xdr_tsp_t", &req_sample->symbols.TSP_sample_symbol_info_list_t_val[i].xdr_tsp_t, */
 					   "dimension", &req_sample->symbols.TSP_sample_symbol_info_list_t_val[i].dimension,
 					   "period", &req_sample->symbols.TSP_sample_symbol_info_list_t_val[i].period,
 					   "phase", &req_sample->symbols.TSP_sample_symbol_info_list_t_val[i].phase);
 	  
 	req_sample->symbols.TSP_sample_symbol_info_list_t_val[i].name = strdup(req_sample->symbols.TSP_sample_symbol_info_list_t_val[i].name);
+
+    /* FIXME, this is temporary, it allows the Ruby consumer to keep on working with float type*/
+    req_sample->symbols.TSP_sample_symbol_info_list_t_val[i].type=1;
+    req_sample->symbols.TSP_sample_symbol_info_list_t_val[i].dimension=1;
+    req_sample->symbols.TSP_sample_symbol_info_list_t_val[i].nelem=0;
+    req_sample->symbols.TSP_sample_symbol_info_list_t_val[i].offset=0;
+    /* FIXME, end*/
+    
 	/* Dispose of our result value. */
 	xmlrpc_DECREF(symbol);
   }
@@ -264,8 +270,8 @@ xmlrpc_value_to_TSP_request_sample (const xmlrpc_env *env,
 }
 
 TSP_answer_sample_init_t* 
-xmlrpc_value_to_TSP_answer_sample_init (const xmlrpc_env *env, 
-										const xmlrpc_value *param)
+xmlrpc_value_to_TSP_answer_sample_init (xmlrpc_env *env, 
+										xmlrpc_value *param)
 {
   TSP_answer_sample_init_t *ans_sample_init;
 
@@ -286,8 +292,8 @@ xmlrpc_value_to_TSP_answer_sample_init (const xmlrpc_env *env,
 
 
 TSP_request_sample_init_t* 
-xmlrpc_value_to_TSP_request_sample_init (const xmlrpc_env *env, 
-										 const xmlrpc_value *param)
+xmlrpc_value_to_TSP_request_sample_init (xmlrpc_env *env, 
+										 xmlrpc_value *param)
 {
   TSP_request_sample_init_t *req_sample_init;
 
@@ -303,8 +309,8 @@ xmlrpc_value_to_TSP_request_sample_init (const xmlrpc_env *env,
 }
 
 TSP_answer_sample_destroy_t*
-xmlrpc_value_to_TSP_answer_sample_destroy(const xmlrpc_env *env,
-										  const xmlrpc_value *xr_ans_sample_destroy)
+xmlrpc_value_to_TSP_answer_sample_destroy(xmlrpc_env *env,
+										  xmlrpc_value *xr_ans_sample_destroy)
 {
   TSP_answer_sample_destroy_t *ans_sample_destroy;
 
@@ -321,8 +327,8 @@ xmlrpc_value_to_TSP_answer_sample_destroy(const xmlrpc_env *env,
 }
 
 TSP_request_sample_destroy_t*
-xmlrpc_value_to_TSP_request_sample_destroy(const xmlrpc_env *env,
-										   const xmlrpc_value *xr_req_sample_destroy)
+xmlrpc_value_to_TSP_request_sample_destroy(xmlrpc_env *env,
+										   xmlrpc_value *xr_req_sample_destroy)
 {
   TSP_request_sample_destroy_t *req_sample_destroy;
 
