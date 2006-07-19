@@ -221,7 +221,10 @@ V-0.8.0: Creation 09/06/2006    tag TSP_0_8_0
                * bug #16430 : tsp_stub_server died prematurely
 
 V-0.8.x: Creation ??/??/2006    tag TSP_0_8_x
-	- XML-RPC command channel in mainstream                 - FredD
-        - Change build system from GNU Autotools to CMake       - FredD
+	- XML-RPC command channel in mainstream                 - FredD-->Caribou
+        - Update Rubytsp for multi-type, Array etc...           - Caribou
+        - Change build system from GNU Autotools to CMake       - FredD,Erk,Caribou
         - Applyed Patches:
-           patch #5208 : V-0.8 doesn't compile under Solaris 2.8
+           * patch #5208 : V-0.8 doesn't compile under Solaris 2.8 
+        - Bug Corrections 
+           * bug 
