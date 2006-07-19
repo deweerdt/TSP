@@ -1,6 +1,6 @@
 /*
 
-$Id: glue_stub.c,v 1.24 2006-05-03 21:15:04 erk Exp $
+$Id: glue_stub.c,v 1.25 2006-07-19 19:50:48 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -525,12 +525,12 @@ STUB_GLU_get_ssei_list_fromPGI(struct GLU_handle_t* this,
  	    TSP_EI_update(&(SSEI_list->TSP_sample_symbol_extended_info_list_t_val[i].info.TSP_extended_info_list_t_val[1]), "unit", "SI");
 	    TSP_EI_update(&(SSEI_list->TSP_sample_symbol_extended_info_list_t_val[i].info.TSP_extended_info_list_t_val[1]), "order", "1");
 	    break;
-	   case 1012:
-	     TSP_EIList_initialize(&(SSEI_list->TSP_sample_symbol_extended_info_list_t_val[i].info),2);
-	     TSP_EI_update(&(SSEI_list->TSP_sample_symbol_extended_info_list_t_val[i].info.TSP_extended_info_list_t_val[0]), "profile", "2*10");
-	     TSP_EI_update(&(SSEI_list->TSP_sample_symbol_extended_info_list_t_val[i].info.TSP_extended_info_list_t_val[1]), "unit", "None");
-	     TSP_EI_update(&(SSEI_list->TSP_sample_symbol_extended_info_list_t_val[i].info.TSP_extended_info_list_t_val[1]), "order", "2");
-	     break; 
+/* 	   case 1012: */
+/* 	     TSP_EIList_initialize(&(SSEI_list->TSP_sample_symbol_extended_info_list_t_val[i].info),2); */
+/* 	     TSP_EI_update(&(SSEI_list->TSP_sample_symbol_extended_info_list_t_val[i].info.TSP_extended_info_list_t_val[0]), "profile", "2*10"); */
+/* 	     TSP_EI_update(&(SSEI_list->TSP_sample_symbol_extended_info_list_t_val[i].info.TSP_extended_info_list_t_val[1]), "unit", "None"); */
+/* 	     TSP_EI_update(&(SSEI_list->TSP_sample_symbol_extended_info_list_t_val[i].info.TSP_extended_info_list_t_val[1]), "order", "2"); */
+/* 	     break;  */
 	  default:
 	    /* do not forget invalid > 1012 PGIs */
 	    SSEI_list->TSP_sample_symbol_extended_info_list_t_val[i].provider_global_index=-1;      
