@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_simple.h,v 1.7 2006-02-26 13:36:06 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_simple.h,v 1.8 2006-07-22 16:57:38 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -39,8 +39,8 @@ Purpose   : BlackBoard Idiom implementation
 
 #include <stdio.h>
 #include <pthread.h>
-#include <bb_utils.h>
-#include <bb_core.h>
+#include "bb_utils.h"
+#include "bb_core.h"
 
 pthread_cond_t  bb_simple_go_condvar;
 pthread_mutex_t bb_simple_go_mutex;

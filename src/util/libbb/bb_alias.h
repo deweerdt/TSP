@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_alias.h,v 1.2 2006-02-26 13:36:06 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_alias.h,v 1.3 2006-07-22 16:54:15 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -37,7 +37,7 @@ Purpose   : BlackBoard Idiom implementation
 #ifndef _BB_ALIAS_H_
 #define _BB_ALIAS_H_
 
-#include <bb_core.h>
+#include "bb_core.h"
 
 /** 
  * @addtogroup BBAliasLib 
