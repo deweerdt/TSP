@@ -7,10 +7,11 @@ a TSP enabled simulator using the tsp_bb_provider.
 
 If you want to try you may run
 
-bb_test -s (the faked simulator using a BlackBoard)
+bb_simu -s (the faked simulator using a BlackBoard)
 
 then run
 
 bb_tsp_provider
 
 then launch any tsp consumer
+
