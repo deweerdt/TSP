@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_utils.h,v 1.10 2006-04-25 21:09:08 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_utils.h,v 1.11 2006-07-22 16:59:16 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -47,20 +47,6 @@ Purpose   : Blackboard Idiom utilities
  * @ingroup BlackBoard
  * General utility functions for TSP BlackBoard.
  */
-
-/**
- * BlackBoard Log message level
- * @ingroup BBUtilsLib
- */
-typedef enum BB_LOG_LEVEL {
-  BB_LOG_ABORT,
-  BB_LOG_SEVERE,
-  BB_LOG_WARNING,
-  BB_LOG_INFO,
-  BB_LOG_CONFIG,
-  BB_LOG_FINE,
-  BB_LOG_FINER
-} BB_LOG_LEVEL_T;
 
 BEGIN_C_DECLS
 
@@ -160,19 +146,6 @@ bb_utils_ntok(const char* name);
  */
 int32_t
 bb_utils_convert_string2hexbuf(const char* string, unsigned char* buf, size_t buflen, int hexval);
-
-/**
- * Log message for BB Error.
- * This function may be replaced by a project specific function
- * which want to use BB with a unified log system.
- * The default implementation use TSP STRACE facility.
- * @param level IN, the log level.
- * @param modname IN, the module who sent the message.
- * @param fmt IN, format as in printf.
- * @return 0 on success, -1 on error.
- */
-int32_t 
-bb_logMsg(const BB_LOG_LEVEL_T level, const char* modname, char* fmt, ...);
 
 
 int32_t 
