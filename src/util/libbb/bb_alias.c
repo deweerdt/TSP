@@ -1,6 +1,6 @@
 /*
   
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_alias.c,v 1.2 2006-02-26 13:36:06 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_alias.c,v 1.3 2006-07-22 16:53:43 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -34,6 +34,7 @@ Purpose   : Blackboard (alias handling)
 
 -----------------------------------------------------------------------
  */
+
 #include <string.h>
 #include <stdlib.h>
 #include <sys/types.h>
@@ -42,9 +43,10 @@ Purpose   : Blackboard (alias handling)
 #include <assert.h>
 
 #include <tsp_abs_types.h>
-#include <bb_core.h>
-#include <bb_alias.h>
-#include <bb_utils.h>
+
+#include "bb_core.h"
+#include "bb_alias.h"
+#include "bb_utils.h"
 
 int32_t 
 bb_isalias(const S_BB_DATADESC_T* data_desc) {
@@ -56,12 +58,12 @@ int32_t
 bb_find_aliastack(volatile S_BB_T* bb,       
 		  S_BB_DATADESC_T* data_desc_stack, 
 		  int32_t* stack_max_size) {
+  int32_t retval             = 0;
+  int32_t current_stack_size = 1;
+
   assert(bb);
   assert(data_desc_stack);
   assert(stack_max_size);
-
-  int32_t retval             = 0;
-  int32_t current_stack_size = 1;
   
   while ((current_stack_size<(*stack_max_size)) &&
 	 bb_isalias(&data_desc_stack[current_stack_size-1])) {
@@ -235,7 +237,6 @@ bb_alias_increment_idxstack(S_BB_DATADESC_T * aliasstack, int32_t aliasstack_siz
 					
   int j = 0;
   int32_t indexstack_curr = indexstack_len-1;
-  int elemnt_found = 0;
   int32_t return_value = BB_NOK;
   
   while (j<aliasstack_size && return_value == BB_NOK){
