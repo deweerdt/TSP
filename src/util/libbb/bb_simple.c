@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_simple.c,v 1.8 2006-02-26 13:36:06 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_simple.c,v 1.9 2006-07-22 16:57:16 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -38,9 +38,10 @@ Purpose   : BlackBoard Idiom implementation
 #include <sys/msg.h>
 #include <string.h>
 
-#include <bb_utils.h>
-#include <bb_core.h>
-#include <bb_simple.h>
+#include "bb_utils.h"
+#include "bb_core.h"
+#include "bb_alias.h"
+#include "bb_simple.h"
 
 static int bb_simple_synchro_type = BB_SIMPLE_SYNCHRO_PROCESS;
 
@@ -174,7 +175,7 @@ void* bb_simple_alias_publish(S_BB_T* bb_simple,
      		  		target.name,
 	  		   	var_name);
 		  
-  		retval=bb_alias_publish( bb_simple,&alias,&target);
+  		retval=(void *)bb_alias_publish(bb_simple, &alias, &target);
   
   		if (retval == NULL) {
     		bb_logMsg(BB_LOG_SEVERE,"BlackBoard::bb_simple_alias_publish", 
@@ -207,7 +208,7 @@ bb_simple_synchro_config(int synchro_type) {
   return retcode;
 } /* end of bb_simple_synchro_config */
 
-int32_t 
+int32_t
 bb_simple_synchro_go(S_BB_T* bb_simple,int type_msg) {
   
   int32_t retcode;
@@ -252,24 +253,10 @@ bb_simple_synchro_wait(S_BB_T* bb_simple,int type_msg) {
 int32_t 
 bb_simple_synchro_verify(S_BB_T* bb_simple) {
   
-  int32_t retcode;
-  struct msqid_ds s_msgq_stat;
-
-  msgctl(bb_msg_id(bb_simple),
-	 IPC_STAT,
-	 &s_msgq_stat);
-  
-  if (s_msgq_stat.msg_qnum > 0) {
-    retcode = BB_NOK;
-    
-  } else {
-    retcode = BB_OK;
-  }  
-  
-  return retcode;
+  return bb_msgq_isalive(bb_simple);
 } /* end of bb_simple_synchro_verify */
 
-int32_t 
+ int32_t 
 bb_simple_thread_synchro_go(int msg_type) {
   
   int32_t retcode;
@@ -320,5 +307,4 @@ bb_simple_thread_synchro_wait(int msg_type) {
   
   return retcode;
 } /* end of bb_simple_synchro_wait */
-
 
