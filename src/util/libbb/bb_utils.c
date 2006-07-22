@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_utils.c,v 1.11 2006-02-26 13:36:06 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_utils.c,v 1.12 2006-07-22 16:58:39 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -172,37 +172,6 @@ bb_utils_convert_string2hexbuf(const char* string, unsigned char* buf, size_t bu
   }    
   return retval;
 }
-
-int32_t 
-bb_logMsg(const BB_LOG_LEVEL_T level, const char* who, char* fmt, ...) {
-  va_list args;
-  char    message[2048];
-
-  memset(message,0,2048);
-  va_start(args, fmt);
-  vsnprintf(message, 2048, fmt, args);
-  va_end(args);
-  
-  switch (level) {
-    
-  case BB_LOG_ABORT:
-  case BB_LOG_SEVERE:
-    STRACE_ERROR(("%s : %s",who,message));
-    break;
-  case BB_LOG_WARNING:
-    STRACE_WARNING(("%s : %s",who,message));
-    break;
-  case BB_LOG_INFO:
-  case BB_LOG_CONFIG:
-    STRACE_INFO(("%s : %s",who,message));
-    break;
-  case BB_LOG_FINE:
-  case BB_LOG_FINER:
-    STRACE_DEBUG(("%s : %s",who,message));
-
-  }
-  return 0;
-} /* end of bb_logMsg */
 
 int32_t 
 bb_utils_parseone_array(const char* provided_symname, 
