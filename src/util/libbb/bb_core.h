@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.h,v 1.21 2006-05-26 14:12:33 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.h,v 1.22 2006-07-22 17:07:15 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -34,30 +34,16 @@ Purpose   : BlackBoard Idiom implementation
 
 -----------------------------------------------------------------------
  */
+
 #ifndef _BB_H_
 #define _BB_H_
 
+#include <stdint.h>
+#include <inttypes.h>
+#include <stdarg.h>
 #include <stdio.h>
-#include <sys/sem.h>
+#include <sys/types.h>
 #include <tsp_abs_types.h>
-#if defined(__GNU_LIBRARY__) && !defined(_SEM_SEMUN_UNDEFINED)
-/* union semun is defined by including <sys/sem.h> */
-#else
-#ifdef _SEM_SEMUN_UNDEFINED
-#undef _SEM_SEMUN_UNDEFINED
-#endif
-/*
- * Union a definir et utiliser
- * pour les appels 'semop' SysV.
- */
-union semun {
-  int val;                           /* value for SETVAL */
-  struct semid_ds *buf;              /* buffer for IPC_STAT & IPC_SET */
-  unsigned short int *array;         /* array for GETALL & SETALL */
-  struct seminfo *__buf;             /* buffer for IPC_INFO */
-};
-#endif
-
 
 /**
  * @defgroup BlackBoard BlackBoard (BB)
@@ -159,6 +145,21 @@ union semun {
  */
 
 /**
+ * BlackBoard Log message level
+ * @ingroup BlackBoard
+ */
+typedef enum BB_LOG_LEVEL {
+  BB_LOG_ABORT,
+  BB_LOG_SEVERE,
+  BB_LOG_WARNING,
+  BB_LOG_INFO,
+  BB_LOG_CONFIG,
+  BB_LOG_FINE,
+  BB_LOG_FINER
+} BB_LOG_LEVEL_T;
+
+
+/**
  * BlackBoard publishable data type.
  * Any data published with @ref bb_publish, @ref bb_alias_publish 
  * or @ref bb_simple_publish should be specified with its type.
@@ -224,6 +225,73 @@ typedef struct S_BB_DATADESC {
   
 } S_BB_DATADESC_T ;
 
+struct S_BB;
+struct S_BB_MSG;
+
+/**
+ * Implementation agnostic operations, for now these
+ * functions abstract the following operating modes:
+ * - SysV shmem + IPCs
+ * - /dev/bb mmap from user space
+ * - in-kernel bb_create, bb_publish
+ */
+struct bb_operations {
+	int (*bb_shmem_get)(struct S_BB ** bb, const char *name, int n_data, 
+				int data_size, int create);
+
+	int (*bb_shmem_attach)(struct S_BB ** bb, const char *name);
+	int (*bb_shmem_detach)(struct S_BB ** bb);
+	int (*bb_shmem_destroy)(struct S_BB **bb);
+
+	int (*bb_sem_get)(struct S_BB *bb, int create);
+	int (*bb_lock)(volatile struct S_BB *bb);
+	int (*bb_unlock)(volatile struct S_BB *bb);
+	int (*bb_sem_destroy)(struct S_BB *bb);
+
+	int (*bb_msgq_get)(struct S_BB * bb, int create);
+	int (*bb_msgq_send)(volatile struct S_BB *bb, struct S_BB_MSG *);
+	int (*bb_msgq_recv)(volatile struct S_BB *bb, struct S_BB_MSG *);
+	int (*bb_msgq_isalive)(struct S_BB *bb);
+	int (*bb_msgq_destroy)(struct S_BB *bb);
+};
+
+/* defined in bb_core_k.h, it's only 
+ * used in kernel space */
+struct bb_device;
+/**
+ * In-kernel black board specific data, part of the S_BB_T structure
+ */
+struct kernel_private {
+	/** the size of the allocated black board */
+	unsigned long shm_size;
+	/** 
+	 * The actual pointer to the allocated memory,
+	 * this is needed as the BB must be aligned on a
+	 * PAGE_SIZE boundary, kmalloc_ptr is the _real_
+	 * start of the allocate memory */
+	void *kmalloc_ptr;
+	/** in-kernel structure, points to the char device */
+	struct bb_device *dev;
+	/** the index of the char device, used for cleaup
+	 * purposes */
+	int index;
+};
+
+/**
+ * SysV specific data, part of the S_BB_T structure
+ */
+struct sysv_private {
+	/* shm file descriptor */
+	int fd;
+	/** the size of the allocated black board */
+	int shm_size;
+	/* sysv semaphore handle */
+	int sem_id;
+	/* sysv message queue handle */
+	int msg_id;
+};
+
+
 /**
  * BlackBoard message definition.
  * This type must conform to the constraint of
@@ -246,6 +314,15 @@ typedef struct S_BB_MSG {
 } S_BB_MSG_T ;
 
 /**
+ * The black board type, this is tightly coupled to the 
+ * struct bb_operations *ops[] defined in bb_core.c
+ * it's used as a selector of the right set of operations
+ */
+enum bb_type {
+	BB_SYSV,
+	BB_KERNEL,
+};
+/**
  * BlackBoard description structure.
  * This structure describes the BlackBoard itself
  * (not data published in BlackBoard which are described
@@ -258,23 +335,6 @@ typedef struct S_BB {
    * to avoid version mismatch between API blackboard access.
    */
   int32_t bb_version_id;
-  /** 
-   * BB access semaphore. 
-   * This SysV semaphore set contains only 1 semaphore
-   * which should be taken before any structural BB 
-   * modification and/or BB data zone copy.
-   * @see bb_shadow_get.
-   * @see bb_publish
-   */
-  int semid;
-  /**
-   * Synchronisation message queue.
-   * This is a simple inter-process synchronisation mean.
-   * For example a simulation process may send end of cycle
-   * message to the queue in order to signal another process
-   * that he may shadow the BB for further safe use.
-   */
-  int msgid;
   /** BlackBoard name */
   char name[BB_NAME_MAX_SIZE+1];
   /** 
@@ -322,6 +382,17 @@ typedef struct S_BB {
    * to a destroyed BB and avoid some operation on shadowed BB.
    */
   BB_STATUS_T status;
+  /**
+   * The type of the BB, used to select the right set of 
+   * bb_operations */
+  enum bb_type type;
+  /**
+   * private structure (depends on the shmem implementation)
+   */
+  union {
+	struct sysv_private sysv;
+	struct kernel_private k;
+  } priv;
 } S_BB_T;
 
 BEGIN_C_DECLS
@@ -448,6 +519,7 @@ bb_data_initialise(volatile S_BB_T* bb, S_BB_DATADESC_T* data_desc,void* default
 int32_t
 bb_value_write(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc, const char* value, int32_t* idxstack, int32_t idxstack_len);
 
+
 /**
  * Print the value off a BB published data on a STDIO file stream.
  * @param bb IN, the BlackBoard where data is published
@@ -483,6 +555,16 @@ bb_data_footer_print(S_BB_DATADESC_T data_desc, FILE* pf, int32_t idx, int32_t a
 int32_t 
 bb_data_print(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc, FILE* pf,
               int32_t* idxstack, int32_t idxstack_len);
+
+/**
+ * Dump a blackboard to a file stream.
+ * Blackboard description and all data content is dumped.
+ * @param bb INOUT, pointer to BB.
+ * @param filedesc INOUT, file stream descriptor.
+ * @return E_OK if dump succeed E_NOK otherwise.
+ */
+int32_t 
+bb_dump(volatile S_BB_T *bb, FILE* filedesc);
 
 /**
  * Create a blackboard.
@@ -604,16 +686,6 @@ void*
 bb_subscribe(volatile S_BB_T *bb, S_BB_DATADESC_T* data_desc);
 
 /**
- * Dump a blackboard to a file stream.
- * Blackboard description and all data content is dumped.
- * @param bb INOUT, pointer to BB.
- * @param filedesc INOUT, file stream descriptor.
- * @return E_OK if dump succeed E_NOK otherwise.
- */
-int32_t 
-bb_dump(volatile S_BB_T *bb, FILE* filedesc);
-
-/**
  * Return the maximum number of data that
  * could be published in blackboard.
  * @param bb IN, pointer to blackboard.
@@ -722,6 +794,31 @@ bb_get_array_name(char * array_name,
 		  S_BB_DATADESC_T * aliasstack, int32_t aliasstack_size,
 		  int32_t * indexstack, int32_t indexstack_len);
 		  
+
+/**
+ * Allow the caller to verify if the message queue is
+ * still working.
+ * @param bb INOUT, pointer to BB.
+ * @return E_OK on success, E_NOK otherwise
+ */
+int32_t bb_msgq_isalive(S_BB_T *bb);
+
+/**
+ * Log message for BB Error.
+ * This function may be replaced by a project specific function
+ * which want to use BB with a unified log system.
+ * The default implementation use TSP STRACE facility.
+ * @param level IN, the log level.
+ * @param modname IN, the module who sent the message.
+ * @param fmt IN, format as in printf.
+ * @return 0 on success, -1 on error.
+ */
+int32_t 
+bb_logMsg(const BB_LOG_LEVEL_T level, const char* modname, char* fmt, ...);
+
+
 /** @} */
+
 END_C_DECLS
+
 #endif /* _BB_H_ */

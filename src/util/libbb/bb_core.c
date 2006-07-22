@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.23 2006-04-25 21:08:17 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.24 2006-07-22 17:07:15 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -34,6 +34,7 @@ Purpose   : Blackboard Idiom implementation
 
 -----------------------------------------------------------------------
  */
+
 #include <string.h>
 #include <stdlib.h>
 #include <sys/types.h>
@@ -45,17 +46,15 @@ Purpose   : Blackboard Idiom implementation
 #include <assert.h>
 #include <ctype.h>
 
-#include <sys/ipc.h>
-#include <sys/shm.h>
-#include <sys/sem.h>
-#include <sys/msg.h>
-
 #include <tsp_abs_types.h>
-#include <bb_core.h>
-#include <bb_alias.h>
-#include <bb_utils.h>
 #include <tsp_abs_types.h>
 #include <tsp_sys_headers.h>
+#include <tsp_simple_trace.h>
+
+
+#include "bb_alias.h"
+#include "bb_utils.h"
+#include "bb_core.h"
 
 /**
  * Convert type to string for display use.
@@ -91,6 +90,20 @@ static const size_t E_BB_TYPE_SIZE[] = {0,
 					sizeof(unsigned char),
 					0,
 					0};
+
+extern struct bb_operations sysv_bb_ops;
+extern struct bb_operations k_bb_ops;
+
+/* Note: This is thigtly related to enum bb_type in bb_core.h,
+   if you ever modify this, you'll probably need to modify
+   enum bb_type */
+static struct bb_operations *ops[] = { 	&sysv_bb_ops,
+					NULL };
+
+static enum bb_type bb_type(const char *name)
+{
+	return BB_SYSV;
+}
 
 size_t 
 sizeof_bb_type(E_BB_TYPE_T bb_type) {
@@ -428,7 +441,6 @@ bb_value_write(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc,const char* value,
   /* Get address of the data in BB */
   data = bb_item_offset(bb, &data_desc,idxstack,idxstack_len);
   /* Now write the value at obtained offset */
-  retval = bb_value_direct_write(data,data_desc,value,hexval);
 
   return retval;
 } /* bb_value_write */
@@ -600,144 +612,28 @@ bb_data_print(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc, FILE* pf,
    return BB_OK;
 } /* end of bb_data_print */
 
-
 int32_t 
 bb_create(S_BB_T** bb, 
 	       const char* pc_bb_name,
 	       int32_t n_data,
 	       int32_t data_size) {
 
-  
+  enum bb_type type;
   int32_t retcode;
-  char* name_shm;
-  char* name_sem;
-  char* name_msg;
-  int32_t  fd_shm;
-  int32_t  mmap_size;
-  char syserr[MAX_SYSMSG_SIZE];
-  union semun u_sem_ctrl;
-  struct sembuf s_semop;
-  
   assert(bb);
-  retcode = BB_OK;  
-  name_shm = bb_utils_build_shm_name(pc_bb_name);
-  name_sem = NULL;
-  name_msg = NULL;
-  bb_logMsg(BB_LOG_INFO,"BlackBoard::bb_create", 
-	      "Create BB <%s>.",pc_bb_name);
-  fd_shm      = 0;
-  mmap_size = 0;
 
-  /* open+create du segment SHM SysV */
-  if (name_shm!=NULL) {
-    /* We size SHM segment using the size of a BB
-     * as returned by bb_size.
-     */
-    mmap_size = bb_size(n_data,data_size);    
-    fd_shm = shmget(bb_utils_ntok(name_shm), mmap_size, IPC_CREAT|IPC_EXCL|BB_SHM_ACCESS_RIGHT);        
-  } else {
-    retcode = BB_NOK;
-  }
-  if((retcode==BB_OK) && (-1==fd_shm)) {
-    strncpy(syserr,strerror(errno),MAX_SYSMSG_SIZE);
-    /* Try to create an existing segment is NOT an error
-     * its an info that should be handled by the caller.
-     */
-    if (EEXIST!=errno)  {
+  type = bb_type(pc_bb_name);
+  retcode = ops[type]->bb_shmem_get(bb, pc_bb_name, n_data, data_size, 1);
+  if (retcode != BB_OK)
+  	goto err;
 
-      bb_logMsg(BB_LOG_SEVERE,"BlackBoard::bb_create", 
-		"Cannot open shm segment <%s key = 0x%x> (%s)",
-		name_shm, bb_utils_ntok(name_shm), syserr);
-    } else {
-      bb_logMsg(BB_LOG_INFO,"BlackBoard::bb_create", 
-		"Cannot open shm segment <%s key = 0x%x> (%s)",
-		name_shm, bb_utils_ntok(name_shm), syserr);
+  retcode = ops[(*bb)->type]->bb_sem_get(*bb, 1);
+  if (retcode != BB_OK)
+  	goto err;
 
-    }
-    retcode = BB_NOK; 
-  }
-
-  if (BB_OK == retcode) {
-    *bb = (S_BB_T*) shmat(fd_shm,NULL,0);
-  }
-
-  if ((BB_OK == retcode) && ((void *)-1 == *bb)) {
-    strncpy(syserr,strerror(errno),MAX_SYSMSG_SIZE);
-    bb_logMsg(BB_LOG_SEVERE,"BlackBoard::bb_create", 
-		"Cannot attach shm segment (%s)",syserr);
-    retcode = BB_NOK; 
-  } 
-  /* On initialise la structure comme il se doit */
-  if (BB_OK == retcode) {
-    /* RAZ de la mémoire allouee */
-    memset(*bb,0,mmap_size);        
-    (*bb)->bb_version_id = BB_VERSION_ID;
-    strncpy((*bb)->name,pc_bb_name,BB_NAME_MAX_SIZE+1);
-    (*bb)->max_data_desc_size = n_data;
-    (*bb)->data_desc_offset = sizeof(S_BB_T);
-    
-    (*bb)->n_data = 0;
-    (*bb)->max_data_size = data_size;
-    (*bb)->data_offset = (*bb)->data_desc_offset + 
-                            ((*bb)->max_data_desc_size)*sizeof(S_BB_DATADESC_T);    
-    (*bb)->data_free_offset = 0;  
-    (*bb)->status = BB_STATUS_GENUINE;
-  }
-  /* On initialise la structure comme il se doit */
-
-  /* Initialisation du semaphore d'acces au BB */
-  if (BB_OK == retcode) {
-    name_sem = bb_utils_build_sem_name((*bb)->name);
-    (*bb)->semid = semget(bb_utils_ntok(name_sem),1,
-			       IPC_CREAT|IPC_EXCL|BB_SEM_ACCESS_RIGHT);
-    
-    if (-1==((*bb)->semid)) {
-      strncpy(syserr,strerror(errno),MAX_SYSMSG_SIZE);
-      bb_logMsg(BB_LOG_SEVERE,"BlackBoard::bb_create", 
-		"Cannot create semaphore <%s key = 0x%x> (%s)",
-		name_sem, bb_utils_ntok(name_sem), syserr);
-      retcode = BB_NOK; 
-    } else {
-      u_sem_ctrl.val = 2;
-      if (-1 == semctl((*bb)->semid,0,SETVAL,u_sem_ctrl)) {
-	strncpy(syserr,strerror(errno),MAX_SYSMSG_SIZE);
-	bb_logMsg(BB_LOG_SEVERE,"BlackBoard::bb_create", 
-		    "Cannot initialise semaphore <%s key = 0x%x> (%s)",
-		    name_sem, bb_utils_ntok(name_sem), syserr);
-	retcode = BB_NOK;
-      }
-    }
-    /* appeler 1 fois semop pour eviter
-     * les races conditions entre le createur
-     * du sémaphore et les clients (cf UNPV2 pages 284--285)
-     */
-    if (BB_OK == retcode) {
-      s_semop.sem_num = 0; 
-      s_semop.sem_op  = -1; 
-      s_semop.sem_flg = 0; 
-      semop((*bb)->semid,&s_semop,1);
-    }    
-    free(name_sem);
-
-    /* Initialisation de la queue de message liee au BB */
-    if (BB_OK == retcode) {     
-      name_msg = bb_utils_build_msg_name((*bb)->name);
-      (*bb)->msgid = msgget(bb_utils_ntok(name_msg),
-				 IPC_CREAT|IPC_EXCL|BB_MSG_ACCESS_RIGHT);
-      
-      if (-1==((*bb)->msgid)) {
-	strncpy(syserr,strerror(errno),MAX_SYSMSG_SIZE);
-	bb_logMsg(BB_LOG_SEVERE,"BlackBoard::bb_create", 
-		    "Cannot message queue <%s key = 0x%x> (%s)",
-		    name_msg, bb_utils_ntok(name_msg), syserr);
-	retcode = BB_NOK; 
-      } 
-    }
-    free(name_msg);
-  }
-  free(name_shm);
-
+  retcode = ops[(*bb)->type]->bb_msgq_get(*bb, 1);
   
+err:
   return retcode;
 } /* end of bb_create */
 
@@ -745,63 +641,25 @@ int32_t
 bb_destroy(S_BB_T** bb) {
   
   int32_t retcode;
-  char syserr[MAX_SYSMSG_SIZE];
-  char* name_shm;
-  int32_t fd_shm;
-  int32_t local_semid;
-  int32_t local_msgid;
-  S_BB_MSG_T bb_msg;
   
-  retcode = BB_OK;
   assert(bb);
   assert(*bb);  
-  bb_logMsg(BB_LOG_INFO,"BlackBoard::bb_destroy", 
-		"Destroy BB <%s>.",(*bb)->name);
-  name_shm = bb_utils_build_shm_name((*bb)->name);
   /* 
    * On signale la destruction en cours pour les processes qui
    * resteraient attachés
    */
   (*bb)->status = BB_STATUS_DESTROYED;
-
-  /* FIXME should reserve a message type for signaling destroy */
-  /*   bb_msg.mtype = 1; */
-  /*   bb_snd_msg(*bb,&bb_msg); */
-  /*   sleep(1); */
-
-  /* On mémorise les IDs
-   * des semaphore et autres queue de message
-   * pour les détruire après la destruction de la SHM
-   */
-  local_semid = (*bb)->semid;
-  local_msgid = (*bb)->msgid;
-  
-  /* On programme la destruction du segment SHM */
-  fd_shm = shmget(bb_utils_ntok(name_shm),0,BB_SHM_ACCESS_RIGHT);
-  if (-1 == shmctl(fd_shm,IPC_RMID,NULL)) {
-    strncpy(&syserr[0],strerror(errno),MAX_SYSMSG_SIZE);
-    bb_logMsg(BB_LOG_SEVERE,"BlackBoard::bb_destroy", 
-		"SHM Destroy failed (%s)",syserr);
-    retcode = BB_NOK;
-  }
-  free(name_shm);
-  
-  /* on se detache de façon a provoquer la destruction */
-  if (BB_OK == retcode) {
-    if (-1 == shmdt((void*)*bb)) {
-      strncpy(&syserr[0],strerror(errno),MAX_SYSMSG_SIZE);
-      bb_logMsg(BB_LOG_SEVERE,"BlackBoard::bb_destroy", 
-		"SHM detach failed (%s)",syserr);
-      retcode = BB_NOK;
-    }
-  }
-  /* FIXME doit-on prendre le semaphore avant de le détruire ?? */
-  /* On programme la destruction du SEMAPHORE */
-  semctl(local_semid,0,IPC_RMID);
-  /* On programme la destruction de la QUEUE DE MESSAGE */
-  msgctl(local_msgid,IPC_RMID,NULL);
-  *bb = NULL;
+  retcode = ops[(*bb)->type]->bb_sem_destroy(*bb);
+  if (retcode != BB_OK)
+  	goto out;
+  retcode = ops[(*bb)->type]->bb_msgq_destroy(*bb);
+  if (retcode != BB_OK)
+  	goto out;
+  retcode = ops[(*bb)->type]->bb_shmem_destroy(bb);
+  if (retcode != BB_OK)
+  	goto out;
     
+out:
   return retcode;
 } /* end of bb_destroy */
 
@@ -816,152 +674,31 @@ bb_data_memset(S_BB_T* bb, const char c) {
 
 int32_t 
 bb_lock(volatile S_BB_T* bb) {
-  
-  int32_t retcode;
-  char syserr[MAX_SYSMSG_SIZE];
-  struct sembuf s_semop;
-  
-  assert(bb);
-
-  /* shadow do not honor locking
-   * they have neither semaphore nor msgqueue attached
-   */
-  if (BB_STATUS_SHADOW == bb->status) {
-    return BB_OK;
-  }
-
-  s_semop.sem_num = 0; 
-  s_semop.sem_op  = -1; 
-  s_semop.sem_flg = SEM_UNDO;   
-  if (-1 == semop(bb->semid,&s_semop,1)) {
-    strncpy(syserr,strerror(errno),MAX_SYSMSG_SIZE);
-    if (EINVAL == errno) {
-      bb_logMsg(BB_LOG_WARNING, "BlackBoard::bb_lock",
-		  "Is BB semaphore destroyed?");
-    }
-    else { 
-      bb_logMsg(BB_LOG_SEVERE,"BlackBoard::bb_lock", 
-		  "semop failed (%s)", syserr);
-    }
-    retcode = BB_NOK;
-  } else {
-    retcode = BB_OK; 
-  }
-  
-  return retcode;
+  return ops[bb->type]->bb_unlock(bb);
 } /* end of bb_lock */
 
 int32_t 
 bb_unlock(volatile S_BB_T* bb) {
   
-  int32_t retcode;
-  char syserr[MAX_SYSMSG_SIZE];
-  struct sembuf s_semop;
-
-  /* shadow do not honor locking
-   * they have neither semaphore nor msgqueue attached
-   */
-  if (BB_STATUS_SHADOW == bb->status) {
-    return BB_OK;
-  }
-
-  s_semop.sem_num = 0; 
-  s_semop.sem_op  = 1; 
-  s_semop.sem_flg = SEM_UNDO;   
-  if (-1 == semop(bb->semid,&s_semop,1)) {
-    strncpy(syserr,strerror(errno),MAX_SYSMSG_SIZE);
-    if (EINVAL == errno) {
-      bb_logMsg(BB_LOG_WARNING, "BlackBoard::bb_unlock",
-		  "Is BB semaphore destroyed?");
-    }
-    bb_logMsg(BB_LOG_SEVERE,"BlackBoard::bb_unlock", 
-		"semop failed (%s)", syserr);
-    retcode = BB_NOK;
-  } else {
-    retcode = BB_OK; 
-  }
-  
-  return retcode;
+  return ops[bb->type]->bb_unlock(bb);
 } /* end of bb_unlock */
 
 
 int32_t 
-bb_attach(S_BB_T** bb, const char* pc_bb_name) {
-    
-  int32_t retcode;
-  char syserr[MAX_SYSMSG_SIZE];
-  char* name_shm;
-  int32_t  fd_shm;
-  
-  retcode = BB_OK;
-  fd_shm  = 0;
-  assert(bb);
-  
-  name_shm = bb_utils_build_shm_name(pc_bb_name);
-/*   bb_logMsg(BB_LOG_INFO,"BlackBoard::bb_attach",  */
-/* 	 "Attachement au BB <%s>.",pc_bb_name); */
-  if (name_shm!=NULL) {
-    /* On recupere l'acces au SHM */
-    fd_shm = shmget(bb_utils_ntok(name_shm), 0, BB_SHM_ACCESS_RIGHT);        
-  } else {
-    retcode = BB_NOK;
-  }
-  if((BB_OK==retcode) && (-1==fd_shm)) {
-
-    strncpy(syserr,strerror(errno),MAX_SYSMSG_SIZE);
-    /* attaching to a non-existing segment is NOT an error
-     * its an info that should be handled by the caller.
-     */
-    if (ENOENT!=errno) {
-
-      bb_logMsg(BB_LOG_SEVERE,"BlackBoard::bb_attach", 
-		"Cannot open shm segment <%s key = 0x%x> (%s)",
-		name_shm, bb_utils_ntok(name_shm), syserr);
-    } else {
-      bb_logMsg(BB_LOG_INFO,"BlackBoard::bb_attach", 
-		"Cannot open shm segment <%s key = 0x%x> (%s)",
-		name_shm, bb_utils_ntok(name_shm), syserr);
-
-    }
-    retcode = BB_NOK; 
-  }
-  free(name_shm);
-
-  if (BB_OK == retcode) {
-    *bb = (S_BB_T*) shmat(fd_shm,NULL,0);
-  }
-  if ((BB_OK == retcode) && ((void *)-1 == *bb)) {
-    strncpy(syserr,strerror(errno),MAX_SYSMSG_SIZE);
-    bb_logMsg(BB_LOG_SEVERE,"BlackBoard::bb_attach", 
-		"Cannot attach shm segment (%s)",syserr);
-    retcode = BB_NOK; 
-  }   
-  
-  return retcode;
+bb_attach(S_BB_T** bb, const char* pc_bb_name) 
+{
+  enum bb_type type;
+  type = bb_type(pc_bb_name);
+  return ops[type]->bb_shmem_attach(bb, pc_bb_name);
 } /* end of bb_attach */
 
 int32_t 
 bb_detach(S_BB_T** bb) {
   
-  int32_t retcode;
-  char syserr[MAX_SYSMSG_SIZE];
-  
-  retcode = BB_OK;
   assert(bb);
   assert(*bb);
-/*   bb_logMsg(BB_LOG_INFO,"BlackBoard::bb_detach",  */
-/* 	      "Detachement du BB <%s>.",(*bb)->name); */
-
-  if (-1 == shmdt((void*)*bb)) {
-    strncpy(&syserr[0],strerror(errno),MAX_SYSMSG_SIZE);
-    bb_logMsg(BB_LOG_SEVERE,"BlackBoard::bb_detach", 
-		"SHM detach failed (%s)",syserr);
-    retcode = BB_NOK;
-  }
-
-  *bb = NULL;
   
-  return retcode;
+  return ops[(*bb)->type]->bb_shmem_detach(bb);
 } /* end of bb_detach */
 
 void* 
@@ -1098,6 +835,7 @@ bb_item_offset(volatile S_BB_T *bb,
 } /* end of bb_item_offset */
 
 
+
 int32_t 
 bb_dump(volatile S_BB_T *bb, FILE* p_filedesc) {  
   
@@ -1173,6 +911,7 @@ bb_dump(volatile S_BB_T *bb, FILE* p_filedesc) {
   return retcode;
 } /* end of bb_dump */
 
+
 int32_t
 bb_get_nb_max_item(volatile S_BB_T *bb) {
   
@@ -1232,9 +971,6 @@ bb_shadow_get(S_BB_T *bb_shadow,
   memcpy(bb_shadow,
 	 (void*)bb_src,
 	 bb_get_mem_size(bb_src));
-  /* On degage ce qui est inutilisable dans le shadow bb */
-  bb_shadow->semid  = -1;  
-  bb_shadow->msgid  = -1;
   bb_shadow->status = BB_STATUS_SHADOW;
   bb_unlock(bb_src);
   
@@ -1262,55 +998,15 @@ bb_shadow_update_data(S_BB_T *bb_shadow,
 } /* end of bb_shadow_update_data */
 
 
-int32_t
-bb_msg_id(volatile S_BB_T *bb) {
-    
-  int32_t retval;
-  
-  assert(bb);
-  retval = bb->msgid;  
-  return retval;
-} 
-
 int32_t 
 bb_snd_msg(volatile S_BB_T *bb,
 		S_BB_MSG_T* msg) {
   
   int32_t retcode;
-  char syserr[MAX_SYSMSG_SIZE];
-  struct msqid_ds mystat;
   
   retcode = BB_OK;
   assert(bb);
-  /* do not flood message queue if no one read it !!*/
-  retcode  = msgctl(bb->msgid,IPC_STAT,&mystat);
-  if (!(mystat.msg_cbytes > 2*MSG_BB_MAX_SIZE)) {
-    /* Non blocking send */
-    retcode = msgsnd(bb->msgid,msg,MSG_BB_MAX_SIZE,IPC_NOWAIT);
-    if (-1 == retcode) {
-      retcode = BB_NOK;
-      strncpy(syserr,strerror(errno),MAX_SYSMSG_SIZE);
-      if (EAGAIN == errno) {
-	/*bb_logMsg(BB_LOG_WARNING,
-	  "Blackboard::bb_snd_msg",
-	  "Envoi du message impossible (queue pleine) <%s>",
-	  syserr);
-	*/
-      } else {
-	bb_logMsg(BB_LOG_SEVERE,
-		  "Blackboard::bb_snd_msg",
-		  "Cannot send message <%s>",
-		  syserr);
-      } 
-    }
-  } else {
-    /* NOP */
-/*     bb_logMsg(BB_LOG_WARNING, */
-/* 	      "Blackboard::bb_snd_msg", */
-/* 	      "Cannot send msg <%d> bytes already queued>",mystat.msg_cbytes); */
-  }
-  
-  return retcode;
+  return ops[bb->type]->bb_msgq_send(bb, msg);
 } /* end of bb_snd_msg */
 
 
@@ -1318,38 +1014,9 @@ int32_t
 bb_rcv_msg(volatile S_BB_T *bb,
 		S_BB_MSG_T* msg) {
     
-  int32_t retcode;
-  char syserr[MAX_SYSMSG_SIZE];
-  int32_t  i_cont;
-  
-  retcode = BB_OK;
   assert(bb);
 
-  i_cont = 1;
-  /* Réception bloquante */
-  while (i_cont) {  
-    retcode = msgrcv(bb->msgid,msg,MSG_BB_MAX_SIZE,msg->mtype,MSG_NOERROR);
-    /* On sort de la boucle si on a pas pris un signal */
-    if ((-1 != retcode) || (EINTR != errno)) {
-      i_cont = 0;
-    }
-  }
-  if (-1 == retcode) {
-    retcode = BB_NOK;
-    /* The identifier removed case and INTR
-     * should not generate a log message 
-     * FIXME on devrait pouvoir faire mieux que ça.
-     */
-    if ((EIDRM != errno) && (EINTR != errno)) {
-      strncpy(syserr,strerror(errno),MAX_SYSMSG_SIZE);
-      bb_logMsg(BB_LOG_SEVERE,
-		"Blackboard::bb_rcv_msg",
-		"Cannot receive messsage <%s>",
-		syserr);
-    }
-  } 
-  
-  return retcode;
+  return ops[bb->type]->bb_msgq_recv(bb, msg);
 } /* end of bb_rcv_msg */
 
 
@@ -1364,6 +1031,7 @@ bb_get_array_name(char * array_name,
   int j;
     
   part_of_name = malloc(array_name_size_max);
+
   indexstack_curr = 0;
   for (j=aliasstack_size-1; j>=0; j--){
     /* If this alias is an array */
@@ -1399,3 +1067,55 @@ bb_get_array_name(char * array_name,
   return BB_OK;
 
 } /* end of get_array_name */
+
+int32_t
+bb_msgq_isalive(S_BB_T *bb)
+{
+	return ops[bb->type]->bb_msgq_isalive(bb);
+}
+
+int32_t 
+bb_logMsg(const BB_LOG_LEVEL_T level, const char* who, char* fmt, ...) {
+  va_list args;
+  char message[2048];
+  char *tmp_str;
+
+  memset(message,0,2048);
+  va_start(args, fmt);
+  vsnprintf(message, 2048, fmt, args);
+  va_end(args);
+  /* add strerror, if needed */
+  if (errno != 0) {
+    tmp_str = strdup(message);
+    if (!tmp_str) {
+      	printf("Cannot allocate memory for message %s\n", message);
+	return BB_NOK;
+    }
+    snprintf(message, 2048, "%s: %s", tmp_str, strerror(errno));
+
+    free(tmp_str);
+  }
+  
+  switch (level) {
+    
+  case BB_LOG_ABORT:
+  case BB_LOG_SEVERE:
+    STRACE_ERROR(("%s : %s",who,message));
+    break;
+  case BB_LOG_WARNING:
+    STRACE_WARNING(("%s : %s",who,message));
+    break;
+  case BB_LOG_INFO:
+  case BB_LOG_CONFIG:
+    STRACE_INFO(("%s : %s",who,message));
+    break;
+  case BB_LOG_FINE:
+  case BB_LOG_FINER:
+    STRACE_DEBUG(("%s : %s",who,message));
+
+  }
+  return 0;
+} /* end of bb_logMsg */
+
+
+
