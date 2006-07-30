@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_plotText.c,v 1.11 2006-05-13 20:55:02 esteban Exp $
+$Id: gdisp_plotText.c,v 1.12 2006-07-30 20:25:58 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -67,7 +67,8 @@ File      : Text plot system.
 */
 
 #undef GD_DEBUG_TEXT
-#define GD_ASYNC_WRITE_ITEM (GD_MAX_FORMATS+1)
+#define GD_ASYNC_WRITE_ITEM   (GD_MAX_FORMATS+1)
+#define GD_REMOVE_SYMBOL_ITEM (GD_MAX_FORMATS+2)
 
 
 /*
@@ -695,6 +696,82 @@ gdisp_getPlotTextTopLevelWidget (Kernel_T  *kernel,
 
 
 /*
+ * Remove plot text selection.
+ */
+static void
+gdisp_removePlotTextSelection ( Kernel_T   *kernel,
+				PlotText_T *plot )
+{
+
+  PlotTextRowData_T *rowData     = (PlotTextRowData_T*)NULL;
+  GList             *selection   = (GList*)NULL;
+  GList             *symbolList  = (GList*)NULL;
+  guint              selectedRow = 0;
+
+  /*
+   * Loop over all selected rows.
+   * Create the list of symbols to be removed.
+   */
+  selection = g_list_first(GTK_CLIST(plot->pttCList)->selection);
+  while (selection != (GList*)NULL) {
+
+    selectedRow = (guint)selection->data;
+
+    rowData = gtk_clist_get_row_data(GTK_CLIST(plot->pttCList),
+				     selectedRow);
+
+    if (rowData != (PlotTextRowData_T*)NULL) {
+
+      symbolList = g_list_append(symbolList,
+				 (gpointer)rowData->symbol);
+
+      /* the row data becomes the symbol */
+      gtk_clist_set_row_data(GTK_CLIST(plot->pttCList),
+			     selectedRow,
+			     (gpointer)rowData->symbol);
+
+      g_free(rowData);
+
+    }
+
+    selection = g_list_next(selection);
+
+  }
+
+  /*
+   * Loop over the list of symbols to be removed.
+   */
+  selection = g_list_first(symbolList);
+  while (selection != (GList*)NULL) {
+
+    /*
+     * Remove the symbol from the plot symbol list.
+     */
+    plot->pttSymbolList = g_list_remove(plot->pttSymbolList,
+					selection->data);
+
+    /*
+     * Remove the symbol from the graphic GTK List.
+     */
+    selectedRow = gtk_clist_find_row_from_data(GTK_CLIST(plot->pttCList),
+					       selection->data);
+    gtk_clist_remove(GTK_CLIST(plot->pttCList),
+		     selectedRow);
+
+    selection = g_list_next(selection);
+
+  }
+
+  /*
+   * Dereference the list of symbols.
+   */
+  gdisp_dereferenceSymbolList(symbolList);
+  /* symbolList has been freed */
+
+}
+
+
+/*
  * Popup Menu Handler.
  * Change the format of the selected symbol.
  */
@@ -723,7 +800,15 @@ gdisp_popupMenuHandler ( Kernel_T    *kernel,
 				    plot->pttShowWriteColumn);
 
   }
+  /*
+   * Remove selected symbols.
+   */
+  else if (item == GD_REMOVE_SYMBOL_ITEM) {
 
+    gdisp_removePlotTextSelection(kernel,
+				  plot);
+
+  }
   /*
    * Look for the current selected row and change its display format.
    */
@@ -753,10 +838,10 @@ gdisp_showPlotText (Kernel_T  *kernel,
 		    void      *data)
 {
 
-  PlotText_T  *plot          = (PlotText_T*)data;
-  void        *menuItem      = (void*)NULL;
-  Format_T     cptFormat     = GD_FLOATING_FIXED_1;
-  guint        asyncItemData = 0;
+  PlotText_T  *plot      = (PlotText_T*)data;
+  void        *menuItem  = (void*)NULL;
+  Format_T     cptFormat = GD_FLOATING_FIXED_1;
+  guint        itemData  = 0;
 
 #if defined(GD_DEBUG_TEXT)
   fprintf(stdout,"Showing text plot.\n");
@@ -787,11 +872,11 @@ gdisp_showPlotText (Kernel_T  *kernel,
 		      "Asynchronous Write",
 		      (gpointer)NULL);
 
-    asyncItemData = GD_ASYNC_WRITE_ITEM;
+    itemData = GD_ASYNC_WRITE_ITEM;
     gdisp_addMenuItem(plot->pttMainMenu,
 		      GD_POPUP_ITEM,
 		      "Show / Hide Column",
-		      (gpointer)GUINT_TO_POINTER(asyncItemData));
+		      (gpointer)GUINT_TO_POINTER(itemData));
 
 
     /*
@@ -911,6 +996,24 @@ gdisp_showPlotText (Kernel_T  *kernel,
 		    GD_POPUP_ITEM,
 		    gdisp_getFormatLabel(GD_ASCII),
 		    (gpointer)GUINT_TO_POINTER(GD_ASCII));
+
+  /*
+   * Insert a horizontal separator.
+   */
+  gdisp_addMenuItem(plot->pttMainMenu,
+		    GD_POPUP_SEPARATOR,
+		    (gchar*)NULL,
+		    (gpointer)NULL);
+
+  /*
+   * Only way to remove symbols from the text plot.
+   */
+  itemData = GD_REMOVE_SYMBOL_ITEM;
+  plot->pttRemoveSymbolsItem =
+    gdisp_addMenuItem(plot->pttMainMenu,
+		      GD_POPUP_ITEM,
+		      (gchar*)"Remove Selected Symbols",
+		      (gpointer)GUINT_TO_POINTER(itemData));
 
 }
 
@@ -1188,14 +1291,21 @@ gdisp_startStepOnPlotText (Kernel_T *kernel,
 			   void     *data)
 {
 
+  PlotText_T *plot = (PlotText_T*)data;
+
   /*
-   * Nothing to be done on text plot, except that we must
+   * We must
    * return TRUE to the calling procedure in order to allow the general
    * step management to proceed.
    *
    * Returning FALSE means that our plot is not enabled to perform its
    * step operations, because of this or that...
    */
+  if (plot->pttRemoveSymbolsItem != (void*)NULL) {
+    gtk_widget_set_sensitive((GtkWidget*)plot->pttRemoveSymbolsItem,
+			     FALSE);
+  }
+
   return TRUE;
 
 }
@@ -1284,9 +1394,15 @@ gdisp_stopStepOnPlotText (Kernel_T *kernel,
 			  void     *data)
 {
 
+  PlotText_T *plot = (PlotText_T*)data;
+
   /*
-   * Nothing to be done on default plot.
+   * Activate remove symbol item.
    */
+  if (plot->pttRemoveSymbolsItem != (void*)NULL) {
+    gtk_widget_set_sensitive((GtkWidget*)plot->pttRemoveSymbolsItem,
+			     TRUE);
+  }
 
 }
 

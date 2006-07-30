@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_xml.c,v 1.7 2006-03-21 16:39:15 brutusj Exp $
+$Id: gdisp_xml.c,v 1.8 2006-07-30 20:25:58 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -155,7 +155,7 @@ gdisp_xmlErrorHandler (void       *voidValidContext,
   vsprintf(tmpBuffer,format,variableList);
 
   fprintf(stdout,
-	  "GDisp+ : ERROR <%s> : %s\n",
+	  "TARGA : ERROR <%s> : %s\n",
 	  (unsigned char*)voidValidContext,
 	  tmpBuffer);
 
@@ -182,7 +182,7 @@ gdisp_xmlWarningHandler (void       *voidUserData,
   vsprintf(tmpBuffer,format,variableList);
 
   fprintf(stdout,
-	  "GDisp+ : WARNING <%s> : %s\n",
+	  "TARGA : WARNING <%s> : %s\n",
 	  (unsigned char*)voidUserData,
 	  tmpBuffer);
 

@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_plotText.h,v 1.5 2006-05-13 20:55:02 esteban Exp $
+$Id: gdisp_plotText.h,v 1.6 2006-07-30 20:25:58 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -101,6 +101,7 @@ typedef struct PlotText_T_ {
   PopupMenu_T         *pttMainMenu;
   PopupMenu_T         *pttHexadecimalMenu;
   PopupMenu_T         *pttFloatingFixedMenu;
+  void                *pttRemoveSymbolsItem;
 
   /*
    * Parent widget.

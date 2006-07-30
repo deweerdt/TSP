@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_plot2D.c,v 1.20 2006-05-13 20:55:02 esteban Exp $
+$Id: gdisp_plot2D.c,v 1.21 2006-07-30 20:25:58 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -282,7 +282,7 @@ gdisp_drawSymbolName ( Kernel_T *kernel,
       symbol = (Symbol_T*)symbolItem->data;
 
       gdk_gc_set_foreground(plot->p2dGContext,
-			    &kernel->colors[_YELLOW_ + symbolNumber++ ]);
+			    gdisp_getDistantColor(kernel,symbolNumber++));
 
       gdk_draw_string(plot->p2dYSymbolWindow,
 		      plot->p2dFont,
@@ -1308,7 +1308,7 @@ gdisp_plot2DDrawBackBufferCurves (Kernel_T       *kernel,
      * TODO: A color per draw ?
      */
     gdk_gc_set_foreground(plot->p2dGContext,
-			  &kernel->colors[_YELLOW_ + cptCurve /* + drawType */]);
+			  gdisp_getDistantColor(kernel,cptCurve));
 
     nbPixels = 0;      
 
@@ -2086,6 +2086,11 @@ gdisp_popupMenuHandler ( Kernel_T    *kernel,
 
   case GD_2D_SNAPSHOT :
 
+    if (plot->p2dXSymbolList == (GList*)NULL ||
+	plot->p2dYSymbolList == (GList*)NULL) {
+      return;
+    }
+
     dataBox = gdisp_createDataBox(kernel,(GtkWidget*)NULL);
 
     gdisp_setDataBoxTitle(dataBox,"Plot 2D Snapshot");
@@ -2119,7 +2124,7 @@ gdisp_popupMenuHandler ( Kernel_T    *kernel,
       gdisp_addDataBoxYData(dataBox,
 			    yName,
 			    yTable,
-			    kernel->colors[_YELLOW_ + cptCurve]);
+			    gdisp_getDistantColor(kernel,cptCurve));
 
       yTable = (gfloat*)NULL; /* important, do not remove */
 

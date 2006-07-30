@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_symbols.c,v 1.10 2006-05-13 20:55:02 esteban Exp $
+$Id: gdisp_symbols.c,v 1.11 2006-07-30 20:25:58 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -55,13 +55,71 @@ File      : Information / Actions upon available symbols.
 #include "gdisp_kernel.h"
 #include "gdisp_prototypes.h"
 #include "gdisp_dragAndDrop.h"
+#include "gdisp_popupMenu.h"
 
+
+/*
+ * Type definition for column management.
+ */
+typedef enum {
+
+  GD_COL_Type = 0,
+  GD_COL_Name,
+  GD_COL_Dim,
+  GD_COL_ExtInfo,
+  GD_COL_Provider,
+  GD_COL_LAST
+
+} ColumnDef_T;
 
 /*
  --------------------------------------------------------------------
                              STATIC ROUTINES
  --------------------------------------------------------------------
 */
+
+/*
+ * Sort symbol list according to sorting method.
+ */
+static void
+gdisp_sortSymbolList (Kernel_T *kernel)
+{
+
+  ColumnDef_T sortingColumn = GD_COL_Name;
+
+  /*
+   * Check out the column to be used for sorting action.
+   */
+  if (kernel->sortingMethod == GD_SORT_BY_TYPE) {
+    sortingColumn = GD_COL_Type;
+  }
+  else if (kernel->sortingMethod == GD_SORT_BY_NAME) {
+    sortingColumn = GD_COL_Name;
+  }
+  else if (kernel->sortingMethod == GD_SORT_BY_DIM) {
+    sortingColumn = GD_COL_Dim;
+  }
+  else if (kernel->sortingMethod == GD_SORT_BY_EXTINFO) {
+    sortingColumn = GD_COL_ExtInfo;
+  }
+  else if (kernel->sortingMethod == GD_SORT_BY_PROVIDER) {
+    sortingColumn = GD_COL_Provider;
+  }
+  else {
+    sortingColumn = GD_COL_Name;
+  }
+
+  gtk_clist_set_sort_column(GTK_CLIST(kernel->widgets.symbolCList),
+			    sortingColumn);
+
+  gtk_clist_set_sort_type(GTK_CLIST(kernel->widgets.symbolCList),
+			  kernel->sortingDirection == GD_SORT_ASCENDING ?
+			  GTK_SORT_ASCENDING : GTK_SORT_DESCENDING);
+
+  gtk_clist_sort(GTK_CLIST(kernel->widgets.symbolCList));
+
+}
+
 
 /*
  * Insert all available symbols into the Gtk CList.
@@ -73,21 +131,19 @@ gdisp_insertAndSortSymbols (Kernel_T  *kernel,
 			    guint      stringFilterSize)
 {
 
-#define GD_MAKE_DIFFERENCE_WITH_PIXMAP
-
   GList      *providerItem   =      (GList*)NULL;
   Symbol_T   *symbolPtr      =   (Symbol_T*)NULL;
   Provider_T *provider       = (Provider_T*)NULL;
   gint        symbolCpt      =                 0,
               nbSymbols      =                 0,
               rowNumber      =                 0;
-  gchar      *symbolInfos[_SYMBOL_CLIST_COLUMNS_NB_] =
-                                                    { (gchar*)NULL,
-						      "n/a",
-						      "undefined" };
-#if defined(GD_MAKE_DIFFERENCE_WITH_PIXMAP)
+  gchar       rowBuffer[128];
+  gchar      *symbolInfos[GD_COL_LAST] = { (gchar*)NULL,
+					   (gchar*)NULL,
+					   (gchar*)NULL,
+					   (gchar*)NULL,
+					   "" };
   Pixmap_T   *idPixmap       = (Pixmap_T*)NULL;
-#endif
 
   assert(kernel);
 
@@ -96,136 +152,134 @@ gdisp_insertAndSortSymbols (Kernel_T  *kernel,
   gtk_clist_freeze(GTK_CLIST(kernel->widgets.symbolCList));
   gtk_clist_clear (GTK_CLIST(kernel->widgets.symbolCList));
 
+  /*
+   * Loop over all provider, then loop over all provider symbols.
+   */
+  providerItem = g_list_first(kernel->providerList);
+  while (providerItem != (GList*)NULL) {
+
+    provider = (Provider_T*)providerItem->data;
+
+    if (provider->pStatus == GD_SESSION_OPENED) {
+
+      symbolPtr = provider->pSymbolList;
+
+      for (symbolCpt=0; symbolCpt<provider->pSymbolNumber; symbolCpt++) {
+
+	/*
+	 * Take into account string filter.
+	 */
+	if (stringFilterSize == 0 /* insert all symbols */ ||
+	    gdisp_strStr(symbolPtr->sInfo.name,
+			 stringFilter,
+			 stringFilterSize) != (gchar*)NULL ) {
+
+	  symbolInfos[0] = gdisp_getTypeAsString(symbolPtr);
+	  symbolInfos[1] = symbolPtr->sInfo.name;
+
+	  /*
+	   * show the dimension is the symbol is a table.
+	   */
+	  if (symbolPtr->sInfo.dimension > 1) {
+
+	    symbolInfos[2] = rowBuffer;
+	    sprintf(symbolInfos[2],"%d",symbolPtr->sInfo.dimension);
+
+	  }
+	  else {
+
+	    symbolInfos[2] = "";
+
+	  }
+
+	  /*
+	   * Insert the symbol into the list.
+	   */
+	  rowNumber =
+	    gtk_clist_append(GTK_CLIST(kernel->widgets.symbolCList),
+			     symbolInfos);
+
+	  nbSymbols++;
+
+	  /*
+	   * If symbol is not available, use special color.
+	   */
+	  if (symbolPtr->sInfo.provider_global_index < 0) {
+
+	    gtk_clist_set_foreground(GTK_CLIST(kernel->widgets.symbolCList),
+				     rowNumber, /* row */
+				     &kernel->colors[_GREY_]);
+
+	    gtk_clist_set_selectable(GTK_CLIST(kernel->widgets.symbolCList),
+				     rowNumber, /* row */
+				     FALSE);
+
+	  }
+
+	  /*
+	   * If symbol has extended information, insert a information pixmap.
+	   */
+	  if (symbolPtr->sExtInfoList != (GList*)NULL) {
+
+	    idPixmap = gdisp_getPixmapById(kernel,
+					   GD_PIX_info,
+					   kernel->widgets.symbolCList);
+
+	    gtk_clist_set_pixmap(GTK_CLIST(kernel->widgets.symbolCList),
+				 rowNumber,
+				 GD_COL_ExtInfo, /* column */
+				 idPixmap->pixmap,
+				 idPixmap->mask);
+	  }
+	  else {
+
+	    gtk_clist_set_text(GTK_CLIST(kernel->widgets.symbolCList),
+			       rowNumber,
+			       GD_COL_ExtInfo, /* column */
+			       "");
+
+	  }
+
+	  /*
+	   * If there are several providers, show symbol appartenance.
+	   */
+	  if (gdisp_getProviderNumber(kernel) > 1) {
+
+	    idPixmap = gdisp_getProviderIdPixmap(kernel,
+						 kernel->widgets.symbolCList,
+						 provider->pIdentity);
+
+	    gtk_clist_set_pixmap(GTK_CLIST(kernel->widgets.symbolCList),
+				 rowNumber,
+				 GD_COL_Provider, /* column */
+				 idPixmap->pixmap,
+				 idPixmap->mask);
+
+	  } /* gdisp_getProviderNumber(kernel) > 1 */
+
+	  /*
+	   * Remember here the symbol the row refers to.
+	   */
+	  gtk_clist_set_row_data(GTK_CLIST(kernel->widgets.symbolCList),
+				 rowNumber, /* row */
+				 (gpointer)symbolPtr);
+
+	} /* filter */
+
+	symbolPtr++;
+
+      } /* loop over all symbols */
+
+    } /* provider status */
+
+    providerItem = g_list_next(providerItem);
+
+  } /* loop over all providers */
 
   /*
-   * When sorting method is GD_SORT_BY_PROVIDER or GD_SORT_BY_NAME,
-   * loop over all provider, then loop over all provider symbols.
+   * Take into account sorting method.
    */
-  if (kernel->sortingMethod == GD_SORT_BY_PROVIDER     ||
-      kernel->sortingMethod == GD_SORT_BY_NAME         ||
-      kernel->sortingMethod == GD_SORT_BY_NAME_REVERSE    ) {
- 
-    /*
-     * Insert all symbols into the cList.
-     */
-    providerItem = g_list_first(kernel->providerList);
-    while (providerItem != (GList*)NULL) {
-
-      provider = (Provider_T*)providerItem->data;
-      if (provider->pStatus == GD_SESSION_OPENED) {
-
-	symbolPtr = provider->pSymbolList;
-	for (symbolCpt=0; symbolCpt<provider->pSymbolNumber; symbolCpt++) {
-
-	  if (stringFilterSize == 0 /* insert all symbols */ ||
-	      gdisp_strStr(symbolPtr->sInfo.name,
-			   stringFilter,
-			   stringFilterSize) != (gchar*)NULL ) {
-
-	    symbolInfos[0] = symbolPtr->sInfo.name;
-
-	    rowNumber =
-	      gtk_clist_append(GTK_CLIST(kernel->widgets.symbolCList),
-			       symbolInfos);
-
-	    nbSymbols++;
-
-	    /*
-	     * If symbol is not available, use special color.
-	     */
-	    if (symbolPtr->sInfo.provider_global_index < 0) {
-
-	      gtk_clist_set_foreground(GTK_CLIST(kernel->widgets.symbolCList),
-				       rowNumber, /* row */
-				       &kernel->colors[_GREY_]);
-
-	      gtk_clist_set_selectable(GTK_CLIST(kernel->widgets.symbolCList),
-				       rowNumber, /* row */
-				       FALSE);
-
-	    }
-
-	    /*
-	     * If there are several providers, show symbol appartenance.
-	     */
-	    if (gdisp_getProviderNumber(kernel) > 1) {
-
-#if defined(GD_MAKE_DIFFERENCE_WITH_PIXMAP)
-
-	      idPixmap = gdisp_getProviderIdPixmap(kernel,
-						   kernel->widgets.symbolCList,
-						   provider->pIdentity);
-
-	      gtk_clist_set_pixtext(GTK_CLIST(kernel->widgets.symbolCList),
-				    rowNumber,
-				    0, /* first column */
-				    symbolPtr->sInfo.name,
-				    5, /* spacing */
-				    idPixmap->pixmap,
-				    idPixmap->mask);
-
-#else
-
-	      /*
-	       * Provider color may have not been calculated before.
-	       * Provider color still may be null if the maximum number
-	       * of providers is excedeed. Cf. << gdisp_colormap.c >>
-	       */
-	      if (provider->pColor == (GdkColor*)NULL)
-		provider->pColor = gdisp_getProviderColor(kernel,
-							  provider->pIdentity);
-
-	      gtk_clist_set_background(GTK_CLIST(kernel->widgets.symbolCList),
-				       rowNumber, /* row */
-				       provider->pColor);
-
-#endif
-
-	    }
-
-	    /*
-	     * Remember here the symbol the row refers to.
-	     */
-	    gtk_clist_set_row_data(GTK_CLIST(kernel->widgets.symbolCList),
-				   rowNumber, /* row */
-				   (gpointer)symbolPtr);
-
-	  } /* filter */
-
-	  symbolPtr++;
-
-	} /* symbolCpt */
-
-      } /* provider status */
-
-      providerItem = g_list_next(providerItem);
-
-    }
-
-  }
-
-
-  /*
-   * If sorting method is GD_SORT_BY_NAME, keep on
-   * sorting all symbols into the CList alphabetically.
-   */
-  if (kernel->sortingMethod == GD_SORT_BY_NAME         ||
-      kernel->sortingMethod == GD_SORT_BY_NAME_REVERSE    ) {
-
-    /*
-     * Specify sorting method.
-     */
-    gtk_clist_set_sort_column(GTK_CLIST(kernel->widgets.symbolCList),
-			      0 /* first column */ );
-
-    gtk_clist_set_sort_type(GTK_CLIST(kernel->widgets.symbolCList),
-			    kernel->sortingMethod == GD_SORT_BY_NAME ?
-			    GTK_SORT_ASCENDING : GTK_SORT_DESCENDING);
-
-    gtk_clist_sort(GTK_CLIST(kernel->widgets.symbolCList));
-
-  }
-
+  gdisp_sortSymbolList(kernel);
 
   /*
    * Allow graphic refreshes.
@@ -233,92 +287,6 @@ gdisp_insertAndSortSymbols (Kernel_T  *kernel,
   gtk_clist_thaw(GTK_CLIST(kernel->widgets.symbolCList));
 
   return nbSymbols;
-
-}
-
-
-/*
- * This callback is called whenever a sorting-method button is pressed.
- * The argument "data" is the kernel itself.
- * The only way to determine which button has been pressed (ie the
- * sorting method  which is requested), is to compare the argument
- * "widget" (the target button) to all radio button pointers stored
- * into the kernel.
- */
-static void
-gdisp_changeSortingMethodCallback (GtkWidget *radioButtonWidget,
-				   gpointer   data )
-{
-
-  Kernel_T *kernel = (Kernel_T*)data;
-
-
-  /*
-   * Compare 'radioButtonWidget' with radio buttons in the kernel.
-   */
-  if (radioButtonWidget == kernel->widgets.pRadioButton) {
-
-    kernel->sortingMethod = GD_SORT_BY_PROVIDER;
-
-  }
-  else if (radioButtonWidget == kernel->widgets.naRadioButton) {
-
-    kernel->sortingMethod = GD_SORT_BY_NAME;
-
-  }
-  else if (radioButtonWidget == kernel->widgets.ndRadioButton) {
-
-    kernel->sortingMethod = GD_SORT_BY_NAME_REVERSE;
-
-  }
-  else {
-
-    /* no check because this should never happend...  */
-
-  }
-
-}
-
-
-/*
- * This callback is called whenever a DnD-scope button is pressed.
- * The argument "data" is the kernel itself.
- * The only way to determine which button has been pressed (ie the
- * DnD-scope which is requested), is to compare the argument
- * "widget" (the target button) to all radio button pointers stored
- * into the kernel.
- */
-static void
-gdisp_changeDnDScopeCallback (GtkWidget *radioButtonWidget,
-			      gpointer   data )
-{
-
-  Kernel_T *kernel = (Kernel_T*)data;
-
-
-  /*
-   * Compare 'radioButtonWidget' with radio buttons in the kernel.
-   */
-  if (radioButtonWidget == kernel->widgets.uRadioButton) {
-
-    kernel->dndScope = GD_DND_UNICAST;
-
-  }
-  else if (radioButtonWidget == kernel->widgets.spRadioButton) {
-
-    kernel->dndScope = GD_DND_MULTICAST;
-
-  }
-  else if (radioButtonWidget == kernel->widgets.apRadioButton) {
-
-    kernel->dndScope = GD_DND_BROADCAST;
-
-  }
-  else {
-
-    /* no check because this should never happend...  */
-
-  }
 
 }
 
@@ -339,6 +307,15 @@ gdisp_listSelectionCallback ( GtkWidget      *widget /* symbol cList */,
   /*
    * Add the selected symbol into the DND selection list.
    */
+  if (g_list_find(kernel->dndSelection,
+		  gtk_clist_get_row_data(GTK_CLIST(widget),
+					 row)) != (GList*)NULL) {
+
+    /* do not add twice */
+    return;
+
+  }
+
   kernel->dndSelection =
     g_list_append(kernel->dndSelection,
 		  gtk_clist_get_row_data(GTK_CLIST(widget),
@@ -586,6 +563,91 @@ gdisp_dataDestroyedDNDCallback (GtkWidget      *widget /* symbol cList */,
 
 
 /*
+ * Button-press handler on a column title in order to change sorting
+ * method and direction.
+ */
+static void
+gdisp_clickColumnCallback (GtkCList *cList,
+			   gint      column,
+			   gpointer  userData)
+{
+
+  Kernel_T *kernel = (Kernel_T*)userData;
+
+  /*
+   * If the button has been pressed on the column which is
+   * already the sorting column, then change sorting direction.
+   */
+  if ((column == GD_COL_Type     &&
+       kernel->sortingMethod == GD_SORT_BY_TYPE     ) ||
+      (column == GD_COL_Name     &&
+       kernel->sortingMethod == GD_SORT_BY_NAME     ) ||
+      (column == GD_COL_Dim      &&
+       kernel->sortingMethod == GD_SORT_BY_DIM      ) ||
+      (column == GD_COL_ExtInfo  &&
+       kernel->sortingMethod == GD_SORT_BY_EXTINFO  ) ||
+      (column == GD_COL_Provider &&
+       kernel->sortingMethod == GD_SORT_BY_PROVIDER )) {
+
+    kernel->sortingDirection = GD_TOGGLE_VALUE(kernel->sortingDirection,
+					       GD_SORT_ASCENDING,
+					       GD_SORT_DESCENDING);
+
+  }
+  else {
+
+    kernel->sortingDirection = GD_SORT_ASCENDING;
+
+    if (column == GD_COL_Type) {
+      kernel->sortingMethod = GD_SORT_BY_TYPE;
+    }
+    else if (column == GD_COL_Name) {
+      kernel->sortingMethod = GD_SORT_BY_NAME;
+    }
+    else if (column == GD_COL_Dim) {
+      kernel->sortingMethod = GD_SORT_BY_DIM;
+    }
+    else if (column == GD_COL_ExtInfo) {
+      kernel->sortingMethod = GD_SORT_BY_EXTINFO;
+    }
+    else if (column == GD_COL_Provider) {
+      kernel->sortingMethod = GD_SORT_BY_PROVIDER;
+    }
+
+  }
+
+  /*
+   * Freeze redrawings while sorting.
+   */
+  gtk_clist_freeze(GTK_CLIST(kernel->widgets.symbolCList));
+
+  gdisp_sortSymbolList(kernel);
+
+  gtk_clist_thaw(GTK_CLIST(kernel->widgets.symbolCList));
+
+}
+
+
+/*
+ * Popup Menu Handler.
+ * Change the scope of the DnD operation.
+ */
+static void
+gdisp_popupMenuHandler ( Kernel_T    *kernel,
+			 PopupMenu_T *menu,
+			 gpointer     menuData, /* null */
+			 gpointer     itemData )
+{
+
+  /*
+   * Update drag and drop scope.
+   */
+  kernel->dndScope = (DndScope_T)itemData;
+
+}
+
+
+/*
  --------------------------------------------------------------------
                              PUBLIC ROUTINES
  --------------------------------------------------------------------
@@ -645,8 +707,10 @@ gdisp_symbolApplyCallback (GtkWidget *applyButtonWidget,
   g_string_sprintf(messageString,
 		   " Available Symbols : %d ",
 		   symbolCount);
+
   gtk_frame_set_label(GTK_FRAME(kernel->widgets.symbolFrame),
 		      messageString->str);
+
   g_string_free(messageString,TRUE);
 
 }
@@ -660,27 +724,25 @@ gdisp_createSymbolList ( Kernel_T  *kernel,
 			 GtkWidget *parent )
 {
 
-  GtkWidget      *otherVBox         =   (GtkWidget*)NULL;
-  GtkWidget      *otherHBox         =   (GtkWidget*)NULL;
-  GtkWidget      *frame             =   (GtkWidget*)NULL;
-  GtkWidget      *scrolledWindow    =   (GtkWidget*)NULL;
-  GtkWidget      *hSeparator        =   (GtkWidget*)NULL;
-  GtkWidget      *label             =   (GtkWidget*)NULL;
-  GtkTooltips    *toolTipGroup      = (GtkTooltips*)NULL;
-
   GtkTargetEntry  targetEntry;
-
-  GSList         *radioButtonGroup  = (GSList*)NULL;
-  gboolean        radioStatuses[]   = { TRUE, FALSE, FALSE };
-
+  PopupMenu_T    *popupMenu         = (PopupMenu_T*)NULL;
+  DndScope_T      dndScope          = GD_DND_UNICAST;
+  GtkWidget      *otherVBox         = (GtkWidget*)NULL;
+  GtkWidget      *otherHBox         = (GtkWidget*)NULL;
+  GtkWidget      *frame             = (GtkWidget*)NULL;
+  GtkWidget      *scrolledWindow    = (GtkWidget*)NULL;
+  GtkWidget      *label             = (GtkWidget*)NULL;
+  GtkStyle       *cListStyle        = (GtkStyle*)NULL;
+  GtkTooltips    *toolTipGroup      = (GtkTooltips*)NULL;
+  Pixmap_T       *infoPixmap        = (Pixmap_T*)NULL;
   GString        *messageString     = (GString*)NULL;
-
   gint            symbolCount       = 0;
   GtkWidget      *cList             = (GtkWidget*)NULL;
-  gchar          *cListTitles[_SYMBOL_CLIST_COLUMNS_NB_] =
-                                                      { "Name",
-							"Unit",
-							"Comment" };
+  gchar          *cListTitles[GD_COL_LAST] = { "Type",
+					       "Name",
+					       "Dim",
+					       (gchar*)NULL,
+					       "P" };
 
   /* ------------------------ TOOLTIP GROUP ------------------------ */
 
@@ -728,7 +790,7 @@ gdisp_createSymbolList ( Kernel_T  *kernel,
   scrolledWindow = gtk_scrolled_window_new(NULL /* H Adjustment */,
 					   NULL /* V Adjustment */);
   gtk_container_border_width(GTK_CONTAINER(scrolledWindow),5);
-  gtk_widget_set_usize(scrolledWindow,350,300);
+  gtk_widget_set_usize(scrolledWindow,395,300);
   gtk_box_pack_start(GTK_BOX(otherVBox),
 		     scrolledWindow,
 		     TRUE  /* expand  */,
@@ -740,9 +802,9 @@ gdisp_createSymbolList ( Kernel_T  *kernel,
   /* -------------- CLIST FOR SYMBOL INFORMATION --------------- */
 
   /*
-   * Create the CList. For our needs, we use 2 columns.
+   * Create the CList. For our needs, we use 4 columns.
    */
-  cList = gtk_clist_new_with_titles(_SYMBOL_CLIST_COLUMNS_NB_,cListTitles);
+  cList = gtk_clist_new_with_titles(GD_COL_LAST,cListTitles);
   gtk_clist_column_titles_show((GtkCList*)cList);
   kernel->widgets.symbolCList = cList;
 
@@ -760,14 +822,33 @@ gdisp_createSymbolList ( Kernel_T  *kernel,
   /*
    * What however is important, is that we set the column widths as
    * they will never be right otherwise.
-   * Note that the columns are numbered from 0 and up (to 2 in our case).
+   * Note that the columns are numbered from 0 and up (to 5 in our case).
    */
-  gtk_clist_set_column_width(GTK_CLIST(cList),0,200);
-  gtk_clist_set_column_width(GTK_CLIST(cList),1,050);
+  gtk_clist_set_column_width(GTK_CLIST(cList),GD_COL_Type    ,050);
+  gtk_clist_set_column_width(GTK_CLIST(cList),GD_COL_Name    ,210);
+  gtk_clist_set_column_width(GTK_CLIST(cList),GD_COL_Dim     ,040);
+  gtk_clist_set_column_width(GTK_CLIST(cList),GD_COL_ExtInfo ,030);
+  gtk_clist_set_column_width(GTK_CLIST(cList),GD_COL_Provider,030);
 
+  /*
+   * Extended information column header is a pixmap.
+   */
+  infoPixmap = gdisp_getPixmapById(kernel,
+				   GD_PIX_info,
+				   kernel->widgets.symbolCList);
+
+  gtk_clist_set_column_widget(GTK_CLIST(kernel->widgets.symbolCList),
+			      GD_COL_ExtInfo, /* column */
+			      gtk_pixmap_new(infoPixmap->pixmap,
+					     infoPixmap->mask));
+
+  /*
+   * Set up button actions.
+   */
   gtk_clist_set_button_actions(GTK_CLIST(cList),
 			       0, /* left button performs selection & DND */
 			       GTK_BUTTON_SELECTS | GTK_BUTTON_DRAGS);
+
   gtk_clist_set_use_drag_icons(GTK_CLIST(cList),
                                FALSE /* use icons */);
 
@@ -780,6 +861,16 @@ gdisp_createSymbolList ( Kernel_T  *kernel,
 		     "unselect_row",
 		     gdisp_listDeselectionCallback,
 		     kernel);
+
+  /*
+   * GTK Style from default style.
+   */
+  cListStyle       = gtk_style_copy(gtk_widget_get_default_style());
+  cListStyle       = gtk_style_ref(cListStyle);
+  cListStyle->font = kernel->fonts[GD_FONT_MEDIUM][GD_FONT_FIXED];
+
+  gtk_widget_set_style(cList,
+		       cListStyle);
 
   /*
    * Add the CList widget to the vertical box and show it.
@@ -809,27 +900,68 @@ gdisp_createSymbolList ( Kernel_T  *kernel,
   gtk_signal_connect(GTK_OBJECT(cList),
 		     "drag_begin",
 		     GTK_SIGNAL_FUNC(gdisp_beginDNDCallback),
-		     kernel);
+		     (gpointer)kernel);
 
   gtk_signal_connect(GTK_OBJECT(cList),
 		     "drag_end",
 		     GTK_SIGNAL_FUNC(gdisp_endDNDCallback),
-		     kernel);
+		     (gpointer)kernel);
 
   gtk_signal_connect(GTK_OBJECT(cList),
 		     "drag_data_get",
 		     GTK_SIGNAL_FUNC(gdisp_dataRequestDNDCallback),
-		     kernel);
+		     (gpointer)kernel);
 
   gtk_signal_connect(GTK_OBJECT(cList),
 		     "drag_data_received",
 		     GTK_SIGNAL_FUNC(gdisp_dataReceivedDNDCallback),
-		     kernel);
+		     (gpointer)kernel);
 
   gtk_signal_connect(GTK_OBJECT(cList),
 		     "drag_data_delete",
 		     GTK_SIGNAL_FUNC(gdisp_dataDestroyedDNDCallback),
-		     kernel);
+		     (gpointer)kernel);
+
+  gtk_signal_connect(GTK_OBJECT(cList),
+		     "click-column",
+		     GTK_SIGNAL_FUNC(gdisp_clickColumnCallback),
+		     (gpointer)kernel);
+
+
+  /* ----------------------- DYNAMIC POPUP MENU ---------------------- */
+
+  /*
+   * Create the dynamic menu.
+   */
+  popupMenu = gdisp_createMenu(kernel,
+			       cList,
+			       gdisp_popupMenuHandler,
+			       (gpointer)NULL);
+
+  gdisp_addMenuItem(popupMenu,
+		    GD_POPUP_TITLE,
+		    "Drag & Drop Scope",
+		    (gpointer)NULL);
+
+  dndScope = GD_DND_UNICAST;
+  gdisp_addMenuItem(popupMenu,
+		    GD_POPUP_ITEM,
+		    "Unique",
+		    (gpointer)GUINT_TO_POINTER(dndScope));
+
+  dndScope = GD_DND_MULTICAST;
+  gdisp_addMenuItem(popupMenu,
+		    GD_POPUP_ITEM,
+		    "Single Page",
+		    (gpointer)GUINT_TO_POINTER(dndScope));
+
+  dndScope = GD_DND_BROADCAST;
+  gdisp_addMenuItem(popupMenu,
+		    GD_POPUP_ITEM,
+		    "All Pages",
+		    (gpointer)GUINT_TO_POINTER(dndScope));
+
+  kernel->widgets.cListPopupMenu = (gpointer)popupMenu;
 
 
   /* ------------------------ FRAME WITH LABEL ----------------------- */
@@ -850,189 +982,6 @@ gdisp_createSymbolList ( Kernel_T  *kernel,
   gtk_widget_show(frame);
 
 
-  /* ------------------------ ANOTHER V BOX ----------------------- */
-
-  /*
-   * We need a vertical packing box.
-   */
-  otherVBox = gtk_vbox_new(FALSE, /* homogeneous */
-			   5      /* spacing     */ );
-  gtk_container_border_width(GTK_CONTAINER(otherVBox),3);
-  gtk_container_add(GTK_CONTAINER(frame),otherVBox);
-  gtk_widget_show(otherVBox);
-
-
-  /* ------------- HORIZONTAL PACKING BOX INTO THE FRAME ------------- */
-
-  /*
-   * We need a horizontal packing box for managing the radio buttons.
-   */
-  otherHBox = gtk_hbox_new(FALSE, /* homogeneous */
-			   5      /* spacing     */ );
-  gtk_container_border_width(GTK_CONTAINER(otherHBox),3);
-  gtk_box_pack_start(GTK_BOX(otherVBox),
-		     otherHBox,
-		     FALSE /* expand  */,
-		     TRUE  /* fill    */,
-		     0     /* padding */);
-  gtk_widget_show(otherHBox);
-
-
-  /* ---------------- RADIO BUTTON FOR SORTING METHODS --------------- */
-
-  /*
-   * Just a label to better understand.
-   */
-  label = gtk_label_new("Sort By   ");
-  gtk_box_pack_start(GTK_BOX(otherHBox),
-		     label,
-		     FALSE /* expand  */,
-		     TRUE  /* fill    */,
-		     0     /* padding */);
-  gtk_widget_show(label);
-
-  /*
-   * Sort by provider (default).
-   */
-  kernel->widgets.pRadioButton = gtk_radio_button_new_with_label((GSList*)NULL,
-								 "Provider");
-  gtk_box_pack_start(GTK_BOX(otherHBox),
-		     kernel->widgets.pRadioButton,
-		     TRUE  /* expand  */,
-		     TRUE  /* fill    */,
-		     0     /* padding */);
-  gtk_widget_show(kernel->widgets.pRadioButton);
-
-  gtk_signal_connect(GTK_OBJECT(kernel->widgets.pRadioButton),
-		     "clicked",
-		     GTK_SIGNAL_FUNC(gdisp_changeSortingMethodCallback),
-		     (gpointer)kernel);
-
-  gtk_tooltips_set_tip(GTK_TOOLTIPS(toolTipGroup),
-		       kernel->widgets.pRadioButton,
-		       "Sort all symbols by provider",
-		       "");
-
-  /*
-   * This radio button must be set to "no sensitive" when only one
-   * provider is available.
-   * Then choose correct sorting method.
-   */
-  if (gdisp_getProviderNumber(kernel) == 1) {
-
-    gtk_widget_set_sensitive(kernel->widgets.pRadioButton,
-			     FALSE /* not sensitive */);
-    if (kernel->sortingMethod == GD_SORT_BY_PROVIDER)
-      kernel->sortingMethod = GD_SORT_BY_NAME;
-
-  }
-
-  /*
-   * Sort by name (ascending).
-   */
-  radioButtonGroup =
-    gtk_radio_button_group(GTK_RADIO_BUTTON(kernel->widgets.pRadioButton));
-
-  kernel->widgets.naRadioButton =
-    gtk_radio_button_new_with_label(radioButtonGroup,
-				    "Name Ascending");
-
-  gtk_box_pack_start(GTK_BOX(otherHBox),
-		     kernel->widgets.naRadioButton,
-		     TRUE  /* expand  */,
-		     TRUE  /* fill    */,
-		     0     /* padding */);
-  gtk_widget_show(kernel->widgets.naRadioButton);
-
-  gtk_signal_connect(GTK_OBJECT(kernel->widgets.naRadioButton),
-		     "clicked",
-		     GTK_SIGNAL_FUNC(gdisp_changeSortingMethodCallback),
-		     (gpointer)kernel);
-
-  gtk_tooltips_set_tip(GTK_TOOLTIPS(toolTipGroup),
-		       kernel->widgets.naRadioButton,
-		       "Sort all symbols alphabetically",
-		       "");
-
-  /*
-   * Sort by name (descending).
-   */
-  radioButtonGroup =
-    gtk_radio_button_group(GTK_RADIO_BUTTON(kernel->widgets.naRadioButton));
-
-  kernel->widgets.ndRadioButton =
-    gtk_radio_button_new_with_label(radioButtonGroup,
-				    "Name Descending");
-
-  gtk_box_pack_start(GTK_BOX(otherHBox),
-		     kernel->widgets.ndRadioButton,
-		     TRUE  /* expand  */,
-		     TRUE  /* fill    */,
-		     0     /* padding */);
-  gtk_widget_show(kernel->widgets.ndRadioButton);
-
-  gtk_signal_connect(GTK_OBJECT(kernel->widgets.ndRadioButton),
-		     "clicked",
-		     GTK_SIGNAL_FUNC(gdisp_changeSortingMethodCallback),
-		     (gpointer)kernel);
-
-  gtk_tooltips_set_tip(GTK_TOOLTIPS(toolTipGroup),
-		       kernel->widgets.ndRadioButton,
-		       "Sort all symbols reverse-alphabetically",
-		       "");
-
-  /*
-   * Take care of current sorting method in the kernel.
-   */
-  switch (kernel->sortingMethod) {
-
-  case GD_SORT_BY_PROVIDER :
-    radioStatuses[0 /* sort by provider        */] = TRUE;
-    radioStatuses[1 /* sort by name ascending  */] = FALSE;
-    radioStatuses[2 /* sort by name descending */] = FALSE;
-    break;
-
-  case GD_SORT_BY_NAME         :
-    radioStatuses[0 /* sort by provider        */] = FALSE;
-    radioStatuses[1 /* sort by name ascending  */] = TRUE;
-    radioStatuses[2 /* sort by name descending */] = FALSE;
-    break;
-
-  case GD_SORT_BY_NAME_REVERSE :
-    radioStatuses[0 /* sort by provider        */] = FALSE;
-    radioStatuses[1 /* sort by name ascending  */] = FALSE;
-    radioStatuses[2 /* sort by name descending */] = TRUE;
-    break;
-
-  default :
-    break;
-
-  }
-
-  gtk_toggle_button_set_active(
-                  GTK_TOGGLE_BUTTON(kernel->widgets.pRadioButton),
-		  radioStatuses[0 /* sort by provider        */]);
-
-  gtk_toggle_button_set_active(
-                  GTK_TOGGLE_BUTTON(kernel->widgets.naRadioButton),
-		  radioStatuses[1 /* sort by name ascending  */]);
-
-  gtk_toggle_button_set_active(
-                  GTK_TOGGLE_BUTTON(kernel->widgets.ndRadioButton),
-		  radioStatuses[2 /* sort by name descending */]);
-
-
-  /* -------------------- HORIZONTAL SEPARATOR --------------------- */
-
-  hSeparator = gtk_hseparator_new();
-  gtk_box_pack_start(GTK_BOX(otherVBox),
-		     hSeparator,
-		     FALSE /* expand  */,
-		     TRUE  /* fill    */,
-		     0     /* padding */);
-  gtk_widget_show(hSeparator);
-
-
   /* ------------------------ PACKING BOX ------------------------ */
 
   /*
@@ -1041,11 +990,7 @@ gdisp_createSymbolList ( Kernel_T  *kernel,
   otherHBox = gtk_hbox_new(FALSE, /* homogeneous */
 			   5      /* spacing     */ );
   gtk_container_border_width(GTK_CONTAINER(otherHBox),5);
-  gtk_box_pack_start(GTK_BOX(otherVBox),
-		     otherHBox,
-		     FALSE /* expand  */,
-		     TRUE  /* fill    */,
-		     0     /* padding */);
+  gtk_container_add(GTK_CONTAINER(frame),otherHBox);
   gtk_widget_show(otherHBox);
 
 
@@ -1078,171 +1023,6 @@ gdisp_createSymbolList ( Kernel_T  *kernel,
 		       "Add coma-separated strings to reduce the size "
 		       "of the list (case sensitive)",
 		       "");
-
-
-  /* -------------------- HORIZONTAL SEPARATOR --------------------- */
-
-  hSeparator = gtk_hseparator_new();
-  gtk_box_pack_start(GTK_BOX(otherVBox),
-		     hSeparator,
-		     FALSE /* expand  */,
-		     TRUE  /* fill    */,
-		     0     /* padding */);
-  gtk_widget_show(hSeparator);
-
-
-  /* ------------- HORIZONTAL PACKING BOX INTO THE FRAME ------------- */
-
-  /*
-   * We need a horizontal packing box for managing the radio buttons.
-   */
-  otherHBox = gtk_hbox_new(FALSE, /* homogeneous */
-			   5      /* spacing     */ );
-  gtk_container_border_width(GTK_CONTAINER(otherHBox),3);
-  gtk_box_pack_start(GTK_BOX(otherVBox),
-		     otherHBox,
-		     FALSE /* expand  */,
-		     TRUE  /* fill    */,
-		     0     /* padding */);
-  gtk_widget_show(otherHBox);
-
-
-  /* ---------------- RADIO BUTTON FOR DnD SCOPE --------------- */
-
-  /*
-   * Just a label to better understand.
-   */
-  label = gtk_label_new("Drag & Drop Scope       ");
-  gtk_box_pack_start(GTK_BOX(otherHBox),
-		     label,
-		     FALSE  /* expand  */,
-		     FALSE /* fill    */,
-		     0     /* padding */);
-  gtk_widget_show(label);
-
-  /*
-   * Drag & Drop Scope is "Unique" (the target is a unique graphic plot).
-   */
-  kernel->widgets.uRadioButton = gtk_radio_button_new_with_label((GSList*)NULL,
-								 "Unique");
-  gtk_box_pack_start(GTK_BOX(otherHBox),
-		     kernel->widgets.uRadioButton,
-		     TRUE  /* expand  */,
-		     TRUE  /* fill    */,
-		     0     /* padding */);
-  gtk_widget_show(kernel->widgets.uRadioButton);
-
-  gtk_signal_connect(GTK_OBJECT(kernel->widgets.uRadioButton),
-		     "clicked",
-		     GTK_SIGNAL_FUNC(gdisp_changeDnDScopeCallback),
-		     (gpointer)kernel);
-
-  gtk_tooltips_set_tip(GTK_TOOLTIPS(toolTipGroup),
-		       kernel->widgets.uRadioButton,
-		       "Only the graphic plot on which the drop action "
-		       "occured will receive the new symbols",
-		       "");
-
-  /*
-   * Drag & Drop Scope is "Single Page".
-   * All graphic plots inside the page that received the drop action will
-   * be given the symbols.
-   */
-  radioButtonGroup =
-    gtk_radio_button_group(GTK_RADIO_BUTTON(kernel->widgets.uRadioButton));
-
-  kernel->widgets.spRadioButton =
-    gtk_radio_button_new_with_label(radioButtonGroup,
-				    "Single Page");
-
-  gtk_box_pack_start(GTK_BOX(otherHBox),
-		     kernel->widgets.spRadioButton,
-		     TRUE  /* expand  */,
-		     TRUE  /* fill    */,
-		     0     /* padding */);
-  gtk_widget_show(kernel->widgets.spRadioButton);
-
-  gtk_signal_connect(GTK_OBJECT(kernel->widgets.spRadioButton),
-		     "clicked",
-		     GTK_SIGNAL_FUNC(gdisp_changeDnDScopeCallback),
-		     (gpointer)kernel);
-
-  gtk_tooltips_set_tip(GTK_TOOLTIPS(toolTipGroup),
-		       kernel->widgets.spRadioButton,
-		       "All graphic plots belonging to the page on which "
-		       "the drop action occured will receive the new symbols",
-		       "");
-
-
-  /*
-   * Drag & Drop Scope is "All Pages".
-   * All graphic plots of all existing pages will be given the symbols.
-   */
-  radioButtonGroup =
-    gtk_radio_button_group(GTK_RADIO_BUTTON(kernel->widgets.spRadioButton));
-
-  kernel->widgets.apRadioButton =
-    gtk_radio_button_new_with_label(radioButtonGroup,
-				    "All Pages");
-
-  gtk_box_pack_start(GTK_BOX(otherHBox),
-		     kernel->widgets.apRadioButton,
-		     TRUE  /* expand  */,
-		     TRUE  /* fill    */,
-		     0     /* padding */);
-  gtk_widget_show(kernel->widgets.apRadioButton);
-
-  gtk_signal_connect(GTK_OBJECT(kernel->widgets.apRadioButton),
-		     "clicked",
-		     GTK_SIGNAL_FUNC(gdisp_changeDnDScopeCallback),
-		     (gpointer)kernel);
-
-  gtk_tooltips_set_tip(GTK_TOOLTIPS(toolTipGroup),
-		       kernel->widgets.apRadioButton,
-		       "All graphic plots of all graphic pages "
-		       "will receive the new symbols",
-		       "");
-
-
-  /*
-   * Take care of current DnD scope in the kernel.
-   */
-  switch (kernel->dndScope) {
-
-  case GD_DND_UNICAST :
-    radioStatuses[0 /* unicast   */] = TRUE;
-    radioStatuses[1 /* multicast */] = FALSE;
-    radioStatuses[2 /* broadcast */] = FALSE;
-    break;
-
-  case GD_DND_MULTICAST :
-    radioStatuses[0 /* unicast   */] = FALSE;
-    radioStatuses[1 /* multicast */] = TRUE;
-    radioStatuses[2 /* broadcast */] = FALSE;
-    break;
-
-  case GD_DND_BROADCAST :
-    radioStatuses[0 /* unicast   */] = FALSE;
-    radioStatuses[1 /* multicast */] = FALSE;
-    radioStatuses[2 /* broadcast */] = TRUE;
-    break;
-
-  default :
-    break;
-
-  }
-
-  gtk_toggle_button_set_active(
-                  GTK_TOGGLE_BUTTON(kernel->widgets.uRadioButton),
-		  radioStatuses[0 /* unicast */]);
-
-  gtk_toggle_button_set_active(
-                  GTK_TOGGLE_BUTTON(kernel->widgets.spRadioButton),
-		  radioStatuses[1 /* multicast */]);
-
-  gtk_toggle_button_set_active(
-                  GTK_TOGGLE_BUTTON(kernel->widgets.apRadioButton),
-		  radioStatuses[2 /* broadcast */]);
 
 
   /* ------------------------ LIST OF SYMBOLS  ------------------------ */
@@ -1311,7 +1091,9 @@ gdisp_destroySymbolList ( Kernel_T *kernel )
 {
 
   /*
-   * Nothing by now.
+   * Destroy popup menu.
    */
+  gdisp_destroyMenu((PopupMenu_T*)kernel->widgets.cListPopupMenu);
+  kernel->widgets.cListPopupMenu = (gpointer)NULL;
 
 }

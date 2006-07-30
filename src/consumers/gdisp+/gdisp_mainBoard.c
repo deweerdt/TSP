@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_mainBoard.c,v 1.12 2006-05-13 20:55:02 esteban Exp $
+$Id: gdisp_mainBoard.c,v 1.13 2006-07-30 20:25:58 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -954,7 +954,7 @@ gdisp_writeInitialInformation (Kernel_T *kernel)
   /*
    * Add into the list GDISP+ Version identification.
    */
-  messageString = g_string_new("GDISP+ Graphic Tool, Version 1.0");
+  messageString = g_string_new("TARGA Graphic Tool, Version 1.0");
   kernel->outputFunc(kernel,messageString,GD_MESSAGE);
 
 

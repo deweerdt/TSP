@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_kernel.c,v 1.16 2006-05-13 20:55:02 esteban Exp $
+$Id: gdisp_kernel.c,v 1.17 2006-07-30 20:25:58 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -321,6 +321,7 @@ gdisp_createKernel (gint    argc,
   kernel->asyncWriteIsAllowed    = FALSE;
   kernel->isThreadSafe           = FALSE;
   kernel->sortingMethod          = GD_SORT_BY_PROVIDER;
+  kernel->sortingDirection       = GD_SORT_ASCENDING;
   kernel->dndScope               = GD_DND_UNICAST;
   kernel->argCounter             = argc;
   kernel->argTable               = argv;

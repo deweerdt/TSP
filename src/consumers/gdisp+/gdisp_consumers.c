@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_consumers.c,v 1.17 2006-05-13 20:55:02 esteban Exp $
+$Id: gdisp_consumers.c,v 1.18 2006-07-30 20:25:58 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -85,6 +85,189 @@ gdisp_sortProviderByUrl(gconstpointer data1,
 
 
 /*
+ * Destroy symbol extended information.
+ */
+static void
+gdisp_destroySymbolExtendedInformation (Provider_T *provider)
+{
+
+  Symbol_T  *symbol      = (Symbol_T*)NULL;
+  GList     *extInfoList = (GList*)NULL;
+  gchar    **extInfo     = (gchar**)NULL;
+  guint      symbolCpt   = 0;
+
+  /*
+   * Loop over all provider symbols.
+   */
+  symbol = provider->pSymbolList;
+  for (symbolCpt=0;
+       symbolCpt<provider->pSymbolNumber;
+       symbolCpt++, symbol++) {
+
+    if (symbol->sExtInfoList != (GList*)NULL) {
+
+      extInfoList = g_list_first(symbol->sExtInfoList);
+      while (extInfoList != (GList*)NULL) {
+
+	extInfo = (gchar**)extInfoList->data;
+
+	g_free(extInfo[0]);
+	g_free(extInfo[1]);
+	g_free(extInfo);
+
+	extInfoList = g_list_next(extInfoList);
+
+      }
+
+      g_list_free(symbol->sExtInfoList);
+      symbol->sExtInfoList = (GList*)NULL;
+
+    }
+
+  } /* loop over all symbols */
+
+}
+
+
+/*
+ * Get symbol extended information.
+ */
+static void
+gdisp_getSymbolExtendedInformation (Provider_T *provider)
+{
+
+  const
+  TSP_sample_symbol_extended_info_list_t *symbolExtInfoList = NULL;
+  TSP_sample_symbol_extended_info_t      *symbolExtInfo     = NULL;
+  TSP_extended_info_t                    *extInfo           = NULL;
+  gchar    **extInfoElem = (gchar**)NULL;
+  guint      pgiTableLen = 0;
+  gint      *pgiTable    = (gint*)NULL;
+  Symbol_T  *symbol      = (Symbol_T*)NULL;
+  gint       symbolCpt   = 0;
+  gint       extInfoCpt  = 0;
+  gint       errorCode   = TSP_STATUS_OK;
+
+
+  /*
+   * Destroy any previous information.
+   */
+  gdisp_destroySymbolExtendedInformation(provider);
+
+  /*
+   * Memory allocation.
+   */
+  pgiTable = (gint*)g_malloc0(provider->pSymbolNumber * sizeof(gint));
+  if (pgiTable == (gint*)NULL) {
+    return;
+  }
+
+  /*
+   * Build the table with all available PGIs.
+   */
+  symbol = provider->pSymbolList;
+  for (symbolCpt=0;
+       symbolCpt<provider->pSymbolNumber;
+       symbolCpt++, symbol++) {
+
+    if (symbol->sPgi != -1) {
+      pgiTable[pgiTableLen++] = symbol->sPgi;
+    }
+
+  }
+
+  /*
+   * Request for TSP extended information.
+   */
+  errorCode = TSP_consumer_request_extended_information(provider->pHandle,
+							pgiTable,
+							pgiTableLen);
+  if (errorCode != TSP_STATUS_OK) {
+    g_free(pgiTable);
+    return;
+  }
+
+  /*
+   * Get TSP extended information.
+   */
+  symbolExtInfoList = TSP_consumer_get_extended_information(provider->pHandle);
+
+  if (symbolExtInfoList == (TSP_sample_symbol_extended_info_list_t*)NULL) {
+    g_free(pgiTable);
+    return;
+  }
+
+  /*
+   * Check the coherence of the response.
+   */
+  if (pgiTableLen !=
+      symbolExtInfoList->TSP_sample_symbol_extended_info_list_t_len) {
+    g_free(pgiTable);
+    return;
+  }
+
+  /*
+   * Loop over all available extended information.
+   */
+  symbol = provider->pSymbolList;
+
+  symbolExtInfo =
+    symbolExtInfoList->TSP_sample_symbol_extended_info_list_t_val;
+
+  for (symbolCpt=0;
+       symbolCpt<provider->pSymbolNumber;
+       symbolCpt++, symbol++) {
+
+    if (symbol->sPgi != -1) {
+
+      /*
+       * PGI must be the same.
+       * FIXME : According to Erk, it is not true.
+       */
+      if (symbol->sPgi != symbolExtInfo->provider_global_index) {
+	fprintf(stdout,
+		"[TARGA] : Extended information -> incoherent PGI (%d <> %d).\n",
+		symbol->sPgi,
+		symbolExtInfo->provider_global_index);
+      }
+
+      if (symbolExtInfo->info.TSP_extended_info_list_t_len > 0) {
+
+	extInfo = symbolExtInfo->info.TSP_extended_info_list_t_val;
+
+	for (extInfoCpt=0;
+	     extInfoCpt<symbolExtInfo->info.TSP_extended_info_list_t_len;
+	     extInfoCpt++, extInfo++) {
+
+	  extInfoElem = (gchar**)g_malloc0(2*sizeof(gchar*));
+	  assert(extInfoElem);
+
+	  extInfoElem[0] = gdisp_strDup(extInfo->key);
+	  extInfoElem[1] = gdisp_strDup(extInfo->value);
+
+	  symbol->sExtInfoList = g_list_append(symbol->sExtInfoList,
+					       (gpointer)extInfoElem);
+
+	} /* loop over all information */
+
+      } /* has extended information */
+
+      symbolExtInfo++;
+
+    } /* correct PGI */
+
+  } /* loop over all PGIs */
+
+
+  /*
+   * Free memory.
+   */
+  g_free(pgiTable);
+
+}
+
+
+/*
  * Manage a new provider -> read information and add symbols.
  */
 static int
@@ -92,16 +275,14 @@ gdisp_insertProvider ( Kernel_T *kernel,
 		       gchar    *url )
 {
 
-  GString        *messageString    = (GString*)NULL;
-
-  TSP_provider_t *provider         = NULL;
-  gint            symbolCpt        = 0;
-
-  Provider_T     *newProvider      = (Provider_T*)NULL;
-  gint            requestStatus    = 0;
-
-  const TSP_answer_sample_t *providerInfo =
-                                  (const TSP_answer_sample_t*)NULL;
+  TSP_provider_t            *provider      = NULL;
+  Provider_T                *newProvider   = (Provider_T*)NULL;
+  Symbol_T                  *symbolList    = (Symbol_T*)NULL;
+  GString                   *messageString = (GString*)NULL;
+  gint                       symbolCpt     = 0;
+  gint                       requestStatus = 0;
+  TSP_sample_symbol_info_t  *symbolInfo    = (TSP_sample_symbol_info_t*)NULL;
+  const TSP_answer_sample_t *providerInfo  = (const TSP_answer_sample_t*)NULL;
 
   /*
    * Check the original url is not known yet.
@@ -182,11 +363,14 @@ gdisp_insertProvider ( Kernel_T *kernel,
 	providerInfo = TSP_consumer_get_information(newProvider->pHandle);
 	assert(providerInfo);
 
+	newProvider->pVersionId           = providerInfo->version_id;
+	newProvider->pChannelId           = providerInfo->channel_id;
+	newProvider->pTimeOut             = providerInfo->provider_timeout;
+	newProvider->pGroupNumber         = providerInfo->provider_group_number;
 	newProvider->pBaseFrequency       = providerInfo->base_frequency;
 	newProvider->pMaxPeriod           = providerInfo->max_period;
 	newProvider->pMaxClientNumber     = providerInfo->max_client_number;
-	newProvider->pCurrentClientNumber =
-	                                providerInfo->current_client_number;
+	newProvider->pCurrentClientNumber = providerInfo->current_client_number;
 	newProvider->pSymbolNumber        = providerInfo->symbols.TSP_sample_symbol_info_list_t_len;
 
 	/*
@@ -214,23 +398,41 @@ gdisp_insertProvider ( Kernel_T *kernel,
 	  /*
 	   * Loop over all symbols.
 	   */
-	  for (symbolCpt=0;
-	       symbolCpt<newProvider->pSymbolNumber; symbolCpt++) {
+	  symbolInfo = providerInfo->symbols.TSP_sample_symbol_info_list_t_val;
+	  symbolList = newProvider->pSymbolList;
 
-	    newProvider->pSymbolList[symbolCpt].sInfo.name   =
-                     gdisp_strDup(providerInfo->symbols.TSP_sample_symbol_info_list_t_val[symbolCpt].name);
-	    newProvider->pSymbolList[symbolCpt].sInfo.provider_global_index  =
-                                  providerInfo->symbols.TSP_sample_symbol_info_list_t_val[symbolCpt].provider_global_index;
+	  for (symbolCpt=0;
+	       symbolCpt<newProvider->pSymbolNumber;
+	       symbolCpt++, symbolList++, symbolInfo++) {
+
+	    /* copy the whole structure... */
+	    symbolList->sInfo = *symbolInfo;
+	    symbolList->sPgi  =  symbolInfo->provider_global_index;
+
+	    /* ... and do not forget to duplicate pointers */
+	    symbolList->sInfo.name = gdisp_strDup(symbolInfo->name);
 
 	    /* Default is : at maximum frequency without offset */
-	    newProvider->pSymbolList[symbolCpt].sInfo.period = 1;
-	    newProvider->pSymbolList[symbolCpt].sInfo.phase  = 0;
+	    symbolList->sInfo.period = 1;
+	    symbolList->sInfo.phase  = 0;
 
+	    /* do not treat table */
+	    if (symbolList->sInfo.dimension > 1) {
+	      symbolList->sInfo.provider_global_index = -1;
+	      symbolList->sPgi = -1;
+	    }
+
+	    /* insert symbol into hash table */
 	    hash_append(newProvider->pSymbolHashTable,
-			newProvider->pSymbolList[symbolCpt].sInfo.name,
-			(void*)&newProvider->pSymbolList[symbolCpt]);
+			symbolList->sInfo.name,
+			(void*)symbolList);
 
 	  } /* symbolCpt */
+
+	  /*
+	   * Get symbol extended information.
+	   */
+	  gdisp_getSymbolExtendedInformation(newProvider);
 
 	} /* retreiveAllSymbols == TRUE */
 
@@ -528,10 +730,17 @@ gdisp_consumingEnd (Kernel_T *kernel)
 
     provider = (Provider_T*)providerItem->data;
 
+    /*
+     * Close TSP connection.
+     */
+    TSP_consumer_request_close(provider->pHandle);
+
     for (symbolCpt=0; symbolCpt<provider->pSymbolNumber; symbolCpt++) {
       g_free(provider->pSymbolList[symbolCpt].sInfo.name);
       provider->pSymbolList[symbolCpt].sInfo.name = (gchar*)NULL;
     }
+
+    gdisp_destroySymbolExtendedInformation(provider);
 
     if (provider->pSymbolList != (Symbol_T*)NULL) {
       g_free(provider->pSymbolList);

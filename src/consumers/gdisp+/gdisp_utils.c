@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_utils.c,v 1.11 2006-05-13 20:55:02 esteban Exp $
+$Id: gdisp_utils.c,v 1.12 2006-07-30 20:25:58 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -907,7 +907,7 @@ gdisp_inputWindowCloseCallback (GtkWidget *closeButtonWidget,
   InputWindowData_T *iwData = (InputWindowData_T*)data;
 
   /*
-   * Tells GTK+ that it has to exit from the GTK+ main processing loop.
+   * Tells GTK+ that it has to exit from the IWindow main processing loop.
    */
   gtk_widget_destroy(iwData->fieldWindow);
 
@@ -1125,6 +1125,9 @@ gdisp_showInputWindow (Kernel_T *kernel,
 
   }
 
+  /*
+   * Show field entry.
+   */
   gtk_widget_show(fieldEntry);
 
   /*
@@ -1141,3 +1144,44 @@ gdisp_showInputWindow (Kernel_T *kernel,
 }
 
 /********************* INPUT WINDOW MANAGEMENT END **********************/
+
+/*
+ * Ascii to Integer with default value.
+ */
+gint
+gdisp_atoi (gchar *string,
+	    gint   defaultValue)
+{
+
+  gint integerValue = atoi(string);
+
+  return (integerValue != 0 ? integerValue : defaultValue);
+
+}
+
+
+/*
+ * Get back distant colors (not too close).
+ */
+GdkColor*
+gdisp_getDistantColor (Kernel_T *kernel,
+		       guint     colorId)
+{
+
+  guint nbDistantColors  = 0;
+  guint distantColorId[] = { _RED_,
+			     _GREEN_,
+			     _ORANGE_,
+			     _YELLOW_,
+			     _BLUE_,
+			     _MAGENTA_,
+			     _CYAN_,
+			     _BLACK_,
+			     _GREY_,
+			     _WHITE_ };
+
+  nbDistantColors = sizeof(distantColorId) / sizeof(guint);
+
+  return &kernel->colors[distantColorId[colorId % nbDistantColors]];
+
+}

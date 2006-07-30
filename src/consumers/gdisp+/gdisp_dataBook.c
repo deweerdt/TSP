@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_dataBook.c,v 1.8 2006-02-26 14:08:23 erk Exp $
+$Id: gdisp_dataBook.c,v 1.9 2006-07-30 20:25:58 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -147,12 +147,6 @@ gdisp_destroySignalHandler (GtkWidget *dataBookWindow,
   kernel->widgets.dataBookApplyButton = (GtkWidget*)NULL;
   kernel->widgets.symbolCList         = (GtkWidget*)NULL;
   kernel->widgets.symbolFrame         = (GtkWidget*)NULL;
-  kernel->widgets.pRadioButton        = (GtkWidget*)NULL;
-  kernel->widgets.naRadioButton       = (GtkWidget*)NULL;
-  kernel->widgets.ndRadioButton       = (GtkWidget*)NULL;
-  kernel->widgets.uRadioButton        = (GtkWidget*)NULL;
-  kernel->widgets.spRadioButton       = (GtkWidget*)NULL;
-  kernel->widgets.apRadioButton       = (GtkWidget*)NULL;
   kernel->widgets.filterEntry         = (GtkWidget*)NULL;
 
 }

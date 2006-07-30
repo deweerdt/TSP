@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_sampledSymbols.c,v 1.11 2006-04-07 10:37:17 morvan Exp $
+$Id: gdisp_sampledSymbols.c,v 1.12 2006-07-30 20:25:58 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -54,6 +54,7 @@ File      : Information / Actions upon available sampled symbols.
  */
 #include "gdisp_kernel.h"
 #include "gdisp_prototypes.h"
+#include "gdisp_popupMenu.h"
 
 
 /*
@@ -440,6 +441,7 @@ gdisp_createSymbolNode(Kernel_T     *kernel,
 {
 
   GtkCTreeNode *iNode                       = (GtkCTreeNode*)NULL;
+  GList        *iExtInfoItem                = (GList*)NULL;
   gchar         iInfo  [128];
   gchar        *iNames [GD_TREE_NB_COLUMNS] = { (gchar*)NULL,  (gchar*)NULL };
 
@@ -447,6 +449,19 @@ gdisp_createSymbolNode(Kernel_T     *kernel,
    * The name of the node is the name of the symbol.
    */
   iNames[0] = symbol->sInfo.name;
+  iNames[1] = iInfo;
+  if (symbol->sInfo.dimension == 1) {
+    sprintf(iNames[1],
+	    "Type %s",
+	    gdisp_getTypeAsString(symbol));
+  }
+  else {
+    sprintf(iNames[1],
+	    "Type %s [%d]",
+	    gdisp_getTypeAsString(symbol),
+	    symbol->sInfo.dimension);
+  }
+
   symbol->sNode = gtk_ctree_insert_node(GTK_CTREE(tree),
 					sampledSymbolNode,
 					(GtkCTreeNode*)NULL, /* no sibling */
@@ -562,6 +577,36 @@ gdisp_createSymbolNode(Kernel_T     *kernel,
 			      iNode,
 			      (gpointer)"sReference");
 
+
+  /*
+   * Insert extended information.
+   */
+  iExtInfoItem = g_list_first(symbol->sExtInfoList);
+  while (iExtInfoItem != (GList*)NULL) {
+
+    iNames[0] = ((gchar**)(iExtInfoItem->data))[0];
+    iNames[1] = ((gchar**)(iExtInfoItem->data))[1];
+    
+    iNode = gtk_ctree_insert_node(GTK_CTREE(tree),
+				  symbol->sNode, /* the parent */
+				  (GtkCTreeNode*)NULL, /* no sibling node */
+				  iNames,
+				  GD_TREE_SPACING,
+				  (GdkPixmap*)NULL,
+				  (GdkBitmap*)NULL,
+				  (GdkPixmap*)NULL,
+				  (GdkBitmap*)NULL,
+				  TRUE,   /* is a leave  */
+				  FALSE); /* is expanded */
+
+    gtk_ctree_node_set_selectable(GTK_CTREE(tree),
+				  iNode,
+				  FALSE); /* not selectable */
+
+    iExtInfoItem = g_list_next(iExtInfoItem);
+
+  }
+
 }
 
 
@@ -647,22 +692,25 @@ static void
 gdisp_poolSampledSymbolList ( Kernel_T *kernel )
 {
 
-  GtkWidget        *cTree             =    (GtkWidget*)NULL;
-  GString          *messageString     =      (GString*)NULL;
-  GList            *providerItem      =        (GList*)NULL;
-  Provider_T       *provider          =   (Provider_T*)NULL;
-  Symbol_T         *symbol            =     (Symbol_T*)NULL;
-  GtkCTreeNode     *pSymbolAnchor     = (GtkCTreeNode*)NULL;
-  GtkCTreeNode     *pNode             = (GtkCTreeNode*)NULL;
-  GtkCTreeNode     *sNode             = (GtkCTreeNode*)NULL;
+  GtkWidget        *cTree              =    (GtkWidget*)NULL;
+  GString          *messageString      =      (GString*)NULL;
+  GList            *providerItem       =        (GList*)NULL;
+  Provider_T       *provider           =   (Provider_T*)NULL;
+  Symbol_T         *symbol             =     (Symbol_T*)NULL;
+  GtkCTreeNode     *pSymbolAnchor      = (GtkCTreeNode*)NULL;
+  GtkCTreeNode     *pNode              = (GtkCTreeNode*)NULL;
+  GtkCTreeNode     *sNode              = (GtkCTreeNode*)NULL;
 
-  gint              pSampleCpt        =                   0;
-  SampleList_T     *pSampleList       = (SampleList_T*)NULL;
-  guint             pSampleMax        =                   0;
+  gint              pSampleCpt         =                   0;
+  SampleList_T     *pSampleList        = (SampleList_T*)NULL;
+  guint             pSampleMax         =                   0;
 
 #define GD_SAMPLE_PGI_AS_STRING_LENGTH 10
   gchar             samplePGIasStringBuffer[GD_SAMPLE_PGI_AS_STRING_LENGTH];
-  gchar            *samplePGIasString =        (gchar*)NULL;
+  gchar            *samplePGIasString  =        (gchar*)NULL;
+
+  TSP_sample_symbol_info_t *symbolInfo = (TSP_sample_symbol_info_t*)NULL;
+
 
   /* ------------------------ PER PROVIDER ---------------------- */
 
@@ -715,18 +763,21 @@ gdisp_poolSampledSymbolList ( Kernel_T *kernel )
 	 */
 	pSampleList = &provider->pSampleList;
 	pSampleMax  = pSampleList->TSP_sample_symbol_info_list_t_len;
+	symbolInfo  = pSampleList->TSP_sample_symbol_info_list_t_val;
 
-	for (pSampleCpt=0; pSampleCpt<pSampleMax; pSampleCpt++) {
+	for (pSampleCpt=0;
+	     pSampleCpt<pSampleMax;
+	     pSampleCpt++, symbolInfo++) {
 
 	  /*
 	   * Get in touch with the symbol through the global index.
 	   */
-	  if (pSampleList->TSP_sample_symbol_info_list_t_val[pSampleCpt].provider_global_index >= 0) {
+	  if (symbolInfo->provider_global_index >= 0) {
 
 #if defined(GD_LOAD_CONFIGURATION_WITH_ALL_SYMBOLS)
 
 	    symbol =
-	      &provider->pSymbolList[pSampleList->TSP_sample_symbol_info_list_t_val[pSampleCpt].provider_global_index];
+	      &provider->pSymbolList[symbolInfo->provider_global_index];
 
 #else
 
@@ -735,7 +786,7 @@ gdisp_poolSampledSymbolList ( Kernel_T *kernel )
 	     */
 	    samplePGIasStringBuffer[GD_SAMPLE_PGI_AS_STRING_LENGTH-1] = '\0';
 	    samplePGIasString =
-	      gdisp_uIntToStr(pSampleList->TSP_sample_symbol_info_list_t_val[pSampleCpt].provider_global_index,
+	      gdisp_uIntToStr(symbolInfo->provider_global_index,
 		  &samplePGIasStringBuffer[GD_SAMPLE_PGI_AS_STRING_LENGTH-1]);
 
 	    /*
@@ -844,6 +895,39 @@ gdisp_poolSampledSymbolList ( Kernel_T *kernel )
 }
 
 
+/*
+ * Popup Menu Handler.
+ * Expand or Collapse the whole hierarchical tree.
+ */
+static void
+gdisp_popupMenuHandler ( Kernel_T    *kernel,
+			 PopupMenu_T *menu,
+			 gpointer     menuData, /* cTree */
+			 gpointer     itemData )
+{
+
+  GtkWidget *cTree  = (GtkWidget*)menuData;
+  guint      action = GPOINTER_TO_UINT(itemData);
+
+  /*
+   * itemData : 0-collapse, 1-expand
+   */
+  if (action == 1 /* expand */) {
+
+    gtk_ctree_expand_recursive(GTK_CTREE(cTree),
+			       (GtkCTreeNode*)NULL);
+
+  }
+  else {
+
+    gtk_ctree_collapse_recursive(GTK_CTREE(cTree),
+				 (GtkCTreeNode*)NULL);
+
+  }
+
+}
+
+
 
 /*
  --------------------------------------------------------------------
@@ -907,16 +991,18 @@ gdisp_createSampledSymbolList ( Kernel_T  *kernel,
 				GtkWidget *parent )
 {
 
-  GtkWidget        *sFrame           =    (GtkWidget*)NULL;
-  GtkWidget        *scrolledWindow   =    (GtkWidget*)NULL;
-  GtkWidget        *cTree            =    (GtkWidget*)NULL;
-  GtkCTreeNode     *pNode            = (GtkCTreeNode*)NULL;
-  GtkCTreeNode     *sNode            = (GtkCTreeNode*)NULL;
-  GdkFont          *selectedFont     =      (GdkFont*)NULL;
-  GdkFont          *unselectedFont   =      (GdkFont*)NULL;
+  GtkWidget    *sFrame         =    (GtkWidget*)NULL;
+  GtkWidget    *scrolledWindow =    (GtkWidget*)NULL;
+  GtkWidget    *cTree          =    (GtkWidget*)NULL;
+  GtkCTreeNode *pNode          = (GtkCTreeNode*)NULL;
+  GtkCTreeNode *sNode          = (GtkCTreeNode*)NULL;
+  GdkFont      *selectedFont   =      (GdkFont*)NULL;
+  GdkFont      *unselectedFont =      (GdkFont*)NULL;
 
-  GList            *providerItem     =        (GList*)NULL;
-  Provider_T       *provider         =   (Provider_T*)NULL;
+  GList        *providerItem   =        (GList*)NULL;
+  Provider_T   *provider       =   (Provider_T*)NULL;
+
+  PopupMenu_T  *popupMenu      = (PopupMenu_T*)NULL;
 
 
   /* ------------------------ FRAME WITH LABEL ------------------------ */
@@ -926,7 +1012,7 @@ gdisp_createSampledSymbolList ( Kernel_T  *kernel,
    * Align the label at the left of the frame.
    * Set the style of the frame.
    */
-  sFrame = gtk_frame_new(" Sampled Symbols (for information only)");
+  sFrame = gtk_frame_new(" Sampled Symbols ");
   gtk_frame_set_label_align(GTK_FRAME(sFrame),0.1,0.0);
   gtk_frame_set_shadow_type(GTK_FRAME(sFrame),GTK_SHADOW_ETCHED_IN);
 
@@ -954,6 +1040,32 @@ gdisp_createSampledSymbolList ( Kernel_T  *kernel,
   gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(scrolledWindow),
 					cTree);
   kernel->widgets.sampledSymbolHTree = cTree;
+
+
+  /* ---------------------- DYNAMIC POPUP MENU ---------------------*/
+
+  /*
+   * Create the dynamic menu.
+   */
+  popupMenu = gdisp_createMenu(kernel,
+			       cTree,
+			       gdisp_popupMenuHandler,
+			       (gpointer)cTree);
+
+  gdisp_addMenuItem(popupMenu,
+		    GD_POPUP_TITLE,
+		    "Sampled Symbol Tree",
+		    (gpointer)NULL);
+
+  gdisp_addMenuItem(popupMenu,
+		    GD_POPUP_ITEM,
+		    "Expand All",
+		    (gpointer)GUINT_TO_POINTER(1));
+
+  gdisp_addMenuItem(popupMenu,
+		    GD_POPUP_ITEM,
+		    "Collapse All",
+		    (gpointer)GUINT_TO_POINTER(0));
 
 
   /* ------------------------ NODE PIXMAPS --------------------- */
@@ -1030,10 +1142,9 @@ gdisp_createSampledSymbolList ( Kernel_T  *kernel,
       gtk_style_ref(kernel->widgets.selectedNodeStyle);
 
     kernel->widgets.selectedNodeStyle->font = selectedFont;
-#if defined(GD_TREE_WITH_COLOR)
+
     kernel->widgets.selectedNodeStyle->fg[GTK_STATE_NORMAL] =
-      kernel->colors[_CYAN_];
-#endif
+      kernel->colors[_BLUE_];
 
     kernel->widgets.unselectedNodeStyle =
       gtk_style_copy(gtk_widget_get_default_style());
@@ -1042,10 +1153,9 @@ gdisp_createSampledSymbolList ( Kernel_T  *kernel,
       gtk_style_ref(kernel->widgets.unselectedNodeStyle);
 
     kernel->widgets.unselectedNodeStyle->font = unselectedFont;
-#if defined(GD_TREE_WITH_COLOR)
+
     kernel->widgets.unselectedNodeStyle->fg[GTK_STATE_NORMAL] =
       kernel->colors[_BLACK_];
-#endif
 
   }
 

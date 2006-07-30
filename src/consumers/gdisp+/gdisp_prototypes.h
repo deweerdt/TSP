@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_prototypes.h,v 1.19 2006-05-13 20:55:02 esteban Exp $
+$Id: gdisp_prototypes.h,v 1.20 2006-07-30 20:25:58 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -276,6 +276,11 @@ void       gdisp_showInputWindow (Kernel_T *kernel,
 							 gchar*,
 							 gpointer),
 				  gboolean  onlyNumbers);
+gint       gdisp_atoi (gchar *string,
+		       gint   defaultValue);
+GdkColor  *gdisp_getDistantColor (Kernel_T *kernel,
+				  guint     colorId);
+
 
 /*
  * From gdisp_preferences.c
@@ -287,11 +292,14 @@ void       gdisp_savePreferenceFile (Kernel_T *kernel);
 /*
  * From gdisp_toString.c
  */
-gchar*     gdisp_dndScopeToString          (Kernel_T *kernel);
-gchar*     gdisp_sortingMethodToString     (Kernel_T *kernel);
-void       gdisp_setUpPreferenceFromString (Kernel_T *kernel,
-					    gchar    *preference,
-					    gchar    *value);
+gchar*         gdisp_dndScopeToString          (Kernel_T *kernel);
+gchar*         gdisp_sortingMethodToString     (Kernel_T *kernel);
+gchar*         gdisp_sortingDirectionToString  (Kernel_T *kernel);
+void           gdisp_setUpPreferenceFromString (Kernel_T *kernel,
+						gchar    *preference,
+						gchar    *value);
+gchar*         gdisp_getTypeAsString           (Symbol_T *symbol);
+TSP_datatype_t gdisp_getTypeFromString         (gchar    *typeAsString);
 
 
 /*
@@ -336,7 +344,7 @@ void       gdisp_setDataBoxXData      (gpointer   dataBoxVoid,
 guint      gdisp_addDataBoxYData      (gpointer   dataBoxVoid,
 				       gchar     *yName,
 				       gfloat    *yData,
-				       GdkColor   yColor);
+				       GdkColor  *yColor);
 void       gdisp_rescaleDataBox       (gpointer   dataBoxVoid);
 
 #endif /* __PROTOTYPES_H__ */

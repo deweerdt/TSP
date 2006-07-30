@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_sampling.c,v 1.18 2006-05-13 20:55:02 esteban Exp $
+$Id: gdisp_sampling.c,v 1.19 2006-07-30 20:25:58 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -65,6 +65,83 @@ File      : Graphic Tool Sampling Core Process.
                              STATIC ROUTINES
  --------------------------------------------------------------------
 */
+
+
+/*
+ * Get double value from TSP value.
+ */
+static gdouble
+gdisp_getDoubleValue(TSP_datatype_t  symbolType,
+		     TSP_sample_t   *sampleValue)
+{
+
+  gdouble doubleValue = 0.0;
+
+  switch (symbolType) {
+
+  case TSP_TYPE_DOUBLE :
+    doubleValue = sampleValue->uvalue.double_value;
+    break;
+
+  case TSP_TYPE_FLOAT :
+    doubleValue = (gdouble)sampleValue->uvalue.float_value;
+    break;
+
+  case TSP_TYPE_INT8 :
+    doubleValue = (gdouble)sampleValue->uvalue.int8_value;
+    break;
+
+  case TSP_TYPE_INT16 :
+    doubleValue = (gdouble)sampleValue->uvalue.int16_value;
+    break;
+
+  case TSP_TYPE_INT32 :
+    doubleValue = (gdouble)sampleValue->uvalue.int32_value;
+    break;
+
+  case TSP_TYPE_INT64 :
+    doubleValue = (gdouble)sampleValue->uvalue.int64_value;
+    break;
+
+  case TSP_TYPE_UINT8 :
+    doubleValue = (gdouble)sampleValue->uvalue.uint8_value;
+    break;
+
+  case TSP_TYPE_UINT16 :
+    doubleValue = (gdouble)sampleValue->uvalue.uint16_value;
+    break;
+
+  case TSP_TYPE_UINT32 :
+    doubleValue = (gdouble)sampleValue->uvalue.uint32_value;
+    break;
+
+  case TSP_TYPE_UINT64 :
+    doubleValue = (gdouble)sampleValue->uvalue.uint64_value;
+    break;
+
+  case TSP_TYPE_CHAR :
+    doubleValue = (gdouble)sampleValue->uvalue.char_value;
+    break;
+
+  case TSP_TYPE_UCHAR :
+    doubleValue = (gdouble)sampleValue->uvalue.uchar_value;
+    break;
+
+  case TSP_TYPE_RAW :
+    doubleValue = (gdouble)sampleValue->uvalue.raw_value;
+    break;
+
+  case TSP_TYPE_UNKNOWN :
+  case TSP_TYPE_LAST :
+  default :
+    doubleValue = 0.0;
+    break;
+
+  }
+  
+  return doubleValue;
+	
+}
 
 
 /*
@@ -580,22 +657,25 @@ static void*
 gdisp_samplingThread (void *data )
 {
 
-  Kernel_T     *kernel            = (Kernel_T*)data;
-  hash_t       *tmpHashTable      = (hash_t*)NULL;
-  const SampleList_T *sampleList  = (const SampleList_T*)NULL;
-  Provider_T   *provider          = (Provider_T*)NULL;
-  Symbol_T     *symbol            = (Symbol_T*)NULL;
-  GList        *providerItem      = (GList*)NULL;
-  gboolean      providerIsFound   = FALSE;
-  guchar        watchDog          = 10;
-  gint          requestStatus     = 0;
-  gboolean      sampleHasArrived  = FALSE;
-  guint         sampleRefTimeTag  = 0;
-  guint         sampleCpt         = 0;
-  TSP_sample_t  sampleValue;
 #define GD_SAMPLE_PGI_AS_STRING_LENGTH 10
-  gchar         samplePGIasStringBuffer[GD_SAMPLE_PGI_AS_STRING_LENGTH];
-  gchar        *samplePGIasString =      (gchar*)NULL;
+
+  Kernel_T                 *kernel            = (Kernel_T*)data;
+  hash_t                   *tmpHashTable      = (hash_t*)NULL;
+  const SampleList_T       *sampleList        = (const SampleList_T*)NULL;
+  Provider_T               *provider          = (Provider_T*)NULL;
+  Symbol_T                 *symbol            = (Symbol_T*)NULL;
+  GList                    *providerItem      = (GList*)NULL;
+  gboolean                  providerIsFound   = FALSE;
+  guchar                    watchDog          = 10;
+  gint                      requestStatus     = 0;
+  gboolean                  sampleHasArrived  = FALSE;
+  guint                     sampleRefTimeTag  = 0;
+  guint                     sampleCpt         = 0;
+  guint                     symbolLoad        = 0;
+  TSP_sample_symbol_info_t *symbolInfo        = (TSP_sample_symbol_info_t*)NULL;
+  TSP_sample_t              sampleValue;
+  gchar                 samplePGIasStringBuffer[GD_SAMPLE_PGI_AS_STRING_LENGTH];
+  gchar                    *samplePGIasString = (gchar*)NULL;
 
 #if defined(GD_THREAD_DEBUG)
   fprintf(stdout,"Beginning of provider sampling thread.\n");
@@ -647,6 +727,39 @@ gdisp_samplingThread (void *data )
   /*
    * Give requested symbols to TSP core.
    */
+#if defined(GD_PRINT_SAMPLE_LIST)
+ {
+
+   guint                     sampleCpt  = 0;
+   TSP_sample_symbol_info_t *symbolInfo = (TSP_sample_symbol_info_t*)NULL;
+
+   symbolInfo = provider->pSampleList.TSP_sample_symbol_info_list_t_val;
+
+   printf("-------------------- SAMPLING THREAD ------------------------\n");
+
+   for (sampleCpt=0;
+	sampleCpt<provider->pSampleList.TSP_sample_symbol_info_list_t_len;
+	sampleCpt++, symbolInfo++) {
+
+     printf("%s\n",symbolInfo->name);
+     printf("  pGlobalIndex %d, pGroupIndex %d, pGroupRank %d\n",
+	    symbolInfo->provider_global_index,
+	    symbolInfo->provider_group_index,
+	    symbolInfo->provider_group_rank);
+     printf("  Type %d, Dimension %d, Offset %d, nElem %d\n",
+	    symbolInfo->type,
+	    symbolInfo->dimension,
+	    symbolInfo->offset,
+	    symbolInfo->nelem);
+     printf("  Period %d, Phase %d\n",
+	    symbolInfo->period,
+	    symbolInfo->phase);
+
+   }
+
+ }
+#endif
+
   requestStatus = TSP_consumer_request_sample(provider->pHandle,
 					      &provider->pSampleList);
 
@@ -679,17 +792,20 @@ gdisp_samplingThread (void *data )
   }
 
   tmpHashTable = hash_open('.','z');
+  symbolInfo   = sampleList->TSP_sample_symbol_info_list_t_val;
+
+  /* Compute maximum load */
+  provider->pLoad    = 0;
+  provider->pMaxLoad = 0;
 
   for (sampleCpt=0;
        sampleCpt<sampleList->TSP_sample_symbol_info_list_t_len;
-       sampleCpt++) {
+       sampleCpt++, symbolInfo++) {
 
-    symbol = (Symbol_T*)
-      hash_get(provider->pSymbolHashTable,
-	       sampleList->TSP_sample_symbol_info_list_t_val[sampleCpt].name);
+    symbol = (Symbol_T*)hash_get(provider->pSymbolHashTable,
+				 symbolInfo->name);
 
-    symbol->sPgi =
-      sampleList->TSP_sample_symbol_info_list_t_val[sampleCpt].provider_global_index;
+    symbol->sPgi = symbolInfo->provider_global_index;
 
     /* I can use 'sprintf' because sampling has not started yet */
     sprintf(samplePGIasStringBuffer,
@@ -699,6 +815,17 @@ gdisp_samplingThread (void *data )
     hash_append(tmpHashTable,
 		samplePGIasStringBuffer,
 		(void*)symbol);
+
+    /* Compute maximum load */
+    if (symbol->sInfo.type >= TSP_TYPE_LAST) {
+      symbol->sInfo.type = TSP_TYPE_LAST;
+    }
+    symbolLoad  = tsp_type_size[symbol->sInfo.type];
+    symbolLoad *= provider->pBaseFrequency;
+    symbolLoad *= symbolInfo->nelem;
+    symbolLoad /= symbolInfo->period;
+
+    provider->pMaxLoad += symbolLoad;
 
   }
 
@@ -728,14 +855,7 @@ gdisp_samplingThread (void *data )
 
   /*
    * Sample... Do it...
-   * As load is concerned, only "double" values are supported by TSP.
    */
-  provider->pLoad    = 0;
-  provider->pMaxLoad =
-    provider->pBaseFrequency  *
-    provider->pSampleList.TSP_sample_symbol_info_list_t_len *
-    sizeof(gdouble);
-
   provider->pSamplingThreadStatus = GD_THREAD_RUNNING;
 
   while (kernel->samplingThreadMustExit == FALSE) {
@@ -756,12 +876,6 @@ gdisp_samplingThread (void *data )
     if (sampleHasArrived == TRUE) {
 
       /*
-       * Count the number of incoming values in order to deduce
-       * the provider load (bytes per seconds).
-       */
-      provider->pLoad += sizeof(gdouble);
-
-      /*
        * Check out new incoming frame.
        */
       if (sampleRefTimeTag != 0 &&
@@ -772,6 +886,7 @@ gdisp_samplingThread (void *data )
 	printf("------------------------ FRAME ------------------------\n");
 
 #endif
+
 	gdisp_loopOnGraphicPlots (kernel,
 				  gdisp_treatSymbolOnOneGraphicPlot,
 				  (void*)NULL);
@@ -805,18 +920,26 @@ gdisp_samplingThread (void *data )
 
 #endif
 
+      /*
+       * Count the number of incoming values in order to deduce
+       * the provider load (bytes per seconds).
+       */
+      provider->pLoad   += tsp_type_size[symbol->sInfo.type];
+
+      symbol->sTimeTag   = (guint)sampleValue.time;
+
+      symbol->sLastValue = gdisp_getDoubleValue(symbol->sInfo.type,
+						&sampleValue);
+
 #if defined(GD_SAMPLING_DEBUG)
 
       printf("Time [%d] - Index [%d] - Name [%s] - Value [%f]\n",
 	 sampleValue.time,
 	 sampleValue.provider_global_index,
 	 symbol->sInfo.name,
-	 (float)sampleValue.user_value);
+	 (float)symbol->sLastValue);
 
 #endif
-
-      symbol->sTimeTag    = (guint)sampleValue.time;
-      symbol->sLastValue  = sampleValue.uvalue.double_value;
 
     } /* sampleHasArrived == TRUE */
 
@@ -921,7 +1044,7 @@ gdisp_preSamplingThread (void *data )
     provider = (Provider_T*)providerItem->data;
 
     /*
-     * Create the thread is only there something to be sampled...
+     * Create the thread if only there something to be sampled...
      */
     if (provider->pSampleList.TSP_sample_symbol_info_list_t_len != 0) {
 
@@ -1239,6 +1362,14 @@ gdisp_affectRequestedSymbolsToProvider ( Kernel_T *kernel )
 
 	  g_array_append_val(requestedSymbolArray,symbol->sInfo);
 
+	  /* CAUTION
+	   * The 'sInfo' structure is going to be passed to the
+	   * 'TSP_consummer_request_sample' function.
+	   * Thus, the name will probably be freed by TSP.
+	   * Forget the current reference by duplicating the string.
+	   */
+	  symbol->sInfo.name = gdisp_strDup(symbol->sInfo.name);
+
 	}
 
 	symbolItem = g_list_next(symbolItem);
@@ -1250,8 +1381,9 @@ gdisp_affectRequestedSymbolsToProvider ( Kernel_T *kernel )
        * Transfer information to provider.
        */
       provider->pSampleList.TSP_sample_symbol_info_list_t_val =
-	(TSP_sample_symbol_info_t*)requestedSymbolArray->data;
-      provider->pSampleList.TSP_sample_symbol_info_list_t_len = requestedSymbolArray->len;
+                         (TSP_sample_symbol_info_t*)requestedSymbolArray->data;
+      provider->pSampleList.TSP_sample_symbol_info_list_t_len =
+                                                     requestedSymbolArray->len;
 
 
       /*
@@ -1286,7 +1418,10 @@ gdisp_asyncWriteSymbol ( Kernel_T *kernel,
 
 {
 
-  Provider_T *provider = (Provider_T*)NULL;
+  TSP_consumer_async_sample_t  asyncSample;
+  Provider_T                  *provider    = (Provider_T*)NULL;
+  gint                         errorCode   = 0;
+  gdouble                      doubleValue = 0.0;
 
   /*
    * Check if an async-write operation is allowed.
@@ -1305,8 +1440,19 @@ gdisp_asyncWriteSymbol ( Kernel_T *kernel,
     return FALSE;
   }
 
-  /* status = TSP_consumer_request_async_sample_write(...); */
+  /*
+   * Async Write.
+   */
+  doubleValue = atof(valueAsString);
 
-  return TRUE;
+  asyncSample.provider_global_index = symbol->sPgi;
+  asyncSample.value_ptr             = &doubleValue;
+  asyncSample.value_size            = sizeof(doubleValue);
+
+  errorCode =
+    TSP_consumer_request_async_sample_write(provider->pHandle,
+					    &asyncSample);
+
+  return (errorCode == TSP_STATUS_OK ? TRUE : FALSE);
 
 }

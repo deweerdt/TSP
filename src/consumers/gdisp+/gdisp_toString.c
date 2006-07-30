@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_toString.c,v 1.2 2006-02-26 14:08:24 erk Exp $
+$Id: gdisp_toString.c,v 1.3 2006-07-30 20:25:58 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -84,9 +84,46 @@ gdisp_setSortingMethodFromString ( Kernel_T *kernel,
     kernel->sortingMethod = GD_SORT_BY_INDEX;
 
   }
+  else if (strcmp(requestedMethod,"SortByType") == 0) {
+
+    kernel->sortingMethod = GD_SORT_BY_TYPE;
+
+  }
+  else if (strcmp(requestedMethod,"SortByDim") == 0) {
+
+    kernel->sortingMethod = GD_SORT_BY_DIM;
+
+  }
+  else if (strcmp(requestedMethod,"SortByExtInfo") == 0) {
+
+    kernel->sortingMethod = GD_SORT_BY_EXTINFO;
+
+  }
   else /* default "SortByProvider" */ {
 
     kernel->sortingMethod = GD_SORT_BY_PROVIDER;
+
+  }
+
+}
+
+
+/*
+ * Set up Sorting methods from string.
+ */
+static void
+gdisp_setSortingDirectionFromString ( Kernel_T *kernel,
+				      gchar    *requestedDirection )
+{
+
+  if (strcmp(requestedDirection,"Descending") == 0) {
+
+    kernel->sortingDirection = GD_SORT_DESCENDING;
+
+  }
+  else {
+
+    kernel->sortingDirection = GD_SORT_ASCENDING;
 
   }
 
@@ -101,9 +138,9 @@ gdisp_setDnDScopeFromString ( Kernel_T *kernel,
 			      gchar    *requestedScope )
 {
 
-  if (strcmp(requestedScope,"Unicast") == 0) {
+  if (strcmp(requestedScope,"Broadcast") == 0) {
 
-    kernel->dndScope = GD_DND_UNICAST;
+    kernel->dndScope = GD_DND_BROADCAST;
 
   }
   else if (strcmp(requestedScope,"Multicast") == 0) {
@@ -111,9 +148,9 @@ gdisp_setDnDScopeFromString ( Kernel_T *kernel,
     kernel->dndScope = GD_DND_MULTICAST;
 
   }
-  else /* default "Broadcast" */ {
+  else /* default "Unicast" */ {
 
-    kernel->dndScope = GD_DND_BROADCAST;
+    kernel->dndScope = GD_DND_UNICAST;
 
   }
 
@@ -134,7 +171,7 @@ gchar*
 gdisp_sortingMethodToString ( Kernel_T *kernel )
 {
 
-  gchar *myString = (gchar*)"Unknown";
+  gchar *myString = (gchar*)NULL;
 
   switch (kernel->sortingMethod) {
 
@@ -150,11 +187,48 @@ gdisp_sortingMethodToString ( Kernel_T *kernel )
     myString = "SortByIndex";
     break;
 
+  case GD_SORT_BY_TYPE :
+    myString = "SortByType";
+    break;
+
+  case GD_SORT_BY_DIM :
+    myString = "SortByDim";
+    break;
+
+  case GD_SORT_BY_EXTINFO :
+    myString = "SortByExtInfo";
+    break;
+
   case GD_SORT_BY_PROVIDER :
+  default :
     myString = "SortByProvider";
     break;
 
+  }
+
+  return myString;
+
+}
+
+
+/*
+ * Convert Sorting direction to string.
+ */
+gchar*
+gdisp_sortingDirectionToString ( Kernel_T *kernel )
+{
+
+  gchar *myString = (gchar*)NULL;
+
+  switch (kernel->sortingDirection) {
+
+  case GD_SORT_DESCENDING :
+    myString = "Descending";
+    break;
+
+  case GD_SORT_ASCENDING :
   default :
+    myString = "Ascending";
     break;
 
   }
@@ -171,13 +245,9 @@ gchar*
 gdisp_dndScopeToString ( Kernel_T *kernel )
 {
 
-  gchar *myString = (gchar*)"Unknown";
+  gchar *myString = (gchar*)NULL;
 
   switch (kernel->dndScope) {
-
-  case GD_DND_UNICAST :
-    myString = "Unicast";
-    break;
 
   case GD_DND_MULTICAST :
     myString = "Multicast";
@@ -187,7 +257,9 @@ gdisp_dndScopeToString ( Kernel_T *kernel )
     myString = "Broadcast";
     break;
 
+  case GD_DND_UNICAST :
   default :
+    myString = "Unicast";
     break;
 
   }
@@ -217,6 +289,15 @@ gdisp_setUpPreferenceFromString ( Kernel_T *kernel,
 
     gdisp_setSortingMethodFromString(kernel,
 				     value);
+
+  }
+  /*
+   * Symbol sorting direction.
+   */
+  else if (strcmp(preference,"sortingDirection") == 0) {
+
+    gdisp_setSortingDirectionFromString(kernel,
+					value);
 
   }
   /*
@@ -269,6 +350,81 @@ gdisp_setUpPreferenceFromString ( Kernel_T *kernel,
     /* nothing else by now */
 
   }
+
+}
+
+
+/*
+ * Get symbol type as a string.
+ */
+gchar*
+gdisp_getTypeAsString (Symbol_T *symbol)
+{
+
+  gchar *typeList[] = { "-?-",
+			"F64",
+			"F32",
+			"I08",
+			"I16",
+			"I32",
+			"I64",
+			"U08",
+			"U16",
+			"U32",
+			"U64",
+			"C08",
+			"UC8",
+			"RAW",
+			"-?-" };
+
+  if (symbol->sInfo.type >= TSP_TYPE_LAST) {
+    symbol->sInfo.type = TSP_TYPE_LAST;
+  }
+
+  return typeList[symbol->sInfo.type];
+
+}
+
+
+/*
+ * Get symbol type from a string.
+ */
+TSP_datatype_t
+gdisp_getTypeFromString (gchar *typeAsString)
+{
+
+  TSP_datatype_t  symbolType = TSP_TYPE_UNKNOWN;
+  gchar          *typeList[] = { "-?-",
+				 "F64",
+				 "F32",
+				 "I08",
+				 "I16",
+				 "I32",
+				 "I64",
+				 "U08",
+				 "U16",
+				 "U32",
+				 "U64",
+				 "C08",
+				 "UC8",
+				 "RAW",
+				 "-?-" };
+
+  if (typeAsString == (gchar*)NULL) {
+    return TSP_TYPE_UNKNOWN;
+  }
+
+  for (symbolType=TSP_TYPE_UNKNOWN;
+       symbolType<TSP_TYPE_LAST;
+       symbolType++) {
+
+    if (strcmp(typeAsString,typeList[symbolType]) == 0) {
+      return symbolType;
+    }
+
+  }
+
+  return TSP_TYPE_UNKNOWN;
 
 }
 

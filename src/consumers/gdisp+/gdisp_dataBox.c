@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_dataBox.c,v 1.2 2006-02-26 14:08:23 erk Exp $
+$Id: gdisp_dataBox.c,v 1.3 2006-07-30 20:25:58 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -49,6 +49,8 @@ File      : Databox management.
 #include <gtk/gtk.h>
 #include <gtk/gtkdatabox.h>
 
+#include <gdk/gdkx.h>
+
 #include "gdisp_kernel.h"
 #include "gdisp_prototypes.h"
 
@@ -56,7 +58,19 @@ File      : Databox management.
 /*
  * Type definition.
  */
+typedef enum {
+
+  GD_SYMBOL_NAME_COLUMN = 0,
+  GD_LEGEND_MAX_COLUMN
+
+} DataBox_Column_T;
+
 typedef struct DataBox_T_ {
+
+  /*
+   * Kernel.
+   */
+  Kernel_T  *dbKernel;
 
   /*
    * Graphics.
@@ -65,7 +79,11 @@ typedef struct DataBox_T_ {
   GtkWidget *dbWindow;
   GtkWidget *dbParent;
   GtkWidget *dbDataBox;
+  GtkWidget *dbDataBoxArea;
   GtkStyle  *dbStyle;
+  GtkWidget *dbCList;
+  GdkGC     *dbGc;
+  GdkWindow *dbTooltip;
 
   /*
    * X Axis.
@@ -91,6 +109,231 @@ typedef struct DataBox_T_ {
 */
 
 
+/*
+ * Manage symbol name window.
+ */
+static GdkFilterReturn
+gdisp_dataBoxEventHandler ( GdkXEvent *xevent,
+			    GdkEvent  *event,
+			    gpointer   data )
+{
+
+  DataBox_T       *dataBox       = (DataBox_T*)data;
+  GdkWindow       *tooltipWindow = (GdkWindow*)NULL;
+  XEvent          *xEvent        = (XEvent*)NULL;
+  GdkFilterReturn  returnFilter  = GDK_FILTER_REMOVE;
+  gint             windowX       = 0;
+  gint             windowY       = 0;
+  gint             windowWidth   = 0;
+  gint             windowHeight  = 0;
+  gint             windowDepth   = 0;
+  GdkRectangle     exposeArea;
+
+  /*
+   * CAUTION !!!! CAUTION !!!! CAUTION !!!! CAUTION !!!! CAUTION !!!!
+   *
+   * Due to a strange way of processing events within Gdk, the second
+   * parameter "event" (a GdkEvent pointer) must be used carefully.
+   * The only field that is correct is the "window" field. All other
+   * fields must not be used, because they are UNINITIALIZED !!!
+   * All other information must be taken from the first argument "xevent"
+   * that must be casted to a X11 native "XEvent" structure.
+   */
+  tooltipWindow = event->any.window;
+  xEvent        = (XEvent*)xevent;
+
+  switch (xEvent->type) {
+
+  case Expose :
+
+    exposeArea.x      = xEvent->xexpose.x;
+    exposeArea.y      = xEvent->xexpose.y;
+    exposeArea.width  = xEvent->xexpose.width;
+    exposeArea.height = xEvent->xexpose.height;
+
+    gdk_gc_set_clip_rectangle(dataBox->dbGc,
+			      &exposeArea);
+
+    gdk_gc_set_foreground(dataBox->dbGc,
+			  &dataBox->dbKernel->colors[_RED_]);
+
+    gdk_window_get_geometry(tooltipWindow,			    
+			    &windowX,
+			    &windowY,
+			    &windowWidth,
+			    &windowHeight,
+			    &windowDepth);
+
+    gdk_draw_rectangle(tooltipWindow,	       
+		       dataBox->dbGc,
+		       TRUE, /* rectangle is filled */
+		       0,
+		       0,
+		       windowWidth,
+		       windowHeight);
+
+    gdk_gc_set_clip_rectangle(dataBox->dbGc,
+			      (GdkRectangle*)NULL);
+
+    break;
+
+  default :
+    break;
+
+  }
+
+  return returnFilter;
+
+}
+
+
+/*
+ * Treat 'enter-notify' X event.
+ * What shall I do when the mouse enters the graphic area ?
+ */
+static gboolean
+gdisp_dataBoxEnterNotify (GtkWidget       *area,
+			  GdkEventCrossing *event,
+			  gpointer          data)
+{
+
+  DataBox_T     *dataBox        = (DataBox_T*)data;
+  GdkVisual     *visual         = (GdkVisual*)NULL;
+  GdkColormap   *colormap       = (GdkColormap*)NULL;
+  gint           windowAttrMask = 0;
+  GdkWindowAttr  windowAttr;
+
+  /*
+   * Create the flying Gdk window.
+   */
+  visual   = gdk_window_get_visual  (area->window);
+  colormap = gdk_window_get_colormap(area->window);
+
+  memset(&windowAttr,0,sizeof(GdkWindowAttr));
+
+  windowAttr.event_mask  = GDK_EXPOSURE_MASK;
+  windowAttr.x           = event->x;
+  windowAttr.y           = event->y;
+  windowAttr.width       = 10;
+  windowAttr.height      = 10;
+  windowAttr.window_type = GDK_WINDOW_CHILD;
+  windowAttr.wclass      = GDK_INPUT_OUTPUT;
+  windowAttr.visual      = visual;
+  windowAttr.colormap    = colormap;
+  windowAttrMask         = GDK_WA_X        | GDK_WA_Y      |
+                           GDK_WA_COLORMAP | GDK_WA_VISUAL;
+
+  dataBox->dbTooltip = gdk_window_new(area->window,
+				      &windowAttr,
+				      windowAttrMask);
+
+  if (dataBox->dbTooltip == (GdkWindow*)NULL) {
+    return TRUE;
+  }
+
+  /*
+   * Assign user data to it.
+   */
+  gdk_window_set_user_data(dataBox->dbTooltip,
+			   (gpointer)dataBox);
+
+  /*
+   * Set up event handler.
+   */
+  gdk_window_add_filter(dataBox->dbTooltip,
+			gdisp_dataBoxEventHandler,
+			(gpointer)dataBox);
+
+  /*
+   * Show the window.
+   */
+  gdk_window_show(dataBox->dbTooltip);
+
+  return TRUE;
+
+}
+
+
+/*
+ * Treat 'leave-notify' X event.
+ * What shall I do when the mouse leaves the graphic area ?
+ */
+static gboolean
+gdisp_dataBoxLeaveNotify (GtkWidget       *area,
+			  GdkEventCrossing *event,
+			  gpointer          data)
+{
+
+  DataBox_T *dataBox = (DataBox_T*)data;
+
+  /*
+   * Destroy tooltip window.
+   */
+  if (dataBox->dbTooltip != (GdkWindow*)NULL) {
+    gdk_window_destroy(dataBox->dbTooltip);
+  }
+
+  dataBox->dbTooltip = (GdkWindow*)NULL;
+
+  return TRUE;
+
+}
+
+
+/*
+ * Treat 'motion-notify' X event.
+ * What shall I do when the mouse moves over the graphic area ?
+ */
+static gboolean
+gdisp_dataBoxMotionNotify(GtkWidget      *area,
+			  GdkEventMotion *event,
+			  gpointer        data)
+{
+
+#if defined(GD_DATABOX_DUMP)
+
+  GtkDataboxCoord  coord;
+  GtkDataboxValue  value;
+  GtkDataboxValue  minimum;
+  GtkDataboxValue  maximum;
+
+  printf("--------------------------------------------------\n");
+  printf("Position %dx%d\n",
+	 (gint)event->x,
+	 (gint)event->y);
+
+  coord.x = event->x;
+  coord.y = event->y;
+  gtk_databox_data_get_value(GTK_DATABOX(dataBox->dbDataBox),
+			     coord,
+			     &value);
+  printf("Value    %f,%f\n",
+	 value.x,
+	 value.y);
+
+  gtk_databox_data_get_extrema(GTK_DATABOX(dataBox->dbDataBox),
+			       &minimum,
+			       &maximum);
+  printf("Extrema  %f,%f -> %f,%f\n",
+	 minimum.x,
+	 minimum.y,
+	 maximum.x,
+	 maximum.y);
+
+  gtk_databox_data_get_visible_extrema(GTK_DATABOX(dataBox->dbDataBox),
+			       &minimum,
+			       &maximum);
+  printf("Visible Extrema  %f,%f -> %f,%f\n",
+	 minimum.x,
+	 minimum.y,
+	 maximum.x,
+	 maximum.y);
+
+#endif
+
+  return TRUE;
+
+}
 
 
 /*
@@ -113,7 +356,6 @@ gdisp_createDataBox ( Kernel_T  *kernel,
   GtkWidget *separator   = (GtkWidget*)NULL;
   GtkWidget *buttonBar   = (GtkWidget*)NULL;
   GtkWidget *doneButton  = (GtkWidget*)NULL;
-  GtkWidget *drawingArea = (GtkWidget*)NULL;
 
   /*
    * Check parent type. Only a vertical packing box is allowed.
@@ -134,6 +376,7 @@ gdisp_createDataBox ( Kernel_T  *kernel,
   /*
    * Init.
    */
+  dataBox->dbKernel     = kernel;
   dataBox->dbXDataIsSet = FALSE;
 
   /*
@@ -202,6 +445,11 @@ gdisp_createDataBox ( Kernel_T  *kernel,
 		     GTK_SIGNAL_FUNC(gtk_databox_data_destroy_all),
 		     (gpointer)NULL);
 
+  gtk_signal_connect(GTK_OBJECT(dataBox->dbDataBox),
+		     "motion-notify-event",
+		     (GtkSignalFunc)gdisp_dataBoxMotionNotify,
+		     (gpointer)dataBox);
+		     
   gtk_box_pack_start(GTK_BOX(dataBox->dbParent),
 		     dataBox->dbDataBox,
 		     TRUE,  /* expand  */
@@ -226,8 +474,16 @@ gdisp_createDataBox ( Kernel_T  *kernel,
   dataBox->dbStyle->fg  [GTK_STATE_SELECTED] = kernel->colors[_BLACK_];
   dataBox->dbStyle->bg  [GTK_STATE_SELECTED] = kernel->colors[_WHITE_];
 
-  drawingArea = gtk_databox_get_drawing_area(GTK_DATABOX(dataBox->dbDataBox));
-  gtk_widget_set_style(drawingArea,dataBox->dbStyle);
+  dataBox->dbDataBoxArea =
+    gtk_databox_get_drawing_area(GTK_DATABOX(dataBox->dbDataBox));
+
+  gtk_widget_set_style(dataBox->dbDataBoxArea,
+		       dataBox->dbStyle);
+
+  /*
+   * Selection area is filled.
+   */
+  gtk_databox_show_selection_filled(GTK_DATABOX(dataBox->dbDataBox));
 
   /*
    * Show databox.
@@ -235,7 +491,60 @@ gdisp_createDataBox ( Kernel_T  *kernel,
   gtk_widget_show(dataBox->dbDataBox);
 
   /*
-   * In standalone mode, add a separator, with 'done' buton under.
+   * Create graphic context.
+   */
+  dataBox->dbGc = gdk_gc_new(dataBox->dbDataBoxArea->window);
+
+  /*
+   * Separator.
+   */
+  separator = gtk_hseparator_new();
+
+  gtk_box_pack_start(GTK_BOX(vBox),
+		     separator,
+		     FALSE, /* expand  */
+		     TRUE,  /* fill    */
+		     0);    /* padding */
+
+  gtk_widget_show(separator);
+
+  /*
+   * Legend.
+   */
+  dataBox->dbCList = gtk_clist_new(GD_LEGEND_MAX_COLUMN);
+
+  gtk_clist_set_shadow_type(GTK_CLIST(dataBox->dbCList),
+			    GTK_SHADOW_IN);
+
+  gtk_clist_set_column_title(GTK_CLIST(dataBox->dbCList),
+			     GD_SYMBOL_NAME_COLUMN,
+			     "Symbol");
+
+  gtk_clist_set_sort_column(GTK_CLIST(dataBox->dbCList),
+			    GD_SYMBOL_NAME_COLUMN);
+
+  gtk_clist_set_sort_type(GTK_CLIST(dataBox->dbCList),
+			  GTK_SORT_ASCENDING);
+
+  gtk_clist_set_auto_sort(GTK_CLIST(dataBox->dbCList),
+			  TRUE); /* Auto-sort is allowed */
+
+  gtk_clist_set_button_actions(GTK_CLIST(dataBox->dbCList),
+			       0, /* left button */
+			       GTK_BUTTON_IGNORED);
+
+  gtk_clist_column_titles_hide(GTK_CLIST(dataBox->dbCList));
+
+  gtk_box_pack_start(GTK_BOX(vBox),
+		     dataBox->dbCList,
+		     FALSE, /* expand  */
+		     TRUE,  /* fill    */
+		     0);    /* padding */
+
+  gtk_widget_show(dataBox->dbCList);
+
+  /*
+   * In standalone mode, add a separator, with 'done' button under.
    */
   if (dataBox->dbMode == GD_DB_STANDALONE) {
 
@@ -335,9 +644,23 @@ gdisp_destroyDataBox ( gpointer dataBoxVoid )
   DataBox_T *dataBox = (DataBox_T*)dataBoxVoid;
 
   /*
+   * Check parameter.
+   */
+  if (dataBox == (DataBox_T*)NULL) {
+    return;
+  }
+
+  /*
+   * Delete graphic context.
+   */
+  if (dataBox->dbGc != (GdkGC*)NULL) {
+    gdk_gc_destroy(dataBox->dbGc);
+  }
+
+  /*
    * Check standalone mode.
    */
-  if (dataBox != (DataBox_T*)NULL && dataBox->dbMode == GD_DB_STANDALONE) {
+  if (dataBox->dbMode == GD_DB_STANDALONE) {
 
     gtk_widget_destroy(dataBox->dbWindow);
 
@@ -398,11 +721,14 @@ guint
 gdisp_addDataBoxYData ( gpointer  dataBoxVoid,
 			gchar    *yName,
 			gfloat   *yData,
-			GdkColor  yColor )
+			GdkColor *yColor )
 {
 
   DataBox_T *dataBox = (DataBox_T*)dataBoxVoid;
+  GdkPixmap *pixmap  = (GdkPixmap*)NULL;
   guint      curveId = 0;
+  guint      theRow  = 0;
+  gchar     *rowData   [GD_LEGEND_MAX_COLUMN];
 
   /*
    * X data must have been given before.
@@ -420,7 +746,7 @@ gdisp_addDataBoxYData ( gpointer  dataBoxVoid,
 				       dataBox->dbNbValues,
 				       dataBox->dbXData,
 				       yData,
-				       yColor,
+				       *yColor,
 				       GTK_DATABOX_LINES, 
 				       1 /* dot size */);
 
@@ -434,11 +760,42 @@ gdisp_addDataBoxYData ( gpointer  dataBoxVoid,
 				     dataBox->dbNbValues,
 				     yData,
 				     dataBox->dbXIndex,
-				     yColor,
+				     *yColor,
 				     GTK_DATABOX_LINES,
 				     1 /* dot size */);
 
   }
+
+  /*
+   * Insert information into the legend.
+   */
+  rowData[0] = yName;
+  theRow = gtk_clist_append(GTK_CLIST(dataBox->dbCList),
+			    rowData);
+
+  pixmap = gdk_pixmap_new(dataBox->dbDataBoxArea->window,
+			  15, /* width  */
+			  15, /* height */
+			  -1  /* the one of the databox area */);
+
+  gdk_gc_set_foreground(dataBox->dbGc,
+			yColor);
+
+  gdk_draw_rectangle((GdkDrawable*)pixmap,
+		     dataBox->dbGc,
+		     1,   /* Filled */
+		     0,   /* X      */
+		     0,   /* Y      */
+		     15,  /* Width  */
+		     15); /* Height */
+
+  gtk_clist_set_pixtext(GTK_CLIST(dataBox->dbCList),
+			theRow,
+			GD_SYMBOL_NAME_COLUMN,
+			rowData[0],
+			10, /* spacing */
+			pixmap,
+			(GdkBitmap*)NULL);
 
   return curveId;
 

@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_preferences.c,v 1.5 2006-02-26 14:08:24 erk Exp $
+$Id: gdisp_preferences.c,v 1.6 2006-07-30 20:25:58 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -140,7 +140,7 @@ gdisp_loadPreferenceFile ( Kernel_T *kernel )
     return;
   }
   sprintf(completeFilename,
-	  "%s/.gdpp",
+	  "%s/.targa",
 	  getenv("HOME"));
 
   /*
@@ -213,7 +213,7 @@ gdisp_savePreferenceFile ( Kernel_T *kernel )
     return;
   }
   sprintf(completeFilename,
-	  "%s/.gdpp",
+	  "%s/.targa",
 	  getenv("HOME"));
 
   /*
@@ -224,7 +224,7 @@ gdisp_savePreferenceFile ( Kernel_T *kernel )
   LIBXML_TEST_VERSION
 
   /*
-   * Create a new XmlWriter for '.gdisp+', with no compression.
+   * Create a new XmlWriter for '.targa', with no compression.
    */
   writer = xmlNewTextWriterFilename(completeFilename,
 				    GD_NO_COMPRESSION);
@@ -254,7 +254,7 @@ gdisp_savePreferenceFile ( Kernel_T *kernel )
    * of the document.
    */
   errorCode = xmlTextWriterStartElement(writer,
-					(xmlChar*)"GDisp");
+					(xmlChar*)"Targa");
 
   if (errorCode < 0) {
     /* No need to print any error message, because gdisp+ is exiting */
@@ -275,7 +275,7 @@ gdisp_savePreferenceFile ( Kernel_T *kernel )
    * HAS to be in UTF-8, even if the output XML is encoded
    * in iso-8859-1.
    */
-  tmp = gdisp_xmlConvertInput("GDisp+ General Preferences",
+  tmp = gdisp_xmlConvertInput("Targa General Preferences",
 			      GD_PREFERENCE_ENCODING);
 
   errorCode = xmlTextWriterWriteComment(writer, tmp);
@@ -325,8 +325,9 @@ gdisp_savePreferenceFile ( Kernel_T *kernel )
 
   /*
    * Preferences to be saved :
-   *  kernel->sortingMethod = GD_SORT_BY_PROVIDER;
-   *  kernel->dndScope      = GD_DND_UNICAST;
+   *  kernel->sortingMethod    = GD_SORT_BY_PROVIDER;
+   *  kernel->sortingDirection = GD_SORT_ASCENDING;
+   *  kernel->dndScope         = GD_DND_UNICAST;
    */
 
   /*
@@ -339,6 +340,24 @@ gdisp_savePreferenceFile ( Kernel_T *kernel )
 					    (xmlChar*)"preference",
 					    TRUE, /* end up element */
 					    (xmlChar*)"sortingMethod",
+					    (xmlChar*)attributeValue,
+					    (xmlChar*)NULL);
+
+  if (errorCode < 0) {
+    /* No need to print any error message, because gdisp+ is exiting */
+    return;
+  }
+
+  /*
+   * Sorting Direction.
+   */
+  attributeValue = gdisp_sortingDirectionToString(kernel);
+  errorCode      = gdisp_xmlWriteAttributes(writer,
+					    GD_INCREASE_INDENTATION,
+					    indentBuffer,
+					    (xmlChar*)"preference",
+					    TRUE, /* end up element */
+					    (xmlChar*)"sortingDirection",
 					    (xmlChar*)attributeValue,
 					    (xmlChar*)NULL);
 

@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_configuration.c,v 1.12 2006-04-17 16:33:25 esteban Exp $
+$Id: gdisp_configuration.c,v 1.13 2006-07-30 20:25:58 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -725,7 +725,13 @@ gdisp_saveProviderSampledSymbols ( Kernel_T         *kernel,
   SampleList_T *pSampleList    = (SampleList_T*)NULL;
   guint         pSampleMax     = 0;
   guint         sPgi           = 1;
+  xmlChar      *typeBuffer     = (xmlChar*)NULL;
   xmlChar       indexBuffer     [256];
+  xmlChar       dimensionBuffer [256];
+  xmlChar       offsetBuffer    [256];
+  xmlChar       nElemBuffer     [256];
+  xmlChar       periodBuffer    [256];
+  xmlChar       phaseBuffer     [256];
 
 #define GD_SAMPLE_PGI_AS_STRING_LENGTH 10
   gchar         samplePGIasStringBuffer[GD_SAMPLE_PGI_AS_STRING_LENGTH];
@@ -834,6 +840,13 @@ gdisp_saveProviderSampledSymbols ( Kernel_T         *kernel,
 	  symbol->sPgi = sPgi++;
 	  sprintf(indexBuffer,"%d",symbol->sPgi);
 
+	  typeBuffer = gdisp_getTypeAsString(symbol);
+	  sprintf(dimensionBuffer,"%d",symbol->sInfo.dimension);
+	  sprintf(offsetBuffer,   "%d",symbol->sInfo.offset   );
+	  sprintf(nElemBuffer,    "%d",symbol->sInfo.nelem    );
+	  sprintf(periodBuffer,   "%d",symbol->sInfo.period   );
+	  sprintf(phaseBuffer,    "%d",symbol->sInfo.phase    );
+
 	  errorCode =
 	    gdisp_xmlWriteAttributes(writer,
 				     pSampleCpt == 0 ?
@@ -846,6 +859,18 @@ gdisp_saveProviderSampledSymbols ( Kernel_T         *kernel,
 				     (xmlChar*)indexBuffer,
 				     (xmlChar*)"name",
 				     (xmlChar*)symbol->sInfo.name,
+				     (xmlChar*)"type",
+				     (xmlChar*)typeBuffer,
+				     (xmlChar*)"dim",
+				     (xmlChar*)dimensionBuffer,
+				     (xmlChar*)"offset",
+				     (xmlChar*)offsetBuffer,
+				     (xmlChar*)"nelem",
+				     (xmlChar*)nElemBuffer,
+				     (xmlChar*)"period",
+				     (xmlChar*)periodBuffer,
+				     (xmlChar*)"phase",
+				     (xmlChar*)phaseBuffer,
 				     (xmlChar*)NULL);
 
 	  if (errorCode < 0) {
@@ -949,7 +974,7 @@ gdisp_loadProviderSymbolsForSampling ( Kernel_T   *kernel,
 
       if (symbolIndex != (xmlChar*)NULL && symbolName != (xmlChar*)NULL) {
 
-	symbolInConf->sicIndex = atoi(symbolIndex);
+	symbolInConf->sicIndex = gdisp_atoi(symbolIndex,0);
 	symbolInConf->sicName  = gdisp_strDup(symbolName);
 
 	symbolInConf++;
@@ -1033,10 +1058,17 @@ gdisp_loadProviderSymbolsForSampling ( Kernel_T   *kernel,
 				       xmlNode    *providerNode )
 {
 
+  Symbol_T     *theSymbol       = (Symbol_T*)NULL;
   xmlNodeSet   *symbolTableNode = (xmlNodeSet*)NULL;
   xmlNode      *symbolNode      = (xmlNode*)NULL;
   xmlChar      *symbolIndex     = (xmlChar*)NULL;
   xmlChar      *symbolName      = (xmlChar*)NULL;
+  xmlChar      *symbolType      = (xmlChar*)NULL;
+  xmlChar      *symbolDimension = (xmlChar*)NULL;
+  xmlChar      *symbolOffset    = (xmlChar*)NULL;
+  xmlChar      *symbolNelem     = (xmlChar*)NULL;
+  xmlChar      *symbolPeriod    = (xmlChar*)NULL;
+  xmlChar      *symbolPhase     = (xmlChar*)NULL;
   unsigned int  cptSymbol       = 0;
   unsigned int  newSymbol       = 0;
 
@@ -1068,24 +1100,39 @@ gdisp_loadProviderSymbolsForSampling ( Kernel_T   *kernel,
     /*
      * Loop over all symbols.
      */
+    theSymbol = provider->pSymbolList;
     for (cptSymbol=0;
 	 cptSymbol<symbolTableNode->nodeNr;
 	 cptSymbol++) {
 
-      symbolNode  = symbolTableNode->nodeTab[cptSymbol];
-      symbolIndex = xmlGetProp(symbolNode,"index");
-      symbolName  = xmlGetProp(symbolNode,"name");
+      symbolNode      = symbolTableNode->nodeTab[cptSymbol];
+      symbolIndex     = xmlGetProp(symbolNode,"index" );
+      symbolName      = xmlGetProp(symbolNode,"name"  );
+      symbolType      = xmlGetProp(symbolNode,"type"  );
+      symbolDimension = xmlGetProp(symbolNode,"dim"   );
+      symbolOffset    = xmlGetProp(symbolNode,"offset");
+      symbolNelem     = xmlGetProp(symbolNode,"nelem" );
+      symbolPeriod    = xmlGetProp(symbolNode,"period");
+      symbolPhase     = xmlGetProp(symbolNode,"phase" );
 
       if (symbolIndex != (xmlChar*)NULL && symbolName != (xmlChar*)NULL) {
 
-	provider->pSymbolList[newSymbol].sPgi       = atoi(symbolIndex);
-	provider->pSymbolList[newSymbol].sInfo.name = gdisp_strDup(symbolName);
-	provider->pSymbolList[newSymbol].sInfo.period = 1;
+	theSymbol->sPgi            = gdisp_atoi(symbolIndex,0);
+	theSymbol->sInfo.name      = gdisp_strDup(symbolName);
+
+	theSymbol->sInfo.type      = gdisp_getTypeFromString(symbolType);
+	theSymbol->sInfo.dimension = gdisp_atoi(symbolDimension,1);
+	theSymbol->sInfo.offset    = gdisp_atoi(symbolOffset,   0);
+	theSymbol->sInfo.nelem     =
+	              gdisp_atoi(symbolNelem,theSymbol->sInfo.dimension);
+	theSymbol->sInfo.period    = gdisp_atoi(symbolPeriod,   1);
+	theSymbol->sInfo.phase     = gdisp_atoi(symbolPhase,    0);
 
 	hash_append(provider->pSymbolHashTable,
-		    provider->pSymbolList[newSymbol].sInfo.name,
+		    theSymbol->sInfo.name,
 		    (void*)&provider->pSymbolList[newSymbol]);
 
+	theSymbol++;
 	newSymbol++;
 
       }
@@ -1246,7 +1293,7 @@ gdisp_addSampledSymbolToPlot ( Kernel_T         *kernel,
       if (symbolIndex != (xmlChar*)NULL) {
 
 	symbol = gdisp_getSymbolInConfByIndex(kernel,
-					      atoi(symbolIndex));
+					      gdisp_atoi(symbolIndex,0));
 
 	if (symbol != (Symbol_T*)NULL) {
 
@@ -1355,25 +1402,25 @@ gdisp_loadTargetPlots ( Kernel_T *kernel,
       
       property = xmlGetProp(plotNode,"row");
       if (property != (xmlChar*)NULL) {
-	plotRow = atoi(property);
+	plotRow = gdisp_atoi(property,0);
 	xmlFree(property);
       }
 
       property = xmlGetProp(plotNode,"column");
       if (property != (xmlChar*)NULL) {
-	plotColumn = atoi(property);
+	plotColumn = gdisp_atoi(property,0);
 	xmlFree(property);
       }
 
       property = xmlGetProp(plotNode,"nbRows");
       if (property != (xmlChar*)NULL) {
-	plotNbRows = atoi(property);
+	plotNbRows = gdisp_atoi(property,0);
 	xmlFree(property);
       }
 
       property = xmlGetProp(plotNode,"nbColumns");
       if (property != (xmlChar*)NULL) {
-	plotNbColumns = atoi(property);
+	plotNbColumns = gdisp_atoi(property,0);
 	xmlFree(property);
       }
 
@@ -1449,8 +1496,8 @@ gdisp_loadTargetPages ( Kernel_T *kernel,
 
 	newPage = gdisp_allocateGraphicPage(kernel,
 					    (gchar*)pageTitle,
-					    atoi(pageRows),
-					    atoi(pageColumns));
+					    gdisp_atoi(pageRows,0),
+					    gdisp_atoi(pageColumns,0));
 
 	/*
 	 * Create all plots of the page.
@@ -1785,7 +1832,7 @@ gdisp_saveConfigurationFile ( Kernel_T *kernel )
   errorCode = gdisp_xmlWriteAttributes(writer,
 				       GD_DO_NOT_CHANGE_INDENTATION,
 				       indentBuffer,
-				       (xmlChar*)"GDispConfiguration",
+				       (xmlChar*)"TargaConfiguration",
 				       FALSE, /* do not end up element */
 				       (xmlChar*)"version",
 				       (xmlChar*)"1.0",
@@ -1809,7 +1856,7 @@ gdisp_saveConfigurationFile ( Kernel_T *kernel )
    * HAS to be in UTF-8, even if the output XML is encoded
    * in iso-8859-1.
    */
-  tmp = gdisp_xmlConvertInput("A GDisp+ Configuration",
+  tmp = gdisp_xmlConvertInput("A Targa Configuration",
 			      GD_PREFERENCE_ENCODING);
 
   errorCode = xmlTextWriterWriteComment(writer, tmp);

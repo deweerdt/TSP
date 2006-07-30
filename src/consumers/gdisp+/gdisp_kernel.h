@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_kernel.h,v 1.26 2006-05-13 20:55:02 esteban Exp $
+$Id: gdisp_kernel.h,v 1.27 2006-07-30 20:25:58 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -52,9 +52,11 @@ File      : Graphic Tool Kernel Interface.
  * Definitition of a dynamic array of double.
  */
 #include "tsp_const_def.h"
+#include "tsp_common.h"
 #include "tsp_consumer.h"
 #include "tsp_hash.h"
 #include "gdisp_doubleArray.h"
+
 
 /** 
  * @defgroup TSP_Targa_Kernel Kernel API
@@ -73,10 +75,11 @@ File      : Graphic Tool Kernel Interface.
 #undef  GD_LOAD_CONFIGURATION_WITH_ALL_SYMBOLS
 #define GD_UNREF_THINGS
 
-#define GD_MIN(a,b)          ((a) < (b) ? (a) :  (b))
-#define GD_MAX(a,b)          ((a) > (b) ? (a) :  (b))
-#define GD_ABS(a)            ((a) >  0  ? (a) : -(a))
-#define GD_TOGGLE_BOOLEAN(b) ((b) == FALSE ? TRUE : FALSE)
+#define GD_MIN(a,b)            ((a) < (b) ? (a) :  (b))
+#define GD_MAX(a,b)            ((a) > (b) ? (a) :  (b))
+#define GD_ABS(a)              ((a) >  0  ? (a) : -(a))
+#define GD_TOGGLE_VALUE(v,a,b) ((v) == (a) ? (b) : (a))
+#define GD_TOGGLE_BOOLEAN(b)   GD_TOGGLE_VALUE(b,TRUE,FALSE)
 
 /*
  * 10 out of 170 colors.
@@ -144,11 +147,13 @@ typedef struct Host_T_ {
 typedef enum {
   /** The provider has just been created. Nothing can be done with it. */
   GD_FROM_SCRATCH = 0,
-  /** The provider has now its name, But 'TSP_consumer_request_*' functions can not be called yet. */ 
+  /** The provider has now its name,
+      But 'TSP_consumer_request_*' functions can not be called yet. */ 
   GD_SESSION_CLOSED,
   /**  Ready now to request any information of the provider. */
   GD_SESSION_OPENED,
-  /** The provider has been given the set of symbols to be sampled. But 'sampling' is still OFF. */
+  /** The provider has been given the set of symbols to be sampled.
+      But 'sampling' is still OFF. */
   GD_SAMPLE_REQUESTED,
   /** 'sampling' is now ON. */
   GD_SAMPLE_STARTED
@@ -156,7 +161,7 @@ typedef enum {
 } ProviderStatus_T;
 
 /* FIXME : the following three definitions must be dynamic */
-#define TSP_PROVIDER_FREQ     100   /* Hz                */
+#define TSP_PROVIDER_FREQ     100   /* Hz */
 
 
 /*
@@ -175,16 +180,17 @@ typedef enum {
 
 typedef struct Symbol_T_ {
 
-  guchar                           sReference;
-  guint                            sPgi;
-  TSP_sample_symbol_info_t         sInfo;
-  guint                            sTimeTag;
-  gdouble                          sLastValue;
+  guchar                    sReference;
+  guint                     sPgi;
+  TSP_sample_symbol_info_t  sInfo;
+  GList                    *sExtInfoList;
+  guint                     sTimeTag;
+  gdouble                   sLastValue;
 
   /*
    * Graphic.
    */
-  GtkCTreeNode                    *sNode;
+  GtkCTreeNode             *sNode;
 
 } Symbol_T;
 
@@ -198,9 +204,19 @@ typedef enum {
   GD_SORT_BY_NAME = 0,
   GD_SORT_BY_NAME_REVERSE,
   GD_SORT_BY_PROVIDER,
-  GD_SORT_BY_INDEX
+  GD_SORT_BY_INDEX,
+  GD_SORT_BY_TYPE,
+  GD_SORT_BY_DIM,
+  GD_SORT_BY_EXTINFO
 
 } SortingMethod_T;
+
+typedef enum {
+
+  GD_SORT_ASCENDING = 0,
+  GD_SORT_DESCENDING
+
+} SortingDirection_T;
 
 
 /*
@@ -259,6 +275,11 @@ typedef struct Provider_T_ {
   ProviderStatus_T  pStatus;
   GString          *pOriginalUrl;
   GString          *pUrl;
+
+  gint              pVersionId;
+  guint             pChannelId;
+  gint              pTimeOut;
+  gint              pGroupNumber;
   gdouble           pBaseFrequency;
   gint              pMaxPeriod;
   gint              pMaxClientNumber;
@@ -513,16 +534,10 @@ typedef struct KernelWidget_T_ {
 
   /* ----------------- WIDGETS IN DATA BOOK PAGES ----------------- */
 
-#define _SYMBOL_CLIST_COLUMNS_NB_ 3
   GtkWidget         *symbolCList;
   GtkWidget         *symbolFrame;
   GtkWidget         *providerVBox;
-  GtkWidget         *pRadioButton;
-  GtkWidget         *naRadioButton;
-  GtkWidget         *ndRadioButton;
-  GtkWidget         *uRadioButton;
-  GtkWidget         *spRadioButton;
-  GtkWidget         *apRadioButton;
+  gpointer           cListPopupMenu;
   GtkWidget         *filterEntry;
   GtkStyle          *selectedNodeStyle;
   GtkStyle          *unselectedNodeStyle;
@@ -556,7 +571,7 @@ typedef struct Kernel_T_ {
   gint               logoTimerIdentity;
   gint               logoHighSpeedTimerIdentity;
   gint               stepTimerIdentity;
-#define GD_TIMER_MIN_PERIOD 100
+#define GD_TIMER_MIN_PERIOD 100 /* milli-seconds */
   guint              stepTimerPeriod;
   guint              stepGlobalCycle;
   time_t             startSamplingTime;
@@ -610,6 +625,7 @@ typedef struct Kernel_T_ {
    */
   GList             *providerList;
   SortingMethod_T    sortingMethod;
+  SortingDirection_T sortingDirection;
   guint              providerId;
 
   /*
