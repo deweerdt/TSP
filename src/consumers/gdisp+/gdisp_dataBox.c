@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_dataBox.c,v 1.3 2006-07-30 20:25:58 esteban Exp $
+$Id: gdisp_dataBox.c,v 1.4 2006-07-31 19:59:07 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -83,6 +83,7 @@ typedef struct DataBox_T_ {
   GtkStyle  *dbStyle;
   GtkWidget *dbCList;
   GdkGC     *dbGc;
+  GdkFont   *dbFont;
   GdkWindow *dbTooltip;
 
   /*
@@ -99,8 +100,17 @@ typedef struct DataBox_T_ {
 
 } DataBox_T;
 
-#define GD_DB_STANDALONE 1
-#define GD_DB_EMBEDDED   2
+#define GD_DB_STANDALONE  1
+#define GD_DB_EMBEDDED    2
+
+/* Offset between the mouse position and the tooltip window */
+#define GD_DB_X_OFFSET   15
+#define GD_DB_Y_OFFSET   15
+#define GD_DB_W_OFFSET    2
+#define GD_DB_H_OFFSET    2
+
+/* Symbol icon size */
+#define GD_DB_ICON_SIZE 10
 
 /*
  --------------------------------------------------------------------
@@ -192,16 +202,45 @@ gdisp_dataBoxEventHandler ( GdkXEvent *xevent,
  * What shall I do when the mouse enters the graphic area ?
  */
 static gboolean
-gdisp_dataBoxEnterNotify (GtkWidget       *area,
+gdisp_dataBoxEnterNotify (GtkWidget        *area,
 			  GdkEventCrossing *event,
 			  gpointer          data)
 {
 
-  DataBox_T     *dataBox        = (DataBox_T*)data;
-  GdkVisual     *visual         = (GdkVisual*)NULL;
-  GdkColormap   *colormap       = (GdkColormap*)NULL;
-  gint           windowAttrMask = 0;
-  GdkWindowAttr  windowAttr;
+  DataBox_T       *dataBox        = (DataBox_T*)data;
+  GdkVisual       *visual         = (GdkVisual*)NULL;
+  GdkColormap     *colormap       = (GdkColormap*)NULL;
+  gint             lBearing       = 0;
+  gint             rBearing       = 0;
+  gint             stringWidth    = 0;
+  gint             ascent         = 0;
+  gint             descent        = 0;
+  gint             windowAttrMask = 0;
+  GdkWindowAttr    windowAttr;
+  GtkDataboxCoord  mouseCoord;
+  GtkDataboxValue  mouseValue;
+  gchar            stringBuffer[128];
+
+  /*
+   * Compute tooltip window dimensions.
+   */
+  mouseCoord.x = event->x;
+  mouseCoord.y = event->y;
+  gtk_databox_data_get_value(GTK_DATABOX(dataBox->dbDataBox),
+			     mouseCoord,
+			     &mouseValue);
+  sprintf(stringBuffer,
+	  "%f,%f",
+	  mouseValue.x,
+	  mouseValue.y);
+
+  gdk_string_extents(dataBox->dbFont,
+		     stringBuffer,
+		     &lBearing,
+		     &rBearing,
+		     &stringWidth,
+		     &ascent,
+		     &descent);
 
   /*
    * Create the flying Gdk window.
@@ -211,11 +250,11 @@ gdisp_dataBoxEnterNotify (GtkWidget       *area,
 
   memset(&windowAttr,0,sizeof(GdkWindowAttr));
 
-  windowAttr.event_mask  = GDK_EXPOSURE_MASK;
-  windowAttr.x           = event->x;
-  windowAttr.y           = event->y;
-  windowAttr.width       = 10;
-  windowAttr.height      = 10;
+  windowAttr.event_mask  = 0; /* GDK_EXPOSURE_MASK; */
+  windowAttr.x           = event->x + GD_DB_X_OFFSET;
+  windowAttr.y           = event->y + GD_DB_Y_OFFSET;
+  windowAttr.width       = stringWidth      + (2 * GD_DB_W_OFFSET);
+  windowAttr.height      = ascent + descent + (2 * GD_DB_H_OFFSET);
   windowAttr.window_type = GDK_WINDOW_CHILD;
   windowAttr.wclass      = GDK_INPUT_OUTPUT;
   windowAttr.visual      = visual;
@@ -259,7 +298,7 @@ gdisp_dataBoxEnterNotify (GtkWidget       *area,
  * What shall I do when the mouse leaves the graphic area ?
  */
 static gboolean
-gdisp_dataBoxLeaveNotify (GtkWidget       *area,
+gdisp_dataBoxLeaveNotify (GtkWidget        *area,
 			  GdkEventCrossing *event,
 			  gpointer          data)
 {
@@ -289,6 +328,19 @@ gdisp_dataBoxMotionNotify(GtkWidget      *area,
 			  GdkEventMotion *event,
 			  gpointer        data)
 {
+
+  DataBox_T       *dataBox        = (DataBox_T*)data;
+  gint             lBearing       = 0;
+  gint             rBearing       = 0;
+  gint             stringWidth    = 0;
+  gint             ascent         = 0;
+  gint             descent        = 0;
+  guint            tooltipWidth   = 0;
+  guint            tooltipHeight  = 0;
+  GtkDataboxCoord  mouseCoord;
+  GtkDataboxValue  mouseValue;
+  gchar            stringBuffer[128];
+
 
 #if defined(GD_DATABOX_DUMP)
 
@@ -331,6 +383,73 @@ gdisp_dataBoxMotionNotify(GtkWidget      *area,
 
 #endif
 
+  /*
+   * Destroy tooltip window.
+   */
+  if (dataBox->dbTooltip != (GdkWindow*)NULL) {
+
+    /*
+     * Compute tooltip window dimensions.
+     */
+    mouseCoord.x = event->x;
+    mouseCoord.y = event->y;
+    gtk_databox_data_get_value(GTK_DATABOX(dataBox->dbDataBox),
+			       mouseCoord,
+			       &mouseValue);
+
+    sprintf(stringBuffer,
+	    "%f,%f",
+	    mouseValue.x,
+	    mouseValue.y);
+
+    gdk_string_extents(dataBox->dbFont,
+		       stringBuffer,
+		       &lBearing,
+		       &rBearing,
+		       &stringWidth,
+		       &ascent,
+		       &descent);
+
+    tooltipWidth  = stringWidth      + (2 * GD_DB_W_OFFSET);
+    tooltipHeight = ascent + descent + (2 * GD_DB_H_OFFSET);
+
+    gdk_window_move_resize(dataBox->dbTooltip,
+			   (gint)event->x + GD_DB_X_OFFSET,
+			   (gint)event->y + GD_DB_Y_OFFSET,
+			   tooltipWidth,
+			   tooltipHeight);
+
+    gdk_gc_set_foreground(dataBox->dbGc,
+			  &dataBox->dbKernel->colors[_BLACK_]);
+
+    gdk_draw_rectangle(dataBox->dbTooltip,
+		       dataBox->dbGc,
+		       TRUE, /* rectangle is filled */
+		       0,
+		       0,
+		       tooltipWidth,
+		       tooltipHeight);
+
+    gdk_gc_set_foreground(dataBox->dbGc,
+			  &dataBox->dbKernel->colors[_WHITE_]);
+
+    gdk_draw_rectangle(dataBox->dbTooltip,
+		       dataBox->dbGc,
+		       FALSE, /* rectangle is not filled */
+		       0,
+		       0,
+		       tooltipWidth  - 1,
+		       tooltipHeight - 1);
+
+    gdk_draw_string(dataBox->dbTooltip,
+		    dataBox->dbFont,
+		    dataBox->dbGc,
+		    GD_DB_W_OFFSET,          /* X Position */
+		    GD_DB_H_OFFSET + ascent, /* Y Position */
+		    stringBuffer);
+
+  }
+
   return TRUE;
 
 }
@@ -356,6 +475,7 @@ gdisp_createDataBox ( Kernel_T  *kernel,
   GtkWidget *separator   = (GtkWidget*)NULL;
   GtkWidget *buttonBar   = (GtkWidget*)NULL;
   GtkWidget *doneButton  = (GtkWidget*)NULL;
+  GtkWidget *frame       = (GtkWidget*)NULL;
 
   /*
    * Check parent type. Only a vertical packing box is allowed.
@@ -406,12 +526,25 @@ gdisp_createDataBox ( Kernel_T  *kernel,
     gtk_widget_show(dataBox->dbWindow);
 
     /*
+     * Create a frame.
+     */
+    frame = gtk_frame_new((gchar*)NULL);
+
+    gtk_frame_set_shadow_type(GTK_FRAME(frame),GTK_SHADOW_ETCHED_IN);
+
+    gtk_container_add(GTK_CONTAINER(dataBox->dbWindow),frame);
+
+    gtk_widget_show(frame);
+
+    /*
      * Create vertical packing box.
      */
     vBox = gtk_vbox_new(FALSE, /* homogeneous */
 			2      /* spacing     */ );
 
-    gtk_container_add(GTK_CONTAINER(dataBox->dbWindow),vBox);
+    gtk_container_set_border_width(GTK_CONTAINER(vBox),5);
+
+    gtk_container_add(GTK_CONTAINER(frame),vBox);
 
     gtk_widget_show(vBox);
 
@@ -481,6 +614,19 @@ gdisp_createDataBox ( Kernel_T  *kernel,
 		       dataBox->dbStyle);
 
   /*
+   * Connect signal for tooltip window.
+   */
+  gtk_signal_connect(GTK_OBJECT(dataBox->dbDataBoxArea),
+		     "enter-notify-event",
+		     (GtkSignalFunc)gdisp_dataBoxEnterNotify,
+		     (gpointer)dataBox);
+
+  gtk_signal_connect(GTK_OBJECT(dataBox->dbDataBoxArea),
+		     "leave-notify-event",
+		     (GtkSignalFunc)gdisp_dataBoxLeaveNotify,
+		     (gpointer)dataBox);
+
+  /*
    * Selection area is filled.
    */
   gtk_databox_show_selection_filled(GTK_DATABOX(dataBox->dbDataBox));
@@ -491,9 +637,11 @@ gdisp_createDataBox ( Kernel_T  *kernel,
   gtk_widget_show(dataBox->dbDataBox);
 
   /*
-   * Create graphic context.
+   * Create graphic context and fonts.
    */
-  dataBox->dbGc = gdk_gc_new(dataBox->dbDataBoxArea->window);
+  dataBox->dbGc   = gdk_gc_new(dataBox->dbDataBoxArea->window);
+  dataBox->dbFont = kernel->fonts[GD_FONT_SMALL][GD_FONT_FIXED];
+
 
   /*
    * Separator.
@@ -774,8 +922,8 @@ gdisp_addDataBoxYData ( gpointer  dataBoxVoid,
 			    rowData);
 
   pixmap = gdk_pixmap_new(dataBox->dbDataBoxArea->window,
-			  15, /* width  */
-			  15, /* height */
+			  GD_DB_ICON_SIZE, /* width  */
+			  GD_DB_ICON_SIZE, /* height */
 			  -1  /* the one of the databox area */);
 
   gdk_gc_set_foreground(dataBox->dbGc,

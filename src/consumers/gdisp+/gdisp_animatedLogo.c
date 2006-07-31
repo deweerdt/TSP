@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_animatedLogo.c,v 1.3 2006-02-26 14:08:23 erk Exp $
+$Id: gdisp_animatedLogo.c,v 1.4 2006-07-31 19:59:07 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -400,7 +400,7 @@ gdisp_startLogoAnimation ( Kernel_T *kernel )
    */
   gdisp_clearLogoArea(kernel);
 
-  gdisp_animateLogo((void*)kernel); /* refresh once */
+  /* gdisp_animateLogo((void*)kernel); */ /* refresh once */
 
   /*
    * Start SMALL logo animation
