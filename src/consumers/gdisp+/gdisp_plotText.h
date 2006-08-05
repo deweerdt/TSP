@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_plotText.h,v 1.6 2006-07-30 20:25:58 esteban Exp $
+$Id: gdisp_plotText.h,v 1.7 2006-08-05 20:50:30 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -75,7 +75,6 @@ typedef struct PlotText_T_ {
   /*
    * Attributes.
    */
-  PlotType_T           pttType;
 
   /*
    * List of pointer on TSP_Symbol_T.

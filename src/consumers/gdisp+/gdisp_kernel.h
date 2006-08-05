@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_kernel.h,v 1.27 2006-07-30 20:25:58 esteban Exp $
+$Id: gdisp_kernel.h,v 1.28 2006-08-05 20:50:30 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -160,9 +160,6 @@ typedef enum {
 
 } ProviderStatus_T;
 
-/* FIXME : the following three definitions must be dynamic */
-#define TSP_PROVIDER_FREQ     100   /* Hz */
-
 
 /*
  * Ha Ha...
@@ -202,7 +199,6 @@ typedef struct Symbol_T_ {
 typedef enum {
 
   GD_SORT_BY_NAME = 0,
-  GD_SORT_BY_NAME_REVERSE,
   GD_SORT_BY_PROVIDER,
   GD_SORT_BY_INDEX,
   GD_SORT_BY_TYPE,
@@ -330,9 +326,11 @@ typedef struct Provider_T_ {
 typedef enum {
 
   GD_PLOT_DEFAULT = 0,
+  /* BEGIN : you may add plots here --------- */
   GD_PLOT_TEXT,
   GD_PLOT_2D,
   GD_PLOT_ORBITAL,
+  /* END ------------------------------------ */
   GD_MAX_PLOT /* this last one defines the limit */
 
 } PlotType_T;
@@ -409,6 +407,7 @@ typedef struct PlotSystem_T_ {
    */
 
   /* FIRST TYPE : Kernel only.                  */
+  PlotType_T (*psGetType)            (Kernel_T_Ptr                       );
   void       (*psGetInformation)     (Kernel_T_Ptr,PlotSystemInfo_T*     );
   void      *(*psCreate )            (Kernel_T_Ptr                       );
   GArray    *(*psGetDropZones)       (Kernel_T_Ptr                       );
@@ -418,7 +417,6 @@ typedef struct PlotSystem_T_ {
   void       (*psSetParent)          (Kernel_T_Ptr,void*,GtkWidget*      );
   GtkWidget *(*psGetTopLevelWidget)  (Kernel_T_Ptr,void*                 );
   void       (*psShow)               (Kernel_T_Ptr,void*                 );
-  PlotType_T (*psGetType)            (Kernel_T_Ptr,void*                 );
   void       (*psSetDimensions)      (Kernel_T_Ptr,void*,guint,guint     );
   void       (*psAddSymbols)         (Kernel_T_Ptr,void*,GList*,guchar   );
   GList     *(*psGetSymbols)         (Kernel_T_Ptr,void*,gchar           );
@@ -564,6 +562,9 @@ typedef struct Kernel_T_ {
    */
   gint               argCounter;
   gchar            **argTable;
+  gboolean           asyncWriteIsAllowed;
+  gboolean           editionIsAllowed;
+  gchar             *pathToGraphicModules;
 
   /*
    * GTK timer identity and period in milli-seconds.
@@ -582,7 +583,6 @@ typedef struct Kernel_T_ {
   /*
    * Definition of the multi-threaded environment.
    */
-  gboolean           asyncWriteIsAllowed;
   gboolean           isThreadSafe;
   void            *(*mutexNew)    (void);
   void             (*mutexLock)   (Kernel_T_Ptr,void*);

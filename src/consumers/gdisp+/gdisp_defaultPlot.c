@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_defaultPlot.c,v 1.6 2006-02-26 14:08:23 erk Exp $
+$Id: gdisp_defaultPlot.c,v 1.7 2006-08-05 20:50:30 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -519,7 +519,6 @@ gdisp_createDefaultPlot (Kernel_T *kernel)
    * Few initialisations.
    */
   plot->dpHasFocus = FALSE;
-  plot->dpType     = GD_PLOT_DEFAULT;
 
   /*
    * Create a single graphic area.
@@ -733,16 +732,13 @@ gdisp_showDefaultPlot (Kernel_T  *kernel,
  * Return to calling process what king of plot we are.
  */
 static PlotType_T
-gdisp_getDefaultPlotType (Kernel_T *kernel,
-			  void     *data)
+gdisp_getDefaultPlotType (Kernel_T *kernel)
 {
 
-  DefaultPlot_T *plot = (DefaultPlot_T*)data;
-
   /*
-   * Must be GD_PLOT_DEFAULT. See 'create' routine.
+   * Must be GD_PLOT_DEFAULT.
    */
-  return plot->dpType;
+  return GD_PLOT_DEFAULT;
 
 }
 

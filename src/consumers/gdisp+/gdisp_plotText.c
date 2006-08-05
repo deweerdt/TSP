@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_plotText.c,v 1.12 2006-07-30 20:25:58 esteban Exp $
+$Id: gdisp_plotText.c,v 1.13 2006-08-05 20:50:30 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -422,7 +422,6 @@ gdisp_createPlotText (Kernel_T *kernel)
   /*
    * Few initialisations.
    */
-  plot->pttType            = GD_PLOT_TEXT;
   plot->pttColumnRatio     = (gfloat)0.66;
   plot->pttShowWriteColumn = FALSE;
 
@@ -1022,20 +1021,17 @@ gdisp_showPlotText (Kernel_T  *kernel,
  * Return to calling process what king of plot we are.
  */
 static PlotType_T
-gdisp_getPlotTextType (Kernel_T *kernel,
-		       void     *data)
+gdisp_getPlotTextType (Kernel_T *kernel)
 {
-
-  PlotText_T *plot = (PlotText_T*)data;
 
 #if defined(GD_DEBUG_TEXT)
   fprintf(stdout,"Getting back text plot type.\n");
 #endif
 
   /*
-   * Must be GD_PLOT_TEXT. See 'create' routine.
+   * Must be GD_PLOT_TEXT.
    */
-  return plot->pttType;
+  return GD_PLOT_TEXT;
 
 }
 
@@ -1493,10 +1489,20 @@ gdisp_getPlotTextDropZones (Kernel_T *kernel)
  --------------------------------------------------------------------
 */
 
+#if defined(GD_DYNAMIC_GRAPHIC_MODULES)
+
+void
+gdisp_initGraphicSystem (Kernel_T     *kernel,
+			 PlotSystem_T *plotSystem)
+
+#else
 
 void
 gdisp_initPlotTextSystem (Kernel_T     *kernel,
 			  PlotSystem_T *plotSystem)
+
+#endif
+
 {
 
   /*

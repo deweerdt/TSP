@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_pages.c,v 1.12 2006-02-26 14:08:23 erk Exp $
+$Id: gdisp_pages.c,v 1.13 2006-08-05 20:50:30 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -230,7 +230,7 @@ gdisp_destroySignalHandler ( GtkWidget *pageWindow,
     g_string_sprintf(messageString,
 		     "Graphic page correctly destroyed (%d remaining).",
 		     g_list_length(kernel->pageList));
-    kernel->outputFunc(kernel,messageString,GD_MESSAGE);
+    (*kernel->outputFunc)(kernel,messageString,GD_MESSAGE);
 
   }
 
@@ -360,8 +360,8 @@ gdisp_analysePositionOverPlot ( Kernel_T          *kernel,
    */
   *zone = (PlotSystemZone_T*)NULL;
 
-  if ((*plotSystemData->plotSystem->psGetType)
-      (kernel,plotSystemData->plotData) == GD_PLOT_DEFAULT) {
+  if (GD_PLOT_DEFAULT ==
+      (*plotSystemData->plotSystem->psGetType)(kernel)) {
 
     /* change plot system */
     plotSystem = &kernel->plotSystems[kernel->currentPlotType];
@@ -727,8 +727,8 @@ gdisp_finalizeDragAndDropOperation(Kernel_T         *kernel,
    * If the plot we are over, is a 'default plot', replace
    * it by the plot the type of which is currently selected.
    */
-  if ((*plotSystemData->plotSystem->psGetType)
-                     (kernel,plotSystemData->plotData) == GD_PLOT_DEFAULT) {
+  if (GD_PLOT_DEFAULT ==
+      (*plotSystemData->plotSystem->psGetType)(kernel)) {
 
     /*
      * Destroy this default plot.
@@ -767,7 +767,7 @@ gdisp_finalizeDragAndDropOperation(Kernel_T         *kernel,
 		       "Requested graphic plot not fully supported (%s).",
 		       plotName);
 
-      kernel->outputFunc(kernel,messageString,GD_ERROR);
+      (*kernel->outputFunc)(kernel,messageString,GD_ERROR);
 
       return;
 
@@ -1309,6 +1309,10 @@ gdisp_addPlotToGraphicPage (Kernel_T   *kernel,
    * Set up requested plot type.
    */
   plotSystemData->plotSystem = &kernel->plotSystems[plotType];
+  if (plotSystemData->plotSystem->psIsSupported == FALSE) {
+    /* backup to default plot */
+    plotSystemData->plotSystem = &kernel->plotSystems[GD_PLOT_DEFAULT];
+  }
 
   /*
    * Store information.
@@ -1663,12 +1667,12 @@ gdisp_createGraphicPage (gpointer factoryData,
     messageString = g_string_new((gchar*)NULL);
     g_string_sprintf(messageString,
 		     "Default plot system not fully supported.");
-    kernel->outputFunc(kernel,messageString,GD_ERROR);
+    (*kernel->outputFunc)(kernel,messageString,GD_ERROR);
 
     messageString = g_string_new((gchar*)NULL);
     g_string_sprintf(messageString,
 		     "Aborting graphic page creation.");
-    kernel->outputFunc(kernel,messageString,GD_WARNING);
+    (*kernel->outputFunc)(kernel,messageString,GD_WARNING);
 
     return;
 
@@ -1714,7 +1718,7 @@ gdisp_createGraphicPage (gpointer factoryData,
   g_string_sprintf(messageString,
 		   "Graphic page correctly created (%d).",
 		   g_list_length(kernel->pageList));
-  kernel->outputFunc(kernel,messageString,GD_MESSAGE);
+  (*kernel->outputFunc)(kernel,messageString,GD_MESSAGE);
 
 }
 

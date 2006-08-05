@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_plot2Doriginal.c,v 1.4 2006-02-26 14:08:23 erk Exp $
+$Id: gdisp_plot2Doriginal.c,v 1.5 2006-08-05 20:50:30 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -832,7 +832,6 @@ gdisp_createPlot2D (Kernel_T *kernel)
    * Few initialisations.
    */
   plot->p2dHasFocus = FALSE;
-  plot->p2dType     = GD_PLOT_2D_X;
 
   /*
    * Create a table : dimension 2 x 2, homogeneous.
@@ -1121,9 +1120,9 @@ gdisp_showPlot2D (Kernel_T  *kernel,
   gtk_widget_show(plot->p2dTable );
 
   /*
-   * These 'show' operations generate 'configure" events. Strange.
+   * These 'show' operations generate "configure" events. Strange.
    */
-
+  
 }
 
 
@@ -1131,20 +1130,17 @@ gdisp_showPlot2D (Kernel_T  *kernel,
  * Return to calling process what king of plot we are.
  */
 static PlotType_T
-gdisp_getPlot2DType (Kernel_T *kernel,
-		     void     *data)
+gdisp_getPlot2DType (Kernel_T *kernel)
 {
-
-  Plot2D_T *plot = (Plot2D_T*)data;
 
 #if defined(DEBUG_2D)
   fprintf(stdout,"Getting back plot type (2D).\n");
 #endif
 
   /*
-   * Must be GD_PLOT_2D_X. See 'create' routine.
+   * Must be GD_PLOT_2D.
    */
-  return plot->p2dType;
+  return GD_PLOT_2D;
 
 }
 

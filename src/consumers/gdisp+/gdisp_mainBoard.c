@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_mainBoard.c,v 1.13 2006-07-30 20:25:58 esteban Exp $
+$Id: gdisp_mainBoard.c,v 1.14 2006-08-05 20:50:30 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -634,6 +634,24 @@ gdispMainBoardMenuDefinitions[] = {
 
 };
 
+static GtkItemFactoryEntry
+gdispMainBoardMenuShortDefinitions[] = {
+
+ { "/_File",                    NULL,
+   NULL,                        0,                           "<Branch>"      },
+ { "/_File/_Open",              "<control>O",
+   gdisp_manageAction,          GD_OPEN_CONF | GD_NEED_FILE, NULL            },
+ { "/_File/Sep1",               NULL,
+   NULL,                        0,                           "<Separator>"   },
+ { "/_File/Quit",               "<control>Q",
+   gdisp_quitItemHandler,       0,                           NULL            },
+ { "/_Help",                    NULL,
+   NULL,                        0,                           "<LastBranch>"  },
+ { "/_Help/About",              NULL,
+   NULL,                        0,                           NULL            },
+
+};
+
 
 /*
  --------------------------------------------------------------------
@@ -717,8 +735,18 @@ gdisp_createMainBoard (Kernel_T *kernel)
   /*
    * Create all popup-menus with 'itemFactory' process.
    */
-  menuItemNb = sizeof(gdispMainBoardMenuDefinitions   ) /
-               sizeof(gdispMainBoardMenuDefinitions[0]);
+  if (kernel->editionIsAllowed == TRUE) {
+
+    menuItemNb = sizeof(gdispMainBoardMenuDefinitions   ) /
+                 sizeof(gdispMainBoardMenuDefinitions[0]);
+
+  }
+  else {
+
+    menuItemNb = sizeof(gdispMainBoardMenuShortDefinitions   ) /
+                 sizeof(gdispMainBoardMenuShortDefinitions[0]);
+
+  }
 
   accelGroup = gtk_accel_group_new();
 
@@ -739,10 +767,22 @@ gdisp_createMainBoard (Kernel_T *kernel)
    * Pass the item factory, the number of items in the array,
    * the array itself, and any callback data for the the menu items.
    */
-  gtk_item_factory_create_items(itemFactory,
-				menuItemNb,
-				gdispMainBoardMenuDefinitions,
-				(gpointer)kernel);
+  if (kernel->editionIsAllowed == TRUE) {
+
+    gtk_item_factory_create_items(itemFactory,
+				  menuItemNb,
+				  gdispMainBoardMenuDefinitions,
+				  (gpointer)kernel);
+
+  }
+  else {
+
+    gtk_item_factory_create_items(itemFactory,
+				  menuItemNb,
+				  gdispMainBoardMenuShortDefinitions,
+				  (gpointer)kernel);
+
+  }
 
   /*
    * Attach the new accelerator group to the window.
@@ -955,7 +995,7 @@ gdisp_writeInitialInformation (Kernel_T *kernel)
    * Add into the list GDISP+ Version identification.
    */
   messageString = g_string_new("TARGA Graphic Tool, Version 1.0");
-  kernel->outputFunc(kernel,messageString,GD_MESSAGE);
+  (*kernel->outputFunc)(kernel,messageString,GD_MESSAGE);
 
 
   /*
@@ -965,7 +1005,7 @@ gdisp_writeInitialInformation (Kernel_T *kernel)
   g_string_sprintf(messageString,
 		   "Implementation is %sthread-safe.",
 		   kernel->isThreadSafe == TRUE ? "" : "NOT ");
-  kernel->outputFunc(kernel,messageString,GD_WARNING);
+  (*kernel->outputFunc)(kernel,messageString,GD_WARNING);
 
 }
 

@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_defaultPlot.h,v 1.3 2006-02-26 14:08:23 erk Exp $
+$Id: gdisp_defaultPlot.h,v 1.4 2006-08-05 20:50:30 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -51,7 +51,6 @@ typedef struct DefaultPlot_T_ {
    * Attributes.
    */
   gboolean   dpHasFocus;
-  PlotType_T dpType;
 
   /*
    * Graphic widget.

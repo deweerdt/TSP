@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_plot2D.c,v 1.21 2006-07-30 20:25:58 esteban Exp $
+$Id: gdisp_plot2D.c,v 1.22 2006-08-05 20:50:30 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -78,6 +78,9 @@ File      : 2D plot system.
 #define GDISP_2D_BACK_COLOR _BLACK_
 
 #define GD_FROZEN_RULERSE
+
+/* FIXME : the following definition must be dynamic */
+#define TSP_PROVIDER_FREQ     100   /* Hz */
 
 /*
  --------------------------------------------------------------------
@@ -1738,7 +1741,6 @@ gdisp_createPlot2D (Kernel_T *kernel)
    */
   plot->p2dHasFocus  = FALSE;
   plot->p2dIsWorking = FALSE;
-  plot->p2dType      = GD_PLOT_2D;
   plot->p2dSubType   = GD_2D_F2T;
 
   /*
@@ -2180,13 +2182,13 @@ gdisp_showPlot2D (Kernel_T  *kernel,
   /*
   gdisp_addMenuItem(plot->p2dMainMenu,
 		    GD_POPUP_ITEM,
-		    "clear",
+		    "Clear",
 		    (gpointer)GUINT_TO_POINTER(GD_2D_CLEAR));
   */
 
   gdisp_addMenuItem(plot->p2dMainMenu,
 		    GD_POPUP_ITEM,
-		    "snapshot",
+		    "Snapshot",
 		    (gpointer)GUINT_TO_POINTER(GD_2D_SNAPSHOT));
 
 }
@@ -2196,18 +2198,15 @@ gdisp_showPlot2D (Kernel_T  *kernel,
  * Return to calling process what king of plot we are.
  */
 static PlotType_T
-gdisp_getPlot2DType (Kernel_T *kernel,
-		     void     *data)
+gdisp_getPlot2DType (Kernel_T *kernel)
 {
-
-  Plot2D_T *plot = (Plot2D_T*)data;
 
   GDISP_TRACE(3,"Getting back plot type (2D).\n");
 
   /*
-   * Must be GD_PLOT_2D. See 'create' routine.
+   * Must be GD_PLOT_2D.
    */
-  return plot->p2dType;
+  return GD_PLOT_2D;
 
 }
 
@@ -2807,10 +2806,20 @@ gdisp_getPlot2DDropZones (Kernel_T *kernel)
  --------------------------------------------------------------------
 */
 
+#if defined(GD_DYNAMIC_GRAPHIC_MODULES)
+
+void
+gdisp_initGraphicSystem (Kernel_T     *kernel,
+			 PlotSystem_T *plotSystem)
+
+#else
 
 void
 gdisp_initPlot2DSystem (Kernel_T     *kernel,
 			PlotSystem_T *plotSystem)
+
+#endif
+
 {
 
   gchar *trace = (gchar*)NULL;
@@ -2842,7 +2851,7 @@ gdisp_initPlot2DSystem (Kernel_T     *kernel,
   /*
    * Manage debug traces.
    */
-  trace = getenv("GDISP_STRACE");
+  trace = g_getenv("GDISP_STRACE");
   gdispVerbosity = (trace != (gchar*)NULL) ? atoi(trace) : 1;
 
 #if defined(DEBUG_2D)	

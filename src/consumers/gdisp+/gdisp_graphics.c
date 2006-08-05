@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_graphics.c,v 1.4 2006-02-26 14:08:23 erk Exp $
+$Id: gdisp_graphics.c,v 1.5 2006-08-05 20:50:30 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -105,7 +105,7 @@ gdisp_changePlotTypeCallback(GtkWidget *buttonWidget,
   g_string_sprintf(messageString,
 		   "%s is now selected.",
 		   plotInformation.psName);
-  kernel->outputFunc(kernel,messageString,GD_MESSAGE);
+  (*kernel->outputFunc)(kernel,messageString,GD_MESSAGE);
 
 }
 
@@ -207,8 +207,10 @@ gdisp_createGraphicList ( Kernel_T  *kernel,
   table = gtk_table_new(lineNumber,
 			columnNumber,
 			TRUE /* homogeneous */);
+
   gtk_table_set_row_spacings(GTK_TABLE(table),
 			     GD_TABLE_SPACING);
+
   gtk_table_set_col_spacings(GTK_TABLE(table),
 			     GD_TABLE_SPACING);
 
@@ -223,117 +225,116 @@ gdisp_createGraphicList ( Kernel_T  *kernel,
 
   /* ---------------- INSERT GRAPHIC PLOT TYPES  ---------------- */
 
+  line   = 0;
+  column = 0;
+
   /* Do not start with default plot */
-  plotType++;
+  while (++plotType < GD_MAX_PLOT) {
 
-  for (line=0; line<lineNumber; line++) {
+    plotSystem = &kernel->plotSystems[plotType];
 
-    for (column=0; column<columnNumber; column++) {
+    if (plotSystem->psIsSupported == TRUE) {
 
-      if (plotType < GD_MAX_PLOT) {
+      /*
+       * Get back information from graphic plot.
+       */
+      memset(&plotInformation,0,sizeof(PlotSystemInfo_T));
+      (*plotSystem->psGetInformation)(kernel,
+				      &plotInformation);
 
-	plotSystem = &kernel->plotSystems[plotType];
+      /*
+       * Instanciate a press button.
+       */
+      pressButton = gtk_button_new();
 
-	if (plotSystem->psIsSupported == TRUE) {
+      /*
+       * Associate the press button with the plot type it represents.
+       * Attach a "clicked" callback.
+       */
+      gtk_object_set_user_data(GTK_OBJECT(pressButton),
+			       (gpointer)plotType);
 
-	  /*
-	   * Get back information from graphic plot.
-	   */
-	  memset(&plotInformation,0,sizeof(PlotSystemInfo_T));
-	  (*plotSystem->psGetInformation)(kernel,
-					  &plotInformation);
+      gtk_signal_connect(GTK_OBJECT(pressButton),
+			 "clicked",
+			 GTK_SIGNAL_FUNC(gdisp_changePlotTypeCallback),
+			 (gpointer)kernel);
 
-	  /*
-	   * Instanciate a press button.
-	   */
-	  pressButton = gtk_button_new();
+      /**********************************************************/
 
-	  /*
-	   * Associate the press button with the plot type it represents.
-	   * Attach a "clicked" callback.
-	   */
-	  gtk_object_set_user_data(GTK_OBJECT(pressButton),
-				   (gpointer)plotType);
+      /*
+       * Use GDK services to create GDISP+ Logo (XPM format).
+       */
+      if (plotInformation.psLogo == (gchar**)NULL) {
 
-	  gtk_signal_connect(GTK_OBJECT(pressButton),
-			     "clicked",
-			     GTK_SIGNAL_FUNC(gdisp_changePlotTypeCallback),
-			     (gpointer)kernel);
+	pixmap = gdisp_getPixmapById(kernel,
+				     GD_PIX_gdispLogo,
+				     kernel->widgets.dataBookWindow);
 
-	  /**********************************************************/
+      }
+      else {
 
-	  /*
-	   * Use GDK services to create GDISP+ Logo (XPM format).
-	   */
-	  if (plotInformation.psLogo == (gchar**)NULL) {
+	pixmap = gdisp_getPixmapByAddr(kernel,
+				       (gchar**)plotInformation.psLogo,
+				       kernel->widgets.dataBookWindow);
 
-	    pixmap = gdisp_getPixmapById(
-                                      kernel,
-				      GD_PIX_gdispLogo,
-				      kernel->widgets.dataBookWindow);
+      }
 
-	  }
-	  else {
+      /*
+       * Create a pixmap widget to contain the pixmap.
+       */
+      pixmapWidget = gtk_pixmap_new(pixmap->pixmap,
+				    pixmap->mask);
 
-	    pixmap = gdisp_getPixmapByAddr(
-				      kernel,
-				      (gchar**)plotInformation.psLogo,
-				      kernel->widgets.dataBookWindow);
+      gtk_container_add(GTK_CONTAINER(pressButton),
+			pixmapWidget);
 
-	  }
+      gtk_widget_show(pixmapWidget);
 
-	  /*
-	   * Create a pixmap widget to contain the pixmap.
-	   */
-	  pixmapWidget = gtk_pixmap_new(pixmap->pixmap,
-					pixmap->mask);
+      /**********************************************************/
 
-	  gtk_container_add(GTK_CONTAINER(pressButton),
-			    pixmapWidget);
+      /*
+       * Set up a requested size for the press button.
+       */
+      gtk_widget_set_usize(pressButton,
+			   150,
+			   150);
 
-	  gtk_widget_show(pixmapWidget);
+      /*
+       * Associate a tooltip information to the press button.
+       */
+      gtk_tooltips_set_tip(GTK_TOOLTIPS(toolTipGroup),
+			   pressButton,
+			   plotInformation.psDescription,
+			   "");
 
-	  /**********************************************************/
+      /*
+       * Attach the press button to its parent widget.
+       */
+      gtk_table_attach_defaults(GTK_TABLE(table),
+				pressButton,
+				column,
+				column + 1,
+				line,
+				line   + 1);
 
-	  /*
-	   * Set up a requested size for the press button.
-	   */
-	  gtk_widget_set_usize(pressButton,
-			       150,
-			       150);
+      /*
+       * Show the press button.
+       */
+      gtk_widget_show(pressButton);
 
-	  /*
-	   * Associate a tooltip information to the press button.
-	   */
-	  gtk_tooltips_set_tip(GTK_TOOLTIPS(toolTipGroup),
-			       pressButton,
-			       plotInformation.psDescription,
-			       "");
 
-	  /*
-	   * Attach the press button to its parent widget.
-	   */
-	  gtk_table_attach_defaults(GTK_TABLE(table),
-				    pressButton,
-				    column,
-				    column + 1,
-				    line,
-				    line   + 1);
+      /*
+       * Goto next position.
+       */
+      column++;
+      if (column == columnNumber) {
+	line++;
+	column = 0;
+      }
 
-	  /*
-	   * Show the press button.
-	   */
-	  gtk_widget_show(pressButton);
+    } /* graphic plot is supported */
 
-	} /* graphic plot is supported */
-
-      } /* do not exceed GD_MAX_PLOT */
-
-      plotType++;
-
-    } /* columns */
-
-  } /* lines */
+  } /* do not exceed GD_MAX_PLOT */
 
 }
 

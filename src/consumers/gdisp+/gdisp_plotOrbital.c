@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_plotOrbital.c,v 1.4 2006-02-26 14:08:24 erk Exp $
+$Id: gdisp_plotOrbital.c,v 1.5 2006-08-05 20:50:30 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -219,7 +219,7 @@ gdisp_createPlotOrbital (Kernel_T *kernel)
   /*
    * Few initialisations.
    */
-  plot->poType = GD_PLOT_ORBITAL;
+
 
   /*
    * Insert a graphic area.
@@ -375,16 +375,13 @@ gdisp_showPlotOrbital (Kernel_T  *kernel,
  * Return to calling process what king of plot we are.
  */
 static PlotType_T
-gdisp_getPlotOrbitalType (Kernel_T *kernel,
-			  void     *data)
+gdisp_getPlotOrbitalType (Kernel_T *kernel)
 {
-
-  PlotOrbital_T *plot = (PlotOrbital_T*)data;
 
   /*
    * Return the type of the plot.
    */
-  return plot->poType;
+  return GD_PLOT_ORBITAL;
 
 }
 
@@ -603,10 +600,20 @@ gdisp_getPlotOrbitalDropZones (Kernel_T *kernel)
  --------------------------------------------------------------------
 */
 
+#if defined(GD_DYNAMIC_GRAPHIC_MODULES)
+
+void
+gdisp_initGraphicSystem (Kernel_T     *kernel,
+			 PlotSystem_T *plotSystem)
+
+#else
 
 void
 gdisp_initOrbitalPlotSystem (Kernel_T     *kernel,
 			     PlotSystem_T *plotSystem)
+
+#endif
+
 {
 
   /*
@@ -631,7 +638,6 @@ gdisp_initOrbitalPlotSystem (Kernel_T     *kernel,
   plotSystem->psTreatSymbolValues   = gdisp_treatPlotOrbitalSymbolValues;
   plotSystem->psGetPeriod           = gdisp_getPlotOrbitalPeriod;
   /* plotSystem->psGetDropZones        = gdisp_getPlotOrbitalDropZones; */
-
 
 }
 

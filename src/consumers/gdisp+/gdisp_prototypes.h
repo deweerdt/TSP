@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_prototypes.h,v 1.20 2006-07-30 20:25:58 esteban Exp $
+$Id: gdisp_prototypes.h,v 1.21 2006-08-05 20:50:30 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -324,6 +324,11 @@ void       gdisp_stopLogoAnimation  (Kernel_T *kernel, gboolean stopAll);
  */
 void       gdisp_showSplashScreen (void);
 
+
+/*
+ * From gdisp_modules.c
+ */
+void       gdisp_loadGraphicModules (Kernel_T *kernel);
 
 /*
  * From gdisp_dataBox.c

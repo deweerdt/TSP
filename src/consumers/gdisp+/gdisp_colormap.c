@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_colormap.c,v 1.5 2006-02-26 14:08:23 erk Exp $
+$Id: gdisp_colormap.c,v 1.6 2006-08-05 20:50:30 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -715,7 +715,7 @@ gdisp_createColormap (Kernel_T *kernel)
     g_string_sprintf(messageString,
 		     "All %d requested colors have been allocated.",
 		     kernel->colorNumber);
-    kernel->outputFunc(kernel,messageString,GD_MESSAGE);
+    (*kernel->outputFunc)(kernel,messageString,GD_MESSAGE);
   
 
   }
@@ -725,7 +725,7 @@ gdisp_createColormap (Kernel_T *kernel)
 		     "Only %d colors out of %d have been allocated.",
 		     allocatedColors,
 		     kernel->colorNumber);
-    kernel->outputFunc(kernel,messageString,GD_WARNING);
+    (*kernel->outputFunc)(kernel,messageString,GD_WARNING);
 
   }
 

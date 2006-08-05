@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_symbols.c,v 1.11 2006-07-30 20:25:58 esteban Exp $
+$Id: gdisp_symbols.c,v 1.12 2006-08-05 20:50:30 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -1045,8 +1045,8 @@ gdisp_createSymbolList ( Kernel_T  *kernel,
   g_string_sprintf(messageString,
 		   "A total of %d symbols have been processed.",
 		   symbolCount);
-  kernel->outputFunc(kernel,messageString,
-		     symbolCount == 0 ? GD_ERROR : GD_MESSAGE);
+  (*kernel->outputFunc)(kernel,messageString,
+			symbolCount == 0 ? GD_ERROR : GD_MESSAGE);
 
 
   /*

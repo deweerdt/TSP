@@ -10,18 +10,13 @@
 
   - many things are hardcoded (plot frequency = 10 Hz).
        make them be dynamically modified via GUI.
-  - save / load symbol and graphic configuration (XML)
   - HTML help on line with the use of GtkHTML widget.
        Before that, the GtkHTML widget should be modified
        in order to avoid linking with Gnome and Bonobo libraries.
-  - graphic plots may become independant dynamic modules.
-  - animation of TSP logo.
 
 2) At sampling level.
 
-  - the GTK step timer period is the minimum period of all plots.
-    it should be the PGCD of all plot periods.
-
+  - 
 
 3) At 2D plot level.
 

@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_plot2D.h,v 1.12 2006-05-13 20:55:02 esteban Exp $
+$Id: gdisp_plot2D.h,v 1.13 2006-08-05 20:50:30 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -86,7 +86,6 @@ typedef struct Plot2D_T_ {
   /*
    * Attributes.
    */
-  PlotType_T           p2dType;
   KindOfPlot_T         p2dSubType;
   gboolean             p2dHasFocus;
   gboolean             p2dIsWorking;

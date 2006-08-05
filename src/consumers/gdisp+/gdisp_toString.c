@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_toString.c,v 1.3 2006-07-30 20:25:58 esteban Exp $
+$Id: gdisp_toString.c,v 1.4 2006-08-05 20:50:30 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -72,11 +72,6 @@ gdisp_setSortingMethodFromString ( Kernel_T *kernel,
   if (strcmp(requestedMethod,"SortByName") == 0) {
 
     kernel->sortingMethod = GD_SORT_BY_NAME;
-
-  }
-  else if (strcmp(requestedMethod,"SortByNameReverse") == 0) {
-
-    kernel->sortingMethod = GD_SORT_BY_NAME_REVERSE;
 
   }
   else if (strcmp(requestedMethod,"SortByIndex") == 0) {
@@ -177,10 +172,6 @@ gdisp_sortingMethodToString ( Kernel_T *kernel )
 
   case GD_SORT_BY_NAME :
     myString = "SortByName";
-    break;
-
-  case GD_SORT_BY_NAME_REVERSE :
-    myString = "SortByNameReverse";
     break;
 
   case GD_SORT_BY_INDEX :
@@ -285,7 +276,20 @@ gdisp_setUpPreferenceFromString ( Kernel_T *kernel,
   /*
    * Symbol sorting method.
    */
-  if (strcmp(preference,"sortingMethod") == 0) {
+  if (strcmp(preference,"pathToGraphicModules") == 0) {
+
+    if (strcmp(value,"unknown") != 0 &&
+	kernel->pathToGraphicModules == (gchar*)NULL) {
+
+      kernel->pathToGraphicModules = gdisp_strDup(value);
+
+    }
+
+  }
+  /*
+   * Symbol sorting method.
+   */
+  else if (strcmp(preference,"sortingMethod") == 0) {
 
     gdisp_setSortingMethodFromString(kernel,
 				     value);

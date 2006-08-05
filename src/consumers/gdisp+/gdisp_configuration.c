@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_configuration.c,v 1.13 2006-07-30 20:25:58 esteban Exp $
+$Id: gdisp_configuration.c,v 1.14 2006-08-05 20:50:30 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -1109,11 +1109,29 @@ gdisp_loadProviderSymbolsForSampling ( Kernel_T   *kernel,
       symbolIndex     = xmlGetProp(symbolNode,"index" );
       symbolName      = xmlGetProp(symbolNode,"name"  );
       symbolType      = xmlGetProp(symbolNode,"type"  );
+      if (symbolType == (xmlChar*)NULL) {
+	symbolType = gdisp_strDup("F64");
+      }
       symbolDimension = xmlGetProp(symbolNode,"dim"   );
+      if (symbolDimension == (xmlChar*)NULL) {
+	symbolDimension = gdisp_strDup("1");
+      }
       symbolOffset    = xmlGetProp(symbolNode,"offset");
+      if (symbolOffset == (xmlChar*)NULL) {
+	symbolOffset = gdisp_strDup("0");
+      }
       symbolNelem     = xmlGetProp(symbolNode,"nelem" );
+      if (symbolNelem == (xmlChar*)NULL) {
+	symbolNelem = gdisp_strDup("0");
+      }
       symbolPeriod    = xmlGetProp(symbolNode,"period");
+      if (symbolPeriod == (xmlChar*)NULL) {
+	symbolPeriod = gdisp_strDup("1");
+      }
       symbolPhase     = xmlGetProp(symbolNode,"phase" );
+      if (symbolPhase == (xmlChar*)NULL) {
+	symbolPhase = gdisp_strDup("0");
+      }
 
       if (symbolIndex != (xmlChar*)NULL && symbolName != (xmlChar*)NULL) {
 
@@ -1142,6 +1160,24 @@ gdisp_loadProviderSymbolsForSampling ( Kernel_T   *kernel,
       }
       if (symbolName != (xmlChar*)NULL) {
 	xmlFree(symbolName);
+      }
+      if (symbolType != (xmlChar*)NULL) {
+	xmlFree(symbolType);
+      }
+      if (symbolDimension != (xmlChar*)NULL) {
+	xmlFree(symbolDimension);
+      }
+      if (symbolOffset != (xmlChar*)NULL) {
+	xmlFree(symbolOffset);
+      }
+      if (symbolNelem != (xmlChar*)NULL) {
+	xmlFree(symbolNelem);
+      }
+      if (symbolPeriod != (xmlChar*)NULL) {
+	xmlFree(symbolPeriod);
+      }
+      if (symbolPhase != (xmlChar*)NULL) {
+	xmlFree(symbolPhase);
       }
 
     } /* for */
@@ -1702,7 +1738,7 @@ gdisp_openConfigurationFile ( Kernel_T *kernel )
    * We really need a filename and NOT a path.
    */
   if (kernel->ioFilename == (gchar*)NULL ||
-      kernel->ioFilename[strlen(kernel->ioFilename)-1] == '/') {
+      kernel->ioFilename[strlen(kernel->ioFilename)-1] == G_DIR_SEPARATOR) {
 
     return FALSE;
 
@@ -1782,7 +1818,7 @@ gdisp_saveConfigurationFile ( Kernel_T *kernel )
    * We really need a filename and NOT a path.
    */
   if (kernel->ioFilename == (gchar*)NULL ||
-      kernel->ioFilename[strlen(kernel->ioFilename)-1] == '/') {
+      kernel->ioFilename[strlen(kernel->ioFilename)-1] == G_DIR_SEPARATOR) {
 
     return FALSE;
 

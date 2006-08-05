@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_preferences.c,v 1.6 2006-07-30 20:25:58 esteban Exp $
+$Id: gdisp_preferences.c,v 1.7 2006-08-05 20:50:30 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -135,13 +135,14 @@ gdisp_loadPreferenceFile ( Kernel_T *kernel )
   /*
    * Caution.
    */
-  if (getenv("HOME") == (char*)NULL) {
+  if (g_get_home_dir() == (char*)NULL) {
     /* strange, but never mind, keep on with default preferences */
     return;
   }
   sprintf(completeFilename,
-	  "%s/.targa",
-	  getenv("HOME"));
+	  "%s%c.targa",
+	  g_get_home_dir(),
+	  G_DIR_SEPARATOR);
 
   /*
    * Check file disponibility.
@@ -208,13 +209,14 @@ gdisp_savePreferenceFile ( Kernel_T *kernel )
    * Caution.
    */
   indentBuffer[0] = '\0';
-  if (getenv("HOME") == (char*)NULL) {
+  if (g_get_home_dir() == (char*)NULL) {
     /* No need to print any error message, because gdisp+ is exiting */
     return;
   }
   sprintf(completeFilename,
-	  "%s/.targa",
-	  getenv("HOME"));
+	  "%s%c.targa",
+	  g_get_home_dir(),
+	  G_DIR_SEPARATOR);
 
   /*
    * This initialize the library and check potential ABI mismatches
@@ -325,17 +327,39 @@ gdisp_savePreferenceFile ( Kernel_T *kernel )
 
   /*
    * Preferences to be saved :
-   *  kernel->sortingMethod    = GD_SORT_BY_PROVIDER;
-   *  kernel->sortingDirection = GD_SORT_ASCENDING;
-   *  kernel->dndScope         = GD_DND_UNICAST;
+   *  kernel->pathToGraphicModules
+   *  kernel->sortingMethod
+   *  kernel->sortingDirection
+   *  kernel->dndScope
    */
+
+  /*
+   * Path to graphic modules.
+   */
+  attributeValue = kernel->pathToGraphicModules;
+  if (attributeValue == (xmlChar*)NULL) {
+    attributeValue = "unknown";
+  }
+  errorCode      = gdisp_xmlWriteAttributes(writer,
+					    GD_INCREASE_INDENTATION,
+					    indentBuffer,
+					    (xmlChar*)"preference",
+					    TRUE, /* end up element */
+					    (xmlChar*)"pathToGraphicModules",
+					    (xmlChar*)attributeValue,
+					    (xmlChar*)NULL);
+
+  if (errorCode < 0) {
+    /* No need to print any error message, because gdisp+ is exiting */
+    return;
+  }
 
   /*
    * Sorting Method.
    */
   attributeValue = gdisp_sortingMethodToString(kernel);
   errorCode      = gdisp_xmlWriteAttributes(writer,
-					    GD_INCREASE_INDENTATION,
+					    GD_DO_NOT_CHANGE_INDENTATION,
 					    indentBuffer,
 					    (xmlChar*)"preference",
 					    TRUE, /* end up element */
@@ -353,7 +377,7 @@ gdisp_savePreferenceFile ( Kernel_T *kernel )
    */
   attributeValue = gdisp_sortingDirectionToString(kernel);
   errorCode      = gdisp_xmlWriteAttributes(writer,
-					    GD_INCREASE_INDENTATION,
+					    GD_DO_NOT_CHANGE_INDENTATION,
 					    indentBuffer,
 					    (xmlChar*)"preference",
 					    TRUE, /* end up element */

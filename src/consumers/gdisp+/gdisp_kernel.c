@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_kernel.c,v 1.17 2006-07-30 20:25:58 esteban Exp $
+$Id: gdisp_kernel.c,v 1.18 2006-08-05 20:50:30 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -94,12 +94,12 @@ gdisp_mutexLock (Kernel_T *kernel,
 
   case EINVAL :
     error = g_string_new("The mutex has not been properly initialized.");
-    kernel->outputFunc(kernel,error,GD_ERROR);
+    (*kernel->outputFunc)(kernel,error,GD_ERROR);
     break;
 
   case EDEADLK :
     error = g_string_new("The mutex is already locked by the calling thread.");
-    kernel->outputFunc(kernel,error,GD_ERROR);
+    (*kernel->outputFunc)(kernel,error,GD_ERROR);
     break;
 
   default :
@@ -124,14 +124,14 @@ gdisp_mutexTrylock (Kernel_T *kernel,
 
   case EINVAL :
     error = g_string_new("The mutex has not been properly initialized.");
-    kernel->outputFunc(kernel,error,GD_ERROR);
+    (*kernel->outputFunc)(kernel,error,GD_ERROR);
     gStatus = FALSE;
     break;
 
   case EBUSY  :
     error = g_string_new("The mutex could not be acquired"
 			 "because it was currently locked.");
-    kernel->outputFunc(kernel,error,GD_ERROR);
+    (*kernel->outputFunc)(kernel,error,GD_ERROR);
     gStatus = FALSE;
     break;
 
@@ -159,12 +159,12 @@ gdisp_mutexUnlock (Kernel_T *kernel,
 
   case EINVAL :
     error = g_string_new("The mutex has not been properly initialized.");
-    kernel->outputFunc(kernel,error,GD_ERROR);
+    (*kernel->outputFunc)(kernel,error,GD_ERROR);
     break;
 
   case EPERM :
     error = g_string_new("The calling thread does not own the mutex");
-    kernel->outputFunc(kernel,error,GD_ERROR);
+    (*kernel->outputFunc)(kernel,error,GD_ERROR);
     break;
 
   default :
@@ -188,7 +188,7 @@ gdisp_mutexFree (Kernel_T *kernel,
 
   case EBUSY :
     error = g_string_new("The mutex is currently locked.");
-    kernel->outputFunc(kernel,error,GD_ERROR);
+    (*kernel->outputFunc)(kernel,error,GD_ERROR);
     return;
     break;
 
@@ -301,13 +301,7 @@ gdisp_createKernel (gint    argc,
 		    gchar **argv)
 {
 
-  Kernel_T        *kernel          =       (Kernel_T*)NULL;
-  PlotSystem_T    *plotSystem      =   (PlotSystem_T*)NULL;
-  PlotType_T       plotType        =       GD_PLOT_DEFAULT;
-  guint            functionSetSize =                     0;
-  guint            functionCpt     =                     0;
-  guint            functionNb      =                     0;
-  FunctionTable_T  functionTable   = (FunctionTable_T)NULL;
+  Kernel_T *kernel = (Kernel_T*)NULL;
 
   /*
    * Memory allocation.
@@ -319,6 +313,7 @@ gdisp_createKernel (gint    argc,
    * Defaults.
    */
   kernel->asyncWriteIsAllowed    = FALSE;
+  kernel->editionIsAllowed       = TRUE;
   kernel->isThreadSafe           = FALSE;
   kernel->sortingMethod          = GD_SORT_BY_PROVIDER;
   kernel->sortingDirection       = GD_SORT_ASCENDING;
@@ -353,66 +348,6 @@ gdisp_createKernel (gint    argc,
    * Initialise all fonts.
    */
   gdisp_loadFonts(kernel->fonts);
-
-
-  /*
-   * Initialise all plot systems.
-   * Each plot system that is supported may provide several functions.
-   */
-  kernel->currentPlotType = GD_PLOT_TEXT;
-
-  /* Remove size of 'psIsSupported' */
-  functionSetSize = sizeof(PlotSystem_T) - sizeof(gboolean);
-  functionNb      = functionSetSize / sizeof(aFunction_T);
-
-  for (plotType=GD_PLOT_DEFAULT; plotType<GD_MAX_PLOT; plotType++) {
-
-    plotSystem = &kernel->plotSystems[plotType];
-    switch (plotType) {
-
-    case GD_PLOT_DEFAULT :
-      gdisp_initDefaultPlotSystem(kernel,plotSystem);
-      break;
-
-    case GD_PLOT_2D :
-      gdisp_initPlot2DSystem(kernel,plotSystem);
-      break;
-
-    case GD_PLOT_TEXT :
-      gdisp_initPlotTextSystem(kernel,plotSystem);
-      break;
-
-    case GD_PLOT_ORBITAL :
-#if _USE_OPENGL
-      gdisp_initOrbitalPlotSystem(kernel,plotSystem);
-#endif
-      break;
-
-    default :
-      break;
-
-    }
-
-    /*
-     * We must check out, at kernel level, that all functions have been
-     * initialised by each plot system.
-     */
-
-    /* By default, the plot system is supported */
-    plotSystem->psIsSupported = TRUE;
-    functionTable             = (FunctionTable_T)plotSystem;
-
-    for (functionCpt=0; functionCpt<functionNb; functionCpt++) {
-
-      if (functionTable[functionCpt] == (aFunction_T)NULL) {
-
-	plotSystem->psIsSupported = FALSE;
-
-      } /* if */
-
-    } /* for 'functionCpt' */
-
-  } /* for 'plotType' */
 
   /*
    * Remember how to register periodic actions.
@@ -483,10 +418,13 @@ gdisp_destroyKernel (Kernel_T *kernel)
   if (kernel->ioFilename != (gchar*)NULL) {
     g_free(kernel->ioFilename);
   }
-
+  if (kernel->pathToGraphicModules != (gchar*)NULL) {
+    g_free(kernel->pathToGraphicModules);
+  }
   g_ptr_array_free(kernel->kernelRegisteredActions,FALSE);
 
   memset(kernel,0,sizeof(Kernel_T));
+
   g_free(kernel);
 
 }

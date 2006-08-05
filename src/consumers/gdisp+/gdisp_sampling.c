@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_sampling.c,v 1.19 2006-07-30 20:25:58 esteban Exp $
+$Id: gdisp_sampling.c,v 1.20 2006-08-05 20:50:30 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -184,13 +184,13 @@ gdisp_createThread ( Kernel_T               *kernel,
       g_string_sprintf(messageString,
 		       "%s thread creation failed.",
 		       threadName);
-      kernel->outputFunc(kernel,messageString,GD_ERROR);
+      (*kernel->outputFunc)(kernel,messageString,GD_ERROR);
 
       messageString = g_string_new((gchar*)NULL);
       g_string_sprintf(messageString,
 		       "%s.",
 		       strerror(errno));
-      kernel->outputFunc(kernel,messageString,GD_ERROR);
+      (*kernel->outputFunc)(kernel,messageString,GD_ERROR);
 
     } /* verbose */
 
@@ -207,13 +207,13 @@ gdisp_createThread ( Kernel_T               *kernel,
       g_string_sprintf(messageString,
 		       "Cannot detach %s thread.",
 		       threadName);
-      kernel->outputFunc(kernel,messageString,GD_ERROR);
+      (*kernel->outputFunc)(kernel,messageString,GD_ERROR);
 
       messageString = g_string_new((gchar*)NULL);
       g_string_sprintf(messageString,
 		       "%s.",
 		       strerror(errno));
-      kernel->outputFunc(kernel,messageString,GD_ERROR);
+      (*kernel->outputFunc)(kernel,messageString,GD_ERROR);
 
     }
 
@@ -1131,7 +1131,7 @@ gdisp_startSamplingProcess (Kernel_T *kernel)
      */
     messageString =
       g_string_new("You should create a graphic plot before sampling...");
-    kernel->outputFunc(kernel,messageString,GD_ERROR);
+    (*kernel->outputFunc)(kernel,messageString,GD_ERROR);
 
     return FALSE;
 
@@ -1155,7 +1155,7 @@ gdisp_startSamplingProcess (Kernel_T *kernel)
   g_string_sprintf(messageString,
 		   "Step process period is %d milli-seconds.",
 		   kernel->stepTimerPeriod);
-  kernel->outputFunc(kernel,messageString,GD_MESSAGE);
+  (*kernel->outputFunc)(kernel,messageString,GD_MESSAGE);
 
 
   /*
@@ -1182,11 +1182,11 @@ gdisp_startSamplingProcess (Kernel_T *kernel)
      */
     messageString =
       g_string_new("Cannot start dynamic plot process");
-    kernel->outputFunc(kernel,messageString,GD_ERROR);
+    (*kernel->outputFunc)(kernel,messageString,GD_ERROR);
 
     messageString =
       g_string_new("because one or more plots are unabled to proceed.");
-    kernel->outputFunc(kernel,messageString,GD_ERROR);
+    (*kernel->outputFunc)(kernel,messageString,GD_ERROR);
 
     return FALSE;
 

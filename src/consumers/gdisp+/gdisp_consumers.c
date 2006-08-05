@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_consumers.c,v 1.18 2006-07-30 20:25:58 esteban Exp $
+$Id: gdisp_consumers.c,v 1.19 2006-08-05 20:50:30 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -445,7 +445,7 @@ gdisp_insertProvider ( Kernel_T *kernel,
 	g_string_sprintf(messageString,
 			 "Session opened on <%s>",
 			 newProvider->pUrl->str);
-	kernel->outputFunc(kernel,messageString,GD_MESSAGE);
+	(*kernel->outputFunc)(kernel,messageString,GD_MESSAGE);
 
 
       } /* requestStatus == TRUE (TSP_consumer_request_information) */
@@ -454,13 +454,13 @@ gdisp_insertProvider ( Kernel_T *kernel,
 
 	messageString = g_string_new((gchar*)NULL);
 	g_string_sprintf(messageString,"Cannot get back information from");
-	kernel->outputFunc(kernel,messageString,GD_ERROR);
+	(*kernel->outputFunc)(kernel,messageString,GD_ERROR);
 
 	messageString = g_string_new((gchar*)NULL);
 	g_string_sprintf(messageString,
 			 "<%s> provider. Session is closed.",
 			 newProvider->pUrl->str);
-	kernel->outputFunc(kernel,messageString,GD_ERROR);
+	(*kernel->outputFunc)(kernel,messageString,GD_ERROR);
 
       }
 
@@ -470,13 +470,13 @@ gdisp_insertProvider ( Kernel_T *kernel,
 
       messageString = g_string_new((gchar*)NULL);
       g_string_sprintf(messageString,"Cannot open a session towards");
-      kernel->outputFunc(kernel,messageString,GD_ERROR);
+      (*kernel->outputFunc)(kernel,messageString,GD_ERROR);
 
       messageString = g_string_new((gchar*)NULL);
       g_string_sprintf(messageString,
 		       "<%s> provider. Aborting.",
 		       newProvider->pUrl->str);
-      kernel->outputFunc(kernel,messageString,GD_ERROR);
+      (*kernel->outputFunc)(kernel,messageString,GD_ERROR);
 
     }
     
@@ -535,7 +535,7 @@ gdisp_insertHostProviders ( Kernel_T *kernel,
 
   }
 
-  kernel->outputFunc(kernel,messageString,GD_WARNING);
+  (*kernel->outputFunc)(kernel,messageString,GD_WARNING);
 
 }
 
@@ -585,7 +585,7 @@ gdisp_consumingInit (Kernel_T *kernel)
 
     messageString = g_string_new((gchar*)NULL);
     g_string_sprintf(messageString,"TSP Initialisation failed.");
-    kernel->outputFunc(kernel,messageString,GD_ERROR);
+    (*kernel->outputFunc)(kernel,messageString,GD_ERROR);
 
     return;
 
@@ -622,7 +622,7 @@ gdisp_consumingInit (Kernel_T *kernel)
     if (hostStatus == -1) {
       
       g_string_sprintf(messageString,"Local host is UNKNOWN.");
-      kernel->outputFunc(kernel,messageString,GD_ERROR);
+      (*kernel->outputFunc)(kernel,messageString,GD_ERROR);
       
     }
     else {
@@ -630,7 +630,7 @@ gdisp_consumingInit (Kernel_T *kernel)
       g_string_sprintf(messageString,
 		       "Local host is '%s'.",
 		       localHostName);
-      kernel->outputFunc(kernel,messageString,GD_MESSAGE);
+      (*kernel->outputFunc)(kernel,messageString,GD_MESSAGE);
       
       gdisp_addHost(kernel,localHostName);
 

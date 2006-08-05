@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_providers.c,v 1.13 2006-07-30 20:25:58 esteban Exp $
+$Id: gdisp_providers.c,v 1.14 2006-08-05 20:50:30 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -664,7 +664,6 @@ gdisp_sortProviderSymbols ( Kernel_T        *kernel,
 	    gdisp_sortProviderSymbolByIndex);
       break;
 
-    case GD_SORT_BY_NAME_REVERSE :
     case GD_SORT_BY_PROVIDER     :
     case GD_SORT_BY_TYPE         :
     case GD_SORT_BY_DIM          :

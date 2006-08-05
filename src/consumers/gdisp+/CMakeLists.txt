@@ -9,7 +9,7 @@ SET(TARGA_SRC
   gdisp_pages gdisp_sampling
   gdisp_colormap gdisp_defaultPlot
   gdisp_pointArray gdisp_splashScreen
-  gdisp_pixmaps)
+  gdisp_pixmaps gdisp_modules)
 
 SET(TARGA_SRC ${TARGA_SRC}
   gdisp_utils gdisp_toString

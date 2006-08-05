@@ -7,6 +7,7 @@ CC = gcc
 SOURCES = \
 	gdisp_main.c           \
 	gdisp_kernel.c         \
+	gdisp_modules.c        \
 	gdisp_preferences.c    \
 	gdisp_configuration.c  \
 	gdisp_mainBoard.c      \
@@ -24,11 +25,11 @@ SOURCES = \
 	gdisp_colormap.c       \
 	gdisp_defaultPlot.c    \
 	gdisp_pointArray.c     \
-	gdisp_splashScreen.c   \
-	gdisp_pixmaps.c
+	gdisp_splashScreen.c
 
 PLUGINS_SOURCES = \
 	gdisp_utils.c \
+	gdisp_pixmaps.c \
 	gdisp_toString.c \
 	gdisp_xml.c \
 	gdisp_format.c \
@@ -36,6 +37,7 @@ PLUGINS_SOURCES = \
 	gdisp_popupMenu.c \
 	gdisp_plot2D.c \
 	gdisp_plotText.c 
+
 ifeq (${USABLE_OPENGL},yes)
 PLUGINS_SOURCES += \
 	gdisp_plotOrbital.c \
@@ -73,56 +75,64 @@ ifeq (${SHAREDLIB_ENABLED},yes)
 # How to build utility shared library.
 # ---------------------------------------------------------
 
-UTIL_TARGET = $(DIRLIB)/libtsp_gdispUtils.so
+UTIL_TARGET = $(DIRLIB)/libtsp_targaUtils.so
 
-$(UTIL_TARGET): gdisp_utils.c
+$(UTIL_TARGET): gdisp_utils.c gdisp_pixmaps.c gdisp_toString.c gdisp_xml.c gdisp_format.c gdisp_dataBox.c gdisp_popupMenu.c
 	$(COMPILE.c) -fPIC -o $(DIRSHOBJ)/gdisp_utils.o gdisp_utils.c
+	$(COMPILE.c) -fPIC -o $(DIRSHOBJ)/gdisp_pixmaps.o gdisp_pixmaps.c
 	$(COMPILE.c) -fPIC -o $(DIRSHOBJ)/gdisp_toString.o gdisp_toString.c
 	$(COMPILE.c) -fPIC -o $(DIRSHOBJ)/gdisp_xml.o gdisp_xml.c
 	$(COMPILE.c) -fPIC -o $(DIRSHOBJ)/gdisp_format.o gdisp_format.c
-	$(LINK.c) -shared -o $@ $(DIRSHOBJ)/gdisp_utils.o $(DIRSHOBJ)/gdisp_toString.o $(DIRSHOBJ)/gdisp_xml.o $(DIRSHOBJ)/gdisp_format.o
+	$(COMPILE.c) -fPIC -o $(DIRSHOBJ)/gdisp_dataBox.o gdisp_dataBox.c
+	$(COMPILE.c) -fPIC -o $(DIRSHOBJ)/gdisp_popupMenu.o gdisp_popupMenu.c
+	$(LINK.c) -shared -o $@ $(DIRSHOBJ)/gdisp_utils.o $(DIRSHOBJ)/gdisp_toString.o $(DIRSHOBJ)/gdisp_xml.o $(DIRSHOBJ)/gdisp_format.o $(DIRSHOBJ)/gdisp_dataBox.o $(DIRSHOBJ)/gdisp_popupMenu.o $(DIRSHOBJ)/gdisp_pixmaps.o 
 
 # ---------------------------------------------------------
 # How to build plot 2D shared library.
 # ---------------------------------------------------------
 
-PLOT2D_TARGET = $(DIRLIB)/libtsp_gdispPlot2D.so
+PLOT2D_TARGET = $(DIRLIB)/libtsp_targaPlot2D.so
 
 $(PLOT2D_TARGET): gdisp_plot2D.c
 	$(COMPILE.c) -fPIC -o gdisp_plot2D.o gdisp_plot2D.c
-	$(LINK.c) -shared -o $@ gdisp_plot2D.o
+	$(LINK.c) -shared -o $@ gdisp_plot2D.o $(UTIL_TARGET)
 
 # ---------------------------------------------------------
 # How to build plot text shared library.
 # ---------------------------------------------------------
 
-PLOTTEXT_TARGET = $(DIRLIB)/libtsp_gdispPlotText.so
+PLOTTEXT_TARGET = $(DIRLIB)/libtsp_targaPlotText.so
 
 $(PLOTTEXT_TARGET): gdisp_plotText.c
 	$(COMPILE.c) -fPIC -o $(DIRSHOBJ)/gdisp_plotText.o gdisp_plotText.c
-	$(LINK.c) -shared -o $@ $(DIRSHOBJ)/gdisp_plotText.o
+	$(LINK.c) -shared -o $@ $(DIRSHOBJ)/gdisp_plotText.o $(UTIL_TARGET)
 
 # ---------------------------------------------------------
 # How to build orbital plot shared library.
 # ---------------------------------------------------------
 
-PLOTORBITAL_TARGET = $(DIRLIB)/libtsp_gdispPlotOrbital.so
+PLOTORBITAL_TARGET = $(DIRLIB)/libtsp_targaPlotOrbital.so
 
 OGL = -lGL -lGLU
 
 $(PLOTORBITAL_TARGET): gdisp_plotOrbital.c gdisp_openglUtils.c
 	$(COMPILE.c) -fPIC -o $(DIRSHOBJ)/gdisp_plotOrbital.o gdisp_plotOrbital.c
 	$(COMPILE.c) -fPIC -o $(DIRSHOBJ)/gdisp_openglUtils.o gdisp_openglUtils.c
-	$(LINK.c) -shared -o $@ $(DIRSHOBJ)/gdisp_plotOrbital.o gdisp_openglUtils.o $(OGL)
+	$(LINK.c) -shared -o $@ $(DIRSHOBJ)/gdisp_plotOrbital.o $(DIRSHOBJ)/gdisp_openglUtils.o $(UTIL_TARGET) $(OGL)
 
 # ---------------------------------------------------------
 # How to build main program.
 # ---------------------------------------------------------
 
-SECONDARY_TARGETS = $(UTIL_TARGET) $(PLOT2D_TARGET) $(PLOTTEXT_TARGET)
+GRAPHIC_TARGETS = $(PLOT2D_TARGET) $(PLOTTEXT_TARGET)
 ifeq (${USABLE_OPENGL},yes)
-SECONDARY_TARGETS += $(PLOTORBITAL_TARGET)
+GRAPHIC_TARGETS += $(PLOTORBITAL_TARGET)
 endif
+
+# ---------------------------------------------------------
+# Extra definition.
+# ---------------------------------------------------------
+CPPFLAGS += -DGD_DYNAMIC_GRAPHIC_MODULES
 
 endif
 
@@ -133,15 +143,15 @@ LDLIBS += -lGL -lGLU
 endif
 
 ifeq (${SHAREDLIB_ENABLED},yes)
-$(TARGET): $(SECONDARY_TARGETS) $(OBJECTS)
-	$(LINK.c) -o $@ $(OBJECTS) $(SECONDARY_TARGETS) $(ADD_LIB) $(LDLIBS)
+$(TARGET): $(UTIL_TARGET) $(GRAPHIC_TARGETS) $(OBJECTS)
+	$(LINK.c) -o $@ $(OBJECTS) $(UTIL_TARGET) $(ADD_LIB) $(LDLIBS)
 else
 $(TARGET): $(OBJECTS)
 	$(LINK.c) -o $@ $(OBJECTS) $(ADD_LIB) $(LDLIBS)
 endif
 
 destroy ::
-	$(RM) $(TARGET) $(OBJECTS) $(SECONDARY_TARGETS) *.o *~
+	$(RM) $(TARGET) $(OBJECTS) $(UTIL_TARGET) $(GRAPHIC_TARGETS) *.o *~
 	$(MAKE) remove_include
 
 include $(DEVBASE)/make/Makerules

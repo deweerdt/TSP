@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_sampledSymbols.c,v 1.12 2006-07-30 20:25:58 esteban Exp $
+$Id: gdisp_sampledSymbols.c,v 1.13 2006-08-05 20:50:30 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -638,7 +638,7 @@ gdisp_updateSymbolNode ( Kernel_T  *kernel,
     g_string_sprintf(messageString,
 		     "%s symbol has no reference node.",
 		     symbol->sInfo.name);
-    kernel->outputFunc(kernel,messageString,GD_ERROR);
+    (*kernel->outputFunc)(kernel,messageString,GD_ERROR);
 
   }
   else {
@@ -751,7 +751,7 @@ gdisp_poolSampledSymbolList ( Kernel_T *kernel )
 	g_string_sprintf(messageString,
 			 "%s provider has no anchor for symbols.",
 			 provider->pUrl->str);
-	kernel->outputFunc(kernel,messageString,GD_ERROR);
+	(*kernel->outputFunc)(kernel,messageString,GD_ERROR);
 
       }
       else {

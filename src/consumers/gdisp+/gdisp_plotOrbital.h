@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_plotOrbital.h,v 1.3 2006-02-26 14:08:24 erk Exp $
+$Id: gdisp_plotOrbital.h,v 1.4 2006-08-05 20:50:30 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -56,7 +56,7 @@ typedef struct PlotOrbital_T_ {
   /*
    * Attributes.
    */
-  PlotType_T  poType;
+
 
   /*
    * List of pointer on TSP_Symbol_T.

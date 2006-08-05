@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_main.c,v 1.14 2006-05-13 20:55:02 esteban Exp $
+$Id: gdisp_main.c,v 1.15 2006-08-05 20:50:30 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -127,19 +127,29 @@ gdisp_usage ( Kernel_T *kernel,
 	  "------------------------------------------------------------\n");
 
   fprintf(stdout,
-	  "Usage : %s [ -x cnf.xml ] [ -w ] [ -u url1 [ -u url2 ... ] ] [ -h host1 [ -h host2 ... ] ]\n",
+	  "Usage : %s [ -x cnf.xml ] [ -r] [ -w ]\n",
 	  basename(applicationName));
 
   fprintf(stdout,
-	  "  -x : automatically load the specified configuration.\n");
+	  "              [ -u url1 [ -u url2 ... ] ] [ -h host1 [ -h host2 ... ] ]\n");
 
   fprintf(stdout,
-	  "  -w : allow asynchronous write operation on symbols.\n");
+	  "              [ -p path-to-graphic-modules ]\n");
 
   fprintf(stdout,
-	  "  -u : insert one or several specific URLs.\n");
+	  "  -x : Automatically load the specified configuration.\n");
+
   fprintf(stdout,
-	  "  -h : insert one or several additional hosts.\n");
+	  "  -r : Runtime mode. Edition is not available\n");
+
+  fprintf(stdout,
+	  "  -w : Allow asynchronous write operations on symbols.\n");
+
+  fprintf(stdout,
+	  "  -u : Insert one or several specific URLs.\n");
+
+  fprintf(stdout,
+	  "  -h : Insert one or several additional hosts.\n");
 
   fprintf(stdout,
 	  "       'localhost' is always taken into account if no URL specified.\n");
@@ -168,7 +178,7 @@ gdisp_analyseUserArguments ( Kernel_T *kernel )
    */
   while ((opt = getopt(kernel->argCounter,
 		       kernel->argTable,
-		       "h:u:x:w")) != EOF) {
+		       "h:u:x:wrp:")) != EOF) {
 
     switch (opt) {
 
@@ -182,6 +192,14 @@ gdisp_analyseUserArguments ( Kernel_T *kernel )
 
     case 'w' :
       kernel->asyncWriteIsAllowed = TRUE;
+      break;
+
+    case 'r' :
+      kernel->editionIsAllowed = FALSE;
+      break;
+
+    case 'p' :
+      kernel->pathToGraphicModules = gdisp_strDup(optarg);
       break;
 
     case 'x' :
@@ -284,6 +302,13 @@ main (int argc, char **argv)
    * Create our colormap.
    */
   gdisp_createColormap(gdispKernel);
+
+
+  /*
+   * Initialise all plot systems.
+   * Each plot system that is supported may provide several functions.
+   */
+  gdisp_loadGraphicModules(gdispKernel);
 
 
   /*
