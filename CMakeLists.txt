@@ -19,6 +19,9 @@ OPTION(BUILD_XMLRPC
 OPTION(BUILD_API_DOC
   "Build doxygen documentation" ON)
 
+OPTION(BUILD_BB_KERNEL_MODULE
+  "Build the in-kernel bb" OFF)
+
 SET(PACKAGE_NAME      "tsp")
 SET(PACKAGE_VERSION   "0.8.cvs")
 SET(PACKAGE_BUGREPORT "tsp@astrium.eads.net")
