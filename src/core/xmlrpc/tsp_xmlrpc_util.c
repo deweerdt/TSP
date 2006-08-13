@@ -252,7 +252,7 @@ xmlrpc_value_to_TSP_request_sample (xmlrpc_env *env,
 	req_sample->symbols.TSP_sample_symbol_info_list_t_val[i].name = strdup(req_sample->symbols.TSP_sample_symbol_info_list_t_val[i].name);
 
     /* FIXME, this is temporary, it allows the Ruby consumer to keep on working with float type*/
-    req_sample->symbols.TSP_sample_symbol_info_list_t_val[i].type=1;
+    req_sample->symbols.TSP_sample_symbol_info_list_t_val[i].type=0;
     req_sample->symbols.TSP_sample_symbol_info_list_t_val[i].dimension=1;
     req_sample->symbols.TSP_sample_symbol_info_list_t_val[i].nelem=0;
     req_sample->symbols.TSP_sample_symbol_info_list_t_val[i].offset=0;
