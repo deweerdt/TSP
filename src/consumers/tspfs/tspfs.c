@@ -592,10 +592,13 @@ static int tspfs_read(const char *path, char *buf, size_t size,
 					sample->sync.uvalue.uchar_value);
 				break;
 			case TSP_TYPE_RAW:
+				sprintf(sym_display, "t=%d v=%d %%d\n", sample->sync.time,
+					sample->sync.uvalue.raw_value);
+				break;
 			case TSP_TYPE_LAST:
 			case TSP_TYPE_UNKNOWN:
 			default:
-				sprintf(sym_display, "unknow type");
+				sprintf(sym_display, "unknown type");
 				break;
 		}
 	} else {
