@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_mainBoard.c,v 1.14 2006-08-05 20:50:30 esteban Exp $
+$Id: gdisp_mainBoard.c,v 1.15 2006-09-21 20:19:59 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -247,6 +247,11 @@ gdisp_outputWrite(Kernel_T  *kernel,
    * Raise main-board window in order to see the incoming message.
    */
   gdk_window_raise(GTK_WIDGET(kernel->widgets.mainBoardWindow)->window);
+
+  /*
+   * Allow graphic updates.
+   */
+  gdisp_updateWholeGui();
 
 }
 
@@ -586,24 +591,29 @@ gdisp_manageAction ( gpointer factoryData,
  *          "<LastBranch>"  -> create a right justified branch.
  */
 
+
 static GtkItemFactoryEntry
 gdispMainBoardMenuDefinitions[] = {
 
- { "/_File",                    NULL,
+ { "/_Session",                 NULL,
    NULL,                        0,                           "<Branch>"      },
- { "/_File/_New",               "<control>N",
+ { "/_Session/_New",            "<control>N",
    gdisp_manageAction,          GD_NEW_CONF,                 NULL            },
- { "/_File/_Open",              "<control>O",
+ { "/_Session/_Open",           "<control>O",
    gdisp_manageAction,          GD_OPEN_CONF | GD_NEED_FILE, NULL            },
- { "/_File/_Save",              "<control>S",
+ { "/_Session/_Save",           "<control>S",
    gdisp_manageAction,          GD_SAVE_CONF | GD_NEED_FILE, NULL            },
- { "/_File/Save _As",           "<control>A",
+ { "/_Session/Save _As",        "<control>A",
    gdisp_manageAction,          GD_SAVE_AS_CONF | GD_NEED_FILE, NULL         },
- { "/_File/_Close",             "<control>C",
+ { "/_Session/_Close",          "<control>C",
    gdisp_manageAction,          GD_CLOSE_CONF,               NULL            },
- { "/_File/Sep1",               NULL,
+ { "/_Session/Sep1",            NULL,
    NULL,                        0,                           "<Separator>"   },
- { "/_File/Quit",               "<control>Q",
+ { "/_Session/_Hosts & URL",    "<control>H",
+   gdisp_manageHosts,           0,                           NULL            },
+ { "/_Session/Sep2",            NULL,
+   NULL,                        0,                           "<Separator>"   },
+ { "/_Session/_Quit",           "<control>Q",
    gdisp_quitItemHandler,       0,                           NULL            },
  { "/_Data",                    NULL,
    NULL,                        0,                           "<Branch>"      },
@@ -637,13 +647,13 @@ gdispMainBoardMenuDefinitions[] = {
 static GtkItemFactoryEntry
 gdispMainBoardMenuShortDefinitions[] = {
 
- { "/_File",                    NULL,
+ { "/_Session",                 NULL,
    NULL,                        0,                           "<Branch>"      },
- { "/_File/_Open",              "<control>O",
+ { "/_Session/_Open",           "<control>O",
    gdisp_manageAction,          GD_OPEN_CONF | GD_NEED_FILE, NULL            },
- { "/_File/Sep1",               NULL,
+ { "/_Session/Sep1",            NULL,
    NULL,                        0,                           "<Separator>"   },
- { "/_File/Quit",               "<control>Q",
+ { "/_Session/_Quit",           "<control>Q",
    gdisp_quitItemHandler,       0,                           NULL            },
  { "/_Help",                    NULL,
    NULL,                        0,                           "<LastBranch>"  },

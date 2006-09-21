@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_kernel.c,v 1.18 2006-08-05 20:50:30 esteban Exp $
+$Id: gdisp_kernel.c,v 1.19 2006-09-21 20:19:59 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -411,6 +411,11 @@ gdisp_destroyKernel (Kernel_T *kernel)
    */
   gdisp_destroyFonts  (kernel->fonts);
   gdisp_destroyPixmaps(kernel);
+
+  /*
+   * Destroy all hosts & URLs.
+   */
+  gdisp_destroyHosts(kernel);
 
   /*
    * Free Kernel.

@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_prototypes.h,v 1.21 2006-08-05 20:50:30 esteban Exp $
+$Id: gdisp_prototypes.h,v 1.22 2006-09-21 20:19:59 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -69,7 +69,8 @@ void       gdisp_addHost      (Kernel_T *kernel,
 void       gdisp_destroyHosts (Kernel_T *kernel);
 void       gdisp_addUrl       (Kernel_T *kernel,
 			       gchar    *urlName);
-void       gdisp_destroyUrls  (Kernel_T *kernel);
+void       gdisp_manageHosts  (gpointer factoryData,
+			       guint    itemData);
 
 
 /*

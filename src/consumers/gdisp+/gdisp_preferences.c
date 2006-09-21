@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_preferences.c,v 1.7 2006-08-05 20:50:30 esteban Exp $
+$Id: gdisp_preferences.c,v 1.8 2006-09-21 20:19:59 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -444,6 +444,28 @@ gdisp_savePreferenceFile ( Kernel_T *kernel )
 				       (xmlChar*)"preference",
 				       TRUE, /* end up element */
 				       (xmlChar*)"dataBookPosition",
+				       (xmlChar*)stringValue,
+				       (xmlChar*)NULL);
+
+  if (errorCode < 0) {
+    /* No need to print any error message, because gdisp+ is exiting */
+    return;
+  }
+
+
+  /*
+   * Host window position on the screen.
+   */
+  sprintf(stringValue,
+	  "%d,%d",
+	  kernel->widgets.hostWindowXPosition,
+	  kernel->widgets.hostWindowYPosition);
+  errorCode = gdisp_xmlWriteAttributes(writer,
+				       GD_DO_NOT_CHANGE_INDENTATION,
+				       indentBuffer,
+				       (xmlChar*)"preference",
+				       TRUE, /* end up element */
+				       (xmlChar*)"hostPosition",
 				       (xmlChar*)stringValue,
 				       (xmlChar*)NULL);
 

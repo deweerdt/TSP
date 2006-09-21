@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_main.c,v 1.15 2006-08-05 20:50:30 esteban Exp $
+$Id: gdisp_main.c,v 1.16 2006-09-21 20:19:59 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -326,11 +326,15 @@ main (int argc, char **argv)
 
   }
   else {
+
+#if defined(GD_NEED_CONSUMMING_AT_STARTUP)
   
     /*
      * Initialize consuming environment.
      */
     gdisp_consumingInit(gdispKernel);
+
+#endif
 
     /*
      * Enter GTK main processing loop.

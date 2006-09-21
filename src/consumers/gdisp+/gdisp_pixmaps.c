@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_pixmaps.c,v 1.6 2006-02-26 14:08:23 erk Exp $
+$Id: gdisp_pixmaps.c,v 1.7 2006-09-21 20:19:59 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -95,6 +95,7 @@ File      : Pixmap utilities.
 #include "pixmaps/gdisp_gdispAnimLogo10.xpm"
 #include "pixmaps/gdisp_gdispAnimLogo11.xpm"
 #include "pixmaps/gdisp_gdispLargeLogo.xpm"
+#include "pixmaps/gdisp_urlLogo.xpm"
 
 
 /*
@@ -175,7 +176,8 @@ gdisp_createPixmap ( Kernel_T   *kernel,
 						  gdisp_gdispAnimLogo9,
 						  gdisp_gdispAnimLogo10,
 						  gdisp_gdispAnimLogo11,
-						  gdisp_gdispLargeLogo };
+						  gdisp_gdispLargeLogo,
+                                                  gdisp_urlLogo };
 
 
   /*
@@ -327,7 +329,6 @@ gdisp_destroyPixmaps ( Kernel_T *kernel )
 
   GList    *pixmapItem =    (GList*)NULL;
   Pixmap_T *pixmap     = (Pixmap_T*)NULL;
-
 
   /*
    * Loop over all created pixmaps, destroy them.

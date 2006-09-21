@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_kernel.h,v 1.28 2006-08-05 20:50:30 esteban Exp $
+$Id: gdisp_kernel.h,v 1.29 2006-09-21 20:19:59 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -85,16 +85,17 @@ File      : Graphic Tool Kernel Interface.
  * 10 out of 170 colors.
  * FIXME : allocate only these 10 colors, and not the entire colormap.
  */
-#define _RED_       3
-#define _GREEN_    10
-#define _ORANGE_   14
-#define _YELLOW_   17
-#define _BLUE_     24
-#define _MAGENTA_  31
-#define _CYAN_     38
-#define _BLACK_    42
-#define _GREY_    155
-#define _WHITE_   169
+#define _RED_         3
+#define _GREEN_      10
+#define _PALE_GREEN_ 13
+#define _ORANGE_     14
+#define _YELLOW_     17
+#define _BLUE_       24
+#define _MAGENTA_    31
+#define _CYAN_       38
+#define _BLACK_      42
+#define _GREY_      155
+#define _WHITE_     169
 
 
 /*
@@ -131,12 +132,26 @@ typedef gint64 HRTime_T;
 
 /**
  * HOST management.
- * Few things by now... be patient...
+ * URL are treated as hosts.
  */
+typedef enum {
+
+  GD_HOST = 0,
+  GD_URL
+
+} HostType_T;
+
 typedef struct Host_T_ {
 
-  GString *hName; /*!< the host name */
-  
+  GString    *hName; /*!< the host name */
+  HostType_T  hType;
+  gboolean    hIsActive;
+
+  /*
+   * Graphic part.
+   */
+  GtkWidget  *hPressButton;
+
 } Host_T;
 
 
@@ -530,6 +545,13 @@ typedef struct KernelWidget_T_ {
   GtkWidget         *dataBookWidget;
   GtkWidget         *dataBookApplyButton;
 
+  /* ----------------------- HOST WIDGETS ------------------------ */
+
+  GtkWidget         *hostWindow;
+  gint               hostWindowXPosition;
+  gint               hostWindowYPosition;
+  GtkStyle          *hostActiveStyle;
+
   /* ----------------- WIDGETS IN DATA BOOK PAGES ----------------- */
 
   GtkWidget         *symbolCList;
@@ -618,7 +640,6 @@ typedef struct Kernel_T_ {
    * Host/URL management.
    */
   GList             *hostList;
-  GList             *urlList;
 
   /*
    * Provider management.

@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_toString.c,v 1.4 2006-08-05 20:50:30 esteban Exp $
+$Id: gdisp_toString.c,v 1.5 2006-09-21 20:19:59 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -345,6 +345,24 @@ gdisp_setUpPreferenceFromString ( Kernel_T *kernel,
 
       kernel->widgets.dataBookWindowXPosition = targetXPosition;
       kernel->widgets.dataBookWindowYPosition = targetYPosition;
+
+    }
+
+  }
+  /*
+   * Host window position.
+   */
+  else if (strcmp(preference,"hostPosition") == 0) {
+
+    nbMatch = sscanf(value,
+		     "%d,%d",
+		     &targetXPosition,
+		     &targetYPosition);
+
+    if (nbMatch == 2) {
+
+      kernel->widgets.hostWindowXPosition = targetXPosition;
+      kernel->widgets.hostWindowYPosition = targetYPosition;
 
     }
 

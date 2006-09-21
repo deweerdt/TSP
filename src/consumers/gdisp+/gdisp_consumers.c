@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_consumers.c,v 1.19 2006-08-05 20:50:30 esteban Exp $
+$Id: gdisp_consumers.c,v 1.20 2006-09-21 20:19:59 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -270,7 +270,7 @@ gdisp_getSymbolExtendedInformation (Provider_T *provider)
 /*
  * Manage a new provider -> read information and add symbols.
  */
-static int
+static guint
 gdisp_insertProvider ( Kernel_T *kernel,
 		       gchar    *url )
 {
@@ -482,6 +482,15 @@ gdisp_insertProvider ( Kernel_T *kernel,
     
   } /* End if available provider */
 
+  else {
+
+    messageString = g_string_new((gchar*)NULL);
+    g_string_sprintf(messageString,
+		     "No TSP provider found on host %s.",
+		     url);
+    (*kernel->outputFunc)(kernel,messageString,GD_ERROR);
+
+  }
 
   return (provider == NULL ? -1 : 0);
 
@@ -491,7 +500,7 @@ gdisp_insertProvider ( Kernel_T *kernel,
 /*
  * Insert possible providers on a host.
  */
-static void
+static guint
 gdisp_insertHostProviders ( Kernel_T *kernel,
 			    Host_T   *host )
 {
@@ -537,6 +546,8 @@ gdisp_insertHostProviders ( Kernel_T *kernel,
 
   (*kernel->outputFunc)(kernel,messageString,GD_WARNING);
 
+  return providersFound;
+
 }
 
 
@@ -561,8 +572,8 @@ gdisp_consumingInit (Kernel_T *kernel)
   gchar           localHostName[_HOST_NAME_MAX_LEN_];
   gint            hostStatus         = 0;
   GList          *hostList           = (GList*)NULL;
-  GList          *urlList            = (GList*)NULL;
-  gint            urlsFound          = 0;
+  Host_T         *host               = (Host_T*)NULL;
+  guint           nbHosts            = 0;
   GString        *messageString      = (GString*)NULL;
 
   /*
@@ -592,29 +603,12 @@ gdisp_consumingInit (Kernel_T *kernel)
   }
 
 
-  /* ------------------------ URL LIST ------------------------- */
+  /* ------------------------ HOST & URL LIST ------------------------- */
 
   /*
-   * Insert all URLs.
+   * Insert 'local host' if host list is empty.
    */
-  urlList = g_list_first(kernel->urlList);
-  while (urlList != (GList*)NULL) {
-
-    if (gdisp_insertProvider(kernel,
-			     (gchar*)urlList->data) == 0) {
-      urlsFound++;
-    }
-
-    urlList = g_list_next(urlList);
-
-  }
-
-  /* ------------------------ HOST LIST ------------------------- */
-
-  /*
-   * Get back local host and insert it if no URL found.
-   */
-  if (urlsFound == 0) {
+  if (g_list_length(kernel->hostList) == 0) {
 
     hostStatus    = gethostname(localHostName,_HOST_NAME_MAX_LEN_);
     messageString = g_string_new((gchar*)NULL);
@@ -635,16 +629,38 @@ gdisp_consumingInit (Kernel_T *kernel)
       gdisp_addHost(kernel,localHostName);
 
     }
+
   }
 
   /*
-   * Insert all hosts.
+   * Insert all HOSTS and URLs.
    */
   hostList = g_list_first(kernel->hostList);
   while (hostList != (GList*)NULL) {
 
-    gdisp_insertHostProviders (kernel,
-			       (Host_T*)hostList->data);
+    host = (Host_T*)hostList->data;
+
+    if (host->hIsActive == TRUE) {
+
+      switch (host->hType) {
+
+      case GD_HOST :
+	nbHosts += gdisp_insertHostProviders(kernel,host);
+	break;
+
+      case GD_URL :
+	if (gdisp_insertProvider(kernel,
+				 (gchar*)host->hName->str) == 0) {
+	  nbHosts++;
+	}
+	break;
+
+      default :
+	break;
+
+      }
+
+    } /* host is active */
 
     hostList = g_list_next(hostList);
 
@@ -776,15 +792,6 @@ gdisp_consumingEnd (Kernel_T *kernel)
     g_list_free(kernel->providerList);
     kernel->providerList = (GList*)NULL;
   }
-
-
-  /*
-   * Destroy all hosts & URLs.
-   */
-#if defined(GD_DESTROY_HOSTS_AND_URLS)
-  gdisp_destroyHosts(kernel);
-  gdisp_destroyUrls (kernel);
-#endif
 
 
   /*
