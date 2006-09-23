@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_mainBoard.c,v 1.15 2006-09-21 20:19:59 esteban Exp $
+$Id: gdisp_mainBoard.c,v 1.16 2006-09-23 20:35:02 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -325,6 +325,33 @@ gdisp_outputListEvent (GtkWidget *widget,
 
 
 /*
+ * Write an information in the status window.
+ */
+static void
+gdisp_statusWrite ( Kernel_T *kernel,
+		    GString  *message )
+{
+
+  /*
+   * Pop previous message.
+   */
+  if (message != (GString*)NULL) {
+
+    gtk_statusbar_pop(GTK_STATUSBAR(kernel->widgets.mainBoardStatusBar),
+		      kernel->widgets.mainBoardStatusContextID);
+
+    gtk_statusbar_push(GTK_STATUSBAR(kernel->widgets.mainBoardStatusBar),
+		       kernel->widgets.mainBoardStatusContextID,
+		       message->str);
+
+    g_string_free(message,TRUE);
+
+  }
+
+}
+
+
+/*
  * Manage (set/get) file name through the standart Gtk+ file selection widget.
  */
 #define GD_NO_ACTION      0
@@ -414,11 +441,30 @@ gdisp_launchAction ( GtkObject *siblingButton,
 
   if (kernel->ioFilename != (gchar*)NULL) {
 
+    /*
+     * Output window.
+     */
     messageString = g_string_new((gchar*)NULL);
     g_string_sprintf(messageString,
 		     "IO file [ %s ].",
 		     kernel->ioFilename);
     kernel->outputFunc(kernel,messageString,messageType);
+
+    /*
+     * Status window.
+     */
+    messageString = g_string_new((gchar*)NULL);
+    g_string_sprintf(messageString,
+		     "Configuration is '%s'.",
+		     kernel->ioFilename);
+    kernel->statusFunc(kernel,messageString);
+
+  }
+
+  if (freeIoFilename == TRUE) {
+
+    messageString = g_string_new(" TARGA is ready.");
+    (*kernel->statusFunc)(kernel,messageString);
 
   }
 
@@ -677,19 +723,20 @@ void
 gdisp_createMainBoard (Kernel_T *kernel)
 {
 
-  GtkWidget      *mainVBox        =      (GtkWidget*)NULL;
-  GtkWidget      *mainHBox        =      (GtkWidget*)NULL;
-  GtkWidget      *pilotBox        =      (GtkWidget*)NULL;
-  GtkWidget      *logoFrame       =      (GtkWidget*)NULL;
-  GtkWidget      *menuBar         =      (GtkWidget*)NULL;
-  GtkWidget      *scrolledWindow  =      (GtkWidget*)NULL;
-  GtkWidget      *hSeparator      =      (GtkWidget*)NULL;
-  GtkWidget      *vSeparator      =      (GtkWidget*)NULL;
-  GtkWidget      *outputMenu      =      (GtkWidget*)NULL;
-  GtkWidget      *outputClearItem =      (GtkWidget*)NULL;
+  GtkWidget      *mainVBox        = (GtkWidget*)NULL;
+  GtkWidget      *mainHBox        = (GtkWidget*)NULL;
+  GtkWidget      *pilotBox        = (GtkWidget*)NULL;
+  GtkWidget      *logoFrame       = (GtkWidget*)NULL;
+  GtkWidget      *menuBar         = (GtkWidget*)NULL;
+  GtkWidget      *scrolledWindow  = (GtkWidget*)NULL;
+  GtkWidget      *hSeparator      = (GtkWidget*)NULL;
+  GtkWidget      *vSeparator      = (GtkWidget*)NULL;
+  GtkWidget      *outputMenu      = (GtkWidget*)NULL;
+  GtkWidget      *outputClearItem = (GtkWidget*)NULL;
+  GtkWidget      *statusBar       = (GtkWidget*)NULL;
   GtkItemFactory *itemFactory     = (GtkItemFactory*)NULL;
-  GtkAccelGroup  *accelGroup      =  (GtkAccelGroup*)NULL;
-  gint            menuItemNb      =                  0;
+  GtkAccelGroup  *accelGroup      = (GtkAccelGroup*)NULL;
+  gint            menuItemNb      = 0;
 
   assert(kernel);
 
@@ -718,7 +765,7 @@ gdisp_createMainBoard (Kernel_T *kernel)
    */
   gtk_widget_set_usize(GTK_WIDGET(kernel->widgets.mainBoardWindow),
 		       600 /* width  */,
-		       150 /* height */);
+		       170 /* height */);
 
   gtk_window_set_title(GTK_WINDOW(kernel->widgets.mainBoardWindow),
 		       "TARGA Copyright (c) 2006.");
@@ -977,6 +1024,37 @@ gdisp_createMainBoard (Kernel_T *kernel)
   gdisp_stopLogoAnimation(kernel,FALSE /* stop all */);
 
 
+  /* ------------------------ SEPARATOR ------------------------ */
+
+  /*
+   * Separate output window and status bar with a horizontal separator.
+   */
+  hSeparator = gtk_hseparator_new();
+  gtk_box_pack_start(GTK_BOX(mainVBox),
+		     hSeparator,
+		     FALSE /* expand  */,
+		     TRUE  /* fill    */,
+		     0     /* padding */);
+  gtk_widget_show(hSeparator);
+
+
+  /* -------------------------- STATUS BAR -------------------------- */
+
+  statusBar = gtk_statusbar_new();
+
+  gtk_box_pack_start(GTK_BOX(mainVBox),
+		     statusBar,
+		     FALSE /* expand  */,
+		     TRUE  /* fill    */,
+		     0     /* padding */);
+  gtk_widget_show(statusBar);
+
+  kernel->widgets.mainBoardStatusBar       = statusBar;
+  kernel->widgets.mainBoardStatusContextID = 
+    gtk_statusbar_get_context_id(GTK_STATUSBAR(statusBar),
+				 "kernel");
+
+
   /* ------------------------ END MAIN BOARD  ------------------------ */
 
   /*
@@ -984,6 +1062,7 @@ gdisp_createMainBoard (Kernel_T *kernel)
    * It is now ready to be used.
    */
   kernel->outputFunc = gdisp_outputWrite;
+  kernel->statusFunc = gdisp_statusWrite;
 
 }
 
@@ -1007,7 +1086,6 @@ gdisp_writeInitialInformation (Kernel_T *kernel)
   messageString = g_string_new("TARGA Graphic Tool, Version 1.0");
   (*kernel->outputFunc)(kernel,messageString,GD_MESSAGE);
 
-
   /*
    * Report whether we are in a thread-safe environment.
    */
@@ -1016,6 +1094,12 @@ gdisp_writeInitialInformation (Kernel_T *kernel)
 		   "Implementation is %sthread-safe.",
 		   kernel->isThreadSafe == TRUE ? "" : "NOT ");
   (*kernel->outputFunc)(kernel,messageString,GD_WARNING);
+
+  /*
+   * Application is ready.
+   */
+  messageString = g_string_new(" TARGA is ready.");
+  (*kernel->statusFunc)(kernel,messageString);
 
 }
 

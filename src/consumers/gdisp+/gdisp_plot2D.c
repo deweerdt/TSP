@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_plot2D.c,v 1.22 2006-08-05 20:50:30 esteban Exp $
+$Id: gdisp_plot2D.c,v 1.23 2006-09-23 20:35:02 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -77,7 +77,7 @@ File      : 2D plot system.
 
 #define GDISP_2D_BACK_COLOR _BLACK_
 
-#define GD_FROZEN_RULERSE
+#undef  GD_FROZEN_RULERS
 
 /* FIXME : the following definition must be dynamic */
 #define TSP_PROVIDER_FREQ     100   /* Hz */

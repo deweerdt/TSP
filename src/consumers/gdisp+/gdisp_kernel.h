@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_kernel.h,v 1.29 2006-09-21 20:19:59 esteban Exp $
+$Id: gdisp_kernel.h,v 1.30 2006-09-23 20:35:01 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -94,6 +94,7 @@ File      : Graphic Tool Kernel Interface.
 #define _MAGENTA_    31
 #define _CYAN_       38
 #define _BLACK_      42
+#define _DARK_GREY_ 145
 #define _GREY_      155
 #define _WHITE_     169
 
@@ -528,6 +529,8 @@ typedef struct KernelWidget_T_ {
   gint               mainBoardLargeLogoX;
   gboolean           mainBoardLargeLogoGoesLeft;
   GtkWidget         *mainBoardMenuBar;
+  GtkWidget         *mainBoardStatusBar;
+  guint              mainBoardStatusContextID;
 
   /* -------------------- PILOT BOARD WIDGETS -------------------- */
 
@@ -551,6 +554,8 @@ typedef struct KernelWidget_T_ {
   gint               hostWindowXPosition;
   gint               hostWindowYPosition;
   GtkStyle          *hostActiveStyle;
+  GtkStyle          *hostInactiveStyle;
+  void              *hostPopupMenu;
 
   /* ----------------- WIDGETS IN DATA BOOK PAGES ----------------- */
 
@@ -624,6 +629,8 @@ typedef struct Kernel_T_ {
   void             (*outputFunc)              (Kernel_T_Ptr,
 					       GString*,
 					       Message_T);
+  void             (*statusFunc)              (Kernel_T_Ptr,
+					       GString*);
   void             (*registerAction)          (Kernel_T_Ptr,
 					       void(*action)(Kernel_T_Ptr));
   void             (*unRegisterAction)        (Kernel_T_Ptr,
