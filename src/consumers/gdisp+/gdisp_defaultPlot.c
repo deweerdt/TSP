@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_defaultPlot.c,v 1.7 2006-08-05 20:50:30 esteban Exp $
+$Id: gdisp_defaultPlot.c,v 1.8 2006-09-28 19:37:54 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -779,6 +779,42 @@ gdisp_getSymbolsFromDefaultPlot (Kernel_T *kernel,
 
 
 /*
+ * Get plot attributes in order to be saved into the configuration.
+ */
+static void
+gdisp_getPlotAttributesDefaultPlot (Kernel_T *kernel,
+				    void     *data,
+				    GList    *attributeList)
+{
+
+  /* DefaultPlot_T *plot = (DefaultPlot_T*)data; */
+
+  /*
+   * Nothing by now.
+   */
+
+}
+
+
+/*
+ * Set plot attributes from the configuration.
+ */
+static void
+gdisp_setPlotAttributesDefaultPlot (Kernel_T *kernel,
+				    void     *data,
+				    GList    *attributeList)
+{
+
+  /* DefaultPlot_T *plot = (DefaultPlot_T*)data; */
+
+  /*
+   * Nothing by now.
+   */
+
+}
+
+
+/*
  * Get symbol attributes in order to be saved into the configuration.
  */
 static void
@@ -980,6 +1016,8 @@ gdisp_initDefaultPlotSystem (Kernel_T     *kernel,
   plotSystem->psTreatSymbolValues   = gdisp_treatDefaultPlotSymbolValues;
   plotSystem->psGetPeriod           = gdisp_getDefaultPlotPeriod;
   plotSystem->psGetDropZones        = gdisp_getDefaultPlotDropZones;
+  plotSystem->psSetPlotAttributes   = gdisp_setPlotAttributesDefaultPlot;
+  plotSystem->psGetPlotAttributes   = gdisp_getPlotAttributesDefaultPlot;
 
 }
 

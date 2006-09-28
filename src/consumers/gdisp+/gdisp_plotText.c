@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_plotText.c,v 1.13 2006-08-05 20:50:30 esteban Exp $
+$Id: gdisp_plotText.c,v 1.14 2006-09-28 19:37:54 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -1151,6 +1151,42 @@ gdisp_getSymbolsFromPlotText (Kernel_T *kernel,
 
 
 /*
+ * Get plot attributes in order to be saved into the configuration.
+ */
+static void
+gdisp_getPlotAttributesPlotText (Kernel_T *kernel,
+				 void     *data,
+				 GList    *attributeList)
+{
+
+  PlotText_T *plot = (PlotText_T*)data;
+
+  /*
+   * Nothing by now.
+   */
+
+}
+
+
+/*
+ * Set plot attributes from the configuration.
+ */
+static void
+gdisp_setPlotAttributesPlotText (Kernel_T *kernel,
+				 void     *data,
+				 GList    *attributeList)
+{
+
+  PlotText_T *plot = (PlotText_T*)data;
+
+  /*
+   * Nothing by now.
+   */
+
+}
+
+
+/*
  * Get symbol attributes in order to be saved into the configuration.
  */
 static void
@@ -1528,6 +1564,8 @@ gdisp_initPlotTextSystem (Kernel_T     *kernel,
   plotSystem->psTreatSymbolValues   = gdisp_treatPlotTextSymbolValues;
   plotSystem->psGetPeriod           = gdisp_getPlotTextPeriod;
   plotSystem->psGetDropZones        = gdisp_getPlotTextDropZones;
+  plotSystem->psSetPlotAttributes   = gdisp_setPlotAttributesPlotText;
+  plotSystem->psGetPlotAttributes   = gdisp_getPlotAttributesPlotText;
 
 }
 

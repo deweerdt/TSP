@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_plotCanevas.c,v 1.6 2006-02-26 14:08:24 erk Exp $
+$Id: gdisp_plotCanevas.c,v 1.7 2006-09-28 19:37:54 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -241,13 +241,49 @@ gdisp_getSymbolsFrom<<<-canevas->>> (Kernel_T *kernel,
 
 
 /*
+ * Get plot attributes in order to be saved into the configuration.
+ */
+static void
+gdisp_getPlotAttributes<<<-canevas->>> (Kernel_T *kernel,
+					void     *data,
+					GList    *attributeList)
+{
+
+  /* <<<-canevas->>>_T *plot = (<<<-canevas->>>_T*)data; */
+
+  /*
+   * Nothing by now.
+   */
+
+}
+
+
+/*
+ * Set plot attributes from the configuration.
+ */
+static void
+gdisp_setPlotAttributes<<<-canevas->>> (Kernel_T *kernel,
+					void     *data,
+					GList    *attributeList)
+{
+
+  /* <<<-canevas->>>_T *plot = (<<<-canevas->>>_T*)data; */
+
+  /*
+   * Nothing by now.
+   */
+
+}
+
+
+/*
  * Get symbol attributes in order to be saved into the configuration.
  */
 static void
-gdisp_getSymbolAttributes<<<-canevas--->>> (Kernel_T *kernel,
-					    void     *data,
-					    Symbol_T *symbol,
-					    GList    *attributeList)
+gdisp_getSymbolAttributes<<<-canevas->>> (Kernel_T *kernel,
+					  void     *data,
+					  Symbol_T *symbol,
+					  GList    *attributeList)
 {
 
   <<<-canevas->>>_T *plot = (<<<-canevas->>>_T*)data;
@@ -262,10 +298,10 @@ gdisp_getSymbolAttributes<<<-canevas--->>> (Kernel_T *kernel,
  * Set symbol attributes from the configuration.
  */
 static void
-gdisp_setSymbolAttributes<<<-canevas--->>> (Kernel_T *kernel,
-					    void     *data,
-					    Symbol_T *symbol,
-					    GList    *attributeList)
+gdisp_setSymbolAttributes<<<-canevas->>> (Kernel_T *kernel,
+					  void     *data,
+					  Symbol_T *symbol,
+					  GList    *attributeList)
 {
 
   <<<-canevas->>>_T *plot = (<<<-canevas->>>_T*)data;
@@ -438,6 +474,8 @@ gdisp_init<<<-canevas->>>System (Kernel_T     *kernel,
   plotSystem->psTreatSymbolValues   = gdisp_treat<<-canevas->>SymbolValues;
   plotSystem->psGetPeriod           = gdisp_get<<-canevas->>Period;
   plotSystem->psGetDropZones        = gdisp_get<<-canevas->>DropZones;
+  plotSystem->psSetPlotAttributes   = gdisp_setPlotAttributes<<<-canevas->>>;
+  plotSystem->psGetPlotAttributes   = gdisp_getPlotAttributes<<<-canevas->>>;
 
 }
 

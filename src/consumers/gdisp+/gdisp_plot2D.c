@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_plot2D.c,v 1.23 2006-09-23 20:35:02 esteban Exp $
+$Id: gdisp_plot2D.c,v 1.24 2006-09-28 19:37:54 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -1225,7 +1225,7 @@ gdisp_plot2DDrawBackBufferBackground (Kernel_T       *kernel,
 			plot->p2dPtMin.x,
 			plot->p2dPtMax.x,
 			plot->p2dPtMin.x,
-			GDISP_WIN_T_DURATION);
+			plot->p2dWindowDuration);
 
   }
 
@@ -1739,9 +1739,10 @@ gdisp_createPlot2D (Kernel_T *kernel)
   /*
    * Few initialisations.
    */
-  plot->p2dHasFocus  = FALSE;
-  plot->p2dIsWorking = FALSE;
-  plot->p2dSubType   = GD_2D_F2T;
+  plot->p2dHasFocus       = FALSE;
+  plot->p2dIsWorking      = FALSE;
+  plot->p2dSubType        = GD_2D_F2T;
+  plot->p2dWindowDuration = GDISP_WIN_T_DURATION; /* default */
 
   /*
    * Create a table : dimension 2 x 2, homogeneous.
@@ -2054,8 +2055,15 @@ gdisp_popupMenuHandler ( Kernel_T    *kernel,
 			 gpointer     itemData )
 {
 
-  Plot2D_T           *plot     = (Plot2D_T*)menuData;
-  Action_T            action   = (Action_T)GPOINTER_TO_UINT(itemData);
+  Plot2D_T           *plot       = (Plot2D_T*)menuData;
+  guint               action     = (guint)GPOINTER_TO_UINT(itemData);
+
+  /*
+   * For time duration.
+   */
+  guint               maxSamples = 0;
+  GList              *symbolItem = (GList*)NULL;
+  Symbol_T           *symbol     = (Symbol_T*)NULL;
 
   /*
    * For snapshot.
@@ -2139,6 +2147,52 @@ gdisp_popupMenuHandler ( Kernel_T    *kernel,
     break;
 
   default :
+
+    /*
+     * Window Time duration has changed.
+     * CAUTION : do not change time duration while sampling is on !!!
+     */
+    if (plot->p2dIsWorking == FALSE) {
+
+      plot->p2dWindowDuration = action; /* new time duration */
+
+      /*
+       * Free data for sampled points.
+       */
+      gdisp_freeSampledPointTables(kernel,plot,FALSE /* freeAll */);
+
+      /*
+       * Allocate memory for receiving sampled values of the plot.
+       */
+      maxSamples = TSP_PROVIDER_FREQ * plot->p2dWindowDuration;
+      symbolItem = g_list_first(plot->p2dYSymbolList);
+
+      while (symbolItem != (GList*)NULL) {
+
+	symbol = (Symbol_T*)symbolItem->data;
+
+	g_ptr_array_add(plot->p2dSampleArray,
+			(gpointer)dparray_newSampleArray(maxSamples));
+
+	symbolItem = g_list_next(symbolItem);
+
+      }
+
+      /*
+       * Should Refresh graphic area.
+       */
+      plot->p2dIsDirty = TRUE;
+
+      gdisp_plot2DDrawBackBuffer(kernel,
+				 plot,
+				 GD_2D_FULL_REDRAW);
+
+      gdisp_plot2DSwapBuffers   (kernel,
+				 plot,
+				 GD_2D_FULL_REDRAW);
+
+    } /* no sampling */
+
     break;
 
   }
@@ -2155,7 +2209,9 @@ gdisp_showPlot2D (Kernel_T  *kernel,
 		  void      *data)
 {
 
-  Plot2D_T *plot = (Plot2D_T*)data;
+  Plot2D_T    *plot     = (Plot2D_T*)data;
+  PopupMenu_T *subMenu  = (PopupMenu_T*)NULL;
+  void        *menuItem = (void*)NULL;
 
   GDISP_TRACE(3,"Showing plot 2D.\n");
 
@@ -2176,9 +2232,9 @@ gdisp_showPlot2D (Kernel_T  *kernel,
 				       gdisp_popupMenuHandler,
 				       (gpointer)plot);
 
-    /*
-     * FIXME-DUF-CLEAR
-     */
+  /*
+   * FIXME-DUF-CLEAR
+   */
   /*
   gdisp_addMenuItem(plot->p2dMainMenu,
 		    GD_POPUP_ITEM,
@@ -2190,6 +2246,62 @@ gdisp_showPlot2D (Kernel_T  *kernel,
 		    GD_POPUP_ITEM,
 		    "Snapshot",
 		    (gpointer)GUINT_TO_POINTER(GD_2D_SNAPSHOT));
+
+  /*
+   * Insert a horizontal separator.
+   */
+  gdisp_addMenuItem(plot->p2dMainMenu,
+		    GD_POPUP_SEPARATOR,
+		    (gchar*)NULL,
+		    (gpointer)NULL);
+
+  /*
+   * Create the sub-menu specific to the window time duration.
+   */
+  menuItem = gdisp_addMenuItem(plot->p2dMainMenu,
+			       GD_POPUP_ITEM,
+			       "Window Duration",
+			       (gpointer)NULL);
+
+  subMenu = gdisp_createMenu(kernel,
+			     menuItem,
+			     gdisp_popupMenuHandler,
+			     (gpointer)plot);
+
+  gdisp_addMenuItem(subMenu,
+		    GD_POPUP_TITLE,
+		    "Duration (s)" /* title */,
+		    (gpointer)NULL);
+
+  gdisp_addMenuItem(subMenu,
+		    GD_POPUP_SEPARATOR,
+		    (gchar*)NULL,
+		    (gpointer)NULL);
+
+  gdisp_addMenuItem(subMenu,
+		    GD_POPUP_ITEM,
+		    "10",
+		    (gpointer)GUINT_TO_POINTER(10));
+
+  gdisp_addMenuItem(subMenu,
+		    GD_POPUP_ITEM,
+		    "20",
+		    (gpointer)GUINT_TO_POINTER(20));
+
+  gdisp_addMenuItem(subMenu,
+		    GD_POPUP_ITEM,
+		    "30",
+		    (gpointer)GUINT_TO_POINTER(30));
+
+  gdisp_addMenuItem(subMenu,
+		    GD_POPUP_ITEM,
+		    "60",
+		    (gpointer)GUINT_TO_POINTER(60));
+
+  gdisp_addMenuItem(subMenu,
+		    GD_POPUP_ITEM,
+		    "120",
+		    (gpointer)GUINT_TO_POINTER(120));
 
 }
 
@@ -2225,7 +2337,6 @@ gdisp_addSymbolsToPlot2D (Kernel_T *kernel,
   Plot2D_T *plot       = (Plot2D_T*)data;
   GList    *symbolItem =    (GList*)NULL;
   Symbol_T *symbol     = (Symbol_T*)NULL;
-  guint     maxSamples =               0;
 
   GDISP_TRACE(3,"Adding symbols to plot 2D.\n");
 
@@ -2298,13 +2409,6 @@ gdisp_addSymbolsToPlot2D (Kernel_T *kernel,
 	symbol = (Symbol_T*)symbolItem->data;
 	symbol->sReference++;
 
-	/*
-	 * Allocate memory for receiving sampled values of the symbol.
-	 */
-	maxSamples = TSP_PROVIDER_FREQ * GDISP_WIN_T_DURATION;
-	g_ptr_array_add(plot->p2dSampleArray,
-			(gpointer)dparray_newSampleArray(maxSamples));
-
       }
 
       symbolItem = g_list_next(symbolItem);
@@ -2369,6 +2473,78 @@ gdisp_getSymbolsFromPlot2D (Kernel_T *kernel,
 
 
 /*
+ * Get plot attributes in order to be saved into the configuration.
+ */
+static void
+gdisp_getPlotAttributesPlot2D (Kernel_T *kernel,
+			       void     *data,
+			       GList    *attributeList)
+{
+
+  Plot2D_T                    *plot = (Plot2D_T*)data;
+  static /* Sorry !! */ gchar  duration[32];
+
+  /*
+   * By now, the only information to be saved is the time window duration.
+   */
+  attributeList = g_list_append(attributeList,
+				(gpointer)"winDuration");
+
+  sprintf(duration,"%d",plot->p2dWindowDuration);
+
+  attributeList = g_list_append(attributeList,
+				(gpointer)duration);
+
+}
+
+
+/*
+ * Set plot attributes from the configuration.
+ */
+static void
+gdisp_setPlotAttributesPlot2D (Kernel_T *kernel,
+			       void     *data,
+			       GList    *attributeList)
+{
+
+  Plot2D_T *plot    = (Plot2D_T*)data;
+  gchar    *keyword = (gchar*)NULL;
+  gchar    *value   = (gchar*)NULL;
+
+  /*
+   * Loop over all attributes and find correct ones.
+   */
+  attributeList = g_list_first(attributeList);
+  while (attributeList != (GList*)NULL) {
+
+    keyword = (gchar*)attributeList->data;
+
+    attributeList = g_list_next(attributeList);
+    value = (gchar*)attributeList->data;
+
+    /*
+     * window time duration.
+     */
+    if (strcmp(keyword,"winDuration") == 0) {
+
+      plot->p2dWindowDuration = atoi(value);
+
+      if (plot->p2dWindowDuration <= 0) {
+
+	plot->p2dWindowDuration = GDISP_WIN_T_DURATION;
+
+      }
+
+    }
+
+    attributeList = g_list_next(attributeList);
+
+  } /* while (attributeList != (GList*)NULL) */
+
+}
+
+
+/*
  * Get symbol attributes in order to be saved into the configuration.
  */
 static void
@@ -2418,10 +2594,13 @@ gdisp_startStepOnPlot2D (Kernel_T *kernel,
 			 void     *data)
 {
 
-  Plot2D_T *plot     = (Plot2D_T*)data;
-  guint     nbEvents = 0;
-  guint     cptEvent = 0;
-  guint     eventID  = 0;
+  Plot2D_T *plot       = (Plot2D_T*)data;
+  Symbol_T *symbol     = (Symbol_T*)NULL;
+  GList    *symbolItem = (GList*)NULL;
+  guint     nbEvents   = 0;
+  guint     cptEvent   = 0;
+  guint     eventID    = 0;
+  guint     maxSamples = 0;
 
   GDISP_TRACE(3,"Performing start-step on plot 2D.\n");
 
@@ -2449,6 +2628,26 @@ gdisp_startStepOnPlot2D (Kernel_T *kernel,
 
   }
 
+  /*
+   * Allocate memory for receiving sampled values of the plot.
+   */
+  if (plot->p2dSampleArray->len == 0) {
+
+    maxSamples = TSP_PROVIDER_FREQ * plot->p2dWindowDuration;
+    symbolItem = g_list_first(plot->p2dYSymbolList);
+
+    while (symbolItem != (GList*)NULL) {
+
+      symbol = (Symbol_T*)symbolItem->data;
+
+      g_ptr_array_add(plot->p2dSampleArray,
+		      (gpointer)dparray_newSampleArray(maxSamples));
+
+      symbolItem = g_list_next(symbolItem);
+
+    }
+
+  }
 
   /*
    * Before starting steps, block few X signals.
@@ -2847,6 +3046,8 @@ gdisp_initPlot2DSystem (Kernel_T     *kernel,
   plotSystem->psTreatSymbolValues   = gdisp_treatPlot2DSymbolValues;
   plotSystem->psGetPeriod           = gdisp_getPlot2DPeriod;
   plotSystem->psGetDropZones        = gdisp_getPlot2DDropZones;
+  plotSystem->psSetPlotAttributes   = gdisp_setPlotAttributesPlot2D;
+  plotSystem->psGetPlotAttributes   = gdisp_getPlotAttributesPlot2D;
 
   /*
    * Manage debug traces.

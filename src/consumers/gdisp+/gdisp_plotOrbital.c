@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_plotOrbital.c,v 1.5 2006-08-05 20:50:30 esteban Exp $
+$Id: gdisp_plotOrbital.c,v 1.6 2006-09-28 19:37:54 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -425,6 +425,42 @@ gdisp_getSymbolsFromPlotOrbital (Kernel_T *kernel,
 
 
 /*
+ * Get plot attributes in order to be saved into the configuration.
+ */
+static void
+gdisp_getPlotAttributesPlotOrbital (Kernel_T *kernel,
+				    void     *data,
+				    GList    *attributeList)
+{
+
+  /* PlotOrbital_T *plot = (PlotOrbital_T*)data; */
+
+  /*
+   * Nothing by now.
+   */
+
+}
+
+
+/*
+ * Set plot attributes from the configuration.
+ */
+static void
+gdisp_setPlotAttributesPlotOrbital (Kernel_T *kernel,
+				    void     *data,
+				    GList    *attributeList)
+{
+
+  /* PlotOrbital_T *plot = (PlotOrbital_T*)data; */
+
+  /*
+   * Nothing by now.
+   */
+
+}
+
+
+/*
  * Get symbol attributes in order to be saved into the configuration.
  */
 static void
@@ -637,7 +673,9 @@ gdisp_initOrbitalPlotSystem (Kernel_T     *kernel,
   plotSystem->psGetInformation      = gdisp_getPlotOrbitalInformation;
   plotSystem->psTreatSymbolValues   = gdisp_treatPlotOrbitalSymbolValues;
   plotSystem->psGetPeriod           = gdisp_getPlotOrbitalPeriod;
-  /* plotSystem->psGetDropZones        = gdisp_getPlotOrbitalDropZones; */
+  plotSystem->psGetDropZones        = gdisp_getPlotOrbitalDropZones;
+  plotSystem->psSetPlotAttributes   = gdisp_setPlotAttributesPlotOrbital;
+  plotSystem->psGetPlotAttributes   = gdisp_getPlotAttributesPlotOrbital;
 
 }
 

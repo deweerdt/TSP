@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_kernel.h,v 1.30 2006-09-23 20:35:01 esteban Exp $
+$Id: gdisp_kernel.h,v 1.31 2006-09-28 19:37:54 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -443,6 +443,8 @@ typedef struct PlotSystem_T_ {
   void       (*psStopStep)           (Kernel_T_Ptr,void*                 );
   void       (*psTreatSymbolValues)  (Kernel_T_Ptr,void*                 );
   guint      (*psGetPeriod)          (Kernel_T_Ptr,void*                 );
+  void       (*psSetPlotAttributes)  (Kernel_T_Ptr,void*,GList*          );
+  void       (*psGetPlotAttributes)  (Kernel_T_Ptr,void*,GList*          );
 
   /*
    * Kernel verification.

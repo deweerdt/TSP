@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_configuration.c,v 1.14 2006-08-05 20:50:30 esteban Exp $
+$Id: gdisp_configuration.c,v 1.15 2006-09-28 19:37:53 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -432,6 +432,7 @@ gdisp_saveOneGraphicPlot ( Kernel_T         *kernel,
 
   int               errorCode      = 0;
   GList            *symbolList     = (GList*)NULL;
+  GList            *attributeList  = (GList*)NULL;
   GArray           *plotZones      = (GArray*)NULL;
   guint             currentZoneId  = 0;
   PlotSystemZone_T *currentZone    = (PlotSystemZone_T*)NULL;
@@ -470,25 +471,54 @@ gdisp_saveOneGraphicPlot ( Kernel_T         *kernel,
     sprintf(sPlotNbRows   ,"%d",plotSystemData->plotNbRows   );
     sprintf(sPlotNbColumns,"%d",plotSystemData->plotNbColumns);
 
+    attributeList = g_list_append(attributeList,
+				  (gpointer)"type");
+    attributeList = g_list_append(attributeList,
+				  (gpointer)plotInformation.psName);
+
+    attributeList = g_list_append(attributeList,
+				  (gpointer)"row");
+    attributeList = g_list_append(attributeList,
+				  (gpointer)sPlotRow);
+
+    attributeList = g_list_append(attributeList,
+				  (gpointer)"column");
+    attributeList = g_list_append(attributeList,
+				  (gpointer)sPlotColumn);
+
+    attributeList = g_list_append(attributeList,
+				  (gpointer)"nbRows");
+    attributeList = g_list_append(attributeList,
+				  (gpointer)sPlotNbRows);
+
+    attributeList = g_list_append(attributeList,
+				  (gpointer)"nbColumns");
+    attributeList = g_list_append(attributeList,
+				  (gpointer)sPlotNbColumns);
+
+    /*
+     * The plot may have specific attributes. Get them back.
+     */
+    (*plotSystemData->plotSystem->psGetPlotAttributes)
+                                               (kernel,
+						plotSystemData->plotData,
+						attributeList);
+
+    /*
+     * Write attributes.
+     */
     errorCode =
-      gdisp_xmlWriteAttributes(writer,
-			       plotIdentity == 0 ?
-			       GD_INCREASE_INDENTATION :
-			       GD_DO_NOT_CHANGE_INDENTATION,
-			       indentBuffer,
-			       (xmlChar*)"Plot",
-			       FALSE, /* do not end up element */
-			       (xmlChar*)"type",
-			       (xmlChar*)plotInformation.psName,
-			       (xmlChar*)"row",
-			       (xmlChar*)sPlotRow,
-			       (xmlChar*)"column",
-			       (xmlChar*)sPlotColumn,
-			       (xmlChar*)"nbRows",
-			       (xmlChar*)sPlotNbRows,
-			       (xmlChar*)"nbColumns",
-			       (xmlChar*)sPlotNbColumns,
-			       (xmlChar*)NULL);
+      gdisp_xmlWriteAttributeList(writer,
+				  plotIdentity == 0 ?
+				  GD_INCREASE_INDENTATION :
+				  GD_DO_NOT_CHANGE_INDENTATION,
+				  indentBuffer,
+				  (xmlChar*)"Plot",
+				  FALSE, /* do not end up element */
+				  attributeList);
+
+    g_list_free(attributeList);
+    attributeList = (GList*)NULL;
 
     if (errorCode < 0) {
       return errorCode;
@@ -1408,6 +1438,7 @@ gdisp_loadTargetPlots ( Kernel_T *kernel,
   guint             plotNbRows     = 1;
   guint             plotNbColumns  = 1;
   PlotType_T        plotType       = GD_PLOT_DEFAULT;
+  GList            *attributeList  = (GList*)NULL;
 
 
   /*
@@ -1460,6 +1491,9 @@ gdisp_loadTargetPlots ( Kernel_T *kernel,
 	xmlFree(property);
       }
 
+      /*
+       * Create the plot.
+       */
       plotSystemData = gdisp_addPlotToGraphicPage(kernel,
 						  page,
 						  plotType,
@@ -1467,6 +1501,27 @@ gdisp_loadTargetPlots ( Kernel_T *kernel,
 						  plotNbRows,
 						  plotColumn,
 						  plotNbColumns);
+
+      /*
+       * Get back the list of plot specific attributes.
+       */
+      gdisp_xmlGetAttributeList(plotNode,
+				&attributeList);
+      attributeList = g_list_first(attributeList);
+
+      /*
+       * Set up specific propoerties.
+       */
+      (*plotSystemData->plotSystem->psSetPlotAttributes)
+                                                  (kernel,
+						   plotSystemData->plotData,
+						   attributeList);
+
+      /*
+       * Free memory allocated to the lists.
+       */
+      g_list_free(attributeList);
+      attributeList = (GList*)NULL;
 
       /*
        * Add symbols to be sampled to plot.

@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_plot2D.h,v 1.13 2006-08-05 20:50:30 esteban Exp $
+$Id: gdisp_plot2D.h,v 1.14 2006-09-28 19:37:54 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -90,6 +90,7 @@ typedef struct Plot2D_T_ {
   gboolean             p2dHasFocus;
   gboolean             p2dIsWorking;
   gboolean             p2dIsDirty;
+  guint                p2dWindowDuration;
 
   /*
    * List of pointer on TSP_Symbol_T.
