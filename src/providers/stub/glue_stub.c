@@ -1,6 +1,6 @@
 /*
 
-$Id: glue_stub.c,v 1.27 2006-10-18 22:46:46 erk Exp $
+$Id: glue_stub.c,v 1.28 2006-10-18 23:28:23 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -69,7 +69,7 @@ void* STUB_GLU_thread(void* athis)
   tsp_hrtime_t current_time;
   glu_item_t item;
   double memo_val[GLU_MAX_SYMBOLS_DOUBLE]; /*for debug informatin */
-  GLU_handle_t* this  = (GLU_handle_t*) athis;
+  GLU_handle_t* cthis  = (GLU_handle_t*) athis;
 
   current_time = X_lasttime = tsp_gethrtime();  
 
@@ -83,7 +83,7 @@ void* STUB_GLU_thread(void* athis)
   while(1) {
 
       /* Must be call at each step in case of new samples wanted */
-      TSP_datapool_get_reverse_list(this->datapool,&symbols_nb, &ptr_index); 
+      TSP_datapool_get_reverse_list(cthis->datapool,&symbols_nb, &ptr_index); 
 
       for (i = 0 ; i <  symbols_nb ; i++) {
 	 
@@ -99,12 +99,12 @@ void* STUB_GLU_thread(void* athis)
 		*((double*)item.raw_value) = (double)(my_time) / (double)(TSP_STUB_FREQ);
 		/* PUSH next sample item into the TSP provider lib DataPool 
 		 * and go to next for (over requested symbols) iteration */
-		TSP_datapool_push_next_item(this->datapool, &item);
+		TSP_datapool_push_next_item(cthis->datapool, &item);
 		memo_val[index]=*((double*)item.raw_value);
 		continue;
 	      }
 	      
-	      /* This loop generate pseudo evolving values for each 
+	      /* cthis loop generate pseudo evolving values for each 
 	       * Stubbed Server symbol 
 	       */
 	      for(j=0;j<X_sample_symbol_info_list_val[index].dimension;++j)
@@ -171,11 +171,9 @@ void* STUB_GLU_thread(void* athis)
 	      }
 	      }
 
-	      TSP_datapool_push_next_item(this->datapool, &item);
+	      TSP_datapool_push_next_item(cthis->datapool, &item);
 	    }
 	}
-
-
 
       /* 
        * Finalize the datapool state with new time : Ready to send 
@@ -183,7 +181,7 @@ void* STUB_GLU_thread(void* athis)
        * set of samples have reached the Datapool and are ready
        * to be distributed with TSP
        */
-      TSP_datapool_push_commit(this->datapool,my_time, GLU_GET_NEW_ITEM);
+      TSP_datapool_push_commit(cthis->datapool,my_time, GLU_GET_NEW_ITEM);
 
       if( current_time <= X_lasttime ) { 
 	tsp_usleep(TSP_USLEEP_PERIOD_US);
@@ -202,12 +200,12 @@ void* STUB_GLU_thread(void* athis)
 					));
     }
     
-  return this;
+  return cthis;
 
 }
 
 
-int STUB_GLU_init(GLU_handle_t* this, int fallback_argc, char* fallback_argv[])
+int STUB_GLU_init(GLU_handle_t* cthis, int fallback_argc, char* fallback_argv[])
 {
   int i;
   int32_t size;
@@ -472,7 +470,7 @@ STUB_GLU_get_ssi_list(GLU_handle_t* h_glu,TSP_sample_symbol_info_list_t* symbol_
 } /* STUB_GLU_get_ssi_list */
 
 int32_t
-STUB_GLU_get_ssei_list_fromPGI(struct GLU_handle_t* this, 
+STUB_GLU_get_ssei_list_fromPGI(struct GLU_handle_t* cthis, 
 			       int32_t* pgis, int32_t pgis_len, 
 			       TSP_sample_symbol_extended_info_list_t* SSEI_list) {
 
