@@ -1,6 +1,6 @@
 /*
 
-$Id: glue_stub.c,v 1.25 2006-07-19 19:50:48 erk Exp $
+$Id: glue_stub.c,v 1.26 2006-10-18 14:51:08 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -59,7 +59,9 @@ static time_stamp_t my_time = 0;
 static GLU_handle_t* stub_GLU = NULL;
 static int32_t taille_max_symbol=0;
 
-
+/*
+ * The GLU->run member function.
+ */
 void* STUB_GLU_thread(void* athis)
 {
   int i,j, symbols_nb, *ptr_index;
@@ -73,7 +75,10 @@ void* STUB_GLU_thread(void* athis)
   item.raw_value=calloc(1,taille_max_symbol);
   assert(item.raw_value);
 
-  /* infinite loop for symbols generation */
+  /* Infinite loop for 
+   * our pseudo simulator 
+   * symbols generation 
+   */
   while(1) {
 
       /* Must be call at each step in case of new samples wanted */
@@ -91,12 +96,16 @@ void* STUB_GLU_thread(void* athis)
 	      /* PGI 0 is a pseudo time */
 	      if (0==index) {
 		*((double*)item.raw_value) = (double)(my_time) / (double)(TSP_STUB_FREQ);
-		/* PUSH to DP and go to next for (over requested symbols) iteration */
+		/* PUSH next sample item into the TSP provider lib DataPool 
+		 * and go to next for (over requested symbols) iteration */
 		TSP_datapool_push_next_item(this->datapool, &item);
 		memo_val[index]=*((double*)item.raw_value);
 		continue;
 	      }
 	      
+	      /* This loop generate pseudo evolving values for each 
+	       * Stubbed Server symbol 
+	       */
 	      for(j=0;j<X_sample_symbol_info_list_val[index].dimension;++j)
 	      {
 	       
@@ -167,18 +176,23 @@ void* STUB_GLU_thread(void* athis)
 
 
 
-      /* Finalize the datapool state with new time : Ready to send */
+      /* 
+       * Finalize the datapool state with new time : Ready to send 
+       * This call signals the TSP Provider library that the coherent
+       * set of samples have reached the Datapool and are ready
+       * to be distributed with TSP
+       */
       TSP_datapool_push_commit(this->datapool,my_time, GLU_GET_NEW_ITEM);
 
-      if( current_time <= X_lasttime )
-	{ 
-	  tsp_usleep(TSP_USLEEP_PERIOD_US);
-	}
+      if( current_time <= X_lasttime ) { 
+	tsp_usleep(TSP_USLEEP_PERIOD_US);
+      }
 
       X_lasttime += TSP_USLEEP_PERIOD_US*1000;
       current_time = tsp_gethrtime();
       my_time++;    
       
+      /* print out some pseudo time for debug purpose */
       if (!(my_time%1000))  STRACE_INFO(("TOP %d : %s=%g \t%s=%g \t%s=%g \t%s=%g", my_time,
 					 X_sample_symbol_info_list_val[0].name, memo_val[0],
 					 X_sample_symbol_info_list_val[1].name, memo_val[1],
@@ -411,6 +425,7 @@ int STUB_GLU_init(GLU_handle_t* this, int fallback_argc, char* fallback_argv[])
 	taille_max_symbol= size;
       }
 
+      ++i;
       /*TAB CHAR*/
       sprintf(symbol_buf, "TAB_CHAR_Symbol%d",i);
       X_sample_symbol_info_list_val[i].name = strdup(symbol_buf);
@@ -525,12 +540,12 @@ STUB_GLU_get_ssei_list_fromPGI(struct GLU_handle_t* this,
  	    TSP_EI_update(&(SSEI_list->TSP_sample_symbol_extended_info_list_t_val[i].info.TSP_extended_info_list_t_val[1]), "unit", "SI");
 	    TSP_EI_update(&(SSEI_list->TSP_sample_symbol_extended_info_list_t_val[i].info.TSP_extended_info_list_t_val[1]), "order", "1");
 	    break;
-/* 	   case 1012: */
-/* 	     TSP_EIList_initialize(&(SSEI_list->TSP_sample_symbol_extended_info_list_t_val[i].info),2); */
-/* 	     TSP_EI_update(&(SSEI_list->TSP_sample_symbol_extended_info_list_t_val[i].info.TSP_extended_info_list_t_val[0]), "profile", "2*10"); */
-/* 	     TSP_EI_update(&(SSEI_list->TSP_sample_symbol_extended_info_list_t_val[i].info.TSP_extended_info_list_t_val[1]), "unit", "None"); */
-/* 	     TSP_EI_update(&(SSEI_list->TSP_sample_symbol_extended_info_list_t_val[i].info.TSP_extended_info_list_t_val[1]), "order", "2"); */
-/* 	     break;  */
+	   case 1012:
+	     TSP_EIList_initialize(&(SSEI_list->TSP_sample_symbol_extended_info_list_t_val[i].info),2);
+	     TSP_EI_update(&(SSEI_list->TSP_sample_symbol_extended_info_list_t_val[i].info.TSP_extended_info_list_t_val[0]), "profile", "2*10");
+	     TSP_EI_update(&(SSEI_list->TSP_sample_symbol_extended_info_list_t_val[i].info.TSP_extended_info_list_t_val[1]), "unit", "None");
+	     TSP_EI_update(&(SSEI_list->TSP_sample_symbol_extended_info_list_t_val[i].info.TSP_extended_info_list_t_val[1]), "order", "2");
+	     break; 
 	  default:
 	    /* do not forget invalid > 1012 PGIs */
 	    SSEI_list->TSP_sample_symbol_extended_info_list_t_val[i].provider_global_index=-1;      
