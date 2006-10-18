@@ -1,0 +1,48 @@
+<?xml version="1.0"?>
+<page_config display_frequency="10.0" period="1"  widget="draw" visible="true" no_border="false" rows="3" duration="50.0">
+
+  <page title="StubbedServer: Draw" x="50" y="50" width="450" height="440" rows="3" >   
+     <variable name="t" type="DOUBLE"   />
+     <variable name="Symbol2" type="DOUBLE"   />
+     <variable name="Symbol3" type="DOUBLE"   />
+     <variable name="Symbol4" type="DOUBLE"   />
+     <variable name="Symbol5" type="DOUBLE"   />
+     <variable name="Symbol6" type="DOUBLE"   />
+  </page>
+
+  <page title="StubbedServer: View" x="510" y="50" width="0" height="0" widget="view" rows="11">   
+     <variable name="Title1" type="TITLE"   />
+     <variable name="Symbol101" type="DOUBLE"   />
+     <variable name="Symbol102" type="DOUBLE"   />
+     <variable name="Symbol103" type="DOUBLE"   />
+     <variable name="Title2" type="TITLE"   />
+     <variable name="Symbol105" type="DOUBLE"   />
+     <variable name="Symbol106" type="DOUBLE"   />
+     <variable name="Title3" type="TITLE"   />
+     <variable name="Symbol107" type="DOUBLE" legend="S207 DOUBLE"/>
+     <variable name="Symbol107" type="HEXA"   legend="S207 HEXA"/>
+     <variable name="Symbol107" type="BIN"    legend="S207 BIN"/>
+
+     <variable name="Title4" type="TITLE"   />
+     <variable name="Symbol108" type="DOUBLE"   />
+     <variable name="Symbol109" type="DOUBLE"   />
+     <variable name="Symbol110" type="DOUBLE"   />
+     <variable name="Title5" type="TITLE"   />
+     <variable name="Symbol201" type="DOUBLE"   />
+     <variable name="Symbol202" type="DOUBLE"   />
+     <variable name="Symbol203" type="DOUBLE"   />
+     <variable name="Symbol204" type="DOUBLE"   />
+     <variable name="Symbol207" type="DOUBLE"   />
+  </page>
+
+  <page title="StubbedServer: Mixed" x="510" y="360" width="0" height="0" widget="view" rows="4" >   
+     <variable name="Title" type="TITLE"   />
+     <variable name="Symbol108" type="DOUBLE"   />
+     <variable name="Symbol109" type="DOUBLE"   />
+     <variable name="Symbol7" type="DOUBLE" widget="draw"  />
+     <variable name="Another" type="TITLE"   />
+     <variable name="Symbol308" type="DOUBLE"   />
+     <variable name="Symbol309" type="DOUBLE"   />
+     <variable name="Symbol8" type="DOUBLE" widget="draw"  />
+  </page>
+ </page_config>

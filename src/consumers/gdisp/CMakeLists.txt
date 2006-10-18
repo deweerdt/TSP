@@ -1,3 +1,7 @@
+TSP_XSCRIPT( 
+           stub_gdisp_config.xml
+	   )
+
 SET(GDISP_SRC interface
 support gdispmain
 config plotwindow

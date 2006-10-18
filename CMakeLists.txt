@@ -61,11 +61,6 @@ MESSAGE(STATUS "Configuring ${PACKAGE_NAME} version ${PACKAGE_VERSION}")
 INCLUDE(CheckFunctionExists)
 #INCLUDE(CMakePrintSystemInformation)
 
-# AP : Migration sous Windows
-# Ecrire un module cmake FindXXXX par element de solution testee:
-#    - FindPthreadWin32
-#    - FindACPTL_ONCRPC
-
 ################ Visual Studio (VC) Check ####################
 IF (WIN32)
 	SET(CMAKE_INSTALL_VS "C:/Program Files/Microsoft Visual Studio .NET 2003/Vc7")
@@ -93,7 +88,6 @@ IF (BUILD_WIN32_ACPLT_ONCPRC)
 	ENDIF (ACPLT_ONCRPC_FOUND)
 ENDIF (BUILD_WIN32_ACPLT_ONCPRC)
 
-# AP : Migration sous Windows
 IF (WIN32)	
 	ADD_DEFINITIONS(-DTSP_SYSTEM_USE_WIN32_SLEEP)
 ELSE (WIN32)
@@ -136,7 +130,7 @@ INCLUDE_DIRECTORIES(
 # Be nice use FIND PACKAGE for searching library
 # if there is no predefined CMake FindXXX module
 # for your needs please write one
-# and put it in {TSP_BASE}/make directory
+# and put it in {TSP_SRC_BASE}/make directory
 # see  
 # http://www.cmake.org/Wiki/CMake_HowToFindInstalledSoftware
 # for building your own CMake module
@@ -278,9 +272,10 @@ IF (WIN32)
   
   IF (MSVC71)
     ## Install FIX the path to le system directoy##
-    INSTALL(FILES C:/Windows/system32/msvcr71d.dll
-				  C:/Windows/system32/mfc71d.dll
-			DESTINATION external/msvc)
+    INSTALL(FILES 
+      C:/Windows/system32/msvcr71d.dll
+      C:/Windows/system32/mfc71d.dll
+      DESTINATION external/msvc)
   ENDIF (MSVC71)
 ELSE (WIN32)
   #Nothing to do.
@@ -294,9 +289,13 @@ MARK_AS_ADVANCED(DIST_DIR)
 LINK_DIRECTORIES(${LIBRARY_OUTPUT_PATH})
 
 ################ INSTALL related config ############################
-IF (NOT CMAKE_INSTALL_PREFIX)
+# the CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT is
+# CMake 2.4.4 (or later) feature
+# see
+# http://www.cmake.org/pipermail/cmake/2006-October/011559.html
+IF (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
   SET(CMAKE_INSTALL_PREFIX "/opt/${PACKAGE_NAME}-${PACKAGE_VERSION}" CACHE PATH "Install path prefix" FORCE)
-ENDIF (NOT CMAKE_INSTALL_PREFIX)
+ENDIF (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 
 ################ TSP SDK related config ###########################
 TSP_CONFIGURE_FILE_AUTOTOOLS_COMPAT(

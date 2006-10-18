@@ -1,3 +1,7 @@
+
+TSP_XSCRIPT( 
+           stub_ascii_writer_config.dat
+	   )
 ADD_DEFINITIONS(-DYY_NO_UNPUT ${XML2_CFLAGS})
 SET(ASCII_WRITER_SRC
   tsp_ascii_writer_main.c
