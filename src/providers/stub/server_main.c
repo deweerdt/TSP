@@ -1,6 +1,6 @@
 /*
 
-$Id: server_main.c,v 1.12 2006-10-18 14:51:09 erk Exp $
+$Id: server_main.c,v 1.13 2006-10-18 21:23:38 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -65,7 +65,7 @@ int main(int argc, char *argv[])
 {
   GLU_handle_t* GLU_stub;
 
-/* Managing thr SIGINT signal */
+/* Managing the SIGINT signal */
 #if defined (WIN32)
   /* intercept SIGINT signal */
   if ( SIG_ERR == signal(SIGINT, intrpt))
@@ -88,13 +88,29 @@ int main(int argc, char *argv[])
   printf ("# Launching <StubbedServer> for generation of 1000 Symbols at 100Hz #\n");
   printf ("#===================================================================#\n");
 
+  /* Create our structured GLU callbacks */
   GLU_stub = GLU_stub_create();
 
-  /* Init server */
+  /* Initialize TSP Provider library and register OUR GLU object
+   * so that the TSP core knows it and is able
+   * to call appropriate callback GLU member functions.
+   */
   if(TSP_STATUS_OK==TSP_provider_init(GLU_stub,&argc, &argv)) {
+    /* configure TSP request handling SIMPLE and NON BLOCKING mode and
+     * 
+     * Start TSP request handling loop
+     * In this case the function will not return
+     * until the program is interrupted (Ctrl-C).
+     *
+     * Provider run will:
+     *    1- Call GLU-->initialize()
+     *    2- Start a thread running GLU-->run()
+     *    3- Start TSP request handler   
+     */
     if (TSP_STATUS_OK!=TSP_provider_run(TSP_ASYNC_REQUEST_SIMPLE | TSP_ASYNC_REQUEST_NON_BLOCKING)) {
         return -1;
     }
+    /* print out TSP URL */
     TSP_provider_urls(TSP_PUBLISH_URLS_PRINT | TSP_PUBLISH_URLS_FILE);
 #if defined (WIN32)
     /* Wait until the intercept signal function is call */
@@ -106,7 +122,10 @@ int main(int argc, char *argv[])
     /* wait until a SIGINT signal */
     sigwait(&allsigs, &whatsig);
 #endif
+    /* Terminate TSP Provider library */
     TSP_provider_end();
+    
+    /* * * NO TSP_xxx functions may be called after this call * * */
   }
 
   printf("#=== End ===#\n");

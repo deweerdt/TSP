@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl_init/tsp_provider_init.h,v 1.15 2006-10-18 09:58:48 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl_init/tsp_provider_init.h,v 1.16 2006-10-18 21:23:51 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -56,6 +56,17 @@ BEGIN_C_DECLS
  * call to the TSP provider library.
  * Call this function at the start of your main function
  * with the received argc/argv. Then use the modified argc/argv.
+ * If you do not have argc/argv when calling TSP_provider_init then
+ * fake it like this:
+ * 
+ * int argc = 1;
+ * char** argv = 0;
+ *
+ * argv = (char**)calloc(argc+1, sizeof(char*));
+ *
+ * argv[0] = strdup("MyOwnProvider");
+ * argv[1] = NULL;
+ *
  * @param[in,out] theGLU the GLU object to be used by this provider.
  * @param[in,out] argc You must provide the real argc before using it
  * @param[in,out] argv You must provide the real argv before using it
@@ -67,7 +78,7 @@ TSP_provider_init(GLU_handle_t* theGLU, int* argc, char** argv[]);
 /**
  * Finalize the TSP provider library.
  * After this call the TSP provider library should
- * not be called anymore.
+ * not be called anymore (even a second call to TSP_provider_init is forbidden).
  */
 _EXPORT_TSP_PROVIDER void 
 TSP_provider_end(void);

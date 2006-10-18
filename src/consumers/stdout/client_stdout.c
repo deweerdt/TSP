@@ -1,6 +1,6 @@
 /*
 
-$Id: client_stdout.c,v 1.13 2006-10-18 09:58:47 erk Exp $
+$Id: client_stdout.c,v 1.14 2006-10-18 21:22:34 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -43,10 +43,30 @@ Purpose   : Simple consumer test that print samples received to stdout
     #include <assert.h>
 #endif
 
-#include "tsp_sys_headers.h"
-#include "tsp_prjcfg.h"
-#include "tsp_consumer.h"
-#include "tsp_time.h"
+#include <tsp_sys_headers.h>
+#include <tsp_prjcfg.h>
+#include <tsp_consumer.h>
+#include <tsp_time.h>
+
+/**
+ * @defgroup TSP_Stdout Stdout Client Consumer
+ * A Simple TSP consumer printing on stdout.
+ * a TSP consumer which is able to output symbols values on standard output.
+ * You select the first 's' symbol(s) of the provider, the period of
+ * the requested samples and the number of sample to receive.
+ *
+ * \par tsp_stdout_client [-h] [-u TSP_URL] [-p period] [-n number_sample] [-s number_symbols] [-t]
+ * \par 
+ * <ul>
+ *   <li> \b -h  (optional) print command line help.</li>
+ *   <li> \b -u  (optional) the TSP provider URL. If not specified default is localhost.</li>
+ *   <li> \b -p  (optional) the period used for the request sample, default=1.</li>
+ *   <li> \b -n  (optional) the number of sample to receive, default=5, 0=infinite loop</li>
+ *   <li> \b -s  (optional) the number of sample symbols to request for, default=1</li>
+ *   <li> \b -t  (optional) test mode to be used with StubbedServer (TSP developer only)</li>
+ * </ul>
+ * @ingroup TSP_Consumers
+ */
 
 /* Number of samples  that will be counted before the data check test pass */
 #define TSP_TEST_COUNT_SAMPLES 10  
@@ -62,7 +82,7 @@ stdout_usage(const char* me) {
   printf("Usage: %s [-u TSP_URL] [-p period] [-n number_sample] [-s number_symbols] [-t]\n",me);
   printf("   -u TSP_URL    (optional) the TSP provider URL, default=localhost\n");
   printf("   -p period     (optional) the period used for the request sample, default=1\n");
-  printf("   -n nb_sample  (optional) the number of sample to received, default=5, 0=infinite loop\n");
+  printf("   -n nb_sample  (optional) the number of sample to receive, default=5, 0=infinite loop\n");
   printf("   -s nb_symbols (optional) the number of sample symbols to request for, default=1\n");
   printf("   -t            (optional) test mode to be used with StubbedServer (TSP developer only)\n");
   printf("   -h            (optional) print this help\n");

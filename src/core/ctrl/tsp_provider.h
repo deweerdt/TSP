@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_provider.h,v 1.22 2006-10-18 09:58:48 erk Exp $
+$Id: tsp_provider.h,v 1.23 2006-10-18 21:23:51 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -56,7 +56,7 @@ BEGIN_C_DECLS
 /**
  * Initialize TSP provider library.
  * One should call this before any other TSP provider lib call.
- * @param[in,out] theGLU the GLU to be used by this provider.
+ * @param[in,out] theGLU the GLU to be registered into the TSP Provider Library.
  * @param[in,out] argc   the number of argument of the main
  * @param[in,out] argv   array of argument of size argc.
  */
