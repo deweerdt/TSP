@@ -1,6 +1,6 @@
 /*
 
-$Id: tspcfg_file.c,v 1.3 2006-06-03 21:42:04 erk Exp $
+$Id: tspcfg_file.c,v 1.4 2006-10-18 23:44:38 erk Exp $
 
 -----------------------------------------------------------------------
  
@@ -1026,7 +1026,11 @@ int32_t TSP_TspCfg_load(TspCfg_T* tspConfig,char* filename)
   LIBXML_TEST_VERSION
 
   /*parse the file and get the DOM */
-  tspConfig->cfg_tree = xmlReadFile(filename, NULL,XML_PARSE_RECOVER);
+#ifdef XMLWRITER_SUPPORTED_AVOID_THIS_CASE
+   tspConfig->cfg_tree = xmlReadFile(filename, NULL,XML_PARSE_RECOVER); 
+#else
+  tspConfig->cfg_tree = xmlParseFile(filename);
+#endif
 
   if (NULL==tspConfig->cfg_tree) {
     printf("error: could not parse file %s\n", filename);
