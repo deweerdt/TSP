@@ -1,3 +1,6 @@
+TSP_XSCRIPT( 
+           stub_targa_config.xml
+	   )
 SET(TARGA_SRC
   gdisp_main gdisp_kernel
   gdisp_preferences gdisp_configuration

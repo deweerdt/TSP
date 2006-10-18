@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<GDispConfiguration version="1.0">
+  <!--A GDisp+ Configuration-->
+  <Kernel>
+    <Provider url="///StubbedServer">
+      <SampledSymbols>
+        <sampledSymbol index="1" name="t"/>
+        <sampledSymbol index="2" name="Symbol1"/>
+      </SampledSymbols>
+    </Provider>
+  </Kernel>
+  <Graphics>
+    <Page title="Graphic Page #1" rows="1" columns="1">
+      <Plot type="Text Plot" row="0" column="0" nbRows="1" nbColumns="1">
+        <sampledSymbol index="1"/>
+        <sampledSymbol index="2"/>
+      </Plot>
+    </Page>
+      <Page title="Graphic Page #2" rows="1" columns="1">
+        <Plot type="2D Plot" row="0" column="0" nbRows="1" nbColumns="1">
+          <sampledSymbol index="1" zone="X"/>
+          <sampledSymbol index="2" zone="Y"/>
+        </Plot>
+      </Page>
+    </Graphics>
+  </GDispConfiguration>
+
