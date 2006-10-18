@@ -1,27 +1,47 @@
 
 IF (DOXYGEN_FOUND)
   
+  SET(DOXYGEN_INPUT ${CMAKE_BINARY_DIR}/tsp.doxy)
+  SET(STATIC_PAGES  ${CMAKE_CURRENT_SOURCE_DIR}/footer/footer.html ${CMAKE_CURRENT_SOURCE_DIR}/header/header.html)
+  SET(APIDOC_DIR ${CMAKE_BINARY_DIR}/doc/api)
+
+IF (WIN32)
+  SET(DOXYGEN_GENERATE_MAN NO)
+  FIND_PROGRAM(HHC_PROGRAM 
+    NAMES hhc.exe 
+    PATHS "c:/Program Files/HTML Help Workshop"
+    DOC "HTML Help Compiler program")
+ELSE (WIN32)
+  SET(DOXYGEN_GENERATE_MAN YES)
+  SET(HHC_PROGRAM)
+ENDIF (WIN32)
+
   TSP_CONFIGURE_FILE_AUTOTOOLS_COMPAT(
     ${CMAKE_CURRENT_SOURCE_DIR}/tsp.in 
-    ${CMAKE_CURRENT_SOURCE_DIR}/tsp 
-    @ONLY)
+    ${CMAKE_BINARY_DIR}/tsp.doxy)
   
-  SET(DOXYGEN_INPUT tsp)
-  SET(STATIC_PAGES  footer/footer.html header/header.html)
-  SET(APIDOC_HTML_DIR ${DIST_DIR}/doc/api/html)
-  SET(APIDOC_RTF_DIR ${DIST_DIR}/doc/api/rtf)
-  SET(APIDOC_PDF_DIR ${DIST_DIR}/doc/api/pdf)
+  FILE(MAKE_DIRECTORY ${APIDOC_DIR}/html)
+  
+  CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/tsp.css ${APIDOC_DIR}/html/tsp.css COPYONLY)
+  FILE(GLOB header_files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/header/*.htm*)
+  FILE(GLOB footer_files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/footer/*.htm*)
+  FILE(GLOB images_files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/images/*.png)
+
+  # Copy necessary doc files
+  FOREACH (file ${header_files} ${footer_files} ${images_files})
+    CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/${file} ${APIDOC_DIR}/html/${file} COPYONLY)
+  ENDFOREACH (file)
   
   ADD_CUSTOM_TARGET(apidoc
-    COMMAND echo "Building C API documentation..."
-    COMMAND mkdir -p ${APIDOC_HTML_DIR}
-    COMMAND mkdir -p ${APIDOC_RTF_DIR}
-    COMMAND mkdir -p ${APIDOC_PDF_DIR}
     COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_INPUT}
-    COMMANE cp -f tsp.css ${APIDOC_HTML_DIR}/tsp.css
-    COMMAND cp -r header ${APIDOC_HTML_DIR}
-    COMMAND cp -r footer ${APIDOC_HTML_DIR}
-    COMMAND cp -r images ${APIDOC_HTML_DIR}
-    COMMAND echo "Building C API documentation...Done."
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     )
+
+  FILE(GLOB_RECURSE doc_files RELATIVE ${APIDOC_DIR} ${APIDOC_DIR}/*)
+  FOREACH(file ${doc_files})
+    GET_FILENAME_COMPONENT(file_prefix ${file} PATH)
+    INSTALL(FILES ${APIDOC_DIR}/${file}
+      DESTINATION doc/${file_prefix})
+  ENDFOREACH(file)
+
 ENDIF (DOXYGEN_FOUND)

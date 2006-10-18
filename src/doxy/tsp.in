@@ -8,7 +8,7 @@
 #---------------------------------------------------------------------------
 PROJECT_NAME           = TSP
 PROJECT_NUMBER         = @PACKAGE_VERSION@
-OUTPUT_DIRECTORY       = $(DEVBASE)/dist/doc/api
+OUTPUT_DIRECTORY       = "${CMAKE_BINARY_DIR}/doc/api"
 CREATE_SUBDIRS         = NO
 OUTPUT_LANGUAGE        = English
 USE_WINDOWS_ENCODING   = NO
@@ -74,13 +74,15 @@ WARN_LOGFILE           =
 #---------------------------------------------------------------------------
 # configuration options related to the input files
 #---------------------------------------------------------------------------
-INPUT                  = $(DEVBASE)/src
+INPUT                  =  "${CMAKE_BINARY_DIR}/src" \
+			  "${CMAKE_SOURCE_DIR}/src"
 FILE_PATTERNS          = *.c \
                          *.h \
                          *.x \
                          *.dox
 RECURSIVE              = YES
-EXCLUDE                = $(DEVBASE)/src/tsp/tests
+EXCLUDE                =  "${CMAKE_BINARY_DIR}/src/tsp/tests" \
+                          "${CMAKE_SOURCE_DIR}/src/tsp/tests"
 EXCLUDE_SYMLINKS       = YES
 EXCLUDE_PATTERNS       = *.old \
                          *xdr*
@@ -113,16 +115,16 @@ IGNORE_PREFIX          = tsp
 GENERATE_HTML          = YES
 HTML_OUTPUT            = html
 HTML_FILE_EXTENSION    = .html
-HTML_HEADER            = header/header.html
-HTML_FOOTER            = footer/footer.html
+HTML_HEADER            = "${APIDOC_DIR}/html/header/header.html"
+HTML_FOOTER            = "${APIDOC_DIR}/html/footer/footer.html"
 #HTML_STYLESHEET        = tsp.css
 HTML_ALIGN_MEMBERS     = YES
-GENERATE_HTMLHELP      = NO
-CHM_FILE               = 
-HHC_LOCATION           = 
+GENERATE_HTMLHELP      = YES
+CHM_FILE               = "tsp.chm"
+HHC_LOCATION           = "${HHC_PROGRAM}"
 GENERATE_CHI           = NO
-BINARY_TOC             = NO
-TOC_EXPAND             = NO
+BINARY_TOC             = YES
+TOC_EXPAND             = YES
 DISABLE_INDEX          = NO
 ENUM_VALUES_PER_LINE   = 4
 GENERATE_TREEVIEW      = YES
@@ -154,7 +156,7 @@ RTF_EXTENSIONS_FILE    =
 #---------------------------------------------------------------------------
 # configuration options related to the man page output
 #---------------------------------------------------------------------------
-GENERATE_MAN           = YES
+GENERATE_MAN           = @DOXYGEN_GENERATE_MAN@
 MAN_OUTPUT             = man
 MAN_EXTENSION          = .3
 MAN_LINKS              = NO
@@ -214,7 +216,7 @@ CALL_GRAPH             = NO
 GRAPHICAL_HIERARCHY    = YES
 DIRECTORY_GRAPH        = YES
 DOT_IMAGE_FORMAT       = png
-DOT_PATH               = 
+DOT_PATH               = "${DOXYGEN_DOT_PATH}"
 DOTFILE_DIRS           = 
 MAX_DOT_GRAPH_WIDTH    = 1024
 MAX_DOT_GRAPH_HEIGHT   = 1024
