@@ -1,0 +1,6 @@
+URL where find an example with the source code which implement a getopt function for Windows :
+
+http://dickey.his.com/c_count/c_count.html
+
+The getopt function does not exist under Windows so it have to be implements.
+
