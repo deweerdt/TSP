@@ -1,6 +1,6 @@
 /*
 
-$Id: glue_stub.c,v 1.26 2006-10-18 14:51:08 erk Exp $
+$Id: glue_stub.c,v 1.27 2006-10-18 22:46:46 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -38,13 +38,13 @@ Purpose   : Implementation for the glue_server, for stub test
 */
 #include <string.h>
 
-#include <tsp_sys_headers.h>
-#include <tsp_glu.h>
+#include <tsp_sys_headers.h> /* platform independant data types definition */
+#include <tsp_glu.h>         /* TSP GLU object definition and API */
 #include <tsp_ringbuf.h>
 #include <tsp_time.h>
-#include <tsp_datapool.h>
+#include <tsp_datapool.h>   /* TSP provider datapool API */
 #include <calc_func.h>
-#include <tsp_common.h>
+#include <tsp_common.h>     /* TSP common structure manipulation API */
 
 /* TSP glue server defines */
 #define TSP_STUB_FREQ 100.0 /*Hz*/
@@ -53,6 +53,7 @@ Purpose   : Implementation for the glue_server, for stub test
 #define GLU_MAX_SYMBOLS_NOT_DOUBLE 12
 
 /* Nasty static variables */
+static TSP_sample_symbol_info_list_t X_SSI_list;
 static TSP_sample_symbol_info_t *X_sample_symbol_info_list_val;
 static tsp_hrtime_t X_lasttime;
 static time_stamp_t my_time = 0;
@@ -205,24 +206,36 @@ void* STUB_GLU_thread(void* athis)
 
 }
 
+
 int STUB_GLU_init(GLU_handle_t* this, int fallback_argc, char* fallback_argv[])
 {
   int i;
   int32_t size;
   char symbol_buf[50];
+
+  /* Initialize provided sample info list */
+  if (TSP_STATUS_OK!=TSP_SSIList_initialize(&X_SSI_list,GLU_MAX_SYMBOLS_DOUBLE+GLU_MAX_SYMBOLS_NOT_DOUBLE+1)) {
+    return FALSE;
+  }
   
-  X_sample_symbol_info_list_val = calloc (GLU_MAX_SYMBOLS_DOUBLE+GLU_MAX_SYMBOLS_NOT_DOUBLE+1, sizeof (TSP_sample_symbol_info_t)) ;
+  X_sample_symbol_info_list_val = X_SSI_list.TSP_sample_symbol_info_list_t_val;
+  
   for (i=0; i<GLU_MAX_SYMBOLS_DOUBLE; i++)
     {      
       sprintf(symbol_buf, "Symbol%d",i);
-      X_sample_symbol_info_list_val[i].name = strdup(symbol_buf);
-      X_sample_symbol_info_list_val[i].provider_global_index = i;
-      X_sample_symbol_info_list_val[i].period = 1;
-      X_sample_symbol_info_list_val[i].type = TSP_TYPE_DOUBLE;
-      X_sample_symbol_info_list_val[i].dimension = 1;
-
-      size=X_sample_symbol_info_list_val[i].dimension * tsp_type_size[X_sample_symbol_info_list_val[i].type];
-      if(taille_max_symbol< size)
+      TSP_SSI_initialize(TSP_SSIList_getSSI(X_SSI_list,i),
+			 symbol_buf,        /* name                  */ 
+			 i,                 /* provider global index */
+			 0,0,               /* pgridx,pgrank         */
+			 TSP_TYPE_DOUBLE,   /* type                  */
+			 1,                 /* dimension             */
+			 0,0,               /* offset, nelem         */
+			 1,                 /* period                */
+			 0);                /* phase                 */
+      /* compute symbol memory size */
+      size = X_sample_symbol_info_list_val[i].dimension * tsp_type_size[X_sample_symbol_info_list_val[i].type];
+      /* update symbol max size */
+      if (taille_max_symbol< size)
       {
 	taille_max_symbol= size;
       }
@@ -452,16 +465,8 @@ int STUB_GLU_init(GLU_handle_t* this, int fallback_argc, char* fallback_argv[])
 int  
 STUB_GLU_get_ssi_list(GLU_handle_t* h_glu,TSP_sample_symbol_info_list_t* symbol_list)
 {
-  int i = 0;
-  TSP_sample_symbol_info_t* p; 
-	
-  for (p=X_sample_symbol_info_list_val; p->name!=0 ; p++)
-    {
-      i++;
-    }
-
-  symbol_list->TSP_sample_symbol_info_list_t_len = i;
-  symbol_list->TSP_sample_symbol_info_list_t_val = X_sample_symbol_info_list_val;
+  symbol_list->TSP_sample_symbol_info_list_t_len = X_SSI_list.TSP_sample_symbol_info_list_t_len;
+  symbol_list->TSP_sample_symbol_info_list_t_val = X_SSI_list.TSP_sample_symbol_info_list_t_val;
 	    
   return TRUE;
 } /* STUB_GLU_get_ssi_list */
