@@ -56,25 +56,11 @@ FIND_PROGRAM(DOXYGEN_DOT_EXECUTABLE
 IF (NOT DOXYGEN_FIND_QUIETLY)
   IF (DOXYGEN_DOT_EXECUTABLE)
     MESSAGE(STATUS "Looking for dot tool... - found ${DOXYGEN_DOT_EXECUTABLE}")
+    GET_FILENAME_COMPONENT(DOXYGEN_DOT_PATH ${DOXYGEN_DOT_EXECUTABLE} PATH CACHE)
   ELSE (DOXYGEN_DOT_EXECUTABLE)
     MESSAGE(STATUS "Looking for dot tool... - NOT found")
   ENDIF (DOXYGEN_DOT_EXECUTABLE)
 ENDIF (NOT DOXYGEN_FIND_QUIETLY)
-
-
-# The Doxyfile wants the path to Dot, not the entire path and executable
-# so for convenience, I'll add another search for DOXYGEN_DOT_PATH.
-FIND_PATH(DOXYGEN_DOT_PATH
-  dot
-  "C:/Program Files/ATT/Graphviz/bin"
-  [HKEY_LOCAL_MACHINE\\SOFTWARE\\ATT\\Graphviz;InstallPath]/bin
-  /Applications/Graphviz.app/Contents/MacOS
-  /Applications/Doxygen.app/Contents/Resources
-  /Applications/Doxygen.app/Contents/MacOS
-  /usr/bin
-  /usr/local/bin
-  DOC "Path to the Graphviz Dot tool"
-)
 
 MARK_AS_ADVANCED(
   DOXYGEN_FOUND,
