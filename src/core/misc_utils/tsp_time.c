@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/misc_utils/tsp_time.c,v 1.10 2006-02-26 13:36:06 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/misc_utils/tsp_time.c,v 1.11 2006-10-18 09:58:48 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -35,13 +35,16 @@ Purpose   : Interface for tsp time functions
 -----------------------------------------------------------------------
  */
 
-#include "tsp_sys_headers.h"
 #include <time.h>
+
+#include "tsp_sys_headers.h"
 
 #include "tsp_time.h"
 
-
-tsp_hrtime_t tsp_gethrtime(void)
+#if defined (WIN32)
+#include <rpc/rpc.h>
+#endif
+tsp_hrtime_t tsp_gethrtime()
 {
 #ifdef TSP_SYSTEM_HAVE_GETHRTIME
   return gethrtime();
@@ -67,7 +70,14 @@ int tsp_usleep(int useconds)
 #ifdef TSP_SYSTEM_HAVE_THREADSAFE_USLEEP
   return usleep(useconds);
 #else
+  
+#ifdef TSP_SYSTEM_USE_WIN32_SLEEP
+  Sleep(useconds / 1000);
+  return 0;
+#else
   ERROR__you_should_try_to_find_some_kind_of_wait_function
+#endif /*TSP_SYSTEM_HAVE_SLEEP*/
+
 #endif /*TSP_SYSTEM_HAVE_THREADSAFE_USLEEP*/
 
 #endif /*TSP_SYSTEM_HAVE_NANOSLEEP*/

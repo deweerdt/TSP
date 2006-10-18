@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_common_status.h,v 1.1 2006-05-10 12:11:40 erk Exp $
+$Id: tsp_common_status.h,v 1.2 2006-10-18 09:58:48 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -55,10 +55,10 @@ Purpose   : Main interface for the producer module
 
 BEGIN_C_DECLS
 
-int32_t
+_EXPORT_TSP_COMMON int32_t
 TSP_STATUS_print(FILE* fs, int32_t TSPStatus);
 
-int32_t
+_EXPORT_TSP_COMMON int32_t
 TSP_STATUS_sprint(char* buffer, int32_t buffer_len, int32_t TSPStatus);
 
 /** @} */

@@ -1,6 +1,6 @@
 /*
 
-$Id: generic_consumer.c,v 1.15 2006-04-27 00:00:33 erk Exp $
+$Id: generic_consumer.c,v 1.16 2006-10-18 09:58:47 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -34,11 +34,15 @@ Purpose   : Generic tsp consumer
 
 -----------------------------------------------------------------------
 */
-#include <unistd.h>
 #include <stdlib.h>
-#include <assert.h>
-#include <string.h>
+#ifdef WIN32
+    #define assert(exp)     ((void)0)
+#else
+    #include <unistd.h>
+    #include <assert.h>
 #include <libgen.h>
+#endif
+#include <string.h>
 #include <stdarg.h>
 
 #include <tsp_sys_headers.h>
@@ -100,6 +104,7 @@ generic_consumer_cmd(const char* generic_consumer_request_string) {
   char*              cmdstr_abbrev;
 
   cmdstr_cpy = strdup(generic_consumer_request_string);
+
   cmdbasename = basename(cmdstr_cpy);
 
   retval = E_TSP_REQUEST_INVALID;

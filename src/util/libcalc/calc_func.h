@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libcalc/calc_func.h,v 1.5 2006-04-27 00:13:15 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libcalc/calc_func.h,v 1.6 2006-10-18 09:58:49 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -38,14 +38,26 @@ Purpose   : Implementation fotr demo purpose
 #ifndef CALC_FUNC_H
 #define CALC_FUNC_H
 
+#include <tsp_abs_types.h>
+
+#undef _EXPORT_TSP_CALC
+#if defined (WIN32) && defined (TSP_SHARED_LIBS)
+#  ifdef tsp_calc_EXPORTS
+#    define _EXPORT_TSP_CALC __declspec(dllexport) 
+#  else
+#    define _EXPORT_TSP_CALC __declspec(dllimport) 
+#  endif
+#else
+#  define _EXPORT_TSP_CALC
+#endif
 
 BEGIN_C_DECLS
 
 /* return nice value for plotting */
-double calc_func (int index, double my_time);
+_EXPORT_TSP_CALC double calc_func (int index, double my_time);
 
 /* return nice value for plotting */
-char calc_func_char (int index, double my_time);
+_EXPORT_TSP_CALC char calc_func_char (int index, double my_time);
 
 
 

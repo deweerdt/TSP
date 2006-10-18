@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/include/Attic/tsp_simple_trace.h,v 1.20 2006-05-26 12:20:42 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/Attic/tsp_simple_trace.h,v 1.21 2006-10-18 09:58:48 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -55,7 +55,7 @@ Purpose   : Some trace macro
            printf text; printf("\n"); fflush(stdout);\
     }\
 } 
-#ifdef __GNUC__       
+#if defined(__GNUC__) || defined(_MSC_VER)
 #  define SIMPLE_TRACE(level,src,text) SIMPLE_TRACE_FUNC(level,src,__FUNCTION__,text)
 #else 
 #  define SIMPLE_TRACE(level,src,text) SIMPLE_TRACE_FUNC(level,src,"where?",text)

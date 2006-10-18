@@ -1,7 +1,7 @@
-prefix=/opt/tsp-@PACKAGE_VERSION@
-exec_prefix=/opt/tsp-@PACKAGE_VERSION@
-libdir=/opt/tsp-@PACKAGE_VERSION@/lib
-includedir=/opt/tsp-@PACKAGE_VERSION@/include
+prefix=@CMAKE_INSTALL_PREFIX@
+exec_prefix=@CMAKE_INSTALL_PREFIX@/bin
+libdir=@CMAKE_INSTALL_PREFIX@/lib
+includedir=@CMAKE_INSTALL_PREFIX@/include
 
 
 Name: tsp

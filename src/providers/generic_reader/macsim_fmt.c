@@ -1,6 +1,6 @@
 /*
 
-$Id: macsim_fmt.c,v 1.10 2006-06-28 13:00:48 erk Exp $
+$Id: macsim_fmt.c,v 1.11 2006-10-18 09:58:48 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -42,7 +42,7 @@ Purpose   : Manipulation function of macsim file
 #include <malloc.h>
 #include <ctype.h>
 
-#include <bb_core.h>
+/* #include <bb_core.h> */
 #include <tsp_rpc.h>
 #include <generic_reader.h>
 #include <macsim_fmt.h>

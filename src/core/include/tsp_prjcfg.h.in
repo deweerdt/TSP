@@ -2,7 +2,7 @@
 
 @configure_input@
 
-$Id: tsp_prjcfg.h.in,v 1.8 2006-02-26 13:36:05 erk Exp $
+$Id: tsp_prjcfg.h.in,v 1.9 2006-10-18 09:58:48 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -50,6 +50,38 @@ Purpose   : some includes
 #define TSP_SOURCE_VERSION "@PACKAGE_VERSION@"
 
 #include <tsp_simple_trace.h>
+
+/*
+ * The following macro is used under windows system to declare 
+ * the DLLs tsp_provider, tsp_common entries points
+ */
+#undef _EXPORT_TSP_PROVIDER
+#undef _EXPORT_TSP_COMMON
+#if defined (WIN32) && defined (TSP_SHARED_LIBS)
+#  ifdef tsp_provider_EXPORTS
+#    define _EXPORT_TSP_PROVIDER __declspec(dllexport)
+#  else
+#    define _EXPORT_TSP_PROVIDER __declspec(dllimport)
+#  endif
+#  ifdef tsp_common_EXPORTS
+#    define _EXPORT_TSP_COMMON __declspec(dllexport) 
+#  else
+#    define _EXPORT_TSP_COMMON __declspec(dllimport) 
+#  endif
+#else
+#  define _EXPORT_TSP_PROVIDER
+#  define _EXPORT_TSP_COMMON
+#endif
+
+/*
+ * The following macro is used under windows system to declare 
+ * the DLLs tsp_provider, tsp_common constant variables
+ */
+#if defined (_EXPORT_TSP_COMMON) && defined(WIN32)
+#  define _EXTERN_TSP_COMMON extern _EXPORT_TSP_COMMON
+#else
+#  define _EXTERN_TSP_COMMON extern
+#endif
 
 /* 
  * The TSP doxygen modules are now defined

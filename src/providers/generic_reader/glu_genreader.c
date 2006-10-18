@@ -1,6 +1,6 @@
 /*
 
-$Id: glu_genreader.c,v 1.8 2006-06-28 13:00:48 erk Exp $
+$Id: glu_genreader.c,v 1.9 2006-10-18 09:58:48 erk Exp $
 
 -----------------------------------------------------------------------
  
@@ -46,8 +46,6 @@ Purpose   : Implementation for the glue_server
 #include <tsp_common.h>
 #include <glu_genreader.h>
 
-#define _LIBUTIL_REENTRANT 1
-#include "libUTIL.h"
 
 #define GLU_STREAM_INIT_USAGE "TSP RES Reader usage : filename[.res]  [-eof N]\n\t\twait N seconds after EOF to check file increment, default = 0 (NO WAIT)\n"
 #define GLU_RES_FILE_ARG_NUMBER 1

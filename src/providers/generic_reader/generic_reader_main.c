@@ -1,6 +1,6 @@
 /*
 
-$Id: generic_reader_main.c,v 1.6 2006-05-29 19:27:06 erk Exp $
+$Id: generic_reader_main.c,v 1.7 2006-10-18 09:58:48 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -138,6 +138,7 @@ int main(int argc, char *argv[])
     TSP_provider_urls(TSP_PUBLISH_URLS_PRINT);
     /* Wait provider and through catched signals */
     sigwait(&allsigs, &whatsig);
+
     TSP_provider_end();
     retcode = TSP_STATUS_OK;    
   } 

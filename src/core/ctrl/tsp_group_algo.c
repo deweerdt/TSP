@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_group_algo.c,v 1.21 2006-05-03 21:16:38 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_group_algo.c,v 1.22 2006-10-18 09:58:48 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -38,7 +38,11 @@ and use groups
  */
 
 #include <string.h>
-
+#ifdef WIN32
+    #define assert(exp)     ((void)0)
+#else
+    #include <assert.h>
+#endif
 #include "tsp_sys_headers.h"
 
 #include "tsp_group_algo.h"
@@ -233,7 +237,7 @@ TSP_group_algo_allocate_group_table(const TSP_sample_symbol_info_list_t* symbols
 
     }
       
-  STRACE_DEBUG(("Max group size = %d", table->max_group_len));
+  STRACE_INFO(("Max group size = %d", table->max_group_len));
   return table;
 }
                                                              
@@ -303,9 +307,10 @@ TSP_group_algo_create_symbols_table(const TSP_sample_symbol_info_list_t* in_symb
 		table->groups[group_id].items[rank].offset       = in_info->offset;
 		table->groups[group_id].items[rank].nelem        = in_info->nelem;
 		
-		/*complete les infos)*/		  
+		/*complete les infos)*/
+        /* cast en int32_t pour Windows : WIN32 */
 		table->groups[group_id].items[rank].data = 
-		  TSP_datapool_get_symbol_value(datapool, in_info->provider_global_index)
+		  (int32_t)TSP_datapool_get_symbol_value(datapool, in_info->provider_global_index)
 		  + in_info->offset * TSP_data_channel_get_encoded_size(in_info->type);
 		  
 		  /* 2 - In the out symbol table */

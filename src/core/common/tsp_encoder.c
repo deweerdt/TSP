@@ -1,7 +1,7 @@
 
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/common/tsp_encoder.c,v 1.6 2006-06-05 14:31:03 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/common/tsp_encoder.c,v 1.7 2006-10-18 09:58:48 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -36,8 +36,7 @@ Purpose   :  Implementation for the functions used to encode the type
 -----------------------------------------------------------------------
  */
 
-
-#include <rpc/types.h>
+#include <rpc/rpc.h>
 #include <rpc/xdr.h>
 
 #include <tsp_const_def.h>
@@ -46,11 +45,24 @@ Purpose   :  Implementation for the functions used to encode the type
 #include <tsp_encoder.h>
 #include <tsp_decoder.h>
 
+#if defined (WIN32)
+    #include <malloc.h>
+    #define assert(exp)     ((void)0)
+#else
+    #include <assert.h>
+#endif
+
 uint32_t TSP_data_channel_double_encoder(void* v_double, uint32_t dimension,  char* out_buf, uint32_t size)
 {
 
   double *pt_double;
   uint32_t i,taille;
+
+#ifndef TSP_NO_XDR_ENCODE
+
+  XDR xhandle;
+
+#endif /*TSP_NO_XDR_ENCODE*/
 
   taille= sizeof(double) * dimension;
   if(size  < taille )
@@ -62,9 +74,6 @@ uint32_t TSP_data_channel_double_encoder(void* v_double, uint32_t dimension,  ch
   pt_double=(double*)v_double;
 
 #ifndef TSP_NO_XDR_ENCODE
-
-  XDR xhandle;
-  
  
   xdrmem_create(&xhandle, out_buf,  size, XDR_ENCODE);
 
@@ -102,6 +111,12 @@ uint32_t TSP_data_channel_float_encoder(void* v_float,uint32_t dimension,  char*
   float *pt_float;
   uint32_t i,taille;
 
+#ifndef TSP_NO_XDR_ENCODE
+
+  XDR xhandle;
+
+#endif /*TSP_NO_XDR_ENCODE*/
+
   taille= sizeof(float) * dimension;
   if(size  < taille )
   {
@@ -113,9 +128,6 @@ uint32_t TSP_data_channel_float_encoder(void* v_float,uint32_t dimension,  char*
 
 #ifndef TSP_NO_XDR_ENCODE
 
-  XDR xhandle;
-  
- 
   xdrmem_create(&xhandle, out_buf,  size, XDR_ENCODE);
 
   for(i=0;i<dimension;++i)
@@ -149,7 +161,7 @@ uint32_t TSP_data_channel_int8_encoder(void* v_int8,uint32_t dimension,  char* o
 
   int8_t *pt_int8;
   uint32_t i;
-  int32_t  temp[dimension];
+  int32_t*  temp = alloca(sizeof(int32_t)*dimension);
 
   pt_int8=(int8_t*)v_int8;
 
@@ -167,7 +179,7 @@ uint32_t TSP_data_channel_int16_encoder(void* v_int16,uint32_t dimension,  char*
 {
   int16_t *pt_int16;
   uint32_t i;
-  int32_t  temp[dimension];
+  int32_t*  temp = alloca(sizeof(int32_t)*dimension);
 
   pt_int16=(int16_t*)v_int16;
 
@@ -183,6 +195,12 @@ uint32_t TSP_data_channel_int32_encoder(void* v_int32,uint32_t dimension,  char*
   int32_t *pt_int32;
   uint32_t i,taille;
 
+#ifndef TSP_NO_XDR_ENCODE
+
+  XDR xhandle;
+
+#endif /*TSP_NO_XDR_ENCODE*/
+
   taille= TSP_SIZEOF_ENCODED_INT32 * dimension;
   if(size  < taille )
   {
@@ -194,9 +212,6 @@ uint32_t TSP_data_channel_int32_encoder(void* v_int32,uint32_t dimension,  char*
 
 #ifndef TSP_NO_XDR_ENCODE
 
-  XDR xhandle;
-  
- 
   xdrmem_create(&xhandle, out_buf,  size, XDR_ENCODE);
 
   for(i=0;i<dimension;++i)
@@ -229,6 +244,12 @@ uint32_t TSP_data_channel_int64_encoder(void* v_int64,uint32_t dimension,  char*
   int64_t *pt_int64;
   uint32_t i,taille;
 
+#ifndef TSP_NO_XDR_ENCODE
+
+  XDR xhandle;
+
+#endif /*TSP_NO_XDR_ENCODE*/
+
   taille= TSP_SIZEOF_ENCODED_INT64 * dimension;
   if(size  < taille )
   {
@@ -240,9 +261,6 @@ uint32_t TSP_data_channel_int64_encoder(void* v_int64,uint32_t dimension,  char*
 
 #ifndef TSP_NO_XDR_ENCODE
 
-  XDR xhandle;
-  
- 
   xdrmem_create(&xhandle, out_buf,  size, XDR_ENCODE);
 
   for(i=0;i<dimension;++i)
@@ -275,7 +293,7 @@ uint32_t TSP_data_channel_uint8_encoder(void* v_uint8,uint32_t dimension,  char*
 
   uint8_t *pt_uint8;
   uint32_t i;
-  uint32_t  temp[dimension];
+  uint32_t*  temp = alloca(sizeof(int32_t)*dimension);
 
   pt_uint8=(uint8_t*)v_uint8;
 
@@ -290,7 +308,7 @@ uint32_t TSP_data_channel_uint16_encoder(void* v_uint16,uint32_t dimension,  cha
 {
   uint16_t *pt_uint16;
   uint32_t i;
-  uint32_t  temp[dimension];
+  uint32_t*  temp = alloca(sizeof(int32_t)*dimension);
 
   pt_uint16=(uint16_t*)v_uint16;
 
@@ -306,6 +324,12 @@ uint32_t TSP_data_channel_uint32_encoder(void* v_uint32,uint32_t dimension,  cha
   uint32_t *pt_uint32;
   uint32_t i,taille;
 
+#ifndef TSP_NO_XDR_ENCODE
+
+  XDR xhandle;
+
+#endif /*TSP_NO_XDR_ENCODE*/
+
   taille= TSP_SIZEOF_ENCODED_UINT32 * dimension;
   if(size  < taille )
   {
@@ -317,9 +341,6 @@ uint32_t TSP_data_channel_uint32_encoder(void* v_uint32,uint32_t dimension,  cha
 
 #ifndef TSP_NO_XDR_ENCODE
 
-  XDR xhandle;
-  
- 
   xdrmem_create(&xhandle, out_buf,  size, XDR_ENCODE);
 
   for(i=0;i<dimension;++i)
@@ -353,6 +374,12 @@ uint32_t TSP_data_channel_uint64_encoder(void* v_uint64,uint32_t dimension,  cha
   uint64_t *pt_uint64;
   uint32_t i,taille;
 
+#ifndef TSP_NO_XDR_ENCODE
+
+  XDR xhandle;
+
+#endif /*TSP_NO_XDR_ENCODE*/
+
   taille= TSP_SIZEOF_ENCODED_UINT64 * dimension;
   if(size  < taille )
   {
@@ -364,9 +391,6 @@ uint32_t TSP_data_channel_uint64_encoder(void* v_uint64,uint32_t dimension,  cha
 
 #ifndef TSP_NO_XDR_ENCODE
 
-  XDR xhandle;
-  
- 
   xdrmem_create(&xhandle, out_buf,  size, XDR_ENCODE);
 
   for(i=0;i<dimension;++i)
@@ -399,7 +423,7 @@ uint32_t TSP_data_channel_char_encoder(void* v_char,uint32_t dimension,  char* o
 {
   uint8_t *pt_char;
   uint32_t i;
-  uint32_t  temp[dimension];
+  uint32_t*  temp = alloca(sizeof(int32_t)*dimension);
 
   pt_char=(uint8_t*)v_char;
 
@@ -415,7 +439,7 @@ uint32_t TSP_data_channel_uchar_encoder(void* v_uchar,uint32_t dimension,  char*
 
   uint8_t  *pt_uchar;
   uint32_t  i;
-  uint32_t  temp[dimension];
+  uint32_t*  temp = alloca(sizeof(int32_t)*dimension);
 
   pt_uchar=(uint8_t*)v_uchar;
 
@@ -431,7 +455,7 @@ uint32_t TSP_data_channel_user_encoder(void* v_user,uint32_t dimension,  char* o
 
   uint8_t *pt_user;
   uint32_t  i;
-  uint32_t  temp[dimension];
+  uint32_t*  temp = alloca(sizeof(int32_t)*dimension);
 
   pt_user=(uint8_t*)v_user;
 

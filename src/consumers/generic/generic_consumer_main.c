@@ -1,6 +1,6 @@
 /*
 
-$Id: generic_consumer_main.c,v 1.9 2006-04-24 22:17:47 erk Exp $
+$Id: generic_consumer_main.c,v 1.10 2006-10-18 09:58:47 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -36,9 +36,14 @@ Purpose   : Generic tsp consumer
 */
 #include <stdio.h>
 #include <malloc.h>
-#include <unistd.h>
 #include <stdlib.h>
-#include <assert.h>
+#ifdef WIN32
+    #define assert(exp)     ((void)0)
+    #include  "getopt.h"
+#else
+    #include <unistd.h>
+    #include <assert.h>
+#endif
 #include <string.h>
 #include <signal.h>
 
@@ -93,8 +98,10 @@ my_sighandler(int signum) {
 int 
 main(int argc, char *argv[]){
 
+#if !defined (WIN32)
   struct sigaction   my_action;
   struct sigaction   old_action;
+#endif
   int32_t            retcode=0;
   /* Main options handling */
   /*  char*         error_string;*/
@@ -104,12 +111,17 @@ main(int argc, char *argv[]){
   generic_consumer_request_t req;
 
   opt_ok            = 1;   
-  
+
+#if defined (WIN32)
+  /* Intercept the CTRL-C signal */  
+  (void) signal(SIGINT, my_sighandler);
+#else
   /* install SIGINT handler (POSIX way) */
   my_action.sa_handler = &my_sighandler;  
   sigfillset(&my_action.sa_mask);
   my_action.sa_flags = SA_RESTART;
   sigaction(SIGINT,&my_action,&old_action);    
+#endif
 
   if(TSP_STATUS_OK!=TSP_consumer_init(&argc, &argv)) {
       STRACE_ERROR(("TSP init failed"));
@@ -122,7 +134,7 @@ main(int argc, char *argv[]){
   while (opt_ok && (EOF != (c_opt = getopt(argc,argv,"u:hnsv")))) {    
     switch (c_opt) {
     case 'u':
-      opt_ok+=2;
+      opt_ok+=2;      
       req.provider_url = strdup(optarg);
       break;
     case 'n':

@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_server.c,v 1.31 2006-05-03 21:16:38 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_server.c,v 1.32 2006-10-18 09:58:48 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -37,10 +37,14 @@ Purpose   :
 
 
 #include <rpc/rpc.h>
-#include <netdb.h>
-#include <rpc/pmap_clnt.h>
 #include <stdio.h>
-#include <unistd.h> 
+#ifndef WIN32
+    #include <netdb.h>
+    #include <unistd.h> 
+    #include <rpc/pmap_clnt.h>
+#else
+    #include <rpc/pmap_cln.h>
+#endif
 
 #include <tsp_sys_headers.h>
 #include <tsp_glu.h>
@@ -66,8 +70,6 @@ Purpose   :
 
 void
 tsp_rpc_1(struct svc_req *rqstp, register SVCXPRT *transp) ;
-
-#ifndef TSP_RPC_CLEANUP
 
 #define TSP_URL_MAXLENGTH 256
 
@@ -254,14 +256,14 @@ static int TSP_rpc_init(TSP_rpc_request_config_t *config)
   int rpcport = -1;
 
   /* look for a free port */
-  while(rpcport && config->server_number<TSP_MAX_SERVER_NUMBER)
+  while(rpcport && (config->server_number<TSP_MAX_SERVER_NUMBER))
     {
-      rpcport = getrpcport("localhost", TSP_get_progid(config->server_number), TSP_RPC_VERSION_INITIAL, IPPROTO_TCP);
+      rpcport = (int)getrpcport("localhost", TSP_get_progid(config->server_number), TSP_RPC_VERSION_INITIAL, IPPROTO_TCP);
       if(rpcport)
-	config->server_number++;
+	    config->server_number++;
     }
 
-  if(rpcport && config->server_number >= TSP_MAX_SERVER_NUMBER)
+  if(rpcport && (config->server_number >= TSP_MAX_SERVER_NUMBER))
       config->server_number = -1;
 
   return config->server_number;
@@ -314,8 +316,12 @@ int TSP_rpc_request(TSP_provider_request_handler_t* this)
   this->run                = TSP_rpc_request_run;
   this->stop               = TSP_rpc_request_stop;
   this->url                = TSP_rpc_request_url;
+#if defined (WIN32)
+  /* structure pthread_t different under Windows */
+  this->tid.p              = -1;
+#else
   this->tid                = (pthread_t)-1;
-
+#endif
   this->config_param       = calloc(1, sizeof(TSP_rpc_request_config_t));
 
   this->status             = TSP_RQH_STATUS_IDLE;
@@ -432,16 +438,3 @@ TSP_answer_extended_information_t* tsp_request_extended_information_1_svc(TSP_re
 
 }
 
-#else
-int main(void)
-{
-  int servernumber;
-  for(servernumber=0; servernumber<TSP_MAX_SERVER_NUMBER; servernumber++)
-    {
-      svc_unregister (TSP_get_progid(servernumber), TSP_RPC_VERSION_INITIAL);
-      pmap_unset (TSP_get_progid(servernumber), TSP_RPC_VERSION_INITIAL);
-    }
-  return 0;
-}
-
-#endif

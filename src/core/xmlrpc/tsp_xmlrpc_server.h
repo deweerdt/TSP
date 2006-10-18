@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_xmlrpc_server.h,v 1.3 2006-02-26 13:36:06 erk Exp $
+$Id: tsp_xmlrpc_server.h,v 1.4 2006-10-18 09:58:48 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -49,11 +49,11 @@ Purpose   :
  */
 
 
-int TSP_xmlrpc_request(TSP_provider_request_handler_t* this);
-int TSP_xmlrpc_request_config(TSP_provider_request_handler_t* this);
-void* TSP_xmlrpc_request_run(TSP_provider_request_handler_t* this);
-int TSP_xmlrpc_request_stop(TSP_provider_request_handler_t* this);
-char* TSP_xmlrpc_request_url(TSP_provider_request_handler_t* this);
+int TSP_xmlrpc_request(TSP_provider_request_handler_t* cthis);
+int TSP_xmlrpc_request_config(TSP_provider_request_handler_t* cthis);
+void* TSP_xmlrpc_request_run(TSP_provider_request_handler_t* cthis);
+int TSP_xmlrpc_request_stop(TSP_provider_request_handler_t* cthis);
+char* TSP_xmlrpc_request_url(TSP_provider_request_handler_t* cthis);
 
 /** @} end group TSP_XMLRPCRequestHandlerLib */ 
 

@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.h,v 1.19 2006-05-05 15:18:05 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.h,v 1.20 2006-10-18 09:58:48 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -55,7 +55,7 @@ int TSP_add_session(channel_id_t* new_channel_id, GLU_handle_t* glu_h);
 /**
  * Session initialisation.
  */
-void TSP_session_init(void);
+void TSP_session_init();
 
 /**
  * Close a session.
@@ -175,7 +175,7 @@ int TSP_session_get_garbage_session(channel_id_t* channel_id);
  * Get current total number of session.
  * @return Total number of session
  */
-int TSP_session_get_nb_session(void);
+int TSP_session_get_nb_session();
 
 /**
  * Change session state to target newState.

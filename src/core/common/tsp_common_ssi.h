@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_common_ssi.h,v 1.9 2006-05-28 14:37:13 erk Exp $
+$Id: tsp_common_ssi.h,v 1.10 2006-10-18 09:58:48 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -40,6 +40,12 @@ Purpose   : Main interface for the producer module
 
 #include <tsp_prjcfg.h>
 #include <tsp_datastruct.h>
+#ifdef WIN32
+    #define assert(exp)     ((void)0)
+#else
+    #include <assert.h>
+#endif
+
 
 /**
  * @defgroup TSP_CommonLib_SSI Sample Symbol Information Library Handling
@@ -70,7 +76,7 @@ BEGIN_C_DECLS
  * @param[in] phase the symbol phase
  * return the new tsp_sample_symbol_info_t
  */
-TSP_sample_symbol_info_t*
+_EXPORT_TSP_COMMON TSP_sample_symbol_info_t*
 TSP_SSI_new(const char* name,
 	    int32_t pgi,
 	    int32_t pgridx,
@@ -87,7 +93,7 @@ TSP_SSI_new(const char* name,
  * @param[in] ssi the symbols list to destruct
  * return  TSP_STATUS_OK if ok
  */
-int32_t
+_EXPORT_TSP_COMMON int32_t
 TSP_SSI_delete(TSP_sample_symbol_info_t** ssi);
 
 /**
@@ -105,7 +111,7 @@ TSP_SSI_delete(TSP_sample_symbol_info_t** ssi);
  * @param[in] phase the symbol phase
  * return  TSP_STATUS_OK if ok
  */
-int32_t
+_EXPORT_TSP_COMMON int32_t
 TSP_SSI_initialize(TSP_sample_symbol_info_t* ssi,
 		   const char* name,
 		   int32_t pgi,
@@ -123,7 +129,7 @@ TSP_SSI_initialize(TSP_sample_symbol_info_t* ssi,
  * @param[in] ssi the symbols list to destruct
  * return  TSP_STATUS_OK if ok
  */
-int32_t
+_EXPORT_TSP_COMMON int32_t
 TSP_SSI_finalize(TSP_sample_symbol_info_t* ssi);
 
 /**
@@ -136,7 +142,7 @@ TSP_SSI_finalize(TSP_sample_symbol_info_t* ssi);
  *                On return the initialized structure.
  * @return TSP_STATUS_OK on success
  */
-int32_t 
+_EXPORT_TSP_COMMON int32_t 
 TSP_SSI_initialize_default(TSP_sample_symbol_info_t* ssi);
 
 /**
@@ -146,7 +152,7 @@ TSP_SSI_initialize_default(TSP_sample_symbol_info_t* ssi);
  * @param[in] period the symbol period
  * return  TSP_STATUS_OK if ok
  */
-int32_t 
+_EXPORT_TSP_COMMON int32_t 
 TSP_SSI_initialize_request_minimal(TSP_sample_symbol_info_t* ssi,
 				   const char* name,
 				   int32_t period);
@@ -162,7 +168,7 @@ TSP_SSI_initialize_request_minimal(TSP_sample_symbol_info_t* ssi,
  * @param[in] phase the symbol phase
  * return  TSP_STATUS_OK if ok
  */
-int32_t 
+_EXPORT_TSP_COMMON int32_t 
 TSP_SSI_initialize_request_full(TSP_sample_symbol_info_t* ssi,
 				const char* name,
 				int32_t type,
@@ -181,7 +187,7 @@ TSP_SSI_initialize_request_full(TSP_sample_symbol_info_t* ssi,
  * @param[in]     src_ssi
  * return  TSP_STATUS_OK if ok 
  */
-int32_t
+_EXPORT_TSP_COMMON int32_t
 TSP_SSI_copy(TSP_sample_symbol_info_t* dst_ssi, 
 	     const TSP_sample_symbol_info_t src_ssi);
 
@@ -191,7 +197,7 @@ TSP_SSI_copy(TSP_sample_symbol_info_t* dst_ssi,
  * @param[in]  nbSSI the number of SSI in the to be created in the list.
  * @return the allocated list on success NULL on failure.
  */
-TSP_sample_symbol_info_list_t*
+_EXPORT_TSP_COMMON TSP_sample_symbol_info_list_t*
 TSP_SSIList_new(int32_t nbSSI);
 
 /**
@@ -199,7 +205,7 @@ TSP_SSIList_new(int32_t nbSSI);
  * @param[in] ssi the symbols list to destruct
  * return  TSP_STATUS_OK if ok
  */
-int32_t
+_EXPORT_TSP_COMMON int32_t
 TSP_SSIList_delete(TSP_sample_symbol_info_list_t** ssi);
 
 /**
@@ -212,7 +218,7 @@ TSP_SSIList_delete(TSP_sample_symbol_info_list_t** ssi);
  * @post ssil contains the description of a SSIList with 
  *       nbSSI symbols. Each item of the list has been default initialized. 
  */
-int32_t 
+_EXPORT_TSP_COMMON int32_t 
 TSP_SSIList_initialize(TSP_sample_symbol_info_list_t* ssil,
 		       int32_t nbSSI);
 
@@ -221,7 +227,7 @@ TSP_SSIList_initialize(TSP_sample_symbol_info_list_t* ssil,
  * @param[in] ssil the symbols list to destruct
  * return  TSP_STATUS_OK if ok
  */
-int32_t 
+_EXPORT_TSP_COMMON int32_t 
 TSP_SSIList_finalize(TSP_sample_symbol_info_list_t* ssil);
 
 /**
@@ -230,15 +236,15 @@ TSP_SSIList_finalize(TSP_sample_symbol_info_list_t* ssil);
  * @param[in] src_ssil the symbols list copy source
  * return  TSP_STATUS_OK if ok
  */
-int32_t
+_EXPORT_TSP_COMMON int32_t
 TSP_SSIList_copy(TSP_sample_symbol_info_list_t* dst_ssil, 
 		 const TSP_sample_symbol_info_list_t  src_ssil);
 
 
-TSP_sample_symbol_info_t*
+_EXPORT_TSP_COMMON TSP_sample_symbol_info_t*
 TSP_SSIList_getSSI(TSP_sample_symbol_info_list_t ssil, uint32_t index);
 
-uint32_t
+_EXPORT_TSP_COMMON uint32_t
 TSP_SSIList_getSize(const TSP_sample_symbol_info_list_t ssil);
 
 /** @} */

@@ -4,42 +4,36 @@
 ##############################
 # Find host type
 ##############################
-setenv HOST_ARCH @HOST_TARGET@
+setenv HOST_ARCH @CMAKE_SYSTEM_NAME@
 echo "Using host target <$HOST_ARCH>"
 if ( "$HOST_ARCH" != "linux") then
-	alias make gmake
+    alias make gmake
 endif
-##############################
-# HOME_EXEC_BASE / HOME_EXEC_CURRENT
-##############################
+
+
 # %%tsp_base%% will be set by the configure script 
-setenv TSP_BASE @TSP_BASE@
-echo "Using TSP_BASE=$TSP_BASE"
-setenv HOME_EXEC_BASE $TSP_BASE/exec
-setenv HOME_EXEC_CURRENT $HOME_EXEC_BASE/current
+setenv TSP_SRC_BASE @PROJECT_SOURCE_DIR@
+setenv TSP_BIN_BASE @PROJECT_BINARY_DIR@
+echo   "Using TSP_SRC_BASE=${TSP_SRC_BASE}"
+echo   "Using TSP_BIN_BASE=${TSP_BIN_BASE}"
 
 ##############################
 # Paths
 ##############################
-setenv PATH ${TSP_BASE}/src/scripts:${HOME_EXEC_BASE}/${HOST_ARCH}/Debug/bin:${HOME_EXEC_BASE}/scripts:${HOME_EXEC_CURRENT}/${HOST_ARCH}/debug/bin:${HOME_EXEC_CURRENT}/scripts:${PATH}
+setenv PATH ${TSP_BIN_BASE}/${HOST_ARCH}/Debug/bin:${TSP_BIN_BASE}/scripts:${PATH}
 
 ##############################
 # DEVBASE
 ##############################
-setenv DEVBASE $TSP_BASE
-echo "Using DEVBASE=$DEVBASE"
-
 if ( ! $?STRACE_DEBUG ) then 
 	setenv STRACE_DEBUG 1
 endif
-echo "Using STRACE_DEBUG=$STRACE_DEBUG"
+echo "Using STRACE_DEBUG=${STRACE_DEBUG}"
 
 
 ##############################
 # ALIAS
 ##############################
-alias go_bin 'cd ${HOME_EXEC_CURRENT}/bin'
-alias go_tsp 'cd ${TSP_BASE}'
-alias go_scripts 'cd ${TSP_BASE}/src/scripts'
-alias go_tests 'cd ${TSP_BASE}/tests'
+alias go_bin_tsp 'cd ${TSP_BIN_BASE}/${HOST_ARCH}/Debug/bin'
+alias go_src_tsp 'cd ${TSP_SRC_BASE}'
 

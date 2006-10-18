@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_common_request.c,v 1.1 2006-04-07 09:30:36 erk Exp $
+$Id: tsp_common_request.c,v 1.2 2006-10-18 09:58:48 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -43,6 +43,12 @@ Purpose   : Main implementation for the producer module
 #include <tsp_const_def.h>
 #define TSP_COMMON_REQUEST_C
 #include <tsp_common_request.h>
+
+#ifdef WIN32
+    #define assert(exp)     ((void)0)
+#else
+    #include <assert.h>
+#endif
 
 void TSP_request_create(TSP_request_t* req, TSP_request_type_t req_type) {
   assert(req);

@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.57 2006-05-05 15:18:05 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.58 2006-10-18 09:58:48 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -307,6 +307,9 @@ TSP_consumer_init(int* argc, char** argv[]) {
   int found_stream_stop = FALSE;
   char* p;
   int32_t retcode = TSP_STATUS_OK;
+#if defined (WIN32)
+  WSADATA WSAData;
+#endif
 
   X_argv = (char**)calloc(*argc, sizeof(char*));
   X_argc = *argc;
@@ -392,6 +395,13 @@ TSP_consumer_init(int* argc, char** argv[]) {
   *argc = final_argc;
   *argv = X_argv;
 
+#if defined (WIN32)  
+  if (WSAStartup(MAKEWORD(2,2), &WSAData)) {
+	WSACleanup();
+	retcode = TSP_STATUS_NOK;
+   }
+#endif
+
   if (TSP_STATUS_OK==retcode) {
     X_tsp_init_ok = TRUE;
   } else {
@@ -404,12 +414,14 @@ TSP_consumer_init(int* argc, char** argv[]) {
 
 
 void 
-TSP_consumer_end(void) {	
+TSP_consumer_end() {	
 
   /* This is the end my friend ... the end ...*/
 
   /* Some day, we will find stuff to do here ;) */
-
+#if defined (WIN32)
+   WSACleanup();
+#endif
    /* By the way. do ->NOT<- free X_tsp_argv and X_argv,
      the main code may be using them... */
 
@@ -1060,8 +1072,12 @@ TSP_request_provider_thread_receiver(void* arg)
     
   TSP_otsp_t* otsp = (TSP_otsp_t*)arg;
   int is_fifo_full;  
-                    
+
+#if defined(WIN32)
+  STRACE_INFO(("Receiver thread started. Id=%u", (uint32_t)pthread_self().p)); 
+#else
   STRACE_INFO(("Receiver thread started. Id=%u", (uint32_t)pthread_self())); 
+#endif
 
   while(TRUE)
     {
@@ -1110,23 +1126,26 @@ TSP_consumer_request_sample_init(TSP_provider_t provider, TSP_sample_callback_t 
       if(otsp->receiver)
 	{
 	  int status;
-
+	  
 	  /* Create receiver fifo */
 	  RINGBUF_PTR_INIT(TSP_sample_ringbuf_t,
 			   otsp->sample_fifo,
 			   TSP_sample_t,
 			   0,
 			   RINGBUF_SZ(TSP_CONSUMER_RINGBUF_SIZE) )
-	  	    
-	    
-	  /* Begin to receive */
-	  status = pthread_create(&(otsp->thread_receiver), 
-				  NULL,
-				  TSP_request_provider_thread_receiver,
-				  otsp);
 	  
-	  TSP_CHECK_THREAD(status, TSP_STATUS_ERROR_THREAD_CREATE);
-	  retcode = TSP_STATUS_OK;
+	  if (NULL==otsp->sample_fifo) {
+	    retcode = TSP_STATUS_ERROR_MEMORY_ALLOCATION;
+	  } else {	    	    	    
+	    /* Begin to receive */
+	    status = pthread_create(&(otsp->thread_receiver), 
+				    NULL,
+				    TSP_request_provider_thread_receiver,
+				    otsp);
+	    
+	    TSP_CHECK_THREAD(status, TSP_STATUS_ERROR_THREAD_CREATE);
+	    retcode = TSP_STATUS_OK;
+	  }
 	  
 	}
       else

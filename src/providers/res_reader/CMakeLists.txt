@@ -1,0 +1,19 @@
+
+
+ADD_EXECUTABLE(tsp_res_reader glue_res.c server_main.c)
+TSP_PROGRAM_INSTALL(tsp_res_reader)
+
+INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/src/util/libres)
+
+SET(LIBS tsp_res tsp_provider tsp_common tsp_services)
+ADD_DEPENDENCIES(tsp_res_reader ${LIBS})
+
+IF (BUILD_XMLRPC)
+    ADD_DEFINITIONS(${LIBWWW_CFLAGS})
+    SET(LIBS ${LIBS} ${XMLRPCC_ABYSS_SERVER_LIBRARIES} ${LIBWWW_LIBRARIES})
+ENDIF (BUILD_XMLRPC)
+
+SET(LIBS ${LIBS} ${PTHREAD_LIBRARY_NAME} ${TSP_WIN32_LIB})
+	
+TARGET_LINK_LIBRARIES(tsp_res_reader ${LIBS})
+TSP_PROGRAM_INSTALL(tsp_res_reader)

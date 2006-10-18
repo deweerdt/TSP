@@ -4,4 +4,5 @@ page_config.c)
 ADD_DEFINITIONS(${XML2_CFLAGS})
 
 ADD_LIBRARY(tsp_page_config ${LIBPAGES_SRC})
+TSP_LIBRARY_INSTALL(tsp_page_config)
 TARGET_LINK_LIBRARIES(tsp_page_config ${XML2_LIBRARY})

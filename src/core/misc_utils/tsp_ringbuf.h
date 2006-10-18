@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/misc_utils/tsp_ringbuf.h,v 1.7 2006-02-26 13:36:05 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/misc_utils/tsp_ringbuf.h,v 1.8 2006-10-18 09:58:48 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -231,17 +231,19 @@ BEGIN_C_DECLS
 
 
 
-#define RINGBUF_PTR_INIT(TypeName, name, ItemType, nbSpareBytes, sz) \
-	{ \
-          int mul_offset =  RINGBUF_MULTSUP((sizeof(ItemType) + nbSpareBytes),sizeof(ItemType)) / sizeof(ItemType);\
-	  name = (TypeName*)malloc(sizeof(TypeName) + (sizeof(ItemType) * mul_offset  * sz)); \
-	  (name)->size   = sz; \
-	  (name)->put   = 0; \
-	  (name)->get   = 0; \
-	  (name)->missed = 0; \
-          (name)->mul_offset = mul_offset; \
-          (name)->buf = (ItemType*)((name)+1); \
-	}
+#define RINGBUF_PTR_INIT(TypeName, name, ItemType, nbSpareBytes, sz)	\
+  {									\
+    int mul_offset =  RINGBUF_MULTSUP((sizeof(ItemType) + nbSpareBytes),sizeof(ItemType)) / sizeof(ItemType); \
+    name = (TypeName*)malloc(sizeof(TypeName) + (sizeof(ItemType) * mul_offset  * sz)); \
+    if(NULL!=name) {							\
+      (name)->size   = sz;						\
+      (name)->put   = 0;						\
+      (name)->get   = 0;						\
+      (name)->missed = 0;						\
+      (name)->mul_offset = mul_offset;					\
+      (name)->buf = (ItemType*)((name)+1);				\
+    }									\
+  }
 
 #define RINGBUF_PTR_DESTROY(name)  \
 	{ \

@@ -80,7 +80,9 @@ main (int argc, char ** argv) {
 			     TSP_ASYNC_REQUEST_SIMPLE | TSP_ASYNC_REQUEST_NON_BLOCKING,
 			     argv[1],atof(argv[2]), 0);
   TSP_provider_urls(TSP_PUBLISH_URLS_PRINT);
+
   sigwait(&allsigs, &whatsig);
+
   bb_tsp_provider_finalize();
   
   return 0;

@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_common_as.c,v 1.1 2006-05-03 21:13:34 erk Exp $
+$Id: tsp_common_as.c,v 1.2 2006-10-18 09:58:48 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -45,6 +45,11 @@ Purpose   : Main implementation for the producer module
 #define TSP_COMMON_AS_C
 #include <tsp_common_as.h>
 #include <tsp_common_ssi.h>
+#ifdef WIN32
+    #define assert(exp)     ((void)0)
+#else
+    #include <assert.h>
+#endif
 
 TSP_answer_sample_t*
 TSP_AS_new(int32_t version_id,
@@ -86,8 +91,9 @@ TSP_AS_initialize(TSP_answer_sample_t* as,
 		  int32_t max_consumer_number,
 		  int32_t current_consumer_number,
 		  TSP_status_t status) {
-  assert(as);
+  
   int32_t retcode = TSP_STATUS_OK;
+  assert(as);
 
   as->version_id             = version_id;
   as->channel_id             = channel_id;
@@ -105,8 +111,9 @@ TSP_AS_initialize(TSP_answer_sample_t* as,
 
 int32_t
 TSP_AS_finalize(TSP_answer_sample_t* as) {
-  assert(as);
+  
   int32_t retcode = TSP_STATUS_OK;
+  assert(as);
   
   TSP_AS_initialize(as,
 		    TSP_UNDEFINED_VERSION_ID,

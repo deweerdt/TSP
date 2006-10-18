@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_provider.c,v 1.55 2006-05-05 15:18:05 erk Exp $
+$Id: tsp_provider.c,v 1.56 2006-10-18 09:58:48 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -35,6 +35,13 @@ Purpose   : Main implementation for the producer module
 -----------------------------------------------------------------------
  */
 
+/* FIXME car sinon pb avec pthread_self*/
+#ifdef WIN32
+    #define assert(exp)     ((void)0)
+#else
+    #include <assert.h>
+#endif
+#include <pthread.h>
 #include <tsp_sys_headers.h>
 #include <tsp_provider.h>
 #include <tsp_filter_symbol.h>
@@ -116,6 +123,10 @@ TSP_cmd_line_parser(int* argc, char** argv[]) {
   char* p;
   int ret = TRUE;
 
+  if (NULL==argv) {
+      return ret;
+  }
+
   /* FIXME : FUITE */
   X_argv = (char**)calloc(*argc, sizeof(char*));
   X_glu_argv = (char**)calloc(*argc, sizeof(char*));
@@ -123,7 +134,9 @@ TSP_cmd_line_parser(int* argc, char** argv[]) {
   TSP_CHECK_ALLOC(X_argv, FALSE);
   TSP_CHECK_ALLOC(X_glu_argv, FALSE);
   /* Get program name anyway */
+  
   X_argv[0] = (*argv)[0];
+  
   for( i = 1 ; i < *argc && ret ; i++)
     {
       /* Is the arg a TSP arg ? */
@@ -246,11 +259,11 @@ TSP_cmd_line_parser(int* argc, char** argv[]) {
 }
 
 int 
-TSP_provider_is_initialized(void) {
+TSP_provider_is_initialized() {
   return  X_tsp_provider_init_ok;
 }
 
-int TSP_provider_get_server_base_number(void)
+int TSP_provider_get_server_base_number()
 {
   return  X_server_base_number;
 }
@@ -396,9 +409,10 @@ TSP_provider_request_filtered_information(TSP_request_information_t* req_info,
 					  int filter_kind, char* filter_string,
 					  TSP_answer_sample_t* ans_sample) {
 
-  STRACE_REQUEST(("FILTERED INFORMATIONS channel_id=<%d>",req_info->channel_id));
-  TSP_LOCK_MUTEX(&X_tsp_request_mutex,);  
   GLU_handle_t* myGLU = NULL;
+
+  STRACE_REQUEST(("FILTERED INFORMATIONS channel_id=<%d>",req_info->channel_id));
+  TSP_LOCK_MUTEX(&X_tsp_request_mutex,);
   
   /* fill-in minimal info in answer_sample */
   TSP_provider_update_answer_with_minimalinfo(req_info->version_id,req_info->channel_id,
@@ -437,9 +451,11 @@ void
 TSP_provider_request_sample(TSP_request_sample_t* req_sample, 
 			    TSP_answer_sample_t* ans_sample) {
 
+  GLU_handle_t* myGLU;
+  
   STRACE_REQUEST(("SAMPLE channel_id=<%d>",req_sample->channel_id));
   TSP_LOCK_MUTEX(&X_tsp_request_mutex,);	
-  GLU_handle_t* myGLU;
+  
   /* Always re-init answer_sample */
   TSP_AS_finalize(ans_sample);
   TSP_provider_update_answer_with_minimalinfo(req_sample->version_id,

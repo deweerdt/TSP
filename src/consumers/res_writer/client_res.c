@@ -1,6 +1,6 @@
 /*
 
-$Id: client_res.c,v 1.17 2006-04-24 22:17:47 erk Exp $
+$Id: client_res.c,v 1.18 2006-10-18 09:58:47 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -58,7 +58,7 @@ typedef void Sigfunc(int);
 static int stop = FALSE;
 static int stop_end = FALSE;
 
-static Sigfunc* _signal(int signo, Sigfunc* func)
+static Sigfunc* MySignal(int signo, Sigfunc* func)
 {
   struct sigaction act, oact;
   
@@ -136,7 +136,7 @@ int main(int argc, char *argv[]){
 
 
   /* catch ctrl-c */
-  _signal(SIGINT, catch_ctrl_c);
+  MySignal(SIGINT, catch_ctrl_c);
 
 
   STRACE_INFO(("Autodetect CPU : %d bits", sizeof(long)*8));

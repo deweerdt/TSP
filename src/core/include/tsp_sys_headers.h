@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_sys_headers.h,v 1.20 2006-02-26 13:36:05 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_sys_headers.h,v 1.21 2006-10-18 09:58:48 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -52,14 +52,19 @@ int _rpcsvcdirty;
 #define _POSIX_C_SOURCE 199506L
 #endif
 
+#ifndef WIN32
 #include <unistd.h>
-#include <assert.h>
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifndef WIN32
 #include <strings.h>
+#endif
 #include <errno.h>
+#ifndef WIN32 /* conflict error C2011 under VC++, already include by <rpc/rpc.h> */
 #include <netdb.h>
+#endif
 /*#include "fortify.h"*/
 
 
@@ -77,8 +82,10 @@ Do not use this with others targets */
 #endif /* OSF1 / Alpha */
 
 #include <pthread.h>
+#ifndef WIN32
 #include <sys/time.h>
 #include <sys/param.h>
+#endif
 
 #ifdef VXWORKS
 /* VXWORKS part */

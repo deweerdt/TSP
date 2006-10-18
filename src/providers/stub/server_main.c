@@ -1,6 +1,6 @@
 /*
 
-$Id: server_main.c,v 1.10 2006-04-24 21:05:34 erk Exp $
+$Id: server_main.c,v 1.11 2006-10-18 09:58:49 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -41,30 +41,71 @@ Purpose   : Implementation for the glue_server, for stub test
 
 #include "tsp_provider_init.h"
 
+#if defined (WIN32)
+#include "tsp_time.h"
+typedef unsigned long sigset_t;
+#endif
+
 GLU_handle_t* GLU_stub_create();
+
+#if defined (WIN32)
+static int sigint_reveived = 0;
+/* intercept signal function : call once */
+void intrpt(int signum)
+{
+    /* managed the SIGINT signal */
+    (void) signal(SIGINT, SIG_DFL);
+    /* End of the waiting */
+    sigint_reveived = 1;
+    /* could be modified to use CreateEvent, SetEvent and WaitForSingleObject functions */
+}
+#endif
 
 int main(int argc, char *argv[])
 {
+  GLU_handle_t* GLU_stub;
+
+/* Managing thr SIGINT signal */
+#if defined (WIN32)
+  /* intercept SIGINT signal */
+  if ( SIG_ERR == signal(SIGINT, intrpt))
+  {
+    STRACE_ERROR(("Error initialisation signal intercept function"));
+    exit(1);
+  }
+#else
   sigset_t allsigs;
   int whatsig;
 
+  /* Allows the SIGINT signal */
+  /* so the sigwait function may stop on a SIGINT signal */
   sigemptyset(&allsigs);
   sigaddset(&allsigs, SIGINT);
   sigprocmask(SIG_BLOCK, &allsigs, NULL);
+#endif
 
   printf ("#===================================================================#\n");
   printf ("# Launching <StubbedServer> for generation of 1000 Symbols at 100Hz #\n");
   printf ("#===================================================================#\n");
 
-  GLU_handle_t* GLU_stub = GLU_stub_create();
+  GLU_stub = GLU_stub_create();
 
   /* Init server */
   if(TSP_STATUS_OK==TSP_provider_init(GLU_stub,&argc, &argv)) {
     if (TSP_STATUS_OK!=TSP_provider_run(TSP_ASYNC_REQUEST_SIMPLE | TSP_ASYNC_REQUEST_NON_BLOCKING)) {
-      return -1;
+        return -1;
     }
     TSP_provider_urls(TSP_PUBLISH_URLS_PRINT | TSP_PUBLISH_URLS_FILE);
+#if defined (WIN32)
+    /* Wait until the intercept signal function is call */
+    while (!sigint_reveived)
+    {
+        tsp_usleep(1000);
+    }
+#else
+    /* wait until a SIGINT signal */
     sigwait(&allsigs, &whatsig);
+#endif
     TSP_provider_end();
   }
 

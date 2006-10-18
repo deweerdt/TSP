@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_abs_types.h,v 1.24 2006-06-05 12:27:31 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_abs_types.h,v 1.25 2006-10-18 09:58:48 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -45,8 +45,8 @@ Purpose   : Type abstraction : Stolen from GLIB public headers
 #undef BEGIN_C_DECLS
 #undef END_C_DECLS
 #ifdef __cplusplus
-# define BEGIN_C_DECLS extern "C" {
-# define END_C_DECLS }
+#  define BEGIN_C_DECLS extern "C" {
+#  define END_C_DECLS }
 #else
 # define BEGIN_C_DECLS /* empty */
 # define END_C_DECLS /* empty */
@@ -63,6 +63,7 @@ Purpose   : Type abstraction : Stolen from GLIB public headers
 /*** Platform specific ***/
 
 /* SUN / sparc|i386 (32/64 bits) */
+/* AP : Migration sous Windows */
 #if  defined(__sun)
 # define TSP_BYTE_ORDER TSP_BIG_ENDIAN
 # define TSP_SYSTEM_HAVE_GETHRTIME
@@ -93,16 +94,67 @@ Purpose   : Type abstraction : Stolen from GLIB public headers
 #		define _INT32_T
 #	endif
 #	ifndef _UINT64_T
-		typedef u_longlong_t    uint64_t;
+	    typedef u_longlong_t        uint64_t;
 #		define _UINT64_T
 #	endif
 #	ifndef _INT64_T
-		typedef longlong_t    int64_t;
+	    typedef longlong_t    int64_t;
 #		define _INT64_T
 #	endif
 #   endif /* Exists SYS_TYPES_H */ 
 # endif /* ! sparcv9 */
 #endif /* SUN */
+
+/* Windows */
+#if defined (WIN32)
+#include <stddef.h>
+/* with UWin */
+#if defined (_UWIN)
+
+#include <stdint.h>
+
+#else /* FIXME */
+
+/* types for compat. with various BSD and other library sources */
+typedef signed char      int8_t;
+typedef unsigned char  u_int8_t;
+typedef short            int16_t;
+typedef unsigned short u_int16_t;
+typedef int              int32_t;
+typedef unsigned int   u_int32_t;
+/* types for compat. with Solaris 7 */
+typedef unsigned char  uint8_t;
+typedef unsigned short uint16_t;
+typedef unsigned int   uint32_t;
+/*
+ * 64bit type for BSD compatability
+ */
+#ifdef __GNUC__
+typedef long long int 		  quad_t;
+typedef unsigned long long int	u_quad_t;
+typedef long long int             int64_t;
+typedef unsigned long long int  u_int64_t;
+#elif _MSC_VER
+typedef __int64 		  quad_t;
+typedef unsigned __int64 	u_quad_t;
+typedef __int64 		  int64_t;
+typedef unsigned __int64 	u_int64_t;
+#endif /*__GNUC__*/
+
+#ifndef _UINT64_T
+    typedef unsigned long long  uint64_t;
+#   define _UINT64_T
+#endif
+#ifndef _INT64_T
+    typedef long long  int64_t;
+#	define _INT64_T
+#endif
+
+#endif /* with UWin */
+# define TSP_BYTE_ORDER TSP_LITTLE_ENDIAN
+# define TSP_INT64_CONSTANT(val)  (val##LL)
+# define TSP_HAVE_INT64 1
+#endif /* Windows with UWin */
 
 
 /* Linux / Intel */
@@ -114,7 +166,6 @@ Purpose   : Type abstraction : Stolen from GLIB public headers
 # define TSP_SYSTEM_HAVE_NANOSLEEP 1
 # define TSP_HAVE_INT64 1
 #endif /* Linux / Intel */
-
 
 
 /* Linux / Powerpc */ 							

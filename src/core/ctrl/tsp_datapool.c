@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_datapool.c,v 1.30 2006-05-05 15:18:05 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_datapool.c,v 1.31 2006-10-18 09:58:48 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -37,6 +37,12 @@ may be unified in this source .
 -----------------------------------------------------------------------
  */
 
+#ifdef WIN32
+    #define assert(exp)     ((void)0)
+#else
+    #include <assert.h>
+#endif
+
 #include <tsp_sys_headers.h>
 #include <tsp_datapool.h>
 #include <tsp_datastruct.h>
@@ -72,16 +78,15 @@ TSP_datapool_t X_global_datapool = {FALSE,FALSE,0,0,0};
 
 
 void 
-TSP_datapool_get_reverse_list (TSP_datapool_t* datapool, int *nb, int **list) {
+TSP_datapool_get_reverse_list (TSP_datapool_t* this, int *nb, int **list) {
   assert(nb!=NULL);
   assert(list!=NULL);
-  assert(datapool);
-  *nb = datapool->nb_wanted_items;
-  *list = datapool->reverse_index;
+  assert(this);
+  *nb = this->nb_wanted_items;
+  *list = this->reverse_index;
 }
 
-
-inline int 
+int 
 TSP_datapool_push_next_item(TSP_datapool_t* datapool, glu_item_t* item) {
   assert(datapool);
   memcpy((*datapool).items[item->provider_global_index].raw_value,

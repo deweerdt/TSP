@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_glu.h,v 1.15 2006-05-18 18:32:07 erk Exp $
+$Id: tsp_glu.h,v 1.16 2006-10-18 09:58:48 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -40,7 +40,9 @@ Purpose   : Interface for the glue server : the data producer
 
 #include <tsp_prjcfg.h>
 #include <tsp_datastruct.h>  /* FIXME : just for TSP_sample_symbol_info_list_t, and shouldn't use generated rpc struct */
-
+#if defined (WIN32)
+#include <pthread.h>
+#endif
 /* forward declare datapool type */
 struct TSP_datapool;
 
@@ -148,23 +150,23 @@ struct GLU_handle_t; /* necessary forward declaration */
  * This string will be used by the consumers to get informations
  * about a provider. It must be meaningfull (ex : "Temperatures Sampler" ) 
  */
-typedef char*              (* GLU_get_server_name_ft   )(struct GLU_handle_t* this);
+typedef char*              (* GLU_get_server_name_ft   )(struct GLU_handle_t* cthis);
 /**
  * GLU server type getter.
  * Will get the GLU type i.e. ACTIVE or PASSIVE.
  * @return GLU server type.
  */
-typedef GLU_server_type_t  (* GLU_get_server_type_ft   )(struct GLU_handle_t* this);
+typedef GLU_server_type_t  (* GLU_get_server_type_ft   )(struct GLU_handle_t* cthis);
 /**
  * Default GLU base frequency.
  * @return GLU base frequency (Hz)
  */
-typedef double             (* GLU_get_base_frequency_ft)(struct GLU_handle_t* this);
+typedef double             (* GLU_get_base_frequency_ft)(struct GLU_handle_t* cthis);
 /**
  * The maximum number of consumer connection
  * @return maximum number of consumer connection
  */
-typedef int32_t             (* GLU_get_nb_max_consumer_ft)(struct GLU_handle_t* this);
+typedef int32_t             (* GLU_get_nb_max_consumer_ft)(struct GLU_handle_t* cthis);
 /**
  * GLU instance creation.
  * This function will be called by the provider for each consumer
@@ -194,7 +196,7 @@ typedef int32_t             (* GLU_get_nb_max_consumer_ft)(struct GLU_handle_t* 
  * to get detailed information about the error. 
  * @return The created GLU handle. Returns 0 when the function fail
  */
-typedef struct GLU_handle_t*      (* GLU_get_instance_ft      )(struct GLU_handle_t* this, int32_t custom_argc, char* custom_argv[], char** error_info);
+typedef struct GLU_handle_t*      (* GLU_get_instance_ft      )(struct GLU_handle_t* cthis, int32_t custom_argc, char* custom_argv[], char** error_info);
 /**
  * GLU initialization function.
  *
@@ -243,20 +245,20 @@ typedef struct GLU_handle_t*      (* GLU_get_instance_ft      )(struct GLU_handl
  * @return Return FALSE if a fatal error occur during initialisation
  * or if there is a probleme with the provided parameters
  */
-typedef int32_t                (* GLU_init_ft              )(struct GLU_handle_t* this,int32_t fallback_argc, char* fallback_argv[]);
+typedef int32_t                (* GLU_init_ft              )(struct GLU_handle_t* cthis,int32_t fallback_argc, char* fallback_argv[]);
 /**
  * Start the loop that will push data to datapool with push_next_item
  * 
  * @return status 
  */
-typedef void*              (* GLU_run_ft               )(void* this);
+typedef void*              (* GLU_run_ft               )(void* cthis);
 /**
  * Start push datapool GLU activity AS A SEPARATE thread.
  * The start function should NOT block, the defaut implementation
  * is to start a new thread running the 'GLU_run_ft' of the GLU. 
  * @return 0 on success and other value on error.
  */
-typedef int32_t                (* GLU_start_ft             )(struct GLU_handle_t* this);
+typedef int32_t                (* GLU_start_ft             )(struct GLU_handle_t* cthis);
 /** 
  * GLU_get_provider_global_indexes provider global indexes corresponding
  * to given symbol list. Used to validate client provided symbol list
@@ -264,51 +266,51 @@ typedef int32_t                (* GLU_start_ft             )(struct GLU_handle_t
  * @param[out] pg_indexes array containing corresponding provider global indexes or -1 if not found 
  * @return TRUE if all symbol found, else return FALSE 
  */
-typedef int32_t                (* GLU_get_pgi_ft           )(struct GLU_handle_t* this, TSP_sample_symbol_info_list_t* symbol_list, int* pg_indexes);
+typedef int32_t                (* GLU_get_pgi_ft           )(struct GLU_handle_t* cthis, TSP_sample_symbol_info_list_t* symbol_list, int* pg_indexes);
 /**
  * List of symbols managed by the GLU.
  * @param this Handle for the GLU (when the GLU is ACTIVE, it is always equal to GLU_GLOBAL_HANDLE)
  * @param symbol_list List of symbols
  * @return TRUE of FALSE. TRUE = OK;
  */
-typedef int32_t                (* GLU_get_ssi_list_ft  )(struct GLU_handle_t* this, TSP_sample_symbol_info_list_t* symbol_list);
+typedef int32_t                (* GLU_get_ssi_list_ft  )(struct GLU_handle_t* cthis, TSP_sample_symbol_info_list_t* symbol_list);
 
 /**
  * Filtered list of symbols managed by the GLU.
- * @param[in] this Handle for the GLU (when the GLU is ACTIVE, it is always equal to GLU_GLOBAL_HANDLE)
+ * @param[in] cthis Handle for the GLU (when the GLU is ACTIVE, it is always equal to GLU_GLOBAL_HANDLE)
  * @param[in] filter_kind the filter kind
  * @param[in] filter_string the filter string
  * @param[out] ans_sample the answer_sample to be filled-in by the GLU.
  * @return TRUE of FALSE. TRUE = OK;
  */
-typedef int32_t                (* GLU_get_filtered_ssi_list_ft)(struct GLU_handle_t* this, int32_t filter_kind, char* filter_string, TSP_answer_sample_t* symbol_list);
+typedef int32_t                (* GLU_get_filtered_ssi_list_ft)(struct GLU_handle_t* cthis, int32_t filter_kind, char* filter_string, TSP_answer_sample_t* symbol_list);
 
 /**
  * Get Sample Symbols Info list from PGI lists.
- * @param[in] this Handle for the GLU (when the GLU is ACTIVE, it is always equal to GLU_GLOBAL_HANDLE)
+ * @param[in] cthis Handle for the GLU (when the GLU is ACTIVE, it is always equal to GLU_GLOBAL_HANDLE)
  * @param[in] pgis the array of requested PGI
  * @param[in] pgis_len the length of the pgis array
  * @param[in,out] the preallocated SSI list. 
  * @return TRUE of FALSE. TRUE = OK;
  */
-typedef int32_t                (* GLU_get_ssi_list_fromPGI_ft)(struct GLU_handle_t* this, int* pgis, int32_t pgis_len, TSP_sample_symbol_info_list_t* SSI_list);
+typedef int32_t                (* GLU_get_ssi_list_fromPGI_ft)(struct GLU_handle_t* cthis, int* pgis, int32_t pgis_len, TSP_sample_symbol_info_list_t* SSI_list);
 
 /**
  * Get Sample Symbols Extended Info list from PGI lists.
- * @param[in] this Handle for the GLU (when the GLU is ACTIVE, it is always equal to GLU_GLOBAL_HANDLE)
+ * @param[in] cthis Handle for the GLU (when the GLU is ACTIVE, it is always equal to GLU_GLOBAL_HANDLE)
  * @param[in] pgis the array of requested PGI
  * @param[in] pgis_len the length of the pgis array
  * @param[in,out] on entry the preallocated SSEI list, on return the updated SSEI list
  * @return TRUE of FALSE. TRUE = OK;
  */
-typedef int32_t                (* GLU_get_ssei_list_fromPGI_ft)(struct GLU_handle_t* this, int* pgis, int32_t pgis_len, TSP_sample_symbol_extended_info_list_t* SSEI_list);
+typedef int32_t                (* GLU_get_ssei_list_fromPGI_ft)(struct GLU_handle_t* cthis, int* pgis, int32_t pgis_len, TSP_sample_symbol_extended_info_list_t* SSEI_list);
 
 /**
  * Get the number of symbols managed by the GLU.
  * @param this Handle for the GLU (when the GLU is ACTIVE, it is always equal to GLU_GLOBAL_HANDLE)
  * @return the number of symbols;
  */
-typedef int32_t                (* GLU_get_nb_symbols_ft  )(struct GLU_handle_t* this);
+typedef int32_t                (* GLU_get_nb_symbols_ft  )(struct GLU_handle_t* cthis);
 
 /**
  * GLU asynchronous sample write.
@@ -322,7 +324,7 @@ typedef int32_t                (* GLU_get_nb_symbols_ft  )(struct GLU_handle_t* 
  * @param[in] value_size the size of the value.
  * @return >0 on success <=0 on failure
  */
-typedef int32_t                (* GLU_async_sample_write_ft)(struct GLU_handle_t* this, int32_t pgi, void* value_ptr, uint32_t value_size);
+typedef int32_t                (* GLU_async_sample_write_ft)(struct GLU_handle_t* cthis, int32_t pgi, void* value_ptr, uint32_t value_size);
 
 /**
  * GLU asynchronous sample read.
@@ -336,7 +338,7 @@ typedef int32_t                (* GLU_async_sample_write_ft)(struct GLU_handle_t
  * @param[in,out] value_size the size of the value.
  * @return >0 on success <=0 on failure
  */
-typedef int32_t                (* GLU_async_sample_read_ft)(struct GLU_handle_t* this, int32_t pgi, void* value_ptr, uint32_t* value_size);
+typedef int32_t                (* GLU_async_sample_read_ft)(struct GLU_handle_t* cthis, int32_t pgi, void* value_ptr, uint32_t* value_size);
 
                 
 /** 
@@ -445,7 +447,7 @@ BEGIN_C_DECLS
  * @param[in] base_frequency the base frequency that will be advertised by the TSP provider
  * @return TRUE if ok FALSE otherwise
  */
-int32_t GLU_handle_create(GLU_handle_t** glu, const char* name, const GLU_server_type_t type, const double base_frequency);
+_EXPORT_TSP_PROVIDER int32_t GLU_handle_create(GLU_handle_t** glu, const char* name, const GLU_server_type_t type, const double base_frequency);
 
 /**
  * Destroy a GLU_handle.

@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/misc_utils/tsp_time.h,v 1.8 2006-02-26 13:36:06 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/misc_utils/tsp_time.h,v 1.9 2006-10-18 09:58:48 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -37,15 +37,16 @@ Purpose   : Interface for tsp time functions
 #ifndef _TSP_TIME_H
 #define _TSP_TIME_H
 
+#include "tsp_services.h"
 #include "tsp_prjcfg.h"
 
 typedef uint64_t  tsp_hrtime_t;
 
 BEGIN_C_DECLS
 
-tsp_hrtime_t tsp_gethrtime(void);
+_EXPORT_TSP_SERVICES tsp_hrtime_t tsp_gethrtime();
 
-int tsp_usleep(int useconds);
+_EXPORT_TSP_SERVICES int tsp_usleep(int useconds);
 
 END_C_DECLS
 

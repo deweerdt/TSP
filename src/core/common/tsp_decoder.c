@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/common/tsp_decoder.c,v 1.3 2006-04-07 10:37:17 morvan Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/common/tsp_decoder.c,v 1.4 2006-10-18 09:58:48 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -35,7 +35,7 @@ Purpose   :  Implementation for the functions used to decode the data received
 -----------------------------------------------------------------------
  */
 
-
+#include <rpc/rpc.h>
 #include <rpc/types.h>
 #include <rpc/xdr.h>
  
@@ -44,6 +44,12 @@ Purpose   :  Implementation for the functions used to decode the data received
 #include <tsp_simple_trace.h>
 #include <tsp_decoder.h>
 
+#ifdef WIN32
+    #define assert(exp)     ((void)0)
+    #include <malloc.h>
+#else
+    #include <assert.h>
+#endif
 
 int32_t TSP_data_channel_double_decoder(void* out_double, uint32_t dimension,  char* in_buf)
 {
@@ -75,10 +81,9 @@ int32_t TSP_data_channel_double_decoder(void* out_double, uint32_t dimension,  c
     ((uint64_t*)out_double)[i] = TSP_DECODE_DOUBLE_TO_UINT64(in_buf+(i*TSP_SIZEOF_ENCODED_DOUBLE));   
     STRACE_DEBUG(("decoded DOUBLE = %f, (received) encoded DOUBLE=0x%08llx",((double*)out_double)[i],((uint64_t*)in_buf)[i]));
   }
-  
-  return TRUE;
-
 #endif
+
+  return TRUE;
 
 }
 
@@ -112,16 +117,15 @@ int32_t TSP_data_channel_float_decoder(void* out_float, uint32_t dimension,  cha
 
     ((uint32_t*)out_float)[i] = TSP_DECODE_FLOAT_TO_UINT32(in_buf+(i* TSP_SIZEOF_ENCODED_FLOAT));   
   }
-  
+#endif
   return TRUE;
 
-#endif
 }
 
 int32_t TSP_data_channel_int8_decoder(void* out_int8, uint32_t dimension,  char* in_buf)
 {
   uint32_t i;
-  int32_t out_temp[dimension];
+  int32_t* out_temp = alloca(sizeof(int32_t)*dimension);
 
 
   if(TSP_data_channel_int32_decoder((void *)(&out_temp[0]), dimension, in_buf))
@@ -142,7 +146,7 @@ int32_t TSP_data_channel_int16_decoder(void* out_int16, uint32_t dimension,  cha
 {
 
   uint32_t i;
-  int32_t out_temp[dimension];
+  int32_t* out_temp = alloca(sizeof(int32_t)*dimension);
 
 
   if(TSP_data_channel_int32_decoder((void *)(&out_temp[0]), dimension, in_buf))
@@ -191,9 +195,8 @@ int32_t TSP_data_channel_int32_decoder(void* out_int32, uint32_t dimension,  cha
     ((int32_t*)out_int32)[i] = TSP_DECODE_INT32(in_buf+(i * TSP_SIZEOF_ENCODED_INT32));   
   }
   
-  return TRUE;
-
 #endif
+    return TRUE;
 }
 
 int32_t TSP_data_channel_int64_decoder(void* out_int64, uint32_t dimension,  char* in_buf)
@@ -226,16 +229,15 @@ int32_t TSP_data_channel_int64_decoder(void* out_int64, uint32_t dimension,  cha
 
     ((int64_t*)out_int64)[i] = TSP_DECODE_INT64(in_buf+(i * TSP_SIZEOF_ENCODED_INT64));   
   }
-  
-  return TRUE;
-
+ 
 #endif
+    return TRUE;
 }
 
 int32_t TSP_data_channel_uint8_decoder(void* out_uint8, uint32_t dimension,  char* in_buf)
 {
   uint32_t i;
-  int32_t out_temp[dimension];
+  int32_t* out_temp = alloca(sizeof(int32_t)*dimension);
 
 
   if(TSP_data_channel_int32_decoder((void *)(&out_temp[0]), dimension, in_buf))
@@ -255,7 +257,7 @@ int32_t TSP_data_channel_uint8_decoder(void* out_uint8, uint32_t dimension,  cha
 int32_t TSP_data_channel_uint16_decoder(void* out_uint16, uint32_t dimension,  char* in_buf)
 {
   uint32_t i;
-  int32_t out_temp[dimension];
+  int32_t* out_temp = alloca(sizeof(int32_t)*dimension);
 
 
   if(TSP_data_channel_int32_decoder((void *)(&out_temp[0]), dimension, in_buf))
@@ -303,9 +305,8 @@ int32_t TSP_data_channel_uint32_decoder(void* out_uint32, uint32_t dimension,  c
     ((uint32_t*)out_uint32)[i] = TSP_DECODE_UINT32(in_buf+(i * TSP_SIZEOF_ENCODED_UINT32));   
   }
   
-  return TRUE;
-
 #endif
+  return TRUE;
 }
 
 int32_t TSP_data_channel_uint64_decoder(void* out_uint64, uint32_t dimension,  char* in_buf)
@@ -339,16 +340,15 @@ int32_t TSP_data_channel_uint64_decoder(void* out_uint64, uint32_t dimension,  c
     ((uint64_t*)out_uint64)[i] = TSP_DECODE_UINT64(in_buf+(i * TSP_SIZEOF_ENCODED_UINT64));   
   }
   
-  return TRUE;
-
 #endif
+  return TRUE;
 }
 
 int32_t TSP_data_channel_char_decoder(void* out_char, uint32_t dimension,  char* in_buf)
 {
 
   uint32_t i;
-  int32_t out_temp[dimension];
+  int32_t* out_temp = alloca(sizeof(int32_t)*dimension);
 
 
   if(TSP_data_channel_int32_decoder((void *)(&out_temp[0]), dimension, in_buf))
@@ -369,7 +369,7 @@ int32_t TSP_data_channel_uchar_decoder(void* out_uchar, uint32_t dimension,  cha
 {
 
   uint32_t i;
-  int32_t out_temp[dimension];
+  int32_t* out_temp = alloca(sizeof(int32_t)*dimension);
 
 
   if(TSP_data_channel_int32_decoder((void *)(&out_temp[0]), dimension, in_buf))
@@ -390,7 +390,7 @@ int32_t TSP_data_channel_user_decoder(void* out_user, uint32_t dimension,  char*
 {
 
   uint32_t i;
-  int32_t out_temp[dimension];
+  int32_t* out_temp = alloca(sizeof(int32_t)*dimension);
 
 
   if(TSP_data_channel_int32_decoder((void *)(&out_temp[0]), dimension, in_buf))

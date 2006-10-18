@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libcalc/calc_func.c,v 1.5 2006-04-27 00:13:15 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libcalc/calc_func.c,v 1.6 2006-10-18 09:58:49 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -38,6 +38,7 @@ Purpose   : Implementation for demo purpose
 
 #include <math.h>
 
+#include "calc_func.h"
 
 /* return nice value for plotting */
 double calc_func (int index, double my_time)
@@ -118,8 +119,11 @@ char calc_func_char (int index, double my_time)
   }
   else
   {
-      index= my_time * index;
-      int module = index % 20;
+      /* AP : Migration sous Windows */
+      /* index= my_time * index; */
+      /* int module = index % 20; */
+      int i = my_time * index;
+      int module = i % 20;
       ret=lettre[module];
 
   }

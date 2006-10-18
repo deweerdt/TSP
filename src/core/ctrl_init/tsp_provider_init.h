@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl_init/tsp_provider_init.h,v 1.14 2006-04-24 21:05:34 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl_init/tsp_provider_init.h,v 1.15 2006-10-18 09:58:48 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -61,7 +61,7 @@ BEGIN_C_DECLS
  * @param[in,out] argv You must provide the real argv before using it
  * @return TSP_STATUS_OK on success other code on failure.
  */
-int32_t
+_EXPORT_TSP_PROVIDER int32_t
 TSP_provider_init(GLU_handle_t* theGLU, int* argc, char** argv[]);
 
 /**
@@ -69,7 +69,7 @@ TSP_provider_init(GLU_handle_t* theGLU, int* argc, char** argv[]);
  * After this call the TSP provider library should
  * not be called anymore.
  */
-void 
+_EXPORT_TSP_PROVIDER void 
 TSP_provider_end(void);
 
 /**
@@ -98,7 +98,7 @@ TSP_provider_end(void);
  *       - 0x11 dynamic blocking mode, this function will block forever.
  * @return TSP_STATUS_OK on success other code on failure.
  */
-int32_t
+_EXPORT_TSP_PROVIDER int32_t
 TSP_provider_run(int spawn_mode);
 
 
@@ -121,7 +121,7 @@ TSP_provider_run(int spawn_mode);
  *       - 0x0100 publish to local SNMP agent (TODO).
  * @return String table or NULL.
  */
-char**
+_EXPORT_TSP_PROVIDER char**
 TSP_provider_urls(int pub_mode);
 
 

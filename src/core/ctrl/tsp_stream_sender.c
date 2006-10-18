@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_stream_sender.c,v 1.21 2006-05-04 21:44:47 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_stream_sender.c,v 1.22 2006-10-18 09:58:48 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -35,14 +35,23 @@ stream  to the consumers.
 -----------------------------------------------------------------------
  */
 
-#include <unistd.h>  
-#include <netdb.h>
-#include <netinet/in.h>
-#include <netinet/tcp.h>
-#include <sys/socket.h>
 #include <signal.h>
+#include <pthread.h>
+#ifdef WIN32
+    #include <Windows.h>
+    #include <WinSock2.h>
+    #include <ws2tcpip.h>
+    #define assert(exp)     ((void)0)
+#else
+    #include <netdb.h>
+    #include <unistd.h>  
+    #include <netinet/in.h>
+    #include <netinet/tcp.h>
+    #include <sys/socket.h>
+    #include <assert.h>
+#endif
 
-#ifndef VXWORKS
+#if !defined (VXWORKS) && !defined(WIN32)
 #include <strings.h> /* for bzero */
 #endif
 #include <string.h>  /* for bzero too :=} */
@@ -119,11 +128,13 @@ struct TSP_socket_t
 typedef struct TSP_socket_t TSP_socket_t;
 
 /* Signal functions */
-
+#if defined (WIN32)
+    /* no SIGPIPE signal uner Windows (waitforsingle obect insteed) */
+#else
 typedef void Sigfunc(int);
 
-Sigfunc* signal(int signo, Sigfunc* func)
-{
+Sigfunc* MySignal(int signo, Sigfunc* func)
+{    
   struct sigaction act, oact;
   
   act.sa_handler = func;
@@ -145,7 +156,7 @@ Sigfunc* signal(int signo, Sigfunc* func)
     return(SIG_ERR);
   return (oact.sa_handler);
 } 
-
+#endif
 
 void* TSP_streamer_sender_thread_sender(void* arg)
 {
@@ -201,21 +212,21 @@ static int TSP_stream_sender_init_bufferized(TSP_socket_t* sock)
 
   int status;
 
-  STRACE_IO(("-->IN"));
-
   RINGBUF_PTR_INIT(TSP_stream_sender_ringbuf_t,
 		   sock->out_ringbuf,
 		   TSP_stream_sender_item_t, 
 		   sock->buffer_size,
 		   RINGBUF_SZ(sock->fifo_size) );
-
+  
+  /* Memory Exhausted */
+  if (NULL==sock->out_ringbuf) {    
+    return FALSE;
+  }
   assert(sock->out_ringbuf);
 
   status = pthread_create(&sock->thread_id, NULL, TSP_streamer_sender_thread_sender,  sock);
   TSP_CHECK_THREAD(status, FALSE);
  
-  STRACE_IO(("-->OUT"));
-
   return TRUE;
   
 }
@@ -246,7 +257,12 @@ static void* TSP_streamer_sender_connector(void* arg)
     
   /* Accept connection on socket */
   STRACE_DEBUG(("Thread acceptor started waiting for client to connect %d", sock->hClient));
+#if defined (WIN32)  
+  sock->hClient = accept(sock->socketId, NULL, NULL);
+#else
+  /* FIXME */
   sock->hClient = accept(sock->socketId, NULL, &Len);
+#endif
 
   if(sock->hClient > 0) {
     /* OK, the client is connected */
@@ -286,12 +302,15 @@ TSP_stream_sender_t TSP_stream_sender_create(int fifo_size, int buffer_size)
     uint8_t     parts[4];
   } myu;
 
+#if defined (WIN32)
+  /* no SIGPIPE signal under Windows (waitforsingleobject insteed) */
+#else
   /* First disable SIGPIPE signal to avoir being crashed by a disconnected client*/
-  if( SIG_ERR == signal(SIGPIPE, SIG_IGN)) {
+  if( SIG_ERR == MySignal(SIGPIPE, SIG_IGN)) {
     STRACE_ERROR(("Unable to disable SIGPIPE signal"));
     return 0;
   }
-  
+#endif
   if( -1 == gethostname(host, TSP_MAXHOSTNAMELEN))
     {
       STRACE_ERROR(("gethostname error"));
@@ -506,15 +525,27 @@ TSP_stream_sender_send(TSP_stream_sender_t sender, const char *buffer, int buffe
   Total = 0;
   if (identSocket > 0) {      
     while (bufferLen > 0) {
+/* sous windows _errno est la variable globale en lecture seule */
+#ifndef WIN32
       errno = 0;
+#endif
       /* FIXME is it really an error to get 0 as nwrite? */
-      if( (nwrite = write(identSocket,  &buffer[Total], bufferLen)) <= 0 ) {
+#ifdef WIN32
+	if( (nwrite = send(identSocket, &buffer[Total], bufferLen,0)) <= 0 ) {
+    if( _errno == EINTR ) {
+#else
+	  if( (nwrite = write(identSocket,  &buffer[Total], bufferLen)) <= 0 ) {
 	if( errno == EINTR ) {
+#endif
 	  /* The write might have been interrupted by a signal */
 	  nwrite = 0;
 	}
 	else {		  
-	  STRACE_DEBUG(("send failed with errno = %d : <%s>",errno,strerror(errno)));
+#ifdef WIN32
+     STRACE_DEBUG(("send failed with errno = %d : <%s>",WSAGetLastError(),strerror(errno)));   
+#else
+	  STRACE_ERROR(("send failed with errno = %d : <%s>",errno,strerror(errno)));
+#endif
 	  sock->connection_ok = FALSE;
 	  return FALSE;
 	}

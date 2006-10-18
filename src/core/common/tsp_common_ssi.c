@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_common_ssi.c,v 1.7 2006-05-03 21:13:34 erk Exp $
+$Id: tsp_common_ssi.c,v 1.8 2006-10-18 09:58:48 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -103,8 +103,9 @@ TSP_SSI_initialize(TSP_sample_symbol_info_t* ssi,
 		   int32_t nelem,
 		   int32_t period,
 		   int32_t phase) {
-  assert(ssi);
+  
   int32_t retcode = TSP_STATUS_OK;
+  assert(ssi);  
 
   if (NULL!=ssi->name) {
     free(ssi->name);    
@@ -133,8 +134,9 @@ TSP_SSI_initialize(TSP_sample_symbol_info_t* ssi,
 
 int32_t
 TSP_SSI_finalize(TSP_sample_symbol_info_t* ssi) {
-  assert(ssi);
+  
   int32_t retcode = TSP_STATUS_OK;
+  assert(ssi);
 
   TSP_SSI_initialize(ssi,
 		     NULL,

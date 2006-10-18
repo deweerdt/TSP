@@ -1,11 +1,14 @@
 PROJECT(TSP C)
 
-CMAKE_MINIMUM_REQUIRED(VERSION 2.2)
+CMAKE_MINIMUM_REQUIRED(VERSION 2.4)
 
 # Use TSP specific CMake modules first
 SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/make)
-# Load TSP Specific CMake macros (TSP_XSCRIPT, TSP_XINCLUDE)
+# Load TSP Specific CMake macros (TSP_XSCRIPT, TSP_XINCLUDE, TSP_xxx_INSTALL)
 INCLUDE(TSPCMakeTools)
+
+OPTION(BUILD_ONLY_TSP_PORT
+  "Build TSP test port" OFF)
 
 OPTION(BUILD_PROVIDER
   "Build providers" ON)
@@ -17,26 +20,104 @@ OPTION(BUILD_XMLRPC
   "Build with XMLRPC support" OFF)
 
 OPTION(BUILD_API_DOC
-  "Build doxygen documentation" ON)
+  "Build doxygen documentation" OFF)
+    
+IF (WIN32)        
+	OPTION(BUILD_WIN32_PTHREADWIN32
+		"Build under Windows with PthreadWin32" ON)
+	
+	OPTION(BUILD_WIN32_ACPLT_ONCPRC
+		"Build under Windows with ACPLT_ONCPRC" ON)	
+		
+	OPTION(BUILD_SHARED
+		"Build libraries as DLL" ON)
+ELSE (WIN32)
+	OPTION(BUILD_SHARED
+		"Build libraries as DLL" OFF)
+ENDIF (WIN32)
 
-OPTION(BUILD_BB_KERNEL_MODULE
-  "Build the in-kernel bb" OFF)
+IF (BUILD_SHARED)
+	SET(BUILD_SHARED_LIBS ON)
+	IF (WIN32)
+		ADD_DEFINITIONS(-DTSP_SHARED_LIBS)
+	ENDIF (WIN32)
+ELSE (BUILD_SHARED)
+	SET(BUILD_SHARED_LIBS OFF)
+ENDIF (BUILD_SHARED)
+
+## If no build type specified then default to Debug
+IF (NOT CMAKE_BUILD_TYPE)
+ SET(CMAKE_BUILD_TYPE "Debug") 
+ENDIF (NOT CMAKE_BUILD_TYPE)
 
 SET(PACKAGE_NAME      "tsp")
-SET(PACKAGE_VERSION   "0.8.cvs")
+SET(PACKAGE_VERSION_MAJOR "0")
+SET(PACKAGE_VERSION_MINOR "8")
+SET(PACKAGE_VERSION_PATCH "1")
+SET(PACKAGE_VERSION   "${PACKAGE_VERSION_MAJOR}.${PACKAGE_VERSION_MINOR}.${PACKAGE_VERSION_PATCH}")
 SET(PACKAGE_BUGREPORT "tsp@astrium.eads.net")
 
 MESSAGE(STATUS "Configuring ${PACKAGE_NAME} version ${PACKAGE_VERSION}")
 INCLUDE(CheckFunctionExists)
 #INCLUDE(CMakePrintSystemInformation)
 
-CHECK_FUNCTION_EXISTS(nanosleep HAS_NANOSLEEP)
-IF(HAS_NANOSLEEP)
-  ADD_DEFINITIONS(-DTSP_SYSTEM_HAVE_NANOSLEEP)
-ENDIF(HAS_NANOSLEEP)
+# AP : Migration sous Windows
+# Ecrire un module cmake FindXXXX par element de solution testee:
+#    - FindPthreadWin32
+#    - FindACPTL_ONCRPC
 
+################ Visual Studio (VC) Check ####################
+IF (WIN32)
+	SET(CMAKE_INSTALL_VS "C:/Program Files/Microsoft Visual Studio .NET 2003/Vc7")
+    SET(TSP_WIN32_LIB TspWin32)
+ELSE (WIN32)
+    SET(TSP_WIN32_LIB)
+ENDIF (WIN32)
+
+################ PthreadWin32 Check ####################
+IF (BUILD_WIN32_PTHREADWIN32)
+	FIND_PACKAGE(PthreadWin32 REQUIRED)
+	IF (PTHREADWIN32_FOUND)
+		LINK_DIRECTORIES(${PTHREADWIN32_LIBRARY_DIRS})
+		INCLUDE_DIRECTORIES(${PTHREADWIN32_INCLUDE_DIRS})		
+		GET_FILENAME_COMPONENT(PTHREAD_LIBRARY_NAME ${PTHREADWIN32_LIBRARY} NAME_WE)
+	ENDIF (PTHREADWIN32_FOUND)
+ENDIF (BUILD_WIN32_PTHREADWIN32)
+
+################ ACPLT_ONCRPC Check ####################
+IF (BUILD_WIN32_ACPLT_ONCPRC)
+	FIND_PACKAGE(ACPLT_ONCRPC)
+	IF (ACPLT_ONCRPC_FOUND)
+		LINK_DIRECTORIES(${ACPLT_ONCRPC_LIBRARY_DIRS})
+		INCLUDE_DIRECTORIES(${ACPLT_ONCRPC_INCLUDE_DIRS})
+	ENDIF (ACPLT_ONCRPC_FOUND)
+ENDIF (BUILD_WIN32_ACPLT_ONCPRC)
+
+# AP : Migration sous Windows
+IF (WIN32)	
+	ADD_DEFINITIONS(-DTSP_SYSTEM_USE_WIN32_SLEEP)
+ELSE (WIN32)
+	CHECK_FUNCTION_EXISTS(nanosleep HAS_NANOSLEEP)
+	IF(HAS_NANOSLEEP)
+		ADD_DEFINITIONS(-DTSP_SYSTEM_HAVE_NANOSLEEP)
+	ELSE (HAS_NANOSLEEP)
+		CHECK_FUNCTION_EXISTS(usleep HAS_THREADSAFE_USLEEP)
+		IF (HAS_THREADSAFE_USLEEP)
+			ADD_DEFINITIONS(-DTSP_SYSTEM_HAVE_THREADSAFE_USLEEP)
+		ENDIF (HAS_THREADSAFE_USLEEP)
+	ENDIF(HAS_NANOSLEEP)
+			
+	CHECK_FUNCTION_EXISTS(gethrtime HAS_GETHRTIME)
+	IF(HAS_GETHRTIME)
+		ADD_DEFINITIONS(-DTSP_SYSTEM_HAVE_GETHRTIME)
+	ENDIF (HAS_GETHRTIME)
+	SET(PTHREAD_LIBRARY_NAME "pthread")
+ENDIF (WIN32)
 
 INCLUDE_DIRECTORIES(
+  ${CMAKE_BINARY_DIR}/src/core/include
+  ${CMAKE_BINARY_DIR}/src/core
+  ${CMAKE_BINARY_DIR}/src/core/rpc
   ${CMAKE_SOURCE_DIR}/src/core/include
   ${CMAKE_SOURCE_DIR}/src/core/
   ${CMAKE_SOURCE_DIR}/src/core/driver
@@ -48,7 +129,7 @@ INCLUDE_DIRECTORIES(
   ${CMAKE_SOURCE_DIR}/src/util/libutil
   ${CMAKE_SOURCE_DIR}/src/core/ctrl_init
   ${CMAKE_SOURCE_DIR}/src/core/ctrl
-  ${CMAKE_SOURCE_DIR}/src/util/libtspcfg/
+  ${CMAKE_SOURCE_DIR}/src/util/libtspcfg
   )
 
 #
@@ -112,16 +193,100 @@ IF (BUILD_XMLRPC)
 ENDIF (BUILD_XMLRPC)
 
 ################ BUILD related config ############################
-IF (NOT CMAKE_BUILD_TYPE)
- SET(CMAKE_BUILD_TYPE "Debug")
-ENDIF (NOT CMAKE_BUILD_TYPE)
 
 IF (CMAKE_BUILD_TYPE STREQUAL "Debug")
   ADD_DEFINITIONS(-DUSE_STRACE)
 ENDIF (CMAKE_BUILD_TYPE STREQUAL "Debug")
 
-SET(LIBRARY_OUTPUT_PATH    ${CMAKE_SOURCE_DIR}/exec/${CMAKE_SYSTEM_NAME}/${CMAKE_BUILD_TYPE}/lib)
-SET(EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/exec/${CMAKE_SYSTEM_NAME}/${CMAKE_BUILD_TYPE}/bin)
+IF (WIN32)
+  SET(LIBRARY_OUTPUT_PATH    ${CMAKE_BINARY_DIR}/${CMAKE_SYSTEM_NAME}/bin)
+  SET(EXECUTABLE_OUTPUT_PATH ${LIBRARY_OUTPUT_PATH})
+  IF (BUILD_WIN32_PTHREADWIN32 AND PTHREADWIN32_FOUND)
+	## installer
+	INSTALL(PROGRAMS ${PTHREADWIN32_INSTALL} DESTINATION external/${PTHREAD_LIBRARY_NAME}/sources)
+	## external include
+	INSTALL(FILES	${PTHREADWIN32_INCLUDE_DIRS}/pthread.h 
+					${PTHREADWIN32_INCLUDE_DIRS}/sched.h 
+					${PTHREADWIN32_INCLUDE_DIRS}/semaphore.h 
+			DESTINATION external/${PTHREAD_LIBRARY_NAME}/include)
+	## external lib and dll
+	INSTALL(FILES ${PTHREADWIN32_LIBRARY_DIRS}/${PTHREAD_LIBRARY_NAME}.lib 
+			DESTINATION external/${PTHREAD_LIBRARY_NAME}/lib)
+	INSTALL(FILES ${PTHREADWIN32_LIBRARY_DIRS}/${PTHREAD_LIBRARY_NAME}.dll 
+			DESTINATION external/${PTHREAD_LIBRARY_NAME}/bin)
+    ## Copy .dll ##    
+    CONFIGURE_FILE(${PTHREADWIN32_LIBRARY_DIRS}/${PTHREAD_LIBRARY_NAME}.dll ${EXECUTABLE_OUTPUT_PATH}/${CMAKE_BUILD_TYPE}/${PTHREAD_LIBRARY_NAME}.dll COPYONLY)
+	## Install ##
+	INSTALL(FILES ${PTHREADWIN32_LIBRARY_DIRS}/${PTHREAD_LIBRARY_NAME}.dll DESTINATION bin)
+    
+    IF (CMAKE_BUILD_TYPE STREQUAL "Debug")
+		## debug file ##
+		IF (EXISTS ${PTHREADWIN32_LIBRARY_DIRS}/${PTHREAD_LIBRARY_NAME}.pdb)
+		   CONFIGURE_FILE(${PTHREADWIN32_LIBRARY_DIRS}/${PTHREAD_LIBRARY_NAME}.pdb ${EXECUTABLE_OUTPUT_PATH}/${CMAKE_BUILD_TYPE}/${PTHREAD_LIBRARY_NAME}.pdb COPYONLY)
+		   INSTALL(FILES ${PTHREADWIN32_LIBRARY_DIRS}/${PTHREAD_LIBRARY_NAME}.pdb DESTINATION bin)
+		   INSTALL(FILES ${PTHREADWIN32_LIBRARY_DIRS}/${PTHREAD_LIBRARY_NAME}.pdb DESTINATION external/${PTHREAD_LIBRARY_NAME}/bin)
+		ENDIF (EXISTS ${PTHREADWIN32_LIBRARY_DIRS}/${PTHREAD_LIBRARY_NAME}.pdb)
+    ENDIF (CMAKE_BUILD_TYPE STREQUAL "Debug")
+  ENDIF (BUILD_WIN32_PTHREADWIN32 AND PTHREADWIN32_FOUND)
+  IF (BUILD_WIN32_ACPLT_ONCPRC AND ACPLT_ONCRPC_FOUND)
+	## installer
+	INSTALL(PROGRAMS ${ACPLT_ONCRPC_INSTALL} DESTINATION external/oncrpc/source)
+	## external include	
+	INSTALL(FILES	${ACPLT_INCLUDE_DIR1}/AUTH.H
+					${ACPLT_INCLUDE_DIR1}/AUTH_UNI.H
+					${ACPLT_INCLUDE_DIR1}/BCOPY.H
+					${ACPLT_INCLUDE_DIR1}/CLNT.H
+					${ACPLT_INCLUDE_DIR1}/NETDB.H
+					${ACPLT_INCLUDE_DIR1}/RPC.H
+					${ACPLT_INCLUDE_DIR1}/RPC_MSG.H
+					${ACPLT_INCLUDE_DIR1}/SVC.H
+					${ACPLT_INCLUDE_DIR1}/SVC_AUTH.H
+					${ACPLT_INCLUDE_DIR1}/TYPES.H
+					${ACPLT_INCLUDE_DIR1}/XDR.H 
+			DESTINATION external/oncrpc/include/rpc)
+	## external lib and dll
+	INSTALL(FILES ${ACPLT_ONCRPC_LIBRARY_DIRS}/oncrpc.lib 
+			DESTINATION external/oncrpc/lib)
+	INSTALL(FILES ${ACPLT_ONCRPC_LIBRARY_DIRS}/oncrpc.dll 
+			DESTINATION external/oncrpc/bin)
+	# external programs
+	INSTALL(PROGRAMS ${ACPLT_ONCRPC_BINARY_DIRS}/rpcinfo.exe
+					 ${ACPLT_ONCRPC_BINARY_DIRS}/rpcgen.exe
+					 ${ACPLT_ONCRPC_BINARY_DIRS}/portmap.exe
+					 ${ACPLT_ONCRPC_BINARY_DIRS}/pm_ascii.exe
+					 ${ACPLT_ONCRPC_BINARY_DIRS}/inst_pm.exe
+			DESTINATION external/oncrpc/bin)
+	## external services
+	INSTALL(FILES ${ACPLT_ONCRPC_BINARY_DIRS}/install.bat
+			DESTINATION external/oncrpc/service)
+	INSTALL(FILES ${ACPLT_ONCRPC_ETC_DIR}/rpc
+	        DESTINATION external/oncrpc/etc)
+	## Copy .dll ##
+    CONFIGURE_FILE(${ACPLT_ONCRPC_LIBRARY_DIRS}/oncrpc.dll ${EXECUTABLE_OUTPUT_PATH}/${CMAKE_BUILD_TYPE}/oncrpc.dll COPYONLY)
+    ## Install ##
+    INSTALL(FILES ${ACPLT_ONCRPC_LIBRARY_DIRS}/oncrpc.dll DESTINATION bin)
+    
+    IF (CMAKE_BUILD_TYPE STREQUAL "Debug")
+		## debug file ##
+		IF (EXISTS ${ACPLT_ONCRPC_LIBRARY_DIRS}/oncrpc.pdb)
+		   CONFIGURE_FILE(${ACPLT_ONCRPC_LIBRARY_DIRS}/oncrpc.pdb ${EXECUTABLE_OUTPUT_PATH}/${CMAKE_BUILD_TYPE}/oncrpc.pdb COPYONLY)
+		   INSTALL(FILES ${ACPLT_ONCRPC_LIBRARY_DIRS}/oncrpc.pdb DESTINATION bin)
+		   INSTALL(FILES ${ACPLT_ONCRPC_LIBRARY_DIRS}/oncrpc.pdb DESTINATION external/oncrpc/bin)
+		ENDIF (EXISTS ${ACPLT_ONCRPC_LIBRARY_DIRS}/oncrpc.pdb)
+    ENDIF (CMAKE_BUILD_TYPE STREQUAL "Debug")
+  ENDIF (BUILD_WIN32_ACPLT_ONCPRC AND ACPLT_ONCRPC_FOUND)
+  
+  IF (MSVC71)
+    ## Install FIX the path to le system directoy##
+    INSTALL(FILES C:/Windows/system32/msvcr71d.dll
+				  C:/Windows/system32/mfc71d.dll
+			DESTINATION external/msvc)
+  ENDIF (MSVC71)
+ELSE (WIN32)
+  #Nothing to do.
+  SET(LIBRARY_OUTPUT_PATH    ${CMAKE_BINARY_DIR}/${CMAKE_SYSTEM_NAME}/${CMAKE_BUILD_TYPE}/lib)
+  SET(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/${CMAKE_SYSTEM_NAME}/${CMAKE_BUILD_TYPE}/bin)
+ENDIF (WIN32)
 
 SET(DIST_DIR ${PROJECT_SOURCE_DIR}/dist)
 MARK_AS_ADVANCED(DIST_DIR)
@@ -129,52 +294,200 @@ MARK_AS_ADVANCED(DIST_DIR)
 LINK_DIRECTORIES(${LIBRARY_OUTPUT_PATH})
 
 ################ INSTALL related config ############################
-SET(CMAKE_INSTALL_PREFIX /opt/${PACKAGE_NAME}-${PACKAGE_VERSION})
-
-ADD_CUSTOM_TARGET(cmake_clean
-  COMMAND sh -c "rm -rf ${CMAKE_SOURCE_DIR}/exec"
-  COMMAND sh -c "rm -f  ${CMAKE_SOURCE_DIR}/CMakeCache.txt"
-  COMMAND sh -c "${CMAKE_SOURCE_DIR}/src/scripts/purge_CMakeFiles.sh ${CMAKE_SOURCE_DIR}")
+IF (NOT CMAKE_INSTALL_PREFIX)
+  SET(CMAKE_INSTALL_PREFIX "/opt/${PACKAGE_NAME}-${PACKAGE_VERSION}" CACHE PATH "Install path prefix" FORCE)
+ENDIF (NOT CMAKE_INSTALL_PREFIX)
 
 ################ TSP SDK related config ###########################
-SET(HOST_TARGET ${CMAKE_SYSTEM_NAME})
-SET(TSP_BASE  ${PROJECT_SOURCE_DIR})
-
-MARK_AS_ADVANCED(
-  HOST_TARGET
-  TSP_BASE)
-
 TSP_CONFIGURE_FILE_AUTOTOOLS_COMPAT(
   src/scripts/tsp_dev.login.in
-  src/scripts/tsp_dev.login
+  ${CMAKE_BINARY_DIR}/src/scripts/tsp_dev.login
   @ONLY)
 
 TSP_CONFIGURE_FILE_AUTOTOOLS_COMPAT(
   src/scripts/tsp_dev.login.sh.in 
-  src/scripts/tsp_dev.login.sh 
+  ${CMAKE_BINARY_DIR}/src/scripts/tsp_dev.login.sh
   @ONLY)
 
 TSP_CONFIGURE_FILE_AUTOTOOLS_COMPAT(
   src/scripts/tsp.pc.in
-  src/scripts/tsp.pc
+  ${CMAKE_BINARY_DIR}/src/scripts/tsp.pc
   @ONLY)
 
+TSP_CONFIGURE_FILE_AUTOTOOLS_COMPAT(
+  src/scripts/tsp_profile.sh.in
+  ${CMAKE_BINARY_DIR}/src/scripts/tsp.profile.sh
+  @ONLY)
+
+TSP_CONFIGURE_FILE_AUTOTOOLS_COMPAT(
+  src/scripts/tsp_profile.csh.in
+  ${CMAKE_BINARY_DIR}/src/scripts/tsp.profile.csh
+  @ONLY)
+
+TSP_CONFIGURE_FILE_AUTOTOOLS_COMPAT(
+  src/scripts/tsp.spec.in
+  ${CMAKE_BINARY_DIR}/src/scripts/tsp.spec
+  @ONLY)
+
+INSTALL(
+  FILES 
+  ${CMAKE_BINARY_DIR}/src/scripts/tsp.pc 
+  ${CMAKE_BINARY_DIR}/src/scripts/tsp.profile.sh
+  ${CMAKE_BINARY_DIR}/src/scripts/tsp.profile.csh
+  DESTINATION scripts)
+
 ## Now add subdirectories
-ADD_SUBDIRECTORY(external)
-ADD_SUBDIRECTORY(src)
+IF (BUILD_ONLY_TSP_PORT)
+  ADD_SUBDIRECTORY(tests/tsp_port)
+ELSE (BUILD_ONLY_TSP_PORT)
+  ADD_SUBDIRECTORY(tests/tsp_port)
+  ADD_SUBDIRECTORY(external)
+  ADD_SUBDIRECTORY(src)
+ENDIF (BUILD_ONLY_TSP_PORT)
+
+ENABLE_TESTING()
+ADD_TEST(TestSocket ${EXECUTABLE_OUTPUT_PATH}/tsp_port_test -t socket -u localhost)
+
+SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "The Transport Sample Protocol")
+SET(CPACK_PACKAGE_VENDOR "The TSP Team")
+SET(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/README")
+SET(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/COPYING")
+SET(CPACK_PACKAGE_NAME tsp)
+SET(CPACK_SYSTEM_NAME ${CMAKE_SYSTEM_NAME})
+
+IF (NOT WIN32)
+  SET(CPACK_SOURCE_GENERATOR "TGZ;ZIP")
+  SET(CPACK_GENERATOR "TGZ")
+  EXECUTE_PROCESS(COMMAND uname -m
+    OUTPUT_VARIABLE MACHINE)
+  STRING(REPLACE "\n" "" 
+    MACHINE
+    ${MACHINE})
+  SET(CPACK_SYSTEM_NAME ${CMAKE_SYSTEM_NAME}-${MACHINE})
+ELSE (NOT WIN32) 
+  SET(CPACK_SOURCE_GENERATOR "ZIP")
+ENDIF (NOT WIN32)
+
+
+#How to exclude some files from source?
+#SET(CPACK_SOURCE_STRIP_FILES "cscope.out;cscope.files")
+SET(CPACK_SOURCE_IGNORE_FILES "/CVS/;/\\\\.svn/;\\\\.swp$;\\\\.#;/#;.*~;cscope.*")
+SET(CPACK_PACKAGE_VERSION ${PACKAGE_VERSION})
+SET(CPACK_PACKAGE_VERSION_MAJOR "0")
+SET(CPACK_PACKAGE_VERSION_MINOR "8")
+SET(CPACK_PACKAGE_VERSION_PATCH "1")
+
+IF(WIN32)
+    ## Customize NSIS installer
+    SET(CPACK_PACKAGE_ICON "${CMAKE_SOURCE_DIR}/make/\\\\pieuvre_tsp_graph.bmp")
+    SET(CPACK_NSIS_CREATE_ICONS "
+		CreateShortCut \\\"$SMPROGRAMS\\\\$STARTMENU_FOLDER\\\\TSP Help.lnk\\\" \\\"$INSTDIR\\\\doc\\\\html\\\\tsp.chm\\\"
+		CreateShortCut \\\"$SMPROGRAMS\\\\$STARTMENU_FOLDER\\\\TSP RPC CleanUp.lnk\\\" \\\"$INSTDIR\\\\bin\\\\tsp_rpc_cleanup.exe\\\"
+	    CreateShortCut \\\"$SMPROGRAMS\\\\$STARTMENU_FOLDER\\\\TSP StubServer.lnk\\\" \\\"$INSTDIR\\\\bin\\\\tsp_stub_server.exe\\\"
+	    CreateShortCut \\\"$SMPROGRAMS\\\\$STARTMENU_FOLDER\\\\TSP StdOutClient.lnk\\\" \\\"$INSTDIR\\\\bin\\\\tsp_stdout_client.exe\\\" \\\"-p 10 -s 2 -n 0\\\"
+	")
+	SET(CPACK_NSIS_DELETE_ICONS "
+		Delete \\\"$SMPROGRAMS\\\\$MUI_TEMP\\\\TSP Help.lnk\\\"
+		Delete \\\"$SMPROGRAMS\\\\$MUI_TEMP\\\\TSP RPC CleanUp.lnk\\\"
+	    Delete \\\"$SMPROGRAMS\\\\$MUI_TEMP\\\\TSP StubServer.lnk\\\"
+	    Delete \\\"$SMPROGRAMS\\\\$MUI_TEMP\\\\TSP StdOutClient.lnk\\\"
+	")
+    SET(CPACK_NSIS_DISPLAY_NAME "${CPACK_PACKAGE_INSTALL_DIRECTORY} Transport Sample Protocol (TSP)")
+    SET(CPACK_NSIS_HELP_LINK "https:\\\\\\\\savannah.nongnu.org\\\\projects\\\\tsp")
+    SET(CPACK_NSIS_URL_INFO_ABOUT "http:\\\\\\\\www.ts2p.org\\\\tsp")
+    SET(CPACK_NSIS_CONTACT "tsp@astrium.eads.net")
+    SET(CPACK_NSIS_MODIFY_PATH ON)
+	## Copy dll to the system path	
+	IF (BUILD_WIN32_ACPLT_ONCPRC AND ACPLT_ONCRPC_FOUND)
+		SET(CPACK_NSIS_EXTRA_INSTALL_COMMANDS "
+		    ExecWait  \\\"$INSTDIR\\\\external\\\\oncrpc\\\\bin\\\\inst_pm.exe remove\\\"
+		    CopyFiles \\\"$INSTDIR\\\\external\\\\oncrpc\\\\bin\\\\oncrpc.dll\\\" \\\"$SYSDIR\\\"
+		    CopyFiles \\\"$INSTDIR\\\\external\\\\oncrpc\\\\bin\\\\portmap.exe\\\" \\\"$SYSDIR\\\"
+		    CreateDirectory \\\"$SYSDIR\\\\drivers\\\\etc\\\"
+		    CopyFiles \\\"$INSTDIR\\\\external\\\\oncrpc\\\\etc\\\\rpc\\\" \\\"$SYSDIR\\\\drivers\\\\etc\\\"
+		    ExecWait  \\\"$INSTDIR\\\\external\\\\oncrpc\\\\bin\\\\inst_pm.exe $SYSDIR\\\\portmap.exe\\\"			
+		")
+	ENDIF (BUILD_WIN32_ACPLT_ONCPRC AND ACPLT_ONCRPC_FOUND)
+	
+	IF (BUILD_WIN32_PTHREADWIN32 AND PTHREADWIN32_FOUND)
+		SET(CPACK_NSIS_EXTRA_INSTALL_COMMANDS ${CPACK_NSIS_EXTRA_INSTALL_COMMANDS} "
+			CopyFiles \\\"$INSTDIR\\\\bin\\\\${PTHREAD_LIBRARY_NAME}.dll\\\" \\\"$SYSDIR\\\"
+		")
+	ENDIF (BUILD_WIN32_PTHREADWIN32 AND PTHREADWIN32_FOUND)
+	
+	SET(CPACK_NSIS_EXTRA_INSTALL_COMMANDS ${CPACK_NSIS_EXTRA_INSTALL_COMMANDS} "
+		CopyFiles \\\"$INSTDIR\\\\bin\\\\TspWin32.dll\\\" \\\"$SYSDIR\\\"
+		CopyFiles \\\"$INSTDIR\\\\bin\\\\Tsp_*.dll\\\" \\\"$SYSDIR\\\"
+	")
+	
+	IF (MSVC71)
+		SET(CPACK_NSIS_EXTRA_INSTALL_COMMANDS ${CPACK_NSIS_EXTRA_INSTALL_COMMANDS} "
+			IfFileExists \\\"$SYSDIR\\\\msvcr71d.dll\\\" next1 0
+			CopyFiles \\\"$INSTDIR\\\\external\\\\msvc\\\\msvcr71d.dll\\\" \\\"$SYSDIR\\\"
+			next1:
+			IfFileExists \\\"$SYSDIR\\\\mfc71d.dll\\\" next2 0
+			CopyFiles \\\"$INSTDIR\\\\external\\\\msvc\\\\mfc71d.dll\\\" \\\"$SYSDIR\\\"
+			next2:
+		")
+	ENDIF (MSVC71)
+	
+#	SET(CPACK_NSIS_EXTRA_INSTALL_COMMANDS ${CPACK_NSIS_EXTRA_INSTALL_COMMANDS} "
+#		MessageBox MB_OK \\\"Copy Libraries to the system directory\\\"
+#	")
+	
+	IF (BUILD_WIN32_PTHREADWIN32 AND PTHREADWIN32_FOUND)
+		SET(CPACK_NSIS_EXTRA_UNINSTALL_COMMANDS "
+			Delete \\\"$SYSDIR\\\\${PTHREAD_LIBRARY_NAME}.dll\\\"
+		")
+	ENDIF (BUILD_WIN32_PTHREADWIN32 AND PTHREADWIN32_FOUND)
+	
+	SET(CPACK_NSIS_EXTRA_UNINSTALL_COMMANDS ${CPACK_NSIS_EXTRA_UNINSTALL_COMMANDS} "
+		Delete \\\"$SYSDIR\\\\TspWin32.dll\\\"
+		Delete \\\"$SYSDIR\\\\Tsp_*.dll\\\"
+		ExecWait  \\\"$INSTDIR\\\\external\\\\oncrpc\\\\bin\\\\inst_pm.exe remove\\\"
+		Delete    \\\"$SYSDIR\\\\oncrpc.dll\\\"
+		Delete    \\\"$SYSDIR\\\\portmap.exe\\\"
+		Delete    \\\"$SYSDIR\\\\drivers\\\\etc\\\\rpc\\\"
+	")
+	
+#	SET(CPACK_NSIS_EXTRA_UNINSTALL_COMMANDS ${CPACK_NSIS_EXTRA_UNINSTALL_COMMANDS} "
+#		MessageBox MB_OK \\\"Delete Libraries from the system directory\\\"
+#	")
+ENDIF(WIN32)
+
+#SET(CPACK_SOURCE_PACKAGE_FILE_NAME ${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-Source)
+
+INCLUDE(CPack)
+
+# Temporary RPM Target waiting for CPack support
+IF (UNIX)
+
+  FILE(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/RPM)
+  FILE(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/RPM/tmp)
+  FILE(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/RPM/BUILD)
+  FILE(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/RPM/RPMS)
+  FILE(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/RPM/SOURCES)
+  FILE(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/RPM/SPECS)
+  FILE(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/RPM/SRPMS)
+
+  ADD_CUSTOM_TARGET(srpm
+    COMMAND cp ${CMAKE_BINARY_DIR}/${CPACK_SOURCE_PACKAGE_FILE_NAME}.tar.gz ${CMAKE_BINARY_DIR}/RPM/SOURCES
+    COMMAND cp ${CMAKE_BINARY_DIR}/src/scripts/tsp.spec ${CMAKE_BINARY_DIR}/RPM/SPECS
+    COMMAND rpmbuild -bs -vv --define="_topdir ${CMAKE_BINARY_DIR}/RPM" --buildroot=${CMAKE_BINARY_DIR}/RPM/tmp ${CMAKE_BINARY_DIR}/src/scripts/tsp.spec
+    )
+  
+  ADD_CUSTOM_TARGET(rpm
+    COMMAND cp ${CMAKE_BINARY_DIR}/${CPACK_SOURCE_PACKAGE_FILE_NAME}.tar.gz ${CMAKE_BINARY_DIR}/RPM/SOURCES
+    COMMAND cp ${CMAKE_BINARY_DIR}/src/scripts/tsp.spec ${CMAKE_BINARY_DIR}/RPM/SPECS
+    COMMAND rpmbuild -bb -vv  --define="_topdir ${CMAKE_BINARY_DIR}/RPM" --buildroot=${CMAKE_BINARY_DIR}/RPM/tmp ${CMAKE_BINARY_DIR}/src/scripts/tsp.spec
+    )  
+ENDIF (UNIX)
+
+
 MESSAGE(STATUS "Configuring ${PACKAGE_NAME} version ${PACKAGE_VERSION}...Done.")
 
-MESSAGE("***********************************************************")
-MESSAGE("*  TSP has been successfully configured.                  *")
-MESSAGE("*  you should now do either                               *")
-MESSAGE("*     source src/scripts/tsp_dev.login  [csh/tcsh]        *")
-MESSAGE("*     . src/scripts/tsp_dev.login.sh    [sh/bash/zsh/...] *")
-MESSAGE("*  And then you may build with a simple                   *")
-MESSAGE("*     make                                                *")  
-MESSAGE("*                                                         *")
-MESSAGE("*  Enjoy TSP !!!                                          *")
-MESSAGE("*  The TSP Team -- ${PACKAGE_BUGREPORT}                   *")
-MESSAGE("***********************************************************")
-
-
-
+IF (WIN32)
+  MESSAGE(STATUS "*** TSP for WIN32 has been successfully configured ********")
+ELSE (WIN32)
+  MESSAGE(STATUS "*** TSP has been successfully configured ********")
+ENDIF (WIN32)

@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_data_sender.c,v 1.25 2006-05-04 21:44:47 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_data_sender.c,v 1.26 2006-10-18 09:58:48 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -35,6 +35,12 @@ stream  for the asked symbols
 
 -----------------------------------------------------------------------
  */
+
+#ifdef WIN32
+    #define assert(exp)     ((void)0)
+#else
+    #include <assert.h>
+#endif
 
 #include <tsp_sys_headers.h>
 #include <rpc/types.h>

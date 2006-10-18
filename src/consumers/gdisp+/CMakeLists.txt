@@ -50,10 +50,18 @@ INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/external/gtk-1.2)
 
 IF(SHAREDLIB_ENABLED)
   ADD_LIBRARY(tsp_gdispUtils gdisp_utils gdisp_toString gdisp_xml gdisp_format)
+  TSP_LIBRARY_INSTALL(tsp_gdispUtils)
   ADD_LIBRARY(tsp_gdispPlot2D gdisp_plot2D)
+  TSP_LIBRARY_INSTALL(tsp_gdispPlot2D)
   ADD_LIBRARY(tsp_gdispPlotText gdisp_plotText)
+  TSP_LIBRARY_INSTALL(tsp_gdispPlotText)
   IF(OPENGL_FOUND AND OPENL_GLU_FOUND)
     ADD_LIBRARY(tsp_gdispPlotOrbital gdisp_plotOrbital gdisp_openglUtils)
+    TSP_LIBRARY_INSTALL(tsp_gdispPlotOrbital)
     TARGET_LINK_LIBRARIES(tsp_gdispPlotOrbital GL GLU)
   ENDIF(OPENGL_FOUND AND OPENL_GLU_FOUND)
+
 ENDIF(SHAREDLIB_ENABLED)
+
+TSP_PROGRAM_INSTALL(targa)
+

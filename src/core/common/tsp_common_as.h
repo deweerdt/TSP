@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_common_as.h,v 1.3 2006-05-28 14:37:13 erk Exp $
+$Id: tsp_common_as.h,v 1.4 2006-10-18 09:58:48 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -69,7 +69,7 @@ BEGIN_C_DECLS
  * @param[in] status
  * @return the new TSP_answer_sample_t
  */
-TSP_answer_sample_t*
+_EXPORT_TSP_COMMON TSP_answer_sample_t*
 TSP_AS_new(int32_t version_id,
 	   uint32_t channel_id,
 	   int32_t p_timeout,
@@ -83,9 +83,9 @@ TSP_AS_new(int32_t version_id,
 /**
  * Delete an Answer Sample.
  * @param[in] as  pointer to pointer to the Answer Sample to be destroy
- * return  TSP_STATUS_OK if ok
+ * @return  TSP_STATUS_OK if ok
  */
-int32_t
+_EXPORT_TSP_COMMON int32_t
 TSP_AS_delete(TSP_answer_sample_t** as);
 
 /**
@@ -100,9 +100,9 @@ TSP_AS_delete(TSP_answer_sample_t** as);
  * @param[in] max_consumer_number the maximum number of consumer the provider is able to handle.
  * @param[in] current_consumer_number the current number of connected consumer.
  * @param[in] status the TSP STATUS of the answer.
- * return  TSP_STATUS_OK if ok
+ * @return  TSP_STATUS_OK if ok
  */
-int32_t
+_EXPORT_TSP_COMMON int32_t
 TSP_AS_initialize(TSP_answer_sample_t* as,
 		  int32_t version_id,
 		  uint32_t channel_id,
@@ -117,9 +117,9 @@ TSP_AS_initialize(TSP_answer_sample_t* as,
 /**
  * Destroy the content of an Answer Sample.
  * @param[in,out] as the Answer Sample whose content should be destroyed.
- * return  TSP_STATUS_OK if ok
+ * @return  TSP_STATUS_OK if ok
  */
-int32_t
+_EXPORT_TSP_COMMON int32_t
 TSP_AS_finalize(TSP_answer_sample_t* as);
 
 /** @} */

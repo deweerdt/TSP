@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_common_status.c,v 1.1 2006-05-10 12:11:40 erk Exp $
+$Id: tsp_common_status.c,v 1.2 2006-10-18 09:58:48 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -44,6 +44,13 @@ Purpose   : Main implementation for the producer module
 #include <tsp_common_macros.h>
 #define TSP_COMMON_STATUS_C
 #include <tsp_common_status.h>
+#ifdef WIN32
+    #include <stdio.h>
+    #define snprintf	(int) _snprintf
+    #define assert(exp)     ((void)0)
+#else
+    #include <assert.h>
+#endif
 
 #define TSP_STATUS_MSG_MAX_LENGTH 1024
 

@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_stream_receiver.c,v 1.11 2006-02-26 13:36:05 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_stream_receiver.c,v 1.12 2006-10-18 09:58:48 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -37,10 +37,15 @@ stream  from the producer for the asked symbols. This layer is the network layer
 
 #include "tsp_sys_headers.h"
 
+#if defined (WIN32)
+#include <Windows.h>
+#include <WinSock2.h>
+#else
 #include <netdb.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
 #include <sys/socket.h>
+#endif
 
 #ifndef SHUT_RDWR
 #define SHUT_RDWR 2
@@ -259,24 +264,34 @@ int TSP_stream_receiver_receive(TSP_stream_receiver_t receiver, char *buffer, in
     {
       while ( bufferLen > 0)
 	{
-	  if ( (nread = read(identSocket, &buffer[Total], bufferLen)) < 0)
-	    {
+	  
+/* AP : Migration sous Windows */
+/* sous windows _errno est la variable globale */
+#ifdef WIN32
+		if ( (nread = recv(identSocket, &buffer[Total], bufferLen,0)) < 0)
+	  {
+          if( _errno == EINTR )
+#else
+		if ( (nread = read(identSocket, &buffer[Total], bufferLen)) < 0)
+	  {
 	      if( errno == EINTR )
-		{
-		  /* The read might have been interrupted by a signal */
-		  nread = 0;
-		}
+#endif
+		  {
+		    /* The read might have been interrupted by a signal */
+		    nread = 0;
+		  }
 	      else 
-		{
+		  {
 		  
-		  STRACE_INFO(("read failed"));
+		    STRACE_INFO(("read failed"));
+		    return FALSE;
+		  }
+	  }
+      else if (nread == 0)
+	  {
+		  STRACE_INFO(("Received socket EOF"));
 		  return FALSE;
-		}
-	    }else if (nread == 0)
-	      {
-		STRACE_INFO(("Received socket EOF"));
-		return FALSE;
-	      }
+	  }
 	  
 	  Total += nread;
 	  bufferLen -= nread;

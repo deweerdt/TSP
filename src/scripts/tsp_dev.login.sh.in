@@ -1,50 +1,34 @@
 #!/bin/sh
 # Do not EDIT: @configure_input@
 ##############################
-# Find host type
+# Set Host type
 ##############################
 
-export HOST_ARCH=@HOST_TARGET@
+export HOST_ARCH=@CMAKE_SYSTEM_NAME@
 echo "Using host target <$HOST_ARCH>"
 
-# %%tsp_base%% will be set by the configure script 
-export TSP_BASE=@TSP_BASE@
-echo "Using TSP_BASE=$TSP_BASE"
-
-##############################
-# HOME_EXEC_BASE / HOME_EXEC_CURRENT
-##############################
-
-export HOME_EXEC_BASE=$TSP_BASE/exec
-export HOME_EXEC_CURRENT=$HOME_EXEC_BASE/current
-
+# %%tsp_xxx_base%% will be set by CMake 
+export TSP_SRC_BASE=@PROJECT_SOURCE_DIR@
+export TSP_BIN_BASE=@PROJECT_BINARY_DIR@
+echo   "Using TSP_SRC_BASE=$TSP_SRC_BASE"
+echo   "Using TSP_BIN_BASE=$TSP_BIN_BASE"
 
 ##############################
 # Paths
 ##############################
-
-
-export PATH=${TSP_BASE}/src/scripts:${HOME_EXEC_BASE}/${HOST_ARCH}/Debug/bin:${HOME_EXEC_BASE}/scripts:${HOME_EXEC_CURRENT}/${HOST_ARCH}/debug/bin:${HOME_EXEC_CURRENT}/scripts:${PATH}
-
+export PATH=${TSP_BIN_BASE}/${HOST_ARCH}/Debug/bin:${TSP_BIN_BASE}/scripts:${PATH}
 
 ##############################
 # DEVBASE
 ##############################
-
-
-export DEVBASE=$TSP_BASE
-echo "Using DEVBASE=$DEVBASE"
-
-if [ -z "$STRACE_DEBUG" ]; then 
+if [ -z "${STRACE_DEBUG}" ]; then 
     export STRACE_DEBUG=1
 fi
-echo "Using STRACE_DEBUG=$STRACE_DEBUG"
+echo "Using STRACE_DEBUG=${STRACE_DEBUG}"
 
+alias go_bin_tsp='cd ${TSP_BIN_BASE}/${HOST_ARCH}/Debug/bin'
+alias go_src_tsp='cd ${TSP_SRC_BASE}'
 
-alias go_bin='cd ${HOME_EXEC_CURRENT}/${HOST_ARCH}/debug/bin'
-alias go_tsp='cd ${TSP_BASE}'
-alias go_scripts='cd ${TSP_BASE}/src/scripts'
-alias go_tests='cd ${TSP_BASE}/tests'
 
 
 

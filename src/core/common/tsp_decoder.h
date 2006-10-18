@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/common/tsp_decoder.h,v 1.3 2006-04-25 21:15:05 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/common/tsp_decoder.h,v 1.4 2006-10-18 09:58:48 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -39,7 +39,7 @@ Purpose   :  Implementation for the functions used to decode the data received
 #define _TSP_DECODER_H
 
 
-#include <tsp_abs_types.h>
+#include <tsp_prjcfg.h>
 #include <tsp_rpc.h>
 
 #define TSP_SIZEOF_ENCODED_DOUBLE RNDUP(sizeof(double))
@@ -200,14 +200,14 @@ int32_t TSP_data_channel_user_decoder(void* out_user, uint32_t dimension,  char*
  * @param[in] type data type to determine the decoder to use
  * @return The address of the decoder function for the data type
  */
-TSP_data_decoder_t TSP_data_channel_get_decoder(TSP_datatype_t type);
+_EXPORT_TSP_COMMON TSP_data_decoder_t TSP_data_channel_get_decoder(TSP_datatype_t type);
 
 /**
  * Get the size of an encoded data type coming from the data stream
  * @param[in] type data type to determine the data type size
  * @return The size of an encoded ddata for the data stream 
  */
-int32_t TSP_data_channel_get_encoded_size(TSP_datatype_t type);
+_EXPORT_TSP_COMMON int32_t TSP_data_channel_get_encoded_size(TSP_datatype_t type);
 
 /** @} */
 

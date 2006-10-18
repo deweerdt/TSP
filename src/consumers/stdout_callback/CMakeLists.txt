@@ -2,6 +2,7 @@ SET(EXE_NAME tsp_stdout_client_callback)
 SET(STDOUT_SRC client_callback_stdout)
 
 ADD_EXECUTABLE(${EXE_NAME} ${STDOUT_SRC})
+TSP_PROGRAM_INSTALL(${EXE_NAME})
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/src/util/libcalc)
 
 TARGET_LINK_LIBRARIES(${EXE_NAME} tsp_consumer tsp_common tsp_services

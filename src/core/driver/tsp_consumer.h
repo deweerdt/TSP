@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_consumer.h,v 1.34 2006-05-03 21:16:38 erk Exp $
+$Id: tsp_consumer.h,v 1.35 2006-10-18 09:58:48 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -42,6 +42,17 @@ Purpose   : Main interface for the TSP consumer library
 
 #include <tsp_abs_types.h>
 #include <tsp_common.h>
+
+#undef _EXPORT_TSP_CONSUMER
+#if defined (WIN32) && defined (TSP_SHARED_LIBS)
+#  ifdef tsp_consumer_EXPORTS
+#    define _EXPORT_TSP_CONSUMER __declspec(dllexport) 
+#  else
+#    define _EXPORT_TSP_CONSUMER __declspec(dllimport) 
+#  endif
+#else
+#  define _EXPORT_TSP_CONSUMER
+#endif
 
 /**
  * @defgroup TSP_ConsumerLib Consumer Core Library
@@ -132,7 +143,7 @@ BEGIN_C_DECLS
  * @param argv Use the argv main arg before using it
  * @return TSP_STATUS_OK on success TSP_STATUS_ERROR_xxx on error.
  */
-int32_t 
+_EXPORT_TSP_CONSUMER int32_t 
 TSP_consumer_init(int* argc, char** argv[]);
 
 /**
@@ -140,7 +151,7 @@ TSP_consumer_init(int* argc, char** argv[]);
  * call this function when you are done with the librairy.
  * This function must be called once.
  */
-void 
+_EXPORT_TSP_CONSUMER void 
 TSP_consumer_end();
 
 
@@ -188,7 +199,7 @@ TSP URL format is defined by <PROTOCOL://HOST/SERVER:PORT>           \n\
 \t\tvoid, /, //, /// or :///   = rpc://localhost/(find any):(find first)     \n\
 \tOthers may have unpredictable results .. \n"
 
-TSP_provider_t TSP_consumer_connect_url(const char *url);
+_EXPORT_TSP_CONSUMER TSP_provider_t TSP_consumer_connect_url(const char *url);
 
 
 /** 
@@ -198,18 +209,18 @@ TSP_provider_t TSP_consumer_connect_url(const char *url);
  * @param provider The provider handle
  * @return The provider name
  */				  
-const char* TSP_consumer_get_connected_name(TSP_provider_t provider);		
+_EXPORT_TSP_CONSUMER const char* TSP_consumer_get_connected_name(TSP_provider_t provider);		
 
 /**
  * Disconnect one given provider.
  * @param provider IN, the provider to be disconnected from.
  */ 
-void TSP_consumer_disconnect_one(TSP_provider_t provider);
+_EXPORT_TSP_CONSUMER void TSP_consumer_disconnect_one(TSP_provider_t provider);
 
 
 /** 
  * Ask the provider for a new consumer session.
- * This function must be called and must succed for the program to be able to call
+ * This function must be called and must succeed for the program to be able to call
  * other TSP_REQUEST_* functions.
  * @param provider The provider handle
  * @param custom_argc Custom provider data stream initialisation (optional : set 0)
@@ -232,7 +243,8 @@ void TSP_consumer_disconnect_one(TSP_provider_t provider);
  * It is a way to prevent the user from providing initialisation parameters thrue the command
  * line.
  */
-int32_t 
+
+_EXPORT_TSP_CONSUMER int32_t 
 TSP_consumer_request_open(TSP_provider_t provider, int custom_argc, char* custom_argv[]);
 
 /**
@@ -242,7 +254,7 @@ TSP_consumer_request_open(TSP_provider_t provider, int custom_argc, char* custom
  * @param provider the TSP session to provider
  * @return the channel Id  if the session is open -1 if session not opened. 
  */
-uint32_t
+_EXPORT_TSP_CONSUMER uint32_t
 TSP_consumer_get_channel_id(TSP_provider_t provider);
 
 /**
@@ -250,7 +262,7 @@ TSP_consumer_get_channel_id(TSP_provider_t provider);
  * @param provider The provider handle
  * @return TSP_STATUS_OK on success TSP_STATUS_ERROR_xxx on error.
  */
-int32_t
+_EXPORT_TSP_CONSUMER int32_t
 TSP_consumer_request_close(TSP_provider_t provider);
 
 
@@ -263,7 +275,7 @@ TSP_consumer_request_close(TSP_provider_t provider);
  * @param provider The provider handle
  * @return TSP_STATUS_OK on success TSP_STATUS_ERROR_xxx on error.
  */				  
-int32_t 
+_EXPORT_TSP_CONSUMER int32_t 
 TSP_consumer_request_information(TSP_provider_t provider);
 
 /** 
@@ -277,7 +289,7 @@ TSP_consumer_request_information(TSP_provider_t provider);
  * @param filter_string the filter string
  * @return TSP_STATUS_OK on success TSP_STATUS_ERROR_xxx on error.
  */				  
-int32_t 
+_EXPORT_TSP_CONSUMER int32_t 
 TSP_consumer_request_filtered_information(TSP_provider_t provider, int filter_kind, char* filter_string);
 
 /** 
@@ -290,7 +302,7 @@ TSP_consumer_request_filtered_information(TSP_provider_t provider, int filter_ki
  * @param[in] pgis_len the length of the pgis array
  * @return TSP_STATUS_OK on success TSP_STATUS_ERROR_xxx on error.
  */
-int32_t 
+_EXPORT_TSP_CONSUMER int32_t 
 TSP_consumer_request_extended_information(TSP_provider_t provider, int32_t* pgis, int32_t pgis_len);
 
 /** 
@@ -300,7 +312,7 @@ TSP_consumer_request_extended_information(TSP_provider_t provider, int32_t* pgis
  * @param provider The provider handle
  * @return the provider extended information structure
  */
-const TSP_sample_symbol_extended_info_list_t*  
+_EXPORT_TSP_CONSUMER const TSP_sample_symbol_extended_info_list_t*  
 TSP_consumer_get_extended_information(TSP_provider_t provider);
 
 /** 
@@ -310,7 +322,7 @@ TSP_consumer_get_extended_information(TSP_provider_t provider);
  * @param provider The provider handle
  * @return the provider information structure
  */				  
-const TSP_answer_sample_t* TSP_consumer_get_information(TSP_provider_t provider);
+_EXPORT_TSP_CONSUMER const TSP_answer_sample_t* TSP_consumer_get_information(TSP_provider_t provider);
 
 /** 
  * Ask the provider for a list of symbols.
@@ -326,7 +338,7 @@ const TSP_answer_sample_t* TSP_consumer_get_information(TSP_provider_t provider)
  * @param symbols The request symbols list
  * @return TSP_STATUS_OK on success TSP_STATUS_ERROR_xxx on error.
  */				  
-int32_t 
+_EXPORT_TSP_CONSUMER int32_t 
 TSP_consumer_request_sample(TSP_provider_t provider,
 			    TSP_sample_symbol_info_list_t* symbols);
 
@@ -350,7 +362,7 @@ const TSP_sample_symbol_info_list_t* TSP_consumer_get_requested_sample(TSP_provi
  * function is CPU friendlier (theoricaly at least...)
  * @return TSP_STATUS_OK on success TSP_STATUS_ERROR_xxx on error.
  */				      
-int32_t 
+_EXPORT_TSP_CONSUMER int32_t 
 TSP_consumer_request_sample_init(TSP_provider_t provider, TSP_sample_callback_t callback, void* user_data);    
 
 /** 
@@ -358,7 +370,7 @@ TSP_consumer_request_sample_init(TSP_provider_t provider, TSP_sample_callback_t 
  * @param provider The provider handle
  * @return TSP_STATUS_OK on success TSP_STATUS_ERROR_xxx on error.
  */				      
-int32_t
+_EXPORT_TSP_CONSUMER int32_t
 TSP_consumer_request_sample_destroy(TSP_provider_t provider);    
 
 /** 
@@ -374,7 +386,7 @@ TSP_consumer_request_sample_destroy(TSP_provider_t provider);
  *  - When the other types will be implemented (RAW, STRING) the TSP_sample_t
  *    type will not work anymore as it is double specific for now.
  */				          
-int32_t 
+_EXPORT_TSP_CONSUMER int32_t 
 TSP_consumer_read_sample(TSP_provider_t provider,
 			 TSP_sample_t* sample,
 			 int* new_sample);
@@ -386,7 +398,7 @@ TSP_consumer_read_sample(TSP_provider_t provider,
  * @param[in] async_sample_write the async write message itself
  * @return TSP_STATUS_OK on success other TSP_STATUS_ERROR on failure.
  */
-int32_t 
+_EXPORT_TSP_CONSUMER int32_t 
 TSP_consumer_request_async_sample_write(TSP_provider_t provider,
 					TSP_consumer_async_sample_t* async_sample_write);
 
@@ -398,7 +410,7 @@ TSP_consumer_request_async_sample_write(TSP_provider_t provider,
  *                on return contains the read value (if success)
  * @return TSP_STATUS_OK on success other TSP_STATUS_ERROR on failure.
  */
-int32_t 
+_EXPORT_TSP_CONSUMER int32_t 
 TSP_consumer_request_async_sample_read(TSP_provider_t provider,
 				       TSP_consumer_async_sample_t* async_sample_read);
 

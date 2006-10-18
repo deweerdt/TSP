@@ -1,6 +1,6 @@
 /*
  
-$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_const_def.h,v 1.41 2006-05-04 21:44:47 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_const_def.h,v 1.42 2006-10-18 09:58:48 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -45,7 +45,7 @@ Purpose   : definitions and const that must have a program wide scope
 #define TSP_PROTOCOL_VERSION 0x00010001
 
 /* we need abstract types for multi-platform portability */
-#include <tsp_abs_types.h>
+#include "tsp_abs_types.h"
 
 #define TSP_MAX_SYSMSG_SIZE 256
 
@@ -88,10 +88,12 @@ Purpose   : definitions and const that must have a program wide scope
 
 /** used to calculate the socket buffer size */
 #define TSP_DATA_STREAM_MAX_HEADER_SIZE 1024
+/** No more than 2MB buffer size which is already HUGE */
+#define TSP_DATA_STREAM_MAX_BUFFER_MAXSIZE (1024*1024*2)
 /* till now, all elements are doubles, but there will be strings, raw, etc ... */
-#define TSP_DATA_STREAM_MAX_ITEM_SIZE sizeof(double)*8096
+#define TSP_DATA_STREAM_MAX_ITEM_SIZE sizeof(double)*10
 #define TSP_DATA_STREAM_MAX_BUFFER_SIZE(max_nb_items) \
-             ( (max_nb_items) * TSP_DATA_STREAM_MAX_ITEM_SIZE \
+  ( ((max_nb_items) * TSP_DATA_STREAM_MAX_ITEM_SIZE) > TSP_DATA_STREAM_MAX_BUFFER_MAXSIZE ? TSP_DATA_STREAM_MAX_BUFFER_MAXSIZE :  (max_nb_items) * TSP_DATA_STREAM_MAX_ITEM_SIZE \
                               + TSP_DATA_STREAM_MAX_HEADER_SIZE)
 
 

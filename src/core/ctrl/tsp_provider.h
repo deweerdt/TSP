@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_provider.h,v 1.21 2006-05-03 21:16:38 erk Exp $
+$Id: tsp_provider.h,v 1.22 2006-10-18 09:58:48 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -88,10 +88,10 @@ void  TSP_provider_request_sample_init(TSP_request_sample_init_t* req_sample_ini
 void  TSP_provider_request_sample_destroy(TSP_request_sample_destroy_t* req_sample_destroy, 
 					  TSP_answer_sample_destroy_t* ans_sample);
 
-int TSP_provider_is_initialized(void);
+int TSP_provider_is_initialized();
 
-int TSP_provider_get_server_number(void);
-int TSP_provider_get_server_base_number(void );
+int TSP_provider_get_server_number();
+int TSP_provider_get_server_base_number( );
 
 int TSP_provider_request_async_sample_write(TSP_async_sample_t* async_sample_write);
 

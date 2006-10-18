@@ -28,3 +28,7 @@ Pierre MALLARD,
   Perl TSP binding
 Julien BRUTUS
   Python TSP binding
+Alan PRAT
+  Win32 Port with Frederik DEWEERDT and Eric NOULARD
+Frederik DEWEERDT
+  Linux Kernel Blackboard, Win32 Port, FreeBSD port and more...

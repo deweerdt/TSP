@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_common_request.h,v 1.2 2006-04-12 13:06:10 erk Exp $
+$Id: tsp_common_request.h,v 1.3 2006-10-18 09:58:48 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -69,7 +69,7 @@ typedef enum TSP_request_type {
 } TSP_request_type_t;
 
 #ifdef TSP_COMMON_REQUEST_C
-const char* tsp_reqname_tab[] = {"tsp_request_invalid",
+_EXPORT_TSP_COMMON const char* tsp_reqname_tab[] = {"tsp_request_invalid",
 				 "tsp_request_generic",
 				 "tsp_request_open",
 				 "tsp_request_close",
@@ -85,7 +85,7 @@ const char* tsp_reqname_tab[] = {"tsp_request_invalid",
 				 "tsp_request_last"
 };
 
-const char* tsp_reqhelp_tab[] = {"invalid tsp request",
+_EXPORT_TSP_COMMON const char* tsp_reqhelp_tab[] = {"invalid tsp request",
 				 "Generic interface to TSP request",
 				 "Send a TSP request open then close",
 				 "Same as request_open",
@@ -101,8 +101,8 @@ const char* tsp_reqhelp_tab[] = {"invalid tsp request",
 				 "TSP LAST REQUEST"
 };
 #else
-extern const char* tsp_reqname_tab[];
-extern const char* tsp_reqhelp_tab[];
+_EXTERN_TSP_COMMON const char* tsp_reqname_tab[];
+_EXTERN_TSP_COMMON const char* tsp_reqhelp_tab[];
 #endif
 
 typedef struct TSP_request {
@@ -118,7 +118,7 @@ BEGIN_C_DECLS
  * @param req 
  * @param req_type
  */
-void TSP_request_create(TSP_request_t* req, TSP_request_type_t req_type);
+_EXPORT_TSP_COMMON void TSP_request_create(TSP_request_t* req, TSP_request_type_t req_type);
 
 
 /** @} */

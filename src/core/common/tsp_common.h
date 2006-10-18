@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_common.h,v 1.13 2006-05-10 12:11:40 erk Exp $
+$Id: tsp_common.h,v 1.14 2006-10-18 09:58:48 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -48,6 +48,8 @@ Purpose   : Main interface for the producer module
 #include <tsp_common_ssei.h>
 #include <tsp_common_as.h>
 
+BEGIN_C_DECLS
+
 /**
  * @defgroup TSP_CommonLib TSP Common Library
  * @ingroup TSP_CoreLib
@@ -58,7 +60,7 @@ Purpose   : Main interface for the producer module
  */
 
 #ifdef TSP_COMMON_C
-const int tsp_type_size[] = { 0,
+_EXPORT_TSP_COMMON const int tsp_type_size[] = { 0,
 			      sizeof(double),
 			      sizeof(float),
 			      sizeof(int8_t),
@@ -74,7 +76,7 @@ const int tsp_type_size[] = { 0,
 			      sizeof(uint8_t),
 			      0				
 };
-const char* tsp_type_name[] = { "TSP_TYPE_UNKNOWN",
+_EXPORT_TSP_COMMON const char* tsp_type_name[] = { "TSP_TYPE_UNKNOWN",
 				"TSP_TYPE_DOUBLE",
 				"TSP_TYPE_FLOAT",
 				"TSP_TYPE_INT8",
@@ -90,7 +92,7 @@ const char* tsp_type_name[] = { "TSP_TYPE_UNKNOWN",
 				"TSP_TYPE_RAW",
 				"TSP_TYPE_LAST"
 };
-const char* tsp_type_fmt[] = { "TSP_TYPE_UNKNOWN",
+_EXPORT_TSP_COMMON const char* tsp_type_fmt[] = { "TSP_TYPE_UNKNOWN",
 			       "%1.15G",
 			       "%1.15G",
 			       "%d",
@@ -107,16 +109,14 @@ const char* tsp_type_fmt[] = { "TSP_TYPE_UNKNOWN",
 			       "TSP_TYPE_LAST"	
 };
 #else
-extern const int   tsp_type_size[];
-extern const char* tsp_type_name[];
-extern const char* tsp_type_fmt[];
+_EXTERN_TSP_COMMON const int   tsp_type_size[];
+_EXTERN_TSP_COMMON const char* tsp_type_name[];
+_EXTERN_TSP_COMMON const char* tsp_type_fmt[];
+#undef _EXTERN_TSP_COMMON
 #endif
 
-BEGIN_C_DECLS
-
+END_C_DECLS
 
 /** @} */
-
-END_C_DECLS
 
 #endif /* _TSP_COMMON_H */

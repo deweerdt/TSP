@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.c,v 1.33 2006-05-05 15:18:05 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.c,v 1.34 2006-10-18 09:58:48 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -40,6 +40,12 @@ opened session from a client
 #include <machine/types.h> 
 #include <machine/endian.h>
 #endif /* __OpenBSD__ */
+
+#ifdef WIN32
+    #define assert(exp)     ((void)0)
+#else
+    #include <assert.h>
+#endif
 
 #include <tsp_sys_headers.h>
 #include <tsp_time.h>
@@ -187,7 +193,7 @@ TSP_session_destroy_symbols_table(TSP_session_t* session) {
 } /* end of TSP_session_destroy_symbols_table */
 
 void 
-TSP_session_init(void) {
+TSP_session_init() {
   if( FALSE == X_initialized )
     {
       /* Mise a 0 de la zone memoire */
@@ -197,8 +203,9 @@ TSP_session_init(void) {
 }
 
 GLU_handle_t* TSP_session_get_GLU_by_channel(channel_id_t channel_id) {
+  TSP_session_t* session = NULL;
   TSP_LOCK_MUTEX(&X_session_list_mutex,NULL);
-  TSP_session_t* session;
+  /* TSP_session_t* session; */
   TSP_GET_SESSION(session,channel_id,NULL);  
   TSP_UNLOCK_MUTEX(&X_session_list_mutex,NULL);
   return session->session_data->glu_h;
@@ -232,7 +239,7 @@ TSP_session_get_state(channel_id_t channel_id) {
 
 
 int 
-TSP_session_get_nb_session(void) {
+TSP_session_get_nb_session() {
   int client_number;
 
   TSP_LOCK_MUTEX(&X_session_list_mutex,-1);
@@ -671,12 +678,11 @@ TSP_session_get_symbols_global_index_by_channel(channel_id_t channel_id,
 						TSP_sample_symbol_info_list_t* symbol_list)
 {
     TSP_session_t* session;
-    int ret=TRUE;
-    TSP_LOCK_MUTEX(&X_session_list_mutex,FALSE);
-    TSP_GET_SESSION(session, channel_id, FALSE);
     GLU_handle_t* myGLU;
-    
+    int ret=TRUE;
     int* pg_indexes = calloc( symbol_list->TSP_sample_symbol_info_list_t_len, sizeof(int) );
+    TSP_LOCK_MUTEX(&X_session_list_mutex,FALSE);
+    TSP_GET_SESSION(session, channel_id, FALSE);    
     
     if (pg_indexes == NULL) {
       STRACE_ERROR(("Unable to allocate memory for global provider index"));

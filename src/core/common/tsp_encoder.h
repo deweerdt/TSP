@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/common/tsp_encoder.h,v 1.4 2006-05-28 14:37:13 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/common/tsp_encoder.h,v 1.5 2006-10-18 09:58:48 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -38,7 +38,7 @@ Purpose   :  Implementation for the functions used to encode the type
 #ifndef _TSP_ENCODER_H
 #define _TSP_ENCODER_H
 
-#include <tsp_abs_types.h>
+#include <tsp_prjcfg.h>
 #include <tsp_rpc.h>
 
 /**
@@ -198,7 +198,7 @@ uint32_t TSP_data_channel_user_encoder(void* v_user,uint32_t dimension,  char* o
  * @param[in] type data type to encode.
  * @return The data type encoder function
  */
-TSP_data_encoder_t TSP_data_channel_get_encoder(TSP_datatype_t type);
+_EXPORT_TSP_COMMON TSP_data_encoder_t TSP_data_channel_get_encoder(TSP_datatype_t type);
 
 /** @} */
 

@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_request_handler.h,v 1.6 2006-05-05 12:30:33 erk Exp $
+$Id: tsp_request_handler.h,v 1.7 2006-10-18 09:58:48 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -166,7 +166,7 @@ extern rqh_manager_data_t rqh_manager_if;
  * of TSP_provider_request_handler.
  * @return the maximum number of (registrable) request handler
  */
-int TSP_provider_rqh_manager_get_max_nb(void);
+int TSP_provider_rqh_manager_get_max_nb();
 
 /**
  * Get the current number

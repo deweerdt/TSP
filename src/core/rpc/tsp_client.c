@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_client.c,v 1.17 2006-04-03 16:07:36 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_client.c,v 1.18 2006-10-18 09:58:48 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -87,7 +87,7 @@ CLIENT* tsp_remote_open_progid(const char *target_name, int progid)
 
   if(cl == (CLIENT *)0)
     {
-      STRACE_DEBUG(("ERROR : GLOBAL clnt_create failed for host %s", target_name));
+      STRACE_ERROR(("ERROR : GLOBAL clnt_create failed for host %s", target_name));
     }
   else
     {
