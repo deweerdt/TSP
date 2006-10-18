@@ -1,0 +1,14 @@
+ACPLT-ONCRPC is a  Windows port of SUN ONC-RPC.
+It is used by TSP on Windows platform.
+
+It is provided here for convenience and because
+we patched the original for making it compiles
+on Windows XP.
+
+The original ACPLT-ONCRPC is here:
+http://www.plt.rwth-aachen.de/index.php?id=258
+
+The patched source files may be found in the
+TSP source tree:
+tsp/external/ACPLT-ONCRPC/source
+Patched source tree have been provided to the maintainers
