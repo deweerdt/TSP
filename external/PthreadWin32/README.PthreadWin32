@@ -1,0 +1,8 @@
+PthreadWin32 is a Win32 implementation
+of POSIX 1003.1-2001.
+
+This is used by TSP on the Win32 platform.
+Files given here are provided only for convenience.
+
+The PthreadWin32 project is here:
+http://sources.redhat.com/pthreads-win32/

@@ -1,0 +1,191 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+	<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=utf-8">
+	<TITLE>POSIX Threads (pthreads) for Win32</TITLE>
+	<META NAME="GENERATOR" CONTENT="OpenOffice.org 2.0  (Linux)">
+	<META NAME="CREATED" CONTENT="20030918;17144800">
+	<META NAME="CHANGEDBY" CONTENT="Ross Johnson">
+	<META NAME="CHANGED" CONTENT="20060401;14074000">
+</HEAD>
+<BODY LANG="en-AU" BGCOLOR="#ffffff" DIR="LTR">
+<TABLE WIDTH=100% CELLPADDING=2 CELLSPACING=2 STYLE="page-break-before: always">
+	<TR>
+		<TD>
+			<A HREF="http://sources.redhat.com/pthreads-win32/copying.html"><IMG SRC="Pthreads-win32-small.gif" NAME="Graphic1" ALIGN=LEFT WIDTH=303 HEIGHT=91 BORDER=0></A></TD>
+		<TD>
+			<H2 LANG="en-GB"><FONT FACE="verdana, arial, helvetica">Open
+			Source<BR>POSIX Threads for Win32</FONT></H2>
+		</TD>
+	</TR>
+</TABLE>
+<H2 LANG="en-GB"><FONT FACE="verdana, arial, helvetica">License</FONT></H2>
+<TABLE WIDTH=943 BORDER=0 CELLPADDING=2 CELLSPACING=0>
+	<COL WIDTH=939>
+	<TR>
+		<TD WIDTH=939>
+			<PRE LANG="en-GB"><FONT FACE="Courier, monospace">	pthreads-win32 - a POSIX threads library for Microsoft Windows</FONT>
+
+
+<FONT FACE="Courier, monospace"><SPAN LANG="en-GB">This file is Copyrighted</SPAN></FONT>
+<FONT FACE="Courier, monospace"><SPAN LANG="en-GB">------------------------</SPAN></FONT>
+
+    <FONT FACE="Courier, monospace"><SPAN LANG="en-GB">This file is covered under the following Copyright:</SPAN></FONT>
+
+<FONT FACE="Courier, monospace"><SPAN LANG="en-GB">	Copyright (C) 2001,2006 Ross P. Johnson</SPAN></FONT>
+<FONT FACE="Courier, monospace"><SPAN LANG="en-GB">	All rights reserved.</SPAN></FONT>
+
+<FONT FACE="Courier, monospace"><SPAN LANG="en-GB">	Everyone is permitted to copy and distribute verbatim copies</SPAN></FONT>
+<FONT FACE="Courier, monospace"><SPAN LANG="en-GB">	of this license document, but changing it is not allowed.</SPAN></FONT>
+
+<FONT FACE="Courier, monospace"><SPAN LANG="en-GB">Pthreads-win32 is covered by the <A HREF="./copying.lib.html">GNU Lesser General Public License</A></SPAN></FONT>
+<FONT FACE="Courier, monospace"><SPAN LANG="en-GB">------------------------------------------------------------------</SPAN></FONT>
+
+    <FONT FACE="Courier, monospace"><SPAN LANG="en-GB">Pthreads-win32 is open software; you can redistribute it and/or</SPAN></FONT>
+    <FONT FACE="Courier, monospace"><SPAN LANG="en-GB">modify it under the terms of the GNU Lesser General Public License</SPAN></FONT>
+    <FONT FACE="Courier, monospace"><SPAN LANG="en-GB">as published by the Free Software Foundation version 2.1 of the</SPAN></FONT>
+    <FONT FACE="Courier, monospace"><SPAN LANG="en-GB">License.</SPAN></FONT>
+
+    <FONT FACE="Courier, monospace"><SPAN LANG="en-GB">Pthreads-win32 is several binary link libraries, several modules,</SPAN></FONT>
+    <FONT FACE="Courier, monospace"><SPAN LANG="en-GB">associated interface definition files and scripts used to control</SPAN></FONT>
+    <FONT FACE="Courier, monospace"><SPAN LANG="en-GB">its compilation and installation.</SPAN></FONT>
+
+    <FONT FACE="Courier, monospace"><SPAN LANG="en-GB">Pthreads-win32 is distributed in the hope that it will be useful,</SPAN></FONT>
+    <FONT FACE="Courier, monospace"><SPAN LANG="en-GB">but WITHOUT ANY WARRANTY; without even the implied warranty of</SPAN></FONT>
+    <FONT FACE="Courier, monospace"><SPAN LANG="en-GB">MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</SPAN></FONT>
+    <FONT FACE="Courier, monospace"><SPAN LANG="en-GB">GNU Lesser General Public License for more details.</SPAN></FONT>
+
+    <FONT FACE="Courier, monospace"><SPAN LANG="en-GB">A copy of the GNU Lesser General Public License is distributed with</SPAN></FONT>
+    <FONT FACE="Courier, monospace"><SPAN LANG="en-GB">pthreads-win32 under the filename:</SPAN></FONT>
+
+<FONT FACE="Courier, monospace"><SPAN LANG="en-GB">	    COPYING.LIB</SPAN></FONT>
+
+    <FONT FACE="Courier, monospace"><SPAN LANG="en-GB">You should have received a copy of the version 2.1 GNU Lesser General</SPAN></FONT>
+    <FONT FACE="Courier, monospace"><SPAN LANG="en-GB">Public License with pthreads-win32; if not, write to:</SPAN></FONT>
+
+<FONT FACE="Courier, monospace"><SPAN LANG="en-GB">	    Free Software Foundation, Inc.</SPAN></FONT>
+<FONT FACE="Courier, monospace"><SPAN LANG="en-GB">	    59 Temple Place</SPAN></FONT>
+<FONT FACE="Courier, monospace"><SPAN LANG="en-GB">	    Suite 330</SPAN></FONT>
+<FONT FACE="Courier, monospace"><SPAN LANG="en-GB">	    Boston, MA	02111-1307</SPAN></FONT>
+<FONT FACE="Courier, monospace"><SPAN LANG="en-GB">	    USA</SPAN></FONT>
+
+    <FONT FACE="Courier, monospace"><SPAN LANG="en-GB">The contact addresses for pthreads-win32 is as follows:</SPAN></FONT>
+
+        <FONT FACE="Courier, monospace"><SPAN LANG="en-GB">Web:	http://sources.redhat.com/pthreads-win32</SPAN></FONT>
+        <FONT FACE="Courier, monospace"><SPAN LANG="en-GB">Email:  Ross Johnson</SPAN></FONT>
+                <FONT FACE="Courier, monospace"><SPAN LANG="en-GB">Please use: Firstname.Lastname@homemail.com.au</SPAN></FONT>
+
+
+
+<FONT FACE="Courier, monospace"><SPAN LANG="en-GB">Pthreads-win32 copyrights and exception files</SPAN></FONT>
+<FONT FACE="Courier, monospace"><SPAN LANG="en-GB">---------------------------------------------</SPAN></FONT>
+
+    <FONT FACE="Courier, monospace"><SPAN LANG="en-GB">With the exception of the files listed below, Pthreads-win32</SPAN></FONT>
+    <FONT FACE="Courier, monospace"><SPAN LANG="en-GB">is covered under the following GNU Lesser General Public License</SPAN></FONT>
+    <FONT FACE="Courier, monospace"><SPAN LANG="en-GB">Copyrights:</SPAN></FONT>
+
+<FONT FACE="Courier, monospace"><SPAN LANG="en-GB">	Pthreads-win32 - POSIX Threads Library for Win32</SPAN></FONT>
+<FONT FACE="Courier, monospace"><SPAN LANG="en-GB">	Copyright(C) 1998 John E. Bossom</SPAN></FONT>
+<FONT FACE="Courier, monospace"><SPAN LANG="en-GB">	Copyright(C) 1999,2006 Pthreads-win32 contributors</SPAN></FONT>
+
+<FONT FACE="Courier, monospace"><SPAN LANG="en-GB">	The current list of contributors is contained</SPAN></FONT>
+        <FONT FACE="Courier, monospace"><SPAN LANG="en-GB">in the file CONTRIBUTORS included with the source</SPAN></FONT>
+<FONT FACE="Courier, monospace"><SPAN LANG="en-GB">	code distribution. The current list of CONTRIBUTORS</SPAN></FONT>
+<FONT FACE="Courier, monospace"><SPAN LANG="en-GB">	can also be seen at the following WWW location:</SPAN></FONT>
+        <FONT FACE="Courier, monospace"><SPAN LANG="en-GB">http://sources.redhat.com/pthreads-win32/contributors.html</SPAN></FONT>
+
+    <FONT FACE="Courier, monospace"><SPAN LANG="en-GB">Contact Email: Ross Johnson</SPAN></FONT>
+                   <FONT FACE="Courier, monospace"><SPAN LANG="en-GB">Please use: Firstname.Lastname@homemail.com.au</SPAN></FONT>
+
+    <FONT FACE="Courier, monospace"><SPAN LANG="en-GB">These files are not covered under one of the Copyrights listed above:</SPAN></FONT>
+
+            <FONT FACE="Courier, monospace"><SPAN LANG="en-GB">COPYING</SPAN></FONT>
+<FONT FACE="Courier, monospace"><SPAN LANG="en-GB">	    COPYING.LIB</SPAN></FONT>
+            <FONT FACE="Courier, monospace"><SPAN LANG="en-GB">tests/rwlock7.c</SPAN></FONT>
+
+    <FONT FACE="Courier, monospace"><SPAN LANG="en-GB">This file, COPYING, is distributed under the Copyright found at the</SPAN></FONT>
+    <FONT FACE="Courier, monospace"><SPAN LANG="en-GB">top of this file.  It is important to note that you may distribute</SPAN></FONT>
+    <FONT FACE="Courier, monospace"><SPAN LANG="en-GB">verbatim copies of this file but you may not modify this file.</SPAN></FONT>
+
+    <FONT FACE="Courier, monospace"><SPAN LANG="en-GB">The file COPYING.LIB, which contains a copy of the version 2.1</SPAN></FONT>
+    <FONT FACE="Courier, monospace"><SPAN LANG="en-GB">GNU Lesser General Public License, is itself copyrighted by the</SPAN></FONT>
+    <FONT FACE="Courier, monospace"><SPAN LANG="en-GB">Free Software Foundation, Inc.  Please note that the Free Software</SPAN></FONT>
+    <FONT FACE="Courier, monospace"><SPAN LANG="en-GB">Foundation, Inc. does NOT have a copyright over Pthreads-win32,</SPAN></FONT>
+    <FONT FACE="Courier, monospace"><SPAN LANG="en-GB">only the COPYING.LIB that is supplied with pthreads-win32.</SPAN></FONT>
+
+    <FONT FACE="Courier, monospace"><SPAN LANG="en-GB">The file tests/rwlock7.c is derived from code written by</SPAN></FONT>
+    <FONT FACE="Courier, monospace"><SPAN LANG="en-GB">Dave Butenhof for his book 'Programming With POSIX(R) Threads'.</SPAN></FONT>
+    <FONT FACE="Courier, monospace"><SPAN LANG="en-GB">The original code was obtained by free download from his website</SPAN></FONT>
+    <FONT FACE="Courier, monospace"><SPAN LANG="en-GB">http://home.earthlink.net/~anneart/family/Threads/source.html</SPAN></FONT>
+    <FONT FACE="Courier, monospace"><SPAN LANG="en-GB">and did not contain a copyright or author notice. It is assumed to</SPAN></FONT>
+    <FONT FACE="Courier, monospace"><SPAN LANG="en-GB">be freely distributable.</SPAN></FONT>
+
+    <FONT FACE="Courier, monospace"><SPAN LANG="en-GB">In all cases one may use and distribute these exception files freely.</SPAN></FONT>
+    <FONT FACE="Courier, monospace"><SPAN LANG="en-GB">And because one may freely distribute the LGPL covered files, the</SPAN></FONT>
+    <FONT FACE="Courier, monospace"><SPAN LANG="en-GB">entire pthreads-win32 source may be freely used and distributed.</SPAN></FONT>
+
+
+
+<FONT FACE="Courier, monospace"><SPAN LANG="en-GB">General Copyleft and License info</SPAN></FONT>
+<FONT FACE="Courier, monospace"><SPAN LANG="en-GB">---------------------------------</SPAN></FONT>
+
+    <FONT FACE="Courier, monospace"><SPAN LANG="en-GB">For general information on Copylefts, see:</SPAN></FONT>
+
+<FONT FACE="Courier, monospace"><SPAN LANG="en-GB">	http://www.gnu.org/copyleft/</SPAN></FONT>
+
+    <FONT FACE="Courier, monospace"><SPAN LANG="en-GB">For information on GNU Lesser General Public Licenses, see:</SPAN></FONT>
+
+<FONT FACE="Courier, monospace"><SPAN LANG="en-GB">	http://www.gnu.org/copyleft/lesser.html</SPAN></FONT>
+<FONT FACE="Courier, monospace"><SPAN LANG="en-GB">	http://www.gnu.org/copyleft/lesser.txt</SPAN></FONT>
+
+
+<FONT FACE="Courier, monospace"><SPAN LANG="en-GB">Why pthreads-win32 did not use the GNU General Public License</SPAN></FONT>
+<FONT FACE="Courier, monospace"><SPAN LANG="en-GB">-------------------------------------------------------------</SPAN></FONT>
+
+    <FONT FACE="Courier, monospace"><SPAN LANG="en-GB">The goal of the pthreads-win32 project has been to</SPAN></FONT>
+    <FONT FACE="Courier, monospace"><SPAN LANG="en-GB">provide a quality and complete implementation of the POSIX</SPAN></FONT>
+    <FONT FACE="Courier, monospace"><SPAN LANG="en-GB">threads API for Microsoft Windows within the limits imposed</SPAN></FONT>
+    <FONT FACE="Courier, monospace"><SPAN LANG="en-GB">by virtue of it being a stand-alone library and not</SPAN></FONT>
+    <FONT FACE="Courier, monospace"><SPAN LANG="en-GB">linked directly to other POSIX compliant libraries. For</SPAN></FONT>
+    <FONT FACE="Courier, monospace"><SPAN LANG="en-GB">example, some functions and features, such as those based</SPAN></FONT>
+    <FONT FACE="Courier, monospace"><SPAN LANG="en-GB">on POSIX signals, are missing.</SPAN></FONT>
+
+    <FONT FACE="Courier, monospace"><SPAN LANG="en-GB">Pthreads-win32 is a library, available in several different</SPAN></FONT>
+    <FONT FACE="Courier, monospace"><SPAN LANG="en-GB">versions depending on supported compilers, and may be used</SPAN></FONT>
+    <FONT FACE="Courier, monospace"><SPAN LANG="en-GB">as a dynamically linked module or a statically linked set of</SPAN></FONT>
+    <FONT FACE="Courier, monospace"><SPAN LANG="en-GB">binary modules. It is not an application on it's own.</SPAN></FONT>
+
+    <FONT FACE="Courier, monospace"><SPAN LANG="en-GB">It was fully intended that pthreads-win32 be usable with</SPAN></FONT>
+    <FONT FACE="Courier, monospace"><SPAN LANG="en-GB">commercial software not covered by either the GPL or the LGPL</SPAN></FONT>
+    <FONT FACE="Courier, monospace"><SPAN LANG="en-GB">licenses. Pthreads-win32 has many contributors to it's</SPAN></FONT>
+    <FONT FACE="Courier, monospace"><SPAN LANG="en-GB">code base, many of whom have done so because they have</SPAN></FONT>
+    <FONT FACE="Courier, monospace"><SPAN LANG="en-GB">used the library in commercial or proprietry software</SPAN></FONT>
+    <FONT FACE="Courier, monospace"><SPAN LANG="en-GB">projects.</SPAN></FONT>
+
+    <FONT FACE="Courier, monospace"><SPAN LANG="en-GB">Releasing pthreads-win32 under the LGPL ensures that the</SPAN></FONT>
+    <FONT FACE="Courier, monospace"><SPAN LANG="en-GB">library can be used widely, while at the same time ensures</SPAN></FONT>
+    <FONT FACE="Courier, monospace"><SPAN LANG="en-GB">that bug fixes and improvements to the pthreads-win32 code</SPAN></FONT>
+    <FONT FACE="Courier, monospace"><SPAN LANG="en-GB">itself is returned to benefit all current and future users</SPAN></FONT>
+    <FONT FACE="Courier, monospace"><SPAN LANG="en-GB">of the library.</SPAN></FONT>
+
+    <FONT FACE="Courier, monospace"><SPAN LANG="en-GB">Although pthreads-win32 makes it possible for applications</SPAN></FONT>
+    <FONT FACE="Courier, monospace"><SPAN LANG="en-GB">that use POSIX threads to be ported to Win32 platforms, the</SPAN></FONT>
+    <FONT FACE="Courier, monospace"><SPAN LANG="en-GB">broader goal of the project is to encourage the use of open</SPAN></FONT>
+    <FONT FACE="Courier, monospace"><SPAN LANG="en-GB">standards, and in particular, to make it just a little easier</SPAN></FONT>
+    <FONT FACE="Courier, monospace"><SPAN LANG="en-GB">for developers writing Win32 applications to consider</SPAN></FONT>
+    <FONT FACE="Courier, monospace"><SPAN LANG="en-GB">widening the potential market for their products.</SPAN></FONT></PRE>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=939>
+			<PRE LANG="en-GB"></PRE>
+		</TD>
+	</TR>
+</TABLE>
+<HR>
+<ADDRESS LANG="en-GB"><FONT FACE="verdana, arial, helvetica">Maintained
+by </FONT><A HREF="./index.html#maintainedby"><I><SPAN LANG="en-GB"><FONT FACE="verdana, arial, helvetica">Ross
+Johnson</FONT></SPAN></I></A></ADDRESS>
+</BODY>
+</HTML>
+
