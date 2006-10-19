@@ -220,11 +220,19 @@ V-0.8.0: Creation 09/06/2006    tag TSP_0_8_0
                * bug #16521 : Request Sample with 0 symbols core dumps 
                * bug #16430 : tsp_stub_server died prematurely
 
+V-0.8.0: Creation 10/20/2006    tag TSP_0_8_1
+        - Change build system from GNU Autotools to CMake       - FredD, Erk,Caribou
+        - Windows TSP port                                      - Alan, Erk, FredD
+        - Targa update for multi-type                           - Euskadi
+        - Applyed Patches:
+           * patch #5208 : V-0.8 doesn't compile under Solaris 2.8 
+        - Bug Corrections 
+           * bug #16629 : Too much memory used
+           * bug #17875 : bb_simple_subscribe won't find the requested symbol
+           * bug #17153 : Stub server answer to extended info on inexistant PGI 1012
+           * bug #16956 : XML2 : can not compile libtspcfg under Solaris
 V-0.8.x: Creation ??/??/2006    tag TSP_0_8_x
 	- XML-RPC command channel in mainstream                 - FredD-->Caribou
         - Update Rubytsp for multi-type, Array etc...           - Caribou
-        - Change build system from GNU Autotools to CMake       - FredD,Erk,Caribou
-        - Applyed Patches:
-           * patch #5208 : V-0.8 doesn't compile under Solaris 2.8 
         - Bug Corrections 
            * bug 
