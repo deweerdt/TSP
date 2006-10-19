@@ -46,26 +46,9 @@ Purpose   : Define the TSP main doxygen modules
  * 
  * \section tsp_sdk Installing and using TSP SDK
  * 
- * TSP SDK comes as either RPM (source or binary) or compressed tar archives.
+ * TSP SDK comes as either as an installer (binary) or compressed tar source archives.
  * The primary format of distribution is gzip compressed tar archive (.tar.gz)
  * and may be found on Savannah TSP download area: <a href="http://download.savannah.nongnu.org/releases/tsp/"> http://download.savannah.nongnu.org/releases/tsp/ </a>.
- *
- * \subsection tsp_sdk_RPM RPM based SDK
- *
- * If you get a binary TSP distribution such as pre-packaged RPM for your 
- * favorite Linux distribution, you may install it as usual, for example:
- * \verbatim
- rpm -i tsp-0.7.3-1.i586.rpm \endverbatim
- *
- * If you did get a Source RPM you may rebuild the binary RPM before installing by doing:
- * \verbatim
- rpm -i tsp-0.7.3-1.src.rpm
- rpmbuild -bb /usr/src/RPM/SPECS/tsp.spec
- rpm -i /usr/src/RPM/RPMS/i586/tsp-0.7.3-1.i586.rpm \endverbatim
- *
- * The exact path for \c /usr/src/RPM may vary depending on 
- * your distribution.
- *  The resulting binary RPM does depend on your target architecture too.
  *
  * \subsection tsp_sdk_TARGZ Tarball based SDK
  * 
@@ -74,47 +57,32 @@ Purpose   : Define the TSP main doxygen modules
  * <a>http://download.savannah.nongnu.org/releases/tsp/</a>, 
  * you should follow these steps: 
  * <ol>
- * <li>untar the archive: tar zxvf tsp-\<version\>.tar.gz 
- *     this should create a tsp  directory
+ * <li>untar the archive: tar zxvf tsp-\<version\>-Source.tar.gz 
+ *     this should create a tsp-\<version\>-Source directory
  * </li>
  * \verbatim
- tar zxvf tsp-0.7.3.tar.gz
+ tar zxvf tsp-0.8.1-Source.tar.gz
  ... wait for tar ending ... \endverbatim
- * <li>configure your TSP (configure --help for more options)
+ * <li>Prepare separate build directory and run CMake
  * </li>
  * \verbatim
- cd tsp
- ./configure
- ... wait for configure ending ... \endverbatim
+ mkdir build_tsp
+ cd build_tsp
+ cmake /path/to/tsp-\<version\>-Source
+ ... wait for cmake run  ending ... \endverbatim
  * <li>
- * set-up some environment variables as indicated at the end of the configure scripts.
- * The tsp_dev.login.sh script sets-up some environment variables. When you are using 
- * a TSP source toolkit, you need to source this file in each shell you want to use the
- * TSP source kit. The environment variable defined or modified by the script are:
- * <ul>
- * <li>TSP_BASE is the variable defining the 'base' directory of
- *     your TSP development source toolkit,</li>
- * <li>STRACE_DEBUG, is the variable which controls the amount of trace 
- *     the TSP libraries are sending to standard output when running a program 
- *     using the TSP libraries.
- * </li>
- * <li>PATH which is updated in order to include the path to the 
- *     TSP binary executable when they are built
- * </li>
- * </ul>
- * </li>
- * \verbatim
- source src/scripts/tsp_dev.login.sh
- Using host target <linux>
- Using TSP_BASE=/home/noularde/TSP/tsp_all/tsp
- Using DEVBASE=/home/noularde/TSP/tsp_all/tsp
- Using STRACE_DEBUG=1 \endverbatim
  * <li>compile your TSP</li>
  * \verbatim
  make
  ... wait the compilation end ... \endverbatim
+ * <li>build your binary package </li>
+ * \verbatim
+ make package \endverbatim
  * </ol>
- * After that you will have a compiled and usable TSP source kit.
+ * After that you will have a compiled and usable TSP package.
+ * This build description is for Unix is you want detailed install
+ * information please read the TSP Programming Tutorial
+ * <a href="http://download.savannah.nongnu.org/releases/tsp/tsp_programming_tutorial-1.0.pdf"> http://download.savannah.nongnu.org/releases/tsp/tsp_programming_tutorial-1.0.pdf </a>
  *  
  * \section tsp_objectModel The TSP C Object model and API
  *
