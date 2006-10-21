@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_stream_receiver.c,v 1.12 2006-10-18 09:58:48 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_stream_receiver.c,v 1.13 2006-10-21 08:48:00 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -197,62 +197,46 @@ TSP_stream_receiver_t TSP_stream_receiver_create(const  char* data_address)
   return sock;
 }
 
-void TSP_stream_receiver_prepare_stop(TSP_stream_receiver_t receiver)
-{
+void 
+TSP_stream_receiver_prepare_stop(TSP_stream_receiver_t receiver) {
 
   TSP_socket_t* sock = (TSP_socket_t*)receiver;
 
-
-  STRACE_IO(("-->IN"));
-  
   sock->is_stopped = TRUE;    
-
-  STRACE_IO(("-->OUT"));
 
 }
 
 
-void TSP_stream_receiver_stop(TSP_stream_receiver_t receiver)
-{
+void 
+TSP_stream_receiver_stop(TSP_stream_receiver_t receiver) {
 
   TSP_socket_t* sock = (TSP_socket_t*)receiver;
-
-
-  STRACE_IO(("-->IN"));
 
   sock->is_stopped = TRUE;      
   shutdown(sock->socketId, SHUT_RDWR);
   close(sock->socketId);
 
-  STRACE_IO(("-->OUT"));
-
 }
 
-void TSP_stream_receiver_destroy(TSP_stream_receiver_t receiver)
-{
+void 
+TSP_stream_receiver_destroy(TSP_stream_receiver_t receiver) {
 
   TSP_socket_t* sock = (TSP_socket_t*)receiver;
 
-  STRACE_IO(("-->IN"));
-
   free(sock);
-
-  STRACE_IO(("-->OUT"));
-
 }
 
 
-int TSP_stream_receiver_is_stopped(TSP_stream_receiver_t receiver)
-{
+int 
+TSP_stream_receiver_is_stopped(TSP_stream_receiver_t receiver) {
 
   TSP_socket_t* sock = (TSP_socket_t*)receiver;
 
   return sock->is_stopped;
-
 }
 
-int TSP_stream_receiver_receive(TSP_stream_receiver_t receiver, char *buffer, int bufferLen)
-{
+int 
+TSP_stream_receiver_receive(TSP_stream_receiver_t receiver, char *buffer, int bufferLen) {
 
   int nread;
   int Total;

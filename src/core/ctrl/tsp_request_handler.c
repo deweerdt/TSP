@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_request_handler.c,v 1.6 2006-10-18 09:58:48 erk Exp $
+$Id: tsp_request_handler.c,v 1.7 2006-10-21 08:48:00 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -50,14 +50,14 @@ TSP_provider_rqh_manager_get_nb() {
 
   int retval = 0;
   int i;
-  STRACE_IO(("-->IN"));
+
   TSP_LOCK_MUTEX(&rqh_manager_if.mutex,-1);
   for (i=0; i<TSP_provider_rqh_manager_get_max_nb(); ++i) {
     if (rqh_manager_if.request_handlers[i].status != TSP_RQH_STATUS_NOTINSTALLED)
       ++retval;
   }
   TSP_UNLOCK_MUTEX(&rqh_manager_if.mutex,-1);
-  STRACE_IO(("-->OUT"));
+
   return retval;
 } /* End of TSP_provider_rqh_manager_get_nb */
 
@@ -66,13 +66,11 @@ int
 TSP_provider_rqh_manager_get_nb_running() {
 
   int retval = 0;
-  STRACE_IO(("-->IN"));
 
   TSP_LOCK_MUTEX(&rqh_manager_if.mutex,-1);
   retval = rqh_manager_if.nb_running_rhq;
   TSP_UNLOCK_MUTEX(&rqh_manager_if.mutex,-1);
 
-  STRACE_IO(("-->OUT"));
   return retval;
 } /* End of TSP_provider_rqh_manager_get_nb_running */
 
@@ -109,7 +107,6 @@ TSP_provider_rqh_manager_install(int rank, tsp_request_handler_ft rqh_constructo
 
   int retval = TRUE;
   TSP_provider_request_handler_t* rqh_p;
-  STRACE_IO(("-->IN"));
 
   rqh_p = TSP_provider_rqh_manager_get(rank);
   TSP_LOCK_MUTEX(&rqh_manager_if.mutex,FALSE);
@@ -132,7 +129,7 @@ TSP_provider_rqh_manager_install(int rank, tsp_request_handler_ft rqh_constructo
   } /* if  (!rqh_p) [else] */
 
   TSP_UNLOCK_MUTEX(&rqh_manager_if.mutex,FALSE);
-  STRACE_IO(("-->OUT"));
+
   return retval;
 } /* End of TSP_provider_rqh_manager_install */
 
@@ -242,7 +239,7 @@ int TSP_provider_rqh_manager_end()
    * call stop for all TSP request handlers
    * that are running
    */
-  STRACE_IO(("-->IN"));
+
   TSP_LOCK_MUTEX(&rqh_manager_if.mutex,FALSE);
 
   nb = TSP_provider_rqh_manager_get_max_nb();
@@ -272,14 +269,12 @@ int TSP_provider_rqh_manager_end()
     } /* End while loop over running request handlers */
 
   TSP_UNLOCK_MUTEX(&rqh_manager_if.mutex,FALSE);
-  STRACE_IO(("-->OUT"));
+
   return TRUE;
 } /* end of TSP_provider_rqh_manager_end */
 
 
 void TSP_provider_rqh_manager_waitend() {
-
-  STRACE_IO(("-->INT"));
 
   TSP_LOCK_MUTEX(&rqh_manager_if.mutex,);
   while (rqh_manager_if.nb_running_rhq > 0) {
@@ -287,5 +282,4 @@ void TSP_provider_rqh_manager_waitend() {
   }
   TSP_UNLOCK_MUTEX(&rqh_manager_if.mutex,);
   STRACE_DEBUG(("No more Request Hanndler running -->terminate"));
-  STRACE_IO(("-->OUT"));
 } /* end of TSP_provider_rqh_manager_waitend */

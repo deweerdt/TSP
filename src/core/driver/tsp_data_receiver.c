@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_data_receiver.c,v 1.26 2006-05-26 14:12:06 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_data_receiver.c,v 1.27 2006-10-21 08:48:00 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -68,8 +68,6 @@ static void TSP_data_receiver_process_receiver_error(TSP_sample_ringbuf_t* sampl
 
   TSP_sample_t* sample;
 
-  STRACE_IO(("-->IN"));
-  
   sample = RINGBUF_PTR_PUTBYADDR(sample_fifo);
   assert(sample);
   sample->time = -1;
@@ -77,8 +75,6 @@ static void TSP_data_receiver_process_receiver_error(TSP_sample_ringbuf_t* sampl
   sample->provider_global_index = TSP_DUMMY_PROVIDER_GLOBAL_INDEX_RECEIVER_ERROR;
   RINGBUF_PTR_PUTBYADDR_COMMIT(sample_fifo);
     
-  STRACE_IO(("-->OUT"));
-
 }
 
 static int TSP_data_receiver_process_reserved_group_id(int group_index, TSP_sample_ringbuf_t* sample_fifo)
@@ -86,9 +82,6 @@ static int TSP_data_receiver_process_reserved_group_id(int group_index, TSP_samp
 
   int ret = TRUE;
   TSP_sample_t* sample;
-
-  STRACE_IO(("-->IN"));
-  
 
   sample = RINGBUF_PTR_PUTBYADDR(sample_fifo);
   assert(sample);
@@ -123,10 +116,7 @@ static int TSP_data_receiver_process_reserved_group_id(int group_index, TSP_samp
       RINGBUF_PTR_PUTBYADDR_COMMIT(sample_fifo);
     }
   
-  STRACE_IO(("-->OUT"));
-
   return ret;
-
 }
 
 TSP_data_receiver_t TSP_data_receiver_create(const char* data_address, TSP_sample_callback_t callback, void* user_data)
@@ -134,9 +124,6 @@ TSP_data_receiver_t TSP_data_receiver_create(const char* data_address, TSP_sampl
     
   TSP_struct_data_receiver_t* receiver;
     
-  STRACE_IO(("-->IN"));
-
-
   receiver = (TSP_struct_data_receiver_t*)calloc(1, sizeof(TSP_struct_data_receiver_t));
   TSP_CHECK_ALLOC(receiver, 0);
 
@@ -156,10 +143,6 @@ TSP_data_receiver_t TSP_data_receiver_create(const char* data_address, TSP_sampl
       receiver = 0;
     
     }
-    
-        
-  STRACE_IO(("-->OUT"));
-
     
   return receiver;
 
@@ -393,43 +376,30 @@ int TSP_data_receiver_receive(TSP_data_receiver_t _receiver,
   return ret;    
 }
 
-void TSP_data_receiver_stop(TSP_data_receiver_t _receiver)
-{
+void 
+TSP_data_receiver_stop(TSP_data_receiver_t _receiver) {
 
    TSP_struct_data_receiver_t*  receiver = ( TSP_struct_data_receiver_t*) _receiver;
-
-   STRACE_IO(("-->IN"));
-
    TSP_stream_receiver_stop(receiver->stream_receiver);
-
-   STRACE_IO(("-->OUT"));
 }
 
-void TSP_data_receiver_prepare_stop(TSP_data_receiver_t _receiver)
-{
+void 
+TSP_data_receiver_prepare_stop(TSP_data_receiver_t _receiver) {
    
    TSP_struct_data_receiver_t*  receiver = ( TSP_struct_data_receiver_t*) _receiver;
-
-   STRACE_IO(("-->IN"));
 
    TSP_stream_receiver_prepare_stop(receiver->stream_receiver);
-
-   STRACE_IO(("-->OUT"));
 }
 
 
-void TSP_data_receiver_destroy(TSP_data_receiver_t _receiver)
-{
+void 
+TSP_data_receiver_destroy(TSP_data_receiver_t _receiver) {
    
    TSP_struct_data_receiver_t*  receiver = ( TSP_struct_data_receiver_t*) _receiver;
 
-   STRACE_IO(("-->IN"));
-   
    TSP_stream_receiver_destroy(receiver->stream_receiver);
    free(receiver->buf); receiver->buf = 0;
    free(receiver); 
-
-   STRACE_IO(("-->OUT"));
 }
 
 

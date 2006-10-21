@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/xmlrpc/tsp_xmlrpc_server.c,v 1.7 2006-08-13 18:57:07 sgalles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/xmlrpc/tsp_xmlrpc_server.c,v 1.8 2006-10-21 08:48:00 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -82,9 +82,8 @@ char *GLU_get_server_name()
 
 xmlrpc_value *tsp_provider_information_xmlrpc(xmlrpc_env *env, xmlrpc_value *param_array, void *user_data) {
   TSP_provider_info_t server_info;
-  STRACE_IO(("-->IN"));    
+
   server_info.info = strdup(GLU_get_server_name());
-  STRACE_IO(("-->OUT"));
   STRACE_DEBUG(("server_info.info: %s\n",server_info.info));
   return xmlrpc_build_value(env, "{s:s}", "info", server_info.info);
 }
@@ -95,9 +94,6 @@ xmlrpc_value * tsp_request_open_xmlrpc(xmlrpc_env *env, xmlrpc_value *param_arra
   TSP_request_open_t req_open;
   xmlrpc_value *result;
 	
-  STRACE_IO(("-->IN"));	
-  
-
   xmlrpc_parse_value(env, param_array, "({s:i,s:i,s:s,*})", 
 					 "version_id", &req_open.version_id,
 					 "TSP_argv_t_len", &req_open.argv.TSP_argv_t_len,
@@ -110,7 +106,6 @@ xmlrpc_value * tsp_request_open_xmlrpc(xmlrpc_env *env, xmlrpc_value *param_arra
 							  "channel_id", ans_open.channel_id,
 							  "status", ans_open.status,
 							  "status_str", ans_open.status_str);
-  STRACE_IO(("-->OUT"));	
   return result;
 }
 
@@ -121,8 +116,6 @@ void *tsp_request_close_xmlrpc(xmlrpc_env *env, xmlrpc_value *param_array, void 
   xmlrpc_value *xr_result;
   TSP_request_close_t req_close;	
 
-  STRACE_IO(("-->IN"));
-
   xmlrpc_parse_value(env, param_array, "({s:i,s:i,*})", 
 					 "version_id", &req_close.version_id,
 					 "channel_id", &req_close.channel_id);
@@ -131,9 +124,6 @@ void *tsp_request_close_xmlrpc(xmlrpc_env *env, xmlrpc_value *param_array, void 
 	
   xr_result = xmlrpc_build_value(env, "(i)", 1);
   
-
-  STRACE_IO(("-->OUT"));
- 
   return xr_result;
 }
 
@@ -146,7 +136,6 @@ xmlrpc_value * tsp_request_information_xmlrpc (xmlrpc_env *env, xmlrpc_value *pa
   xmlrpc_value *xmlrpc_ans_sample;
   int i;
 
-  STRACE_IO(("-->IN"));	
   xmlrpc_parse_value(env, param_array, "({s:i,s:i,*})", 
 					 "version_id", &req_info.version_id,
 					 "channel_id", &req_info.channel_id);
@@ -184,7 +173,7 @@ xmlrpc_value * tsp_request_information_xmlrpc (xmlrpc_env *env, xmlrpc_value *pa
                                 
 	xmlrpc_array_append_item(env, value, symbol);
   }
-  STRACE_IO(("-->OUT"));	
+
   return value;
 }
 
@@ -251,9 +240,6 @@ tsp_request_sample_init_xmlrpc (xmlrpc_env *env,
   TSP_request_sample_init_t *req_sample_init;
   xmlrpc_value *xr_ans_sample_init;
 
-  STRACE_IO(("-->IN"));
-    
-
   req_sample_init = xmlrpc_value_to_TSP_request_sample_init(env, param_array);
 
   /*TBD FIXME Desallouer l'appel precedent*/
@@ -265,8 +251,6 @@ tsp_request_sample_init_xmlrpc (xmlrpc_env *env,
   TSP_provider_request_sample_init(req_sample_init, &ans_sample_init);
 
   xr_ans_sample_init = TSP_answer_sample_init_to_xmlrpc_value(env, &ans_sample_init);
-
-  STRACE_IO(("-->OUT"));
 
   return xr_ans_sample_init;
 
@@ -284,14 +268,12 @@ tsp_request_sample_destroy_xmlrpc (xmlrpc_env *env,
   TSP_answer_sample_destroy_t ans_sample_destroy;
   xmlrpc_value *xr_ans_sample_destroy;
 
-  STRACE_IO(("-->IN"));
   req_sample_destroy = xmlrpc_value_to_TSP_request_sample_destroy(env, param_array);
 
   TSP_provider_request_sample_destroy(req_sample_destroy, &ans_sample_destroy);
 
   xr_ans_sample_destroy = TSP_answer_sample_destroy_to_xmlrpc_value(env, &ans_sample_destroy);
 	
-  STRACE_IO(("-->OUT"));
   return xr_ans_sample_destroy;
 
 }
@@ -405,15 +387,11 @@ void* TSP_xmlrpc_request_run(TSP_provider_request_handler_t* this)
 
   TSP_xmlrpc_request_config_t *config = (TSP_xmlrpc_request_config_t *)(this->config_param);
 
-  STRACE_IO(("-->IN"));  
- 
   if(config->server_number >= 0) {
 	this->status = TSP_RQH_STATUS_RUNNING;
 	TSP_xmlrpc_run(config);
 	this->status = TSP_RQH_STATUS_IDLE;
   }
-
-  STRACE_IO(("-->OUT"));
 
   return (void*)NULL;
 } /* end of TSP_xmlrpc_request_run */

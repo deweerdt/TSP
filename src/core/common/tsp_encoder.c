@@ -1,7 +1,7 @@
 
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/common/tsp_encoder.c,v 1.7 2006-10-18 09:58:48 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/common/tsp_encoder.c,v 1.8 2006-10-21 08:48:00 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -91,12 +91,10 @@ uint32_t TSP_data_channel_double_encoder(void* v_double, uint32_t dimension,  ch
 
 #else
    
-    for(i=0;i<dimension;++i)
-    {
+    for (i=0;i<dimension;++i) {
       ((uint64_t*)out_buf)[i] = TSP_ENCODE_DOUBLE_TO_UINT64(pt_double+i);
-      STRACE_IO(("DOUBLE = %f, encoded DOUBLE=0x%08llx",*pt_double,((uint64_t*)out_buf)[i]));
-    }
-
+      STRACE_DEBUG_MORE(("DOUBLE = %f, encoded DOUBLE=0x%08llx",*pt_double,((uint64_t*)out_buf)[i]));
+    } 
 
     return (uint32_t)(taille);
 
@@ -239,8 +237,8 @@ uint32_t TSP_data_channel_int32_encoder(void* v_int32,uint32_t dimension,  char*
 #endif /*TSP_NO_XDR_ENCODE*/
 }
 
-uint32_t TSP_data_channel_int64_encoder(void* v_int64,uint32_t dimension,  char* out_buf, uint32_t size)
-{
+uint32_t 
+TSP_data_channel_int64_encoder(void* v_int64,uint32_t dimension,  char* out_buf, uint32_t size) {
   int64_t *pt_int64;
   uint32_t i,taille;
 
@@ -251,10 +249,9 @@ uint32_t TSP_data_channel_int64_encoder(void* v_int64,uint32_t dimension,  char*
 #endif /*TSP_NO_XDR_ENCODE*/
 
   taille= TSP_SIZEOF_ENCODED_INT64 * dimension;
-  if(size  < taille )
-  {
-    STRACE_ERROR(("buffer is too small"));
-    return 0;
+  if (size  < taille ) {
+     STRACE_ERROR(("buffer is too small"));
+     return 0;
   }
 
   pt_int64=(int64_t*)v_int64;
@@ -265,9 +262,9 @@ uint32_t TSP_data_channel_int64_encoder(void* v_int64,uint32_t dimension,  char*
 
   for(i=0;i<dimension;++i)
   {
-    if( xdr_long(&xhandle, pt_int64+i) != TRUE)
+    if( xdr_hyper(&xhandle, pt_int64+i) != TRUE)
     {
-       STRACE_ERROR(("Function xdr_long failed"));
+       STRACE_ERROR(("Function xdr_hyper failed"));
        return 0;
     }
   }
@@ -395,7 +392,7 @@ uint32_t TSP_data_channel_uint64_encoder(void* v_uint64,uint32_t dimension,  cha
 
   for(i=0;i<dimension;++i)
   {
-    if( xdr_long(&xhandle, pt_uint64+i) != TRUE)
+    if( xdr_hyper(&xhandle, pt_uint64+i) != TRUE)
     {
        STRACE_ERROR(("Function xdr_long failed"));
        return 0;

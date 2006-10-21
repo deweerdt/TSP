@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/common/tsp_decoder.c,v 1.4 2006-10-18 09:58:48 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/common/tsp_decoder.c,v 1.5 2006-10-21 08:48:00 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -211,7 +211,7 @@ int32_t TSP_data_channel_int64_decoder(void* out_int64, uint32_t dimension,  cha
 
   for(i=0;i<dimension;++i)
   {
-    if( xdr_long(&xhandle, (int64_t*)out_int64+i) != TRUE)
+    if( xdr_hyper(&xhandle, (int64_t*)out_int64+i) != TRUE)
     {
       STRACE_ERROR(("Function xdr_float failed"));
       return FALSE;
@@ -321,7 +321,7 @@ int32_t TSP_data_channel_uint64_decoder(void* out_uint64, uint32_t dimension,  c
 
   for(i=0;i<dimension;++i)
   {
-    if( xdr_long(&xhandle, (uint64_t*)out_uint64+i) != TRUE)
+    if( xdr_hyper(&xhandle, (uint64_t*)out_uint64+i) != TRUE)
     {
       STRACE_ERROR(("Function xdr_float failed"));
       return FALSE;

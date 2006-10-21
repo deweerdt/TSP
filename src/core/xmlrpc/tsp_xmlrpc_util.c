@@ -119,8 +119,6 @@ xmlrpc_value_to_TSP_answer_open (xmlrpc_env *env,
 {
   TSP_answer_open_t *ans_open;
 
-  STRACE_IO(("-->IN"));
-
   ans_open = (TSP_answer_open_t *)malloc(sizeof(*ans_open));
 
   if (ans_open != NULL) {
@@ -133,8 +131,6 @@ xmlrpc_value_to_TSP_answer_open (xmlrpc_env *env,
     
 	ans_open->status_str = strdup(ans_open->status_str);
   }
-
-  STRACE_IO(("-->OUT"));
 
   return ans_open;
 }
@@ -205,8 +201,6 @@ xmlrpc_value_to_TSP_request_sample (xmlrpc_env *env,
   xmlrpc_value *xr_req_sample;
   int i;
 
-  STRACE_IO(("-->IN"));
-
   req_sample = (TSP_request_sample_t *)malloc(sizeof(*req_sample));
   
   if (req_sample == NULL) goto mem_alloc_failed;
@@ -262,8 +256,6 @@ xmlrpc_value_to_TSP_request_sample (xmlrpc_env *env,
 	xmlrpc_DECREF(symbol);
   }
 
-
-  STRACE_IO(("-->OUT"));
 
  mem_alloc_failed:
   return req_sample;

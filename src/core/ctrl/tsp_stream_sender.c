@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_stream_sender.c,v 1.22 2006-10-18 09:58:48 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_stream_sender.c,v 1.23 2006-10-21 08:48:00 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -241,7 +241,7 @@ static void TSP_stream_sender_save_address_string(TSP_socket_t* sock,
   strcat(sock->data_address, ":");    
   strcat(sock->data_address, strPort);
     
-  STRACE_IO(("-->OUT address='%s'", sock->data_address));
+  STRACE_DEBUG_MORE(("address='%s'", sock->data_address));
 }
 
 static void* TSP_streamer_sender_connector(void* arg)

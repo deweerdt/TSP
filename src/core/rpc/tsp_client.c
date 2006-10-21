@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_client.c,v 1.18 2006-10-18 09:58:48 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_client.c,v 1.19 2006-10-21 08:48:00 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -57,16 +57,10 @@ TSP_provider_info_t * tsp_provider_information(TSP_server_t server)
 
   TSP_provider_info_t* result;
 	
-  STRACE_IO(("-->IN"));
-
-	
   LOCAL_RPCCHECK_0;
 	
   result = tsp_provider_information_1(server);
   TSP_STRACE_RPC_ERROR(server, result);
-	
-  STRACE_IO(("-->OUT"));
-
 	
   return result;
 }	
@@ -77,11 +71,7 @@ CLIENT* tsp_remote_open_progid(const char *target_name, int progid)
   CLIENT* cl = (CLIENT *)0;
   /* struct timeval timeout = { 1, 0 }; */
 
-  STRACE_IO(("-->IN"));
-
   /*cl = clnt_create_timed(target_name, progid, TSP_RPC_VERSION_INITIAL, "tcp",&timeout );*/
-
-  
 
   cl = clnt_create(target_name, progid, TSP_RPC_VERSION_INITIAL, "tcp");
 
@@ -97,9 +87,6 @@ CLIENT* tsp_remote_open_progid(const char *target_name, int progid)
 
     }
  
-   
-
-  STRACE_IO(("-->OUT"));
   return cl;
 	
 }
@@ -119,8 +106,6 @@ int TSP_remote_open_server( const char *protocol,
   *server = (TSP_server_t)0;
   server_info[0] = '\0';
 	
-  STRACE_IO(("-->IN"));
-
   prodid_max_number = TSP_get_progid_total_number();
 
   if(strcmp(protocol, TSP_RPC_PROTOCOL) != 0)
@@ -185,9 +170,6 @@ int TSP_remote_open_server( const char *protocol,
       STRACE_ERROR(("server_id %d too high", server_id));
     }
 	
-  STRACE_IO(("-->OUT"));
-
-	
   return ret;
 	
 }
@@ -211,16 +193,10 @@ TSP_answer_open_t * TSP_request_open(const TSP_request_open_t* req_open, TSP_ser
 
   TSP_answer_open_t* result;
 	
-  STRACE_IO(("-->IN"));
-
-	
   LOCAL_RPCCHECK_0;
 	
   result = tsp_request_open_1(*req_open, server);
   TSP_STRACE_RPC_ERROR(server, result);
-	
-  STRACE_IO(("-->OUT"));
-
 	
   return result;
 }	
@@ -229,14 +205,11 @@ int* TSP_request_close(const TSP_request_close_t* req_close, TSP_server_t server
 {
   int* retcode;
 
-  STRACE_IO(("-->IN"));
-	
   LOCAL_RPCCHECK_0;
     
   retcode = tsp_request_close_1(*req_close, server);
   TSP_STRACE_RPC_ERROR(server, retcode);
   
-  STRACE_IO(("-->OUT"));
   return retcode;
 }	
 
@@ -245,16 +218,11 @@ TSP_answer_sample_t * TSP_request_information(const TSP_request_information_t* r
 
   TSP_answer_sample_t* result;
 	
-  STRACE_IO(("-->IN"));
-
-	
   LOCAL_RPCCHECK_0;
 	
   result = tsp_request_information_1(*req_info, server);
   TSP_STRACE_RPC_ERROR(server, result);
   
-  STRACE_IO(("-->OUT"));
-	
   return result;
 }	
 
@@ -263,16 +231,11 @@ TSP_answer_sample_t * TSP_request_filtered_information(const TSP_request_informa
 
   TSP_answer_sample_t* result;
 	
-  STRACE_IO(("-->IN"));
-
-	
   LOCAL_RPCCHECK_0;
 	
   result = tsp_request_filtered_information_1(*req_info, filter_kind, filter_string, server);
   TSP_STRACE_RPC_ERROR(server, result);
   
-  STRACE_IO(("-->OUT"));
-	
   return result;
 }	
 
@@ -283,16 +246,10 @@ TSP_answer_sample_t * TSP_request_sample(
 
   TSP_answer_sample_t* result;
 	
-  STRACE_IO(("-->IN"));
-
-	
   LOCAL_RPCCHECK_0;
 	
   result = tsp_request_sample_1(*req_sample, server);
   TSP_STRACE_RPC_ERROR(server, result);
-	
-  STRACE_IO(("-->OUT"));
-
 	
   return result;
 }
@@ -304,16 +261,10 @@ TSP_answer_sample_init_t * TSP_request_sample_init(
 
   TSP_answer_sample_init_t* result;
 	
-  STRACE_IO(("-->IN"));
-
-	
   LOCAL_RPCCHECK_0;
 	
   result = tsp_request_sample_init_1(*req_sample, server);
   TSP_STRACE_RPC_ERROR(server, result);
-	
-  STRACE_IO(("-->OUT"));
-
 	
   return result;
 }
@@ -325,14 +276,10 @@ TSP_request_sample_destroy(const TSP_request_sample_destroy_t* req_sample,
   
   TSP_answer_sample_destroy_t* result;
 	
-  STRACE_IO(("-->IN"));
-	
   LOCAL_RPCCHECK_0;
 	
   result = tsp_request_sample_destroy_1(*req_sample, server);
   TSP_STRACE_RPC_ERROR(server, result);
-	
-  STRACE_IO(("-->OUT"));
 	
   return result;
 }
@@ -341,9 +288,6 @@ int* TSP_request_async_sample_write(const TSP_async_sample_t* async_sample_write
 {
   int* result;
   
-  STRACE_IO(("-->IN"));
-  
-
 /*   switch (async_sample_write->data.data_len) { */
 /*   case 2:  */
 /*     TSP_UINT16_TO_BE(*(uint16_t*)async_sample_write->data.data_val);	 */
@@ -358,15 +302,11 @@ int* TSP_request_async_sample_write(const TSP_async_sample_t* async_sample_write
 /*     break; */
 /*   } */
   
-  LOCAL_RPCCHECK_FALSE;
-  
+  LOCAL_RPCCHECK_FALSE;  
 
   result = tsp_request_async_sample_write_1(*async_sample_write, server);
-	
-  
+	  
   TSP_STRACE_RPC_ERROR(server, result);
-	
-  STRACE_IO(("-->OUT"));
   	
  return result;
 } /* end of async_sample_write */	
@@ -397,8 +337,6 @@ TSP_async_sample_t* TSP_request_async_sample_read(const TSP_async_sample_t* asyn
 	
   TSP_STRACE_RPC_ERROR(server, result);
 	
-  STRACE_IO(("-->OUT"));
-  	
   return result;
 } /* end of async_sample_read */	
 

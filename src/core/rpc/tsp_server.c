@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_server.c,v 1.32 2006-10-18 09:58:48 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_server.c,v 1.33 2006-10-21 08:48:00 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -101,12 +101,8 @@ int *tsp_request_close_1_svc(TSP_request_close_t req_close, struct svc_req * rqs
 
   static int retcode = 0;
 	
-  STRACE_IO(("-->IN"));
-
   TSP_provider_request_close(&req_close);
 	
-  STRACE_IO(("-->OUT"));
- 
   return &retcode;
 }
 
@@ -115,9 +111,7 @@ TSP_answer_sample_t* tsp_request_information_1_svc(TSP_request_information_t req
 
   static TSP_answer_sample_t ans_sample;
 	
-  STRACE_IO(("-->IN"));	
   TSP_provider_request_information(&req_info, &ans_sample);
-  STRACE_IO(("-->OUT"));       
   return &ans_sample;
 
 }
@@ -127,9 +121,7 @@ TSP_answer_sample_t* tsp_request_filtered_information_1_svc(TSP_request_informat
 
   static TSP_answer_sample_t ans_sample;
 	
-  STRACE_IO(("-->IN"));	
   TSP_provider_request_filtered_information(&req_info, filter_kind, filter_string, &ans_sample);
-  STRACE_IO(("-->OUT"));       
   return &ans_sample;
 
 }
@@ -138,9 +130,6 @@ TSP_answer_feature_t* tsp_request_feature_1_svc(TSP_request_feature_t req_featur
 {
 
   static TSP_answer_feature_t ans_feature;
-	
-  STRACE_IO(("-->IN"));
-  STRACE_IO(("-->OUT"));
 	
   return &ans_feature;
 
@@ -390,8 +379,6 @@ void* TSP_rpc_request_run(TSP_provider_request_handler_t* this)
 
   TSP_rpc_request_config_t *config = (TSP_rpc_request_config_t *)(this->config_param);
 
-  STRACE_IO(("-->IN"));  
- 
   /* pthread_detach(pthread_self()); */ /* FIXME shoudl we do this */ 
 
   if(config->server_number >= 0)
@@ -400,8 +387,6 @@ void* TSP_rpc_request_run(TSP_provider_request_handler_t* this)
       TSP_rpc_run(config);
       this->status = TSP_RQH_STATUS_IDLE;
    }
-
-  STRACE_IO(("-->OUT"));
 
   return (void*)NULL;
 } /* end of TSP_rpc_request_run */
@@ -431,9 +416,7 @@ TSP_answer_extended_information_t* tsp_request_extended_information_1_svc(TSP_re
 
   static TSP_answer_extended_information_t ans_extinfo;
 	
-  STRACE_IO(("-->IN"));	
   TSP_provider_request_extended_information(&req_extinfo, &ans_extinfo);
-  STRACE_IO(("-->OUT"));       
   return &ans_extinfo;
 
 }

@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_group.c,v 1.10 2006-04-07 10:37:17 morvan Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_group.c,v 1.11 2006-10-21 08:48:00 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -73,10 +73,7 @@ TSP_group_create_group_table(const TSP_sample_symbol_info_list_t* symbols, int g
     
   TSP_group_table_t* table = 0;
   TSP_group_item_t* items_table = 0;
-
     
-  STRACE_IO(("-->IN"));
-
   assert(symbols);
     
   table = (TSP_group_table_t*)calloc(1, sizeof(TSP_group_table_t));
@@ -167,9 +164,6 @@ TSP_group_create_group_table(const TSP_sample_symbol_info_list_t* symbols, int g
 
     }
             
-     
-  STRACE_IO(("-->OUT"));
-
   return table;
 }
                                                              

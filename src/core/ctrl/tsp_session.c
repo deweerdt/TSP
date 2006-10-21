@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.c,v 1.34 2006-10-18 09:58:48 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.c,v 1.35 2006-10-21 08:48:00 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -648,7 +648,7 @@ const char* TSP_session_get_data_address_string_by_channel(channel_id_t channel_
     
   TSP_UNLOCK_MUTEX(&X_session_list_mutex,FALSE);
 
-  STRACE_IO(("-->OUT data_address='%s'",data_address ));
+  STRACE_DEBUG_MORE(("data_address='%s'",data_address ));
 
     
   return data_address;
