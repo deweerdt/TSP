@@ -1,6 +1,6 @@
 /*
 
-$Id: generic_consumer.c,v 1.16 2006-10-18 09:58:47 erk Exp $
+$Id: generic_consumer.c,v 1.17 2006-10-21 09:28:03 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -50,6 +50,7 @@ Purpose   : Generic tsp consumer
 #include <generic_consumer.h>
 #include <tsp_consumer.h>
 #include <tsp_common.h>
+#include <tsp_encoder.h>
 
 
 void 
@@ -277,6 +278,9 @@ generic_consumer_usage(generic_consumer_request_t* req) {
   case E_TSP_REQUEST_GENERIC:
     fprintf(req->stream, 
 	    "TSP generic consumer v%s (%s)\n",TSP_SOURCE_VERSION,TSP_PROJECT_URL);
+    fprintf(req->stream,
+	    "TSP XDR encoding/decoding method is: <%s>\n",
+	    TSP_data_channel_get_encoder_method());
     fprintf(req->stream, 
 	    "Usage: %s [generic_opts] <tsp_request> [request_opts]\n",
 	    tsp_reqname_tab[E_TSP_REQUEST_GENERIC]);

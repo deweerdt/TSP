@@ -1,7 +1,7 @@
 
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/common/tsp_encoder.c,v 1.8 2006-10-21 08:48:00 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/common/tsp_encoder.c,v 1.9 2006-10-21 09:28:03 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -461,6 +461,18 @@ uint32_t TSP_data_channel_user_encoder(void* v_user,uint32_t dimension,  char* o
   }
 
   return  TSP_data_channel_uint32_encoder(&temp[0],dimension,out_buf,size);
+}
+
+const char* 
+TSP_data_channel_get_encoder_method() {
+
+  static char* XDREncodeMethod = "NotSet";
+#ifdef TSP_NO_XDR_ENCODE
+  XDREncodeMethod = "TSP_NO_XDR_ENCODE";
+#else
+  XDREncodeMethod = "TSP_XDRLIB_XDR_ENCODE";
+#endif
+  return XDREncodeMethod;
 }
 
 TSP_data_encoder_t 

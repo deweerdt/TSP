@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/common/tsp_encoder.h,v 1.5 2006-10-18 09:58:48 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/common/tsp_encoder.h,v 1.6 2006-10-21 09:28:03 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -190,6 +190,19 @@ uint32_t TSP_data_channel_uchar_encoder(void* v_uchar,uint32_t dimension,  char*
  */
 uint32_t TSP_data_channel_user_encoder(void* v_user,uint32_t dimension,  char* out_buf, uint32_t out_buf_size);
 
+/**
+ * Returns the encoder/decoder method used 
+ * by TSP Library. TSP may be compiled either with
+ *  - TSP_NO_XDR_ENCODE (default) which means that
+ *    TSP library use its own XDR encoding MACRO
+ *  - TSP_XDRLIB_XDR_ENCODE which means that 
+ *    TSP library use the found XDR library to
+ *    encode.
+ * This is a compile-time choice. The function is returning
+ * a static constant character string.
+ * @return The TSP XDR encoder method name.
+ */
+_EXPORT_TSP_COMMON const char* TSP_data_channel_get_encoder_method();
 
 /**
  * Returns the function used to encode the data type.

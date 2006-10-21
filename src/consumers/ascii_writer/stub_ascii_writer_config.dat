@@ -9,4 +9,7 @@ Symbol112                 1
 unknown_var1            15
 UINT32_Symbol1007       1
 FLOAT_Symbol1000        1
+NT16_Symbol1002 1
+INT32_Symbol1003 1
+INT64_Symbol1004 1
 #TAB_INT8_Symbol1011     1
