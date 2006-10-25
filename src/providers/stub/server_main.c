@@ -1,6 +1,6 @@
 /*
 
-$Id: server_main.c,v 1.13 2006-10-18 21:23:38 erk Exp $
+$Id: server_main.c,v 1.14 2006-10-25 15:00:31 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -46,7 +46,15 @@ Purpose   : Implementation for the glue_server, for stub test
 typedef unsigned long sigset_t;
 #endif
 
-GLU_handle_t* GLU_stub_create();
+#ifdef WIN32
+    #define assert(exp)     ((void)0)
+    #include  "getopt.h"
+#else
+    #include <unistd.h>
+    #include <assert.h>
+#endif
+
+GLU_handle_t* GLU_stub_create(double baseFrequency);
 
 #if defined (WIN32)
 static int sigint_reveived = 0;
@@ -61,9 +69,36 @@ void intrpt(int signum)
 }
 #endif
 
-int main(int argc, char *argv[])
+/**
+ * @defgroup TSP_StubbedServer Stubbed Provider
+ * A Simple TSP provider producing 100 symbols at specified base frequency.
+ *
+ * \par tsp_stub_server [-h] [-f frequency (in HZ)]
+ * \par 
+ * <ul>
+ *   <li> \b -h  (optional) print command line help.</li>
+ *   <li> \b -f  (optional) produce symbols at specified frequency in Hz. Default is 100 Hz.</li>
+ * </ul>
+ * @ingroup TSP_Providers
+ */
+
+void 
+stub_usage(const char* me) {
+  printf("%s is a (very) simple TSP provider which produce 1000 Symbols at specified frequency.\n",me);
+  printf("With no args %s will produce 1000 Symvols at 100 Hz\n",me); 
+ 
+  printf("Usage: %s [-h] [-f frequency]\n",me);
+  printf("   -h           (optional) print command line help.\n");
+  printf("   -f frequency (optional) produce symbols at specified frequency in Hz. Default is 100 Hz.\n");
+}
+
+int 
+main(int argc, char *argv[])
 {
   GLU_handle_t* GLU_stub;
+  int           opt_ok=1;
+  char          c_opt;
+  double        baseFrequency = 100.0; /* default frequency is 100Hz */
 
 /* Managing the SIGINT signal */
 #if defined (WIN32)
@@ -84,12 +119,43 @@ int main(int argc, char *argv[])
   sigprocmask(SIG_BLOCK, &allsigs, NULL);
 #endif
 
-  printf ("#===================================================================#\n");
-  printf ("# Launching <StubbedServer> for generation of 1000 Symbols at 100Hz #\n");
-  printf ("#===================================================================#\n");
+    /* Analyse command line parameters */
+  c_opt = getopt(argc,argv,"f:h");
+
+  if(opt_ok && EOF != c_opt) {
+      opt_ok  = 1;
+    do { 
+      switch (c_opt) {
+      case 'f':
+	baseFrequency = atof(optarg);
+	break;
+      case 'h':
+	opt_ok = 0;
+	break;
+      case '?':
+	fprintf(stderr,"Invalid command line option(s), correct it and rerun\n");
+	opt_ok = 0;
+	break;
+      default:
+	opt_ok = 0;
+	break;
+      } /* end of switch */  
+      c_opt = getopt(argc,argv,"u:p:n:s:ht");  
+    }
+    while (opt_ok && (EOF != c_opt));
+  }
+
+  if (!opt_ok) {
+    stub_usage(argv[0]);
+    exit(-1);
+  } else {
+    printf ("#=====================================================================#\n");
+    printf ("# Launching <StubbedServer> for generation of 1000 Symbols at %f Hz    \n",baseFrequency);
+    printf ("#=====================================================================#\n");
+  }
 
   /* Create our structured GLU callbacks */
-  GLU_stub = GLU_stub_create();
+  GLU_stub = GLU_stub_create(baseFrequency);
 
   /* Initialize TSP Provider library and register OUR GLU object
    * so that the TSP core knows it and is able

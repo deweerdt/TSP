@@ -1,6 +1,6 @@
 /*
 
-$Id: glue_stub.c,v 1.28 2006-10-18 23:28:23 erk Exp $
+$Id: glue_stub.c,v 1.29 2006-10-25 15:00:31 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -47,15 +47,13 @@ Purpose   : Implementation for the glue_server, for stub test
 #include <tsp_common.h>     /* TSP common structure manipulation API */
 
 /* TSP glue server defines */
-#define TSP_STUB_FREQ 100.0 /*Hz*/
-#define TSP_USLEEP_PERIOD_US (1000000/TSP_STUB_FREQ) /*given in µS, value 10ms*/
 #define GLU_MAX_SYMBOLS_DOUBLE 1000
 #define GLU_MAX_SYMBOLS_NOT_DOUBLE 12
 
 /* Nasty static variables */
 static TSP_sample_symbol_info_list_t X_SSI_list;
 static TSP_sample_symbol_info_t *X_sample_symbol_info_list_val;
-static tsp_hrtime_t X_lasttime;
+static tsp_hrtime_t X_nexttime;
 static time_stamp_t my_time = 0;
 static GLU_handle_t* stub_GLU = NULL;
 static int32_t taille_max_symbol=0;
@@ -70,8 +68,9 @@ void* STUB_GLU_thread(void* athis)
   glu_item_t item;
   double memo_val[GLU_MAX_SYMBOLS_DOUBLE]; /*for debug informatin */
   GLU_handle_t* cthis  = (GLU_handle_t*) athis;
+  int tsp_usleep_period_us = (int)(1000000/(cthis->get_base_frequency(cthis)));
 
-  current_time = X_lasttime = tsp_gethrtime();  
+  current_time = X_nexttime = tsp_gethrtime();  
 
   item.raw_value=calloc(1,taille_max_symbol);
   assert(item.raw_value);
@@ -96,7 +95,7 @@ void* STUB_GLU_thread(void* athis)
 
 	      /* PGI 0 is a pseudo time */
 	      if (0==index) {
-		*((double*)item.raw_value) = (double)(my_time) / (double)(TSP_STUB_FREQ);
+		*((double*)item.raw_value) = (double)(my_time) / (double)(cthis->get_base_frequency(cthis));
 		/* PUSH next sample item into the TSP provider lib DataPool 
 		 * and go to next for (over requested symbols) iteration */
 		TSP_datapool_push_next_item(cthis->datapool, &item);
@@ -183,12 +182,16 @@ void* STUB_GLU_thread(void* athis)
        */
       TSP_datapool_push_commit(cthis->datapool,my_time, GLU_GET_NEW_ITEM);
 
-      if( current_time <= X_lasttime ) { 
-	tsp_usleep(TSP_USLEEP_PERIOD_US);
+      /* Update nexttime to be next time to generated symbols */
+      X_nexttime += tsp_usleep_period_us*1000;
+      /* get current time */
+      current_time = tsp_gethrtime();
+      /* wait for "missing" cycle time */
+      if( current_time < X_nexttime ) { 	
+	/* time are in nano-second and we Usleep in micro-second */
+	tsp_usleep((X_nexttime-current_time)/1000);
       }
 
-      X_lasttime += TSP_USLEEP_PERIOD_US*1000;
-      current_time = tsp_gethrtime();
       my_time++;    
       
       /* print out some pseudo time for debug purpose */
@@ -571,10 +574,10 @@ STUB_GLU_get_ssei_list_fromPGI(struct GLU_handle_t* cthis,
 
 
 /* create the GLU handle instance for STUB */
-GLU_handle_t* GLU_stub_create() {
+GLU_handle_t* GLU_stub_create(double baseFrequency) {
   
   /* create a default GLU */
-  GLU_handle_create(&stub_GLU,"StubbedServer",GLU_SERVER_TYPE_ACTIVE,TSP_STUB_FREQ);
+  GLU_handle_create(&stub_GLU,"StubbedServer",GLU_SERVER_TYPE_ACTIVE,baseFrequency);
   
   stub_GLU->initialize             = &STUB_GLU_init;
   stub_GLU->run                    = &STUB_GLU_thread;
