@@ -1,6 +1,6 @@
 /* -*- idl -*-
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_rpc.x,v 1.41 2006-05-05 15:18:05 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_rpc.x,v 1.42 2006-10-25 14:40:30 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -58,125 +58,125 @@ Purpose   :
 enum TSP_status_t 
 {
 	/** OK */
-	TSP_STATUS_OK,
+	TSP_STATUS_OK=0,
 
 	/** NOK but not an error */
-	TSP_STATUS_NOK,
+	TSP_STATUS_NOK=1,
 
 	/** 
 	 * Provider unreachable.
 	 * The provider may be stopped or dead.
 	 */
-	TSP_STATUS_ERROR_PROVIDER_UNREACHABLE,
+	TSP_STATUS_ERROR_PROVIDER_UNREACHABLE=2,
 
 	/** Fatal error */
-	TSP_STATUS_ERROR_UNKNOWN,
+	TSP_STATUS_ERROR_UNKNOWN=3,
 
 	/** 
 	 * Means that a detailed error string is provided by the function,
 	 * and the details of the error are in this string
          */
-	TSP_STATUS_ERROR_SEE_STRING,	
+	TSP_STATUS_ERROR_SEE_STRING=4,	
 
 	/** 
          * The requested version for the protocol does not match
          */
-	TSP_STATUS_ERROR_VERSION,
+	TSP_STATUS_ERROR_VERSION=5,
 
 	/**
          * Error with the symbols (asked or returned)
          */
-	TSP_STATUS_ERROR_SYMBOLS,
+	TSP_STATUS_ERROR_SYMBOLS=6,
 
 	/**
 	 * The requested symbols filter is ill-formed
 	 */
-	TSP_STATUS_ERROR_SYMBOL_FILTER,
+	TSP_STATUS_ERROR_SYMBOL_FILTER=7,
 
 	/**
          * The requested feature is not supported (by this particular consumer/provider)
          */
-	TSP_STATUS_ERROR_NOT_SUPPORTED,
+	TSP_STATUS_ERROR_NOT_SUPPORTED=8,
 
 	/**	
          * The requested feature is not implemented
          */
-	TSP_STATUS_ERROR_NOT_IMPLEMENTED,
+	TSP_STATUS_ERROR_NOT_IMPLEMENTED=9,
 
 	/**
          * The requested PGI (provider global index is unknown)
          */
-	TSP_STATUS_ERROR_PGI_UNKNOWN,
+	TSP_STATUS_ERROR_PGI_UNKNOWN=10,
 
 	/**
          * Asynchronous read is not allowed.
          */
- 	TSP_STATUS_ERROR_ASYNC_READ_NOT_ALLOWED,
+ 	TSP_STATUS_ERROR_ASYNC_READ_NOT_ALLOWED=11,
 
 	/**
          * Asynchronous write is not allowed.
          */
- 	TSP_STATUS_ERROR_ASYNC_WRITE_NOT_ALLOWED,       
+ 	TSP_STATUS_ERROR_ASYNC_WRITE_NOT_ALLOWED=12,       
 
 	/**
          * Asynchronous read is not supported.
          */
-	TSP_STATUS_ERROR_ASYNC_READ_NOT_SUPPORTED,	
+	TSP_STATUS_ERROR_ASYNC_READ_NOT_SUPPORTED=13,	
 
 	/**
          * Asynchronous write is not supported.
          */
- 	TSP_STATUS_ERROR_ASYNC_WRITE_NOT_SUPPORTED,     	
+ 	TSP_STATUS_ERROR_ASYNC_WRITE_NOT_SUPPORTED=14,     	
 	/**
 	 * Memory Allocation error
 	 */
-	TSP_STATUS_ERROR_MEMORY_ALLOCATION,
+	TSP_STATUS_ERROR_MEMORY_ALLOCATION=15,
 	/**
 	 * Provided channel Id is invalid
 	 */
-	TSP_STATUS_ERROR_INVALID_CHANNEL_ID,
+	TSP_STATUS_ERROR_INVALID_CHANNEL_ID=16,
 	/**
 	 * Cannot instantiate a new GLU
 	 */
-	TSP_STATUS_ERROR_NO_MORE_GLU,
+	TSP_STATUS_ERROR_NO_MORE_GLU=17,
 	/**
 	 * Cannot create new TSP Session
 	 * Maximum reached.
 	 */
-	TSP_STATUS_ERROR_NO_MORE_SESSION,
+	TSP_STATUS_ERROR_NO_MORE_SESSION=18,
 	/**
 	 * Cannot start the GLU 
 	 */
-	TSP_STATUS_ERROR_GLU_START,
+	TSP_STATUS_ERROR_GLU_START=19,
 	/**
 	 * Cannot initialize GLU
 	 */
-	TSP_STATUS_ERROR_GLU_INITIALIZE,
+	TSP_STATUS_ERROR_GLU_INITIALIZE=20,
 	/**
 	 * The logical ordering of TSP Request was
 	 * not respected. E.g. Request Sample Initialize
 	 * before Request Sample.
 	 */
-	TSP_STATUS_ERROR_BAD_REQUEST_ORDER,
+	TSP_STATUS_ERROR_BAD_REQUEST_ORDER=21,
 	/**
 	 * Cannot instantiate new Datapool.
 	 */
-	TSP_STATUS_ERROR_DATAPOOL_INSTANTIATE,
+	TSP_STATUS_ERROR_DATAPOOL_INSTANTIATE=22,
 	/**
 	 * Cannot create new thread.
 	 */
-	TSP_STATUS_ERROR_THREAD_CREATE,
+	TSP_STATUS_ERROR_THREAD_CREATE=23,
 	
-	TSP_STATUS_ERROR_NOT_INITIALIZED,
+	TSP_STATUS_ERROR_NOT_INITIALIZED=24,
 	/**
 	 * The TSP Request content is invalid.
 	 */
-	TSP_STATUS_ERROR_INVALID_REQUEST,
+	TSP_STATUS_ERROR_INVALID_REQUEST=25,
 	/**
 	 * The TSP Request sample is empty.
 	 * i.e. no symbol requested.
 	 */
-	TSP_STATUS_ERROR_EMPTY_REQUEST_SAMPLE,
+	TSP_STATUS_ERROR_EMPTY_REQUEST_SAMPLE=26,
 	/**
 	 * Value greater than TSP_STATUS_ERROR_CUSTOM_BEGIN
 	 * may be used by custom TSP providers of consumers
@@ -192,36 +192,36 @@ enum TSP_status_t
  */
 enum TSP_session_state_t {
   /** This session is probably not initialized */
-  TSP_SESSION_STATE_UNKNOWN,
+  TSP_SESSION_STATE_UNKNOWN=0,
   /** This session has accepted a valid request open */
-  TSP_SESSION_STATE_OPENED,
+  TSP_SESSION_STATE_OPENED=1,
   /** This session has received a valid request close */
-  TSP_SESSION_STATE_CLOSED,
+  TSP_SESSION_STATE_CLOSED=2,
   /** This session has accepted a valid request sample */
-  TSP_SESSION_STATE_REQUEST_SAMPLE_OK,
+  TSP_SESSION_STATE_REQUEST_SAMPLE_OK=3,
   /** 
    * This session has accepted a valid request sample init
    * but sampling did not began (yet) because consumer
    * is not connected yet. 
    */
-  TSP_SESSION_STATE_REQUEST_SAMPLE_INIT_OK,
+  TSP_SESSION_STATE_REQUEST_SAMPLE_INIT_OK=4,
   /**
    * Consumer connected and provdier is sending sampling
    * for this session.
    */
-  TSP_SESSION_STATE_SAMPLING,
+  TSP_SESSION_STATE_SAMPLING=5,
   /** 
    * This session has accepted a valid request sample destroy.
    */
-  TSP_SESSION_STATE_REQUEST_SAMPLE_DESTROY_OK,
+  TSP_SESSION_STATE_REQUEST_SAMPLE_DESTROY_OK=6,
   /**
    * Was in sampling state but link goes to broken.
    * May be a network failure or either party (provider or consumer)
    * crashed or terminate itself without sending
    * request sample destroy and/or request close.
    */
-  TSP_SESSION_STATE_BROKEN_LINK,
-  TSP_SESSION_STATE_CLOSE_ON_EOF
+  TSP_SESSION_STATE_BROKEN_LINK=7,
+  TSP_SESSION_STATE_CLOSE_ON_EOF=8
 };
 			 
 
@@ -238,17 +238,17 @@ enum TSP_datatype_t
    */
   TSP_TYPE_UNKNOWN=0,
   TSP_TYPE_DOUBLE=1,   /*!< An IEEE double precision floating point  */
-  TSP_TYPE_FLOAT,      /*!< An IEEE simple precision floating point  */
-  TSP_TYPE_INT8,       /*!< An 8bit signed integer                   */
-  TSP_TYPE_INT16,      /*!< A 16bit signed integer                   */
-  TSP_TYPE_INT32,      /*!< A 32bit signed integer                   */
-  TSP_TYPE_INT64,      /*!< A 64bit signed integer                   */
-  TSP_TYPE_UINT8,      /*!< An 8bit unsigned integer                 */
-  TSP_TYPE_UINT16,     /*!< A 16bit unsigned integer                 */
-  TSP_TYPE_UINT32,     /*!< A 32bit unsigned integer                 */
-  TSP_TYPE_UINT64,     /*!< A 64bit unsigned integer                 */
-  TSP_TYPE_CHAR,       /*!< An 8bit signed character                 */
-  TSP_TYPE_UCHAR,      /*!< An 8bit unsigned character               */
+  TSP_TYPE_FLOAT=2,      /*!< An IEEE simple precision floating point  */
+  TSP_TYPE_INT8=3,       /*!< An 8bit signed integer                   */
+  TSP_TYPE_INT16=4,      /*!< A 16bit signed integer                   */
+  TSP_TYPE_INT32=5,      /*!< A 32bit signed integer                   */
+  TSP_TYPE_INT64=6,      /*!< A 64bit signed integer                   */
+  TSP_TYPE_UINT8=7,      /*!< An 8bit unsigned integer                 */
+  TSP_TYPE_UINT16=8,     /*!< A 16bit unsigned integer                 */
+  TSP_TYPE_UINT32=9,     /*!< A 32bit unsigned integer                 */
+  TSP_TYPE_UINT64=10,     /*!< A 64bit unsigned integer                 */
+  TSP_TYPE_CHAR=11,       /*!< An 8bit signed character                 */
+  TSP_TYPE_UCHAR=12,      /*!< An 8bit unsigned character               */
   /**
    * Any type of 8bit size.
    * For this type no encoding will be done
@@ -256,8 +256,8 @@ enum TSP_datatype_t
    * will be done on receive.
    * Beware endianity problem when using this.
    */
-  TSP_TYPE_RAW,      
-  TSP_TYPE_LAST       
+  TSP_TYPE_RAW=13,      
+  TSP_TYPE_LAST=14       
 };
 
 
@@ -711,28 +711,28 @@ program TSP_RPC {
 	
 	/* TSP Protocol */	
 
-	TSP_answer_open_t 		     TSP_REQUEST_OPEN(TSP_request_open_t req_open) = 102;
+	TSP_answer_open_t 		     TSP_REQUEST_OPEN(TSP_request_open_t) = 102;
 	
-	int 				     TSP_REQUEST_CLOSE(TSP_request_close_t req_close) = 103;
+	int 				     TSP_REQUEST_CLOSE(TSP_request_close_t) = 103;
 	
-	TSP_answer_sample_t		     TSP_REQUEST_INFORMATION(TSP_request_information_t req_info) = 104;
+	TSP_answer_sample_t		     TSP_REQUEST_INFORMATION(TSP_request_information_t) = 104;
 	
-	TSP_answer_feature_t		     TSP_REQUEST_FEATURE(TSP_request_feature_t req_feature) = 105;
+	TSP_answer_feature_t		     TSP_REQUEST_FEATURE(TSP_request_feature_t) = 105;
 	
-	TSP_answer_sample_t		     TSP_REQUEST_SAMPLE(TSP_request_sample_t req_sample) = 106;
+	TSP_answer_sample_t		     TSP_REQUEST_SAMPLE(TSP_request_sample_t) = 106;
 	
-	TSP_answer_sample_init_t	     TSP_REQUEST_SAMPLE_INIT(TSP_request_sample_init_t req_sample) = 107;
+	TSP_answer_sample_init_t	     TSP_REQUEST_SAMPLE_INIT(TSP_request_sample_init_t) = 107;
 	
-	TSP_answer_sample_destroy_t	     TSP_REQUEST_SAMPLE_DESTROY(TSP_request_sample_destroy_t req_destroy) = 108;
+	TSP_answer_sample_destroy_t	     TSP_REQUEST_SAMPLE_DESTROY(TSP_request_sample_destroy_t) = 108;
 	
-	int				     TSP_EXEC_FEATURE(TSP_exec_feature_t exec_feature) = 109;
+	int				     TSP_EXEC_FEATURE(TSP_exec_feature_t) = 109;
 	
-	int 				     TSP_REQUEST_ASYNC_SAMPLE_WRITE(TSP_async_sample_t async_sample_write) = 110;
+	int 				     TSP_REQUEST_ASYNC_SAMPLE_WRITE(TSP_async_sample_t ) = 110;
 
-	TSP_async_sample_t                   TSP_REQUEST_ASYNC_SAMPLE_READ(TSP_async_sample_t async_sample_read) = 111;
+	TSP_async_sample_t                   TSP_REQUEST_ASYNC_SAMPLE_READ(TSP_async_sample_t) = 111;
 
-	TSP_answer_sample_t		     TSP_REQUEST_FILTERED_INFORMATION(TSP_request_information_t req_info, int filter_kind, string filter_string<>) = 112;
-	TSP_answer_extended_information_t    TSP_REQUEST_EXTENDED_INFORMATION(TSP_request_extended_information_t req_extinfo) = 113;
+	TSP_answer_sample_t		     TSP_REQUEST_FILTERED_INFORMATION(TSP_request_information_t , int , string) = 112;
+	TSP_answer_extended_information_t    TSP_REQUEST_EXTENDED_INFORMATION(TSP_request_extended_information_t ) = 113;
 	
 
 	} = 1;
