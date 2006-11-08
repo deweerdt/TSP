@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_plotText.h,v 1.7 2006-08-05 20:50:30 esteban Exp $
+$Id: gdisp_plotText.h,v 1.8 2006-11-08 21:31:12 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -93,6 +93,7 @@ typedef struct PlotText_T_ {
   guchar               pttIsSizeAllocating;
   gint                 pttSelectedRow;
   gint                 pttSelectedColumn;
+  gboolean             pttShowUnits;
 
   /*
    * Popup menus.

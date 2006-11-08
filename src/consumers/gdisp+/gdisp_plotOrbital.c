@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_plotOrbital.c,v 1.6 2006-09-28 19:37:54 esteban Exp $
+$Id: gdisp_plotOrbital.c,v 1.7 2006-11-08 21:31:12 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -396,7 +396,7 @@ gdisp_addSymbolsToPlotOrbital (Kernel_T *kernel,
 			       guchar    zoneId)
 {
 
-  PlotOrbital_T *plot = (PlotOrbital_T*)data;
+  /* PlotOrbital_T *plot = (PlotOrbital_T*)data; */
 
   /*
    * Record here all incoming symbols.
@@ -414,7 +414,7 @@ gdisp_getSymbolsFromPlotOrbital (Kernel_T *kernel,
 				 gchar     axis)
 {
 
-  PlotOrbital_T *plot = (PlotOrbital_T*)data;
+  /* PlotOrbital_T *plot = (PlotOrbital_T*)data; */
 
   /*
    * Return the list of symbols.
@@ -532,7 +532,7 @@ gdisp_stepOnPlotOrbital (Kernel_T *kernel,
 			 void     *data)
 {
 
-  PlotOrbital_T *plot = (PlotOrbital_T*)data;
+  /* PlotOrbital_T *plot = (PlotOrbital_T*)data; */
 
   /*
    * Do anything you want to perform steps.
@@ -548,7 +548,7 @@ gdisp_stopStepOnPlotOrbital (Kernel_T *kernel,
 			     void     *data)
 {
 
-  PlotOrbital_T *plot = (PlotOrbital_T*)data;
+  /* PlotOrbital_T *plot = (PlotOrbital_T*)data; */
 
   /*
    * Do anything you want when steps are stopped.

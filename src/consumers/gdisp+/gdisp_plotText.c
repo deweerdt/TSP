@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_plotText.c,v 1.14 2006-09-28 19:37:54 esteban Exp $
+$Id: gdisp_plotText.c,v 1.15 2006-11-08 21:31:12 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -69,6 +69,7 @@ File      : Text plot system.
 #undef GD_DEBUG_TEXT
 #define GD_ASYNC_WRITE_ITEM   (GD_MAX_FORMATS+1)
 #define GD_REMOVE_SYMBOL_ITEM (GD_MAX_FORMATS+2)
+#define GD_SHOW_UNITS_ITEM    (GD_MAX_FORMATS+3)
 
 
 /*
@@ -424,6 +425,7 @@ gdisp_createPlotText (Kernel_T *kernel)
    */
   plot->pttColumnRatio     = (gfloat)0.66;
   plot->pttShowWriteColumn = FALSE;
+  plot->pttShowUnits       = FALSE;
 
   /*
    * Create a CList with 2 columns.
@@ -809,6 +811,14 @@ gdisp_popupMenuHandler ( Kernel_T    *kernel,
 
   }
   /*
+   * Show / Hide symbol unit.
+   */
+  else if (item == GD_SHOW_UNITS_ITEM) {
+
+    plot->pttShowUnits = GD_TOGGLE_BOOLEAN(plot->pttShowUnits);
+
+  }
+  /*
    * Look for the current selected row and change its display format.
    */
   else {
@@ -1014,6 +1024,23 @@ gdisp_showPlotText (Kernel_T  *kernel,
 		      (gchar*)"Remove Selected Symbols",
 		      (gpointer)GUINT_TO_POINTER(itemData));
 
+  /*
+   * Insert a horizontal separator.
+   */
+  gdisp_addMenuItem(plot->pttMainMenu,
+		    GD_POPUP_SEPARATOR,
+		    (gchar*)NULL,
+		    (gpointer)NULL);
+
+  /*
+   * Show / Hide the symbol unit.
+   */
+  itemData = GD_SHOW_UNITS_ITEM;
+  gdisp_addMenuItem(plot->pttMainMenu,
+		    GD_POPUP_ITEM,
+		    (gchar*)"Show / Hide Symbol Unit",
+		    (gpointer)GUINT_TO_POINTER(itemData));
+
 }
 
 
@@ -1159,7 +1186,7 @@ gdisp_getPlotAttributesPlotText (Kernel_T *kernel,
 				 GList    *attributeList)
 {
 
-  PlotText_T *plot = (PlotText_T*)data;
+  /* PlotText_T *plot = (PlotText_T*)data; */
 
   /*
    * Nothing by now.
@@ -1177,7 +1204,7 @@ gdisp_setPlotAttributesPlotText (Kernel_T *kernel,
 				 GList    *attributeList)
 {
 
-  PlotText_T *plot = (PlotText_T*)data;
+  /* PlotText_T *plot = (PlotText_T*)data; */
 
   /*
    * Nothing by now.
@@ -1353,11 +1380,18 @@ gdisp_stepOnPlotText (Kernel_T *kernel,
 
   PlotText_T        *plot       = (PlotText_T*)data;
   PlotTextRowData_T *rowData    = (PlotTextRowData_T*)NULL;
-  GList             *symbolItem =      (GList*)NULL;
-  Symbol_T          *symbol     =   (Symbol_T*)NULL;
+  GList             *symbolItem = (GList*)NULL;
+  Symbol_T          *symbol     = (Symbol_T*)NULL;
+  Pixmap_T          *pPixmap    = (Pixmap_T*)NULL;
   gint               rowNumber  = 0;
   gchar              sValue [256];
 
+  /*
+   * Initialize pixmap for out of range handling.
+   */
+  pPixmap = gdisp_getPixmapById(kernel,
+				GD_PIX_warning,
+				kernel->widgets.mainBoardWindow);
 
   /*
    * Loop over all symbols.
@@ -1390,27 +1424,47 @@ gdisp_stepOnPlotText (Kernel_T *kernel,
     }
 
     /*
-     * Update symbol into the graphic list.
+     * Add unit if available and requested.
      */
-    gtk_clist_set_text(GTK_CLIST(plot->pttCList),
-		       rowNumber,
-		       GD_SYMBOL_VALUE_COLUMN,
-		       sValue);
+    if (plot->pttShowUnits == TRUE && symbol->sUnit != (gchar*)NULL) {
 
-#if defined(TRY_PIXMAP)
+      strcat(sValue," ");
+      strcat(sValue,symbol->sUnit);
 
-    gtk_clist_set_pixtext(GTK_CLIST(plot->pttCList),
-			  rowNumber,
-			  GD_SYMBOL_NAME_COLUMN,
-			  symbol->sInfo.name,
-			  10, /* spacing */
-			  pixmap,
-			  mask);
+    }
 
-#endif
+    /*
+     * Update symbol into the graphic list.
+     * Take care of the symbol range. Warn the user with a specific pixmap.
+     */
+    if (symbol->sMinimum   < symbol->sLastValue &&
+	symbol->sLastValue < symbol->sMaximum      ) {
 
+      /* correct range */
+      gtk_clist_set_text(GTK_CLIST(plot->pttCList),
+			 rowNumber,
+			 GD_SYMBOL_VALUE_COLUMN,
+			 sValue);
+
+    }
+    else {
+
+      /* symbol is out of range */
+      strcat(sValue," (out of range)");
+      gtk_clist_set_pixtext(GTK_CLIST(plot->pttCList),
+			    rowNumber,
+			    GD_SYMBOL_VALUE_COLUMN,
+			    sValue,
+			    10, /* spacing */
+			    pPixmap->pixmap,
+			    pPixmap->mask);
+
+    }
+
+    /* next row */
     rowNumber++;
 
+    /* next symbol */
     symbolItem = g_list_next(symbolItem);
 
   }

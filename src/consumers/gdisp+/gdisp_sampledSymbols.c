@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_sampledSymbols.c,v 1.13 2006-08-05 20:50:30 esteban Exp $
+$Id: gdisp_sampledSymbols.c,v 1.14 2006-11-08 21:31:12 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -435,6 +435,7 @@ gdisp_createProviderNode(Kernel_T      *kernel,
  */
 static void
 gdisp_createSymbolNode(Kernel_T     *kernel,
+		       GtkWidget    *parent,
 		       GtkWidget    *tree,
 		       GtkCTreeNode *sampledSymbolNode,
 		       Symbol_T     *symbol)
@@ -442,8 +443,11 @@ gdisp_createSymbolNode(Kernel_T     *kernel,
 
   GtkCTreeNode *iNode                       = (GtkCTreeNode*)NULL;
   GList        *iExtInfoItem                = (GList*)NULL;
-  gchar         iInfo  [128];
+  Pixmap_T     *pPixmap                     = (Pixmap_T*)NULL;
   gchar        *iNames [GD_TREE_NB_COLUMNS] = { (gchar*)NULL,  (gchar*)NULL };
+  gchar         iInfo  [128];
+  gchar         iMin   [128];
+  gchar         iMax   [128];
 
   /*
    * The name of the node is the name of the symbol.
@@ -531,7 +535,19 @@ gdisp_createSymbolNode(Kernel_T     *kernel,
    */
   iNames[0] = "Range";
   iNames[1] = iInfo;
-  sprintf(iNames[1],"[ n/a .. n/a ]");
+  if (symbol->sMinimum > (- G_MAXDOUBLE)) {
+    sprintf(iMin,"%f",symbol->sMinimum);
+  }
+  else {
+    sprintf(iMin,"n/a");
+  }
+  if (symbol->sMaximum < (+ G_MAXDOUBLE)) {
+    sprintf(iMax,"%f",symbol->sMaximum);
+  }
+  else {
+    sprintf(iMax,"n/a");
+  }
+  sprintf(iNames[1],"[ %s .. %s ]",iMin,iMax);
 
   iNode = gtk_ctree_insert_node(GTK_CTREE(tree),
 				symbol->sNode, /* symbol node is the parent */
@@ -581,21 +597,25 @@ gdisp_createSymbolNode(Kernel_T     *kernel,
   /*
    * Insert extended information.
    */
+  pPixmap = gdisp_getPixmapById(kernel,
+				GD_PIX_info,
+				parent);
+
   iExtInfoItem = g_list_first(symbol->sExtInfoList);
   while (iExtInfoItem != (GList*)NULL) {
 
     iNames[0] = ((gchar**)(iExtInfoItem->data))[0];
     iNames[1] = ((gchar**)(iExtInfoItem->data))[1];
-    
+
     iNode = gtk_ctree_insert_node(GTK_CTREE(tree),
 				  symbol->sNode, /* the parent */
 				  (GtkCTreeNode*)NULL, /* no sibling node */
 				  iNames,
 				  GD_TREE_SPACING,
-				  (GdkPixmap*)NULL,
-				  (GdkBitmap*)NULL,
-				  (GdkPixmap*)NULL,
-				  (GdkBitmap*)NULL,
+				  pPixmap->pixmap,
+				  pPixmap->mask,
+				  pPixmap->pixmap,
+				  pPixmap->mask,
 				  TRUE,   /* is a leave  */
 				  FALSE); /* is expanded */
 
@@ -819,6 +839,7 @@ gdisp_poolSampledSymbolList ( Kernel_T *kernel )
 		if (symbol->sNode == (GtkCTreeNode*)NULL) {
 
 		  gdisp_createSymbolNode(kernel,
+					 kernel->widgets.sampledSymbolScrolledWindow,
 					 cTree,
 					 pSymbolAnchor,
 					 symbol);
@@ -1175,6 +1196,8 @@ void
 gdisp_refreshSampledSymbolList ( Kernel_T *kernel )
 {
 
+  GList        *providerItem = (GList*)NULL;
+  Provider_T   *provider     = (Provider_T*)NULL;
   GtkWidget    *cTree        = (GtkWidget*)NULL;
   GList        *cTreeList    = (GList*)NULL;
   GtkCTreeRow  *cTreeRow     = (GtkCTreeRow*)NULL;
@@ -1231,6 +1254,19 @@ gdisp_refreshSampledSymbolList ( Kernel_T *kernel )
 			  (GtkCTreeNode*)cTreeList->data);
 
     cTreeList = g_list_next(cTreeList);
+
+  }
+
+  /*
+   * Loop over all providers. Forget tree node address.
+   */
+  providerItem = g_list_first(kernel->providerList);
+  while (providerItem != (GList*)NULL) {
+
+    provider        = (Provider_T*)providerItem->data;
+    provider->pNode = (GtkCTreeNode*)NULL;
+
+    providerItem = g_list_next(providerItem);
 
   }
 

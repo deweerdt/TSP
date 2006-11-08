@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_dataBox.c,v 1.4 2006-07-31 19:59:07 esteban Exp $
+$Id: gdisp_dataBox.c,v 1.5 2006-11-08 21:31:12 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -216,10 +216,16 @@ gdisp_dataBoxEnterNotify (GtkWidget        *area,
   gint             ascent         = 0;
   gint             descent        = 0;
   gint             windowAttrMask = 0;
+  gint             parentX        = 0;
+  gint             parentY        = 0;
+  gint             parentWidth    = 0;
+  gint             parentHeight   = 0;
+  gint             parentDepth    = 0;
   GdkWindowAttr    windowAttr;
   GtkDataboxCoord  mouseCoord;
   GtkDataboxValue  mouseValue;
   gchar            stringBuffer[128];
+
 
   /*
    * Compute tooltip window dimensions.
@@ -230,7 +236,7 @@ gdisp_dataBoxEnterNotify (GtkWidget        *area,
 			     mouseCoord,
 			     &mouseValue);
   sprintf(stringBuffer,
-	  "%f,%f",
+	  "%.2f,%.2f",
 	  mouseValue.x,
 	  mouseValue.y);
 
@@ -241,6 +247,16 @@ gdisp_dataBoxEnterNotify (GtkWidget        *area,
 		     &stringWidth,
 		     &ascent,
 		     &descent);
+
+  /*
+   * Get back parent window geometry.
+   */
+  gdk_window_get_geometry(area->window,
+			  &parentX,
+			  &parentY,
+			  &parentWidth,
+			  &parentHeight,
+			  &parentDepth);
 
   /*
    * Create the flying Gdk window.
@@ -262,6 +278,19 @@ gdisp_dataBoxEnterNotify (GtkWidget        *area,
   windowAttrMask         = GDK_WA_X        | GDK_WA_Y      |
                            GDK_WA_COLORMAP | GDK_WA_VISUAL;
 
+  /*
+   * Check tooltip window position according to its width and height.
+   */
+  if (windowAttr.x + windowAttr.width > parentWidth) {
+    windowAttr.x = parentWidth - windowAttr.width;
+  }
+  if (windowAttr.y + windowAttr.height > parentHeight) {
+    windowAttr.y = parentHeight - windowAttr.height;
+  }
+
+  /*
+   * Create the tooltip window.
+   */
   dataBox->dbTooltip = gdk_window_new(area->window,
 				      &windowAttr,
 				      windowAttrMask);
@@ -335,10 +364,14 @@ gdisp_dataBoxMotionNotify(GtkWidget      *area,
   gint             stringWidth    = 0;
   gint             ascent         = 0;
   gint             descent        = 0;
-  guint            tooltipWidth   = 0;
-  guint            tooltipHeight  = 0;
+  gint             parentX        = 0;
+  gint             parentY        = 0;
+  gint             parentWidth    = 0;
+  gint             parentHeight   = 0;
+  gint             parentDepth    = 0;
   GtkDataboxCoord  mouseCoord;
   GtkDataboxValue  mouseValue;
+  GdkWindowAttr    windowAttr;
   gchar            stringBuffer[128];
 
 
@@ -398,7 +431,7 @@ gdisp_dataBoxMotionNotify(GtkWidget      *area,
 			       &mouseValue);
 
     sprintf(stringBuffer,
-	    "%f,%f",
+	    "%.2f,%.2f",
 	    mouseValue.x,
 	    mouseValue.y);
 
@@ -410,15 +443,43 @@ gdisp_dataBoxMotionNotify(GtkWidget      *area,
 		       &ascent,
 		       &descent);
 
-    tooltipWidth  = stringWidth      + (2 * GD_DB_W_OFFSET);
-    tooltipHeight = ascent + descent + (2 * GD_DB_H_OFFSET);
+    windowAttr.x      = (gint)event->x + GD_DB_X_OFFSET;
+    windowAttr.y      = (gint)event->y + GD_DB_Y_OFFSET;
+    windowAttr.width  = stringWidth      + (2 * GD_DB_W_OFFSET);
+    windowAttr.height = ascent + descent + (2 * GD_DB_H_OFFSET);
 
+    /*
+     * Get back parent window geometry.
+     */
+    gdk_window_get_geometry(area->window,
+			    &parentX,
+			    &parentY,
+			    &parentWidth,
+			    &parentHeight,
+			    &parentDepth);
+
+    /*
+     * Check tooltip window position according to its width and height.
+     */
+    if (windowAttr.x + windowAttr.width > parentWidth) {
+      windowAttr.x = parentWidth - windowAttr.width;
+    }
+    if (windowAttr.y + windowAttr.height > parentHeight) {
+      windowAttr.y = parentHeight - windowAttr.height;
+    }
+
+    /*
+     * Move and resize window.
+     */
     gdk_window_move_resize(dataBox->dbTooltip,
-			   (gint)event->x + GD_DB_X_OFFSET,
-			   (gint)event->y + GD_DB_Y_OFFSET,
-			   tooltipWidth,
-			   tooltipHeight);
+			   windowAttr.x,
+			   windowAttr.y,
+			   windowAttr.width,
+			   windowAttr.height);
 
+    /*
+     * Write the text inside a rectangle. All is white.
+     */
     gdk_gc_set_foreground(dataBox->dbGc,
 			  &dataBox->dbKernel->colors[_BLACK_]);
 
@@ -427,8 +488,8 @@ gdisp_dataBoxMotionNotify(GtkWidget      *area,
 		       TRUE, /* rectangle is filled */
 		       0,
 		       0,
-		       tooltipWidth,
-		       tooltipHeight);
+		       windowAttr.width,
+		       windowAttr.height);
 
     gdk_gc_set_foreground(dataBox->dbGc,
 			  &dataBox->dbKernel->colors[_WHITE_]);
@@ -438,8 +499,8 @@ gdisp_dataBoxMotionNotify(GtkWidget      *area,
 		       FALSE, /* rectangle is not filled */
 		       0,
 		       0,
-		       tooltipWidth  - 1,
-		       tooltipHeight - 1);
+		       windowAttr.width  - 1,
+		       windowAttr.height - 1);
 
     gdk_draw_string(dataBox->dbTooltip,
 		    dataBox->dbFont,
@@ -641,7 +702,7 @@ gdisp_createDataBox ( Kernel_T  *kernel,
    */
   dataBox->dbGc   = gdk_gc_new(dataBox->dbDataBoxArea->window);
   dataBox->dbFont = kernel->fonts[GD_FONT_SMALL][GD_FONT_FIXED];
-
+  gdk_gc_set_font(dataBox->dbGc,dataBox->dbFont);
 
   /*
    * Separator.
@@ -934,8 +995,8 @@ gdisp_addDataBoxYData ( gpointer  dataBoxVoid,
 		     1,   /* Filled */
 		     0,   /* X      */
 		     0,   /* Y      */
-		     15,  /* Width  */
-		     15); /* Height */
+		     GD_DB_ICON_SIZE,  /* Width  */
+		     GD_DB_ICON_SIZE); /* Height */
 
   gtk_clist_set_pixtext(GTK_CLIST(dataBox->dbCList),
 			theRow,

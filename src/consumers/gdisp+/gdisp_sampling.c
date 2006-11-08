@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_sampling.c,v 1.20 2006-08-05 20:50:30 esteban Exp $
+$Id: gdisp_sampling.c,v 1.21 2006-11-08 21:31:12 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -651,6 +651,102 @@ gdisp_garbageCollectorThread ( void *data )
 
 
 /*
+ * Request init and sample.
+ */
+static gboolean
+gdisp_requestSample ( Kernel_T   *kernel,
+		      Provider_T *provider )
+{
+
+  const SampleList_T *sampleList        = (const SampleList_T*)NULL;
+  Symbol_T           *symbol            = (Symbol_T*)NULL;
+  gint                requestStatus     = 0;
+  guint               sampleCpt         = 0;
+  guint               symbolLoad        = 0;
+  TSP_sample_symbol_info_t *symbolInfo  = (TSP_sample_symbol_info_t*)NULL;
+  gboolean            errorCode         = FALSE;
+
+
+  /*
+   * Give requested symbols to TSP core.
+   */
+  requestStatus = TSP_consumer_request_sample(provider->pHandle,
+					      &provider->pSampleList);
+
+  if (TSP_STATUS_OK != requestStatus) {
+
+    provider->pSamplingThreadStatus = GD_THREAD_REQUEST_SAMPLE_ERROR;
+    return FALSE;
+
+  }
+
+
+  /*
+   * Manage output PGI of each symbol.
+   */
+  sampleList = TSP_consumer_get_requested_sample(provider->pHandle);
+
+  if (sampleList == (SampleList_T*)NULL) {
+
+    provider->pSamplingThreadStatus = GD_THREAD_REQUEST_SAMPLE_ERROR;
+    return FALSE;
+
+  }
+
+
+  /*
+   * Build PGI to symbol hash table.
+   */
+  errorCode = gdisp_buildProviderPgiHashTable(provider,
+					      sampleList);
+
+  if (errorCode == FALSE) {
+
+    provider->pSamplingThreadStatus = GD_THREAD_REQUEST_SAMPLE_ERROR;
+    return FALSE;
+
+  }
+
+
+  /*
+   * Get back all extended information.
+   */
+  gdisp_getSymbolExtendedInformation(provider,
+				     FALSE /* do not forget any previous info */);
+
+
+  /*
+   * Compute maximum load.
+   */
+  provider->pLoad    = 0;
+  provider->pMaxLoad = 0;
+  symbolInfo         = sampleList->TSP_sample_symbol_info_list_t_val;
+
+  for (sampleCpt=0;
+       sampleCpt<sampleList->TSP_sample_symbol_info_list_t_len;
+       sampleCpt++, symbolInfo++) {
+
+    symbol = (Symbol_T*)hash_get(provider->pSymbolHashTable,
+				 symbolInfo->name);
+
+    if (symbol->sInfo.type >= TSP_TYPE_LAST) {
+      symbol->sInfo.type = TSP_TYPE_LAST;
+    }
+    symbolLoad  = tsp_type_size[symbol->sInfo.type];
+    symbolLoad *= provider->pBaseFrequency;
+    symbolLoad *= symbolInfo->nelem;
+    symbolLoad /= symbolInfo->period;
+
+    provider->pMaxLoad += symbolLoad;
+
+  }
+
+  return TRUE;
+
+}
+
+
+/*
  * Main Sampling Thread.
  */
 static void*
@@ -660,8 +756,6 @@ gdisp_samplingThread (void *data )
 #define GD_SAMPLE_PGI_AS_STRING_LENGTH 10
 
   Kernel_T                 *kernel            = (Kernel_T*)data;
-  hash_t                   *tmpHashTable      = (hash_t*)NULL;
-  const SampleList_T       *sampleList        = (const SampleList_T*)NULL;
   Provider_T               *provider          = (Provider_T*)NULL;
   Symbol_T                 *symbol            = (Symbol_T*)NULL;
   GList                    *providerItem      = (GList*)NULL;
@@ -670,9 +764,6 @@ gdisp_samplingThread (void *data )
   gint                      requestStatus     = 0;
   gboolean                  sampleHasArrived  = FALSE;
   guint                     sampleRefTimeTag  = 0;
-  guint                     sampleCpt         = 0;
-  guint                     symbolLoad        = 0;
-  TSP_sample_symbol_info_t *symbolInfo        = (TSP_sample_symbol_info_t*)NULL;
   TSP_sample_t              sampleValue;
   gchar                 samplePGIasStringBuffer[GD_SAMPLE_PGI_AS_STRING_LENGTH];
   gchar                    *samplePGIasString = (gchar*)NULL;
@@ -713,7 +804,6 @@ gdisp_samplingThread (void *data )
 
   } while (providerIsFound == FALSE && watchDog > 0);
 
-
   /*
    * Do I know who I am ?
    */
@@ -722,114 +812,6 @@ gdisp_samplingThread (void *data )
     pthread_exit((void*)FALSE);
 
   }
-
-
-  /*
-   * Give requested symbols to TSP core.
-   */
-#if defined(GD_PRINT_SAMPLE_LIST)
- {
-
-   guint                     sampleCpt  = 0;
-   TSP_sample_symbol_info_t *symbolInfo = (TSP_sample_symbol_info_t*)NULL;
-
-   symbolInfo = provider->pSampleList.TSP_sample_symbol_info_list_t_val;
-
-   printf("-------------------- SAMPLING THREAD ------------------------\n");
-
-   for (sampleCpt=0;
-	sampleCpt<provider->pSampleList.TSP_sample_symbol_info_list_t_len;
-	sampleCpt++, symbolInfo++) {
-
-     printf("%s\n",symbolInfo->name);
-     printf("  pGlobalIndex %d, pGroupIndex %d, pGroupRank %d\n",
-	    symbolInfo->provider_global_index,
-	    symbolInfo->provider_group_index,
-	    symbolInfo->provider_group_rank);
-     printf("  Type %d, Dimension %d, Offset %d, nElem %d\n",
-	    symbolInfo->type,
-	    symbolInfo->dimension,
-	    symbolInfo->offset,
-	    symbolInfo->nelem);
-     printf("  Period %d, Phase %d\n",
-	    symbolInfo->period,
-	    symbolInfo->phase);
-
-   }
-
- }
-#endif
-
-  requestStatus = TSP_consumer_request_sample(provider->pHandle,
-					      &provider->pSampleList);
-
-  if (TSP_STATUS_OK != requestStatus) {
-
-    provider->pSamplingThreadStatus = GD_THREAD_REQUEST_SAMPLE_ERROR;
-    pthread_exit((void*)FALSE);
-
-  }
-
-
-  /*
-   * Manage output PGI of each symbol.
-   */
-  sampleList = TSP_consumer_get_requested_sample(provider->pHandle);
-
-  if (sampleList == (SampleList_T*)NULL) {
-
-    provider->pSamplingThreadStatus = GD_THREAD_REQUEST_SAMPLE_ERROR;
-    pthread_exit((void*)FALSE);
-
-  }
-
-  if (provider->pSymbolHashTablePGI != (hash_t*)NULL) {
-
-    tmpHashTable = provider->pSymbolHashTablePGI;
-    provider->pSymbolHashTablePGI = (hash_t*)NULL;
-    hash_close(tmpHashTable);
-
-  }
-
-  tmpHashTable = hash_open('.','z');
-  symbolInfo   = sampleList->TSP_sample_symbol_info_list_t_val;
-
-  /* Compute maximum load */
-  provider->pLoad    = 0;
-  provider->pMaxLoad = 0;
-
-  for (sampleCpt=0;
-       sampleCpt<sampleList->TSP_sample_symbol_info_list_t_len;
-       sampleCpt++, symbolInfo++) {
-
-    symbol = (Symbol_T*)hash_get(provider->pSymbolHashTable,
-				 symbolInfo->name);
-
-    symbol->sPgi = symbolInfo->provider_global_index;
-
-    /* I can use 'sprintf' because sampling has not started yet */
-    sprintf(samplePGIasStringBuffer,
-	    "%d",
-	    symbol->sPgi);
-    
-    hash_append(tmpHashTable,
-		samplePGIasStringBuffer,
-		(void*)symbol);
-
-    /* Compute maximum load */
-    if (symbol->sInfo.type >= TSP_TYPE_LAST) {
-      symbol->sInfo.type = TSP_TYPE_LAST;
-    }
-    symbolLoad  = tsp_type_size[symbol->sInfo.type];
-    symbolLoad *= provider->pBaseFrequency;
-    symbolLoad *= symbolInfo->nelem;
-    symbolLoad /= symbolInfo->period;
-
-    provider->pMaxLoad += symbolLoad;
-
-  }
-
-  provider->pSymbolHashTablePGI = tmpHashTable;
 
   /*
    * Tell TSP core to start sampling process.
@@ -851,7 +833,6 @@ gdisp_samplingThread (void *data )
     gdisp_uSleep(_ONE_SECOND_IN_MICROSECONDS_ / 2);
 
   }
-
 
   /*
    * Sample... Do it...
@@ -956,7 +937,6 @@ gdisp_samplingThread (void *data )
   }
 
   provider->pSamplingThreadStatus = GD_THREAD_STOPPED;
-  
 
   /*
    * Tell TSP core to stop sampling process.
@@ -973,7 +953,6 @@ gdisp_samplingThread (void *data )
     provider->pSamplingThreadStatus = GD_THREAD_SAMPLE_DESTROY_ERROR;
 
   }
-
 
   /*
    * Bye bye.
@@ -1024,15 +1003,16 @@ gdisp_preSamplingThread (void *data )
 
 
   /*
-   * Compute provider sampling configurations.
-   */
-  gdisp_affectRequestedSymbolsToProvider(kernel);
-
-
-  /*
    * All provider threads must keep on running...
    */
   kernel->samplingThreadMustExit = FALSE;
+
+
+  /*
+   * Assign symbols to providers.
+   * This is done because few symbols may have been removed from graphic plots.
+   */
+  gdisp_affectRequestedSymbolsToProvider(kernel);
 
 
   /*
@@ -1294,6 +1274,101 @@ gdisp_stopSamplingProcess (Kernel_T *kernel)
 
 
 /*
+ * Build PGI hash table.
+ */
+gboolean
+gdisp_buildProviderPgiHashTable ( Provider_T         *provider,
+				  const SampleList_T *sampleList )
+{
+
+  hash_t                   *tmpHashTable = (hash_t*)NULL;
+  Symbol_T                 *symbol       = (Symbol_T*)NULL;
+  guint                     sampleCpt    = 0;
+  TSP_sample_symbol_info_t *symbolInfo   = (TSP_sample_symbol_info_t*)NULL;
+  gchar            samplePGIasStringBuffer[GD_SAMPLE_PGI_AS_STRING_LENGTH];
+
+
+#if defined(GD_PRINT_SAMPLE_LIST)
+ {
+
+   symbolInfo = sampleList->TSP_sample_symbol_info_list_t_val;
+
+   printf("--------------- REQUEST INIT AND SAMPLE  -------------------\n");
+
+   for (sampleCpt=0;
+	sampleCpt<sampleList->TSP_sample_symbol_info_list_t_len;
+	sampleCpt++, symbolInfo++) {
+
+     printf("%s\n",symbolInfo->name);
+     printf("  pGlobalIndex %d, pGroupIndex %d, pGroupRank %d\n",
+	    symbolInfo->provider_global_index,
+	    symbolInfo->provider_group_index,
+	    symbolInfo->provider_group_rank);
+     printf("  Type %d, Dimension %d, Offset %d, nElem %d\n",
+	    symbolInfo->type,
+	    symbolInfo->dimension,
+	    symbolInfo->offset,
+	    symbolInfo->nelem);
+     printf("  Period %d, Phase %d\n",
+	    symbolInfo->period,
+	    symbolInfo->phase);
+
+   }
+
+ }
+#endif
+
+
+  /*
+   * Destroy previous hash table.
+   */
+  if (provider->pSymbolHashTablePGI != (hash_t*)NULL) {
+
+    tmpHashTable = provider->pSymbolHashTablePGI;
+    provider->pSymbolHashTablePGI = (hash_t*)NULL;
+    hash_close(tmpHashTable);
+
+  }
+
+
+  /*
+   * And create new one.
+   */
+  tmpHashTable = hash_open('.','z');
+  symbolInfo   = sampleList->TSP_sample_symbol_info_list_t_val;
+
+
+  /*
+   * Insert symbol into the hash table.
+   */
+  for (sampleCpt=0;
+       sampleCpt<sampleList->TSP_sample_symbol_info_list_t_len;
+       sampleCpt++, symbolInfo++) {
+
+    symbol = (Symbol_T*)hash_get(provider->pSymbolHashTable,
+				 symbolInfo->name);
+
+    symbol->sPgi = symbolInfo->provider_global_index;
+
+    /* I can use 'sprintf' because sampling has not started yet */
+    sprintf(samplePGIasStringBuffer,
+	    "%d",
+	    symbol->sPgi);
+    
+    hash_append(tmpHashTable,
+		samplePGIasStringBuffer,
+		(void*)symbol);
+
+  }
+
+  provider->pSymbolHashTablePGI = tmpHashTable;
+
+  return TRUE;
+
+}
+
+
+/*
  * All symbols that must be plotted do not belong to the same
  * provider. So give back requested symbols to the provider each
  * of them belongs to.
@@ -1302,13 +1377,15 @@ void
 gdisp_affectRequestedSymbolsToProvider ( Kernel_T *kernel )
 {
 
-  GArray     *requestedSymbolArray =     (GArray*)NULL;
-  GList      *providerItem         =      (GList*)NULL;
-  Provider_T *provider             = (Provider_T*)NULL;
-  GList      *symbolList           =      (GList*)NULL;
-  GList      *symbolItem           =      (GList*)NULL;
-  Symbol_T   *symbol               =   (Symbol_T*)NULL;
-  guint       elementSize          =                 0;
+  GArray       *requestedSymbolArray = (GArray*)NULL;
+  GList        *providerItem         = (GList*)NULL;
+  Provider_T   *provider             = (Provider_T*)NULL;
+  GList        *symbolList           = (GList*)NULL;
+  GList        *symbolItem           = (GList*)NULL;
+  Symbol_T     *symbol               = (Symbol_T*)NULL;
+  guint         elementSize          = 0;
+  SampleList_T *pSampleListPtr       = (SampleList_T*)NULL;
+  gboolean      errorCode            = FALSE;
 
   /*
    * Get back requested symbols from graphic pages.
@@ -1323,17 +1400,18 @@ gdisp_affectRequestedSymbolsToProvider ( Kernel_T *kernel )
   providerItem = g_list_first(kernel->providerList);
   while (providerItem != (GList*)NULL) {
 
-    provider = (Provider_T*)providerItem->data;
+    provider       = (Provider_T*)providerItem->data;
+    pSampleListPtr = &provider->pSampleList;
 
     if (provider->pStatus == GD_SESSION_OPENED) {
 
       /*
        * Cancel any previous sampling configuration.
        */
-      provider->pSampleList.TSP_sample_symbol_info_list_t_len = 0;
-      if (provider->pSampleList.TSP_sample_symbol_info_list_t_val != (TSP_sample_symbol_info_t*)NULL)
-	g_free(provider->pSampleList.TSP_sample_symbol_info_list_t_val);
-      provider->pSampleList.TSP_sample_symbol_info_list_t_val = (TSP_sample_symbol_info_t*)NULL;
+      pSampleListPtr->TSP_sample_symbol_info_list_t_len = 0;
+      if (pSampleListPtr->TSP_sample_symbol_info_list_t_val != (TSP_sample_symbol_info_t*)NULL)
+	g_free(pSampleListPtr->TSP_sample_symbol_info_list_t_val);
+      pSampleListPtr->TSP_sample_symbol_info_list_t_val = (TSP_sample_symbol_info_t*)NULL;
 
 
       /*
@@ -1380,9 +1458,9 @@ gdisp_affectRequestedSymbolsToProvider ( Kernel_T *kernel )
       /*
        * Transfer information to provider.
        */
-      provider->pSampleList.TSP_sample_symbol_info_list_t_val =
+      pSampleListPtr->TSP_sample_symbol_info_list_t_val =
                          (TSP_sample_symbol_info_t*)requestedSymbolArray->data;
-      provider->pSampleList.TSP_sample_symbol_info_list_t_len =
+      pSampleListPtr->TSP_sample_symbol_info_list_t_len =
                                                      requestedSymbolArray->len;
 
 
@@ -1391,6 +1469,14 @@ gdisp_affectRequestedSymbolsToProvider ( Kernel_T *kernel )
        * Free the table, not the content.
        */
       g_array_free(requestedSymbolArray,FALSE);
+
+
+      /*
+       * Request sample.
+       */
+      errorCode = gdisp_requestSample(kernel,
+				      provider);
+
 
     } /* provider->pStatus == GD_SESSION_OPENED */
 

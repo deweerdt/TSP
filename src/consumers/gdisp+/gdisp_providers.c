@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_providers.c,v 1.14 2006-08-05 20:50:30 esteban Exp $
+$Id: gdisp_providers.c,v 1.15 2006-11-08 21:31:12 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -167,11 +167,12 @@ static void
 gdisp_poolProviderThreadStatus ( Kernel_T *kernel )
 {
 
-  GList      *providerItem      =      (GList*)NULL;
-  Provider_T *provider          = (Provider_T*)NULL;
-  guint       providerLoad      = 0;
+  GList      *providerItem    = (GList*)NULL;
+  Provider_T *provider        = (Provider_T*)NULL;
+  Pixmap_T   *pixmap          = (Pixmap_T*)NULL;
+  guint       providerLoad    = 0;
+  guint       bgColorId       = _WHITE_;
   gchar       rowBuffer[128];
-  guint       bgColorId         = _WHITE_;
 
 
   /*
@@ -182,14 +183,34 @@ gdisp_poolProviderThreadStatus ( Kernel_T *kernel )
 
     provider = (Provider_T*)providerItem->data;
 
-    gtk_clist_set_text(GTK_CLIST(provider->pCList),
-		       1 /* status row */,
-		       1 /* information */,
+    if (gdisp_getProviderNumber(kernel) > 1) {
+
+      pixmap = gdisp_getProviderIdPixmap(kernel,
+					 provider->pCList,
+					 provider->pIdentity);
+
+      gtk_clist_set_pixtext(GTK_CLIST(provider->pCList),
+			    0, /* status row    */
+			    1, /* second column */
+	       gdisp_providerStatusToString(provider->pSamplingThreadStatus,
+					    &bgColorId),
+			    5, /* spacing */
+			    pixmap->pixmap,
+			    pixmap->mask);
+
+    }
+    else {
+
+      gtk_clist_set_text(GTK_CLIST(provider->pCList),
+			 0 /* status row */,
+			 1 /* information */,
 	       gdisp_providerStatusToString(provider->pSamplingThreadStatus,
 					    &bgColorId));
 
+    }
+
     gtk_clist_set_background(GTK_CLIST(provider->pCList),
-			     1 /* status row */,
+			     0 /* status row */,
 			     &kernel->colors[bgColorId]);
 
     sprintf(rowBuffer,
@@ -197,8 +218,8 @@ gdisp_poolProviderThreadStatus ( Kernel_T *kernel )
 	    provider->pSampleList.TSP_sample_symbol_info_list_t_len);
 
     gtk_clist_set_text(GTK_CLIST(provider->pCList),
-		       10 /* sample symbol row */,
-		       1  /* information       */,
+		       9 /* sample symbol row */,
+		       1 /* information       */,
 		       rowBuffer);
 
     /* ----------------------------------------------------------- */
@@ -224,7 +245,7 @@ gdisp_poolProviderThreadStatus ( Kernel_T *kernel )
 	    '%');
 
     gtk_clist_set_text(GTK_CLIST(provider->pCList),
-		       11 /* provider load row */,
+		       10 /* provider load row */,
 		       1  /* information       */,
 		       rowBuffer);
 
@@ -276,8 +297,8 @@ gdisp_insertAllProviders ( Kernel_T *kernel )
      * Align the label at the left of the frame.
      * Set the style of the frame.
      */
-    sprintf(rowBuffer," %d ",provider->pIdentity + 1);
-    frame = gtk_frame_new((gchar*)NULL /* rowBuffer */);
+    sprintf(rowBuffer," URL : %s ",provider->pUrl->str);
+    frame = gtk_frame_new(rowBuffer);
 
     gtk_frame_set_label_align(GTK_FRAME(frame),0.1,0.0);
     gtk_frame_set_shadow_type(GTK_FRAME(frame),GTK_SHADOW_ETCHED_IN);
@@ -340,8 +361,9 @@ gdisp_insertAllProviders ( Kernel_T *kernel )
 
     /* ------------------ LABELS WITH INFORMATION ------------------- */
 
-    rowInfo[0] = "URL";
-    rowInfo[1] = provider->pUrl->str;
+    rowInfo[0] = "Status";
+    rowInfo[1] = gdisp_providerStatusToString(provider->pSamplingThreadStatus,
+					      &bgColorId);
 
     /* 'rowNumber' is 0 */
     rowNumber  = gtk_clist_append(GTK_CLIST(provider->pCList),
@@ -356,20 +378,12 @@ gdisp_insertAllProviders ( Kernel_T *kernel )
       gtk_clist_set_pixtext(GTK_CLIST(provider->pCList),
 			    rowNumber,
 			    1, /* second column */
-			    provider->pUrl->str,
+			    rowInfo[1],
 			    5, /* spacing */
 			    pixmap->pixmap,
 			    pixmap->mask);
 
     }
-
-    rowInfo[0] = "Status";
-    rowInfo[1] = gdisp_providerStatusToString(provider->pSamplingThreadStatus,
-					      &bgColorId);
-
-    /* 'rowNumber' is 1 */
-    rowNumber  = gtk_clist_append(GTK_CLIST(provider->pCList),
-				  rowInfo);
 
     /* do not remove */
     rowInfo[1] = rowBuffer;
@@ -377,42 +391,42 @@ gdisp_insertAllProviders ( Kernel_T *kernel )
     rowInfo[0] = "Version ID";
     sprintf(rowInfo[1],"V%d",provider->pVersionId);
 
-    /* 'rowNumber' is 2 */
+    /* 'rowNumber' is 1 */
     rowNumber  = gtk_clist_append(GTK_CLIST(provider->pCList),
 				  rowInfo);
 
     rowInfo[0] = "Channel ID";
     sprintf(rowInfo[1],"%d",provider->pChannelId);
 
-    /* 'rowNumber' is 3 */
+    /* 'rowNumber' is 2 */
     rowNumber  = gtk_clist_append(GTK_CLIST(provider->pCList),
 				  rowInfo);
 
     rowInfo[0] = "Timeout";
     sprintf(rowInfo[1],"%d ms",provider->pTimeOut);
 
-    /* 'rowNumber' is 4 */
+    /* 'rowNumber' is 3 */
     rowNumber  = gtk_clist_append(GTK_CLIST(provider->pCList),
 				  rowInfo);
 
     rowInfo[0] = "Group Number";
     sprintf(rowInfo[1],"%d",provider->pGroupNumber);
 
-    /* 'rowNumber' is 5 */
+    /* 'rowNumber' is 4 */
     rowNumber  = gtk_clist_append(GTK_CLIST(provider->pCList),
 				  rowInfo);
 
     rowInfo[0] = "Base Frequency";
     sprintf(rowInfo[1],"%3.0f Hz",provider->pBaseFrequency);
 
-    /* 'rowNumber' is 6 */
+    /* 'rowNumber' is 5 */
     rowNumber  = gtk_clist_append(GTK_CLIST(provider->pCList),
 				  rowInfo);
 
     rowInfo[0] = "Maximum Period";
     sprintf(rowInfo[1],"%d ms",provider->pMaxPeriod);
 
-    /* 'rowNumber' is 7 */
+    /* 'rowNumber' is 6 */
     rowNumber  = gtk_clist_append(GTK_CLIST(provider->pCList),
 				  rowInfo);
 
@@ -422,14 +436,14 @@ gdisp_insertAllProviders ( Kernel_T *kernel )
 	    provider->pCurrentClientNumber,
 	    provider->pMaxClientNumber);
 
-    /* 'rowNumber' is 8 */
+    /* 'rowNumber' is 7 */
     rowNumber  = gtk_clist_append(GTK_CLIST(provider->pCList),
 				  rowInfo);
 
     rowInfo[0] = "Total Symbols";
     sprintf(rowInfo[1],"%d",provider->pSymbolNumber);
 
-    /* 'rowNumber' is 9 */
+    /* 'rowNumber' is 8 */
     rowNumber  = gtk_clist_append(GTK_CLIST(provider->pCList),
 				  rowInfo);
 
@@ -439,7 +453,7 @@ gdisp_insertAllProviders ( Kernel_T *kernel )
 	    "%d",
 	    provider->pSampleList.TSP_sample_symbol_info_list_t_len);
 
-    /* 'rowNumber' is 10 */
+    /* 'rowNumber' is 9 */
     rowNumber  = gtk_clist_append(GTK_CLIST(provider->pCList),
 				  rowInfo);
 
@@ -448,7 +462,7 @@ gdisp_insertAllProviders ( Kernel_T *kernel )
     rowInfo[0] = "Detected Flow";
     sprintf(rowInfo[1],"0 Bytes/s, 0 %c",'%');
 
-    /* 'rowNumber' is 11 */
+    /* 'rowNumber' is 10 */
     rowNumber  = gtk_clist_append(GTK_CLIST(provider->pCList),
 				  rowInfo);
 

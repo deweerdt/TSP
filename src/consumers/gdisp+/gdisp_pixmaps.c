@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_pixmaps.c,v 1.7 2006-09-21 20:19:59 esteban Exp $
+$Id: gdisp_pixmaps.c,v 1.8 2006-11-08 21:31:12 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -96,6 +96,7 @@ File      : Pixmap utilities.
 #include "pixmaps/gdisp_gdispAnimLogo11.xpm"
 #include "pixmaps/gdisp_gdispLargeLogo.xpm"
 #include "pixmaps/gdisp_urlLogo.xpm"
+#include "pixmaps/gdisp_warningLogo2.xpm"
 
 
 /*
@@ -177,7 +178,8 @@ gdisp_createPixmap ( Kernel_T   *kernel,
 						  gdisp_gdispAnimLogo10,
 						  gdisp_gdispAnimLogo11,
 						  gdisp_gdispLargeLogo,
-                                                  gdisp_urlLogo };
+                                                  gdisp_urlLogo,
+                                                  gdisp_warningLogo2 };
 
 
   /*

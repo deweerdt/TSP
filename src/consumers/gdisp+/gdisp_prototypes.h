@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_prototypes.h,v 1.22 2006-09-21 20:19:59 esteban Exp $
+$Id: gdisp_prototypes.h,v 1.23 2006-11-08 21:31:12 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -53,12 +53,14 @@ void       gdisp_destroyKernel   (Kernel_T *kernel);
 /*
  * From gdisp_sampling.c
  */
-gboolean   gdisp_startSamplingProcess             (Kernel_T *kernel);
-void       gdisp_stopSamplingProcess              (Kernel_T *kernel);
-void       gdisp_affectRequestedSymbolsToProvider (Kernel_T *kernel);
-gboolean   gdisp_asyncWriteSymbol                 (Kernel_T *kernel,
-						   Symbol_T *symbol,
-						   gchar    *valueAsString);
+gboolean   gdisp_startSamplingProcess             (Kernel_T           *kernel);
+void       gdisp_stopSamplingProcess              (Kernel_T           *kernel);
+void       gdisp_affectRequestedSymbolsToProvider (Kernel_T           *kernel);
+gboolean   gdisp_buildProviderPgiHashTable        (Provider_T         *provider,
+						   const SampleList_T *sampleList);
+gboolean   gdisp_asyncWriteSymbol                 (Kernel_T           *kernel,
+						   Symbol_T           *symbol,
+						   gchar              *valueAsString);
 
 
 /*
@@ -136,11 +138,13 @@ GdkColor  *gdisp_getProviderColor(Kernel_T *kernel,
 /*
  * From gdisp_consumers.c
  */
-void        gdisp_consumingInit            (Kernel_T *kernel);
-guint       gdisp_getProviderNumber        (Kernel_T *kernel);
-Provider_T *gdisp_getProviderByOriginalUrl (Kernel_T *kernel,
-					    gchar    *originalUrl);
-void        gdisp_consumingEnd             (Kernel_T *kernel);
+void        gdisp_getSymbolExtendedInformation(Provider_T *provider,
+					       gboolean    forgetPreviousExtInfo);
+void        gdisp_consumingInit               (Kernel_T *kernel);
+guint       gdisp_getProviderNumber           (Kernel_T *kernel);
+Provider_T *gdisp_getProviderByOriginalUrl    (Kernel_T *kernel,
+					       gchar    *originalUrl);
+void        gdisp_consumingEnd                (Kernel_T *kernel);
 
 
 /*

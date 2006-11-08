@@ -1,0 +1,36 @@
+/* XPM */
+static char *gdisp_warningLogo2[] = {
+/* width height num_colors chars_per_pixel */
+"   15    13       16            1",
+/* colors */
+". c #b13e14",
+"# c #d8821e",
+"a c #e89617",
+"b c #e1a05f",
+"c c #fac000",
+"d c #fcda00",
+"e c #f9c83f",
+"f c #edcfad",
+"g c #fff700",
+"h c #fff31c",
+"i c #fff283",
+"j c #faf0e5",
+"k c #f7f7f7",
+"l c #f7fbff",
+"m c #fffff7",
+"n c None",
+/* pixels */
+"nnnnnnnannnnnnn",
+"nnnnnnbabnnnnnn",
+"nnnnnfeaannnnnn",
+"nnnnnafci#nnnnn",
+"nnnnbfa.b#bnnnn",
+"nnnfbea.bcannnn",
+"nnnakcc.fdc#nnn",
+"nnbjedc.iddcbnn",
+"nnbfdcdfhhddann",
+"nbcccca.feddg#n",
+"fffccca.fadcgdb",
+"#ggfhgddgggggg.",
+"bb#b######.###b"
+};

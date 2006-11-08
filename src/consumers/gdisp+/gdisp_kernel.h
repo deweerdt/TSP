@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_kernel.h,v 1.31 2006-09-28 19:37:54 esteban Exp $
+$Id: gdisp_kernel.h,v 1.32 2006-11-08 21:31:12 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -191,6 +191,8 @@ typedef enum {
  *  - sTimeTag    : the time tag of the symbol value.
  */
 
+#define GD_SAMPLE_PGI_AS_STRING_LENGTH 10
+
 typedef struct Symbol_T_ {
 
   guchar                    sReference;
@@ -199,6 +201,9 @@ typedef struct Symbol_T_ {
   GList                    *sExtInfoList;
   guint                     sTimeTag;
   gdouble                   sLastValue;
+  gdouble                   sMinimum;
+  gdouble                   sMaximum;
+  gchar                    *sUnit;
 
   /*
    * Graphic.

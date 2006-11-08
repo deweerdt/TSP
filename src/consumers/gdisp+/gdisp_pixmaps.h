@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_pixmaps.h,v 1.5 2006-09-21 20:19:59 esteban Exp $
+$Id: gdisp_pixmaps.h,v 1.6 2006-11-08 21:31:12 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -82,6 +82,7 @@ typedef enum {
   GD_PIX_animLogo11,
   GD_PIX_largeLogo,
   GD_PIX_urlLogo,
+  GD_PIX_warning2,
   GD_PIX_NbPixmaps /* Pixmap total number */
 
 } Pixmap_ID;

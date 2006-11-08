@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_configuration.c,v 1.15 2006-09-28 19:37:53 esteban Exp $
+$Id: gdisp_configuration.c,v 1.16 2006-11-08 21:31:12 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -1175,6 +1175,9 @@ gdisp_loadProviderSymbolsForSampling ( Kernel_T   *kernel,
 	              gdisp_atoi(symbolNelem,theSymbol->sInfo.dimension);
 	theSymbol->sInfo.period    = gdisp_atoi(symbolPeriod,   1);
 	theSymbol->sInfo.phase     = gdisp_atoi(symbolPhase,    0);
+
+	theSymbol->sMinimum        = - G_MAXDOUBLE;
+	theSymbol->sMaximum        = + G_MAXDOUBLE;
 
 	hash_append(provider->pSymbolHashTable,
 		    theSymbol->sInfo.name,
