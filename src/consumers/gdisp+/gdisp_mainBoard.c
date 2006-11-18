@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_mainBoard.c,v 1.16 2006-09-23 20:35:02 esteban Exp $
+$Id: gdisp_mainBoard.c,v 1.17 2006-11-18 09:58:49 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -858,6 +858,54 @@ gdisp_createMainBoard (Kernel_T *kernel)
 		     0     /* padding */);
   gtk_widget_show(menuBar);
   kernel->widgets.mainBoardMenuBar = menuBar;
+
+  /*
+   * Freeze few menu items if XML not supported.
+   * Forbid 'Save' and 'Save As' actions.
+   */
+#ifndef XMLWRITER_SUPPORTED 
+
+ {
+
+   GtkMenuItem *menuItem     = (GtkMenuItem*)NULL;
+   GList       *menuItemList = (GList*)NULL;
+
+   void gdisp_freezeWidget(GtkWidget *widget,
+			   gpointer   targetName) {
+
+     gchar *widgetName = gtk_widget_get_name(widget);
+
+     if (strcmp(widgetName,(gchar*)targetName) == 0) {
+       gtk_widget_set_sensitive(widget,FALSE);
+     }
+
+   }
+
+   menuItemList = GTK_MENU_BAR(menuBar)->menu_shell.children;
+   while (menuItemList != (GList*)NULL) {
+
+     menuItem = (GtkMenuItem*)menuItemList->data;
+
+     if (menuItem->submenu != (GtkWidget*)NULL) {
+
+       gtk_container_forall(GTK_CONTAINER(menuItem->submenu),
+			    gdisp_freezeWidget,
+			    (gpointer)"<main>/Session/Save");
+
+       gtk_container_forall(GTK_CONTAINER(menuItem->submenu),
+			    gdisp_freezeWidget,
+			    (gpointer)"<main>/Session/Save As");
+
+     }
+
+     menuItemList = g_list_next(menuItemList);
+
+   }
+
+
+ }
+
+#endif
 
   /* ------------------------ MAIN WINDOW ------------------------ */
 
