@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_tools.c,v 1.24 2006-03-10 22:42:21 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_tools.c,v 1.25 2006-11-24 15:17:04 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -812,7 +812,6 @@ bbtools_publish(bbtools_request_t* req) {
   char* symbol_type_str;
   S_BB_DATADESC_T  symbol_desc;
   int32_t dimension[MAX_ALIAS_LEVEL];
-  int32_t dimension_len=MAX_ALIAS_LEVEL;
 
   memset(&symbol_desc,0,sizeof(S_BB_DATADESC_T));
   if (req->argc<2) {
