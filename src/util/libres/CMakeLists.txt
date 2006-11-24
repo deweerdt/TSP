@@ -1,3 +1,6 @@
+
+TSP_XINCLUDE(libUTIL.h)
+
 SET(LIBRES_SRC
 use_dbl.c datar.c
 dataw.c)

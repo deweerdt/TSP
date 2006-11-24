@@ -2,7 +2,9 @@
 TSP_XSCRIPT( 
            tspcfg_example.xml
 	   )
-
+TSP_XINCLUDE(
+  tspcfg_file.h
+  )
 SET(_SRC
 tspcfg_file.c)
 ADD_DEFINITIONS(${XML2_CFLAGS})
