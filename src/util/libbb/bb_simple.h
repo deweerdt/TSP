@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_simple.h,v 1.8 2006-07-22 16:57:38 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_simple.h,v 1.9 2006-11-24 10:05:59 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -98,14 +98,14 @@ BEGIN_C_DECLS
  *   - the module name whose variable belongs to
  *   - the module instance in case there may be
  *     several instance of the same moule.
- * @param bb_simple INOUT, a pointer to a valid BB.
- * @param var_name IN, the name of the data
- * @param module_name IN, the module name
- * @param module_instance IN, the module instance, -1 signify no instance.
- * @param bb_type IN, BlackBoard data type.
- * @param type_size IN, the data type size in byte (correspond to the size
+ * @param[in,out] bb_simple  a pointer to a valid BB.
+ * @param[in] var_name  the name of the data
+ * @param[in] module_name the module name
+ * @param[in] module_instance  the module instance, -1 signify no instance.
+ * @param[in] bb_type  BlackBoard data type.
+ * @param[in] type_size  the data type size in byte (correspond to the size
  *        of an element of this type to be allocated).
- * @param dimension IN, dimension of the variable
+ * @param[in] dimension  dimension of the variable
  *                    - 1 for scalar
  *                    - > 1 for array var.
  * @return address of the allocated data on success, NULL if allocation failed.
@@ -121,14 +121,14 @@ void* bb_simple_publish(S_BB_T* bb_simple,
  * Subscribe to a data in simple BB.
  * This a normal BB subscribe with name
  * mangling just the same as  @see bb_simple_publish.
- * @param bb_simple IN, a pointer to a valid BB.
- * @param var_name IN, the variable name
- * @param module_name IN, the name of the module who has published the data
- * @param module_instance IN, module instance (-1 if no instance)
- * @param bb_type IN/OUT, en entrée le type de donnée attendu  en sortie
+ * @param[in] bb_simple  a pointer to a valid BB.
+ * @param[in] var_name  the variable name
+ * @param[in] module_name  the name of the module who has published the data
+ * @param[in] module_instance  module instance (-1 if no instance)
+ * @param[in,out] bb_type en entrée le type de donnée attendu  en sortie
  *                      le type de la donnée trouvée dans le BB.
- * @param type_size OUT, taille du type récupéré en octet
- * @param dimension IN/OUT, en entrée la taille attendue en sortie
+ * @param[out] type_size  taille du type récupéré en octet
+ * @param[in,out] dimension en entrée la taille attendue en sortie
  *                           la taille effective de la donnée.
  * @return adresse de la donnée allouée, NULL
  *         si allocation impossible.
@@ -143,7 +143,7 @@ void* bb_simple_subscribe(S_BB_T* bb_simple,
 
 /**
  * Configure synchronization type (thread or process).
- * @param synchro_type IN,
+ * @param[in] synchro_type
  *        - BB_SIMPLE_SYNCHRO_THREAD for POSIX thread synchro
  *        - BB_SIMPLE_SYNCHRO_PROCESS for Sys V synchro
  * @return E_OK on success, E_NOK on failure.
@@ -152,8 +152,8 @@ int32_t bb_simple_synchro_config(int synchro_type);
 
 /**
  * Send a simple synchro message through the BB message queue.
- * @param bb_simple INOUT, a pointer to a valid BB.
- * @param msg_type IN, le type de message à envoyer pour la synchro
+ * @param[in,out] bb_simple a pointer to a valid BB.
+ * @param[in] msg_type le type de message à envoyer pour la synchro
  * @return E_OK si tout se passe bien
  */
 int32_t bb_simple_synchro_go(S_BB_T* bb_simple,int msg_type);
@@ -161,15 +161,15 @@ int32_t bb_simple_synchro_go(S_BB_T* bb_simple,int msg_type);
 /**
  * Attente d'un message de deblocage
  * de synchronisation SIMPLE.
- * @param bb_simple a pointer to a valid BB.
- * @param type_msg le type de message à recevoir pour la synchro
+ * @param[in,out] bb_simple a pointer to a valid BB.
+ * @param[in] type_msg le type de message à recevoir pour la synchro
  * @return E_OK si tout se passe bien
  */
 int32_t bb_simple_synchro_wait(S_BB_T* bb_simple,int type_msg);
 
 /**
  * Verification de la synchronisation SIMPLE.
- * @param bb_simple INOUT, a pointer to a valid BB.
+ * @param[in,out] bb_simple  a pointer to a valid BB.
  * @return E_OK si tous les messages de synchro ont ete consommes, E_NOK sinon.
  */
 int32_t bb_simple_synchro_verify(S_BB_T* bb_simple);
@@ -177,7 +177,7 @@ int32_t bb_simple_synchro_verify(S_BB_T* bb_simple);
 /**
  * Envoi d'un message de déblocage
  * de synchronisation SIMPLE (version thread).
- * @param type_msg le type de message à envoyer pour la synchro
+ * @param[in] type_msg le type de message à envoyer pour la synchro
  * @return E_OK si tout se passe bien
  */
 int32_t bb_simple_thread_synchro_go(int type_msg);
@@ -185,7 +185,7 @@ int32_t bb_simple_thread_synchro_go(int type_msg);
 /**
  * Attente d'un message de déblocage
  * de synchronisation SIMPLE (version thread).
- * @param type_msg le type de message à recevoir pour la synchro
+ * @param[in] type_msg le type de message à recevoir pour la synchro
  * @return E_OK si tout se passe bien
  */
 int32_t bb_simple_thread_synchro_wait(int type_msg);
@@ -205,18 +205,18 @@ int32_t bb_simple_thread_synchro_wait(int type_msg);
  *   - the module name whose variable belongs to
  *   - the module instance in case there may be
  *     several instance of the same moule.
- * @param bb_simple INOUT, a pointer to a valid BB.
- * @param var_name IN, the name of the data
- * @param target_var_name IN, the name of the target of the alias currently being defined
- * @param module_name IN, the module name
- * @param module_instance IN, the module instance, -1 signify no instance.
- * @param bb_type IN, BlackBoard data type.
- * @param type_size IN, the data type size in byte (correspond to the size
+ * @param[in,out] bb_simple a pointer to a valid BB.
+ * @param[in] var_name  the name of the data
+ * @param[in] target_var_name  the name of the target of the alias currently being defined
+ * @param[in] module_name  the module name
+ * @param[in] module_instance  the module instance, -1 signify no instance.
+ * @param[in] bb_type  BlackBoard data type.
+ * @param[in] type_size  the data type size in byte (correspond to the size
  *        of an element of this type to be allocated).
- * @param dimension IN, dimension of the variable
+ * @param[in] dimension  dimension of the variable
  *                    - 1 for scalar
  *                    - > 1 for array var.
- * @param offset IN, offset relative of the alias from the target 
+ * @param[in] offset  offset relative of the alias from the target 
  * @return address of the allocated data on success, NULL if allocation failed.
  */
 void* bb_simple_alias_publish(S_BB_T* bb_simple,
