@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core_sysv.c,v 1.1 2006-07-22 16:52:27 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core_sysv.c,v 1.2 2006-11-24 18:17:45 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -40,10 +40,13 @@ Note	  : Most of the code was written by Eric, and was historically
 
 #include <errno.h>
 #include <assert.h>
+#include <stdlib.h>
+#include <string.h>
 #include <sys/types.h>
 #include <sys/ipc.h>
 #include <sys/msg.h>
 #include <sys/sem.h>
+#include <sys/shm.h>
 
 #include "bb_core_sysv.h"
 #include "bb_core.h"
@@ -408,6 +411,8 @@ static int32_t sysv_bb_msgq_send(volatile S_BB_T * bb, S_BB_MSG_T * msg)
 /* 	      "Blackboard::bb_snd_msg", */
 /* 	      "Cannot send msg <%d> bytes already queued>",mystat.msg_cbytes); */
 	}
+
+	return retcode;
 }
 
 static int32_t sysv_bb_msgq_isalive(S_BB_T * bb)

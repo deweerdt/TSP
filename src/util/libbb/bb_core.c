@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.24 2006-07-22 17:07:15 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.25 2006-11-24 18:17:45 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -448,71 +448,85 @@ bb_value_write(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc,const char* value,
 
 int32_t
 bb_data_header_print(S_BB_DATADESC_T data_desc, FILE* pf, int32_t idx, int32_t aliastack) {
-	const char une_tab[] = "    ";
+  const char oneTab[] = "    "; 
+  char tabs[MAX_ALIAS_LEVEL*5]="";
+  
+  int i;
+  
+  for (i=0; i<(aliastack-1); i++)
+    {
+      strncat(tabs, oneTab, strlen(oneTab));
+    }
+  
+  fprintf(pf,"%s---------- < %s > ----------\n", tabs,data_desc.name);
+  fprintf(pf,"%s  alias-target = %d\n", tabs, data_desc.alias_target);
+  fprintf(pf,"%s  type         = %d  (%s)\n",tabs,data_desc.type,E_BB_2STRING[data_desc.type]);
+  fprintf(pf,"%s  dimension    = %d  \n",tabs,data_desc.dimension);
+  fprintf(pf,"%s  type_size    = %d  \n",tabs,data_desc.type_size);
+  fprintf(pf,"%s  data_offset  = %ld \n",tabs,data_desc.data_offset);
+  if ((idx>=0) && 
+      ((E_BB_UCHAR != data_desc.type) &&
+       (E_BB_CHAR  != data_desc.type)
+       )
+      ) {
+    fprintf(pf,"%s  value[%d]     = ",tabs,idx);
+  } else {
+    fprintf(pf,"%s  value        = ",tabs);
+  }
+  if ((data_desc.dimension > 1) &&
+      ((E_BB_UCHAR != data_desc.type) &&
+       (E_BB_CHAR  != data_desc.type)
+       )
+      ){
+    fprintf(pf," [ ");
+  } 
 
-	char decallage[MAX_ALIAS_LEVEL*5]="";
-	
-	int i;
-	
-	for (i=0; i<(aliastack-1); i++)
-	{
-		strncat(decallage, une_tab, strlen(une_tab));
-	}
-
-	fprintf(pf,"%s---------- < %s > ----------\n", decallage,data_desc.name);
-	fprintf(pf,"%s  alias-target = %d\n", decallage, data_desc.alias_target);
-	fprintf(pf,"%s  type         = %d  (%s)\n",decallage,data_desc.type,E_BB_2STRING[data_desc.type]);
-	fprintf(pf,"%s  dimension    = %d  \n",decallage,data_desc.dimension);
-	fprintf(pf,"%s  type_size    = %d  \n",decallage,data_desc.type_size);
-	fprintf(pf,"%s  data_offset  = %ld \n",decallage,data_desc.data_offset);
-	if (idx>=0) {
-	fprintf(pf,"%s  value[%d]    = ",decallage,idx);
-	} else {
-	fprintf(pf,"%s  value        = ",decallage);
-	}
-	if (data_desc.dimension > 1) {
-	fprintf(pf," [ ");
-	} 
-	if (idx>=0) {
-	fprintf(pf,"... ");
-	}
-	return 0;
+  if ((idx>=0) && 
+      ((E_BB_UCHAR != data_desc.type) &&
+       (E_BB_CHAR  != data_desc.type)
+       )
+      ) {
+    fprintf(pf,"... ");
+  }
+  return 0;
 } /* end of bb_data_header_print */
-
-
 
 int32_t
 bb_data_footer_print(S_BB_DATADESC_T data_desc, FILE* pf, int32_t idx, int32_t aliastack) {
-	const char une_tab[] = "    ";
+  const char oneTab[] = "    ";
+  char tabs[MAX_ALIAS_LEVEL*5]="";
+  
+  int i;
+  
+  for (i=0; i<(aliastack-1); i++) {
+    strncat(tabs, oneTab, strlen(oneTab));
+  }
+    
+  if ((idx>=0) &&
+      ((E_BB_UCHAR != data_desc.type) &&
+       (E_BB_CHAR  != data_desc.type)
+       )
+      ) {
+    fprintf(pf,"... ");
+  }  
 
-
-	char decallage[MAX_ALIAS_LEVEL*5]="";
-
-	int i;
-
-	for (i=0; i<(aliastack-1); i++)
-	{
-		strncat(decallage, une_tab, strlen(une_tab));
-	}
-
-
-	if (idx>=0) {
-		fprintf(pf,"... ");
-	}  
-	if (data_desc.dimension > 1) {
-		fprintf(pf,"]");
-	}  
-	fprintf(pf,"\n");    
-	fprintf(pf,"%s---------- ---------- ----------\n", decallage);
-
-	return 0;
+  if ((data_desc.dimension > 1) &&
+      ((E_BB_UCHAR != data_desc.type) &&
+       (E_BB_CHAR  != data_desc.type)
+       )
+      ){
+    fprintf(pf,"]");
+  }  
+  fprintf(pf,"\n");    
+  fprintf(pf,"%s---------- ---------- ----------\n", tabs);
+  
+  return 0;
 } /* end of bb_data_footer_print */
 
 int32_t 
-bb_value_print(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc, FILE* pf, 
-               int32_t* idxstack, int32_t idxstack_len) {
-  
-  int32_t i,j,ibeg,iend;
+bb_string_value_print(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc, FILE* pf, 
+		      int32_t* idxstack, int32_t idxstack_len) {
+  int32_t i,ibeg,iend;
   char* data;
   int32_t idx;
   assert(bb);
@@ -535,68 +549,145 @@ bb_value_print(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc, FILE* pf,
     iend=data_desc.dimension;
   }
 
-  for (i=ibeg; i< iend; ++i) {
-    
-    switch (data_desc.type) {
-    case E_BB_DOUBLE: 
-      fprintf(pf,"%1.16f ",((double*) data)[i]);
-      break;
-    case E_BB_FLOAT:
-      fprintf(pf,"%f ",((float*) data)[i]);
-      break;
-    case E_BB_INT8:
-      fprintf(pf,"%d ",((int8_t*) data)[i]);
-      break;
-    case E_BB_INT16:
-      fprintf(pf,"%d ",((int16_t*) data)[i]);
-      break; 
-    case E_BB_INT32:
-      fprintf(pf,"%d ",((int32_t*) data)[i]);
-      break; 
-    case E_BB_INT64:
-      fprintf(pf,"%lld ",((int64_t*) data)[i]);
-      break;
-    case E_BB_UINT8:
-      fprintf(pf,"0x%x ",((uint8_t*) data)[i]);
-      break; 
-    case E_BB_UINT16:
-      fprintf(pf,"0x%x ",((uint16_t*) data)[i]);
-      break;
-    case E_BB_UINT32:
-      fprintf(pf,"0x%x ",((uint32_t*) data)[i]);
-      break;	
-    case E_BB_UINT64:
-      fprintf(pf,"0x%llx ",((uint64_t*) data)[i]);
-      break;	
-    case E_BB_CHAR:
-      fprintf(pf,"0x%02x<%c> ",((char*) data)[i],
-	      isprint((int)data[i]) ? ((char*) data)[i] : '?');
-      break;
-    case E_BB_USER:
-      for (j=0; j<data_desc.type_size; ++j) {
-	fprintf(pf,"0x%02x ",((uint8_t*) data)[i*data_desc.type_size+j]);
-        //bb_data_print(bb, *(&data_desc+1), pf);  
+  /* 
+   * If we have character this means we want
+   * a character-like or string-like display 
+   * HEX dump should be for UINT8/16/32/64
+   */
+  if ((E_BB_CHAR ==data_desc.type) ||
+      (E_BB_UCHAR==data_desc.type)) {
+    for (i=ibeg; i< iend; ++i) {
+      if ('\0'==((char*) data)[i]) {
+	break;
+      } else {
+	fprintf(pf,"%c",isprint((int)data[i]) ? ((char*) data)[i] : '?');
       }
-      break; 
-    default:
-      fprintf(pf,"0x%x ",((char*) data)[i]);
-      break;
+    }
+  } else {
+    /* This is not a char type ? */
+    fprintf(pf,"bb_string_value_print: Not a char type");
+    return 1;
+  }
+  return 0;
+} /* end of bb_string_value_print */
+
+int32_t 
+bb_value_print(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc, FILE* pf, 
+               int32_t* idxstack, int32_t idxstack_len) {
+  
+  int32_t i,j,ibeg,iend;
+  char* data;
+  int32_t idx;
+  int32_t charNullCount;
+  assert(bb);
+  /* We get BB data address  */
+  data = bb_item_offset(bb, &data_desc,idxstack,idxstack_len);
+  
+  /* check index stack to handle index */
+  if ((idxstack_len>0) && (data_desc.dimension > 1)){
+    idx = idxstack[idxstack_len-1];
+    if (idx>=0) {
+      ibeg=0;
+      iend=1;
+    } else {
+      ibeg=0;
+      iend=data_desc.dimension;
+    }
+  } else {
+    idx = 0;
+    ibeg=0;
+    iend=data_desc.dimension;
+  }
+
+  /* 
+   * If we have character this means we want
+   * a character-like or string-like display 
+   * HEX dump should be for UINT8/16/32/64
+   */
+  if ((E_BB_CHAR ==data_desc.type) ||
+      (E_BB_UCHAR==data_desc.type)) {
+    charNullCount = 0;
+    for (i=ibeg; i< iend; ++i) {
+      if ('\0'==((char*) data)[i]) {
+	charNullCount++;
+      } else {
+	if (charNullCount>0) {
+	  fprintf(pf,"(%d*'\\0')",charNullCount);
+	  charNullCount = 0;
+	}
+	if (isprint((int)data[i])) {
+	  fprintf(pf,"%c",((char*) data)[i]);
+	} else {
+	  fprintf(pf," 0x%02X ",((char*) data)[i]);
+	}
+      }
+    }
+    if (charNullCount>0) {
+      fprintf(pf," (%d*'\\0')",charNullCount);
+      charNullCount = 0;
+    }
+
+/*     fprintf(pf," (0x"); */
+/*     for (i=ibeg; i< iend; ++i) { */
+/*       fprintf(pf,"%02x",((char*) data)[i]); */
+/*     } */
+/*     fprintf(pf,")"); */
+  } else {
+
+    for (i=ibeg; i< iend; ++i) {    
+      switch (data_desc.type) {
+      case E_BB_DOUBLE: 
+	fprintf(pf,"%1.16f ",((double*) data)[i]);
+	break;
+      case E_BB_FLOAT:
+	fprintf(pf,"%f ",((float*) data)[i]);
+	break;
+      case E_BB_INT8:
+	fprintf(pf,"%d ",((int8_t*) data)[i]);
+	break;
+      case E_BB_INT16:
+	fprintf(pf,"%d ",((int16_t*) data)[i]);
+	break; 
+      case E_BB_INT32:
+	fprintf(pf,"%d ",((int32_t*) data)[i]);
+	break; 
+      case E_BB_INT64:
+	fprintf(pf,"%lld ",((int64_t*) data)[i]);
+	break;
+      case E_BB_UINT8:
+	fprintf(pf,"0x%x ",((uint8_t*) data)[i]);
+	break; 
+      case E_BB_UINT16:
+	fprintf(pf,"0x%x ",((uint16_t*) data)[i]);
+	break;
+      case E_BB_UINT32:
+	fprintf(pf,"0x%x ",((uint32_t*) data)[i]);
+	break;	
+      case E_BB_UINT64:
+	fprintf(pf,"0x%llx ",((uint64_t*) data)[i]);
+	break;	
+	/*     case E_BB_CHAR: */
+	/*       fprintf(pf,"0x%02x<%c> ",((char*) data)[i], */
+	/* 	      isprint((int)data[i]) ? ((char*) data)[i] : '?'); */
+	/*       break; */
+	/*     case E_BB_UCHAR: */
+	/*       fprintf(pf,"0x%02x<%c> ",((char*) data)[i], */
+	/* 	      isprint((int)data[i]) ? ((char*) data)[i] : '?'); */
+	/*       break;*/
+      case E_BB_USER:
+	for (j=0; j<data_desc.type_size; ++j) {
+	  fprintf(pf,"0x%02x ",((uint8_t*) data)[i*data_desc.type_size+j]);
+	  //bb_data_print(bb, *(&data_desc+1), pf);  
+	}
+	break; 
+      default:
+	fprintf(pf,"0x%x ",((char*) data)[i]);
+	break;
+      }
     }
   } 
   return 0;
 } /* end of bb_value_print */
-
-
-
-/*int32_t 
-bb_data_print(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc, FILE* pf) {
-	
-	bb_data_header_print(data_desc,pf,-1);
-	bb_value_print(bb,data_desc,pf,-1);
-	bb_data_footer_print(data_desc,pf,-1);
-	return BB_OK;
-
-}*/ /* end of bb_data_print */
 
 int32_t 
 bb_data_print(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc, FILE* pf,
@@ -848,7 +939,6 @@ bb_dump(volatile S_BB_T *bb, FILE* p_filedesc) {
   int32_t          aliasstack_size = MAX_ALIAS_LEVEL;
   S_BB_DATADESC_T  aliasstack[MAX_ALIAS_LEVEL];
   int32_t array_in_aliasstack;
-
   
   retcode = BB_OK;
   assert(bb);

@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.h,v 1.22 2006-07-22 17:07:15 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.h,v 1.23 2006-11-24 18:17:45 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -399,7 +399,7 @@ BEGIN_C_DECLS
 
 /**
  * The size (in byte) of a BlackBoard data type.
- * @param bb_type IN, a BlackBoard data type
+ * @param[in] bb_type a BlackBoard data type
  * @return The size (in byte) of a BlackBoard data type or -1 if bb_type equals @ref E_BB_USER
  *         or is unknown.
  */
@@ -408,7 +408,7 @@ sizeof_bb_type(E_BB_TYPE_T bb_type);
 
 /**
  * Convert a string representing a E_BB_TYPE_T to a BlackBoard data type.
- * @param bb_type_string IN, a string representing a BlackBoard data type
+ * @param[in] bb_type_string a string representing a BlackBoard data type
  * @return the BlackBoard data type or -1 if conversion failed.
  */
 E_BB_TYPE_T 
@@ -417,7 +417,7 @@ bb_type_string2bb_type(const char* bb_type_string);
 /**
  * Check if the accessed blackboard is of the same
  * version as the one used by this code.
- * @param bb IN, the BlackBoard to be checked 
+ * @param[in] bb the BlackBoard to be checked 
  * @return 0 if version is the same, < 0 if current
  *         version is older than the accessed blackboard, 
  *         > 0  for the converse.
@@ -430,8 +430,8 @@ bb_check_version(volatile S_BB_T* bb);
  * n_data publishable elements with a data zone of size data_size byte.
  * This is the exact size of the SHM segment required
  * to create a BB.
- * @param n_data IN the number of publishable data in blackboard
- * @param data_size IN the size (in byte) of the blackboard data zone.
+ * @param[in] n_data the number of publishable data in blackboard
+ * @param[in] data_size the size (in byte) of the blackboard data zone.
  * @return the size (in byte) of this kind of blackboard.
  */
 int32_t
@@ -439,8 +439,8 @@ bb_size(const int32_t n_data, const int32_t data_size);
 
 /**
  * Search a variable within a BlackBoard.
- * @param bb IN BlackBoard pointer
- * @param var_name IN the name of the searched variable
+ * @param[in] bb BlackBoard pointer
+ * @param[in] var_name the name of the searched variable
  * @return index of the variable in the BB descriptor array
  */
 int32_t 
@@ -448,9 +448,9 @@ bb_find(volatile S_BB_T* bb, const char* var_name);
 
 /*
  * Search a variable within a BlackBoard using fastfind algorithm.
- * @param bb IN BlackBoard pointer
- * @param fastfind_string IN the fastfind string build with @ref bb_fastfind_build
- * @param var_name IN the name of the searched variable
+ * @param[in] bb BlackBoard pointer
+ * @param[in] fastfind_string the fastfind string build with @ref bb_fastfind_build
+ * @param[in] var_name the name of the searched variable
  * @return index of the variable in the BB descriptor array
  */
 /* int32_t */
@@ -459,7 +459,7 @@ bb_find(volatile S_BB_T* bb, const char* var_name);
 /**
  * Return a pointer to the beginning of the data 
  * descriptor array of the specified BB.
- * @param bb IN BlackBoard pointer
+ * @param[in] bb BlackBoard pointer
  * @return start address of the data descriptor array in bb
  */
 S_BB_DATADESC_T* 
@@ -468,7 +468,7 @@ bb_data_desc(volatile S_BB_T* bb);
 /**
  * Return a pointer to the beginning of the data array
  * of the specified BB.
- * @param bb IN BlackBoard pointer
+ * @param[in] bb BlackBoard pointer
  * @return start address of the data array in bb
  */
 void* 
@@ -477,8 +477,8 @@ bb_data(volatile S_BB_T* bb);
 /**
  * Return a double value from the pointer
  * value considered as the bbtype.
- * @param value IN pointer to the value
- * @param bbtype IN the type of the pointer
+ * @param[in] value pointer to the value
+ * @param[in] bbtype the type of the pointer
  * @return double value of the pointed value
  */
 double
@@ -489,10 +489,10 @@ bb_double_of(void *value, E_BB_TYPE_T bbtype);
  * If default value pointer is NULL then all type are 
  * initialized to 0 but the E_BB_USER for which
  * the data zone is set to binary 0.
- * @param bb IN pointer to the blackboard whose the data belongs.
- * @param data_desc INOUT pointer to the data descriptor structure
+ * @param[in] bb pointer to the blackboard whose the data belongs.
+ * @param[in,out] data_desc pointer to the data descriptor structure
  *                (should NOT be NULL).
- * @param default_value INOUT default pointer to the default value used for init.
+ * @param[in,out] default_value default pointer to the default value used for init.
  *                         If NULL then initialize to 0.
  * @return E_OK if init OK E_NOK otherwise.
  */
@@ -506,34 +506,56 @@ bb_data_initialise(volatile S_BB_T* bb, S_BB_DATADESC_T* data_desc,void* default
  * the data pointer.
  * Nevertheless the function take care of the string to value
  * conversion with proper hexvalue.
- * @param bb IN, the BlackBoard where data is published
- * @param data_desc IN, the BB data descriptor. Be sure to provide
+ * @param[in] bb the BlackBoard where data is published
+ * @param[in] data_desc the BB data descriptor. Be sure to provide
  *                      a properly initialised data_desc since the
  *                      function does not verify this. 
- * @param value IN, the string representing the value to be written to BB data
- * @param idxstack IN, the indexstack (in the alias case)  @ref BBAliasLib.
+ * @param[in] value the string representing the value to be written to BB data
+ * @param[in] idxstack the indexstack (in the alias case)  @ref BBAliasLib.
  *                     it is not read if idxstack_len is 0.
- * @param idxstack_len IN, the indexstack length should be >= 0, if 0 idxstack is ignored
+ * @param[in] idxstack_len the indexstack length should be >= 0, if 0 idxstack is ignored
  * @return BB_OK on success BB_NOK otherwise.
  */
 int32_t
 bb_value_write(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc, const char* value, int32_t* idxstack, int32_t idxstack_len);
 
+int32_t
+bb_value_direct_write(void* data, S_BB_DATADESC_T data_desc, const char* value, int hexval);
+
+int32_t
+bb_value_direct_rawwrite(void* data, S_BB_DATADESC_T data_desc, void* value);
 
 /**
  * Print the value off a BB published data on a STDIO file stream.
- * @param bb IN, the BlackBoard where data is published
- * @param data_desc IN, the BB data descriptor. Be sure to provide
+ * @param[in] bb the BlackBoard where data is published
+ * @param[in] data_desc the BB data descriptor. Be sure to provide
  *                      a properly initialised data_desc since the
  *                      function does not verify this. 
- * @param pf IN, the STDIO file stream pointer, should be open for writing.
- * @param idxstack IN, the indexstack (in the alias case)  @ref BBAliasLib.
+ * @param[in] pf the STDIO file stream pointer, should be open for writing.
+ * @param[in] idxstack the indexstack (in the alias case)  @ref BBAliasLib.
  *                     it is not read if idxstack_len is 0.
- * @param idxstack_len IN, the indexstack length should be >= 0, if 0 idxstack is ignored
+ * @param[in] idxstack_len the indexstack length should be >= 0, if 0 idxstack is ignored
+ */
+int32_t 
+bb_string_value_print(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc, FILE* pf,
+		      int32_t* idxstack, int32_t idxstack_len);
+
+/**
+ * Print the value off a BB published data on a STDIO file stream.
+ * @param[in] bb the BlackBoard where data is published
+ * @param[in] data_desc the BB data descriptor. Be sure to provide
+ *                      a properly initialised data_desc since the
+ *                      function does not verify this. 
+ * @param[in] pf the STDIO file stream pointer, should be open for writing.
+ * @param[in] idxstack the indexstack (in the alias case)  @ref BBAliasLib.
+ *                     it is not read if idxstack_len is 0.
+ * @param[in] idxstack_len the indexstack length should be >= 0, if 0 idxstack is ignored
  */
 int32_t 
 bb_value_print(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc, FILE* pf,
                int32_t* idxstack, int32_t idxstack_len);
+
+
 
 int32_t
 bb_data_header_print(S_BB_DATADESC_T data_desc, FILE* pf, int32_t idx, int32_t aliastack);
@@ -545,11 +567,11 @@ bb_data_footer_print(S_BB_DATADESC_T data_desc, FILE* pf, int32_t idx, int32_t a
 
 /**
  * Print the content of a data descriptor.
- * @param bb IN pointer to BB where the data reside
- * @param data_desc INOUT pointer to data descriptor.
- * @param pf INOUT stream file pointer to be used for printing.
- * @param idxstack IN, the index stack 
- * @param idxstack_len IN, the size of the index stack
+ * @param[in] bb  pointer to BB where the data reside
+ * @param[in,out] data_desc pointer to data descriptor.
+ * @param[in,out] pf stream file pointer to be used for printing.
+ * @param[in] idxstack the index stack 
+ * @param[in] idxstack_len  the size of the index stack
  * @return always return E_OK unless pf is NULL.
  */
 int32_t 
@@ -559,8 +581,8 @@ bb_data_print(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc, FILE* pf,
 /**
  * Dump a blackboard to a file stream.
  * Blackboard description and all data content is dumped.
- * @param bb INOUT, pointer to BB.
- * @param filedesc INOUT, file stream descriptor.
+ * @param[in,out] bb  pointer to BB.
+ * @param[in,out] filedesc  file stream descriptor.
  * @return E_OK if dump succeed E_NOK otherwise.
  */
 int32_t 
@@ -573,15 +595,15 @@ bb_dump(volatile S_BB_T *bb, FILE* filedesc);
  * to contains a fresh new blackboard structure.
  * Only one process should create a blackboard others should
  * attach through @see bb_attach(S_BB_T**, const char*). 
- * @param bb INOUT Pointer to a BB pointer.
+ * @param[in,out] bb  Pointer to a BB pointer.
  *                    IN, non NULL pointer.
  *                    OUT, the pointed element is the new created BB
  *                         or NULL is creation failed.
- * @param pc_bb_name IN, the blackboard name
- * @param n_data IN maximum data to be stored in blackboard.
+ * @param[in] pc_bb_name the blackboard name
+ * @param[in] n_data maximum data to be stored in blackboard.
  *                  I.e. the number of different published element in BB
  *                 (each element has an associated key)
- * @param data_size IN the maximum data zone size (in byte) of the blackboard.
+ * @param[in] data_size the maximum data zone size (in byte) of the blackboard.
  *                     This is the sum of all data published in the blackboard.
  * @return E_OK if creation succeed E_NOK if failed.
  */
@@ -596,7 +618,7 @@ bb_create(S_BB_T** bb,
  * and detach from it. Note that effective shared memory segment
  * destruction will occur when the last process attached 
  * is detached (through @see bb_detach for example).
- * @param bb INOUT Pointer to BB pointer.
+ * @param[in,out] bb Pointer to BB pointer.
  *                 Should not be NULL.
  * @return E_OK on success E_NOK otherwise.
  */
@@ -605,8 +627,8 @@ bb_destroy(S_BB_T** bb);
 
 /**
  * Memset the data area of a BB.
- * @param  bb INOUT BB pointer, should not be NULL.
- * @param  c IN, the character used to memset each byte of the 
+ * @param[in,out]  bb  BB pointer, should not be NULL.
+ * @param[in]  c  the character used to memset each byte of the 
  *               BlackBoard data area.
  */
 int32_t
@@ -619,7 +641,7 @@ bb_data_memset(S_BB_T* bb, const char c);
  * concurrent modifications.
  * This is a blocking call (using sys V semaphore).
  * @see bb_publish/ @see bb_subscribe automatically lock the blackboard.
- * @param bb INOUT BB pointer, should not be NULL.
+ * @param[in,out] bb BB pointer, should not be NULL.
  * @return E_OK if lock succeed, E_NOK otherwise.
  */
 int32_t 
@@ -627,7 +649,7 @@ bb_lock(volatile S_BB_T* bb);
 
 /**
  * Unlock blackboard.
- * @param bb INOUT, BB pointer, should not be NULL.
+ * @param[in,out] bb BB pointer, should not be NULL.
  * @return E_OK if unlock succeed, E_NOK otherwise.
  */
 int32_t 
@@ -635,9 +657,9 @@ bb_unlock(volatile S_BB_T* bb);
 
 /**
  * Attach to an existing blackboard.=
- * @param bb OUT, Pointer to BB pointer (should not be NULL).
+ * @param[out] bb Pointer to BB pointer (should not be NULL).
  *               the pointed value is updated is BB attach succeed.
- * @param bb_name IN, blackboard name
+ * @param[in] bb_name blackboard name
  * @return  E_OK  if blackboard exists and attach succeed
  *                E_NOK otherwise.
  */
@@ -646,7 +668,7 @@ bb_attach(S_BB_T** bb, const char* bb_name);
 
 /**
  * Detach from blackboard.
- * @param bb INOUT, Pointer to BB pointer (should not be NULL)
+ * @param[in,out] bb Pointer to BB pointer (should not be NULL)
  * @return E_OK if blackboard exists and detach succeed E_NOK otherwise.
  */
 int32_t 
@@ -657,8 +679,8 @@ bb_detach(S_BB_T** bb);
  * This request allocate space for the specified data in blackboard
  * and return the address of the newly allocated space.
  * This function has the same semantic as malloc(3).
- * @param bb INOUT, BB pointer (should not be NULL).
- * @param data_desc INOUT, Data descriptor of the data to be published.
+ * @param[in,out] bb  BB pointer (should not be NULL).
+ * @param[in,out] data_desc  Data descriptor of the data to be published.
  *                         OUT, if data has been properly allocated
  *                         the S_BB_DATADESC_T.data_offset is updated.
  * @return address of the allocated data, NULL
@@ -677,8 +699,8 @@ bb_item_offset(volatile S_BB_T *bb,
  * Subscribe to blackboard data.
  * The function search the data in BB and return its
  * address if found.
- * @param bb IN, pointer to BB.
- * @param data_desc INOUT, data descriptor for the searched data on entry
+ * @param[in] bb pointer to BB.
+ * @param[in,out] data_desc data descriptor for the searched data on entry
  *                         updated data desc if found.
  * @return data address if found NULL if not found.
  */
@@ -688,7 +710,7 @@ bb_subscribe(volatile S_BB_T *bb, S_BB_DATADESC_T* data_desc);
 /**
  * Return the maximum number of data that
  * could be published in blackboard.
- * @param bb IN, pointer to blackboard.
+ * @param[in] bb pointer to blackboard.
  * @return the maximum number of data that could be published in blackboard
  */
 int32_t
@@ -697,7 +719,7 @@ bb_get_nb_max_item(volatile S_BB_T *bb);
 /**
  * Return the number of data that
  * are currently published in blackboard. 
- * @param bb IN, pointer to blackboard. 
+ * @param[in] bb pointer to blackboard. 
  * @return the number of data currently published in blackboard. 
  */
 int32_t
@@ -705,7 +727,7 @@ bb_get_nb_item(volatile S_BB_T *bb);
 
 /**
  * Return the memory occupation (in byte) of a blackboard.
- * @param bb IN, pointer to BB.
+ * @param[in] bb pointer to BB.
  * @return memory occupied by the specified BB in bytes
  */
 int32_t
@@ -723,9 +745,9 @@ bb_get_mem_size(volatile S_BB_T *bb);
  *      - direct access to BB data
  * This kind of BB is used for flip/flop BB distribution
  * with a blackboard TSP provider.
- * @param bb_shadow INOUT, pointer to pre-allocated data zone
+ * @param[in,out] bb_shadow pointer to pre-allocated data zone
  *                         which will receive the shadow BB.
- * @param bb_src IN, pointer to source blackboard to be shadowed.
+ * @param[in] bb_src pointer to source blackboard to be shadowed.
  * @return  E_OK on success E_NOK if not.
  */
 int32_t 
@@ -734,8 +756,8 @@ bb_shadow_get(S_BB_T *bb_shadow, volatile S_BB_T *bb_src);
 /**
  * Update the data zone of a shadow blackboard.
  * This is essentially a memcpy of the blackboard data zone.
- * @param bb_shadow INOUT, pointer to shadow BB
- * @param bb_src IN, pointer to source BB (the same BB
+ * @param[in,out] bb_shadow pointer to shadow BB
+ * @param[in] bb_src pointer to source BB (the same BB
  *                   initially used for making shadow)
  * @return E_OK on success.
  */
@@ -744,7 +766,7 @@ bb_shadow_update_data(S_BB_T *bb_shadow, volatile S_BB_T *bb_src);
 
 /**
  * Return the BB message queue identifier.
- * @param bb INOUT, pointer to BB.
+ * @param[in,out] bb pointer to BB.
  * @return message queue id 
  */
 int32_t 
@@ -755,8 +777,8 @@ bb_msg_id(volatile S_BB_T *bb);
  * This is a non blocking call, if there is no more
  * room in the message queue, the message is not sent
  * and lost.
- * @param bb INOUT, pointer to BB
- * @param msg INOUT, pointer to message to be sent
+ * @param[in,out] bb pointer to BB
+ * @param[in,out] msg pointer to message to be sent
  * @return E_OK on success E_NOK otherwise.
  */
 int32_t 
@@ -766,8 +788,8 @@ bb_snd_msg(volatile S_BB_T *bb, S_BB_MSG_T* msg);
 /**
  * Receive a message on the BB message queue.
  * This is a blocking call.
- * @param bb INOUT, pointer to BB.
- * @param msg INOUT, the message to be read.
+ * @param[in,out] bb  pointer to BB.
+ * @param[in,out] msg  the message to be read.
  *                  The type of the message to be received should be
  *                  be specified on entry in the message structure
  *                  msg->mtype.
@@ -776,16 +798,15 @@ bb_snd_msg(volatile S_BB_T *bb, S_BB_MSG_T* msg);
 int32_t 
 bb_rcv_msg(volatile S_BB_T *bb, S_BB_MSG_T* msg);
 
-
 /**
  * Build in array_name the name of the array defined
  * by the provided  alias stack and index stack.
- * @param array_name OUT, the string to be used to build array name
- * @param array_name_size_max IN, the maximum (usable) size for array_name
- * @param aliasstack IN, the alias stack
- * @param aliasstack_size IN, the size of the alias stack
- * @param indexstack IN, the index stack 
- * @param indexstack_len IN, the lenth of the index stack
+ * @param[out] array_name  the string to be used to build array name
+ * @param[in] array_name_size_max  the maximum (usable) size for array_name
+ * @param[in] aliasstack  the alias stack
+ * @param[in] aliasstack_size the size of the alias stack
+ * @param[in] indexstack the index stack 
+ * @param[in] indexstack_len the lenth of the index stack
  * @return E_OK on success, E_NOK otherwise
  */
 int32_t
@@ -798,7 +819,7 @@ bb_get_array_name(char * array_name,
 /**
  * Allow the caller to verify if the message queue is
  * still working.
- * @param bb INOUT, pointer to BB.
+ * @param[in,out] bb pointer to BB.
  * @return E_OK on success, E_NOK otherwise
  */
 int32_t bb_msgq_isalive(S_BB_T *bb);
@@ -808,9 +829,9 @@ int32_t bb_msgq_isalive(S_BB_T *bb);
  * This function may be replaced by a project specific function
  * which want to use BB with a unified log system.
  * The default implementation use TSP STRACE facility.
- * @param level IN, the log level.
- * @param modname IN, the module who sent the message.
- * @param fmt IN, format as in printf.
+ * @param[in] level the log level.
+ * @param[in] modname the module who sent the message.
+ * @param[in] fmt format as in printf.
  * @return 0 on success, -1 on error.
  */
 int32_t 
