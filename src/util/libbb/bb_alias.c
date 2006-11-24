@@ -1,6 +1,6 @@
 /*
   
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_alias.c,v 1.3 2006-07-22 16:53:43 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_alias.c,v 1.4 2006-11-24 15:20:42 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -177,8 +177,12 @@ bb_alias_publish(volatile S_BB_T *bb,
 		          data_desc_target->name);
       }
     }
-    /* initialize publish data zone with default value */
-    bb_data_initialise(bb,data_desc,NULL);
+    /* DO NOT initialize publish data zone with default value */
+    /* You dont want an alias to be initialized since it may
+     * destroy data previously initialized with the genuine (non-aliased)
+     * structure.
+     */
+    /* bb_data_initialise(bb,data_desc,NULL); */
   }    
   /* no init in case of automatic subscribe */  
   bb_unlock(bb);  
