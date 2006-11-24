@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer_main.c,v 1.16 2006-10-18 21:22:34 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer_main.c,v 1.17 2006-11-24 07:48:58 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -55,7 +55,7 @@ Purpose   : TSP ascii writer consumer (main)
  * <a href="http://www.gnuplot.org/">Gnuplot (http://www.gnuplot.org/)</a>.
  * You may specify different file format output which essentialy change the header of the file. 
  *
- * \par tsp_ascii_writer [-n] -x=\<sample_config_file\> [-o=\<output_filename\>] [-f=\<output file format\>] [-l=\<nb sample\>] [-u TSP_provider URL ] 
+ * \par tsp_ascii_writer [-n] -x \<sample_config_file\> [-o \<output_filename\>] [-f \<output file format\>] [-l \<nb sample\>] [-u TSP_provider URL ] 
  * \par 
  * <ul>
  *   <li> \b -n  (optional) will check and enforce no duplicate symbols</li>
