@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_alias.h,v 1.3 2006-07-22 16:54:15 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_alias.h,v 1.4 2006-11-27 19:53:20 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -56,7 +56,9 @@ Purpose   : BlackBoard Idiom implementation
 
 /** @} */
 
+#ifndef __KERNEL__
 BEGIN_C_DECLS
+#endif
 
 /**
  * @defgroup BBAliasLib The BB Alias System
@@ -168,5 +170,7 @@ bb_alias_increment_idxstack(S_BB_DATADESC_T * aliasstack, int32_t aliasstack_siz
 
 /** @} */ 
 
+#ifndef __KERNEL__
 END_C_DECLS
+#endif
 #endif /* _BB_ALIAS_H_ */
