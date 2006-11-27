@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.25 2006-11-24 18:17:45 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.26 2006-11-27 19:41:43 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -35,6 +35,7 @@ Purpose   : Blackboard Idiom implementation
 -----------------------------------------------------------------------
  */
 
+#ifndef __KERNEL__
 #include <string.h>
 #include <stdlib.h>
 #include <sys/types.h>
@@ -51,6 +52,7 @@ Purpose   : Blackboard Idiom implementation
 #include <tsp_sys_headers.h>
 #include <tsp_simple_trace.h>
 
+#endif /* __KERNEL__ */
 
 #include "bb_alias.h"
 #include "bb_utils.h"
@@ -59,6 +61,7 @@ Purpose   : Blackboard Idiom implementation
 /**
  * Convert type to string for display use.
  */
+#ifndef __KERNEL__
 static const char* E_BB_2STRING[] = {"DiscoverType",
 				     "double", 
 				     "float", 
@@ -74,10 +77,13 @@ static const char* E_BB_2STRING[] = {"DiscoverType",
 				     "uchar",
 				     "UserType",
 				     "NotAType end"};
+#endif
 
 static const size_t E_BB_TYPE_SIZE[] = {0,
+			#ifndef __KERNEL__
 					sizeof(double), 
 					sizeof(float), 
+			#endif
 					sizeof(int8_t),
 					sizeof(int16_t),
 					sizeof(int32_t),
@@ -91,18 +97,32 @@ static const size_t E_BB_TYPE_SIZE[] = {0,
 					0,
 					0};
 
+#ifdef __KERNEL__
+/* In case we're compiling kernel code, there's really no need
+   for the sysv code */
+static struct bb_operations sysv_bb_ops;
+extern struct bb_operations k_bb_ops;
+#else
 extern struct bb_operations sysv_bb_ops;
 extern struct bb_operations k_bb_ops;
+#endif
 
 /* Note: This is thigtly related to enum bb_type in bb_core.h,
    if you ever modify this, you'll probably need to modify
    enum bb_type */
 static struct bb_operations *ops[] = { 	&sysv_bb_ops,
-					NULL };
+					&k_bb_ops };
 
 static enum bb_type bb_type(const char *name)
 {
+#ifdef __KERNEL__
+	return BB_KERNEL;
+#else
+	if (!strncmp(name, "/dev/", 5))
+		return BB_KERNEL;
+	
 	return BB_SYSV;
+#endif /* __KERNEL__ */
 }
 
 size_t 
@@ -117,12 +137,14 @@ sizeof_bb_type(E_BB_TYPE_T bb_type) {
 E_BB_TYPE_T 
 bb_type_string2bb_type(const char* bb_type_string) {
   E_BB_TYPE_T retval = 0;
+#ifndef __KERNEL__
   if (!strncasecmp("double",bb_type_string,strlen("double"))) {
     retval = E_BB_DOUBLE;
   } else
   if (!strncasecmp("float",bb_type_string,strlen("float"))) {
     retval = E_BB_FLOAT;
   } else
+#endif
   if (!strncasecmp("int8",bb_type_string,strlen("int8"))) {
     retval = E_BB_INT8;
   } else
@@ -229,6 +251,7 @@ bb_data(volatile S_BB_T* bb) {
   return retval;
 } /* end of bb_data */
 
+#ifndef __KERNEL__
 double
 bb_double_of(void* value, E_BB_TYPE_T bbtype) {
 
@@ -280,6 +303,7 @@ bb_double_of(void* value, E_BB_TYPE_T bbtype) {
 
   return retval;
 } /* end of bb_double_of */
+#endif
 
 int32_t 
 bb_data_initialise(volatile S_BB_T* bb, S_BB_DATADESC_T* data_desc,void* default_value) {
@@ -302,12 +326,14 @@ bb_data_initialise(volatile S_BB_T* bb, S_BB_DATADESC_T* data_desc,void* default
   retval = BB_OK;
   for (i=0; i< data_desc->dimension; ++i) {
     switch (data_desc->type) {
+#ifndef __KERNEL__
     case E_BB_DOUBLE: 
       ((double*) data)[i] = default_value ? *((double *) default_value) : 0.0;
       break;
     case E_BB_FLOAT:
       ((float*) data)[i] = default_value ? *((float *) default_value) : 0.0;
       break;
+#endif
     case E_BB_INT8:
       ((int8_t*) data)[i] = default_value ? *((int8_t *) default_value) : 0;
       break;
@@ -357,6 +383,7 @@ bb_value_direct_rawwrite(void* data, S_BB_DATADESC_T data_desc, void* value) {
   return BB_OK;
 }
 
+#ifndef __KERNEL__
 int32_t
 bb_value_direct_write(void* data, S_BB_DATADESC_T data_desc, const char* value, int hexval) {
 
@@ -365,12 +392,14 @@ bb_value_direct_write(void* data, S_BB_DATADESC_T data_desc, const char* value, 
   retval = BB_OK;
 
   switch (data_desc.type) {
+#ifndef __KERNEL__
   case E_BB_DOUBLE: 
     ((double *)data)[0] = atof(value);
     break;
   case E_BB_FLOAT:
     ((float *)data)[0] = atof(value);
     break;
+#endif
   case E_BB_INT8:
     ((int8_t*)data)[0] = strtol(value,(char **)NULL,hexval ? 16 : 10);
     break; 
@@ -415,6 +444,7 @@ bb_value_direct_write(void* data, S_BB_DATADESC_T data_desc, const char* value, 
   }
   return retval;
 } /* bb_value_direct_write */
+#endif /* !__KERNEL__ */
 
 int32_t
 bb_value_write(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc,const char* value, int32_t* idxstack, int32_t idxstack_len) {
@@ -445,6 +475,7 @@ bb_value_write(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc,const char* value,
   return retval;
 } /* bb_value_write */
 
+#ifndef __KERNEL__
 
 int32_t
 bb_data_header_print(S_BB_DATADESC_T data_desc, FILE* pf, int32_t idx, int32_t aliastack) {
@@ -702,6 +733,7 @@ bb_data_print(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc, FILE* pf,
    bb_data_footer_print(data_desc,pf,-1,aliasstack_size);
    return BB_OK;
 } /* end of bb_data_print */
+#endif /* !__KERNEL__ */
 
 int32_t 
 bb_create(S_BB_T** bb, 
@@ -727,6 +759,9 @@ bb_create(S_BB_T** bb,
 err:
   return retcode;
 } /* end of bb_create */
+#ifdef __KERNEL__
+EXPORT_SYMBOL_GPL(bb_create);
+#endif
 
 int32_t 
 bb_destroy(S_BB_T** bb) {
@@ -926,6 +961,7 @@ bb_item_offset(volatile S_BB_T *bb,
 } /* end of bb_item_offset */
 
 
+#ifndef __KERNEL__
 
 int32_t 
 bb_dump(volatile S_BB_T *bb, FILE* p_filedesc) {  
@@ -939,6 +975,7 @@ bb_dump(volatile S_BB_T *bb, FILE* p_filedesc) {
   int32_t          aliasstack_size = MAX_ALIAS_LEVEL;
   S_BB_DATADESC_T  aliasstack[MAX_ALIAS_LEVEL];
   int32_t array_in_aliasstack;
+
   
   retcode = BB_OK;
   assert(bb);
@@ -1001,6 +1038,7 @@ bb_dump(volatile S_BB_T *bb, FILE* p_filedesc) {
   return retcode;
 } /* end of bb_dump */
 
+#endif /* ! __KERNEL__ */
 
 int32_t
 bb_get_nb_max_item(volatile S_BB_T *bb) {
@@ -1120,7 +1158,11 @@ bb_get_array_name(char * array_name,
   int32_t indexstack_curr;
   int j;
     
+#ifdef __KERNEL__
+  part_of_name = kmalloc(array_name_size_max, GFP_KERNEL);
+#else
   part_of_name = malloc(array_name_size_max);
+#endif /* __KERNEL__ */
 
   indexstack_curr = 0;
   for (j=aliasstack_size-1; j>=0; j--){
@@ -1153,7 +1195,11 @@ bb_get_array_name(char * array_name,
       strncat(array_name, part_of_name, array_name_size_max);
     }
   }
+#ifdef __KERNEL__
+  kfree (part_of_name);
+#else
   free (part_of_name);
+#endif
   return BB_OK;
 
 } /* end of get_array_name */
@@ -1164,6 +1210,21 @@ bb_msgq_isalive(S_BB_T *bb)
 	return ops[bb->type]->bb_msgq_isalive(bb);
 }
 
+#ifdef __KERNEL__
+int32_t 
+bb_logMsg(const BB_LOG_LEVEL_T level, const char* who, char* fmt, ...) 
+{
+	va_list args;	
+	char message[2048];
+
+	memset(message,0,2048);
+	va_start(args, fmt);
+	vsnprintf(message, 2048, fmt, args);
+	va_end(args);
+	printk("bb: %s : %s", who, message);
+	return 0;
+}
+#else
 int32_t 
 bb_logMsg(const BB_LOG_LEVEL_T level, const char* who, char* fmt, ...) {
   va_list args;
@@ -1207,5 +1268,6 @@ bb_logMsg(const BB_LOG_LEVEL_T level, const char* who, char* fmt, ...) {
   return 0;
 } /* end of bb_logMsg */
 
+#endif /* __KERNEL__ */
 
 
