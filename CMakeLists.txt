@@ -29,6 +29,9 @@ OPTION(USE_XDR_LIB_ENCODING
   "Use XDR library instead of TSP own XDR encoding"
   OFF)
 
+OPTION(BUILD_BB_KERNEL_MODULE
+  "Build the Black Board kernel module" OFF)
+
 IF (WIN32)        
 	OPTION(BUILD_WIN32_PTHREADWIN32
 		"Build under Windows with PthreadWin32" ON)
