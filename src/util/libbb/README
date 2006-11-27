@@ -1,3 +1,6 @@
+ Overview
+ ========
+
 Current directory implement a 
 BlackBoard idiom implemenation.
 
@@ -15,3 +18,43 @@ bb_tsp_provider
 
 then launch any tsp consumer
 
+
+ In-kernel black board 
+ =====================
+
+The build produces a bb.ko module, insmod it:
+	# insmod bb.ko
+The dmesg, will show the following messages:
+	# dmesg
+	New bb device created, major: 254, minor: 0
+	New bb device created, major: 254, minor: 1
+	Kernel black board loaded.
+	See http://savannah.nongnu.org/projects/tsp for details.
+
+This means that two sample black boards were just created (pass run_test=0
+to insmod if you want to avoid it). To access them, you need to create
+the associated character devices (with the corresponding major and
+minor numbers):
+	# mknod /dev/bbk0 c 254 0
+
+
+The black board can now be reached by:
+	# bb_tools bb_dump /dev/bbk0
+	============= <[begin] BlackBoard [bb_test1] [begin] > ===============
+	  @start blackboard    = 0xb7f6f000
+	  stored data          = 1 / 2 [max desc]
+	  free data size       = 196 / 200
+	  @data_desc           = 0xb7f6f134
+	  @data                = 0xb7f6f28c
+	================ < [begin] Data [begin] > ==================
+	---------- < bb_test1_variable > ----------
+	  alias-target = -1
+	  type         = 5  (int32_t)
+	  dimension    = 1
+	  type_size    = 4
+	  data_offset  = 0
+	  value        = 21
+	---------- ---------- ----------
+	================== < [end] Data [end] > ====================
+	============== < [end] BlackBoard [bb_test1] [end] > ================
+	
