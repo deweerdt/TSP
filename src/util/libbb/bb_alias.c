@@ -1,6 +1,6 @@
 /*
   
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_alias.c,v 1.4 2006-11-24 15:20:42 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_alias.c,v 1.5 2006-11-27 19:55:14 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -35,6 +35,8 @@ Purpose   : Blackboard (alias handling)
 -----------------------------------------------------------------------
  */
 
+#ifndef __KERNEL__
+
 #include <string.h>
 #include <stdlib.h>
 #include <sys/types.h>
@@ -43,6 +45,8 @@ Purpose   : Blackboard (alias handling)
 #include <assert.h>
 
 #include <tsp_abs_types.h>
+
+#endif /* __KERNEL__ */
 
 #include "bb_core.h"
 #include "bb_alias.h"
