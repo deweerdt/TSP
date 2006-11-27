@@ -1,7 +1,9 @@
 SET(_SRC
   bb_utils bb_alias
   bb_core bb_simple
-  bb_sha1 bb_tools bb_core_sysv.c)
+  bb_sha1 bb_tools 
+  bb_core_sysv.c
+  bb_core_k.c)
 
 SET(BB_INCLUDE_FILES
   bb_core.h
