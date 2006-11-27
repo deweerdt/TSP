@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.h,v 1.23 2006-11-24 18:17:45 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.h,v 1.24 2006-11-27 19:50:41 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -38,12 +38,38 @@ Purpose   : BlackBoard Idiom implementation
 #ifndef _BB_H_
 #define _BB_H_
 
+#ifdef __KERNEL__
+
+#include <linux/module.h>
+#include <linux/init.h>
+#include <linux/version.h>
+#include <linux/errno.h>
+#include <linux/fs.h>
+#include <linux/mm.h>
+#include <linux/interrupt.h>
+#include <linux/sched.h>
+#include <asm/uaccess.h>
+#include <asm/io.h>
+#include <linux/vmalloc.h>
+#include <linux/mman.h>
+#include <linux/slab.h>
+#include <linux/highmem.h>
+#include <linux/types.h>
+#include <linux/cdev.h>
+
+#define strncasecmp strnicmp
+#define assert(x) WARN_ON(!(x))
+
+#else /* __KERNEL__ */
+
 #include <stdint.h>
 #include <inttypes.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <sys/types.h>
 #include <tsp_abs_types.h>
+
+#endif /* __KERNEL__ */
 
 /**
  * @defgroup BlackBoard BlackBoard (BB)
@@ -395,7 +421,9 @@ typedef struct S_BB {
   } priv;
 } S_BB_T;
 
+#ifndef __KERNEL__
 BEGIN_C_DECLS
+#endif
 
 /**
  * The size (in byte) of a BlackBoard data type.
@@ -474,6 +502,7 @@ bb_data_desc(volatile S_BB_T* bb);
 void* 
 bb_data(volatile S_BB_T* bb);
 
+#ifndef __KERNEL__
 /**
  * Return a double value from the pointer
  * value considered as the bbtype.
@@ -483,6 +512,7 @@ bb_data(volatile S_BB_T* bb);
  */
 double
 bb_double_of(void *value, E_BB_TYPE_T bbtype);
+#endif
 
 /**
  * Initialise a freshly created structure to a default value.
@@ -519,6 +549,7 @@ bb_data_initialise(volatile S_BB_T* bb, S_BB_DATADESC_T* data_desc,void* default
 int32_t
 bb_value_write(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc, const char* value, int32_t* idxstack, int32_t idxstack_len);
 
+#ifndef __KERNEL__
 int32_t
 bb_value_direct_write(void* data, S_BB_DATADESC_T data_desc, const char* value, int hexval);
 
@@ -587,6 +618,8 @@ bb_data_print(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc, FILE* pf,
  */
 int32_t 
 bb_dump(volatile S_BB_T *bb, FILE* filedesc);
+
+#endif /* __KERNEL__ */
 
 /**
  * Create a blackboard.
@@ -840,6 +873,8 @@ bb_logMsg(const BB_LOG_LEVEL_T level, const char* modname, char* fmt, ...);
 
 /** @} */
 
+#ifndef __KERNEL__
 END_C_DECLS
+#endif
 
 #endif /* _BB_H_ */
