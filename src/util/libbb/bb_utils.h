@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_utils.h,v 1.11 2006-07-22 16:59:16 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_utils.h,v 1.12 2006-11-27 20:05:22 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -37,10 +37,14 @@ Purpose   : Blackboard Idiom utilities
 #ifndef _BB_UTILS_H_
 #define _BB_UTILS_H_
 
+#ifdef __KERNEL__
+#include <linux/types.h>
+#else
 #include <sys/ipc.h>
 #include <sys/types.h>
 
 #include <tsp_abs_types.h>
+#endif /* __KERNEL__ */
 
 /**
  * @defgroup BBUtilsLib The BB Utilities Library
@@ -48,7 +52,9 @@ Purpose   : Blackboard Idiom utilities
  * General utility functions for TSP BlackBoard.
  */
 
+#ifndef __KERNEL__
 BEGIN_C_DECLS
+#endif
 
 /**
  * @addtogroup BBUtilsLib
@@ -163,6 +169,8 @@ bb_utils_parsearrayname(const char* provided_symname,
 
 /** @} */
 
+#ifndef __KERNEL__
 END_C_DECLS
+#endif
 
 #endif /* _BB_UTILS_H_ */
