@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_simple.c,v 1.10 2006-09-25 17:42:05 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_simple.c,v 1.11 2006-11-27 20:01:47 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -34,9 +34,11 @@ Purpose   : BlackBoard Idiom implementation
 
 -----------------------------------------------------------------------
  */
+#ifndef __KERNEL__
 #include <sys/types.h>
 #include <sys/msg.h>
 #include <string.h>
+#endif /* __KERNEL__ */
 
 #include "bb_utils.h"
 #include "bb_core.h"
@@ -45,10 +47,14 @@ Purpose   : BlackBoard Idiom implementation
 
 static int bb_simple_synchro_type = BB_SIMPLE_SYNCHRO_PROCESS;
 
+#ifndef __KERNEL__
+
 pthread_cond_t  bb_simple_go_condvar       = PTHREAD_COND_INITIALIZER;
 pthread_mutex_t bb_simple_go_mutex         = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t  bb_simple_stockage_condvar = PTHREAD_COND_INITIALIZER;
 pthread_mutex_t bb_simple_stcokage_mutex   = PTHREAD_MUTEX_INITIALIZER;
+
+#endif /* __KERNEL__ */
 
 static void gen_var_name(char *gen_var_name, const int module_instance,
 			 const char *module_name, const char *var_name)
@@ -235,7 +241,14 @@ bb_simple_synchro_verify(S_BB_T* bb_simple) {
   return bb_msgq_isalive(bb_simple);
 } /* end of bb_simple_synchro_verify */
 
- int32_t 
+#ifdef __KERNEL__
+int32_t
+bb_simple_thread_synchro_go(int msg_type)
+{
+	return BB_OK;
+}
+#else
+int32_t
 bb_simple_thread_synchro_go(int msg_type) {
   
   int32_t retcode;
@@ -260,7 +273,15 @@ bb_simple_thread_synchro_go(int msg_type) {
   
   return retcode;
 } /* end of bb_simple_synchro_go */
+#endif /* __KERNEL__ */
 
+#ifdef __KERNEL__
+int32_t 
+bb_simple_thread_synchro_wait(int msg_type) 
+{
+	return BB_OK;
+}
+#else
 int32_t 
 bb_simple_thread_synchro_wait(int msg_type) {
   
@@ -286,4 +307,9 @@ bb_simple_thread_synchro_wait(int msg_type) {
   
   return retcode;
 } /* end of bb_simple_synchro_wait */
+#endif /* __KERNEL__ */
+
+#ifdef __KERNEL__
+EXPORT_SYMBOL_GPL(bb_simple_publish);
+#endif
 
