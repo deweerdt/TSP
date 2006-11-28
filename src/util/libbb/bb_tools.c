@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_tools.c,v 1.25 2006-11-24 15:17:04 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_tools.c,v 1.26 2006-11-28 12:58:51 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -488,13 +488,18 @@ bbtools_read(bbtools_request_t* req) {
 		    	idx = 0;
 		  	}
 	  		if (req->verbose) {
-	 			bb_data_header_print(sym_data_desc,req->stream,idx,1);
-	  			bb_value_print(req->theBB,sym_data_desc,req->stream,array_index,array_index_len);
-	      	bb_data_footer_print(sym_data_desc,req->stream,idx,1);
-	   	} else {
-	      	bb_value_print(req->theBB,sym_data_desc,req->stream,array_index,array_index_len);
-	      	fprintf(req->stream,"%s",req->newline);
-	   	}
+			  bb_data_header_print(sym_data_desc,req->stream,idx,1);
+			  bb_value_print(req->theBB,sym_data_desc,req->stream,array_index,array_index_len);
+			  bb_data_footer_print(sym_data_desc,req->stream,idx,1);
+			} else {
+			  if ((E_BB_CHAR ==sym_data_desc.type) ||
+			      (E_BB_UCHAR==sym_data_desc.type)) {
+			    bb_string_value_print(req->theBB,sym_data_desc,req->stream,array_index,array_index_len);
+			  } else {
+			    bb_value_print(req->theBB,sym_data_desc,req->stream,array_index,array_index_len);
+			  }
+			  fprintf(req->stream,"%s",req->newline);
+			}
 		}    
     }
 
@@ -517,7 +522,7 @@ bbtools_write(bbtools_request_t* req) {
   int32_t j;
   int32_t idx;
 
-
+  /* verify request write arguments */
   if (req->argc<3) {
     bbtools_logMsg(req->stream,"%s: <%d> argument(s) missing\n",
 		   bbtools_cmdname_tab[E_BBTOOLS_WRITE],
@@ -526,6 +531,8 @@ bbtools_write(bbtools_request_t* req) {
     retval = -1;
     return retval;
   }
+
+  /* parse for array name */
   memset(&sym_data_desc,0,sizeof(S_BB_DATADESC_T));
   if (bb_utils_parsearrayname(req->argv[1],
 			      sym_data_desc.name,
@@ -564,7 +571,7 @@ bbtools_write(bbtools_request_t* req) {
     sym_data_desc.type      = E_BB_DISCOVER;
     sym_data_desc.type_size = 0;
     sym_data_desc.dimension = 0;
-	 sym_value = bb_alias_subscribe(req->theBB,&sym_data_desc,array_index,array_index_len);    	
+    sym_value = bb_alias_subscribe(req->theBB,&sym_data_desc,array_index,array_index_len);    	
     
     if ((sym_data_desc.dimension>1) && (0==array_index_len)) {
       if (req->verbose) {
