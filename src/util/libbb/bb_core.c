@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.26 2006-11-27 19:41:43 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.27 2006-11-28 13:52:27 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -83,6 +83,9 @@ static const size_t E_BB_TYPE_SIZE[] = {0,
 			#ifndef __KERNEL__
 					sizeof(double), 
 					sizeof(float), 
+                        #else 
+                                        0,
+                                        0,
 			#endif
 					sizeof(int8_t),
 					sizeof(int16_t),
@@ -447,7 +450,10 @@ bb_value_direct_write(void* data, S_BB_DATADESC_T data_desc, const char* value, 
 #endif /* !__KERNEL__ */
 
 int32_t
-bb_value_write(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc,const char* value, int32_t* idxstack, int32_t idxstack_len) {
+bb_value_write(volatile S_BB_T* bb, 
+	       S_BB_DATADESC_T data_desc, 
+	       const char* value, 
+	       int32_t* idxstack, int32_t idxstack_len) {
 
   char* data;
   int retval;
@@ -471,7 +477,9 @@ bb_value_write(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc,const char* value,
   /* Get address of the data in BB */
   data = bb_item_offset(bb, &data_desc,idxstack,idxstack_len);
   /* Now write the value at obtained offset */
-
+#ifndef __KERNEL__
+  retval = bb_value_direct_write(data,data_desc,value,hexval);
+#endif
   return retval;
 } /* bb_value_write */
 

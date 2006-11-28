@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_tools.c,v 1.26 2006-11-28 12:58:51 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_tools.c,v 1.27 2006-11-28 13:52:27 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -543,92 +543,97 @@ bbtools_write(bbtools_request_t* req) {
 		   req->argv[1]);
     retval = -1;
   } else {
-      if (req->verbose) {
-	bbtools_logMsg(req->stream,
-		       "%s: Trying to write symbol <%s> on blackboard <%s>...\n",
-		       bbtools_cmdname_tab[E_BBTOOLS_READ],
-		       sym_data_desc.name,
-		       req->bbname);
-	nbcar =0;
-	nbcar += snprintf(&msg[nbcar],MSG_SIZE-nbcar,"%s","[");			 
-	for (i=0;i<array_index_len;++i) {
-		nbcar += snprintf(&msg[nbcar],MSG_SIZE-nbcar,"%d ",array_index[i]);
-	}			 
-	nbcar += snprintf(&msg[nbcar],MSG_SIZE-nbcar," %s","]");			 
-	msg[nbcar] = '\0';
-	bbtools_logMsg(req->stream,
-		       "%s: array_index_len = <%d> indexes = %s...\n",
-		       bbtools_cmdname_tab[E_BBTOOLS_READ],
-		       array_index_len,
-				 msg);				 
-
-      }
+    if (req->verbose) {
+      bbtools_logMsg(req->stream,
+		     "%s: Trying to write symbol <%s> on blackboard <%s>...\n",
+		     bbtools_cmdname_tab[E_BBTOOLS_WRITE],
+		     sym_data_desc.name,
+		     req->bbname);
+      nbcar =0;
+      nbcar += snprintf(&msg[nbcar],MSG_SIZE-nbcar,"%s","[");			 
+      for (i=0;i<array_index_len;++i) {
+	nbcar += snprintf(&msg[nbcar],MSG_SIZE-nbcar,"%d ",array_index[i]);
+      }			 
+      nbcar += snprintf(&msg[nbcar],MSG_SIZE-nbcar," %s","]");			 
+      msg[nbcar] = '\0';
+      bbtools_logMsg(req->stream,
+		     "%s: array_index_len = <%d> indexes = %s...\n",
+		     bbtools_cmdname_tab[E_BBTOOLS_WRITE],
+		     array_index_len,
+		     msg);				 
+      
     }
-    /* 
-     * Use low-level subscribe in order to discover the 
-     * type of the variable
-     */
-    sym_data_desc.type      = E_BB_DISCOVER;
-    sym_data_desc.type_size = 0;
-    sym_data_desc.dimension = 0;
-    sym_value = bb_alias_subscribe(req->theBB,&sym_data_desc,array_index,array_index_len);    	
-    
-    if ((sym_data_desc.dimension>1) && (0==array_index_len)) {
-      if (req->verbose) {
-	  bbtools_logMsg(req->stream,"%s: Implicit first array element write\n",
-			 bbtools_cmdname_tab[E_BBTOOLS_WRITE]);
-
-      }
-      array_index[0] = 0;
-      if (req->verbose) {
+  }
+  /* 
+   * Use low-level subscribe in order to discover the 
+   * type of the variable
+   */
+  sym_data_desc.type      = E_BB_DISCOVER;
+  sym_data_desc.type_size = 0;
+  sym_data_desc.dimension = 0;
+  sym_value = bb_alias_subscribe(req->theBB,&sym_data_desc,array_index,array_index_len);    	
+  
+  if ((sym_data_desc.dimension>1) && (0==array_index_len)) {
+    if (req->verbose) {
+      bbtools_logMsg(req->stream,"%s: Implicit first array element write\n",
+		     bbtools_cmdname_tab[E_BBTOOLS_WRITE]);
+      
+    }     
+    array_index[0] = 0;
+    if (req->verbose) {
 	bbtools_logMsg(req->stream,
 		       "%s: Trying to write index <%d> of array symbol <%s> on blackboard <%s>...\n",
 		       bbtools_cmdname_tab[E_BBTOOLS_WRITE],
 		       array_index[0],
 		       sym_data_desc.name,
 		       req->bbname);
+    }
+  }
+
+  if (NULL==sym_value) {
+    bbtools_logMsg(req->stream,"%s: symbol <%s> not found in BB <%s>\n",
+		   bbtools_cmdname_tab[E_BBTOOLS_WRITE],
+		   sym_data_desc.name,
+		   req->bbname);
+    retval = -1;
+  } else {
+    /* 
+     * If array index stack is specified then look
+     * for array in alias stack
+     */
+    if (array_index_len>0) {
+      aliasstack[0]=sym_data_desc;
+      bb_find_aliastack(req->theBB, aliasstack, &aliasstack_size);
+      j=aliasstack_size;
+      while ( (aliasstack[j-1].dimension<=1) && (j>0) ){
+	--j;
       }
     }
 
-   if (NULL==sym_value) {
-      bbtools_logMsg(req->stream,"%s: symbol <%s> not found in BB <%s>\n",
+    if ( (array_index_len>0) && (j==0)) {
+      bbtools_logMsg(req->stream,"%s: no array found in aliasstack\n",
+		     bbtools_cmdname_tab[E_BBTOOLS_WRITE]);
+      retval = -1;
+    } else if ( (array_index_len>0) && (aliasstack[j-1].dimension <= array_index[array_index_len-1]) ) {
+      bbtools_logMsg(req->stream,"%s: index <%d> exceeds symbol array dimension <%d> whose valid index range is <0..%d>\n",
 		     bbtools_cmdname_tab[E_BBTOOLS_WRITE],
-		     sym_data_desc.name,
-		     req->bbname);
+		     array_index[array_index_len-1],
+		     aliasstack[j-1].dimension,
+		     aliasstack[j-1].dimension-1);
     } else {
-		if (array_index_len>0)
-		{
-			aliasstack[0]=sym_data_desc;
-			bb_find_aliastack(req->theBB, aliasstack, &aliasstack_size);
-			j=aliasstack_size;
-			while ( (aliasstack[j-1].dimension<=1) && (j>0) ){
-				--j;
-			}
-		}
-		if ( (array_index_len>0) && (j==0)) {
-			bbtools_logMsg(req->stream,"%s: no array found in aliasstack\n",
-		   				    bbtools_cmdname_tab[E_BBTOOLS_WRITE]);
-		}
-		else if ( (array_index_len>0) && (aliasstack[j-1].dimension <= array_index[array_index_len-1]) ) {
-			bbtools_logMsg(req->stream,"%s: index <%d> exceeds symbol array dimension <%d> whose valid index range is <0..%d>\n",
-				       bbtools_cmdname_tab[E_BBTOOLS_WRITE],
-				       array_index[array_index_len-1],
-				       aliasstack[j-1].dimension,
-				       aliasstack[j-1].dimension-1);
-		} else {
-		  	if (array_index_len>0) {
-		    	 idx = array_index[array_index_len-1];
-		  	} else {
-		    	idx = 0;
-		  	}
-	     	if (req->verbose) {
-		   	 bbtools_logMsg(req->stream,"Writing <%s> (at index=%d)\n",
-				 req->argv[2],idx);	 		 
-	    	}
-	    	bb_value_write(req->theBB,sym_data_desc,req->argv[2],array_index,array_index_len);
-		} 
-    }
-	         
+      if (array_index_len>0) {
+	idx = array_index[array_index_len-1];
+      } else {
+	idx = 0;
+      }
+      if (req->verbose) {
+	bbtools_logMsg(req->stream,"Writing <%s> (at index=%d)\n",
+		       req->argv[2],idx);	 		 
+      }
+      bb_value_write(req->theBB,sym_data_desc,req->argv[2],array_index,array_index_len);
+    } 
+  }
+  
   return retval;
 }  /* end of bbtools_write */
 
