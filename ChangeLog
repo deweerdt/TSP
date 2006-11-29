@@ -1,4 +1,232 @@
-2006-10-19 23:19  tag TSP_0_8_1
+2006-11-29 08:34  tag TSP_0_8_2
+
+2006-11-29 08:34  erk
+
+	* src/Version.Readme (1.47, TSP_0_8_2): Update for TSP 0.8.2
+
+2006-11-28 15:22  erk
+
+	* ChangeLog (1.1, TSP_0_8_2): Add first ChangeLog generated using
+	  cvs2cl (www.red-bean.com/cvs2cl/) src/scripts/cvs2cl.pl -t -r
+	  --delta TSP_0_8_0:TSP_0_8_1 --prune -T --accum
+
+2006-11-28 14:58  erk
+
+	* CMakeLists.txt (1.24, TSP_0_8_2): Prepare 0.8.2
+
+2006-11-28 14:52  erk
+
+	* src/util/libbb/: bb_core.c (1.27), bb_tools.c (1.27) (utags:
+	  TSP_0_8_2): Correct bug #18395: bb_write does not work any more
+	  Add #ifndef __KERNEL__ and re-add bb_value_direct_write  call
+	  which disapeared bewteen r1.23 and r1.24 when merging in bb
+	  rework for bb kernel Add #else __KERNEL__ for E_BB_TYPE_SIZE
+	  array in order to avoid  wrong value du to offset in enum index
+
+2006-11-28 13:58  erk
+
+	* src/util/libbb/bb_tools.c (1.26): Improve bb_read for string-like
+	  output bb_read will use bb_string_value_print whereas bb_read -v
+	  will not, allowing to see past '\0' characters in CHAR / UCHAR
+	  arrays
+
+2006-11-28 13:57  erk
+
+	* make/FindTSP.cmake (1.1, TSP_0_8_2): Preliminary FindTSP cmake
+	  module
+
+2006-11-27 21:19  deweerdt
+
+	* CMakeLists.txt (1.23): Merge of the kernel bb branch Add an
+	  option to build the Black Board kernel module
+
+2006-11-27 21:12  deweerdt
+
+	* src/util/libbb/CMakeLists.txt (1.7, TSP_0_8_2): Merge of the
+	  kernel bb branch Add forgotten bb_core_k.c to the source files
+	  even in userspace (it contains dummy functions in that case)
+
+2006-11-27 21:05  deweerdt
+
+	* src/util/libbb/bb_utils.h (1.12, TSP_0_8_2): Merge of the kernel
+	  bb branch Ifdef some userspace code, add kernel specific headers
+
+2006-11-27 21:03  deweerdt
+
+	* src/util/libbb/bb_simple.h (1.10, TSP_0_8_2): Merge of the kernel
+	  bb branch Add kernel specific headers, ifdef some userspace code
+
+2006-11-27 21:01  deweerdt
+
+	* src/util/libbb/bb_simple.c (1.11, TSP_0_8_2): Merge of the kernel
+	  bb branch Add ifdef's for kernel, implement dummy functions for
+	  synchro
+
+2006-11-27 20:55  deweerdt
+
+	* src/util/libbb/bb_module.c (1.2, TSP_0_8_2): Merge of the kernel
+	  bb branch
+
+2006-11-27 20:55  deweerdt
+
+	* src/util/libbb/bb_alias.c (1.5, TSP_0_8_2): Merge of the kernel
+	  bb branch Add ifdef's __KERNEL__
+
+2006-11-27 20:53  deweerdt
+
+	* src/util/libbb/bb_alias.h (1.4, TSP_0_8_2): Merge of the kernel
+	  bb branch ifdef *_C_DECLS
+
+2006-11-27 20:50  deweerdt
+
+	* src/util/libbb/bb_core.h (1.24, TSP_0_8_2): Merge of the kernel
+	  bb branch Mostly add ifdef's for userspace specific functions
+
+2006-11-27 20:42  deweerdt
+
+	* src/util/libbb/: bb_core_k.c (1.2), bb_core_k.h (1.2),
+	  build_module.sh (1.2), Makefile.k (1.2) (utags: TSP_0_8_2): Merge
+	  of the kernel bb branch
+
+2006-11-27 20:41  deweerdt
+
+	* src/util/libbb/bb_core.c (1.26): Merge kernel bb branch Mostly
+	  add ifdef's for double and float operations
+
+2006-11-27 20:20  deweerdt
+
+	* src/util/libbb/CMakeLists.txt (1.6): BBK branch merge Add build
+	  instructions for the bb kernel module
+
+2006-11-27 20:14  deweerdt
+
+	* src/util/libbb/README (1.3, TSP_0_8_2): BBK branch merge Add
+	  documentation on the kernel module
+
+2006-11-24 19:54  erk
+
+	* src/scripts/: cvs2cl.pl (1.1), cvs2cl.pl.readme (1.1) (utags:
+	  TSP_0_8_2): Added cvs2pl perl scripts see
+	  http://www.red-bean.com/cvs2cl/
+
+2006-11-24 19:17  erk
+
+	* src/util/libbb/: bb_core.c (1.25), bb_core.h (1.23),
+	  bb_core_sysv.c (1.2, TSP_0_8_2): Add better char type in
+	  bb_value_print Add string-like bb_string_value_print Add several
+	  #include in bb_core_sysv.c in order to calm down compiler warning
+	  Update bb_core doxygen comment.
+
+2006-11-24 19:15  erk
+
+	* src/core/common/tsp_common.c (1.9, TSP_0_8_2): Suppress
+	  compilation warning no newline at the end of file
+
+2006-11-24 16:20  erk
+
+	* src/util/libbb/bb_alias.c (1.4): Correct  bug #18364,
+	  bb_alias_publish should not initialise Alias published data
+
+2006-11-24 16:17  erk
+
+	* src/util/libbb/bb_tools.c (1.25): Suppress warning for unused var
+
+2006-11-24 11:05  erk
+
+	* src/util/libbb/bb_simple.h (1.9): Update doxygen comment
+
+2006-11-24 08:50  erk
+
+	* CMakeLists.txt (1.22): Update version to pre2 Add commented
+	  example for detecting endianity just in case :))
+
+2006-11-24 08:49  erk
+
+	* src/: consumers/ascii_writer/CMakeLists.txt (1.6, TSP_0_8_2),
+	  util/libbb/CMakeLists.txt (1.5), util/libres/CMakeLists.txt (1.3,
+	  TSP_0_8_2), util/libtspcfg/CMakeLists.txt (1.5, TSP_0_8_2): Add
+	  missing exported header using TSP_XINCLUDE
+
+2006-11-24 08:48  erk
+
+	* src/consumers/ascii_writer/tsp_ascii_writer_main.c (1.17,
+	  TSP_0_8_2): Doc update
+
+2006-11-18 10:58  esteban
+
+	* src/consumers/gdisp+/gdisp_mainBoard.c (1.17, TSP_0_8_2): Freeze
+	  'Save' and 'Save As' menu item if XML is not supported.
+
+2006-11-08 22:31  esteban
+
+	* src/consumers/gdisp+/: gdisp_configuration.c (1.16),
+	  gdisp_consumers.c (1.21), gdisp_dataBox.c (1.5), gdisp_kernel.h
+	  (1.32), gdisp_pixmaps.c (1.8), gdisp_pixmaps.h (1.6),
+	  gdisp_plotOrbital.c (1.7), gdisp_plotText.c (1.15),
+	  gdisp_plotText.h (1.8), gdisp_prototypes.h (1.23),
+	  gdisp_providers.c (1.15), gdisp_sampledSymbols.c (1.14),
+	  gdisp_sampling.c (1.21), pixmaps/gdisp_warningLogo2.xpm (1.1)
+	  (utags: TSP_0_8_2): No comment.
+
+2006-11-08 21:03  erk
+
+	* CMakeLists.txt (1.21): Oops forget to check-in those modif for
+	  forthcoming 0.8.2
+
+2006-10-25 17:00  erk
+
+	* src/providers/stub/: glue_stub.c (1.29), server_main.c (1.14)
+	  (utags: TSP_0_8_2): Add -f option to stub server in order to be
+	  able to select base frequency.
+
+	  Improve cycle timing by usleeping the "remaining time" and not
+	  fixed time
+
+2006-10-25 16:42  erk
+
+	* src/core/CMakeLists.txt (1.9, TSP_0_8_2): RPCGEN Generated files
+	  depends on .x RPC IDL spec file
+
+2006-10-25 16:42  erk
+
+	* CMakeLists.txt (1.20): Add missing -D_REENTRANT Update
+	  PACKAGE_VERSION_PATCH for 2pre1-cvs
+
+2006-10-25 16:40  erk
+
+	* src/core/rpc/tsp_rpc.x (1.42, TSP_0_8_2): Be more RFC1831
+	  compliant (RPC Spec V2)
+	  ftp://ftp.rfc-editor.org/in-notes/rfc1831.txt enum should specify
+	  values procedure do not accept dummy arg, just types
+
+2006-10-21 11:28  erk
+
+	* CMakeLists.txt (1.19),
+	  src/consumers/ascii_writer/stub_ascii_writer_config.dat (1.4,
+	  TSP_0_8_2), src/consumers/generic/generic_consumer.c (1.17,
+	  TSP_0_8_2), src/core/common/tsp_encoder.c (1.9, TSP_0_8_2),
+	  src/core/common/tsp_encoder.h (1.6, TSP_0_8_2): Re-activate
+	  TSP_NO_XDR_ENCODE See bug #18075 : TSP_NO_XDR_ENCODE wasn't used
+	  anymore
+
+2006-10-21 10:48  erk
+
+	* src/core/: common/tsp_decoder.c (1.5, TSP_0_8_2),
+	  common/tsp_encoder.c (1.8), ctrl/tsp_request_handler.c (1.7,
+	  TSP_0_8_2), ctrl/tsp_session.c (1.35, TSP_0_8_2),
+	  ctrl/tsp_stream_sender.c (1.23, TSP_0_8_2),
+	  driver/tsp_data_receiver.c (1.27, TSP_0_8_2), driver/tsp_group.c
+	  (1.11, TSP_0_8_2), driver/tsp_stream_receiver.c (1.13,
+	  TSP_0_8_2), include/tsp_simple_trace.h (1.22, TSP_0_8_2),
+	  rpc/tsp_client.c (1.19, TSP_0_8_2), rpc/tsp_server.c (1.33,
+	  TSP_0_8_2), xmlrpc/tsp_xmlrpc_server.c (1.8, TSP_0_8_2),
+	  xmlrpc/tsp_xmlrpc_util.c (1.4, TSP_0_8_2): Move away STRACE_IO
+	  usage (not necessary) Rename STRACE_IO to STRACE_DEBUG_MORE.
+	  Correct bug #17612 And probably bug #18051
+
+2006-10-20 09:26  erk
+
+	* src/Version.Readme (1.46): Minor correction 0.8.0 --> 0.8.1
 
 2006-10-19 23:19  erk
 
