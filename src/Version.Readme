@@ -231,8 +231,17 @@ V-0.8.1: Creation 10/20/2006    tag TSP_0_8_1
            * bug #17875 : bb_simple_subscribe won't find the requested symbol
            * bug #17153 : Stub server answer to extended info on inexistant PGI 1012
            * bug #16956 : XML2 : can not compile libtspcfg under Solaris
+
+V-0.8.2: Creation 11/29/2006    tag TSP_0_8_2
+	- Several Targa Improvement                             - Euskadi
+        - Merge Linux Kernel BlackBoard into trunk              - FredD
+        - Bug Corrections 
+           * bug #18395 : bb_write does not work any more
+           * bug #18364 : bb_alias_publish should not initialise Alias published data
+           * bug #18361 : Some public TSP header files are not packaged since they are not exported
+           * bug #18075 : TSP_NO_XDR_ENCODE wasn't used anymore
+           * bug #18051 : received group id is corrupted.
+
 V-0.8.x: Creation ??/??/2006    tag TSP_0_8_x
 	- XML-RPC command channel in mainstream                 - FredD-->Caribou
         - Update Rubytsp for multi-type, Array etc...           - Caribou
-        - Bug Corrections 
-           * bug 
