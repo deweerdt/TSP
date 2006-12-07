@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_alias.h,v 1.4 2006-11-27 19:53:20 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_alias.h,v 1.5 2006-12-07 21:25:21 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -81,7 +81,7 @@ BEGIN_C_DECLS
 
 /**
  * True if the described data is an alias.
- * @param data_desc IN, the data descriptor.
+ * @param[in] data_desc the data descriptor.
  * @return 1 if the specified data is an alias 0 otherwise.
  */
 int32_t bb_isalias(const S_BB_DATADESC_T* data_desc);
@@ -91,16 +91,17 @@ int32_t bb_isalias(const S_BB_DATADESC_T* data_desc);
  * An alias stack is a sequence of @ref S_BB_DATADESC_T
  * describing the way to go from an alias to a genuine
  * published symbol.
- * @param bb IN, the BlackBoard
- * @param data_desc_stack INOUT, the array containing the alias stack.
- *                               <ul>
- *                                   <li>IN, the first index must contain the data descriptor for which we are seeking the alias stack </li>
- *                                   <li>OUT, the first index is not touched and other indexes are updated with intermediate to final target of the alias </li>
- *                               </ul>
- * @param stack_max_size INOUT,  <ul>
- *                                   <li>IN, the maximum size of the alias stack array </li>
- *                                   <li>OUT, the size of the found alias stack </li>
- *                               </ul>
+ * @param[in] bb the BlackBoard
+ * @param[in,out] data_desc_stack the array containing the alias stack.
+ *           <ul>
+ *               <li>IN, the first index must contain the data descriptor for which we are seeking the alias stack </li>
+ *               <li>OUT, the first index is not touched and other indexes are updated with intermediate to final target of the alias </li>
+ *           </ul>
+ * @param[in,out] stack_max_size  Stack maximum size
+ *           <ul>
+ *               <li>IN, the maximum size of the alias stack array </li>
+ *               <li>OUT, the size of the found alias stack </li>
+ *           </ul>
  * @return E_OK on sucess E_NOK if we failed to build the alias stack.
  */
 int32_t bb_find_aliastack(volatile S_BB_T* bb,       
@@ -111,9 +112,9 @@ int32_t bb_find_aliastack(volatile S_BB_T* bb,
 /**
  * Compute the offset of the data described
  * by the alias stack.
- * @param data_desc_stack IN,
- * @param index_stack IN,
- * @param stack_size IN,
+ * @param[in] data_desc_stack
+ * @param[in] index_stack
+ * @param[in] stack_size
  * @return the computed offset
  */
 unsigned long bb_aliasstack_offset(S_BB_DATADESC_T* data_desc_stack, 
@@ -121,12 +122,14 @@ unsigned long bb_aliasstack_offset(S_BB_DATADESC_T* data_desc_stack,
 				   int32_t stack_size);
 /**
  * Publish an aliased data in a BlackBoard.
- * @param bb INOUT, BB pointer (should not be NULL).
- * @param data_desc INOUT, Data descriptor of the data to be published.
- *                         OUT, if data has been properly allocated
+ * @param[in,out] bb  BB pointer (should not be NULL).
+ * @param[in,out] data_desc Data descriptor of the data to be published.
+ *                  <ul>
+ *                         <li> OUT, if data has been properly allocated
  *                         the S_BB_DATADESC_T.data_offset is updated
- *                         and S_BB_DATADESC_T.alias_target too.
- * @param data_desc_target IN, Data descriptor of the data to be aliased.
+ *                         and S_BB_DATADESC_T.alias_target too.</li>
+ *                  </ul>
+ * @param[in] data_desc_target Data descriptor of the data to be aliased.
  * @return address of the (first) aliased data, NULL
  *         if alias failed.
  */
@@ -137,14 +140,16 @@ bb_alias_publish(volatile S_BB_T *bb, S_BB_DATADESC_T* data_desc,
 
 /**
  * Subscribe to an aliased data in a BlackBoard.
- * @param bb IN, BB pointer (should not be NULL).
- * @param data_desc INOUT, Data descriptor of the data to subscribe to.
- *                         IN, the name of the data is used
- *                         OUT, if data has been properly found
+ * @param[in] bb BB pointer (should not be NULL).
+ * @param[in,out] data_desc Data descriptor of the data to subscribe to.
+ *                  <ul>
+ *                         <li>IN, the name of the data is used</li>
+ *                         <li>OUT, if data has been properly found
  *                         the data_offset is updated
- *                         and alias_target too.
- * @param indexstack IN, The index stack to be used to find the aliased data
- * @param indexstack_len IN, the length of the indexstack.
+ *                         and alias_target too.</li>
+ *                 </ul>
+ * @param[in] indexstack The index stack to be used to find the aliased data
+ * @param[in] indexstack_len the length of the indexstack.
  * @return address of the (first) aliased data, NULL
  *         if subscribe failed.
  */
@@ -157,10 +162,10 @@ bb_alias_subscribe(volatile S_BB_T *bb,
 /**
  * Increment indexstack from the left most
  * element (alias) to the right most element (target)
- * @param  aliasstack IN, 
- * @param  aliasstack_size IN,
- * @param  idxstack INOUT,
- * @param  idxstack_len IN,
+ * @param[in]  aliasstack 
+ * @param[in]  aliasstack_size
+ * @param[in,out]  idxstack
+ * @param[in]  idxstack_len
  * @return E_OK on success, E_NOK otherwise
  */					
 int32_t 

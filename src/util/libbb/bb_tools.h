@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_tools.h,v 1.8 2006-02-26 13:36:06 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_tools.h,v 1.9 2006-12-07 21:25:21 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -144,14 +144,14 @@ BEGIN_C_DECLS
 
 /**
  * Initialise BBTools request.
- * @param req OUT, the request to initialize.
+ * @param[out] req the request to initialize.
  */
 void 
 bbtools_init(bbtools_request_t* req);
 
 /**
  * The BBTools command generic API.
- * @param req INOUT, the bbtools request to be handled
+ * @param[in,out] req the bbtools request to be handled
  * @return E_OK on success E_NOK otherwise.
  */
 int32_t 
@@ -160,7 +160,7 @@ bbtools(bbtools_request_t* req);
 /**
  * Return the BB Tools command type
  * from the string passed as parameter
- * @param bbtools_string the name of the bbtools command
+ * @param[in] bbtools_string the name of the bbtools command
  */
 E_BBTOOLS_CMD_T
 bbtools_cmd(const char* bbtools_string);
@@ -173,7 +173,7 @@ bbtools_checkargs(bbtools_request_t* req);
 
 /**
  * Print usage of the specified bbtools request.
- * @param req IN, the bbtools request.
+ * @param[in] req the bbtools request.
  */
 void 
 bbtools_usage(bbtools_request_t* req);
@@ -181,7 +181,7 @@ bbtools_usage(bbtools_request_t* req);
 /**
  * Return the BB structure if the named
  * BB exists, NULL if not.
- * @param bbname IN, the name of a blackboard
+ * @param[in] bbname the name of a blackboard
  */
 S_BB_T*
 bbtools_checkbbname(const char* bbname);
