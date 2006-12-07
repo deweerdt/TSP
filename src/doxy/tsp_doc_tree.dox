@@ -163,7 +163,7 @@ Purpose   : Define the TSP main doxygen modules
 
 /**
  * @defgroup TSP_CoreLib TSP Core Libraries
- * The TSP Core module is the module
+ * The TSP Core module is the module which
  * includes core TSP framework utility.
  * @ingroup TSP_Libraries
  */
@@ -179,7 +179,7 @@ Purpose   : Define the TSP main doxygen modules
  * @defgroup TSP_Consumers TSP Consumers
  * The TSP consumer applications.
  * A set of ready-to-use TSP consumer such as
- * @ref TSP_AsciiWriter, @ref TSP_GDisp, @ref TSPFS TSP_Targa...
+ * @ref TSP_AsciiWriter, @ref TSP_GDisp, @ref TSPFS, @ref TSP_Targa...
  * @ingroup TSP_Applications
  */
 
