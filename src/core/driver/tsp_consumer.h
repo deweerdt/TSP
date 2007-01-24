@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_consumer.h,v 1.35 2006-10-18 09:58:48 erk Exp $
+$Id: tsp_consumer.h,v 1.36 2007-01-24 10:27:31 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -69,12 +69,43 @@ Purpose   : Main interface for the TSP consumer library
 
 
 
-/** Structure to get each sample */
+/** 
+ * Structure used to get a TSP sample symbol.
+ * A variable sample of this type is filled 
+ * by a call to @ref TSP_consumer_read_sample.
+ */
 typedef struct TSP_sample
 {
+  /** 
+   * The TSP time stamp.
+   * This field is mostly for TSP internal use
+   * it is not relared to any "real time",
+   * that not simulated time nor wallclock time.
+   * It is a TSP time sequence.
+   * It should be increasing (with 32bits rollover).
+   * When TSP time change the provider is changing cycle. 
+   */
   int time;
+  
+  /**
+   * The provider global index
+   * is the provider-side unique identifier for a TSP symbol.
+   * It may be used to retrieve the sample symbols informations
+   * sent to the consumer in the Answer Sample.
+   */
   int provider_global_index;
+
+  /**
+   * If the TSP symbol is of array type
+   * this is the index corresponding to
+   * the value given in @ref uvalue.
+   * For any scalar symbol it should be 0.
+   */
   int32_t array_index;
+
+  /**
+   * The TSP type for this symbol.
+   */
   TSP_datatype_t type; 
  
   union {
