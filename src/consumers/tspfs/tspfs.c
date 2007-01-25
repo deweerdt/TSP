@@ -270,7 +270,7 @@ static int get_tsp_symbol_index(const char *symbol_name)
 	return -1;
 }
 
-static inline int is_tsp_symbol(const char *symbol_name)
+static int is_tsp_symbol(const char *symbol_name)
 {
 	return get_tsp_symbol_index(symbol_name) >= 0;
 }
