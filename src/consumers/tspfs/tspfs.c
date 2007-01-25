@@ -108,7 +108,7 @@
 
 #define TSPFS_DEBUG 0
 
-static inline int is_tsp_symbol(const char *path);
+static int is_tsp_symbol(const char *path);
 static char *get_symname_from_path(const char *path);
 
 static int tspfs_getattr(const char *path, struct stat *stbuf)
