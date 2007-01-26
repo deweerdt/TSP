@@ -63,11 +63,11 @@ ENDIF(ACPLT_ONCRPC_FOUND)
 
 # EXE
 ADD_EXECUTABLE(tsp_port_test ${TSP_PORT_SRC})
-TARGET_LINK_LIBRARIES(tsp_port_test tsp_port_api tsp_port_rpc_clnt ${PTHREAD_LIBRARY_NAME})
+TARGET_LINK_LIBRARIES(tsp_port_test tsp_port_api tsp_port_rpc_clnt ${PTHREAD_LIBRARY_NAME} ${RPC_LIBRARY_NAME} ${SOCKET_LIBRARY_NAME})
 ADD_DEPENDENCIES(tsp_port_test tsp_port_rpc_clnt)
 
 ADD_EXECUTABLE(tsp_port_test_svc ${TSP_PORT_SVC_SRC})
-TARGET_LINK_LIBRARIES(tsp_port_test_svc tsp_port_api tsp_port_rpc_svc ${PTHREAD_LIBRARY_NAME}  ${TSP_WIN32_LIB})
+TARGET_LINK_LIBRARIES(tsp_port_test_svc tsp_port_api tsp_port_rpc_svc ${PTHREAD_LIBRARY_NAME}  ${TSP_WIN32_LIB} ${RPC_LIBRARY_NAME} ${SOCKET_LIBRARY_NAME})
 ADD_DEPENDENCIES(tsp_port_test_svc tsp_port_rpc_svc)
 
 TSP_PROGRAM_INSTALL(tsp_port_test tsp_port_test_svc)
