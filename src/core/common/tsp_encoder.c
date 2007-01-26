@@ -1,7 +1,7 @@
 
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/common/tsp_encoder.c,v 1.9 2006-10-21 09:28:03 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/common/tsp_encoder.c,v 1.10 2007-01-26 16:47:19 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -45,10 +45,14 @@ Purpose   :  Implementation for the functions used to encode the type
 #include <tsp_encoder.h>
 #include <tsp_decoder.h>
 
+#if defined(sun) || defined(__sun)
+#include <alloca.h>
+#endif
+
 #if defined (WIN32)
     #include <malloc.h>
     #define assert(exp)     ((void)0)
-#else
+#else    
     #include <assert.h>
 #endif
 

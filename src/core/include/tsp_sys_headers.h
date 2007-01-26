@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_sys_headers.h,v 1.21 2006-10-18 09:58:48 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_sys_headers.h,v 1.22 2007-01-26 16:47:19 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -57,6 +57,9 @@ int _rpcsvcdirty;
 #endif
 #include <stdio.h>
 #include <stdlib.h>
+#if defined(sun) || defined(__sun)
+#include <alloca.h>
+#endif
 #include <string.h>
 #ifndef WIN32
 #include <strings.h>

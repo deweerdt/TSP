@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/common/tsp_decoder.c,v 1.5 2006-10-21 08:48:00 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/common/tsp_decoder.c,v 1.6 2007-01-26 16:47:19 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -43,6 +43,10 @@ Purpose   :  Implementation for the functions used to decode the data received
 #include <tsp_datastruct.h>
 #include <tsp_simple_trace.h>
 #include <tsp_decoder.h>
+
+#if defined(sun) || defined(__sun)
+#include <alloca.h>
+#endif
 
 #ifdef WIN32
     #define assert(exp)     ((void)0)
