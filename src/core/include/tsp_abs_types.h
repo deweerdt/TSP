@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_abs_types.h,v 1.25 2006-10-18 09:58:48 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_abs_types.h,v 1.26 2007-01-26 17:09:52 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -63,10 +63,8 @@ Purpose   : Type abstraction : Stolen from GLIB public headers
 /*** Platform specific ***/
 
 /* SUN / sparc|i386 (32/64 bits) */
-/* AP : Migration sous Windows */
 #if  defined(__sun)
 # define TSP_BYTE_ORDER TSP_BIG_ENDIAN
-# define TSP_SYSTEM_HAVE_GETHRTIME
 # define TSP_SYSTEM_HAVE_NANOSLEEP
 # define TSP_HAVE_INT64 1
 # if  defined(__sparcv9)
