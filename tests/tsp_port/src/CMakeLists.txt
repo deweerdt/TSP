@@ -2,42 +2,23 @@
 SET(TSP_PORT_SRC test)
 SET(TSP_PORT_SVC_SRC test_server)
 SET(TSP_PORT_API_SRC test_api)
-SET(TSP_PORT_RPC_SVC_SRC test_rpc_server test_port_rpc_xdr test_port_rpc_svc)
-SET(TSP_PORT_RPC_CLNT_SRC test_rpc_client test_port_rpc_xdr test_port_rpc_clnt)
+#SET(TSP_PORT_RPC_SVC_SRC test_rpc_server test_port_rpc_xdr test_port_rpc_svc test_port_rpc)
+#SET(TSP_PORT_RPC_CLNT_SRC test_rpc_client test_port_rpc_xdr test_port_rpc_clnt test_port_rpc)
 
-SET(RPC "test_port_rpc")
-SET(TEST_PORT_SRC ${TEST_PORT_SRC})
+# Setup RPC machinery
+ONCRPC_SETUP(test_port_rpc
+  "${CMAKE_CURRENT_BINARY_DIR}"
+  "${CMAKE_CURRENT_BINARY_DIR}/test_port_rpc"
+  "")
 
-###############################
-# RPCGEN ne fonctionne pas actuellement dans Cmake, 
-# il faut le faire dans une "Visual Studio .Net 2003 command prompt"
-###############################
-#ADD_CUSTOM_COMMAND(
-#	OUTPUT	${RPC}_xdr.c
-#	COMMAND ${RPCGEN} -c ${RPC}.x -o ${RPC}_xdr.c
-#	DEPENDS ${RPC}.x
-#	WORKING_DIRECTORY ${CMAKE_CURRENT_DIR})
-	
-#ADD_CUSTOM_COMMAND(
-#	OUTPUT	${RPC}.h
-#	COMMAND ${RPCGEN} -h ${CMAKE_SOURCE_DIR}/tests/tsp_port/src/${RPC}.x -o ${RPC}.h
-#	DEPENDS ${CMAKE_SOURCE_DIR}/tests/tsp_port/src/${RPC}.x)
-
-#ADD_CUSTOM_COMMAND(
-#	OUTPUT 	${RPC}_clnt.c
-#	COMMAND ${RPCGEN} -l ${CMAKE_SOURCE_DIR}/tests/tsp_port/src/${RPC}.x -o ${RPC}_clnt.c
-#	DEPENDS ${CMAKE_SOURCE_DIR}/tests/tsp_port/src/${RPC}.x)
-
-#ADD_CUSTOM_COMMAND(
-#	OUTPUT 	${RPC}_scv.c
-#	COMMAND ${RPCGEN} -m ${CMAKE_SOURCE_DIR}/tests/tsp_port/src/${RPC}.x -o ${RPC}_svc.c
-#	DEPENDS ${CMAKE_SOURCE_DIR}/tests/tsp_port/src/${RPC}.x)
+SET(TSP_PORT_RPC_SVC_SRC test_rpc_server ${test_port_rpc_RPCGEN_OUTPUT_SRV})
+SET(TSP_PORT_RPC_CLNT_SRC test_rpc_client ${test_port_rpc_RPCGEN_OUTPUT_CLNT})
 
 IF (WIN32)
-	INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/external/TspWin32)
+  INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/external/TspWin32)
 ENDIF (WIN32)
 
-# DLL
+# Libraries
 TSP_XINCLUDE(${TSP_PORT_API_SRC})
 ADD_LIBRARY(tsp_port_api ${TSP_PORT_API_SRC})
 IF (PTHREADWIN32_FOUND)
