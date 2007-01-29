@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.27 2006-11-28 13:52:27 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.28 2007-01-29 17:04:16 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -107,14 +107,20 @@ static struct bb_operations sysv_bb_ops;
 extern struct bb_operations k_bb_ops;
 #else
 extern struct bb_operations sysv_bb_ops;
+#if defined(linux) || defined(__linux)
 extern struct bb_operations k_bb_ops;
+#endif
 #endif
 
 /* Note: This is thigtly related to enum bb_type in bb_core.h,
    if you ever modify this, you'll probably need to modify
    enum bb_type */
-static struct bb_operations *ops[] = { 	&sysv_bb_ops,
-					&k_bb_ops };
+static struct bb_operations *ops[] = { 	&sysv_bb_ops
+#if defined(linux) || defined(__linux)
+					,&k_bb_ops };
+#else
+                                     };
+#endif
 
 static enum bb_type bb_type(const char *name)
 {
