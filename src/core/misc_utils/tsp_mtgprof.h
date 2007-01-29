@@ -1,3 +1,6 @@
+#ifndef __TSP_MTGPROG
+#define __TSP_MTGPROG
+
 /* 
  * pthread_create wrapper for gprof compatibility
  * Provided by Samuel Hocevar at http://sam.zoy.org/doc/programming/gprof.html
@@ -34,9 +37,6 @@ struct	itimerval
 #else
 #include <sys/time.h>
 #endif
-
-#ifndef __TSP_MTGPROG
-#define __TSP_MTGPROG 1
 
 #ifndef VXWORKS
 typedef struct wrapper_s

@@ -10,6 +10,13 @@ SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/make)
 # Load TSP Specific CMake macros (TSP_XSCRIPT, TSP_XINCLUDE, TSP_xxx_INSTALL)
 INCLUDE(TSPCMakeTools)
 
+# We do not accept InSource build anymore
+STRING(COMPARE EQUAL "${CMAKE_SOURCE_DIR}" "${CMAKE_BINARY_DIR}" insource)
+IF(insource)
+  MESSAGE(FATAL_ERROR "InSource Build is forbidden for TSP")
+ENDIF(insource)
+
+
 # Load Checker macros
 INCLUDE(CheckFunctionExists)
 INCLUDE(CheckLibraryExists)

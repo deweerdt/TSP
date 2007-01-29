@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_sys_headers.h,v 1.22 2007-01-26 16:47:19 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_sys_headers.h,v 1.23 2007-01-29 16:52:39 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -47,7 +47,8 @@ Purpose   :
 int _rpcsvcdirty;
 #endif /* __OpenBSD__ */
 
-#ifndef _POSIX_SOURCE
+/* FIXME using POSIX_SOURCE on SOLARIS gives me very strange compilation trouble (Erk) */
+#if !defined(_POSIX_SOURCE) && !(defined(sun) || defined(__sun))
 #define _POSIX_SOURCE
 #define _POSIX_C_SOURCE 199506L
 #endif
@@ -55,24 +56,32 @@ int _rpcsvcdirty;
 #ifndef WIN32
 #include <unistd.h>
 #endif
+
 #include <stdio.h>
 #include <stdlib.h>
+
 #if defined(sun) || defined(__sun)
 #include <alloca.h>
+#include <rpc/rpc.h>
 #endif
+
 #include <string.h>
+
 #ifndef WIN32
 #include <strings.h>
 #endif
+
 #include <errno.h>
+
 #ifndef WIN32 /* conflict error C2011 under VC++, already include by <rpc/rpc.h> */
 #include <netdb.h>
 #endif
-/*#include "fortify.h"*/
 
 
-/* Used for gprof to work for linux multi-thread programs.
-Do not use this with others targets */
+/* 
+ * Used for gprof to work for linux multi-thread programs.
+ * Do not use this with others targets 
+ */
 #ifdef MT_GPROF
 #include "tsp_mtgprof.h"
 #define pthread_create gprof_pthread_create

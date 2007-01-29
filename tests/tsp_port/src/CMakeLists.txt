@@ -2,16 +2,14 @@
 SET(TSP_PORT_SRC test)
 SET(TSP_PORT_SVC_SRC test_server)
 SET(TSP_PORT_API_SRC test_api)
-#SET(TSP_PORT_RPC_SVC_SRC test_rpc_server test_port_rpc_xdr test_port_rpc_svc test_port_rpc)
-#SET(TSP_PORT_RPC_CLNT_SRC test_rpc_client test_port_rpc_xdr test_port_rpc_clnt test_port_rpc)
 
 # Setup RPC machinery
-ONCRPC_SETUP(test_port_rpc
+ONCRPC_SETUP("test_port_rpc"
   "${CMAKE_CURRENT_BINARY_DIR}"
   "${CMAKE_CURRENT_BINARY_DIR}/test_port_rpc"
   "")
 
-SET(TSP_PORT_RPC_SVC_SRC test_rpc_server ${test_port_rpc_RPCGEN_OUTPUT_SRV})
+SET(TSP_PORT_RPC_SVC_SRC test_rpc_server ${test_port_rpc_RPCGEN_OUTPUT_SVC})
 SET(TSP_PORT_RPC_CLNT_SRC test_rpc_client ${test_port_rpc_RPCGEN_OUTPUT_CLNT})
 
 IF (WIN32)
