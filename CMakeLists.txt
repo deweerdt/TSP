@@ -2,10 +2,18 @@ PROJECT(TSP C)
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.4)
 
+# May be used to print extensive system informations
+#INCLUDE(CMakePrintSystemInformation)
+
 # Use TSP specific CMake modules first
 SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/make)
 # Load TSP Specific CMake macros (TSP_XSCRIPT, TSP_XINCLUDE, TSP_xxx_INSTALL)
 INCLUDE(TSPCMakeTools)
+
+# Load Checker macros
+INCLUDE(CheckFunctionExists)
+INCLUDE(CheckLibraryExists)
+
 #INCLUDE(TestBigEndian)
 #TEST_BIG_ENDIAN(IS_BIG_ENDIAN)
 #MESSAGE(STATUS "IS_BIG_ENDIAN is : ${IS_BIG_ENDIAN}")
@@ -33,41 +41,30 @@ OPTION(BUILD_BB_KERNEL_MODULE
   "Build the Black Board kernel module" OFF)
 
 IF (WIN32)        
-	OPTION(BUILD_WIN32_PTHREADWIN32
-		"Build under Windows with PthreadWin32" ON)
-	
-	OPTION(BUILD_WIN32_ACPLT_ONCPRC
-		"Build under Windows with ACPLT_ONCPRC" ON)	
-		
-	OPTION(BUILD_SHARED
-		"Build libraries as DLL" ON)
+  OPTION(BUILD_WIN32_PTHREADWIN32
+    "Build under Windows with PthreadWin32" ON)
+  
+  OPTION(BUILD_WIN32_ACPLT_ONCPRC
+    "Build under Windows with ACPLT_ONCPRC" ON)	
+  
+  OPTION(BUILD_SHARED
+    "Build libraries as DLL" ON)
 ELSE (WIN32)
-	OPTION(BUILD_SHARED
-		"Build libraries as shared library" ON)
+  OPTION(BUILD_SHARED
+    "Build libraries as shared library" ON)
 ENDIF (WIN32)
 
 IF (NOT USE_XDR_LIB_ENCODING)
   ADD_DEFINITIONS(-DTSP_NO_XDR_ENCODE)
 ENDIF (NOT USE_XDR_LIB_ENCODING)
 
-MESSAGE(STATUS "Setting RPC and Socket library name for system ${CMAKE_SYSTEM_NAME}")
-IF (CMAKE_SYSTEM_NAME STREQUAL "SunOS")
-   SET(RPC_LIBRARY_NAME "nsl")
-   SET(SOCKET_LIBRARY_NAME "socket")  
-ELSE (CMAKE_SYSTEM_NAME STREQUAL "SunOS")
-   SET(RPC_LIBRARY_NAME)
-   SET(SOCKET_LIBRARY_NAME)  
-ENDIF (CMAKE_SYSTEM_NAME STREQUAL "SunOS")
-MESSAGE(STATUS "RPC    library name is : ${RPC_LIBRARY_NAME}") 
-MESSAGE(STATUS "Socket library name is : ${SOCKET_LIBRARY_NAME}") 
-
 IF (BUILD_SHARED)
-	SET(BUILD_SHARED_LIBS ON)
-	IF (WIN32)
-		ADD_DEFINITIONS(-DTSP_SHARED_LIBS)
-	ENDIF (WIN32)
+  SET(BUILD_SHARED_LIBS ON)
+  IF (WIN32)
+    ADD_DEFINITIONS(-DTSP_SHARED_LIBS)
+  ENDIF (WIN32)
 ELSE (BUILD_SHARED)
-	SET(BUILD_SHARED_LIBS OFF)
+  SET(BUILD_SHARED_LIBS OFF)
 ENDIF (BUILD_SHARED)
 
 ## If no build type specified then default to Debug
@@ -86,17 +83,24 @@ SET(PACKAGE_VERSION   "${PACKAGE_VERSION_MAJOR}.${PACKAGE_VERSION_MINOR}.${PACKA
 SET(PACKAGE_BUGREPORT "tsp@astrium.eads.net")
 
 MESSAGE(STATUS "Configuring ${PACKAGE_NAME} version ${PACKAGE_VERSION}")
-INCLUDE(CheckFunctionExists)
-#INCLUDE(CMakePrintSystemInformation)
 
 ################ Visual Studio (VC) Check ####################
 IF (WIN32)
-	SET(CMAKE_INSTALL_VS "C:/Program Files/Microsoft Visual Studio .NET 2003/Vc7")
-    SET(TSP_WIN32_LIB TspWin32)
-    INCLUDE_DIRECTORIES(external/TspWin32)
+  SET(CMAKE_INSTALL_VS "C:/Program Files/Microsoft Visual Studio .NET 2003/Vc7")
+  SET(TSP_WIN32_LIB TspWin32)
+  INCLUDE_DIRECTORIES(external/TspWin32)
 ELSE (WIN32)
-    SET(TSP_WIN32_LIB)
+  SET(TSP_WIN32_LIB)
 ENDIF (WIN32)
+
+################ Socket library Check ####################
+CHECK_LIBRARY_EXISTS("socket" "connect" "/usr/lib" SOCKET_LIBRARY_HAS_CONNECT)
+IF (SOCKET_LIBRARY_HAS_CONNECT)
+  MESSAGE(STATUS "Socket library needed for system ${CMAKE_SYSTEM_NAME}")
+  SET(SOCKET_LIBRARY "socket")
+ELSE (SOCKET_LIBRARY_HAS_CONNECT)
+  SET(SOCKET_LIBRARY)
+ENDIF (SOCKET_LIBRARY_HAS_CONNECT)
 
 ################ PthreadWin32 Check ####################
 IF (BUILD_WIN32_PTHREADWIN32)
@@ -115,6 +119,8 @@ IF (BUILD_WIN32_ACPLT_ONCPRC)
 		LINK_DIRECTORIES(${ACPLT_ONCRPC_LIBRARY_DIRS})
 		INCLUDE_DIRECTORIES(${ACPLT_ONCRPC_INCLUDE_DIRS})
 	ENDIF (ACPLT_ONCRPC_FOUND)
+ELSE (BUILD_WIN32_ACPLT_ONCPRC)
+  FIND_PACKAGE(ONCRPC)
 ENDIF (BUILD_WIN32_ACPLT_ONCPRC)
 
 IF (WIN32)	
@@ -521,7 +527,6 @@ IF (UNIX)
     COMMAND rpmbuild -bb --define=\"_topdir ${RPM_ROOTDIR}\" --buildroot=${RPM_ROOTDIR}/tmp ${CMAKE_BINARY_DIR}/src/scripts/tsp.spec
     )  
 ENDIF (UNIX)
-
 
 MESSAGE(STATUS "Configuring ${PACKAGE_NAME} version ${PACKAGE_VERSION}...Done.")
 
