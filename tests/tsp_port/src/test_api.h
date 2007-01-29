@@ -36,4 +36,5 @@ _EXPORT_API int teststringrecu(char * recu);
 #ifdef __cplusplus
 }
 #endif
+
 #endif

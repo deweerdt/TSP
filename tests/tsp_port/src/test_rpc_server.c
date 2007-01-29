@@ -2,13 +2,17 @@
 #include <rpc/rpc.h>
 #include <pthread.h>
 #ifdef WIN32
-#  include <ws2tcpip.h>
-#  include "getopt.h" 
+    #include <ws2tcpip.h>
+    #include "getopt.h" 
 #else
-#  include <unistd.h>
-#  include <sys/types.h>
-#  include <sys/socket.h>
-#  include <netdb.h>
+    #include <unistd.h>
+    #include <sys/types.h>
+    #include <sys/socket.h>  
+    #include <netdb.h>
+#if defined(sun) || defined(__sun)
+    #include <strings.h>
+    #include <stdlib.h>
+#endif
 #endif
 #include "test_port_rpc.h"
 #include "test_api.h"

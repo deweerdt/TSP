@@ -5,10 +5,15 @@
 #include <assert.h>
 #include <pthread.h>
 #ifdef WIN32
-#  include <windows.h>
+  #include <windows.h>
 #else
-#  include <netdb.h>
-#  include <string.h>
+  #include <netdb.h>
+  #include <string.h>
+  #include <stdlib.h>
+  #include <unistd.h>
+#if defined(sun) || defined(__sun)
+  #include <alloca.h>
+#endif
 #endif
 
 #include "test_api.h"
@@ -209,7 +214,7 @@ void test_gethostx()
 	    myu.parts[3], myu.parts[2], myu.parts[1], myu.parts[0],
 	    (myhost_byaddr->h_addrtype == AF_INET6 ?  "AF_INET6" : "AF_INET"));
 
-    htonl(INADDR_ANY);
+    /* htonl(INADDR_ANY); what's that */
     
     host = strdup(name);
     last = strstr(host, ".");

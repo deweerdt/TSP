@@ -9,6 +9,10 @@
     #include <sys/types.h>
     #include <sys/socket.h>
     #include <netdb.h>
+#if defined(sun) || defined(__sun)
+    #include <strings.h>
+    #include <stdlib.h>
+#endif
 #endif
 
 #include "test_api.h"
