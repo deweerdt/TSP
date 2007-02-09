@@ -47,20 +47,18 @@ Select & download the tar version you want to use
 
 How to configure :
 ------------------
-% cd tsp                           # change to the toplevel directory
-% ./configure                      # run the `configure' script
+% cd tsp_build                     # change to the toplevel directory. MUST BE DIFFERENT from
+                                   # the one where the source was installed
+
+% cmake <path-to-tsp-source>       # run cmake (see http://www.cmake.org)
 You can choose to use debug / opt compilation, and exclude parts of tsp (java, provider, consumer)
 For more information 
-% ./configure --help
+% ccmake <path-to-tsp-source>
 
-How to compil :
+How to compile :
 ---------------
-The configure script will tell you what to do then. You should now do either
-% source src/scripts/tsp_dev.login  [csh/tcsh]       
-Or
-% . src/scripts/tsp_dev.login.sh    [sh/bash/zsh/...]
-And then you may build with a simple                   
-% cd src; make           
+
+% make           
 
 
 ========================
