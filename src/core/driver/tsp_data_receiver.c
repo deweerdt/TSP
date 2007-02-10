@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_data_receiver.c,v 1.27 2006-10-21 08:48:00 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_data_receiver.c,v 1.28 2007-02-10 18:49:37 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -169,7 +169,6 @@ int TSP_data_receiver_receive(TSP_data_receiver_t _receiver,
 
   *fifo_full = FALSE;
   sample = &sample_buf;
-
 
   /* We read data if there enough room in ringbuf to store data, else, do nothing ; 
      we want the biggest group to have enough room, so we use max_group_len
@@ -356,7 +355,7 @@ int TSP_data_receiver_receive(TSP_data_receiver_t _receiver,
 	{
 	  if(!receiver_stopped)
 	    {		  
-	      STRACE_WARNING(("Unable to receive group size and time stamp"));
+	      STRACE_WARNING(("Unable to receive group size and time stamp, provider died?"));
 	      /* Add in fifo a message to report the incident via the read sample API*/
 	      TSP_data_receiver_process_receiver_error(sample_fifo);
 	    }

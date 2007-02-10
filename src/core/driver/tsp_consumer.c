@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.58 2006-10-18 09:58:48 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.59 2007-02-10 18:49:37 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -989,6 +989,13 @@ TSP_consumer_request_sample(TSP_provider_t provider, TSP_sample_symbol_info_list
 	
   /* Get the computed ans_sample from the provider */
   ans_sample = TSP_request_sample(&req_sample, otsp->server);
+
+  /* Check if ans_sample is valid */
+  if (NULL == ans_sample) {
+    STRACE_ERROR(("Unable to communicate with the provider"));    
+    retcode = TSP_STATUS_ERROR_PROVIDER_UNREACHABLE;
+    return retcode;
+  }
   
   /* 
    * now update provider global index (and other provider-side symbol info)
@@ -999,56 +1006,48 @@ TSP_consumer_request_sample(TSP_provider_t provider, TSP_sample_symbol_info_list
   /*free allocated request sample symbol list */
   free(req_sample.symbols.TSP_sample_symbol_info_list_t_val);  
        
-  if( NULL != ans_sample) {      
-    retcode = ans_sample->status;
-    switch (ans_sample->status)
-	{
-	case TSP_STATUS_OK :
-	  break;
-	case TSP_STATUS_ERROR_UNKNOWN :
-	  STRACE_WARNING(("Provider unknown error"));
-	  break;
-	case TSP_STATUS_ERROR_VERSION :
-	  STRACE_WARNING(("Provider version error"));
-	  break;
-	case TSP_STATUS_ERROR_SYMBOLS :
-	  STRACE_WARNING(("Provider symbols error"));
-	  break;
-	case TSP_STATUS_ERROR_INVALID_REQUEST :
-	  STRACE_WARNING(("Provider says request is invalid"));
-	  break;
-	default:
-	  STRACE_ERROR(("The provider sent an unreferenced error. It looks like a bug."));
-	  break;
-	}
-
-
-      /*-------------------------------------------------*/
-      /* Create group table and store requested symbols */
-      /*-------------------------------------------------*/
-      if(TSP_STATUS_OK==retcode)
-	{
-	  STRACE_INFO(("Total group number = %d", ans_sample->provider_group_number));
-	  /* Create group table but delete any previous allocation*/
-	  TSP_group_delete_group_table(otsp->groups);
-	  otsp->groups = TSP_group_create_group_table(&(ans_sample->symbols), ans_sample->provider_group_number);
-	  if( NULL != otsp->groups) {
-	    if (TRUE == TSP_consumer_store_requested_symbols(&otsp->requested_sym,&ans_sample->symbols)) {
-	      retcode = TSP_STATUS_OK;
-	    }
-	  }
-	  else {
-	    STRACE_ERROR(("Function TSP_group_create_group_table failed"));	   
-	  }
-	}
-  }
-  else
+  retcode = ans_sample->status;
+  switch (ans_sample->status)
     {
-      STRACE_ERROR(("Unable to communicate with the provider"));
+    case TSP_STATUS_OK :
+      break;
+    case TSP_STATUS_ERROR_UNKNOWN :
+      STRACE_WARNING(("Provider unknown error"));
+      break;
+    case TSP_STATUS_ERROR_VERSION :
+      STRACE_WARNING(("Provider version error"));
+      break;
+    case TSP_STATUS_ERROR_SYMBOLS :
+      STRACE_WARNING(("Provider symbols error"));
+      break;
+    case TSP_STATUS_ERROR_INVALID_REQUEST :
+      STRACE_WARNING(("Provider says request is invalid"));
+      break;
+    default:
+      STRACE_ERROR(("The provider sent an unreferenced error. It looks like a bug."));
+      break;
     }
-           
+  
+  
+  /*-------------------------------------------------*/
+  /* Create group table and store requested symbols */
+  /*-------------------------------------------------*/
+  if (TSP_STATUS_OK==retcode) {
+    STRACE_INFO(("Total group number = %d", ans_sample->provider_group_number));
+    /* Create group table but delete any previous allocation*/
+    TSP_group_delete_group_table(otsp->groups);
+    otsp->groups = TSP_group_create_group_table(&(ans_sample->symbols), ans_sample->provider_group_number);
+    if( NULL != otsp->groups) {
+      if (TRUE == TSP_consumer_store_requested_symbols(&otsp->requested_sym,&ans_sample->symbols)) {
+	retcode = TSP_STATUS_OK;
+      }
+    }
+    else {
+      STRACE_ERROR(("Function TSP_group_create_group_table failed"));	   
+    }
+  }
   return retcode;
-}
+} /* end of TSP_consumer_request_sample */
 
 const TSP_sample_symbol_info_list_t* TSP_consumer_get_requested_sample(TSP_provider_t provider)
 {
@@ -1256,6 +1255,7 @@ TSP_consumer_read_sample(TSP_provider_t provider,
 	      break;
 	    case TSP_DUMMY_PROVIDER_GLOBAL_INDEX_RECEIVER_ERROR :
 	      STRACE_WARNING (("status message RECEIVER ERROR"));
+	      retcode = TSP_STATUS_ERROR_PROVIDER_UNREACHABLE;
 	      /* FIXME : get last error à gerer ? */
 	      break;
 	    case TSP_DUMMY_PROVIDER_GLOBAL_INDEX_GLU_DATA_LOST :
