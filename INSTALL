@@ -1,10 +1,16 @@
 ========================
 Installation procedure
 ========================
+This a simple text version of install guide.
+You may find more detailed information about
+the TSP installation and usage directly from:
+http://download.savannah.nongnu.org/releases/tsp/tsp_programming_guide-1.1.pdf
+or
+http://download.savannah.nongnu.org/releases/tsp/tsp_programming_tutorial-1.0.pdf
 
 1) How to get sources
-  1a) Downoload tarball
-  1b) use CVS checkout
+   1a) Downoload tarball
+   1b) use CVS checkout
 
 2) Compilation
 
@@ -16,7 +22,7 @@ Installation procedure
 
 1a) Download tarball
 --------------------
-Go to  http://savannah.nongnu.org/files/?group=tsp
+Go to  https://savannah.nongnu.org/files/?group=tsp
 Select & download the tar version you want to use
 % gzip -cd tsp-xxx.tar.gz | tar xvf -  # unpack the sources
 
@@ -24,22 +30,23 @@ Select & download the tar version you want to use
 --------------------
  * Create an account on savannah
 	https://savannah.gnu.org/account/register.php
-	If yoy want to be developper (allowed to commit modification, ask tsp@astrium-space.com)
+	If you want to be developper (allowed to commit modification, ask on tsp-devel@nongnu.org)
 
  * Create and register a SSH key for this account
 	In fact, you can simply do this by typing:
 	echo "Protocol 2" > ~/.ssh/config
-	ssh-keygen -dsa
+	ssh-keygen -t dsa
 	[ http://savannah.gnu.org/account/editsshkeys.php ] Change Authorized Keys page (logged in)
-	and paste you key generated in ~.ssh/identity.pub, then wait next cron tab update (6h)
+	and paste you key generated in ~/.ssh/id_dsa.pub, then wait next cron tab update (6h)
 
  * Extract CVS tree 
+        see explanation here: https://savannah.nongnu.org/cvs/?group=tsp
 	Move into the local directory where you want to keep your local copy of the CVS tree. 
 	For example:
- 	%  cd /opt
+ 	%  cd /where_you/want/it/to/go
  	Download the CVS tree structure (substitute user with your login name):
  	% export CVS_RSH=ssh
-	 % cvs -z3 -dmyUserName@subversions.gnu.org:/cvsroot/tsp co tsp
+	% cvs -z3 -d:ext:myUserName@cvs.savannah.gnu.org:/sources/tsp co tsp
 
 ========================
 2) Compilation procedure
