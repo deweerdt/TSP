@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bbtools/bb_simu.c,v 1.10 2006-04-25 21:09:51 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bbtools/bb_simu.c,v 1.11 2007-02-11 21:41:11 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -191,7 +191,7 @@ main (int argc, char ** argv) {
 #ifdef HUGE_ARRAY
 #define BIG_SIZE 200000
 #else
-#define BIG_SIZE 10
+#define BIG_SIZE 250
 #endif
   HugeArray = (double*) bb_simple_publish(mybb,"HugeArray",basename(argv[0]),1, E_BB_DOUBLE, sizeof(double),BIG_SIZE);
   if (NULL==HugeArray) {
