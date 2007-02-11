@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_sampling.c,v 1.21 2006-11-08 21:31:12 esteban Exp $
+$Id: gdisp_sampling.c,v 1.22 2007-02-11 19:19:25 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -941,11 +941,10 @@ gdisp_samplingThread (void *data )
   /*
    * Tell TSP core to stop sampling process.
    */
-  if (requestStatus == FALSE) {
-    requestStatus = 0;
-  }
-  else {
+  if (requestStatus == TSP_STATUS_OK) {
+
     requestStatus = TSP_consumer_request_sample_destroy(provider->pHandle);
+
   }
 
   if (TSP_STATUS_OK != requestStatus) {
