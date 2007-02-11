@@ -1,6 +1,6 @@
 /*
  
-$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_const_def.h,v 1.42 2006-10-18 09:58:48 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_const_def.h,v 1.43 2007-02-11 21:45:56 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -44,7 +44,7 @@ Purpose   : definitions and const that must have a program wide scope
 /** TSP Version */
 #define TSP_PROTOCOL_VERSION 0x00010001
 
-/* we need abstract types for multi-platform portability */
+/* We need abstract types for multi-platform portability */
 #include "tsp_abs_types.h"
 
 #define TSP_MAX_SYSMSG_SIZE 256
@@ -55,7 +55,6 @@ Purpose   : definitions and const that must have a program wide scope
  * FIXME : calculate the ringbuf depth using the base frequency
  */
 #define TSP_CONSUMER_RINGBUF_SIZE (1000 * 100) * 10
-
 
 
 /* Max client total number */
@@ -78,7 +77,7 @@ Purpose   : definitions and const that must have a program wide scope
  */
 #define TSP_DATA_STREAM_SOCKET_FIFO_SIZE (1024*48)
 
-/** Duration of stream sender fifo in secondes */
+/** Duration of stream sender fifo in seconds */
 #ifdef VXWORKS
 #define TSP_STREAM_SENDER_RINGBUF_SIZE 2
 #else
@@ -88,13 +87,13 @@ Purpose   : definitions and const that must have a program wide scope
 
 /** used to calculate the socket buffer size */
 #define TSP_DATA_STREAM_MAX_HEADER_SIZE 1024
+
 /** No more than 2MB buffer size which is already HUGE */
 #define TSP_DATA_STREAM_MAX_BUFFER_MAXSIZE (1024*1024*2)
-/* till now, all elements are doubles, but there will be strings, raw, etc ... */
-#define TSP_DATA_STREAM_MAX_ITEM_SIZE sizeof(double)*10
-#define TSP_DATA_STREAM_MAX_BUFFER_SIZE(max_nb_items) \
-  ( ((max_nb_items) * TSP_DATA_STREAM_MAX_ITEM_SIZE) > TSP_DATA_STREAM_MAX_BUFFER_MAXSIZE ? TSP_DATA_STREAM_MAX_BUFFER_MAXSIZE :  (max_nb_items) * TSP_DATA_STREAM_MAX_ITEM_SIZE \
-                              + TSP_DATA_STREAM_MAX_HEADER_SIZE)
+
+/** FIXME explain that computation */
+#define TSP_DATA_STREAM_MAX_BUFFER_SIZE(group_max_byte_size)		\
+  ( (group_max_byte_size) > TSP_DATA_STREAM_MAX_BUFFER_MAXSIZE ? TSP_DATA_STREAM_MAX_BUFFER_MAXSIZE :  (group_max_byte_size) + TSP_DATA_STREAM_MAX_HEADER_SIZE )
 
 
 /** 
@@ -280,16 +279,16 @@ typedef struct  TSP_otsp_server_info_t TSP_otsp_server_info_t;
 	{ \
 		if ( 0 == p ) \
 		{ \
-			STRACE_ERROR(("-->OUT : ERROR : Memory allocation failed"))  \
+			STRACE_ERROR(("TSP_CHECK_ALLOC : ERROR : Memory allocation failed"))  \
 			return ret; \
 		} \
 	}
 
-#define TSP_CHECK_POINTER(p, ret) \
+#define TSP_CHECK_POINTER(p, ret, msg)		\
 	{ \
 		if ( NULL == p ) \
 		{ \
-			STRACE_ERROR(("-->OUT : ERROR : NULL POINTER"))  \
+			STRACE_ERROR(("TSP_CHECK_POINTER : NULL POINTER : " # msg ))  \
 			return ret; \
 		} \
 	}
@@ -298,7 +297,7 @@ typedef struct  TSP_otsp_server_info_t TSP_otsp_server_info_t;
 	{ \
 		if ( 0 != status ) \
 		{ \
-			STRACE_ERROR(("-->OUT : ERROR : Thread API Error"))  \
+			STRACE_ERROR(("TSP_CHECK_THREAD : ERROR : Thread API Error"))  \
 			return ret; \
 		} \
 	}	
@@ -307,7 +306,7 @@ typedef struct  TSP_otsp_server_info_t TSP_otsp_server_info_t;
 	{ \
 		if ( 0 != pthread_mutex_lock(mutex) )\
 		{ \
-			STRACE_ERROR(("-->OUT : ERROR : Mutex Lock Error"))  \
+			STRACE_ERROR(("TSP_LOCK_MUTEX : ERROR : Mutex Lock Error"))  \
 			return ret; \
 		} \
 	}	
@@ -316,7 +315,7 @@ typedef struct  TSP_otsp_server_info_t TSP_otsp_server_info_t;
 	{ \
 		if ( 0 != pthread_mutex_unlock(mutex) ) \
 		{ \
-			STRACE_ERROR(("-->OUT : ERROR : Mutex Unlock Error"))  \
+			STRACE_ERROR(("TSP_UNLOCK_MUTEX : ERROR : Mutex Unlock Error"))  \
 			return ret; \
 		} \
 	}	

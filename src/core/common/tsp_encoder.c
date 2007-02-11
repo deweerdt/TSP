@@ -1,7 +1,7 @@
 
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/common/tsp_encoder.c,v 1.10 2007-01-26 16:47:19 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/common/tsp_encoder.c,v 1.11 2007-02-11 21:45:56 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -56,9 +56,12 @@ Purpose   :  Implementation for the functions used to encode the type
     #include <assert.h>
 #endif
 
-uint32_t TSP_data_channel_double_encoder(void* v_double, uint32_t dimension,  char* out_buf, uint32_t size)
-{
-
+uint32_t 
+TSP_data_channel_double_encoder(void*    v_double,
+				uint32_t dimension,
+				char*    out_buf,
+				uint32_t size) {
+  
   double *pt_double;
   uint32_t i,taille;
 
@@ -68,13 +71,19 @@ uint32_t TSP_data_channel_double_encoder(void* v_double, uint32_t dimension,  ch
 
 #endif /*TSP_NO_XDR_ENCODE*/
 
-  taille= sizeof(double) * dimension;
-  if(size  < taille )
-  {
+  taille = sizeof(double) * dimension;
+
+  /* short circuit
+   * caller only want to get encoded size */
+  if (NULL==v_double) {
+    return taille;
+  }
+  
+  if (size  < taille ) {
     STRACE_ERROR(("buffer is too small"));
     return 0;
   }
-
+  
   pt_double=(double*)v_double;
 
 #ifndef TSP_NO_XDR_ENCODE
@@ -95,21 +104,24 @@ uint32_t TSP_data_channel_double_encoder(void* v_double, uint32_t dimension,  ch
 
 #else
    
-    for (i=0;i<dimension;++i) {
-      ((uint64_t*)out_buf)[i] = TSP_ENCODE_DOUBLE_TO_UINT64(pt_double+i);
-      STRACE_DEBUG_MORE(("DOUBLE = %f, encoded DOUBLE=0x%08llx",*pt_double,((uint64_t*)out_buf)[i]));
-    } 
-
-    return (uint32_t)(taille);
+  for (i=0;i<dimension;++i) {
+    ((uint64_t*)out_buf)[i] = TSP_ENCODE_DOUBLE_TO_UINT64(pt_double+i);
+    STRACE_DEBUG_MORE(("DOUBLE = %f, encoded DOUBLE=0x%08llx",*pt_double,((uint64_t*)out_buf)[i]));
+  } 
+  
+  return (uint32_t)(taille);
 
 #endif /*TSP_NO_XDR_ENCODE*/
 
-}
+} /* end of TSP_data_channel_double_encoder */
 
 
-uint32_t TSP_data_channel_float_encoder(void* v_float,uint32_t dimension,  char* out_buf, uint32_t size)
-{
-
+uint32_t 
+TSP_data_channel_float_encoder(void*    v_float,
+			       uint32_t dimension,
+			       char*    out_buf, 
+			       uint32_t size) {
+  
   float *pt_float;
   uint32_t i,taille;
 
@@ -119,9 +131,15 @@ uint32_t TSP_data_channel_float_encoder(void* v_float,uint32_t dimension,  char*
 
 #endif /*TSP_NO_XDR_ENCODE*/
 
-  taille= sizeof(float) * dimension;
-  if(size  < taille )
-  {
+  taille = sizeof(float) * dimension;
+
+  /* short circuit
+   * caller only want to get encoded size */
+  if (NULL==v_float) {
+    return taille;
+  }
+
+  if (size  < taille ) {
     STRACE_ERROR(("buffer is too small"));
     return 0;
   }
@@ -156,15 +174,25 @@ uint32_t TSP_data_channel_float_encoder(void* v_float,uint32_t dimension,  char*
 
 #endif /*TSP_NO_XDR_ENCODE*/
 
-}
+} /* end of TSP_data_channel_float_encoder */
 
-uint32_t TSP_data_channel_int8_encoder(void* v_int8,uint32_t dimension,  char* out_buf, uint32_t size)
-{
+uint32_t 
+TSP_data_channel_int8_encoder(void*    v_int8,
+			      uint32_t dimension,
+			      char*    out_buf,
+			      uint32_t size) {
 
   int8_t *pt_int8;
   uint32_t i;
-  int32_t*  temp = alloca(sizeof(int32_t)*dimension);
+  int32_t*  temp;
 
+  /* short circuit
+   * caller only want to get encoded size */
+  if (NULL==v_int8) {
+    return TSP_data_channel_int32_encoder(NULL,dimension,out_buf,size);
+  }
+
+  temp = alloca(sizeof(int32_t)*dimension);
   pt_int8=(int8_t*)v_int8;
 
   for (i=0;i<dimension;++i) {
@@ -173,16 +201,25 @@ uint32_t TSP_data_channel_int8_encoder(void* v_int8,uint32_t dimension,  char* o
 
   return  TSP_data_channel_int32_encoder(&temp[0],dimension,out_buf,size);
 
+} /* end of TSP_data_channel_int8_encoder */
 
-}
 
-
-uint32_t TSP_data_channel_int16_encoder(void* v_int16,uint32_t dimension,  char* out_buf, uint32_t size)
-{
+uint32_t 
+TSP_data_channel_int16_encoder(void*    v_int16,
+			       uint32_t dimension,
+			       char*    out_buf,
+			       uint32_t size) {
   int16_t *pt_int16;
   uint32_t i;
-  int32_t*  temp = alloca(sizeof(int32_t)*dimension);
+  int32_t*  temp;
 
+  /* short circuit
+   * caller only want to get encoded size */
+  if (NULL==v_int16) {
+    return TSP_data_channel_int32_encoder(NULL,dimension,out_buf,size);
+  }
+
+  temp = alloca(sizeof(int32_t)*dimension);
   pt_int16=(int16_t*)v_int16;
 
   for (i=0;i<dimension;++i) {
@@ -190,10 +227,13 @@ uint32_t TSP_data_channel_int16_encoder(void* v_int16,uint32_t dimension,  char*
   }
 
   return  TSP_data_channel_int32_encoder(&temp[0],dimension,out_buf,size);
-}
+} /* end of TSP_data_channel_int16_encoder */
 
-uint32_t TSP_data_channel_int32_encoder(void* v_int32,uint32_t dimension,  char* out_buf, uint32_t size)
-{
+uint32_t 
+TSP_data_channel_int32_encoder(void*    v_int32,
+			       uint32_t dimension,
+			       char*    out_buf,
+			       uint32_t size) {
   int32_t *pt_int32;
   uint32_t i,taille;
 
@@ -203,9 +243,15 @@ uint32_t TSP_data_channel_int32_encoder(void* v_int32,uint32_t dimension,  char*
 
 #endif /*TSP_NO_XDR_ENCODE*/
 
-  taille= TSP_SIZEOF_ENCODED_INT32 * dimension;
-  if(size  < taille )
-  {
+  taille = TSP_SIZEOF_ENCODED_INT32 * dimension;
+
+  /* short circuit
+   * caller only want to get encoded size */
+  if (NULL==v_int32) {
+    return taille;
+  }
+
+  if (size  < taille) {
     STRACE_ERROR(("buffer is too small"));
     return 0;
   }
@@ -227,7 +273,6 @@ uint32_t TSP_data_channel_int32_encoder(void* v_int32,uint32_t dimension,  char*
   
   return xdr_getpos(&xhandle);
     
-
 #else
    
     for(i=0;i<dimension;++i)
@@ -239,10 +284,13 @@ uint32_t TSP_data_channel_int32_encoder(void* v_int32,uint32_t dimension,  char*
     return (uint32_t)(taille);
 
 #endif /*TSP_NO_XDR_ENCODE*/
-}
+} /* end of TSP_data_channel_int32_encoder */
 
 uint32_t 
-TSP_data_channel_int64_encoder(void* v_int64,uint32_t dimension,  char* out_buf, uint32_t size) {
+TSP_data_channel_int64_encoder(void*    v_int64,
+			       uint32_t dimension,
+			       char*    out_buf, 
+			       uint32_t size) {
   int64_t *pt_int64;
   uint32_t i,taille;
 
@@ -253,6 +301,13 @@ TSP_data_channel_int64_encoder(void* v_int64,uint32_t dimension,  char* out_buf,
 #endif /*TSP_NO_XDR_ENCODE*/
 
   taille= TSP_SIZEOF_ENCODED_INT64 * dimension;
+
+  /* short circuit
+   * caller only want to get encoded size */
+  if (NULL==v_int64) {
+    return taille;
+  }
+
   if (size  < taille ) {
      STRACE_ERROR(("buffer is too small"));
      return 0;
@@ -275,7 +330,6 @@ TSP_data_channel_int64_encoder(void* v_int64,uint32_t dimension,  char* out_buf,
   
   return xdr_getpos(&xhandle);
     
-
 #else
    
     for(i=0;i<dimension;++i)
@@ -287,15 +341,25 @@ TSP_data_channel_int64_encoder(void* v_int64,uint32_t dimension,  char* out_buf,
     return (uint32_t)(taille);
 
 #endif /*TSP_NO_XDR_ENCODE*/
-}
+} /* end of TSP_data_channel_int64_encoder */
 
-uint32_t TSP_data_channel_uint8_encoder(void* v_uint8,uint32_t dimension,  char* out_buf, uint32_t size)
-{
+uint32_t 
+TSP_data_channel_uint8_encoder(void*    v_uint8,
+			       uint32_t dimension,
+			       char*    out_buf,
+			       uint32_t size) {
 
-  uint8_t *pt_uint8;
-  uint32_t i;
-  uint32_t*  temp = alloca(sizeof(int32_t)*dimension);
+  uint8_t*   pt_uint8;
+  uint32_t   i;
+  uint32_t*  temp;
 
+  /* short circuit
+   * caller only want to get encoded size */
+  if (NULL==v_uint8) {
+    return TSP_data_channel_uint32_encoder(NULL,dimension,out_buf,size);
+  }
+
+  temp = alloca(sizeof(int32_t)*dimension);
   pt_uint8=(uint8_t*)v_uint8;
 
   for (i=0;i<dimension;++i) {
@@ -303,14 +367,24 @@ uint32_t TSP_data_channel_uint8_encoder(void* v_uint8,uint32_t dimension,  char*
   }
 
   return  TSP_data_channel_uint32_encoder(&temp[0],dimension,out_buf,size);
-}
+} /* end of TSP_data_channel_uint8_encoder */
 
-uint32_t TSP_data_channel_uint16_encoder(void* v_uint16,uint32_t dimension,  char* out_buf, uint32_t size)
-{
+uint32_t 
+TSP_data_channel_uint16_encoder(void*    v_uint16,
+				uint32_t dimension,
+				char*    out_buf,
+				uint32_t size) {
   uint16_t *pt_uint16;
   uint32_t i;
-  uint32_t*  temp = alloca(sizeof(int32_t)*dimension);
+  uint32_t*  temp;
 
+  /* short circuit
+   * caller only want to get encoded size */
+  if (NULL==v_uint16) {
+    return TSP_data_channel_uint32_encoder(NULL,dimension,out_buf,size);
+  }
+  
+  temp = alloca(sizeof(int32_t)*dimension);
   pt_uint16=(uint16_t*)v_uint16;
 
   for (i=0;i<dimension;++i) {
@@ -318,10 +392,13 @@ uint32_t TSP_data_channel_uint16_encoder(void* v_uint16,uint32_t dimension,  cha
   }
 
   return  TSP_data_channel_uint32_encoder(&temp[0],dimension,out_buf,size);
-}
+} /* end of TSP_data_channel_uint16_encoder */
 
-uint32_t TSP_data_channel_uint32_encoder(void* v_uint32,uint32_t dimension,  char* out_buf, uint32_t size)
-{
+uint32_t 
+TSP_data_channel_uint32_encoder(void*    v_uint32,
+				uint32_t dimension,
+				char*    out_buf,
+				uint32_t size) {
   uint32_t *pt_uint32;
   uint32_t i,taille;
 
@@ -332,8 +409,14 @@ uint32_t TSP_data_channel_uint32_encoder(void* v_uint32,uint32_t dimension,  cha
 #endif /*TSP_NO_XDR_ENCODE*/
 
   taille= TSP_SIZEOF_ENCODED_UINT32 * dimension;
-  if(size  < taille )
-  {
+
+  /* short circuit
+   * caller only want to get encoded size */
+  if (NULL == v_uint32) {
+    return taille;
+  }
+
+  if (size  < taille) {
     STRACE_ERROR(("buffer is too small"));
     return 0;
   }
@@ -367,10 +450,13 @@ uint32_t TSP_data_channel_uint32_encoder(void* v_uint32,uint32_t dimension,  cha
     return (uint32_t)(taille);
 
 #endif /*TSP_NO_XDR_ENCODE*/
-}
+} /* end of TSP_data_channel_uint32_encoder */
 
-uint32_t TSP_data_channel_uint64_encoder(void* v_uint64,uint32_t dimension,  char* out_buf, uint32_t size)
-{
+uint32_t 
+TSP_data_channel_uint64_encoder(void*    v_uint64,
+				uint32_t dimension,
+				char*    out_buf,
+				uint32_t size) {
 
   uint64_t *pt_uint64;
   uint32_t i,taille;
@@ -382,8 +468,14 @@ uint32_t TSP_data_channel_uint64_encoder(void* v_uint64,uint32_t dimension,  cha
 #endif /*TSP_NO_XDR_ENCODE*/
 
   taille= TSP_SIZEOF_ENCODED_UINT64 * dimension;
-  if(size  < taille )
-  {
+
+  /* short circuit
+   * caller only want to get encoded size */
+  if (NULL == v_uint64) {
+    return taille;
+  }
+
+  if (size  < taille) {
     STRACE_ERROR(("buffer is too small"));
     return 0;
   }
@@ -420,12 +512,22 @@ uint32_t TSP_data_channel_uint64_encoder(void* v_uint64,uint32_t dimension,  cha
 
 }
 
-uint32_t TSP_data_channel_char_encoder(void* v_char,uint32_t dimension,  char* out_buf, uint32_t size)
-{
+uint32_t 
+TSP_data_channel_char_encoder(void*    v_char,
+			      uint32_t dimension,
+			      char*    out_buf,
+			      uint32_t size) {
   uint8_t *pt_char;
   uint32_t i;
-  uint32_t*  temp = alloca(sizeof(int32_t)*dimension);
+  uint32_t*  temp;
 
+  /* short circuit
+   * caller only want to get encoded size */
+  if (NULL == v_char) {
+    return TSP_data_channel_uint32_encoder(NULL,dimension,out_buf,size);
+  }
+
+  temp = alloca(sizeof(int32_t)*dimension);
   pt_char=(uint8_t*)v_char;
 
   for (i=0;i<dimension;++i) {
@@ -433,15 +535,25 @@ uint32_t TSP_data_channel_char_encoder(void* v_char,uint32_t dimension,  char* o
   }
 
   return  TSP_data_channel_uint32_encoder(&temp[0],dimension,out_buf,size);
-}
+} /* end of TSP_data_channel_char_encoder */
 
-uint32_t TSP_data_channel_uchar_encoder(void* v_uchar,uint32_t dimension,  char* out_buf, uint32_t size)
-{
+uint32_t
+TSP_data_channel_uchar_encoder(void*    v_uchar,
+			       uint32_t dimension,
+			       char*    out_buf,
+			       uint32_t size) {
 
   uint8_t  *pt_uchar;
   uint32_t  i;
-  uint32_t*  temp = alloca(sizeof(int32_t)*dimension);
+  uint32_t* temp;
+  
+  /* short circuit
+   * caller only want to get encoded size */
+  if (NULL == v_uchar) {
+    return TSP_data_channel_uint32_encoder(NULL,dimension,out_buf,size);
+  }
 
+  temp = alloca(sizeof(int32_t)*dimension);
   pt_uchar=(uint8_t*)v_uchar;
 
   for (i=0;i<dimension;++i) {
@@ -449,15 +561,25 @@ uint32_t TSP_data_channel_uchar_encoder(void* v_uchar,uint32_t dimension,  char*
   }
 
   return  TSP_data_channel_uint32_encoder(&temp[0],dimension,out_buf,size);
-}
+} /* end of TSP_data_channel_uchar_encoder */
 
-uint32_t TSP_data_channel_user_encoder(void* v_user,uint32_t dimension,  char* out_buf, uint32_t size)
-{
+uint32_t 
+TSP_data_channel_user_encoder(void*    v_user,
+			      uint32_t dimension,
+			      char*    out_buf,
+			      uint32_t size) {
 
   uint8_t *pt_user;
   uint32_t  i;
-  uint32_t*  temp = alloca(sizeof(int32_t)*dimension);
+  uint32_t*  temp;
 
+  /* short circuit
+   * caller only want to get encoded size */
+  if (NULL == v_user) {
+    return TSP_data_channel_uint32_encoder(NULL,dimension,out_buf,size);
+  }
+
+  temp = alloca(sizeof(int32_t)*dimension);
   pt_user=(uint8_t*)v_user;
 
   for (i=0;i<dimension;++i) {
@@ -465,7 +587,7 @@ uint32_t TSP_data_channel_user_encoder(void* v_user,uint32_t dimension,  char* o
   }
 
   return  TSP_data_channel_uint32_encoder(&temp[0],dimension,out_buf,size);
-}
+} /* end of TSP_data_channel_uint32_encoder */
 
 const char* 
 TSP_data_channel_get_encoder_method() {

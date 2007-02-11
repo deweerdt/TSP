@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_group_algo_data.h,v 1.7 2006-04-12 06:56:03 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_group_algo_data.h,v 1.8 2007-02-11 21:45:56 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -59,7 +59,7 @@ typedef struct TSP_algo_group_item_t TSP_algo_group_item_t;
 struct TSP_algo_group_t
 {
   int group_len;
-    
+  uint32_t group_byte_size;
   TSP_algo_group_item_t* items;
     
 };
@@ -74,7 +74,8 @@ struct TSP_algo_table_t
     
   TSP_algo_group_t* groups;
 
-  int max_group_len;
+  int       max_group_len;
+  uint32_t  group_max_byte_size;
 
   TSP_algo_group_item_t* all_items;
     

@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_group_algo.h,v 1.10 2006-05-03 21:16:38 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_group_algo.h,v 1.11 2007-02-11 21:45:56 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -40,21 +40,20 @@ and use symbols groups
 #define _TSP_GROUP_ALGO_H
 
 #include <tsp_prjcfg.h>
-
 #include <tsp_datastruct.h>
 #include <tsp_datapool.h>
 
 typedef  void* TSP_groups_t;
 
 /**
-* Create the groups table for  a given symbol list 
-* @param symbols The required symbol list
-* @param out_symbols The required symbol list with information added (group id ...)
-* @param out_groups The computed group table
-* @param datapool The associated datapool used to link the datapool suymbols address
-* to the value in the group table
-* @return TRUE=OK
-*/
+ * Create the groups table for  a given symbol list 
+ * @param symbols The required symbol list
+ * @param out_symbols The required symbol list with information added (group id ...)
+ * @param out_groups The computed group table
+ * @param datapool The associated datapool used to link the datapool suymbols address
+ * to the value in the group table
+ * @return TRUE=OK
+ */
 int TSP_group_algo_create_symbols_table(const TSP_sample_symbol_info_list_t* symbols,
 					TSP_sample_symbol_info_list_t* out_symbols,
 					TSP_groups_t* out_groups,
@@ -66,15 +65,15 @@ int TSP_group_algo_create_symbols_table(const TSP_sample_symbol_info_list_t* sym
 void TSP_group_algo_destroy_symbols_table(TSP_groups_t* groups);
 
 /**
-* Get the total number of computed groups
-* @return Groups number
-*/                                       
+ * Get the total number of computed groups
+ * @return Groups number
+ */                                       
 int TSP_group_algo_get_group_number(TSP_groups_t* groups);
 
 /**
-* Get the biggest group size of all computed groups
-* @return Biggest group size
-*/                                       
-int TSP_group_algo_get_biggest_group_size(TSP_groups_t* groups);
+ * Get the biggest group size of all computed groups
+ * @return Biggest group size
+ */                                       
+uint32_t TSP_group_algo_get_biggest_group_size(TSP_groups_t* groups);
                                        
 #endif /* _TSP_GROUP_ALGO_H */

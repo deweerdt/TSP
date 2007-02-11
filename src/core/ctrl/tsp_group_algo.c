@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_group_algo.c,v 1.22 2006-10-18 09:58:48 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_group_algo.c,v 1.23 2007-02-11 21:45:56 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -81,10 +81,10 @@ number group_number */
 /*-----------------------------------------------*/
 
 /**
-* Get the total number of groups.
-* @param symbols list of symbols on which the number of groups must be calculated
-* @return Total Number of groups for the list
-*/
+ * Get the total number of groups.
+ * @param symbols list of symbols on which the number of groups must be calculated
+ * @return Total Number of groups for the list
+ */
 int TSP_group_algo_get_nb_groups(const TSP_sample_symbol_info_list_t* symbols)
 {
 	
@@ -124,20 +124,23 @@ int TSP_group_algo_get_nb_groups(const TSP_sample_symbol_info_list_t* symbols)
 }
 
 /**
-* Get the size of a given group.
-* @symbols list of symbols on which the group size must be calculated
-* @group_id Id of the group that must be processed
-* @return Number of symbols in the group group_id;
-*/
+ * Get the size of a given group.
+ * @symbols list of symbols on which the group size must be calculated
+ * @group_id Id of the group that must be processed
+ * @return Number of symbols in the group group_id;
+ */
 static int 
 TSP_group_algo_get_group_size(const TSP_sample_symbol_info_list_t* symbols, 
-			      int group_id) {
+			      int group_id, uint32_t* group_byte_size) {
     
   int group_size = 0;
   uint32_t nb_symbols = symbols->TSP_sample_symbol_info_list_t_len;
   uint32_t i;
 
   assert(symbols);
+  assert(group_byte_size);
+
+  *group_byte_size = 0;
     
   /* We search all symbols that belong to the group group_number*/
   for( i = 0 ; i < nb_symbols ; i++ ) {
@@ -147,6 +150,7 @@ TSP_group_algo_get_group_size(const TSP_sample_symbol_info_list_t* symbols,
       if(BELONGS_TO_GROUP(frequency_ratio, phase , group_id) ) {
 	/*Yes ! */
 	group_size++;
+	*group_byte_size +=  TSP_data_channel_get_encoded_size(symbols->TSP_sample_symbol_info_list_t_val[i].type)*symbols->TSP_sample_symbol_info_list_t_val[i].nelem;
       }      
     }
     
@@ -166,12 +170,13 @@ TSP_group_algo_get_groups_summed_size(const TSP_sample_symbol_info_list_t* symbo
     
   int groups_summed_size = 0;
   int group_id;
+  uint32_t group_byte_size = 0;
 
   assert(symbols);
     
   /* For all groups, get the size and sum the result */
   for( group_id = 0 ; group_id < nb_groups ; group_id++ ) {    
-    groups_summed_size += TSP_group_algo_get_group_size(symbols, group_id); 
+    groups_summed_size += TSP_group_algo_get_group_size(symbols, group_id,&group_byte_size); 
   }
     
   STRACE_INFO(("Groups_summed_size is %d", groups_summed_size));
@@ -184,7 +189,7 @@ TSP_group_algo_get_groups_summed_size(const TSP_sample_symbol_info_list_t* symbo
  * Allocate the group table.
  * This function initialize several size informations located in the structures
  * @symbols list of symbols on which the group table must be calculated
- * @return The allocated table of groups
+ * @return The allocated table of groups, NULL on error.
  */
 static TSP_algo_table_t*
 TSP_group_algo_allocate_group_table(const TSP_sample_symbol_info_list_t* symbols)
@@ -192,7 +197,7 @@ TSP_group_algo_allocate_group_table(const TSP_sample_symbol_info_list_t* symbols
     
   int group_id;
     
-  TSP_algo_table_t* table = NULL;
+  TSP_algo_table_t*      table       = NULL;
   TSP_algo_group_item_t* items_table = NULL;
     
   assert(symbols);
@@ -203,43 +208,54 @@ TSP_group_algo_allocate_group_table(const TSP_sample_symbol_info_list_t* symbols
   /* Get total number of groups */
   table->table_len = TSP_group_algo_get_nb_groups(symbols);
 
-  /*Allocate room for all groups */
+  /* Allocate room for all groups */
   table->groups = (TSP_algo_group_t*)calloc(table->table_len, sizeof(TSP_algo_group_t));
   TSP_CHECK_ALLOC(table->groups, NULL);
     
-  /*Allocate room for all group items*/
+  /* 
+   * Allocate room for all group items 
+   * Note that a group item correspond to a requested symbol
+   * which means each item in a group may not have the same SIZE (in byte)
+   * nevertheless the "group size" is its number of item not
+   * its "byte" size.
+   */
   table->groups_summed_size = TSP_group_algo_get_groups_summed_size(symbols, table->table_len);
   items_table = (TSP_algo_group_item_t*)calloc(table->groups_summed_size, sizeof(TSP_algo_group_item_t));
   table->all_items = items_table;
   TSP_CHECK_ALLOC(items_table, NULL);
         
-  /*Initialize groups items*/
+  /* Initialize groups items */
   /* And make them point at the right place in the item list */
   for(group_id = 0 ;
       group_id < table->table_len ;
-      group_id++)
-    {
+      group_id++) {
             
       /* Get size of group i */
       table->groups[group_id].group_len = TSP_group_algo_get_group_size(symbols,
-                                                                        group_id);
+                                                                        group_id,
+									&(table->groups[group_id].group_byte_size));
       /* Correct items pointer */
       table->groups[group_id].items = items_table;
 
-      /* Memorise max group len */
-      if (table->max_group_len <  table->groups[group_id].group_len)
-	{
-	  table->max_group_len = table->groups[group_id].group_len;
-	}
+      /* Memorize max group len */
+      if (table->max_group_len <  table->groups[group_id].group_len) {
+	table->max_group_len = table->groups[group_id].group_len;
+      }
+
+      /* Same with byte size */
+      if (table->group_max_byte_size < table->groups[group_id].group_byte_size) {
+	table->group_max_byte_size = table->groups[group_id].group_byte_size;
+      }
                      
       /* Get ready for next round ! */        
       items_table += table->groups[group_id].group_len;
 
     }
-      
-  STRACE_INFO(("Max group size = %d", table->max_group_len));
+
+  STRACE_INFO(("Max group size      = %d", table->max_group_len));  
+  STRACE_INFO(("Group max byte size = %d", table->group_max_byte_size));
   return table;
-}
+} /* TSP_group_algo_allocate_group_table */
                                                              
 void 
 TSP_group_algo_destroy_symbols_table(TSP_groups_t* groups) {
@@ -261,82 +277,81 @@ TSP_group_algo_create_symbols_table(const TSP_sample_symbol_info_list_t* in_symb
   
   TSP_algo_table_t* table;
     
-  int rank; /* rank in a group */
-  int group_id; /* id for a group */
+  int rank;     /* rank in a group */
+  int group_id; /* id for a group  */
     
-  /* total number of in symbols*/
+  /* Total number of IN symbols 
+   * (should be requested from incoming request_sample) 
+   */
   uint32_t nb_symbols = in_symbols->TSP_sample_symbol_info_list_t_len;
     
   uint32_t out_current_info, in_current_info;
   TSP_sample_symbol_info_t* in_info;
   TSP_sample_symbol_info_t* out_info;
     
+  /* Allocate group table from requested symbols */
   table = TSP_group_algo_allocate_group_table(in_symbols);
   *out_groups = table;
-    
-  if (NULL!=table) {
-    /* Allocate memory for the out_symbols */
-    out_symbols->TSP_sample_symbol_info_list_t_len = table->groups_summed_size;
-    out_symbols->TSP_sample_symbol_info_list_t_val = 
-      (TSP_sample_symbol_info_t*)calloc(table->groups_summed_size, sizeof(TSP_sample_symbol_info_t));
-    TSP_CHECK_ALLOC(out_symbols->TSP_sample_symbol_info_list_t_val, FALSE);
-    
-    /* For each group...*/
-    for( out_current_info = 0, group_id = 0 ; 
-	 group_id < table->table_len ; 
-	 group_id++) {
-	
-	/* For each symbol, does it belong to the group ? */
-	/* Start at first rank */
-	for(rank = 0, in_current_info = 0 ; 
-	    in_current_info < nb_symbols ; 
-	    in_current_info++) {
 
-	    out_info = &(out_symbols->TSP_sample_symbol_info_list_t_val[out_current_info]);
-	    in_info = &(in_symbols->TSP_sample_symbol_info_list_t_val[in_current_info]);
-	                
-	    /* Does - it belong to the group */
-	    if (BELONGS_TO_GROUP(in_info->period, in_info->phase , group_id) ) {		
-		/*Yes, we add it*/
-		STRACE_DEBUG(("Adding provider_global_index %d at group %d and rank %d",in_info->provider_global_index,group_id,rank));
-		/* 1 - In the out group table */
-		
-		/* find the encoder of the data type */
-		table->groups[group_id].items[rank].data_encoder = TSP_data_channel_get_encoder(in_info->type);
-		table->groups[group_id].items[rank].dimension    = in_info->dimension;
-		table->groups[group_id].items[rank].offset       = in_info->offset;
-		table->groups[group_id].items[rank].nelem        = in_info->nelem;
-		
-		/*complete les infos)*/
-        /* cast en int32_t pour Windows : WIN32 */
-		table->groups[group_id].items[rank].data = 
-		  (int32_t)TSP_datapool_get_symbol_value(datapool, in_info->provider_global_index)
-		  + in_info->offset * TSP_data_channel_get_encoded_size(in_info->type);
-		  
-		  /* 2 - In the out symbol table */
-		  
-		  (*out_info) = (*in_info);
-                    
-		  out_info->name = strdup(in_info->name);
-		  TSP_CHECK_ALLOC(out_info->name, FALSE);
-                    
-		  out_info->provider_group_index = group_id;
-		  out_info->provider_group_rank = rank;
-                    
-		  /* inc */
-		  rank++;
-		  out_current_info++;
-                    
-		  /* Some optimization  : the group might be full*/
-		  if(rank == table->groups[group_id].group_len) break;
-                }
-                
-            }
-        }
+  /* Short circuit if allocation failed */
+  TSP_CHECK_POINTER(table,TSP_STATUS_ERROR_MEMORY_ALLOCATION,"Unable to allocate group table");
+    
+  /* Allocate memory for the out_symbols */
+  out_symbols->TSP_sample_symbol_info_list_t_len = table->groups_summed_size;
+  out_symbols->TSP_sample_symbol_info_list_t_val = 
+    (TSP_sample_symbol_info_t*)calloc(table->groups_summed_size, sizeof(TSP_sample_symbol_info_t));
+  TSP_CHECK_ALLOC(out_symbols->TSP_sample_symbol_info_list_t_val, TSP_STATUS_ERROR_MEMORY_ALLOCATION);
+  
+  /* For each group...*/
+  for( out_current_info = 0, group_id = 0 ; 
+       group_id < table->table_len ; 
+       group_id++) {
+    
+    /* For each symbol, does it belong to the group ? */
+    /* Start at first rank */
+    for(rank = 0, in_current_info = 0 ; 
+	in_current_info < nb_symbols ; 
+	in_current_info++) {
+      
+      out_info = &(out_symbols->TSP_sample_symbol_info_list_t_val[out_current_info]);
+      in_info = &(in_symbols->TSP_sample_symbol_info_list_t_val[in_current_info]);
+      
+      /* Does - it belong to the group */
+      if (BELONGS_TO_GROUP(in_info->period, in_info->phase , group_id) ) {		
+	/*Yes, we add it*/
+	STRACE_DEBUG(("Adding provider_global_index %d at group %d and rank %d",in_info->provider_global_index,group_id,rank));
+	/* 1 - In the out group table */
+	
+	/* find the encoder of the data type */
+	table->groups[group_id].items[rank].data_encoder = TSP_data_channel_get_encoder(in_info->type);
+	table->groups[group_id].items[rank].dimension    = in_info->dimension;
+	table->groups[group_id].items[rank].offset       = in_info->offset;
+	table->groups[group_id].items[rank].nelem        = in_info->nelem;
+	
+	/* complete les infos */
+        /* cast en int32_t pour Windows : WIN32 ?FIXME erk: pourquoi? */
+	table->groups[group_id].items[rank].data = 
+	  (int32_t)TSP_datapool_get_symbol_value(datapool, in_info->provider_global_index)
+	  + in_info->offset * TSP_data_channel_get_encoded_size(in_info->type);
+	
+	/* 2 - In the out symbol table */
+	
+	(*out_info) = (*in_info);
+        
+	out_info->name = strdup(in_info->name);
+	TSP_CHECK_ALLOC(out_info->name, TSP_STATUS_ERROR_MEMORY_ALLOCATION);
+        
+	out_info->provider_group_index = group_id;
+	out_info->provider_group_rank  = rank;
+        
+	/* inc */
+	rank++;
+	out_current_info++;
+        
+	/* Some optimization  : the group might be full*/
+	if(rank == table->groups[group_id].group_len) break;
+      }      
     }
-  else {
-    STRACE_ERROR(("Unable to allocate group table"));
-    return TSP_STATUS_ERROR_MEMORY_ALLOCATION;
   }
     
   return TSP_STATUS_OK;
@@ -350,13 +365,12 @@ TSP_group_algo_get_group_number(TSP_groups_t* groups) {
   return group_table->table_len;
 }
 
-int 
+uint32_t 
 TSP_group_algo_get_biggest_group_size(TSP_groups_t* groups) {
     
   TSP_algo_table_t* group_table = (TSP_algo_table_t*)groups;
-    
+  int i;
   assert(groups);
-    
-  return group_table->max_group_len;
 
+  return group_table->group_max_byte_size;
 }

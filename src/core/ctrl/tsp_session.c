@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.c,v 1.35 2006-10-21 08:48:00 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.c,v 1.36 2007-02-11 21:45:56 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -200,16 +200,16 @@ TSP_session_init() {
       memset(X_session_t, 0, TSP_MAX_CLIENT_NUMBER*sizeof(TSP_session_t));
       X_initialized = TRUE;
     }
-}
+} /* end of TSP_session_init */
 
-GLU_handle_t* TSP_session_get_GLU_by_channel(channel_id_t channel_id) {
+GLU_handle_t* 
+TSP_session_get_GLU_by_channel(channel_id_t channel_id) {
   TSP_session_t* session = NULL;
   TSP_LOCK_MUTEX(&X_session_list_mutex,NULL);
-  /* TSP_session_t* session; */
   TSP_GET_SESSION(session,channel_id,NULL);  
   TSP_UNLOCK_MUTEX(&X_session_list_mutex,NULL);
   return session->session_data->glu_h;
-}
+} /* end of TSP_session_get_GLU_by_channel */
 
 void 
 TSP_session_close_session_by_channel(channel_id_t channel_id) {
@@ -242,14 +242,11 @@ int
 TSP_session_get_nb_session() {
   int client_number;
 
-  TSP_LOCK_MUTEX(&X_session_list_mutex,-1);
-  
-  client_number = X_session_nb;
-  
+  TSP_LOCK_MUTEX(&X_session_list_mutex,-1);  
+  client_number = X_session_nb;  
   TSP_UNLOCK_MUTEX(&X_session_list_mutex,-1);
-
   return client_number;
-}
+} /* end of TSP_session_get_nb_session */
 
 int32_t
 TSP_add_session(channel_id_t* new_channel_id, GLU_handle_t* glu_h) {
@@ -317,12 +314,10 @@ TSP_session_destroy_symbols_table_by_channel(channel_id_t channel_id) {
    
   TSP_LOCK_MUTEX(&X_session_list_mutex,);    
   TSP_GET_SESSION(session, channel_id,); 
-
   TSP_session_destroy_symbols_table(session);  
-
   TSP_UNLOCK_MUTEX(&X_session_list_mutex,);
 
-}
+} /* TSP_session_destroy_symbols_table_by_channel */
 
 
 int32_t 
@@ -330,8 +325,8 @@ TSP_session_create_symbols_table_by_channel(const TSP_request_sample_t* req_samp
 					    TSP_answer_sample_t* ans_sample)
 
 {
-  int retcode = TSP_STATUS_ERROR_NO_MORE_SESSION;
-  TSP_session_t* session = 0;
+  int             retcode         = TSP_STATUS_ERROR_NO_MORE_SESSION;
+  TSP_session_t*  session         = 0;
   TSP_datapool_t* target_datapool = NULL;    
 
   TSP_LOCK_MUTEX(&X_session_list_mutex,FALSE);
@@ -358,7 +353,6 @@ TSP_session_create_symbols_table_by_channel(const TSP_request_sample_t* req_samp
   if(TSP_STATUS_OK==retcode) {
     ans_sample->provider_group_number = 
       TSP_group_algo_get_group_number(session->session_data->groups);
-    retcode = TSP_STATUS_OK;
   }
   else {
     STRACE_ERROR(("Function TSP_group_algo_create_symbols_table failed"));    
@@ -562,7 +556,7 @@ TSP_session_create_data_sender_by_channel(channel_id_t channel_id) {
     if ( base_frequency > 0.0 ) {
       ringbuf_size = TSP_STREAM_SENDER_RINGBUF_SIZE * base_frequency;
       
-      STRACE_DEBUG(("Stream sender ringbuf size will be : %d items (i.e. %d secondes)",
+      STRACE_DEBUG(("Stream sender ringbuf size will be : %d items (i.e. %d seconds)",
 		    ringbuf_size,
 		    TSP_STREAM_SENDER_RINGBUF_SIZE));
     }
@@ -576,7 +570,11 @@ TSP_session_create_data_sender_by_channel(channel_id_t channel_id) {
   /* Create data sender */
   /*--------------------*/
   if (TSP_STATUS_OK==retcode) {
-    int max_group_size = TSP_group_algo_get_biggest_group_size(session->session_data->groups);
+    uint32_t max_group_size = TSP_group_algo_get_biggest_group_size(session->session_data->groups);
+    STRACE_DEBUG(("Channel Id <%d> has Max TSP Group Size <%d> byte(s)",
+		  channel_id,max_group_size));
+    STRACE_DEBUG(("Using RINBUF size of <%d> byte(s)",
+		  ringbuf_size));
     session->session_data->sender = TSP_data_sender_create(ringbuf_size, max_group_size);      
     if(NULL != session->session_data->sender) {
       /* If there's no fifo, 

@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_data_sender.h,v 1.10 2006-03-31 12:55:19 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_data_sender.h,v 1.11 2007-02-11 21:45:56 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -71,10 +71,10 @@ int TSP_data_sender_send_msg_ctrl(TSP_data_sender_t _sender, TSP_msg_ctrl_t msg_
  * Create a data sender.
  * @param fifo_size If fifo_size > 0, a ringbuffer will be created with a fifo_size
  * depth, to send the data
- * @param max_group_size Size of the bigger group (used to calculate the buffer size )
+ * @param group_max_byte_size Size of the bigger group in byte (used to calculate the buffer size )
  * @return The created data sender handle
  */
-TSP_data_sender_t TSP_data_sender_create(int fifo_size, int max_group_size);
+TSP_data_sender_t TSP_data_sender_create(int fifo_size, uint32_t group_max_byte_size);
 
 /**
  * Stop a data sender.

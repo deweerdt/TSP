@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_data_sender.c,v 1.26 2006-10-18 09:58:48 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_data_sender.c,v 1.27 2007-02-11 21:45:56 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -79,17 +79,18 @@ typedef struct TSP_struct_data_sender_t TSP_struct_data_sender_t;
 
 
 TSP_data_sender_t 
-TSP_data_sender_create(int fifo_size, int max_group_size) {
+TSP_data_sender_create(int fifo_size, uint32_t group_max_byte_size) {
   
   TSP_struct_data_sender_t* sender;
   
   sender = (TSP_struct_data_sender_t*)calloc(1, sizeof(TSP_struct_data_sender_t));
-  TSP_CHECK_ALLOC(sender, 0);
+  TSP_CHECK_ALLOC(sender, NULL);
 
   /* init */
-  sender->fifo_full = FALSE;
-  sender->buffer_size = TSP_DATA_STREAM_MAX_BUFFER_SIZE(max_group_size);
+  sender->fifo_full   = FALSE;
+  sender->buffer_size = TSP_DATA_STREAM_MAX_BUFFER_SIZE(group_max_byte_size);
 
+  STRACE_DEBUG(("Data Sender buffer size is: <%d> byte(s)",sender->buffer_size));
   /* Create the sender stream with its fifo size*/
   sender->stream_sender = (TSP_data_sender_t)TSP_stream_sender_create(fifo_size, sender->buffer_size);
   if (sender->stream_sender) {      
@@ -98,7 +99,7 @@ TSP_data_sender_create(int fifo_size, int max_group_size) {
     if (sender->use_fifo) {
       sender->out_item = 0;
       sender->out_fifo = TSP_stream_sender_get_ringbuf(sender->stream_sender);
-      assert( sender->out_fifo);
+      assert(sender->out_fifo);
     }
     else {
       sender->out_fifo = 0;
@@ -109,7 +110,7 @@ TSP_data_sender_create(int fifo_size, int max_group_size) {
   else {
     STRACE_ERROR(("Function TSP_stream_sender_create failed"));
     free(sender);
-    sender = 0;
+    sender = NULL;
   }
   return sender;
 } /* end of TSP_data_sender_create */
@@ -289,13 +290,23 @@ TSP_data_sender_send(TSP_data_sender_t _sender, TSP_groups_t _groups, time_stamp
   int size;
   TSP_stream_sender_item_t* tosend;
 
+  /* 
+   * Time stamp is the TSP time stamp 
+   * cycle counter
+   * so that the TSP group index 
+   * whose data is to be sent at this "times_tamp"  
+   * only depends on the current time stamp.
+   */
   group_index = time_stamp % groups_table->table_len;
-  group = &(groups_table->groups[group_index]);
+  group       = &(groups_table->groups[group_index]);
 
   /* get out buffer if it is available */
   tosend = TSP_data_sender_get_out_item(data_sender);
     
-  /* If it is not available, try net time */
+  /* 
+   * If it is not available, try next time 
+   * FIXME erk: why? could we just skip a cycle?
+   */
 
   /* FIXME : uses packet format as described in the protocol spec */
   if (tosend) {
