@@ -13,7 +13,7 @@ INCLUDE(TSPCMakeTools)
 # We do not accept InSource build anymore
 STRING(COMPARE EQUAL "${CMAKE_SOURCE_DIR}" "${CMAKE_BINARY_DIR}" insource)
 IF(insource)
-  MESSAGE(FATAL_ERROR "InSource Build is forbidden for TSP")
+  MESSAGE(FATAL_ERROR "InSource Build is forbidden for ${PROJECT_NAME}")
 ENDIF(insource)
 
 
@@ -507,33 +507,8 @@ IF(WIN32)
 ENDIF(WIN32)
 
 INCLUDE(CPack)
-
-# Temporary RPM Target waiting for CPack support
-IF (UNIX)
-
-  SET(RPM_ROOTDIR ${CMAKE_BINARY_DIR}/RPM)
-  FILE(MAKE_DIRECTORY ${RPM_ROOTDIR})
-  FILE(MAKE_DIRECTORY ${RPM_ROOTDIR}/tmp)
-  FILE(MAKE_DIRECTORY ${RPM_ROOTDIR}/BUILD)
-  FILE(MAKE_DIRECTORY ${RPM_ROOTDIR}/RPMS)
-  FILE(MAKE_DIRECTORY ${RPM_ROOTDIR}/SOURCES)
-  FILE(MAKE_DIRECTORY ${RPM_ROOTDIR}/SPECS)
-  FILE(MAKE_DIRECTORY ${RPM_ROOTDIR}/SRPMS)
-  
-  ADD_CUSTOM_TARGET(srpm
-    COMMAND ${CMAKE_MAKE_PROGRAM} package_source
-    COMMAND ${CMAKE_COMMAND} -E copy ${CPACK_SOURCE_PACKAGE_FILE_NAME}.tar.gz ${RPM_ROOTDIR}/SOURCES    
-    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/src/scripts/tsp.spec ${RPM_ROOTDIR}/SPECS
-    COMMAND rpmbuild -bs --define=\"_topdir ${RPM_ROOTDIR}\" --buildroot=${RPM_ROOTDIR}/tmp ${CMAKE_BINARY_DIR}/src/scripts/tsp.spec
-    )
-  
-  ADD_CUSTOM_TARGET(rpm
-    COMMAND ${CMAKE_MAKE_PROGRAM} package_source
-    COMMAND ${CMAKE_COMMAND} -E copy ${CPACK_SOURCE_PACKAGE_FILE_NAME}.tar.gz ${RPM_ROOTDIR}/SOURCES    
-    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/src/scripts/tsp.spec ${RPM_ROOTDIR}/SPECS
-    COMMAND rpmbuild -bb --define=\"_topdir ${RPM_ROOTDIR}\" --buildroot=${RPM_ROOTDIR}/tmp ${CMAKE_BINARY_DIR}/src/scripts/tsp.spec
-    )  
-ENDIF (UNIX)
+INCLUDE(UseRPMTools)
+RPMTools_ADD_RPM_TARGETS(tsp ${CMAKE_BINARY_DIR}/src/scripts/tsp.spec)
 
 MESSAGE(STATUS "Configuring ${PACKAGE_NAME} version ${PACKAGE_VERSION}...Done.")
 
