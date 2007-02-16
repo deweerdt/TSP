@@ -508,7 +508,9 @@ ENDIF(WIN32)
 
 INCLUDE(CPack)
 INCLUDE(UseRPMTools)
-RPMTools_ADD_RPM_TARGETS(tsp ${CMAKE_BINARY_DIR}/src/scripts/tsp.spec)
+IF(RPMTools_FOUND)
+	RPMTools_ADD_RPM_TARGETS(tsp ${CMAKE_BINARY_DIR}/src/scripts/tsp.spec)
+ENDIF(RPMTools_FOUND)
 
 MESSAGE(STATUS "Configuring ${PACKAGE_NAME} version ${PACKAGE_VERSION}...Done.")
 
