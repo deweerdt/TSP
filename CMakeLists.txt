@@ -1,6 +1,6 @@
 PROJECT(TSP C)
 
-CMAKE_MINIMUM_REQUIRED(VERSION 2.4)
+CMAKE_MINIMUM_REQUIRED(VERSION 2.4.4)
 
 # May be used to print extensive system informations
 #INCLUDE(CMakePrintSystemInformation)
