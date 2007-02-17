@@ -376,11 +376,6 @@ TSP_CONFIGURE_FILE_AUTOTOOLS_COMPAT(
   ${CMAKE_BINARY_DIR}/src/scripts/tsp.profile.csh
   @ONLY)
 
-TSP_CONFIGURE_FILE_AUTOTOOLS_COMPAT(
-  src/scripts/tsp.spec.in
-  ${CMAKE_BINARY_DIR}/src/scripts/tsp.spec
-  @ONLY)
-
 INSTALL(
   FILES 
   ${CMAKE_BINARY_DIR}/src/scripts/tsp.pc 
@@ -510,7 +505,7 @@ ENDIF(WIN32)
 INCLUDE(CPack)
 INCLUDE(UseRPMTools)
 IF(RPMTools_FOUND)
-	RPMTools_ADD_RPM_TARGETS(tsp ${CMAKE_BINARY_DIR}/src/scripts/tsp.spec)
+  RPMTools_ADD_RPM_TARGETS(tsp ${CMAKE_SOURCE_DIR}/src/scripts/tsp.spec.in)
 ENDIF(RPMTools_FOUND)
 
 MESSAGE(STATUS "Configuring ${PACKAGE_NAME} version ${PACKAGE_VERSION}...Done.")
