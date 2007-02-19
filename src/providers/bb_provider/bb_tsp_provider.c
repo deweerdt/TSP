@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/providers/bb_provider/bb_tsp_provider.c,v 1.29 2006-04-25 21:10:21 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/providers/bb_provider/bb_tsp_provider.c,v 1.30 2007-02-19 15:51:03 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -120,258 +120,268 @@ static GLU_handle_t* bbGLU = NULL;
 int 
 BB_GLU_init(GLU_handle_t* this, int fallback_argc, char* fallback_argv[]) {
 
-  int retcode;
-  int i;
-  int j;
-  int i_temp;
-  int pgi;
-  int32_t indexStackCartesianSize; 
-  char* tempName;
+	int retcode;
+	int i;
+	int j;
+	int i_temp;
+	int pgi;
+	int32_t indexStackCartesianSize; 
+	char* tempName;
 
-  int32_t          aliasstack_size = MAX_ALIAS_LEVEL;
-  S_BB_DATADESC_T  aliasstack[MAX_ALIAS_LEVEL];
-  int32_t indexstack[MAX_ALIAS_LEVEL];
-  int32_t indexstack_len;    
+	int32_t          aliasstack_size = MAX_ALIAS_LEVEL;
+	S_BB_DATADESC_T  aliasstack[MAX_ALIAS_LEVEL];
+	int32_t indexstack[MAX_ALIAS_LEVEL];
+	int32_t indexstack_len;    
 
-  retcode = TRUE;
-  /* We don't need fallback for now */
-  /* 
-   * !!! We need to attach to BB iff
-   * !!! we are in a separate process
-   */
-  if (bb_attach(&the_bb,the_bbname) != BB_OK) {
-    bb_logMsg(BB_LOG_SEVERE,
-	      "bb_tsp_provider::GLU_init","Cannot attach to BlackBoard <%s>!!",
-	      the_bbname);
-    retcode = FALSE;
-    return retcode;
-  } 
-  
-  /* 
-   * Get direct blackboard access in order to 
-   * to build symbol list more easily
-   */
-  if (TRUE == retcode) {
-    /* Allocate shadow blackboard */
-    shadow_bb = malloc(bb_get_mem_size(the_bb));
-    if (NULL == shadow_bb) {
-      retcode = FALSE;
-    }
-  }
-  if (TRUE == retcode) {
-    /* Shadow BBPE */
-    if (BB_NOK == bb_shadow_get(shadow_bb, the_bb)) {
-      retcode = FALSE;
-    }  
-  }
-  if (TRUE == retcode) {
-    /* Initial update */
-    if (BB_NOK ==  bb_shadow_update_data(shadow_bb,the_bb)) {
-      retcode = FALSE;
-    } 
-  }
-
-  /* Build symbols list */
-  /* 
-   * We should compute the number Blackboard
-   * item which may be distributed using TSP.
-   * In fact every type but not USER type.
-   */
-  nbTspSymbols = 0;
-  for (i=0;i<bb_get_nb_item(shadow_bb);++i) {
-    /* 
-     * We skip BB_TYPE which may not be distributed
-     * using TSP, we must count alias dimension(s)
-     * which may generate more symbols than the number
-     * of published data in BB.
-     */
-    if (bb_data_desc(shadow_bb)[i].type < E_BB_USER) {
-      /*
-       * If an alias is a TSP handled type
-       * we must resolve the aliasstack in order
-       * to create as much PGI as the cartesian product
-       * of the alias stack "indexstack" minus the dimension
-       * of the primary alias which may be an array.
-       */
-      if (bb_isalias(&bb_data_desc(shadow_bb)[i])) {
-	indexStackCartesianSize = 1;
-	aliasstack[0]   = bb_data_desc(shadow_bb)[i];
-	aliasstack_size = MAX_ALIAS_LEVEL;
-	bb_find_aliastack(shadow_bb, aliasstack, &aliasstack_size);
-	memset(indexstack,0,MAX_ALIAS_LEVEL*sizeof(int32_t));
-	indexstack_len = 0;
+	retcode = TRUE;
+	/* We don't need fallback for now */
 	/* 
-	 * Compute cartesian product of alias stack dimension 
-	 * not counting alias dimension itself
+	 * !!! We need to attach to BB iff
+	 * !!! we are in a separate process
 	 */
-	for (j=aliasstack_size-1; j>0; --j) {
-	  indexStackCartesianSize *= aliasstack[j].dimension;
+	if (bb_attach(&the_bb,the_bbname) != BB_OK) {
+		bb_logMsg(BB_LOG_SEVERE,
+				"bb_tsp_provider::GLU_init","Cannot attach to BlackBoard <%s>!!",
+				the_bbname);
+		retcode = FALSE;
+		return retcode;
 	} 
-	nbTspSymbols += indexStackCartesianSize;
-      } else { /* non alias case */
-	++nbTspSymbols;
-      } /* end of if(bb_isalias) */
-    } /* end if if (<E_BB_USER) */
-  } /* end for all BB items */
 
-  /* 
-   * Allocate symbol list whose size
-   * correspond to number of data published in BB
-   * which may be distributed with TSP.
-   */
-  X_SSIList       = TSP_SSIList_new(nbTspSymbols);
-  X_SSIList_value = &(X_SSIList->TSP_sample_symbol_info_list_t_val[0]);
-
-  /* 
-   * Allocate array of pointer to data
-   */
-  value_by_pgi      = (void **) calloc(nbTspSymbols,sizeof(void*));
-  bbdatadesc_by_pgi = (S_BB_DATADESC_T **) calloc(nbTspSymbols,sizeof(S_BB_DATADESC_T*));
-  bbindex_to_pgi    = (int32_t *) calloc(bb_get_nb_item(shadow_bb),sizeof(int32_t));  
-  /*
-   * Allocate write 'right' management array
-   */
-  allow_to_write = (int *) calloc(nbTspSymbols,sizeof(int));
-
-  assert(value_by_pgi);	
-  assert(bbdatadesc_by_pgi);	
-  assert(bbindex_to_pgi);
-  assert(allow_to_write);
-    
-  /* initialize the provider global index to 0 */
-  pgi = 0;
-  for (i=0; i<bb_get_nb_item(shadow_bb);++i) {
-    /* we skip unhandled BB_TYPE */ 
-    if (bb_data_desc(shadow_bb)[i].type < E_BB_USER) {
-      /* memorize the first PGI used for this bbindex */
-      bbindex_to_pgi[i] = pgi;
-		
-      /* 
-       * Alias case 
-       * The alias case will generate TSP symbol name like:
-       * targetname.aliasnameL1.aliasnameL2
-       * NOTE THAT WE DO NOT HANDLE THE CASE OF ALIAS
-       * ON A ARRAY OF NON-USER TYPE.
-       */
-      if (bb_isalias(&bb_data_desc(shadow_bb)[i])) {
-	aliasstack[0]=bb_data_desc(shadow_bb)[i];
-	aliasstack_size = MAX_ALIAS_LEVEL;
-	bb_find_aliastack(shadow_bb, aliasstack, &aliasstack_size);
-	memset(indexstack,0,MAX_ALIAS_LEVEL*sizeof(int32_t));
-	indexstack_len = 0;
-	/*
-	 * Don't count first alias dimension itself since
-	 * it will be published as an TSP array
-	 * So j>0 and not j>=0
-	 */
-	for (j=aliasstack_size-1; j>0; --j) {
-	  if (aliasstack[j].dimension > 1) {
-	    indexstack[indexstack_len]=0;
-	    ++indexstack_len;
-	  }
-	}
-	
 	/* 
-	 * Alias with array a intermediate alias 
+	 * Get direct blackboard access in order to 
+	 * to build symbol list more easily
 	 */
-	if (indexstack_len){
-	  /* Compute the maximum length of symbol
-	   * which is the name of the symbol itself plus
-	   * the size of successive index '[nnnnnnnn]'
-	   * like target[45].aliasL1[23].aliasL2[999].aliasL3[]
-	   */
-	  i_temp = strlen(bb_data_desc(shadow_bb)[i].name) + 10*indexstack_len;
-	  do {
-
-	    tempName = calloc(1,i_temp);
-	    assert(tempName);
-	    /* 
-	     * Build alias array name beginning with 
-	     * second alias in aliasstack
-	     * (first alias is the symbol itself which may be published
-	     *  as an array if it is an array)
-	     */
-	    bb_get_array_name(tempName,
-			      i_temp,
-			      &aliasstack[1], aliasstack_size-1,
-			      indexstack, indexstack_len);	   
-
-	    /* Add last part */
-	    strncat(tempName,rindex(bb_data_desc(shadow_bb)[i].name,'.'),i_temp);
-
-	    TSP_SSI_initialize(&X_SSIList_value[pgi],
-			       tempName,
-			       pgi,
-			       0, /* pgridx NA provider-side */
-			       0, /* pgrank NA provider-side */
-			       bb_type2tsp_type[bb_data_desc(shadow_bb)[i].type],
-			       bb_data_desc(shadow_bb)[i].dimension,
-			       0, /* offset */
-			       bb_data_desc(shadow_bb)[i].dimension, /* nelem */
-			       0, /* period */
-			       0 /* phase  */
-			       );
-
-	    free(tempName);
-
-	    /* Update data pointer with appropriate value */
-	    value_by_pgi[pgi]      = bb_item_offset(shadow_bb, &bb_data_desc(shadow_bb)[i], indexstack, indexstack_len);
-	    bbdatadesc_by_pgi[pgi] = &bb_data_desc(shadow_bb)[i];
-	    allow_to_write[pgi]    = TSP_ASYNC_WRITE_ALLOWED;
-	    ++pgi;
-	  }
-	  while (BB_OK == bb_alias_increment_idxstack(&aliasstack[1], aliasstack_size-1, indexstack, indexstack_len));
+	if (TRUE == retcode) {
+		/* Allocate shadow blackboard */
+		shadow_bb = malloc(bb_get_mem_size(the_bb));
+		if (NULL == shadow_bb) {
+			retcode = FALSE;
+		}
 	}
-		
-	/* Simple alias */
-	else {
-
-	  TSP_SSI_initialize(&X_SSIList_value[pgi],
-			     bb_data_desc(shadow_bb)[i].name,
-			     pgi,
-			     0, /* pgridx NA provider-side */
-			     0, /* pgrank NA provider-side */
-			     bb_type2tsp_type[bb_data_desc(shadow_bb)[i].type],
-			     bb_data_desc(shadow_bb)[i].dimension,
-			     0, /* offset */
-			     bb_data_desc(shadow_bb)[i].dimension, /* nelem */
-			     0, /* period */
-			     0 /* phase  */
-			     );
-
-	  value_by_pgi[pgi]      = bb_item_offset(shadow_bb, &bb_data_desc(shadow_bb)[i], indexstack, indexstack_len);
-	  bbdatadesc_by_pgi[pgi] = &bb_data_desc(shadow_bb)[i];
-	  allow_to_write[pgi]    = TSP_ASYNC_WRITE_ALLOWED;
-	  ++pgi;
-	  
+	if (TRUE == retcode) {
+		/* Shadow BBPE */
+		if (BB_NOK == bb_shadow_get(shadow_bb, the_bb)) {
+			retcode = FALSE;
+		}  
 	}
-      }
-      /* Non-Alias case (Same as simple alias) */
-      else {
-	TSP_SSI_initialize(&X_SSIList_value[pgi],
-			   bb_data_desc(shadow_bb)[i].name,
-			   pgi,
-			   0, /* pgridx NA provider-side */
-			   0, /* pgrank NA provider-side */
-			   bb_type2tsp_type[bb_data_desc(shadow_bb)[i].type],
-			   bb_data_desc(shadow_bb)[i].dimension,
-			   0, /* offset */
-			   bb_data_desc(shadow_bb)[i].dimension, /* nelem */
-			   0, /* period */
-			   0 /* phase  */
-			   );
+	if (TRUE == retcode) {
+		/* Initial update */
+		if (BB_NOK ==  bb_shadow_update_data(shadow_bb,the_bb)) {
+			retcode = FALSE;
+		} 
+	}
 
-	value_by_pgi[pgi]      = ((void*) ((char*)bb_data(shadow_bb) + bb_data_desc(shadow_bb)[i].data_offset));
-	bbdatadesc_by_pgi[pgi] = &bb_data_desc(shadow_bb)[i];
-	allow_to_write[pgi]    = TSP_ASYNC_WRITE_ALLOWED;
-	++pgi;
-      }
-    } else  { /* skip unhandled BB type */ 
-      STRACE_INFO(("Skipping unhandled symbol type <%d> name <%s>",bb_data_desc(shadow_bb)[i].type,bb_data_desc(shadow_bb)[i].name));
-    }
-  } /* loop over bb items */
-    
-  return retcode;
+	/* Build symbols list */
+	/* 
+	 * We should compute the number Blackboard
+	 * item which may be distributed using TSP.
+	 * In fact every type but not USER type.
+	 */
+	nbTspSymbols = 0;
+	for (i=0;i<bb_get_nb_item(shadow_bb);++i) {
+		/* 
+		 * We skip BB_TYPE which may not be distributed
+		 * using TSP, we must count alias dimension(s)
+		 * which may generate more symbols than the number
+		 * of published data in BB.
+		 */
+		if (bb_data_desc(shadow_bb)[i].type < E_BB_USER) {
+			/*
+			 * If an alias is a TSP handled type
+			 * we must resolve the aliasstack in order
+			 * to create as much PGI as the cartesian product
+			 * of the alias stack "indexstack" minus the dimension
+			 * of the primary alias which may be an array.
+			 */
+			if (bb_isalias(&bb_data_desc(shadow_bb)[i])) {
+				indexStackCartesianSize = 1;
+				aliasstack[0]   = bb_data_desc(shadow_bb)[i];
+				aliasstack_size = MAX_ALIAS_LEVEL;
+				bb_find_aliastack(shadow_bb, aliasstack, &aliasstack_size);
+				memset(indexstack,0,MAX_ALIAS_LEVEL*sizeof(int32_t));
+				indexstack_len = 0;
+				/* 
+				 * Compute cartesian product of alias stack dimension 
+				 * not counting alias dimension itself
+				 */
+				for (j=aliasstack_size-1; j>0; --j) {
+					indexStackCartesianSize *= aliasstack[j].dimension;
+				} 
+				nbTspSymbols += indexStackCartesianSize;
+			} else { /* non alias case */
+				++nbTspSymbols;
+			} /* end of if(bb_isalias) */
+		} /* end if if (<E_BB_USER) */
+	} /* end for all BB items */
+
+	/* 
+	 * Allocate symbol list whose size
+	 * correspond to number of data published in BB
+	 * which may be distributed with TSP.
+	 */
+	X_SSIList       = TSP_SSIList_new(nbTspSymbols);
+	X_SSIList_value = &(X_SSIList->TSP_sample_symbol_info_list_t_val[0]);
+
+	/* 
+	 * Allocate array of pointer to data
+	 */
+	value_by_pgi      = (void **) calloc(nbTspSymbols,sizeof(void*));
+	bbdatadesc_by_pgi = (S_BB_DATADESC_T **) calloc(nbTspSymbols,sizeof(S_BB_DATADESC_T*));
+	bbindex_to_pgi    = (int32_t *) calloc(bb_get_nb_item(shadow_bb),sizeof(int32_t));  
+	/*
+	 * Allocate write 'right' management array
+	 */
+	allow_to_write = (int *) calloc(nbTspSymbols,sizeof(int));
+
+	assert(value_by_pgi);	
+	assert(bbdatadesc_by_pgi);	
+	assert(bbindex_to_pgi);
+	assert(allow_to_write);
+
+	/* initialize the provider global index to 0 */
+	pgi = 0;
+	for (i=0; i<bb_get_nb_item(shadow_bb);++i) {
+		/* we skip unhandled BB_TYPE */ 
+		if (bb_data_desc(shadow_bb)[i].type < E_BB_USER) {
+			/* memorize the first PGI used for this bbindex */
+			bbindex_to_pgi[i] = pgi;
+
+			/* 
+			 * Alias case 
+			 * The alias case will generate TSP symbol name like:
+			 * targetname.aliasnameL1.aliasnameL2
+			 * NOTE THAT WE DO NOT HANDLE THE CASE OF ALIAS
+			 * ON A ARRAY OF NON-USER TYPE.
+			 */
+			if (bb_isalias(&bb_data_desc(shadow_bb)[i])) {
+				aliasstack[0]=bb_data_desc(shadow_bb)[i];
+				aliasstack_size = MAX_ALIAS_LEVEL;
+				bb_find_aliastack(shadow_bb, aliasstack, &aliasstack_size);
+				memset(indexstack,0,MAX_ALIAS_LEVEL*sizeof(int32_t));
+				indexstack_len = 0;
+				/*
+				 * Don't count first alias dimension itself since
+				 * it will be published as an TSP array
+				 * So j>0 and not j>=0
+				 */
+				for (j=aliasstack_size-1; j>0; --j) {
+					if (aliasstack[j].dimension > 1) {
+						indexstack[indexstack_len]=0;
+						++indexstack_len;
+					}
+				}
+
+				/* 
+				 * Alias with array a intermediate alias 
+				 */
+				if (indexstack_len) {
+					char *n = __bb_get_varname(&bb_data_desc(shadow_bb)[i]);
+					/* Compute the maximum length of symbol
+					 * which is the name of the symbol itself plus
+					 * the size of successive index '[nnnnnnnn]'
+					 * like target[45].aliasL1[23].aliasL2[999].aliasL3[]
+					 */
+					i_temp = strlen(n) + 10*indexstack_len;
+					free(n);
+					do {
+						tempName = calloc(1,i_temp);
+						assert(tempName);
+						/* 
+						 * Build alias array name beginning with 
+						 * second alias in aliasstack
+						 * (first alias is the symbol itself which may be published
+						 *  as an array if it is an array)
+						 */
+						bb_get_array_name(tempName,
+								i_temp - 1,
+								&aliasstack[1], aliasstack_size-1,
+								indexstack, indexstack_len);	   
+
+						/* Add last part */
+						n = __bb_get_varname(&bb_data_desc(shadow_bb)[i]);
+						strncat(tempName,rindex(n,'.'),i_temp - strlen(tempName) - 1);
+						free(n);
+
+						TSP_SSI_initialize(&X_SSIList_value[pgi],
+								tempName,
+								pgi,
+								0, /* pgridx NA provider-side */
+								0, /* pgrank NA provider-side */
+								bb_type2tsp_type[bb_data_desc(shadow_bb)[i].type],
+								bb_data_desc(shadow_bb)[i].dimension,
+								0, /* offset */
+								bb_data_desc(shadow_bb)[i].dimension, /* nelem */
+								0, /* period */
+								0 /* phase  */
+								);
+
+						free(tempName);
+
+						/* Update data pointer with appropriate value */
+						value_by_pgi[pgi]      = bb_item_offset(shadow_bb, &bb_data_desc(shadow_bb)[i], indexstack, indexstack_len);
+						bbdatadesc_by_pgi[pgi] = &bb_data_desc(shadow_bb)[i];
+						allow_to_write[pgi]    = TSP_ASYNC_WRITE_ALLOWED;
+						++pgi;
+					} while (BB_OK == bb_alias_increment_idxstack(&aliasstack[1], aliasstack_size-1, indexstack, indexstack_len));
+				}
+
+				/* Simple alias */
+				else {
+					char *n;
+					n = __bb_get_varname(&bb_data_desc(shadow_bb)[i]);
+					TSP_SSI_initialize(&X_SSIList_value[pgi],
+							n,
+							pgi,
+							0, /* pgridx NA provider-side */
+							0, /* pgrank NA provider-side */
+							bb_type2tsp_type[bb_data_desc(shadow_bb)[i].type],
+							bb_data_desc(shadow_bb)[i].dimension,
+							0, /* offset */
+							bb_data_desc(shadow_bb)[i].dimension, /* nelem */
+							0, /* period */
+							0 /* phase  */
+							);
+					free(n);
+
+					value_by_pgi[pgi]      = bb_item_offset(shadow_bb, &bb_data_desc(shadow_bb)[i], indexstack, indexstack_len);
+					bbdatadesc_by_pgi[pgi] = &bb_data_desc(shadow_bb)[i];
+					allow_to_write[pgi]    = TSP_ASYNC_WRITE_ALLOWED;
+					++pgi;
+
+				}
+			}
+			/* Non-Alias case (Same as simple alias) */
+			else {
+				char *n;
+				n = __bb_get_varname(&bb_data_desc(shadow_bb)[i]);
+				TSP_SSI_initialize(&X_SSIList_value[pgi],
+						n,
+						pgi,
+						0, /* pgridx NA provider-side */
+						0, /* pgrank NA provider-side */
+						bb_type2tsp_type[bb_data_desc(shadow_bb)[i].type],
+						bb_data_desc(shadow_bb)[i].dimension,
+						0, /* offset */
+						bb_data_desc(shadow_bb)[i].dimension, /* nelem */
+						0, /* period */
+						0 /* phase  */
+						);
+				free(n);
+
+				value_by_pgi[pgi]      = ((void*) ((char*)bb_data(shadow_bb) + bb_data_desc(shadow_bb)[i].data_offset));
+				bbdatadesc_by_pgi[pgi] = &bb_data_desc(shadow_bb)[i];
+				allow_to_write[pgi]    = TSP_ASYNC_WRITE_ALLOWED;
+				++pgi;
+			}
+		} else  { /* skip unhandled BB type */ 
+			char *n;
+			n = __bb_get_varname(&bb_data_desc(shadow_bb)[i]);
+			STRACE_INFO(("Skipping unhandled symbol type <%d> name <%s>",bb_data_desc(shadow_bb)[i].type, n));
+			free(n);
+		}
+	} /* loop over bb items */
+
+	return retcode;
 } /* end of BB_GLU_init */
 
 
@@ -408,6 +418,7 @@ BB_GLU_get_pgi(GLU_handle_t* this, TSP_sample_symbol_info_list_t* symbol_list, i
   S_BB_DATADESC_T  aliasstack[MAX_ALIAS_LEVEL];
   int32_t previous_array_ptr;
   void *sym_value;
+  char *n;
   
   STRACE_INFO(("Starting symbol Valid nb_symbol=%u",symbol_list->TSP_sample_symbol_info_list_t_len));
   /* For each requested symbols, check by name, and find the provider global index */
@@ -415,8 +426,9 @@ BB_GLU_get_pgi(GLU_handle_t* this, TSP_sample_symbol_info_list_t* symbol_list, i
   
     /* Get short name (without [XXX], for array) and indexstack and its length */                                
     memset(&sym_data_desc,0,sizeof(S_BB_DATADESC_T));
+    n = __bb_get_varname(&sym_data_desc);
     if (bb_utils_parsearrayname(symbol_list->TSP_sample_symbol_info_list_t_val[i].name, 
-				sym_data_desc.name,
+				n,
 				VARNAME_MAX_SIZE,
 				array_index, &array_index_len)) {
 	   STRACE_INFO  (("%s: cannot parse symname <%s>",
@@ -428,8 +440,7 @@ BB_GLU_get_pgi(GLU_handle_t* this, TSP_sample_symbol_info_list_t* symbol_list, i
 	 else {
 	   STRACE_DEBUG  (("%s: array name <%s> parsed to symname <%s>",
 			   "BB_GLU_get_pgi",
-			   symbol_list->TSP_sample_symbol_info_list_t_val[i].name,
-			   sym_data_desc.name));
+			   symbol_list->TSP_sample_symbol_info_list_t_val[i].name, n));
 	   /* search if the symbol is published in the blackboard */
 	   sym_data_desc.type      = E_BB_DISCOVER;
 	   sym_data_desc.type_size = 0;
@@ -438,19 +449,17 @@ BB_GLU_get_pgi(GLU_handle_t* this, TSP_sample_symbol_info_list_t* symbol_list, i
 	   
 	   if (NULL==sym_value) {
 	     STRACE_INFO  (("symbol <%s> not found in BB <%s>",
-			    sym_data_desc.name,
-			    shadow_bb->name));
+			    n, shadow_bb->name));
 	     pg_indexes[i] = -1;	     
 	     ret = FALSE;
 	     continue;
 	   }
 	   else { 		
 	     /* find the index of the symbol in the BB */
-	     bbidx = bb_find(shadow_bb, sym_data_desc.name);
+	     bbidx = bb_find(shadow_bb, n);
 	     
 	     STRACE_DEBUG(("Validate symbol: orig_name=<%s>, short=<%s>",
-			   symbol_list->TSP_sample_symbol_info_list_t_val[i].name,
-			   sym_data_desc.name));
+			   symbol_list->TSP_sample_symbol_info_list_t_val[i].name, n));
 
 	     /* 
 	      * Array index is in reverse order of aliasstack.
@@ -482,11 +491,12 @@ BB_GLU_get_pgi(GLU_handle_t* this, TSP_sample_symbol_info_list_t* symbol_list, i
 	       for (j=0; j<aliasstack_size; ++j) {
 		 /* validate */
 		 if ((aliasstack[j].dimension > 1) && (aliasstack[j].dimension < array_index[array_index_ptr])) {
+			 char *n = __bb_get_varname(&aliasstack[j]);
 		   STRACE_INFO(("Symbol=%s, found but index=%d out of range for element <%s>",
 				symbol_list->TSP_sample_symbol_info_list_t_val[i].name,
-				array_index[array_index_ptr],
-				aliasstack[j].name));
+				array_index[array_index_ptr], n));
 		   ret = FALSE;
+			 free(n);
 		 }
 		 /* go to next index on (index)stack */
 		 else if (aliasstack[j].dimension > 1){
@@ -543,6 +553,7 @@ BB_GLU_get_pgi(GLU_handle_t* this, TSP_sample_symbol_info_list_t* symbol_list, i
 	   }
 	 }
 
+    free(n);
     /* complete symbol validation */
     GLU_validate_sample_default(&(symbol_list->TSP_sample_symbol_info_list_t_val[i]), 
 				(-1==pg_indexes[i]) ? NULL : &(X_SSIList_value[pg_indexes[i]]),
@@ -645,8 +656,11 @@ BB_GLU_async_sample_write(GLU_handle_t* glu,
 	/* try to write */
 	if (provider_global_index>=0 && provider_global_index<nbTspSymbols) {		
 	  if (allow_to_write[provider_global_index]==TSP_ASYNC_WRITE_ALLOWED) { 
+			char *n;
 	    data_desc = bbdatadesc_by_pgi[provider_global_index];
-	    STRACE_INFO(("About to write on symbol <%s> value <%f> (strvalue=%s)...",data_desc->name,value,strvalue));	    
+			n = __bb_get_varname(data_desc);
+	    STRACE_INFO(("About to write on symbol <%s> value <%f> (strvalue=%s)...",n,value,strvalue));	    
+			free(n);
 	    /* 
 	     * Note that we should write to genuine BB not the shadow ... 
 	     * since the shadow may be overwritten immediatly on next update cycle
@@ -679,10 +693,11 @@ BB_GLU_async_sample_read(GLU_handle_t* glu,
 	
 	/* try to read */
 	if (provider_global_index>=0 && provider_global_index<nbTspSymbols) {
-
+			char *n;
 	    data_desc = bbdatadesc_by_pgi[provider_global_index];
-	
-	    STRACE_INFO(("About to read from symbol <%s> value...",bbdatadesc_by_pgi[provider_global_index]->name));
+			n = __bb_get_varname(data_desc);
+	    STRACE_INFO(("About to read from symbol <%s> value...",n));
+			free(n);
 	    /* 
 	     * Note that we should read from genuine BB not the shadow ... 
 	     * since the shadow may be overwritten immediatly on next update cycle
