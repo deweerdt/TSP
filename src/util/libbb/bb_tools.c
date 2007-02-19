@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_tools.c,v 1.27 2006-11-28 13:52:27 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_tools.c,v 1.28 2007-02-19 15:53:19 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -408,6 +408,7 @@ bbtools_read(bbtools_request_t* req) {
   int32_t i;
   int32_t j;
   int32_t idx;
+  char name[VARNAME_MAX_SIZE];
   
   if (req->argc<2) {
     bbtools_logMsg(req->stream,"%s: <%d> argument(s) missing\n",
@@ -418,36 +419,38 @@ bbtools_read(bbtools_request_t* req) {
     return retval;
   }
   memset(&sym_data_desc,0,sizeof(S_BB_DATADESC_T));
+   
   if (bb_utils_parsearrayname(req->argv[1],
-			      sym_data_desc.name,
+			      name,
 			      VARNAME_MAX_SIZE,
 			      array_index,&array_index_len)) {
     bbtools_logMsg(req->stream,"%s: cannot parse symname <%s>",
 		   bbtools_cmdname_tab[E_BBTOOLS_READ],
 		   req->argv[1]);
     retval = -1;
-  } else {    
-      if (req->verbose) {
-	bbtools_logMsg(req->stream,
-		       "%s: Trying to read symbol <%s> on blackboard <%s>...\n",
-		       bbtools_cmdname_tab[E_BBTOOLS_READ],
-		       sym_data_desc.name,
-		       req->bbname);
-	nbcar =0;
-	nbcar += snprintf(&msg[nbcar],MSG_SIZE-nbcar,"%s","[");			 
-	for (i=0;i<array_index_len;++i) {
-		nbcar += snprintf(&msg[nbcar],MSG_SIZE-nbcar,"%d ",array_index[i]);
-	}			 
-	nbcar += snprintf(&msg[nbcar],MSG_SIZE-nbcar," %s","]");			 
-	msg[nbcar] = '\0';
-	bbtools_logMsg(req->stream,
-		       "%s: array_index_len = <%d> indexes = %s...\n",
-		       bbtools_cmdname_tab[E_BBTOOLS_READ],
-		       array_index_len,
-				 msg);				 
+  } else {
+    bb_set_varname(&sym_data_desc, name);
+    if (req->verbose) {
+      char *n = __bb_get_varname(&sym_data_desc);
+      bbtools_logMsg(req->stream,
+          "%s: Trying to read symbol <%s> on blackboard <%s>...\n",
+          bbtools_cmdname_tab[E_BBTOOLS_READ], n, req->bbname);
+      free(n);
+      nbcar = 0;
+      nbcar += snprintf(&msg[nbcar],MSG_SIZE-nbcar,"%s","[");			 
+      for (i=0;i<array_index_len;++i) {
+        nbcar += snprintf(&msg[nbcar],MSG_SIZE-nbcar,"%d ",array_index[i]);
+      }			 
+      nbcar += snprintf(&msg[nbcar],MSG_SIZE-nbcar," %s","]");			 
+      msg[nbcar] = '\0';
+      bbtools_logMsg(req->stream,
+          "%s: array_index_len = <%d> indexes = %s...\n",
+          bbtools_cmdname_tab[E_BBTOOLS_READ],
+          array_index_len,
+          msg);				 
 
-      }
     }
+  }
 	  /* 
      * Use low-level subscribe in order to discover the 
      * type of the variable
@@ -458,10 +461,10 @@ bbtools_read(bbtools_request_t* req) {
     sym_value = bb_alias_subscribe(req->theBB,&sym_data_desc,array_index,array_index_len);    	
 
     if (NULL==sym_value) {
+      char *n = __bb_get_varname(&sym_data_desc);
       bbtools_logMsg(req->stream,"%s: symbol <%s> not found in BB <%s>\n",
-		     bbtools_cmdname_tab[E_BBTOOLS_READ],
-		     sym_data_desc.name,
-		     req->bbname);
+		     bbtools_cmdname_tab[E_BBTOOLS_READ], n, req->bbname);
+      free(n);
     } else {
 	 /* the test to determine exeeding array dimension */
      if (array_index_len>0) {
@@ -521,6 +524,7 @@ bbtools_write(bbtools_request_t* req) {
   int32_t i;
   int32_t j;
   int32_t idx;
+  char name[VARNAME_MAX_SIZE];
 
   /* verify request write arguments */
   if (req->argc<3) {
@@ -535,7 +539,7 @@ bbtools_write(bbtools_request_t* req) {
   /* parse for array name */
   memset(&sym_data_desc,0,sizeof(S_BB_DATADESC_T));
   if (bb_utils_parsearrayname(req->argv[1],
-			      sym_data_desc.name,
+			      name,
 			      VARNAME_MAX_SIZE,
 			      array_index,&array_index_len)) {
     bbtools_logMsg(req->stream,"%s: cannot parse symname <%s>",
@@ -543,12 +547,13 @@ bbtools_write(bbtools_request_t* req) {
 		   req->argv[1]);
     retval = -1;
   } else {
+    bb_set_varname(&sym_data_desc, name);
     if (req->verbose) {
+      char *n = __bb_get_varname(&sym_data_desc);
       bbtools_logMsg(req->stream,
 		     "%s: Trying to write symbol <%s> on blackboard <%s>...\n",
-		     bbtools_cmdname_tab[E_BBTOOLS_WRITE],
-		     sym_data_desc.name,
-		     req->bbname);
+		     bbtools_cmdname_tab[E_BBTOOLS_WRITE], n, req->bbname);
+      free(n);
       nbcar =0;
       nbcar += snprintf(&msg[nbcar],MSG_SIZE-nbcar,"%s","[");			 
       for (i=0;i<array_index_len;++i) {
@@ -581,20 +586,19 @@ bbtools_write(bbtools_request_t* req) {
     }     
     array_index[0] = 0;
     if (req->verbose) {
-	bbtools_logMsg(req->stream,
+      char *n = __bb_get_varname(&sym_data_desc);
+      bbtools_logMsg(req->stream,
 		       "%s: Trying to write index <%d> of array symbol <%s> on blackboard <%s>...\n",
-		       bbtools_cmdname_tab[E_BBTOOLS_WRITE],
-		       array_index[0],
-		       sym_data_desc.name,
-		       req->bbname);
+		       bbtools_cmdname_tab[E_BBTOOLS_WRITE], array_index[0], n, req->bbname);
+      free(n);
     }
   }
 
   if (NULL==sym_value) {
+    char *n = __bb_get_varname(&sym_data_desc);
     bbtools_logMsg(req->stream,"%s: symbol <%s> not found in BB <%s>\n",
-		   bbtools_cmdname_tab[E_BBTOOLS_WRITE],
-		   sym_data_desc.name,
-		   req->bbname);
+		   bbtools_cmdname_tab[E_BBTOOLS_WRITE], n, req->bbname);
+    free(n);
     retval = -1;
   } else {
     /* 
@@ -686,11 +690,13 @@ bbtools_find(bbtools_request_t* req) {
 
 
   for (i=0; i< req->theBB->n_data;++i) {
-    if (NULL != strstr((bb_data_desc(req->theBB)[i]).name,varmatch)) {
-      fprintf(req->stream,"%s",(bb_data_desc(req->theBB)[i]).name);
+    char *n = __bb_get_varname(&bb_data_desc(req->theBB)[i]);
+    if (NULL != strstr(n ,varmatch)) {
+      fprintf(req->stream,"%s",n);
       fprintf(req->stream,"%s",req->newline);
       ++nmatch;
      } 
+    free(n);
    } /* end for */
     
   if (req->verbose) {
@@ -854,17 +860,18 @@ bbtools_publish(bbtools_request_t* req) {
     symbol_desc.dimension = dimension[0];
   }
   /* copy symbol name */
-  strncpy(symbol_desc.name,req->argv[1],VARNAME_MAX_SIZE);    
+  bb_set_varname(&symbol_desc,req->argv[1]);
   /* find the requested type */
   symbol_desc.type = bb_type_string2bb_type(symbol_type_str);
 
   if (req->verbose) {
+    char *n = __bb_get_varname(&symbol_desc);
     bbtools_logMsg(req->stream,
 		   "%s: publish symbol <%s> of type <%s> in BB <%s>\n",
-		   bbtools_cmdname_tab[E_BBTOOLS_PUBLISH],
-                   symbol_desc.name,
+		   bbtools_cmdname_tab[E_BBTOOLS_PUBLISH], n,
 		   symbol_type_str,
 		   req->bbname);
+    free(n);
   }
 
   if (symbol_desc.type!=0) {

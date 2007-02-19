@@ -1,6 +1,6 @@
 /*
   
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_alias.c,v 1.5 2006-11-27 19:55:14 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_alias.c,v 1.6 2007-02-19 15:53:19 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -113,6 +113,7 @@ bb_alias_publish(volatile S_BB_T *bb,
   S_BB_DATADESC_T  aliasstack[MAX_ALIAS_LEVEL];
   int32_t          indexstack[MAX_ALIAS_LEVEL];
   int32_t          aliasstack_size = MAX_ALIAS_LEVEL;
+  char *name;
 
   retval = NULL;
   assert(bb);
@@ -126,15 +127,16 @@ bb_alias_publish(volatile S_BB_T *bb,
    * if key already exists.
    */
   bb_lock(bb);
-  if (bb_find(bb,data_desc->name) != -1) {
-     bb_logMsg(BB_LOG_FINER,"BlackBoard::bb_publish",
-	       "Key <%s> already exists in blackboard (automatic subscribe)!!",data_desc->name);
+  name = (char *)bb_get_varname(data_desc);
+  if (bb_find(bb,name) != -1) {
+    char *n = (char *)bb_get_varname(data_desc);
+    bb_logMsg(BB_LOG_FINER,"BlackBoard::bb_publish",
+        "Key <%s> already exists in blackboard (automatic subscribe)!!", n);
+    free(n);
     bb_unlock(bb);
     retval = bb_subscribe(bb,data_desc);
     bb_lock(bb);
-  } 
-  
-  else {
+  } else {
     /* verify available space in BB data descriptor zone */
     if (bb->n_data >= bb->max_data_desc_size) {
       bb_logMsg(BB_LOG_SEVERE,"BlackBoard::bb_alias_publish", 
@@ -143,8 +145,11 @@ bb_alias_publish(volatile S_BB_T *bb,
          
     } 
     else {
+      char *n;
       /* find the target */
-      data_desc->alias_target = bb_find(bb,data_desc_target->name);
+      n = (char *)bb_get_varname(data_desc_target);
+      data_desc->alias_target = bb_find(bb,n);
+      free(n);
       if (-1 != data_desc->alias_target) {
 	      /* 
 	       * check described offset is not
@@ -166,19 +171,21 @@ bb_alias_publish(volatile S_BB_T *bb,
 		            "Cannot resolve alias stack");
 	        }
 	      } else {
+          char *n = (char *)bb_get_varname(data_desc_target);
 	        bb_logMsg(BB_LOG_SEVERE,"BlackBoard::bb_alias_publish", 
 		          "Alias dim * size <%d> * <%d> and offset <%d> goes out of target range <%d> (%s)",
 		          data_desc->dimension,
 		          data_desc->type_size,
 		          data_desc->data_offset,
 		          data_desc_target->type_size,
-		          data_desc_target->name);
+		          n);
 	      }
       } 
       else {
+          char *n = (char *)bb_get_varname(data_desc_target);
 	        bb_logMsg(BB_LOG_SEVERE,"BlackBoard::bb_alias_publish", 
-		          "Target <%s> does not exists",
-		          data_desc_target->name);
+		          "Target <%s> does not exists", n);
+          free(n);
       }
     }
     /* DO NOT initialize publish data zone with default value */
@@ -187,7 +194,8 @@ bb_alias_publish(volatile S_BB_T *bb,
      * structure.
      */
     /* bb_data_initialise(bb,data_desc,NULL); */
-  }    
+  }
+  free(name);
   /* no init in case of automatic subscribe */  
   bb_unlock(bb);  
   return retval;
@@ -208,7 +216,9 @@ bb_alias_subscribe(volatile S_BB_T* bb,
 
    /* We seek the data using its key (name) */
   bb_lock(bb);
-  idx = bb_find(bb,data_desc->name);
+  char *n = (char *)bb_get_varname(data_desc);
+  idx = bb_find(bb, n);
+  free(n);
   if (idx==-1) {
     retval = NULL;      
   } else {

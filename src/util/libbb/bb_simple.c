@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_simple.c,v 1.11 2006-11-27 20:01:47 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_simple.c,v 1.12 2007-02-19 15:53:19 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -83,7 +83,9 @@ void* bb_simple_publish(S_BB_T* bb_simple,
   
   void* retval;
   S_BB_DATADESC_T s_data_desc;
-  gen_var_name(s_data_desc.name, module_instance, module_name, var_name);
+  char new_name[VARNAME_MAX_SIZE];
+  gen_var_name(new_name, module_instance, module_name, var_name);
+  bb_set_varname(&s_data_desc, new_name);
   s_data_desc.type        = type;
   s_data_desc.type_size   = type_size;
   s_data_desc.dimension   = dimension;
@@ -108,9 +110,10 @@ void* bb_simple_subscribe(S_BB_T* bb_simple,
   
   void* retval;
   S_BB_DATADESC_T s_data_desc;
+  char new_name[VARNAME_MAX_SIZE];
 
-  gen_var_name(s_data_desc.name, module_instance, module_name, var_name);
-  
+  gen_var_name(new_name, module_instance, module_name, var_name);
+  bb_set_varname(&s_data_desc, new_name);
   s_data_desc.type        = *type;
   s_data_desc.type_size   = *type_size;
   s_data_desc.dimension   = *dimension;
@@ -132,12 +135,14 @@ void* bb_simple_alias_publish(S_BB_T* bb_simple,
   void* retval=NULL;
   int32_t idx;
   char new_target_name[VARNAME_MAX_SIZE];
+  char alias_name[VARNAME_MAX_SIZE];
   S_BB_DATADESC_T alias;
   S_BB_DATADESC_T target;
   
   gen_var_name(new_target_name, module_instance, module_name, target_name);
-  snprintf(alias.name, VARNAME_MAX_SIZE, "%s_%s",
+  snprintf(alias_name, VARNAME_MAX_SIZE, "%s_%s",
 	   new_target_name, var_name);
+  bb_set_varname(&alias, alias_name);
 
   alias.type        = type;
   alias.type_size   = type_size;
@@ -150,23 +155,23 @@ void* bb_simple_alias_publish(S_BB_T* bb_simple,
     bb_logMsg(BB_LOG_SEVERE,"BlackBoard::bb_simple_alias_publish", 
 		"Cannot find the target <%s> of the alias <%s>",
 		target_name, var_name);
-  }  
-  else {
-  		target = bb_data_desc(bb_simple)[idx];
+  } else {
+    char *n;
+    target = bb_data_desc(bb_simple)[idx];
 
-  		memset(alias.name,0,VARNAME_MAX_SIZE); 
- 		snprintf(alias.name,VARNAME_MAX_SIZE,
-	    		 	"%s.%s",
-     		  		target.name,
-	  		   	var_name);
-		  
-  		retval=(void *)bb_alias_publish(bb_simple, &alias, &target);
-  
-  		if (retval == NULL) {
-    		bb_logMsg(BB_LOG_SEVERE,"BlackBoard::bb_simple_alias_publish", 
-						"Cannot publish data <%s> instance <%d> module <%s>",
-						var_name,module_instance,module_name);
-  		}
+    n = __bb_get_varname(&target);
+    snprintf(alias_name,VARNAME_MAX_SIZE,
+        "%s.%s", n, var_name);
+    free(n);
+    bb_set_varname(&alias, alias_name);
+
+    retval=(void *)bb_alias_publish(bb_simple, &alias, &target);
+
+    if (retval == NULL) {
+      bb_logMsg(BB_LOG_SEVERE,"BlackBoard::bb_simple_alias_publish", 
+          "Cannot publish data <%s> instance <%d> module <%s>",
+          var_name,module_instance,module_name);
+    }
   } 
   return retval;
 } /* end of bb_simple_alias_publish */

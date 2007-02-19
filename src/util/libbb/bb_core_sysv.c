@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core_sysv.c,v 1.2 2006-11-24 18:17:45 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core_sysv.c,v 1.3 2007-02-19 15:53:19 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -173,15 +173,6 @@ static int sysv_bb_sem_get(S_BB_T * bb, int create)
       err:
 	free(name_sem);
 	return BB_NOK;
-}
-
-static const char *sysv_strip_name(const char *name)
-{
-	char *p;
-	p = strchr(name, ':');
-	if (!p)
-		return name;
-	return p + 1;
 }
 
 static int sysv_bb_shmem_detach(S_BB_T ** bb)

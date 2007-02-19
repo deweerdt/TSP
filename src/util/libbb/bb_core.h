@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.h,v 1.24 2006-11-27 19:50:41 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.h,v 1.25 2007-02-19 15:53:19 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -63,8 +63,12 @@ Purpose   : BlackBoard Idiom implementation
 #else /* __KERNEL__ */
 
 #include <stdint.h>
+#include <stdlib.h>
+#include <assert.h>
+#include <zlib.h>
 #include <inttypes.h>
 #include <stdarg.h>
+#include <string.h>
 #include <stdio.h>
 #include <sys/types.h>
 #include <tsp_abs_types.h>
@@ -223,7 +227,8 @@ typedef enum {BB_STATUS_UNKNOWN=0, /*!< Unknown status     */
  */     	      
 typedef struct S_BB_DATADESC {
   /** Variable name */
-  char name[VARNAME_MAX_SIZE+1];
+  char __name[VARNAME_MAX_SIZE+1];
+  int  __name_len;
   /** The Variable type */
   E_BB_TYPE_T type;
   /** 
@@ -250,6 +255,8 @@ typedef struct S_BB_DATADESC {
   int  alias_target;
   
 } S_BB_DATADESC_T ;
+
+
 
 struct S_BB;
 struct S_BB_MSG;
@@ -424,6 +431,34 @@ typedef struct S_BB {
 #ifndef __KERNEL__
 BEGIN_C_DECLS
 #endif
+
+typedef char *(*bb_get_varname_fn)(const S_BB_DATADESC_T *);
+typedef void (*bb_set_varname_fn)(S_BB_DATADESC_T *, const char *);
+/**
+ * Get the name of a variable described by @dd
+ * @param[in] dd the descriptor of the variable
+ * @return the variable name, must be freed by caller
+ */
+extern bb_get_varname_fn bb_get_varname;
+/**
+ * Get the name of a variable described by @dd
+ * @param[in] dd the descriptor of the variable
+ * @return the variable name, must be freed by caller
+ */
+extern bb_set_varname_fn bb_set_varname;
+
+#define BB_CTL_SET_NAME_ENCODE_PTR  (1<<1)
+#define BB_CTL_GET_NAME_ENCODE_PTR  (1<<2)
+#define BB_CTL_SET_NAME_ENCODE_NAME (1<<3)
+#define BB_CTL_GET_NAME_ENCODE_NAME (1<<4)
+/**
+ * General purpose bb control function
+ * @param[in] bb a BlackBoard pointer
+ * @param[in] request the kind of request (see BB_CTL defines)
+ * @return BB_OK is the operation succeeded, BB_NOK otherwise.
+ */
+int32_t
+bb_ctl(S_BB_T *bb, unsigned int request, ...);
 
 /**
  * The size (in byte) of a BlackBoard data type.

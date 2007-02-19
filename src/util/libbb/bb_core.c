@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.28 2007-01-29 17:04:16 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.29 2007-02-19 15:53:19 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -187,6 +187,88 @@ bb_type_string2bb_type(const char* bb_type_string) {
   return retval;
 }
 
+static char *bb_get_varname_default(const S_BB_DATADESC_T *dd)
+{
+  return strdup(dd->__name);
+}
+static void bb_set_varname_default(S_BB_DATADESC_T *dd, const char *key)
+{
+  strncpy(dd->__name, key, VARNAME_MAX_SIZE);
+}
+
+bb_get_varname_fn bb_get_varname = bb_get_varname_default;
+bb_set_varname_fn bb_set_varname = bb_set_varname_default;
+
+char *bb_get_varname_zipped(const S_BB_DATADESC_T *dd)
+{
+  unsigned long len = dd->__name_len * 3;
+  int ret;
+  char *uncomp = malloc(len);
+                          
+  ret = uncompress((unsigned char *)uncomp, &len, (unsigned char *)dd->__name, dd->__name_len);
+  if (ret) {
+    return NULL;
+  }
+  uncomp[len] = '\0';
+  return uncomp;
+}
+
+void bb_set_varname_zipped(S_BB_DATADESC_T *dd, const char *key)
+{
+	int ret;
+  unsigned long len;
+  char *comp;
+	
+  /* see zlib manual, they require 1% + 12 chars */
+  len = strlen(key)*1.01 + 12;
+  comp = malloc(len);
+  ret = compress2((unsigned char *)comp, &len, (unsigned char *)key, strlen(key), 9);
+  if (ret) {
+    return;
+  }
+  assert(len < VARNAME_MAX_SIZE);
+  memcpy(dd->__name, comp, len);
+  dd->__name_len = len;
+  free(comp);
+}
+
+
+int32_t
+bb_ctl(S_BB_T *bb, unsigned int request, ...)
+{
+	va_list ap;
+	int ret=BB_OK;
+	char *mangling_fn_name;
+
+	va_start(ap, request);
+	switch (request) {
+		/* We've been passed a function pointer */
+		case BB_CTL_SET_NAME_ENCODE_PTR:
+			bb_set_varname = va_arg(ap, typeof(bb_set_varname));
+			break;
+		case BB_CTL_GET_NAME_ENCODE_PTR:
+			bb_get_varname = va_arg(ap, typeof(bb_get_varname));
+			break;
+			/* We've been passed a symbol name, use dlsym to find it */
+		case BB_CTL_SET_NAME_ENCODE_NAME:
+			/*TODO dlopen the right function */
+			ret=BB_NOK;
+			break;
+		case BB_CTL_GET_NAME_ENCODE_NAME:
+			/*TODO dlopen the right function */
+			ret=BB_NOK;
+			break;
+		default:
+			ret=BB_NOK;
+			break;
+	}
+	va_end(ap);
+
+	return ret;
+}
+
+
+
 int32_t
 bb_check_version(volatile S_BB_T* bb) {
   int32_t retval = 0;
@@ -227,10 +309,13 @@ bb_find(volatile S_BB_T* bb, const char* var_name) {
   assert(bb);
 
   for (i=0; i< bb->n_data;++i) {
-    if (!strncmp(var_name,(bb_data_desc(bb)[i]).name,VARNAME_MAX_SIZE+1)) {
+    char * n = __bb_get_varname(&bb_data_desc(bb)[i]);
+    if (!strncmp(var_name,n,VARNAME_MAX_SIZE+1)) {
       retval = i;
+      free(n);
       break;
     }
+    free(n);
   } /* end for */
 
   return retval;
@@ -495,15 +580,17 @@ int32_t
 bb_data_header_print(S_BB_DATADESC_T data_desc, FILE* pf, int32_t idx, int32_t aliastack) {
   const char oneTab[] = "    "; 
   char tabs[MAX_ALIAS_LEVEL*5]="";
-  
+  char *n;
   int i;
   
   for (i=0; i<(aliastack-1); i++)
     {
-      strncat(tabs, oneTab, strlen(oneTab));
+      strncat(tabs, oneTab, sizeof(tabs)-strlen(tabs));
     }
   
-  fprintf(pf,"%s---------- < %s > ----------\n", tabs,data_desc.name);
+  n = __bb_get_varname(&data_desc);
+  fprintf(pf,"%s---------- < %s > ----------\n", tabs, n);
+  free(n);
   fprintf(pf,"%s  alias-target = %d\n", tabs, data_desc.alias_target);
   fprintf(pf,"%s  type         = %d  (%s)\n",tabs,data_desc.type,E_BB_2STRING[data_desc.type]);
   fprintf(pf,"%s  dimension    = %d  \n",tabs,data_desc.dimension);
@@ -544,7 +631,7 @@ bb_data_footer_print(S_BB_DATADESC_T data_desc, FILE* pf, int32_t idx, int32_t a
   int i;
   
   for (i=0; i<(aliastack-1); i++) {
-    strncat(tabs, oneTab, strlen(oneTab));
+    strncat(tabs, oneTab, strlen(oneTab)+sizeof(tabs));
   }
     
   if ((idx>=0) &&
@@ -846,6 +933,7 @@ bb_publish(volatile S_BB_T *bb, S_BB_DATADESC_T* data_desc) {
   
   void* retval;
   int32_t needed_size;
+  char *n;
 
   retval = NULL;
   assert(bb);
@@ -856,9 +944,12 @@ bb_publish(volatile S_BB_T *bb, S_BB_DATADESC_T* data_desc) {
    * if key already exists.
    */
   bb_lock(bb);
-  if (bb_find(bb,data_desc->name) != -1) {
-     bb_logMsg(BB_LOG_FINER,"BlackBoard::bb_publish",
-	       "Key <%s> already exists in blackboard (automatic subscribe)!!",data_desc->name);
+  n = __bb_get_varname(data_desc);
+  if (bb_find(bb, n) != -1) {
+    char *name = __bb_get_varname(data_desc);
+    bb_logMsg(BB_LOG_FINER,"BlackBoard::bb_publish",
+        "Key <%s> already exists in blackboard (automatic subscribe)!!", name);
+    free(name);
     bb_unlock(bb);
     retval = bb_subscribe(bb,data_desc);
     bb_lock(bb);
@@ -892,6 +983,7 @@ bb_publish(volatile S_BB_T *bb, S_BB_DATADESC_T* data_desc) {
     /* initialize publish data zone with default value */
     bb_data_initialise(bb,data_desc,NULL);
   }    
+  free(n);
   /* no init in case of automatic subscribe */  
   bb_unlock(bb);  
   return retval;
@@ -1179,34 +1271,44 @@ bb_get_array_name(char * array_name,
 #endif /* __KERNEL__ */
 
   indexstack_curr = 0;
-  for (j=aliasstack_size-1; j>=0; j--){
+  for (j=aliasstack_size-1; j>=0; j--) {
     /* If this alias is an array */
-    if (aliasstack[j].dimension > 1){
-      if (j==aliasstack_size-1){
-	snprintf(part_of_name, array_name_size_max, "%s[%0d]",
-		 aliasstack[j].name,
-		 indexstack[indexstack_curr]);
+    if (aliasstack[j].dimension > 1) {
+      if (j==aliasstack_size-1) {
+        char *n = __bb_get_varname(&aliasstack[j]);
+        snprintf(part_of_name, array_name_size_max, "%s[%0d]", n,
+            indexstack[indexstack_curr]);
+        free(n);
       } else {
-	snprintf(part_of_name, array_name_size_max, "%s[%0d]",
-		 strstr(aliasstack[j].name,
-			aliasstack[j+1].name)+strlen(aliasstack[j+1].name),
-		 indexstack[indexstack_curr]);
+        char *n1, *n2;
+        n1 = __bb_get_varname(&aliasstack[j]);
+        n2 = __bb_get_varname(&aliasstack[j+1]);
+        snprintf(part_of_name, array_name_size_max, "%s[%0d]",
+            strstr(n1, n2 + strlen(n2)),
+            indexstack[indexstack_curr]);
+        free(n1);
+        free(n2);
       }      
-      strncat(array_name, part_of_name, array_name_size_max);
+      strncat(array_name, part_of_name, array_name_size_max-strlen(array_name));
       /* go to next index in the index stack */
       indexstack_curr++;
     }
     /* The current alias is a scalar */
     else {
+      char *n1, *n2;
       if (j==aliasstack_size-1){
-	snprintf(part_of_name, array_name_size_max, "%s", aliasstack[j].name);
+        n1 = __bb_get_varname(&aliasstack[j]);
+        snprintf(part_of_name, array_name_size_max, "%s", n1);
+        free(n1);
       } else {
-	snprintf(part_of_name, array_name_size_max, "%s", 
-		 strstr(aliasstack[j].name, aliasstack[j+1].name) +
-		 strlen(aliasstack[j+1].name)
-		 );
+        n1 = __bb_get_varname(&aliasstack[j]);
+        n2 = __bb_get_varname(&aliasstack[j+1]);
+        snprintf(part_of_name, array_name_size_max, "%s", 
+            strstr(n1, n2 + strlen(n2)));
+        free(n1);
+        free(n2);
       }
-      strncat(array_name, part_of_name, array_name_size_max);
+      strncat(array_name, part_of_name, array_name_size_max-strlen(array_name));
     }
   }
 #ifdef __KERNEL__
