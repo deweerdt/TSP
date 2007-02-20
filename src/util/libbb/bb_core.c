@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.34 2007-02-20 14:53:34 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.35 2007-02-20 16:00:49 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -46,6 +46,10 @@ Purpose   : Blackboard Idiom implementation
 #include <unistd.h>
 #include <assert.h>
 #include <ctype.h>
+#include <dlfcn.h>
+#ifndef RTLD_DEFAULT
+#define RTLD_DEFAULT (void *)0
+#endif
 
 #include <tsp_abs_types.h>
 #include <tsp_abs_types.h>
@@ -199,40 +203,80 @@ static void bb_set_varname_default(S_BB_DATADESC_T *dd, const char *key)
 bb_get_varname_fn bb_get_varname = bb_get_varname_default;
 bb_set_varname_fn bb_set_varname = bb_set_varname_default;
 
-int32_t
-bb_ctl(S_BB_T *bb, unsigned int request, ...)
+static int32_t
+bb_varname_init(S_BB_T *bb)
 {
-	va_list ap;
-	int ret=BB_OK;
+	bb_get_varname_fn getter;
+	bb_set_varname_fn setter;
+	char getter_name[256];
+	char setter_name[256];
+	S_BB_PRIV_T *priv;
+	void *handle = RTLD_DEFAULT;
 
-	va_start(ap, request);
-	switch (request) {
-		/* We've been passed a function pointer */
-		case BB_CTL_SET_NAME_ENCODE_PTR:
-			bb_set_varname = va_arg(ap, typeof(bb_set_varname));
-			break;
-		case BB_CTL_GET_NAME_ENCODE_PTR:
-			bb_get_varname = va_arg(ap, typeof(bb_get_varname));
-			break;
-			/* We've been passed a symbol name, use dlsym to find it */
-		case BB_CTL_SET_NAME_ENCODE_NAME:
-			/*TODO dlopen the right function */
-			ret=BB_NOK;
-			break;
-		case BB_CTL_GET_NAME_ENCODE_NAME:
-			/*TODO dlopen the right function */
-			ret=BB_NOK;
-			break;
-		default:
-			ret=BB_NOK;
-			break;
+	priv = bb_get_priv(bb);
+	if (priv->varname_lib[0] == '\0')
+		return BB_OK;
+
+	sprintf(getter_name, "bb_get_varname_%s", priv->varname_lib);
+	sprintf(setter_name, "bb_set_varname_%s", priv->varname_lib);
+
+	getter = dlsym(handle, getter_name);
+	if (!getter) {
+		char libname[FILENAME_MAX];
+
+		sprintf(libname, "%s.so", priv->varname_lib);
+		/* try to open a library */
+		handle = dlopen(libname, RTLD_NOW);
+		getter = dlsym(handle, getter_name);
+		if (!getter)
+			return BB_NOK;
 	}
-	va_end(ap);
+	setter = dlsym(handle, getter_name);
+	if (!setter)
+		return BB_NOK;
 
-	return ret;
+	bb_set_varname = setter;
+	bb_get_varname = getter;
+
+	return BB_OK;
 }
 
 
+int32_t
+bb_ctl(S_BB_T *bb, unsigned int request, ...)
+{
+  va_list ap;
+  int ret=BB_OK;
+  char *name;
+  S_BB_PRIV_T *priv;
+
+  va_start(ap, request);
+  switch (request) {
+    /* We've been passed a function pointer */
+    case BB_CTL_SET_NAME_ENCODE_PTR:
+      bb_set_varname = va_arg(ap, typeof(bb_set_varname));
+      break;
+    case BB_CTL_GET_NAME_ENCODE_PTR:
+      bb_get_varname = va_arg(ap, typeof(bb_get_varname));
+      break;
+      /* We've been passed a symbol name, use dlsym to find it */
+    case BB_CTL_GET_NAMING_FROM_BB:
+      ret=bb_varname_init(bb);
+      break;
+    case BB_CTL_SET_NAMING_IN_BB:
+      name = va_arg(ap, typeof(name));
+      priv = va_arg(ap, typeof(priv));
+      strncpy(priv->varname_lib, name, VARNAME_LIB_LENGTH);
+      ret=bb_varname_init(bb);
+      break;
+    default:
+      ret=BB_NOK;
+      break;
+  }
+  va_end(ap);
+
+  return ret;
+}
 
 int32_t
 bb_check_version(volatile S_BB_T* bb) {
@@ -261,9 +305,16 @@ bb_size(const int32_t n_data, const int32_t data_size) {
    */
   return (sizeof(S_BB_T) + 
     sizeof(S_BB_DATADESC_T)*n_data +
-    sizeof(char)*data_size) +
-    sizeof(S_BB_PRIV_T);
+    sizeof(char)*data_size +
+    sizeof(S_BB_PRIV_T));
 } /* end of bb_size */
+
+S_BB_PRIV_T *
+bb_get_priv(volatile S_BB_T* bb)
+{
+  fprintf(stderr, "%d %d %d", bb, bb_size(bb->n_data, bb->max_data_size) , sizeof(S_BB_PRIV_T));
+  return (S_BB_PRIV_T *)((unsigned long )bb + (unsigned long)(bb_size(bb->n_data, bb->max_data_size) - sizeof(S_BB_PRIV_T)));
+}
 
 int32_t 
 bb_find(volatile S_BB_T* bb, const char* var_name) {
@@ -876,13 +927,21 @@ bb_unlock(volatile S_BB_T* bb) {
   return ops[bb->type]->bb_unlock(bb);
 } /* end of bb_unlock */
 
-
 int32_t 
 bb_attach(S_BB_T** bb, const char* pc_bb_name) 
 {
   enum bb_type type;
+	int ret;
+
   type = bb_type(pc_bb_name);
-  return ops[type]->bb_shmem_attach(bb, pc_bb_name);
+  ret = ops[type]->bb_shmem_attach(bb, pc_bb_name);
+	if (ret != BB_OK)
+		return ret;
+
+	if (bb_varname_init(*bb) != BB_OK) {
+		STRACE_WARNING(("Could not setup a proper varname handling scheme\n"));
+	}
+	return ret;
 } /* end of bb_attach */
 
 int32_t 

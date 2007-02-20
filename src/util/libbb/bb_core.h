@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.h,v 1.30 2007-02-20 14:53:34 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.h,v 1.31 2007-02-20 16:00:49 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -253,10 +253,6 @@ typedef struct S_BB_DATADESC {
    */
   int  alias_target;
   
-  /**
-   * Reserved for future extension of the datadesc
-   */
-  char __reserved[256];
 } S_BB_DATADESC_T ;
 
 
@@ -432,11 +428,19 @@ typedef struct S_BB {
 
 } S_BB_T;
 
+#define VARNAME_LIB_LENGTH 96
+
 typedef struct S_BB_PRIV {
-	char varname_lib[96];
-	uint8_t reserved[4000];
+  char varname_lib[VARNAME_LIB_LENGTH];
+  uint8_t reserved[4000];
 } S_BB_PRIV_T;
 
+/**
+ * Get a pointer to the private structure of the BB
+ * @return a pointer to the private structure of the BB
+ */
+S_BB_PRIV_T *
+bb_get_priv(volatile S_BB_T* bb);
 
 #ifndef __KERNEL__
 BEGIN_C_DECLS
@@ -459,8 +463,8 @@ extern bb_set_varname_fn bb_set_varname;
 
 #define BB_CTL_SET_NAME_ENCODE_PTR  (1<<1)
 #define BB_CTL_GET_NAME_ENCODE_PTR  (1<<2)
-#define BB_CTL_SET_NAME_ENCODE_NAME (1<<3)
-#define BB_CTL_GET_NAME_ENCODE_NAME (1<<4)
+#define BB_CTL_GET_NAMING_FROM_BB   (1<<3)
+#define BB_CTL_SET_NAMING_IN_BB     (1<<4)
 
 /**
  * General purpose bb control function
