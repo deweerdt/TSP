@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.30 2007-02-20 07:31:10 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.31 2007-02-20 07:34:17 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -238,7 +238,6 @@ bb_ctl(S_BB_T *bb, unsigned int request, ...)
 {
 	va_list ap;
 	int ret=BB_OK;
-	char *mangling_fn_name;
 
 	va_start(ap, request);
 	switch (request) {
