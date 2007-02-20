@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.35 2007-02-20 16:00:49 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.36 2007-02-20 16:12:11 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -303,16 +303,19 @@ bb_size(const int32_t n_data, const int32_t data_size) {
    *  data descriptor array size +
    *  data zone size
    */
-  return (sizeof(S_BB_T) + 
+  int32_t size;
+
+  size = (sizeof(S_BB_T) + 
     sizeof(S_BB_DATADESC_T)*n_data +
-    sizeof(char)*data_size +
-    sizeof(S_BB_PRIV_T));
+    sizeof(char)*data_size);
+
+  size += sizeof(S_BB_PRIV_T);
+  return size;
 } /* end of bb_size */
 
 S_BB_PRIV_T *
 bb_get_priv(volatile S_BB_T* bb)
 {
-  fprintf(stderr, "%d %d %d", bb, bb_size(bb->n_data, bb->max_data_size) , sizeof(S_BB_PRIV_T));
   return (S_BB_PRIV_T *)((unsigned long )bb + (unsigned long)(bb_size(bb->n_data, bb->max_data_size) - sizeof(S_BB_PRIV_T)));
 }
 
@@ -931,17 +934,21 @@ int32_t
 bb_attach(S_BB_T** bb, const char* pc_bb_name) 
 {
   enum bb_type type;
-	int ret;
+  int ret;
 
   type = bb_type(pc_bb_name);
   ret = ops[type]->bb_shmem_attach(bb, pc_bb_name);
-	if (ret != BB_OK)
-		return ret;
+  if (ret != BB_OK)
+    return ret;
 
-	if (bb_varname_init(*bb) != BB_OK) {
-		STRACE_WARNING(("Could not setup a proper varname handling scheme\n"));
-	}
-	return ret;
+  /* older versions don't support name encoding */
+  if ((*bb)->bb_version_id < 0x0004000)
+    return ret;
+
+  if (bb_varname_init(*bb) != BB_OK) {
+    STRACE_WARNING(("Could not setup a proper varname encoding scheme\n"));
+  }
+  return ret;
 } /* end of bb_attach */
 
 int32_t 

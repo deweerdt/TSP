@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.h,v 1.31 2007-02-20 16:00:49 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.h,v 1.32 2007-02-20 16:12:11 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -427,6 +427,9 @@ typedef struct S_BB {
   } priv;
 
 } S_BB_T;
+
+/** Size of the S_BB_PRIV_T in version 0x0004000 */
+#define BB_EXT_SIZE_V0x0004000  4096
 
 #define VARNAME_LIB_LENGTH 96
 
