@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_tools.c,v 1.28 2007-02-19 15:53:19 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_tools.c,v 1.29 2007-02-20 07:31:10 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -431,7 +431,7 @@ bbtools_read(bbtools_request_t* req) {
   } else {
     bb_set_varname(&sym_data_desc, name);
     if (req->verbose) {
-      char *n = __bb_get_varname(&sym_data_desc);
+      char *n = bb_get_varname(&sym_data_desc);
       bbtools_logMsg(req->stream,
           "%s: Trying to read symbol <%s> on blackboard <%s>...\n",
           bbtools_cmdname_tab[E_BBTOOLS_READ], n, req->bbname);
@@ -461,7 +461,7 @@ bbtools_read(bbtools_request_t* req) {
     sym_value = bb_alias_subscribe(req->theBB,&sym_data_desc,array_index,array_index_len);    	
 
     if (NULL==sym_value) {
-      char *n = __bb_get_varname(&sym_data_desc);
+      char *n = bb_get_varname(&sym_data_desc);
       bbtools_logMsg(req->stream,"%s: symbol <%s> not found in BB <%s>\n",
 		     bbtools_cmdname_tab[E_BBTOOLS_READ], n, req->bbname);
       free(n);
@@ -549,7 +549,7 @@ bbtools_write(bbtools_request_t* req) {
   } else {
     bb_set_varname(&sym_data_desc, name);
     if (req->verbose) {
-      char *n = __bb_get_varname(&sym_data_desc);
+      char *n = bb_get_varname(&sym_data_desc);
       bbtools_logMsg(req->stream,
 		     "%s: Trying to write symbol <%s> on blackboard <%s>...\n",
 		     bbtools_cmdname_tab[E_BBTOOLS_WRITE], n, req->bbname);
@@ -586,7 +586,7 @@ bbtools_write(bbtools_request_t* req) {
     }     
     array_index[0] = 0;
     if (req->verbose) {
-      char *n = __bb_get_varname(&sym_data_desc);
+      char *n = bb_get_varname(&sym_data_desc);
       bbtools_logMsg(req->stream,
 		       "%s: Trying to write index <%d> of array symbol <%s> on blackboard <%s>...\n",
 		       bbtools_cmdname_tab[E_BBTOOLS_WRITE], array_index[0], n, req->bbname);
@@ -595,7 +595,7 @@ bbtools_write(bbtools_request_t* req) {
   }
 
   if (NULL==sym_value) {
-    char *n = __bb_get_varname(&sym_data_desc);
+    char *n = bb_get_varname(&sym_data_desc);
     bbtools_logMsg(req->stream,"%s: symbol <%s> not found in BB <%s>\n",
 		   bbtools_cmdname_tab[E_BBTOOLS_WRITE], n, req->bbname);
     free(n);
@@ -690,7 +690,7 @@ bbtools_find(bbtools_request_t* req) {
 
 
   for (i=0; i< req->theBB->n_data;++i) {
-    char *n = __bb_get_varname(&bb_data_desc(req->theBB)[i]);
+    char *n = bb_get_varname(&bb_data_desc(req->theBB)[i]);
     if (NULL != strstr(n ,varmatch)) {
       fprintf(req->stream,"%s",n);
       fprintf(req->stream,"%s",req->newline);
@@ -865,7 +865,7 @@ bbtools_publish(bbtools_request_t* req) {
   symbol_desc.type = bb_type_string2bb_type(symbol_type_str);
 
   if (req->verbose) {
-    char *n = __bb_get_varname(&symbol_desc);
+    char *n = bb_get_varname(&symbol_desc);
     bbtools_logMsg(req->stream,
 		   "%s: publish symbol <%s> of type <%s> in BB <%s>\n",
 		   bbtools_cmdname_tab[E_BBTOOLS_PUBLISH], n,

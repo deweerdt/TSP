@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.29 2007-02-19 15:53:19 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.30 2007-02-20 07:31:10 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -309,7 +309,7 @@ bb_find(volatile S_BB_T* bb, const char* var_name) {
   assert(bb);
 
   for (i=0; i< bb->n_data;++i) {
-    char * n = __bb_get_varname(&bb_data_desc(bb)[i]);
+    char * n = bb_get_varname(&bb_data_desc(bb)[i]);
     if (!strncmp(var_name,n,VARNAME_MAX_SIZE+1)) {
       retval = i;
       free(n);
@@ -588,7 +588,7 @@ bb_data_header_print(S_BB_DATADESC_T data_desc, FILE* pf, int32_t idx, int32_t a
       strncat(tabs, oneTab, sizeof(tabs)-strlen(tabs));
     }
   
-  n = __bb_get_varname(&data_desc);
+  n = bb_get_varname(&data_desc);
   fprintf(pf,"%s---------- < %s > ----------\n", tabs, n);
   free(n);
   fprintf(pf,"%s  alias-target = %d\n", tabs, data_desc.alias_target);
@@ -944,9 +944,9 @@ bb_publish(volatile S_BB_T *bb, S_BB_DATADESC_T* data_desc) {
    * if key already exists.
    */
   bb_lock(bb);
-  n = __bb_get_varname(data_desc);
+  n = bb_get_varname(data_desc);
   if (bb_find(bb, n) != -1) {
-    char *name = __bb_get_varname(data_desc);
+    char *name = bb_get_varname(data_desc);
     bb_logMsg(BB_LOG_FINER,"BlackBoard::bb_publish",
         "Key <%s> already exists in blackboard (automatic subscribe)!!", name);
     free(name);
@@ -1275,14 +1275,14 @@ bb_get_array_name(char * array_name,
     /* If this alias is an array */
     if (aliasstack[j].dimension > 1) {
       if (j==aliasstack_size-1) {
-        char *n = __bb_get_varname(&aliasstack[j]);
+        char *n = bb_get_varname(&aliasstack[j]);
         snprintf(part_of_name, array_name_size_max, "%s[%0d]", n,
             indexstack[indexstack_curr]);
         free(n);
       } else {
         char *n1, *n2;
-        n1 = __bb_get_varname(&aliasstack[j]);
-        n2 = __bb_get_varname(&aliasstack[j+1]);
+        n1 = bb_get_varname(&aliasstack[j]);
+        n2 = bb_get_varname(&aliasstack[j+1]);
         snprintf(part_of_name, array_name_size_max, "%s[%0d]",
             strstr(n1, n2 + strlen(n2)),
             indexstack[indexstack_curr]);
@@ -1297,12 +1297,12 @@ bb_get_array_name(char * array_name,
     else {
       char *n1, *n2;
       if (j==aliasstack_size-1){
-        n1 = __bb_get_varname(&aliasstack[j]);
+        n1 = bb_get_varname(&aliasstack[j]);
         snprintf(part_of_name, array_name_size_max, "%s", n1);
         free(n1);
       } else {
-        n1 = __bb_get_varname(&aliasstack[j]);
-        n2 = __bb_get_varname(&aliasstack[j+1]);
+        n1 = bb_get_varname(&aliasstack[j]);
+        n2 = bb_get_varname(&aliasstack[j+1]);
         snprintf(part_of_name, array_name_size_max, "%s", 
             strstr(n1, n2 + strlen(n2)));
         free(n1);

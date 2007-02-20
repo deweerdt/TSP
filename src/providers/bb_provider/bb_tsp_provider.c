@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/providers/bb_provider/bb_tsp_provider.c,v 1.30 2007-02-19 15:51:03 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/providers/bb_provider/bb_tsp_provider.c,v 1.31 2007-02-20 07:30:54 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -275,7 +275,7 @@ BB_GLU_init(GLU_handle_t* this, int fallback_argc, char* fallback_argv[]) {
 				 * Alias with array a intermediate alias 
 				 */
 				if (indexstack_len) {
-					char *n = __bb_get_varname(&bb_data_desc(shadow_bb)[i]);
+					char *n = bb_get_varname(&bb_data_desc(shadow_bb)[i]);
 					/* Compute the maximum length of symbol
 					 * which is the name of the symbol itself plus
 					 * the size of successive index '[nnnnnnnn]'
@@ -298,7 +298,7 @@ BB_GLU_init(GLU_handle_t* this, int fallback_argc, char* fallback_argv[]) {
 								indexstack, indexstack_len);	   
 
 						/* Add last part */
-						n = __bb_get_varname(&bb_data_desc(shadow_bb)[i]);
+						n = bb_get_varname(&bb_data_desc(shadow_bb)[i]);
 						strncat(tempName,rindex(n,'.'),i_temp - strlen(tempName) - 1);
 						free(n);
 
@@ -328,7 +328,7 @@ BB_GLU_init(GLU_handle_t* this, int fallback_argc, char* fallback_argv[]) {
 				/* Simple alias */
 				else {
 					char *n;
-					n = __bb_get_varname(&bb_data_desc(shadow_bb)[i]);
+					n = bb_get_varname(&bb_data_desc(shadow_bb)[i]);
 					TSP_SSI_initialize(&X_SSIList_value[pgi],
 							n,
 							pgi,
@@ -353,7 +353,7 @@ BB_GLU_init(GLU_handle_t* this, int fallback_argc, char* fallback_argv[]) {
 			/* Non-Alias case (Same as simple alias) */
 			else {
 				char *n;
-				n = __bb_get_varname(&bb_data_desc(shadow_bb)[i]);
+				n = bb_get_varname(&bb_data_desc(shadow_bb)[i]);
 				TSP_SSI_initialize(&X_SSIList_value[pgi],
 						n,
 						pgi,
@@ -375,7 +375,7 @@ BB_GLU_init(GLU_handle_t* this, int fallback_argc, char* fallback_argv[]) {
 			}
 		} else  { /* skip unhandled BB type */ 
 			char *n;
-			n = __bb_get_varname(&bb_data_desc(shadow_bb)[i]);
+			n = bb_get_varname(&bb_data_desc(shadow_bb)[i]);
 			STRACE_INFO(("Skipping unhandled symbol type <%d> name <%s>",bb_data_desc(shadow_bb)[i].type, n));
 			free(n);
 		}
@@ -426,7 +426,7 @@ BB_GLU_get_pgi(GLU_handle_t* this, TSP_sample_symbol_info_list_t* symbol_list, i
   
     /* Get short name (without [XXX], for array) and indexstack and its length */                                
     memset(&sym_data_desc,0,sizeof(S_BB_DATADESC_T));
-    n = __bb_get_varname(&sym_data_desc);
+    n = bb_get_varname(&sym_data_desc);
     if (bb_utils_parsearrayname(symbol_list->TSP_sample_symbol_info_list_t_val[i].name, 
 				n,
 				VARNAME_MAX_SIZE,
@@ -491,7 +491,7 @@ BB_GLU_get_pgi(GLU_handle_t* this, TSP_sample_symbol_info_list_t* symbol_list, i
 	       for (j=0; j<aliasstack_size; ++j) {
 		 /* validate */
 		 if ((aliasstack[j].dimension > 1) && (aliasstack[j].dimension < array_index[array_index_ptr])) {
-			 char *n = __bb_get_varname(&aliasstack[j]);
+			 char *n = bb_get_varname(&aliasstack[j]);
 		   STRACE_INFO(("Symbol=%s, found but index=%d out of range for element <%s>",
 				symbol_list->TSP_sample_symbol_info_list_t_val[i].name,
 				array_index[array_index_ptr], n));
@@ -658,7 +658,7 @@ BB_GLU_async_sample_write(GLU_handle_t* glu,
 	  if (allow_to_write[provider_global_index]==TSP_ASYNC_WRITE_ALLOWED) { 
 			char *n;
 	    data_desc = bbdatadesc_by_pgi[provider_global_index];
-			n = __bb_get_varname(data_desc);
+			n = bb_get_varname(data_desc);
 	    STRACE_INFO(("About to write on symbol <%s> value <%f> (strvalue=%s)...",n,value,strvalue));	    
 			free(n);
 	    /* 
@@ -695,7 +695,7 @@ BB_GLU_async_sample_read(GLU_handle_t* glu,
 	if (provider_global_index>=0 && provider_global_index<nbTspSymbols) {
 			char *n;
 	    data_desc = bbdatadesc_by_pgi[provider_global_index];
-			n = __bb_get_varname(data_desc);
+			n = bb_get_varname(data_desc);
 	    STRACE_INFO(("About to read from symbol <%s> value...",n));
 			free(n);
 	    /* 

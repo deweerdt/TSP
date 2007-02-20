@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_simple.c,v 1.12 2007-02-19 15:53:19 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_simple.c,v 1.13 2007-02-20 07:31:10 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -159,7 +159,7 @@ void* bb_simple_alias_publish(S_BB_T* bb_simple,
     char *n;
     target = bb_data_desc(bb_simple)[idx];
 
-    n = __bb_get_varname(&target);
+    n = bb_get_varname(&target);
     snprintf(alias_name,VARNAME_MAX_SIZE,
         "%s.%s", n, var_name);
     free(n);
