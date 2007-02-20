@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.h,v 1.27 2007-02-20 07:38:20 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.h,v 1.28 2007-02-20 07:39:13 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -154,7 +154,7 @@ Purpose   : BlackBoard Idiom implementation
  * is compatible with the process currently trying to use 
  * BlackBoard.
  */
-#define BB_VERSION_ID       0x0002000
+#define BB_VERSION_ID       0x0004000
 
 #define BB_OK        0
 #define BB_NOK      -1
