@@ -503,6 +503,7 @@ IF(WIN32)
 ENDIF(WIN32)
 
 INCLUDE(CPack)
+INCLUDE(UsePackageBackup)
 INCLUDE(UseRPMTools)
 IF(RPMTools_FOUND)
   RPMTools_ADD_RPM_TARGETS(tsp ${CMAKE_SOURCE_DIR}/src/scripts/tsp.spec.in)
