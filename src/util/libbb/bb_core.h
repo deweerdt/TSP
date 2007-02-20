@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.h,v 1.26 2007-02-20 07:34:00 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.h,v 1.27 2007-02-20 07:38:20 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -228,8 +228,6 @@ typedef enum {BB_STATUS_UNKNOWN=0, /*!< Unknown status     */
 typedef struct S_BB_DATADESC {
   /** Variable name */
   char __name[VARNAME_MAX_SIZE+1];
-  /** Length of the variable name */
-  int  __name_len;
   /** The Variable type */
   E_BB_TYPE_T type;
   /** 

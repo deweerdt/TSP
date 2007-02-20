@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.31 2007-02-20 07:34:17 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.32 2007-02-20 07:38:20 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -201,11 +201,11 @@ bb_set_varname_fn bb_set_varname = bb_set_varname_default;
 
 char *bb_get_varname_zipped(const S_BB_DATADESC_T *dd)
 {
-  unsigned long len = dd->__name_len * 3;
+  unsigned long len = VARNAME_MAX_SIZE * 3;
   int ret;
   char *uncomp = malloc(len);
                           
-  ret = uncompress((unsigned char *)uncomp, &len, (unsigned char *)dd->__name, dd->__name_len);
+  ret = uncompress((unsigned char *)uncomp, &len, (unsigned char *)dd->__name, VARNAME_MAX_SIZE);
   if (ret) {
     return NULL;
   }
@@ -228,7 +228,6 @@ void bb_set_varname_zipped(S_BB_DATADESC_T *dd, const char *key)
   }
   assert(len < VARNAME_MAX_SIZE);
   memcpy(dd->__name, comp, len);
-  dd->__name_len = len;
   free(comp);
 }
 
