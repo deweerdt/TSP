@@ -233,7 +233,7 @@ xmlrpc_value_to_TSP_request_sample (xmlrpc_env *env,
 	
 	xmlrpc_array_read_item(env, param_array, i+1, &symbol);
 	  
-	xmlrpc_parse_value(env, symbol, "{s:s,s:i,s:i,s:i,s:i,s:i,s:i,*}",
+	xmlrpc_parse_value(env, symbol, "{s:s,s:i,s:i,s:i,s:i,s:i,s:i,s:i,s:i,s:i,*}",
 					   "name", &req_sample->symbols.TSP_sample_symbol_info_list_t_val[i].name,
 					   "provider_global_index", &req_sample->symbols.TSP_sample_symbol_info_list_t_val[i].provider_global_index,
 					   "provider_group_index", &req_sample->symbols.TSP_sample_symbol_info_list_t_val[i].provider_group_index,
@@ -241,14 +241,14 @@ xmlrpc_value_to_TSP_request_sample (xmlrpc_env *env,
 					   /* "xdr_tsp_t", &req_sample->symbols.TSP_sample_symbol_info_list_t_val[i].xdr_tsp_t, */
 					   "dimension", &req_sample->symbols.TSP_sample_symbol_info_list_t_val[i].dimension,
 					   "period", &req_sample->symbols.TSP_sample_symbol_info_list_t_val[i].period,
-					   "phase", &req_sample->symbols.TSP_sample_symbol_info_list_t_val[i].phase);
+                       "phase", &req_sample->symbols.TSP_sample_symbol_info_list_t_val[i].phase, 
+                       "type", &req_sample->symbols.TSP_sample_symbol_info_list_t_val[i].type, 
+                       "dimension", &req_sample->symbols.TSP_sample_symbol_info_list_t_val[i].dimension,                     
+					   "nelem", &req_sample->symbols.TSP_sample_symbol_info_list_t_val[i].nelem);
 	  
 	req_sample->symbols.TSP_sample_symbol_info_list_t_val[i].name = strdup(req_sample->symbols.TSP_sample_symbol_info_list_t_val[i].name);
 
-    /* FIXME, this is temporary, it allows the Ruby consumer to keep on working with float type*/
-    req_sample->symbols.TSP_sample_symbol_info_list_t_val[i].type=0;
-    req_sample->symbols.TSP_sample_symbol_info_list_t_val[i].dimension=1;
-    req_sample->symbols.TSP_sample_symbol_info_list_t_val[i].nelem=0;
+    /* FIXME, this is temporary to follow the Ruby consumer implementation*/
     req_sample->symbols.TSP_sample_symbol_info_list_t_val[i].offset=0;
     /* FIXME, end*/
     

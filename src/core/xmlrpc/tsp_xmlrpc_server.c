@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/xmlrpc/tsp_xmlrpc_server.c,v 1.8 2006-10-21 08:48:00 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/xmlrpc/tsp_xmlrpc_server.c,v 1.9 2007-02-20 19:05:03 sgalles Exp $
 
 -----------------------------------------------------------------------
 
@@ -160,7 +160,7 @@ xmlrpc_value * tsp_request_information_xmlrpc (xmlrpc_env *env, xmlrpc_value *pa
   for (i=0; i < ans_sample.symbols.TSP_sample_symbol_info_list_t_len; i++) {
 	xmlrpc_value *symbol;
 
-	symbol = xmlrpc_build_value(env, "{s:s,s:i,s:i,s:i,s:i,s:i,s:i,s:i}",
+	symbol = xmlrpc_build_value(env, "{s:s,s:i,s:i,s:i,s:i,s:i,s:i,s:i,s:i,s:i}",
 								"name", ans_sample.symbols.TSP_sample_symbol_info_list_t_val[i].name,
 								"provider_global_index", ans_sample.symbols.TSP_sample_symbol_info_list_t_val[i].provider_global_index,
 								"provider_group_index", ans_sample.symbols.TSP_sample_symbol_info_list_t_val[i].provider_group_index,
@@ -169,6 +169,8 @@ xmlrpc_value * tsp_request_information_xmlrpc (xmlrpc_env *env, xmlrpc_value *pa
 								"dimension", ans_sample.symbols.TSP_sample_symbol_info_list_t_val[i].dimension,
 								"period", ans_sample.symbols.TSP_sample_symbol_info_list_t_val[i].period,
                                 "phase", ans_sample.symbols.TSP_sample_symbol_info_list_t_val[i].phase,
+                                "nelem", ans_sample.symbols.TSP_sample_symbol_info_list_t_val[i].nelem,
+                                "dimension", ans_sample.symbols.TSP_sample_symbol_info_list_t_val[i].dimension,
 								"type", ans_sample.symbols.TSP_sample_symbol_info_list_t_val[i].type);
                                 
 	xmlrpc_array_append_item(env, value, symbol);
@@ -211,7 +213,7 @@ xmlrpc_value * tsp_request_sample_xmlrpc (xmlrpc_env *env, xmlrpc_value *param_a
 	xmlrpc_value *symbol;
 
 
-	symbol = xmlrpc_build_value(env, "{s:s,s:i,s:i,s:i,s:i,s:i,s:i,s:i}",
+	symbol = xmlrpc_build_value(env, "{s:s,s:i,s:i,s:i,s:i,s:i,s:i,s:i,s:i,s:i}",
 								"name", ans_sample.symbols.TSP_sample_symbol_info_list_t_val[i].name,
 								"provider_global_index", ans_sample.symbols.TSP_sample_symbol_info_list_t_val[i].provider_global_index,
 								"provider_group_index", ans_sample.symbols.TSP_sample_symbol_info_list_t_val[i].provider_group_index,
@@ -220,6 +222,8 @@ xmlrpc_value * tsp_request_sample_xmlrpc (xmlrpc_env *env, xmlrpc_value *param_a
 								"dimension", ans_sample.symbols.TSP_sample_symbol_info_list_t_val[i].dimension,
 								"period", ans_sample.symbols.TSP_sample_symbol_info_list_t_val[i].period,
                                 "phase", ans_sample.symbols.TSP_sample_symbol_info_list_t_val[i].phase,
+                                "nelem", ans_sample.symbols.TSP_sample_symbol_info_list_t_val[i].nelem,
+                                "dimension", ans_sample.symbols.TSP_sample_symbol_info_list_t_val[i].dimension,
 								"type", ans_sample.symbols.TSP_sample_symbol_info_list_t_val[i].type);
 	xmlrpc_array_append_item(env, value, symbol);
   }
