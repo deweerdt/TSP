@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.h,v 1.29 2007-02-20 14:13:05 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.h,v 1.30 2007-02-20 14:53:34 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -65,7 +65,6 @@ Purpose   : BlackBoard Idiom implementation
 #include <stdint.h>
 #include <stdlib.h>
 #include <assert.h>
-#include <zlib.h>
 #include <inttypes.h>
 #include <stdarg.h>
 #include <string.h>

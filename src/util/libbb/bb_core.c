@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.33 2007-02-20 14:13:05 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.34 2007-02-20 14:53:34 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -198,39 +198,6 @@ static void bb_set_varname_default(S_BB_DATADESC_T *dd, const char *key)
 
 bb_get_varname_fn bb_get_varname = bb_get_varname_default;
 bb_set_varname_fn bb_set_varname = bb_set_varname_default;
-
-char *bb_get_varname_zipped(const S_BB_DATADESC_T *dd)
-{
-  unsigned long len = VARNAME_MAX_SIZE * 3;
-  int ret;
-  char *uncomp = malloc(len);
-                          
-  ret = uncompress((unsigned char *)uncomp, &len, (unsigned char *)dd->__name, VARNAME_MAX_SIZE);
-  if (ret) {
-    return NULL;
-  }
-  uncomp[len] = '\0';
-  return uncomp;
-}
-
-void bb_set_varname_zipped(S_BB_DATADESC_T *dd, const char *key)
-{
-	int ret;
-  unsigned long len;
-  char *comp;
-	
-  /* see zlib manual, they require 1% + 12 chars */
-  len = strlen(key)*1.01 + 12;
-  comp = malloc(len);
-  ret = compress2((unsigned char *)comp, &len, (unsigned char *)key, strlen(key), 9);
-  if (ret) {
-    return;
-  }
-  assert(len < VARNAME_MAX_SIZE);
-  memcpy(dd->__name, comp, len);
-  free(comp);
-}
-
 
 int32_t
 bb_ctl(S_BB_T *bb, unsigned int request, ...)
