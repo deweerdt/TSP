@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.32 2007-02-20 07:38:20 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.33 2007-02-20 14:13:05 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -294,7 +294,8 @@ bb_size(const int32_t n_data, const int32_t data_size) {
    */
   return (sizeof(S_BB_T) + 
     sizeof(S_BB_DATADESC_T)*n_data +
-    sizeof(char)*data_size);
+    sizeof(char)*data_size) +
+    sizeof(S_BB_PRIV_T);
 } /* end of bb_size */
 
 int32_t 

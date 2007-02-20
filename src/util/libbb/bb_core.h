@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.h,v 1.28 2007-02-20 07:39:13 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.h,v 1.29 2007-02-20 14:13:05 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -226,8 +226,9 @@ typedef enum {BB_STATUS_UNKNOWN=0, /*!< Unknown status     */
  * one such structure.
  */     	      
 typedef struct S_BB_DATADESC {
-  /** Variable name */
+  /** Variable name (private) use bb_get_varname/bb_set_varname */
   char __name[VARNAME_MAX_SIZE+1];
+
   /** The Variable type */
   E_BB_TYPE_T type;
   /** 
@@ -429,7 +430,14 @@ typedef struct S_BB {
 	struct sysv_private sysv;
 	struct kernel_private k;
   } priv;
+
 } S_BB_T;
+
+typedef struct S_BB_PRIV {
+	char varname_lib[96];
+	uint8_t reserved[4000];
+} S_BB_PRIV_T;
+
 
 #ifndef __KERNEL__
 BEGIN_C_DECLS
@@ -454,6 +462,7 @@ extern bb_set_varname_fn bb_set_varname;
 #define BB_CTL_GET_NAME_ENCODE_PTR  (1<<2)
 #define BB_CTL_SET_NAME_ENCODE_NAME (1<<3)
 #define BB_CTL_GET_NAME_ENCODE_NAME (1<<4)
+
 /**
  * General purpose bb control function
  * @param[in] bb a BlackBoard pointer
