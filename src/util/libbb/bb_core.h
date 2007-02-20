@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.h,v 1.32 2007-02-20 16:12:11 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.h,v 1.33 2007-02-20 16:43:37 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -464,8 +464,8 @@ extern bb_get_varname_fn bb_get_varname;
  */
 extern bb_set_varname_fn bb_set_varname;
 
-#define BB_CTL_SET_NAME_ENCODE_PTR  (1<<1)
-#define BB_CTL_GET_NAME_ENCODE_PTR  (1<<2)
+#define BB_CTL_SET_NAME_SETTER_PTR  (1<<1)
+#define BB_CTL_SET_NAME_GETTER_PTR  (1<<2)
 #define BB_CTL_GET_NAMING_FROM_BB   (1<<3)
 #define BB_CTL_SET_NAMING_IN_BB     (1<<4)
 

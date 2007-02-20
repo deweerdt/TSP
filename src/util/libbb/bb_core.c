@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.36 2007-02-20 16:12:11 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.37 2007-02-20 16:43:37 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -253,19 +253,19 @@ bb_ctl(S_BB_T *bb, unsigned int request, ...)
   va_start(ap, request);
   switch (request) {
     /* We've been passed a function pointer */
-    case BB_CTL_SET_NAME_ENCODE_PTR:
+    case BB_CTL_SET_NAME_SETTER_PTR:
       bb_set_varname = va_arg(ap, typeof(bb_set_varname));
       break;
-    case BB_CTL_GET_NAME_ENCODE_PTR:
+    /* We've been passed a function pointer */
+    case BB_CTL_SET_NAME_GETTER_PTR:
       bb_get_varname = va_arg(ap, typeof(bb_get_varname));
       break;
-      /* We've been passed a symbol name, use dlsym to find it */
     case BB_CTL_GET_NAMING_FROM_BB:
       ret=bb_varname_init(bb);
       break;
     case BB_CTL_SET_NAMING_IN_BB:
       name = va_arg(ap, typeof(name));
-      priv = va_arg(ap, typeof(priv));
+      priv = bb_get_priv(bb);
       strncpy(priv->varname_lib, name, VARNAME_LIB_LENGTH);
       ret=bb_varname_init(bb);
       break;
