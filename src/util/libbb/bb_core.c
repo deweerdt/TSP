@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.37 2007-02-20 16:43:37 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.38 2007-02-22 14:54:54 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -119,11 +119,12 @@ extern struct bb_operations k_bb_ops;
 /* Note: This is thigtly related to enum bb_type in bb_core.h,
    if you ever modify this, you'll probably need to modify
    enum bb_type */
-static struct bb_operations *ops[] = { 	&sysv_bb_ops
+static struct bb_operations *ops[] = {
+  &sysv_bb_ops
 #if defined(linux) || defined(__linux)
-					,&k_bb_ops };
+  ,&k_bb_ops };
 #else
-                                     };
+};
 #endif
 
 static enum bb_type bb_type(const char *name)
@@ -195,9 +196,11 @@ static char *bb_get_varname_default(const S_BB_DATADESC_T *dd)
 {
   return strdup(dd->__name);
 }
-static void bb_set_varname_default(S_BB_DATADESC_T *dd, const char *key)
+
+static int32_t bb_set_varname_default(S_BB_DATADESC_T *dd, const char *key)
 {
   strncpy(dd->__name, key, VARNAME_MAX_SIZE);
+  return BB_OK;
 }
 
 bb_get_varname_fn bb_get_varname = bb_get_varname_default;
@@ -206,39 +209,54 @@ bb_set_varname_fn bb_set_varname = bb_set_varname_default;
 static int32_t
 bb_varname_init(S_BB_T *bb)
 {
-	bb_get_varname_fn getter;
-	bb_set_varname_fn setter;
-	char getter_name[256];
-	char setter_name[256];
-	S_BB_PRIV_T *priv;
-	void *handle = RTLD_DEFAULT;
+  bb_varname_init_fn init;
+  bb_get_varname_fn getter;
+  bb_set_varname_fn setter;
+  char getter_name[256];
+  char setter_name[256];
+  char init_name[256];
+  S_BB_PRIV_T *priv;
+  void *handle = RTLD_DEFAULT;
 
-	priv = bb_get_priv(bb);
-	if (priv->varname_lib[0] == '\0')
-		return BB_OK;
+  priv = bb_get_priv(bb);
+  if (priv->varname_lib[0] == '\0') {
+    return BB_OK;
+  }
 
-	sprintf(getter_name, "bb_get_varname_%s", priv->varname_lib);
-	sprintf(setter_name, "bb_set_varname_%s", priv->varname_lib);
+  sprintf(getter_name, "bb_get_varname_%s", priv->varname_lib);
+  sprintf(setter_name, "bb_set_varname_%s", priv->varname_lib);
+  sprintf(init_name, "bb_varname_init_%s", priv->varname_lib);
 
-	getter = dlsym(handle, getter_name);
-	if (!getter) {
-		char libname[FILENAME_MAX];
+  getter = dlsym(handle, getter_name);
+  if (!getter) {
+    char libname[FILENAME_MAX];
 
-		sprintf(libname, "%s.so", priv->varname_lib);
-		/* try to open a library */
-		handle = dlopen(libname, RTLD_NOW);
-		getter = dlsym(handle, getter_name);
-		if (!getter)
-			return BB_NOK;
-	}
-	setter = dlsym(handle, getter_name);
-	if (!setter)
-		return BB_NOK;
+    sprintf(libname, "%s.so", priv->varname_lib);
+    /* try to open a library */
+    handle = dlopen(libname, RTLD_NOW);
+    getter = dlsym(handle, getter_name);
+    if (!getter) {
+      STRACE_WARNING(("cound not find symbol %s\n", getter_name));
+      return BB_NOK;
+    }
+  }
+  setter = dlsym(handle, setter_name);
+  if (!setter) {
+    STRACE_WARNING(("cound not find symbol %s\n", setter_name));
+    return BB_NOK;
+  }
 
-	bb_set_varname = setter;
-	bb_get_varname = getter;
+  init = dlsym(handle, init_name);
 
-	return BB_OK;
+  if (init) {
+    if (init(bb) != BB_OK)
+      return BB_NOK;
+  }
+
+  bb_set_varname = setter;
+  bb_get_varname = getter;
+
+  return BB_OK;
 }
 
 
@@ -256,7 +274,7 @@ bb_ctl(S_BB_T *bb, unsigned int request, ...)
     case BB_CTL_SET_NAME_SETTER_PTR:
       bb_set_varname = va_arg(ap, typeof(bb_set_varname));
       break;
-    /* We've been passed a function pointer */
+      /* We've been passed a function pointer */
     case BB_CTL_SET_NAME_GETTER_PTR:
       bb_get_varname = va_arg(ap, typeof(bb_get_varname));
       break;
@@ -288,6 +306,10 @@ bb_check_version(volatile S_BB_T* bb) {
 
   assert(bb);
   retval = BB_VERSION_ID - bb->bb_version_id;
+  /* From now on we're nice and backwards compatible */
+  if (BB_VERSION_ID >= 0x2000 && bb->bb_version_id >= 0x2000) {
+    return 0; 
+  }
 /*   if (retval != 0) { */
 /*       bb_logMsg(BB_LOG_WARNING, "BlackBoard::bb_check_version", */
 /* 		"BB version mismatch using <0x%08X> for accessing <0x%08X>\n", */
@@ -316,21 +338,20 @@ bb_size(const int32_t n_data, const int32_t data_size) {
 S_BB_PRIV_T *
 bb_get_priv(volatile S_BB_T* bb)
 {
-  return (S_BB_PRIV_T *)((unsigned long )bb + (unsigned long)(bb_size(bb->n_data, bb->max_data_size) - sizeof(S_BB_PRIV_T)));
+  return (S_BB_PRIV_T *)((unsigned long)bb + (unsigned long)(bb_size(bb->max_data_desc_size, bb->max_data_size) - sizeof(S_BB_PRIV_T)));
 }
 
 int32_t 
 bb_find(volatile S_BB_T* bb, const char* var_name) {
-  
   int32_t retval;  
   int32_t i;
-    
+
   retval = -1;
   assert(bb);
 
   for (i=0; i< bb->n_data;++i) {
     char * n = bb_get_varname(&bb_data_desc(bb)[i]);
-    if (!strncmp(var_name,n,VARNAME_MAX_SIZE+1)) {
+    if (!strcmp(var_name,n)) {
       retval = i;
       free(n);
       break;
@@ -477,9 +498,9 @@ bb_data_initialise(volatile S_BB_T* bb, S_BB_DATADESC_T* data_desc,void* default
       break;
     case E_BB_USER:
       if (NULL == default_value) {
-	memset(data + (data_desc->type)*i,0,data_desc->type);
+				memset(data + (data_desc->type)*i,0,data_desc->type_size);
       } else {
-	memcpy(data + (data_desc->type)*i,default_value,data_desc->type);
+				memcpy(data + (data_desc->type)*i,default_value,data_desc->type_size);
       }
       break; 
     default:

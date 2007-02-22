@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.h,v 1.33 2007-02-20 16:43:37 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.h,v 1.34 2007-02-22 14:54:54 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -193,30 +193,32 @@ typedef enum BB_LOG_LEVEL {
  * Any data published with @ref bb_publish, @ref bb_alias_publish 
  * or @ref bb_simple_publish should be specified with its type.
  */
-typedef enum {E_BB_DISCOVER=0, /*!< Discover is used by @ref bb_subscribe when discovering data type */
-              E_BB_DOUBLE=1,   /*!< An IEEE double precision floating point  */
-	      E_BB_FLOAT,      /*!< An IEEE simple precision floating point  */
-	      E_BB_INT8,       /*!< An 8bit signed integer                   */
-	      E_BB_INT16,      /*!< A 16bit signed integer                   */
-	      E_BB_INT32,      /*!< A 32bit signed integer                   */
-	      E_BB_INT64,      /*!< A 64bit signed integer                   */
-	      E_BB_UINT8,      /*!< An 8bit unsigned integer                 */
-	      E_BB_UINT16,     /*!< A 16bit unsigned integer                 */
-	      E_BB_UINT32,     /*!< A 32bit unsigned integer                 */
-	      E_BB_UINT64,     /*!< A 64bit unsigned integer                 */
-	      E_BB_CHAR,       /*!< An 8bit signed character                 */
-	      E_BB_UCHAR,      /*!< An 8bit unsigned character               */
-              E_BB_USER        /*!< A user type of any size (should be supplied) in @ref bb_publish */
+typedef enum {
+  E_BB_DISCOVER=0, /*!< Discover is used by @ref bb_subscribe when discovering data type */
+  E_BB_DOUBLE=1,   /*!< An IEEE double precision floating point  */
+  E_BB_FLOAT,      /*!< An IEEE simple precision floating point  */
+  E_BB_INT8,       /*!< An 8bit signed integer                   */
+  E_BB_INT16,      /*!< A 16bit signed integer                   */
+  E_BB_INT32,      /*!< A 32bit signed integer                   */
+  E_BB_INT64,      /*!< A 64bit signed integer                   */
+  E_BB_UINT8,      /*!< An 8bit unsigned integer                 */
+  E_BB_UINT16,     /*!< A 16bit unsigned integer                 */
+  E_BB_UINT32,     /*!< A 32bit unsigned integer                 */
+  E_BB_UINT64,     /*!< A 64bit unsigned integer                 */
+  E_BB_CHAR,       /*!< An 8bit signed character                 */
+  E_BB_UCHAR,      /*!< An 8bit unsigned character               */
+  E_BB_USER        /*!< A user type of any size (should be supplied) in @ref bb_publish */
 } E_BB_TYPE_T;
 
 /**
  * BlackBoard status.
  */
-typedef enum {BB_STATUS_UNKNOWN=0, /*!< Unknown status     */
-	      BB_STATUS_GENUINE,   /*!< Genuine as opposed to a shadow one */
-	      BB_STATUS_DIRTY,     /*!< Unused for now */
-	      BB_STATUS_DESTROYED, /*!< The BlackBoard has been destroyed by one of the process that were attached to, other should detach as fast as possible */
-	      BB_STATUS_SHADOW     /*!< A Shadow BlackBoard created by @ref bb_shadow_get */
+typedef enum {
+  BB_STATUS_UNKNOWN=0, /*!< Unknown status     */
+  BB_STATUS_GENUINE,   /*!< Genuine as opposed to a shadow one */
+  BB_STATUS_DIRTY,     /*!< Unused for now */
+  BB_STATUS_DESTROYED, /*!< The BlackBoard has been destroyed by one of the process that were attached to, other should detach as fast as possible */
+  BB_STATUS_SHADOW     /*!< A Shadow BlackBoard created by @ref bb_shadow_get */
 } BB_STATUS_T;
 	      
 /**
@@ -449,8 +451,10 @@ bb_get_priv(volatile S_BB_T* bb);
 BEGIN_C_DECLS
 #endif
 
+typedef int32_t (*bb_varname_init_fn)(S_BB_T *);
+typedef int32_t (*bb_varname_destroy_fn)(S_BB_T *);
 typedef char *(*bb_get_varname_fn)(const S_BB_DATADESC_T *);
-typedef void (*bb_set_varname_fn)(S_BB_DATADESC_T *, const char *);
+typedef int32_t (*bb_set_varname_fn)(S_BB_DATADESC_T *, const char *);
 /**
  * Get the name of a variable described by @dd
  * @param[in] dd the descriptor of the variable

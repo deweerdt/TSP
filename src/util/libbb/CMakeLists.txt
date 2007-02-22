@@ -2,10 +2,10 @@ SET(_SRC
   bb_utils bb_alias
   bb_core bb_simple
   bb_sha1 bb_tools 
-  bb_core_sysv.c)
+  bb_core_sysv.c bb_varname_sarray.c)
 
 IF(ZLIB_FOUND)
-SET(_SRC ${_SRC} bb_zip.c)
+SET(_SRC ${_SRC} bb_varname_zip.c)
 ENDIF(ZLIB_FOUND)
 #
 # bb_core_k kernel device API on works on linux 
