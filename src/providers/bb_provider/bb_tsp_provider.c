@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/providers/bb_provider/bb_tsp_provider.c,v 1.32 2007-02-26 21:42:01 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/providers/bb_provider/bb_tsp_provider.c,v 1.33 2007-02-26 21:55:19 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -444,6 +444,7 @@ BB_GLU_get_pgi(GLU_handle_t* this, TSP_sample_symbol_info_list_t* symbol_list, i
             "BB_GLU_get_pgi",
             symbol_list->TSP_sample_symbol_info_list_t_val[i].name, n));
       /* search if the symbol is published in the blackboard */
+      bb_set_varname(&sym_data_desc, n);
       sym_data_desc.type      = E_BB_DISCOVER;
       sym_data_desc.type_size = 0;
       sym_data_desc.dimension = 0;
