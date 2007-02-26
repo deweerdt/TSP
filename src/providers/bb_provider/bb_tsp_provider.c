@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/providers/bb_provider/bb_tsp_provider.c,v 1.31 2007-02-20 07:30:54 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/providers/bb_provider/bb_tsp_provider.c,v 1.32 2007-02-26 21:42:01 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -403,7 +403,7 @@ BB_GLU_get_sample_symbol_info_list(GLU_handle_t* h_glu,
 
 int 
 BB_GLU_get_pgi(GLU_handle_t* this, TSP_sample_symbol_info_list_t* symbol_list, int* pg_indexes) {
-  
+
   int     i=0;
   int 	  j=0;
   int     ret=TRUE;
@@ -419,149 +419,153 @@ BB_GLU_get_pgi(GLU_handle_t* this, TSP_sample_symbol_info_list_t* symbol_list, i
   int32_t previous_array_ptr;
   void *sym_value;
   char *n;
-  
+
   STRACE_INFO(("Starting symbol Valid nb_symbol=%u",symbol_list->TSP_sample_symbol_info_list_t_len));
   /* For each requested symbols, check by name, and find the provider global index */
   for (i = 0 ; i < symbol_list->TSP_sample_symbol_info_list_t_len ; i++) {
-  
+
     /* Get short name (without [XXX], for array) and indexstack and its length */                                
     memset(&sym_data_desc,0,sizeof(S_BB_DATADESC_T));
     n = bb_get_varname(&sym_data_desc);
+    n = realloc(n, VARNAME_MAX_SIZE);
     if (bb_utils_parsearrayname(symbol_list->TSP_sample_symbol_info_list_t_val[i].name, 
-				n,
-				VARNAME_MAX_SIZE,
-				array_index, &array_index_len)) {
-	   STRACE_INFO  (("%s: cannot parse symname <%s>",
-			  "BB_GLU_get_pgi",
-			  symbol_list->TSP_sample_symbol_info_list_t_val[i].name));
-	   ret = FALSE;
-	   continue;
-	 } 	 
-	 else {
-	   STRACE_DEBUG  (("%s: array name <%s> parsed to symname <%s>",
-			   "BB_GLU_get_pgi",
-			   symbol_list->TSP_sample_symbol_info_list_t_val[i].name, n));
-	   /* search if the symbol is published in the blackboard */
-	   sym_data_desc.type      = E_BB_DISCOVER;
-	   sym_data_desc.type_size = 0;
-	   sym_data_desc.dimension = 0;
-	   sym_value = bb_alias_subscribe(shadow_bb,&sym_data_desc,array_index,array_index_len);    	
-	   
-	   if (NULL==sym_value) {
-	     STRACE_INFO  (("symbol <%s> not found in BB <%s>",
-			    n, shadow_bb->name));
-	     pg_indexes[i] = -1;	     
-	     ret = FALSE;
-	     continue;
-	   }
-	   else { 		
-	     /* find the index of the symbol in the BB */
-	     bbidx = bb_find(shadow_bb, n);
-	     
-	     STRACE_DEBUG(("Validate symbol: orig_name=<%s>, short=<%s>",
-			   symbol_list->TSP_sample_symbol_info_list_t_val[i].name, n));
+          n,
+          VARNAME_MAX_SIZE,
+          array_index, &array_index_len)) {
+      STRACE_INFO  (("%s: cannot parse symname <%s>",
+            "BB_GLU_get_pgi",
+            symbol_list->TSP_sample_symbol_info_list_t_val[i].name));
+      ret = FALSE;
+      free(n);
+      continue;
+    } 	 
+    else {
+      STRACE_DEBUG  (("%s: array name <%s> parsed to symname <%s>",
+            "BB_GLU_get_pgi",
+            symbol_list->TSP_sample_symbol_info_list_t_val[i].name, n));
+      /* search if the symbol is published in the blackboard */
+      sym_data_desc.type      = E_BB_DISCOVER;
+      sym_data_desc.type_size = 0;
+      sym_data_desc.dimension = 0;
+      sym_value = bb_alias_subscribe(shadow_bb,&sym_data_desc,array_index,array_index_len);    	
 
-	     /* 
-	      * Array index is in reverse order of aliasstack.
-	      *
-	      * Array index is ordered by 'reading' order:
-	      *  target[idx0].aliasL1[idx1].aliasL2[idx2]
-	      * whereas aliasstack is ordered by alias to target resolution order
-	      *  aliasL2 --> aliasL1 --> target
-	      */
-	     array_index_ptr   = array_index_len-1;
-	     /* Initialise aliasstack */
-	     aliasstack_size   = MAX_ALIAS_LEVEL;
-	     aliasstack[0]     = sym_data_desc;
-	     bb_find_aliastack(shadow_bb, aliasstack, &aliasstack_size);	     
-	     
-	     /* symbol not found skip to next symname */
-	     if (-1==bbidx) {
-	       pg_indexes[i] = -1;
-	       ret=FALSE;
-	       STRACE_INFO(("Symbol=%s, not found",symbol_list->TSP_sample_symbol_info_list_t_val[i].name));
-	       continue;
-	     } else {
-	       /* 
-		* Examine whether symbol is of array type or not
-		* and validate index range in indexstack vs dimension specified in aliasstack
-		* (remember indexstack is in the reverse order of aliasstack so the --array_index_ptr)
-		* if it is of array type.
-		*/
-	       for (j=0; j<aliasstack_size; ++j) {
-		 /* validate */
-		 if ((aliasstack[j].dimension > 1) && (aliasstack[j].dimension < array_index[array_index_ptr])) {
-			 char *n = bb_get_varname(&aliasstack[j]);
-		   STRACE_INFO(("Symbol=%s, found but index=%d out of range for element <%s>",
-				symbol_list->TSP_sample_symbol_info_list_t_val[i].name,
-				array_index[array_index_ptr], n));
-		   ret = FALSE;
-			 free(n);
-		 }
-		 /* go to next index on (index)stack */
-		 else if (aliasstack[j].dimension > 1){
-		   --array_index_ptr;
-		 }
-	       }
-	       if (ret == FALSE) {continue;}
-	       else {		 
-		 /* 
-		  * Magic formula for fast rebuild of PGI 
-		  * from indexstack and aliasstack 
-		  * We need to calculate PGI the same way we did during initialize.
-		  * The PGI of target[idx0].aliasL1[idx1].aliasL2[idx2]
-		  * should be 
-		  * pgiof(target.aliasL1.aliasL2) + 
-		  *      idx0*target.dimension  + 
-		  *      idx1*aliasL1.dimension
-		  * 
-		  * NOTE THAT WE DO NOT HANDLE THE CASE OF ALIAS
-		  * ON A ARRAY OF NON-USER TYPE.
-		  */
+      if (NULL==sym_value) {
+        STRACE_INFO  (("symbol <%s> not found in BB <%s>",
+              n, shadow_bb->name));
+        pg_indexes[i] = -1;	     
+        ret = FALSE;
+        free(n);
+        continue;
+      }
+      else { 		
+        /* find the index of the symbol in the BB */
+        bbidx = bb_find(shadow_bb, n);
 
-		 /* 
-		  * reset array_index_ptr to the end 
-		  * (again remember alias and index stacks are reversed)
-		  */
-		 array_index_ptr = array_index_len-1;
-		 pgi_offset = 0;
-		 /*
-		  * Skip index of aliastack[0] if it's an array
-		  * since TSP now handles arrays.
-		  */
-		 if (aliasstack[0].dimension > 1) {
-		   --array_index_ptr;
-		 }
-		 /* now computes pgi offset */
-		 for (j=1; j<aliasstack_size; ++j) {
-		   if (aliasstack[j].dimension > 1) {
-		     if (array_index_ptr == array_index_len-1) {
-		       pgi_offset += array_index[array_index_ptr];
-		     }
-		     else {
-		       pgi_offset += array_index[array_index_ptr] * aliasstack[previous_array_ptr].dimension;
-		     }
-		     previous_array_ptr = j;
-		     --array_index_ptr;
-		   }
-		 }
-		 
-		 pg_indexes[i] = bbindex_to_pgi[bbidx] + pgi_offset;
-		 STRACE_INFO(("Symbol=%s, found index=%d",symbol_list->TSP_sample_symbol_info_list_t_val[i].name,pg_indexes[i]));
-	       }
-	     }
-	   }
-	 }
+        STRACE_DEBUG(("Validate symbol: orig_name=<%s>, short=<%s>",
+              symbol_list->TSP_sample_symbol_info_list_t_val[i].name, n));
+
+        /* 
+         * Array index is in reverse order of aliasstack.
+         *
+         * Array index is ordered by 'reading' order:
+         *  target[idx0].aliasL1[idx1].aliasL2[idx2]
+         * whereas aliasstack is ordered by alias to target resolution order
+         *  aliasL2 --> aliasL1 --> target
+         */
+        array_index_ptr   = array_index_len-1;
+        /* Initialise aliasstack */
+        aliasstack_size   = MAX_ALIAS_LEVEL;
+        aliasstack[0]     = sym_data_desc;
+        bb_find_aliastack(shadow_bb, aliasstack, &aliasstack_size);	     
+
+        /* symbol not found skip to next symname */
+        if (-1==bbidx) {
+          pg_indexes[i] = -1;
+          ret=FALSE;
+          STRACE_INFO(("Symbol=%s, not found",symbol_list->TSP_sample_symbol_info_list_t_val[i].name));
+          free(n);
+          continue;
+        } else {
+          /* 
+           * Examine whether symbol is of array type or not
+           * and validate index range in indexstack vs dimension specified in aliasstack
+           * (remember indexstack is in the reverse order of aliasstack so the --array_index_ptr)
+           * if it is of array type.
+           */
+          for (j=0; j<aliasstack_size; ++j) {
+            /* validate */
+            if ((aliasstack[j].dimension > 1) && (aliasstack[j].dimension < array_index[array_index_ptr])) {
+              char *n = bb_get_varname(&aliasstack[j]);
+              STRACE_INFO(("Symbol=%s, found but index=%d out of range for element <%s>",
+                    symbol_list->TSP_sample_symbol_info_list_t_val[i].name,
+                    array_index[array_index_ptr], n));
+              ret = FALSE;
+              free(n);
+            }
+            /* go to next index on (index)stack */
+            else if (aliasstack[j].dimension > 1){
+              --array_index_ptr;
+            }
+          }
+          if (ret == FALSE) {free(n); continue;}
+          else {
+            /* 
+             * Magic formula for fast rebuild of PGI 
+             * from indexstack and aliasstack 
+             * We need to calculate PGI the same way we did during initialize.
+             * The PGI of target[idx0].aliasL1[idx1].aliasL2[idx2]
+             * should be 
+             * pgiof(target.aliasL1.aliasL2) + 
+             *      idx0*target.dimension  + 
+             *      idx1*aliasL1.dimension
+             * 
+             * NOTE THAT WE DO NOT HANDLE THE CASE OF ALIAS
+             * ON A ARRAY OF NON-USER TYPE.
+             */
+
+            /* 
+             * reset array_index_ptr to the end 
+             * (again remember alias and index stacks are reversed)
+             */
+            array_index_ptr = array_index_len-1;
+            pgi_offset = 0;
+            /*
+             * Skip index of aliastack[0] if it's an array
+             * since TSP now handles arrays.
+             */
+            if (aliasstack[0].dimension > 1) {
+              --array_index_ptr;
+            }
+            /* now computes pgi offset */
+            for (j=1; j<aliasstack_size; ++j) {
+              if (aliasstack[j].dimension > 1) {
+                if (array_index_ptr == array_index_len-1) {
+                  pgi_offset += array_index[array_index_ptr];
+                }
+                else {
+                  pgi_offset += array_index[array_index_ptr] * aliasstack[previous_array_ptr].dimension;
+                }
+                previous_array_ptr = j;
+                --array_index_ptr;
+              }
+            }
+
+            pg_indexes[i] = bbindex_to_pgi[bbidx] + pgi_offset;
+            STRACE_INFO(("Symbol=%s, found index=%d",symbol_list->TSP_sample_symbol_info_list_t_val[i].name,pg_indexes[i]));
+          }
+        }
+      }
+    }
 
     free(n);
     /* complete symbol validation */
     GLU_validate_sample_default(&(symbol_list->TSP_sample_symbol_info_list_t_val[i]), 
-				(-1==pg_indexes[i]) ? NULL : &(X_SSIList_value[pg_indexes[i]]),
-				&(pg_indexes[i]));
+        (-1==pg_indexes[i]) ? NULL : &(X_SSIList_value[pg_indexes[i]]),
+        &(pg_indexes[i]));
   }
 
   STRACE_INFO(("End of symbol Valid")); 
-  
+
   return ret;
 } /* BB_GLU_get_pgi */
 
