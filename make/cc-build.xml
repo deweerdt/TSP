@@ -1,0 +1,41 @@
+<!-- This a Ant build file whose sole purpose is to test 
+both a complete vanilla TSP build, and an XMLRPC TSP build,
+so as to be able to do continuous integration for the
+build of TSP, in a tool such as cruisecontrol -->
+<project name="tsp" default="all" basedir=".">
+
+    <property name="build.dir" value="../tsp_cc_build"/>
+    <property name="tsp.dir" value=".."/>
+
+    <macrodef name="cmake">
+                <attribute name="flags" default=""/>
+                <sequential>
+                        <exec dir="${build.dir}" executable="cmake" failonerror="true">
+                            <arg line="@{flags} ${tsp.dir}"/>
+                        </exec>
+                </sequential>
+    </macrodef>
+    <macrodef name="make">                
+                <sequential>
+                        <exec dir="${build.dir}" executable="make" failonerror="true"/>
+                </sequential>
+    </macrodef>
+
+    <target name="all" depends="vanilla,xmlrpc"/>
+
+    <target name="vanilla" depends="clean">
+        <cmake/>
+        <make/>
+    </target>
+
+    <target name="xmlrpc" depends="clean">
+        <cmake flags="-DBUILD_XMLRPC=ON"/>
+        <make/>
+    </target>
+
+    <target name="clean">
+        <delete dir="${build.dir}"/>
+        <mkdir dir="${build.dir}"/>
+    </target>
+
+</project>
