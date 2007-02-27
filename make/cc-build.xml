@@ -17,9 +17,7 @@ build of TSP, in a tool such as cruisecontrol  -->
     </macrodef>
     <macrodef name="make">                
                 <sequential>
-                        <exec dir="${build.dir}" executable="make" failonerror="true">
-                            <arg line="VERBOSE=1"/>
-                        </exec>
+                        <exec dir="${build.dir}" executable="make" failonerror="true"/>
                 </sequential>
     </macrodef>
 
