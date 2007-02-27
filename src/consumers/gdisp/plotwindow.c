@@ -38,6 +38,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include <math.h>
+#include <string.h>
 
 
 #define MARGIN 60
@@ -78,8 +79,6 @@
 static void plotwindow_class_init (PlotWindowClass *class);
 static void plotwindow_init (PlotWindow *pw);
 static void plotwindow_realize (GtkWidget *widget);
-static void plotwindow_map();
-static void plotwindow_draw(); 
 static void plotwindow_size_allocate(GtkWidget *widget, GtkAllocation *allocation);
 static gint plotwindow_expose(GtkWidget *widget, GdkEventExpose *event) ;
 static void render_now (PlotWindow *pw);
@@ -248,16 +247,6 @@ plotwindow_realize (GtkWidget *widget) {
   pw = PLOTWINDOW(widget);
 }
   
-/* Makes sure the widget is actually drawn on the screen (mapped) */
-static void
-plotwindow_map () {
-}
-/* Calls the drawing functions to draw the widget on the screen */
-static void
-plotwindow_draw () {
-}
- 
-  
 gint paint_data (void *arg) 
 {
   PlotWindow *pw = (PlotWindow *)arg;
@@ -379,17 +368,18 @@ void time_mode_scroll(PlotWindow* pw)
 		     xdest + width, y,
 		     xsrc - xdest,  height);
 
-  /* scroll axis 
+#if 0
+  /* scroll axis */
   gdk_draw_pixmap (pw->ready_buffer, pw->scroll_gc, pw->ready_buffer,
 		   xsrc, y+height+1,
 		   xdest, y+height+1, 
 		   width+X_RIGHT_MARGIN, MARGIN/2);
   
-  /* Erase old part of axis 
+  /* Erase old part of axis */
   gdk_draw_rectangle(pw->ready_buffer, pw->scroll_gc, TRUE,
 		     xdest+width+X_RIGHT_MARGIN-1, y+height+1,
 		     xsrc-xdest, MARGIN/2);
-
+#endif
 
 		     /* Avoid truncadted figures on the left axis */
   gdk_draw_rectangle(pw->ready_buffer, pw->scroll_gc, TRUE,
@@ -445,8 +435,6 @@ void add_point(PlotWindow* pw,DoublePoint* pt)
 	}
     }       
 }
-
-
 
 /** Set title
  *
@@ -609,11 +597,6 @@ plotwindow_expose (GtkWidget      *widget,
 		   GdkEventExpose *event)  {
 
   PlotWindow *pw;
-  int x,y;
-  void *point;
-  GdkColor color = { 0, 0x12, 0x34, 0x56 };
-  struct timeval begin;
-  struct timeval end;
 
   g_return_val_if_fail (widget != NULL, FALSE);
   g_return_val_if_fail (IS_PLOTWINDOW (widget), FALSE);
@@ -638,7 +621,7 @@ plotwindow_expose (GtkWidget      *widget,
 
 
   
-static clear_widget(PlotWindow *pw, GdkDrawable *where)
+static void clear_widget(PlotWindow *pw, GdkDrawable *where)
 {
   gdk_draw_rectangle(where,
 		     pw->clear_gc,
@@ -680,9 +663,6 @@ static void draw_all_points(PlotWindow *pw, GdkDrawable *where)
 }
 
 static void render_now (PlotWindow *pw) {
-  DoublePoint prev;
-  int i,n;
-
   /* If scale must change, recompute it */
   if(pw->scale_dirty)
     {
@@ -811,16 +791,6 @@ void draw_grids(PlotWindow *pw, GdkDrawable *where, int partial) {
 		  pw->widget.allocation.width/2-(gdk_text_width(pw->big_font,pw->title, strlen(pw->title))/2), 
 		  title_height*2, pw->title );
 }
-
-
-
-static void 
-plotwindow_size_request (GtkWidget      *widget,
-			 GtkRequisition *requisition) {
-  requisition->width = PLOTWINDOW_PREFERRED_WIDTH;
-  requisition->height = PLOTWINDOW_PREFERRED_WIDTH;
-}
-
 
 void set_time_mode(PlotWindow* pw, double duration_sec, double frequency_hz)
 {

@@ -156,7 +156,7 @@ typedef struct _draw_grids_args {
 
   void set_time_mode(PlotWindow* pw, double duration_sec, double frequency_hz);
 
-
+  void set_title(PlotWindow *pw, const gchar* title);
 
 #ifdef __cplusplus
 }

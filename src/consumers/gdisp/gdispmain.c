@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/consumers/gdisp/gdispmain.c,v 1.13 2006-05-03 21:18:59 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/consumers/gdisp/gdispmain.c,v 1.14 2007-02-27 05:52:22 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -125,7 +125,6 @@ void init_tsp_index(void)
   const TSP_sample_symbol_info_list_t* symbols;
   int i, j, k;
   variable* var;
-  int maxid = 0;
 
   symbols = TSP_consumer_get_requested_sample(tsp);
   assert(symbols);
@@ -251,13 +250,7 @@ void init_index2vars(void)
 
 static int 
 main_window_start(char* conf_file, char* tsp_prov_url) {
-  int		        i, j, nitem, ts_ok;
-  char		        *f, name[1024];
-  GdkGCValues	        gcvalues;
-  /*Display			dsp;*/
-  GtkWidget       *widget;
-
-  /*Scrollbar	        v_scrollbar, h_scrollbar;*/
+  char		        name[1024];
   int ret = FALSE;
 
   printf("Loading '%s' conf file\n", conf_file);

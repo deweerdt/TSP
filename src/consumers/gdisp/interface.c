@@ -114,7 +114,7 @@ static void on_togglebutton_toggled                (GtkToggleButton *togglebutto
       
 }
 
-void convert_to_bin(uint32_t anuint32, char binstr[4][9]) {
+void convert_to_bin(uint32_t anuint32, uint8_t binstr[4][9]) {
   int i;
   static uint8_t mask[8] = {0x01,0x02,0x04,0x08,
 			    0x10,0x20,0x40,0x80};
@@ -136,13 +136,10 @@ redraw_widgets (gpointer data)
 {
   GtkLabel *label;
   char buffer[512];
-  int var_index, var_offset, var_drvnum;
-  
-  double val_double = 0;
+
   int i, j;
   TSP_sample_t sample;
   int new_sample;
-  unsigned long ulong_value;
   DoublePoint pt;
 
   variable** ptr_var;
@@ -181,7 +178,6 @@ redraw_widgets (gpointer data)
   /* Refresh all variables in all the windows */
   for (i=0; i < conf_data.nb_page; i++) {
     for (j=0; j < pages[i].variables->len; j++) {
-      int color_index;
       uint32_t myuint32;
       uint8_t myuint32str[4][9];
       var = g_ptr_array_index(pages[i].variables, j);
@@ -214,7 +210,7 @@ redraw_widgets (gpointer data)
 	break;
       case VAR_HEXA:
 	label = GTK_LABEL(var->widget);
-	sprintf(buffer, LABEL_HEXA_FORMAT, var->legend == NULL ? var->text : var->legend, (unsigned long) rint(TSP_sample2double(var->sample)));
+	sprintf(buffer, LABEL_HEXA_FORMAT, var->legend == NULL ? var->text : var->legend, (unsigned int) rint(TSP_sample2double(var->sample)));
 	gtk_label_set_text(label, buffer);
 	break;
       case VAR_BIN:
@@ -231,12 +227,17 @@ redraw_widgets (gpointer data)
 	continue;
       }
       /*TODO*/
-      /*color_index = bstable_get_color_index(var->text);
-	if (color_index<0 || color_index > MAX_COLORS ) */
-      /*color_index = DEFAULT_COLOR_INDEX;
-	gdk_color_parse(colors[color_index], &yellow);*/
+#if 0
+      {
+      int color_index;
+      color_index = bstable_get_color_index(var->text);
+	if (color_index<0 || color_index > MAX_COLORS )
+      color_index = DEFAULT_COLOR_INDEX;
+	gdk_color_parse(colors[color_index], &yellow);
       /* Apply the desired color */
-      /*set_style_recursively(GTK_WIDGET(GTK_WIDGET(var->widget)->parent)->parent, style);*/
+      set_style_recursively(GTK_WIDGET(GTK_WIDGET(var->widget)->parent)->parent, style);
+      }
+#endif
 
     }
 
@@ -259,9 +260,7 @@ static void  page_variables_add (int page) {
   variable *var;
   guint row, col;
   GtkTable *table;
-  double val_double = 0.0;
   int i;
-
   const TSP_answer_sample_t*  tsp_info;
 
   /* Get the TSP information structure to retreive the base frequency */
@@ -335,13 +334,7 @@ create_page_window (int page_number)
 {
   GtkWidget *window;
   GtkWidget *table;
-  GtkWidget *button;
-  guint row, col;
-  int i;
   gchar *title;
-  GtkStyle *style;
-  GdkColor yellow;
-  GdkColor black;
 
   window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
 
@@ -426,29 +419,14 @@ create_mainwin (conf_data_t* conf_data, const gchar* conf_file_name)
 
   GtkWidget *mainwin;
   GtkWidget *button_quit;
-  GtkWidget *label_disp_mesg;
-  GtkWidget *label_points_disp;
-  GtkWidget *label_disp_pages;
-  GtkWidget *label_cur_conf_file;
-  GtkWidget *checkbutton_disp_mesg;
-  GtkWidget *checkbutton_status;
-  GtkWidget *label_disp_freq;
   GtkWidget *statusbar;
-  GtkWidget *label_status;
   GtkWidget *label;
   GtkWidget *separator;
 
   GdkPixmap *img_tnt;
   GdkBitmap *mask_tnt;
   GtkWidget *pixmap_tnt;
-
-
-
-
   gchar mainwin_title[1024];
-
-  GtkAdjustment   *adj;
-
 
   /* initialize global style */
   init_style();
