@@ -1,7 +1,7 @@
 <!-- This a Ant build file whose sole purpose is to test 
 both a complete vanilla TSP build, and an XMLRPC TSP build,
 so as to be able to do continuous integration for the
-build of TSP, in a tool such as cruisecontrol -->
+build of TSP, in a tool such as cruisecontrol  -->
 <project name="tsp" default="all" basedir=".">
 
     <property name="build.dir" value="../tsp_cc_build"/>
