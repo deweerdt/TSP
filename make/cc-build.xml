@@ -19,7 +19,7 @@ build of TSP, in a tool such as cruisecontrol  -->
                 <sequential>
                         <exec dir="${build.dir}" executable="make" failonerror="true"/>
                 </sequential>
-    </macrodef>
+    </macrodef> 
 
     <target name="all" depends="vanilla,xmlrpc"/>
 
