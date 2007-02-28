@@ -2,6 +2,7 @@
 both a complete vanilla TSP build, and an XMLRPC TSP build,
 so as to be able to do continuous integration for the
 build of TSP, in a tool such as cruisecontrol  -->
+
 <project name="tsp" default="build" basedir="..">
 
     <property name="build.dir" value="tsp_cc_build"/>
@@ -61,7 +62,7 @@ build of TSP, in a tool such as cruisecontrol  -->
 
 <!--
 ***********************************************
-Exemple of Cruise control configuration file  :
+Exemple of CruiseControl config.xml configuration file  :
 ***********************************************
 
 <cruisecontrol>
@@ -106,5 +107,18 @@ Exemple of Cruise control configuration file  :
         
     </project>
 </cruisecontrol>
+
+***********************************************
+How to create a continuous integration build for tsp in cruisecontrol ?
+***********************************************
+- install a binary distribution of cruise control
+- replace the config.xml file with the previous file. Change the email addresses
+of the 'returnaddress', and the 'always address'. You can add as many 'always address'
+as you want
+- go to the 'projects' directory of the cruisecontrol install and perform an anonymous
+check out of tsp :
+cd projects
+cvs -z3 -d:pserver:anonymous@cvs.savannah.nongnu.org:/sources/tsp co 
+- run the cruisecontrol.sh script. you're done.
 
 -->
