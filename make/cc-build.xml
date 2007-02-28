@@ -2,10 +2,10 @@
 both a complete vanilla TSP build, and an XMLRPC TSP build,
 so as to be able to do continuous integration for the
 build of TSP, in a tool such as cruisecontrol  -->
-<project name="tsp" default="all" basedir=".">
+<project name="tsp" default="build" basedir="..">
 
-    <property name="build.dir" value="../tsp_cc_build"/>
-    <property name="tsp.dir" value=".."/>
+    <property name="build.dir" value="tsp_cc_build"/>
+    <property name="tsp.dir" value="."/>
 
     <macrodef name="cmake">
                 <attribute name="flags" default=""/>
@@ -15,13 +15,26 @@ build of TSP, in a tool such as cruisecontrol  -->
                         </exec>
                 </sequential>
     </macrodef>
+
     <macrodef name="make">                
                 <sequential>
                         <exec dir="${build.dir}" executable="make" failonerror="true"/>
                 </sequential>
     </macrodef> 
 
-    <target name="all" depends="vanilla,xmlrpc"/>
+    <macrodef name="cvs-update">
+                <attribute name="workDir"/>
+                <sequential>
+                        <exec dir="@{workDir}" executable="cvs" failonerror="true">
+                                <arg line="update -dP "/>
+                        </exec>
+                </sequential>
+    </macrodef>
+
+    <target name="build" depends="update">
+        <antcall target="vanilla"/>
+        <antcall target="xmlrpc"/>
+    </target>
 
     <target name="vanilla" depends="clean">
         <cmake/>
@@ -37,5 +50,10 @@ build of TSP, in a tool such as cruisecontrol  -->
         <delete dir="${build.dir}"/>
         <mkdir dir="${build.dir}"/>
     </target>
+
+    <target name="update">
+        <cvs-update workDir="${basedir}"/>
+    </target>
+
 
 </project>
