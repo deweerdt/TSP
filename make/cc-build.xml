@@ -57,3 +57,54 @@ build of TSP, in a tool such as cruisecontrol  -->
 
 
 </project>
+
+
+<!--
+***********************************************
+Exemple of Cruise control configuration file  :
+***********************************************
+
+<cruisecontrol>
+    <project name="tsp" buildafterfailed="false">
+
+        <listeners>
+            <currentbuildstatuslistener file="logs/${project.name}/status.txt"/>
+        </listeners>
+
+        <bootstrappers>
+            <cvsbootstrapper localWorkingCopy="projects/${project.name}/make" 
+                             file="cc-build.xml" />
+        </bootstrappers>
+
+        <modificationset quietperiod="30">
+            <cvs localWorkingCopy="projects/${project.name}"/>
+        </modificationset>
+
+        <schedule interval="300">
+            <ant anthome="apache-ant-1.6.5" 
+                buildfile="projects/${project.name}/make/cc-build.xml"
+                 />
+        </schedule>
+
+        <log>
+            <merge dir="projects/${project.name}/target/test-results"/>
+        </log>
+
+        <publishers>
+            <htmlemail mailhost="smtp.blablablablabla.fr"
+                reportsuccess="fixes"
+                returnaddress="foo@blablablablabla.fr"
+                subjectprefix="[CruiseControl]"    
+                skipusers="true" spamwhilebroken="true"
+                xsldir="webapps/cruisecontrol/xsl" 
+                css="webapps/cruisecontrol/css/cruisecontrol.css" 
+                >
+                <always address="foo@blablablablabla.fr"/>
+                <always address="bar@blablablablabla.fr"/>
+           </htmlemail>
+        </publishers>
+        
+    </project>
+</cruisecontrol>
+
+-->
