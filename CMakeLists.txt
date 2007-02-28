@@ -507,6 +507,7 @@ INCLUDE(UsePackageBackup)
 INCLUDE(UseRPMTools)
 IF(RPMTools_FOUND)
   RPMTools_ADD_RPM_TARGETS(tsp ${CMAKE_SOURCE_DIR}/src/scripts/tsp.spec.in)
+  #RPMTools_ADD_RPM_TARGETS(tsp)
 ENDIF(RPMTools_FOUND)
 
 MESSAGE(STATUS "Configuring ${PACKAGE_NAME} version ${PACKAGE_VERSION}...Done.")
