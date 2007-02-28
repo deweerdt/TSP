@@ -5,7 +5,7 @@ build of TSP, in a tool such as cruisecontrol  -->
 <project name="tsp" default="build" basedir="..">
 
     <property name="build.dir" value="tsp_cc_build"/>
-    <property name="tsp.dir" value="."/>
+    <property name="tsp.dir" value=".."/>
 
     <macrodef name="cmake">
                 <attribute name="flags" default=""/>
