@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core_sysv.c,v 1.3 2007-02-19 15:53:19 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core_sysv.c,v 1.4 2007-03-01 18:43:35 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -346,7 +346,7 @@ static int32_t sysv_bb_msgq_recv(volatile S_BB_T * bb, S_BB_MSG_T * msg)
 	/* Réception bloquante */
 	while (i_cont) {
 		retcode =
-		    msgrcv(bb->priv.sysv.msg_id, msg, MSG_BB_MAX_SIZE, msg->mtype,
+		    msgrcv(bb->priv.sysv.msg_id, msg, MAX_SYSMSG_SIZE, msg->mtype,
 			   MSG_NOERROR);
 		/* On sort de la boucle si on a pas pris un signal */
 		if ((-1 != retcode) || (EINTR != errno)) {
@@ -378,10 +378,10 @@ static int32_t sysv_bb_msgq_send(volatile S_BB_T * bb, S_BB_MSG_T * msg)
 	assert(bb);
 	/* do not flood message queue if no one read it !! */
 	retcode = msgctl(bb->priv.sysv.msg_id, IPC_STAT, &mystat);
-	if (!(mystat.msg_cbytes > 2 * MSG_BB_MAX_SIZE)) {
+	if (!(mystat.msg_cbytes > 2 * MAX_SYSMSG_SIZE)) {
 		/* Non blocking send */
 		retcode =
-		    msgsnd(bb->priv.sysv.msg_id, msg, MSG_BB_MAX_SIZE, IPC_NOWAIT);
+		    msgsnd(bb->priv.sysv.msg_id, msg, MAX_SYSMSG_SIZE, IPC_NOWAIT);
 		if (-1 == retcode) {
 			retcode = BB_NOK;
 			if (EAGAIN == errno) {
