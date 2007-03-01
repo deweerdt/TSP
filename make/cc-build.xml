@@ -117,8 +117,16 @@ of the 'returnaddress', and the 'always address'. You can add as many 'always ad
 as you want
 - go to the 'projects' directory of the cruisecontrol install and perform an anonymous
 check out of tsp :
+
 cd projects
-cvs -z3 -d:pserver:anonymous@cvs.savannah.nongnu.org:/sources/tsp co 
-- run the cruisecontrol.sh script. you're done.
+cvs -z3 -d:pserver:anonymous@cvs.savannah.nongnu.org:/sources/tsp co tsp
+
+- you can test the build without cruise control if Ant is available :
+go to projects/tsp/make and launch :
+
+ant -f cc-build.xml
+
+- If everything is OK, with the build, run the cruisecontrol.sh script. you're done,
+cruisecontrol is up and running.
 
 -->
