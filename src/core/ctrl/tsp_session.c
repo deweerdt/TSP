@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.c,v 1.36 2007-02-11 21:45:56 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.c,v 1.37 2007-03-01 17:36:41 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -711,7 +711,7 @@ TSP_session_get_garbage_session(channel_id_t* channel_id) {
   /* There is multiple criterion for session garbage collection */  
   for( i = 0 ;  i < X_session_nb ; i++) {
 
-    /* do not garbage collect session in the following state */
+    /* Do not garbage collect session in the following state */
     if ((X_session_t[i].state == TSP_SESSION_STATE_UNKNOWN) ||
 	(X_session_t[i].state == TSP_SESSION_STATE_CLOSED)
 	) {
@@ -721,6 +721,7 @@ TSP_session_get_garbage_session(channel_id_t* channel_id) {
     /* Garbage collect Data link broken session */
     if (X_session_t[i].state == TSP_SESSION_STATE_BROKEN_LINK ) {
       found = TRUE;
+      STRACE_INFO(("Garbage Collector thread found broken link session <%d>",X_session_t[i].channel_id));
       *channel_id = X_session_t[i].channel_id;
       break;
     } 
@@ -732,10 +733,16 @@ TSP_session_get_garbage_session(channel_id_t* channel_id) {
     if (NULL != X_session_t[i].session_data) {
       /* Datapool has been deleted */
       if (NULL == X_session_t[i].session_data->datapool) { 
-	if (TSP_SESSION_STATE_REQUEST_SAMPLE_DESTROY_OK == X_session_t[i].state) {	  
-	  found = TRUE;
-	  *channel_id = X_session_t[i].channel_id;
-	}
+	/* FIXME nothing to do here */
+        /* X_session_t[i].session_data->datapool
+	 * is the LOCAL datapool which is used when
+	 * a provider (possibly PASSIVE) is giving
+	 * ONE datapool per session 
+	 * In the case of GLOBAL datapool this datapool
+	 * is ALWAYS NULL and never used in fact.
+	 * see bug #19179
+	 */
+	continue;
       }
       /* Datapool has been terminated */ 
       else {
@@ -744,6 +751,7 @@ TSP_session_get_garbage_session(channel_id_t* channel_id) {
 	     (TSP_SESSION_STATE_REQUEST_SAMPLE_DESTROY_OK == X_session_t[i].state)
 	     )
 	    ){
+	  STRACE_INFO(("Garbage Collector thread found Datapool TERMINATED for session <%d>",X_session_t[i].channel_id));
 	  found = TRUE;
 	  *channel_id = X_session_t[i].channel_id;
 	}

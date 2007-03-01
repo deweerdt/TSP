@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_datapool.h,v 1.18 2006-10-18 09:58:48 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_datapool.h,v 1.19 2007-03-01 17:36:41 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -116,7 +116,7 @@ _EXPORT_TSP_PROVIDER int TSP_datapool_push_commit(TSP_datapool_t* cthis, time_st
 
 /**
  * Allocation of a datapool.
- * @param[in] glu Handle for the GLU that mus be linked to this datapool
+ * @param[in] glu Handle for the GLU that must be linked to this datapool
  *                  datapool size will be GLU provided number of symbol(s).
  * @return The datapool object created on success, NULL on failure.
  */ 
