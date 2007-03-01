@@ -2,10 +2,12 @@ SET(_SRC
   bb_utils bb_alias
   bb_core bb_simple
   bb_sha1 bb_tools 
-  bb_core_sysv.c bb_varname_sarray.c)
+  bb_core_sysv.c)
+
+SET(LIB_VARNAME_SARRAY_SRC bb_varname_sarray.c)
 
 IF(ZLIB_FOUND)
-SET(_SRC ${_SRC} bb_varname_zip.c)
+SET(LIB_VARNAME_ZIP_SRC ${_SRC} bb_varname_zip.c)
 ENDIF(ZLIB_FOUND)
 #
 # bb_core_k kernel device API on works on linux 
@@ -38,10 +40,12 @@ INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/src/util/libbb)
 
 ADD_LIBRARY(bb ${_SRC})
 TSP_LIBRARY_INSTALL(bb)
-IF(ZLIB_FOUND)
-TARGET_LINK_LIBRARIES(bb ${PTHREAD_LIBRARY_NAME} dl z)
-ELSE(ZLIB_FOUND)
 TARGET_LINK_LIBRARIES(bb ${PTHREAD_LIBRARY_NAME} dl)
+ADD_LIBRARY(sarray ${LIB_VARNAME_SARRAY_SRC})
+TSP_LIBRARY_INSTALL(sarray)
+
+IF(ZLIB_FOUND)
+ADD_LIBRARY(sarray ${LIB_VARNAME_SARRAY_SRC_SRC})
 ENDIF(ZLIB_FOUND)
 
 ADD_SUBDIRECTORY(bbtools)

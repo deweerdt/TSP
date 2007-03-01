@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_varname_sarray.c,v 1.1 2007-02-25 10:13:12 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_varname_sarray.c,v 1.2 2007-03-01 18:45:13 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -45,7 +45,7 @@ Purpose   : Blackboard get/set varname primitives that store the var
 
 
 #define MAX_NAME_LENGTH 512
-#define MAX_NAMES 512
+#define MAX_NAMES 1024
 
 struct name_tab {
 	char names[MAX_NAMES][MAX_NAME_LENGTH];
@@ -54,6 +54,9 @@ struct name_tab {
 
 static struct name_tab *names;
 
+/**
+ * FIXME: actually call this function
+ */
 int32_t bb_varname_destroy_sarray(S_BB_T *bb)
 {
 	shmdt(names);
@@ -81,6 +84,11 @@ int32_t bb_varname_init_sarray(S_BB_T *bb)
 	return BB_OK;
 }
 
+int32_t bb_varname_max_len_sarray()
+{
+  return MAX_NAME_LENGTH;
+}
+
 char *bb_get_varname_sarray(const S_BB_DATADESC_T *dd)
 {
 	unsigned int index = *(unsigned int *)dd->__name;
@@ -91,8 +99,9 @@ char *bb_get_varname_sarray(const S_BB_DATADESC_T *dd)
 
 int32_t bb_set_varname_sarray(S_BB_DATADESC_T *dd, const char *key)
 {
-	if (names->current_index > MAX_NAMES || strlen(key) > MAX_NAME_LENGTH)
+	if (names->current_index > MAX_NAMES || strlen(key) > MAX_NAME_LENGTH) {
 		return BB_NOK;
+	}
 	strncpy(names->names[names->current_index], key, MAX_NAME_LENGTH);
 	*(unsigned int *)dd->__name = names->current_index;
 	names->current_index++;	

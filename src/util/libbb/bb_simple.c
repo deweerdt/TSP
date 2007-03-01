@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_simple.c,v 1.14 2007-02-22 14:54:54 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_simple.c,v 1.15 2007-03-01 18:45:13 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -57,34 +57,32 @@ pthread_mutex_t bb_simple_stcokage_mutex   = PTHREAD_MUTEX_INITIALIZER;
 #endif /* __KERNEL__ */
 
 static void gen_var_name(char *gen_var_name, const int module_instance,
-			 const char *module_name, const char *var_name)
+			                   const char *module_name, const char *var_name)
 {
-  memset(gen_var_name,0,VARNAME_MAX_SIZE*2); 
+  memset(gen_var_name,0,bb_varname_max_len()); 
   if (strcmp(module_name,"")==0) {
-    snprintf(gen_var_name,VARNAME_MAX_SIZE*2,
-	     "%s", var_name);
+    snprintf(gen_var_name,bb_varname_max_len(), "%s", var_name);
   } else if (-1!=module_instance) {
-    snprintf(gen_var_name,VARNAME_MAX_SIZE*2,
-	     "%s_%d_%s",
-	     module_name,module_instance,var_name);
+    snprintf(gen_var_name,bb_varname_max_len(), "%s_%d_%s",
+	           module_name,module_instance,var_name);
   } else {
-    snprintf(gen_var_name,VARNAME_MAX_SIZE*2,
-	     "%s_%s", module_name,var_name);
+    snprintf(gen_var_name,bb_varname_max_len(), "%s_%s", 
+             module_name,var_name);
   }
 }
 
 void* bb_simple_publish(S_BB_T* bb_simple,
-			const char* var_name, 
-			const char* module_name,
-			const int module_instance,
-			E_BB_TYPE_T type,
-			int type_size,
-			int dimension) {
-  
+    const char* var_name, 
+    const char* module_name,
+    const int module_instance,
+    E_BB_TYPE_T type,
+    int type_size,
+    int dimension) {
+
   void* retval;
   S_BB_DATADESC_T s_data_desc;
-  char new_name[VARNAME_MAX_SIZE*2];
-	int ret;
+  char *new_name = alloca(bb_varname_max_len());
+  int ret;
 
   gen_var_name(new_name, module_instance, module_name, var_name);
   ret = bb_set_varname(&s_data_desc, new_name);
@@ -114,7 +112,7 @@ void* bb_simple_subscribe(S_BB_T* bb_simple,
   
   void* retval;
   S_BB_DATADESC_T s_data_desc;
-  char new_name[VARNAME_MAX_SIZE*2];
+  char *new_name = alloca(bb_varname_max_len());
 	int ret;
 
   gen_var_name(new_name, module_instance, module_name, var_name);
@@ -141,18 +139,18 @@ void* bb_simple_alias_publish(S_BB_T* bb_simple,
   
   void* retval=NULL;
   int32_t idx;
-  char new_target_name[VARNAME_MAX_SIZE*2];
-  char alias_name[VARNAME_MAX_SIZE*2];
+  char *new_target_name = alloca(bb_varname_max_len());
+  char *alias_name = alloca(bb_varname_max_len());
 	int ret;
   S_BB_DATADESC_T alias;
   S_BB_DATADESC_T target;
   
   gen_var_name(new_target_name, module_instance, module_name, target_name);
-  snprintf(alias_name, VARNAME_MAX_SIZE*2, "%s_%s",
+  snprintf(alias_name, bb_varname_max_len(), "%s_%s",
 	   new_target_name, var_name);
   ret = bb_set_varname(&alias, alias_name);
-	if (ret == BB_NOK)
-		return NULL;
+  if (ret == BB_NOK)
+    return NULL;
 
   alias.type        = type;
   alias.type_size   = type_size;
@@ -171,7 +169,7 @@ void* bb_simple_alias_publish(S_BB_T* bb_simple,
     target = bb_data_desc(bb_simple)[idx];
 
     n = bb_get_varname(&target);
-    snprintf(alias_name,VARNAME_MAX_SIZE*2,
+    snprintf(alias_name,bb_varname_max_len(),
         "%s.%s", n, var_name);
     free(n);
     ret = bb_set_varname(&alias, alias_name);

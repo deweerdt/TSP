@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.38 2007-02-22 14:54:54 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.39 2007-03-01 18:45:13 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -197,6 +197,11 @@ static char *bb_get_varname_default(const S_BB_DATADESC_T *dd)
   return strdup(dd->__name);
 }
 
+static int32_t bb_varname_max_len_default()
+{
+  return VARNAME_MAX_SIZE;
+}
+
 static int32_t bb_set_varname_default(S_BB_DATADESC_T *dd, const char *key)
 {
   strncpy(dd->__name, key, VARNAME_MAX_SIZE);
@@ -205,6 +210,7 @@ static int32_t bb_set_varname_default(S_BB_DATADESC_T *dd, const char *key)
 
 bb_get_varname_fn bb_get_varname = bb_get_varname_default;
 bb_set_varname_fn bb_set_varname = bb_set_varname_default;
+bb_varname_max_len_fn bb_varname_max_len = bb_varname_max_len_default;
 
 static int32_t
 bb_varname_init(S_BB_T *bb)
@@ -212,9 +218,11 @@ bb_varname_init(S_BB_T *bb)
   bb_varname_init_fn init;
   bb_get_varname_fn getter;
   bb_set_varname_fn setter;
+  bb_varname_max_len_fn max_len;
   char getter_name[256];
   char setter_name[256];
   char init_name[256];
+  char max_len_name[256];
   S_BB_PRIV_T *priv;
   void *handle = RTLD_DEFAULT;
 
@@ -226,14 +234,19 @@ bb_varname_init(S_BB_T *bb)
   sprintf(getter_name, "bb_get_varname_%s", priv->varname_lib);
   sprintf(setter_name, "bb_set_varname_%s", priv->varname_lib);
   sprintf(init_name, "bb_varname_init_%s", priv->varname_lib);
+  sprintf(max_len_name, "bb_varname_max_len_%s", priv->varname_lib);
 
   getter = dlsym(handle, getter_name);
   if (!getter) {
     char libname[FILENAME_MAX];
 
-    sprintf(libname, "%s.so", priv->varname_lib);
+    sprintf(libname, "lib%s.so", priv->varname_lib);
     /* try to open a library */
     handle = dlopen(libname, RTLD_NOW);
+    if (!handle) {
+      STRACE_WARNING(("cound not find lib %s\n", libname));
+      return BB_NOK;
+    }
     getter = dlsym(handle, getter_name);
     if (!getter) {
       STRACE_WARNING(("cound not find symbol %s\n", getter_name));
@@ -252,6 +265,10 @@ bb_varname_init(S_BB_T *bb)
     if (init(bb) != BB_OK)
       return BB_NOK;
   }
+
+  max_len = dlsym(handle, max_len_name);
+  if (max_len)
+    bb_varname_max_len = max_len;
 
   bb_set_varname = setter;
   bb_get_varname = getter;

@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_tools.c,v 1.30 2007-02-22 14:54:54 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_tools.c,v 1.31 2007-03-01 18:45:13 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -408,7 +408,7 @@ bbtools_read(bbtools_request_t* req) {
   int32_t i;
   int32_t j;
   int32_t idx;
-  char name[VARNAME_MAX_SIZE*2];
+  char *name = alloca(bb_varname_max_len());
   
   if (req->argc<2) {
     bbtools_logMsg(req->stream,"%s: <%d> argument(s) missing\n",
@@ -422,7 +422,7 @@ bbtools_read(bbtools_request_t* req) {
    
   if (bb_utils_parsearrayname(req->argv[1],
 			      name,
-			      VARNAME_MAX_SIZE*2,
+			      bb_varname_max_len(),
 			      array_index,&array_index_len)) {
     bbtools_logMsg(req->stream,"%s: cannot parse symname <%s>",
 		   bbtools_cmdname_tab[E_BBTOOLS_READ],
@@ -524,7 +524,7 @@ bbtools_write(bbtools_request_t* req) {
   int32_t i;
   int32_t j;
   int32_t idx;
-  char name[VARNAME_MAX_SIZE*2];
+  char *name = alloca(bb_varname_max_len());
 
   /* verify request write arguments */
   if (req->argc<3) {
@@ -540,7 +540,7 @@ bbtools_write(bbtools_request_t* req) {
   memset(&sym_data_desc,0,sizeof(S_BB_DATADESC_T));
   if (bb_utils_parsearrayname(req->argv[1],
 			      name,
-			      VARNAME_MAX_SIZE*2,
+			      bb_varname_max_len(),
 			      array_index,&array_index_len)) {
     bbtools_logMsg(req->stream,"%s: cannot parse symname <%s>",
 		   bbtools_cmdname_tab[E_BBTOOLS_WRITE],

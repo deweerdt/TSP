@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.h,v 1.34 2007-02-22 14:54:54 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.h,v 1.35 2007-03-01 18:45:13 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -344,7 +344,7 @@ typedef struct S_BB_MSG {
    * Message content.
    * This is an opaque buffer.
    */
-  unsigned char mtext[MSG_BB_MAX_SIZE];
+  unsigned char mtext[MAX_SYSMSG_SIZE];
 } S_BB_MSG_T ;
 
 /**
@@ -455,6 +455,7 @@ typedef int32_t (*bb_varname_init_fn)(S_BB_T *);
 typedef int32_t (*bb_varname_destroy_fn)(S_BB_T *);
 typedef char *(*bb_get_varname_fn)(const S_BB_DATADESC_T *);
 typedef int32_t (*bb_set_varname_fn)(S_BB_DATADESC_T *, const char *);
+typedef int32_t (*bb_varname_max_len_fn)();
 /**
  * Get the name of a variable described by @dd
  * @param[in] dd the descriptor of the variable
@@ -467,6 +468,11 @@ extern bb_get_varname_fn bb_get_varname;
  * @return the variable name, must be freed by caller
  */
 extern bb_set_varname_fn bb_set_varname;
+/**
+ * Get the max len of a name of a variable described by @dd
+ * @return the max lenght of a variable name
+ */
+extern bb_varname_max_len_fn bb_varname_max_len;
 
 #define BB_CTL_SET_NAME_SETTER_PTR  (1<<1)
 #define BB_CTL_SET_NAME_GETTER_PTR  (1<<2)
