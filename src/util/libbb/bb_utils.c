@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_utils.c,v 1.13 2006-10-18 09:58:49 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_utils.c,v 1.14 2007-03-04 21:08:21 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -234,6 +234,12 @@ bb_utils_parsearrayname(const char*    provided_symname,
   int i = 0;
   int symname_current_index = 0;
   int32_t retcode = 0;
+
+  /* 
+   * Please zero-out parsed symname before using it
+   * since we will strncat into it...
+   */
+  memset(parsed_symname,0,parsed_symname_maxlen*sizeof(char*));
 
   /* RAZ the array index */
   memset(array_index,0,(*array_index_len)*sizeof(int32_t));
