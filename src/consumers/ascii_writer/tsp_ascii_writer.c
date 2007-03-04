@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer.c,v 1.27 2006-05-05 15:18:05 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer.c,v 1.28 2007-03-04 20:21:03 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -115,7 +115,7 @@ static tsp_ascii_writer_logMsg_ft my_logMsg = tsp_ascii_writer_logMsg_stdout;
 static char * tsp_ascii_writer_tab_char=NULL;
 
 /*stock a uchar macsilm data before print*/
-static char * tsp_ascii_writer_tab_uchar=NULL; 
+static unsigned char * tsp_ascii_writer_tab_uchar=NULL; 
 
 void tsp_ascii_writer_set_logMsgCB(tsp_ascii_writer_logMsg_ft logMsgCB) {
   my_logMsg = logMsgCB;
@@ -452,7 +452,7 @@ tsp_ascii_writer_validate_symbols(TSP_sample_symbol_info_list_t* requestedSSIL,
     my_logMsg("Finally asking for <%d> symbol(s)\n",TSP_SSIList_getSize(*validatedSSIL));    
     retcode = TSP_consumer_request_sample(myprovider,validatedSSIL);
     if (TSP_STATUS_OK!=retcode) {
-      TSP_consumer_print_invalid_symbols(stderr,&(validatedSSIL->TSP_sample_symbol_info_list_t_val[0]),tsp_provider_url);
+      TSP_consumer_print_invalid_symbols(stderr,validatedSSIL,tsp_provider_url);
       STRACE_ERROR(("(final) TSP request sample refused by the provider?huh?..."));
       return retcode;
     }
