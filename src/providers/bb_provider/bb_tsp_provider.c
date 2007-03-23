@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/providers/bb_provider/bb_tsp_provider.c,v 1.33 2007-02-26 21:55:19 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/providers/bb_provider/bb_tsp_provider.c,v 1.34 2007-03-23 21:12:53 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -117,8 +117,15 @@ static int* allow_to_write = NULL;
 
 static GLU_handle_t* bbGLU = NULL;
 
+/* 
+ * The raw value maximum size is the
+ * the size (in byte) of the TSP symbol
+ * whose data size is the bigger.
+ */
+static int32_t raw_value_maxsize = 0;
+
 int 
-BB_GLU_init(GLU_handle_t* this, int fallback_argc, char* fallback_argv[]) {
+BB_GLU_init(GLU_handle_t* cthis, int fallback_argc, char* fallback_argv[]) {
 
 	int retcode;
 	int i;
@@ -127,13 +134,15 @@ BB_GLU_init(GLU_handle_t* this, int fallback_argc, char* fallback_argv[]) {
 	int pgi;
 	int32_t indexStackCartesianSize; 
 	char* tempName;
+	int32_t raw_value_size;
 
 	int32_t          aliasstack_size = MAX_ALIAS_LEVEL;
 	S_BB_DATADESC_T  aliasstack[MAX_ALIAS_LEVEL];
 	int32_t indexstack[MAX_ALIAS_LEVEL];
 	int32_t indexstack_len;    
 
-	retcode = TRUE;
+	retcode           = TRUE;
+	raw_value_maxsize = 0;
 	/* We don't need fallback for now */
 	/* 
 	 * !!! We need to attach to BB iff
@@ -315,6 +324,12 @@ BB_GLU_init(GLU_handle_t* this, int fallback_argc, char* fallback_argv[]) {
 								0 /* phase  */
 								);
 
+						raw_value_size = 
+						  X_SSIList_value[pgi].dimension *
+						  tsp_type_size[X_SSIList_value[pgi].type];
+
+						raw_value_maxsize = raw_value_size > raw_value_maxsize ? raw_value_size : raw_value_maxsize;
+
 						free(tempName);
 
 						/* Update data pointer with appropriate value */
@@ -342,6 +357,12 @@ BB_GLU_init(GLU_handle_t* this, int fallback_argc, char* fallback_argv[]) {
 							0 /* phase  */
 							);
 					free(n);
+					raw_value_size = 
+					  X_SSIList_value[pgi].dimension *
+					  tsp_type_size[X_SSIList_value[pgi].type];
+					
+					raw_value_maxsize = raw_value_size > raw_value_maxsize ? raw_value_size : raw_value_maxsize;
+
 
 					value_by_pgi[pgi]      = bb_item_offset(shadow_bb, &bb_data_desc(shadow_bb)[i], indexstack, indexstack_len);
 					bbdatadesc_by_pgi[pgi] = &bb_data_desc(shadow_bb)[i];
@@ -367,7 +388,12 @@ BB_GLU_init(GLU_handle_t* this, int fallback_argc, char* fallback_argv[]) {
 						0 /* phase  */
 						);
 				free(n);
-
+				raw_value_size = 
+				  X_SSIList_value[pgi].dimension *
+				  tsp_type_size[X_SSIList_value[pgi].type];
+				
+				raw_value_maxsize = raw_value_size > raw_value_maxsize ? raw_value_size : raw_value_maxsize;
+				
 				value_by_pgi[pgi]      = ((void*) ((char*)bb_data(shadow_bb) + bb_data_desc(shadow_bb)[i].data_offset));
 				bbdatadesc_by_pgi[pgi] = &bb_data_desc(shadow_bb)[i];
 				allow_to_write[pgi]    = TSP_ASYNC_WRITE_ALLOWED;
@@ -385,7 +411,7 @@ BB_GLU_init(GLU_handle_t* this, int fallback_argc, char* fallback_argv[]) {
 } /* end of BB_GLU_init */
 
 
-int  BB_GLU_get_symbol_number(GLU_handle_t* this) {
+int  BB_GLU_get_symbol_number(GLU_handle_t* cthis) {
 
   return nbTspSymbols;
 
@@ -402,7 +428,7 @@ BB_GLU_get_sample_symbol_info_list(GLU_handle_t* h_glu,
 } /* BB_GLU_get_sample_symbol_info_list */
 
 int 
-BB_GLU_get_pgi(GLU_handle_t* this, TSP_sample_symbol_info_list_t* symbol_list, int* pg_indexes) {
+BB_GLU_get_pgi(GLU_handle_t* cthis, TSP_sample_symbol_info_list_t* symbol_list, int* pg_indexes) {
 
   int     i=0;
   int 	  j=0;
@@ -574,12 +600,11 @@ void* BB_GLU_thread(void* arg) {
   
   int i;
   glu_item_t item;
-  double     item_value;
   sigset_t s_mask;
   int nb_consumed_symbols;
   int* ptr_consumed_index;
   int pgi;
-  GLU_handle_t* this = (GLU_handle_t*)arg;
+  GLU_handle_t* cthis = (GLU_handle_t*)arg;
   
   bb_logMsg(BB_LOG_INFO,
 	      "bb_tsp_provider::GLU_thread",
@@ -594,9 +619,10 @@ void* BB_GLU_thread(void* arg) {
    * Initialise le temps propre du GLU 
    */
   glu_time       = 0;
-  /* FIXME for now its ok to only have scalar DOUBLE value */
-  item.raw_value = &item_value; 
-  item.size      = 1*tsp_type_size[TSP_TYPE_DOUBLE];
+  /* Allocate space for the larger raw_value item precomputed in BB_GLU_init */
+  item.raw_value = calloc(1,raw_value_maxsize);
+  assert(item.raw_value);
+  item.size      = 0; /* will be modified before push_next_item */
 
   /* boucle infinie tant que le blackboard n'est pas detruit */
   while(BB_STATUS_DESTROYED != the_bb->status) {
@@ -613,11 +639,11 @@ void* BB_GLU_thread(void* arg) {
      * Refresh the [reverse list of consumed symbols]
      * Must be call at each step in case of new samples wanted 
      */
-    TSP_datapool_get_reverse_list (this->datapool,&nb_consumed_symbols, &ptr_consumed_index); 
+    TSP_datapool_get_reverse_list (cthis->datapool,&nb_consumed_symbols, &ptr_consumed_index); 
 
 
     /* acknowledge copy end if bb_provider was telled to do so */
-    if ( *((int*)(this->private_data)) ) {
+    if ( *((int*)(cthis->private_data)) ) {
       bb_simple_synchro_go(the_bb,BB_SIMPLE_MSGID_SYNCHRO_COPY_ACK); 
     }
 
@@ -630,14 +656,17 @@ void* BB_GLU_thread(void* arg) {
       /* we return a double value even if 
        * the blackboard type is different
        * since TSP only knows double ... till now */
-      *((double*)item.raw_value) = bb_double_of(value_by_pgi[pgi],bbdatadesc_by_pgi[pgi]->type);
-      TSP_datapool_push_next_item(this->datapool, &item);      
+      /* *((double*)item.raw_value) = bb_double_of(value_by_pgi[pgi],bbdatadesc_by_pgi[pgi]->type); */
+      item.size = bbdatadesc_by_pgi[pgi]->type_size*bbdatadesc_by_pgi[pgi]->dimension;
+      memcpy(item.raw_value,value_by_pgi[pgi],item.size);
+      TSP_datapool_push_next_item(cthis->datapool, &item);      
     }
-    TSP_datapool_push_commit(this->datapool, glu_time, GLU_GET_NEW_ITEM);
+    TSP_datapool_push_commit(cthis->datapool, glu_time, GLU_GET_NEW_ITEM);
       
     ++glu_time;
   }
 
+  free(item.raw_value);
   return NULL;
   
 } /* end of BB_GLU_thread */
