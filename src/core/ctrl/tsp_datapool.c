@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_datapool.c,v 1.31 2006-10-18 09:58:48 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_datapool.c,v 1.32 2007-03-23 19:52:15 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -160,7 +160,12 @@ TSP_datapool_initialize(TSP_datapool_t* datapool, GLU_handle_t* glu) {
   TSP_CHECK_ALLOC(datapool->items, TSP_STATUS_ERROR_MEMORY_ALLOCATION);
 
   for(i=0;i<symbols.TSP_sample_symbol_info_list_t_len;++i) {
-    
+   
+    /* 
+     * The raw_value should be able to hold the 
+     * value of the TSP symbol, if the symbol is an array
+     * then the raw_value hold ALL the values of the array
+     */ 
     datapool->items[i].raw_value = 
       calloc(symbols.TSP_sample_symbol_info_list_t_val[i].dimension,
 	     tsp_type_size[symbols.TSP_sample_symbol_info_list_t_val[i].type]);
