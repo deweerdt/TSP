@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer.c,v 1.28 2007-03-04 20:21:03 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer.c,v 1.29 2007-03-24 13:40:00 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -67,19 +67,19 @@ static int stop_it = 0;
 
 /*format to print macsim value in the different type*/
 const static char* fmt_tab[] = { 0,
-			      "%1.15G\t",
-			      "%1.15G\t",
-			      "%d\t",
-			      "%d\t",
-			      "%d\t",
-			      "%d\t",
-			      "%d\t",
-			      "%d\t",
-			      "%d\t",
-			      "%d\t",
-			      "%s\t",
-			      "%s\t",
-			      "%c\t",
+			      "%1.15G",
+			      "%1.15G",
+			      "%d",
+			      "%d",
+			      "%d",
+			      "%d",
+			      "%d",
+			      "%d",
+			      "%d",
+			      "%d",
+			      "%s",
+			      "%s",
+			      "%c",
 			      0				
 };
 
@@ -564,12 +564,12 @@ tsp_ascii_writer_start(FILE* sfile,
   TSP_extended_info_list_t* currentEIList;
   char* array_label;
 
-  int             complete_line;
+  int32_t         nb_complete_line;
   char            charbuf[MAX_VAR_NAME_SIZE];
   int             symbol_dim;
-  int             nb_sample;
+  int32_t         nb_sample_item;
   int		  indice;
-  int32_t         nb_data_receive=0;
+  int32_t         nb_awaited_sample_item=0;
   
   char** tab_colonne=NULL;
 
@@ -584,9 +584,14 @@ tsp_ascii_writer_start(FILE* sfile,
   /* buf RAZ  */
   memset(tc_output_buffer,'\0',OUTPUT_STREAM_BUFFER_SIZE);
   /* tailored output stream buffer (if not stdout) */
-  /* if (stdout != sfile) { */
-/*     setvbuf(sfile,tc_output_buffer,_IOFBF,OUTPUT_STREAM_BUFFER_SIZE);   */
-/*   } */
+  if (stdout != sfile) {
+    /* only used tailored output buffer if user asked
+     * for limited size output
+     */
+    if (0 != nb_sample_max_infile) {
+      setvbuf(sfile,tc_output_buffer,_IOLBF,OUTPUT_STREAM_BUFFER_SIZE);
+    }
+  }
 
   /* Get previously configured symbols */
   symbols = TSP_consumer_get_requested_sample(myprovider);
@@ -694,19 +699,21 @@ tsp_ascii_writer_start(FILE* sfile,
       if( TSP_TYPE_CHAR==symbols->TSP_sample_symbol_info_list_t_val[indice].type
 	  || TSP_TYPE_UCHAR==symbols->TSP_sample_symbol_info_list_t_val[indice].type )
       {
-	  nb_data_receive+=(symbols->TSP_sample_symbol_info_list_t_val[indice].nelem / LG_MAX_STRING_MACSIM);
+	  nb_awaited_sample_item+=(symbols->TSP_sample_symbol_info_list_t_val[indice].nelem / LG_MAX_STRING_MACSIM);
       }
       else
       {
-	nb_data_receive+=symbols->TSP_sample_symbol_info_list_t_val[indice].nelem;
+	nb_awaited_sample_item+=symbols->TSP_sample_symbol_info_list_t_val[indice].nelem;
       
       }
     }
     else
     {
-	nb_data_receive+=symbols->TSP_sample_symbol_info_list_t_val[indice].nelem;
+	nb_awaited_sample_item+=symbols->TSP_sample_symbol_info_list_t_val[indice].nelem;
     }
   }
+  
+  my_logMsg("Nb awaited sample item per line: %d\n",nb_awaited_sample_item);
 
   /* Demarrage des sample au niveau provider */
   if(TSP_STATUS_OK!=TSP_consumer_request_sample_init(myprovider,0,0)) {
@@ -718,54 +725,48 @@ tsp_ascii_writer_start(FILE* sfile,
   STRACE_DEBUG(("Begin sample read...\n"));
   if (0 == retcode) 
   {
-    complete_line = 0;
-    nb_sample     = 0;
+    nb_sample_item    = 0;
+    nb_complete_line  = 0;
     /* write loop */
-    while (TSP_STATUS_OK==TSP_asciiwriter_read_sample(myprovider,&sample, &new_sample) && !stop_it) 
-    {
-      if (new_sample) 
-      {
-			if (tsp_ascii_writer_header_style==2) 
-			{
-			  /*bach file*/
-				tsp_ascii_writer_display_value(sfile,sample);
+    while (TSP_STATUS_OK==TSP_asciiwriter_read_sample(myprovider,&sample, &new_sample) && 
+	   !stop_it) {
 
-				++complete_line;
-				/* We write the endl if we receive a whole sample line */
-				if (nb_data_receive==complete_line) 
-				{
-	  				fprintf(sfile,"\n");
-	 				complete_line = 0;
-	  				++nb_sample;
-	  				if ((0 != nb_sample_max_infile) && 
-	      			(0 == (nb_sample % nb_sample_max_infile ))) 
-					{
-	    				rewind(sfile);
-	  				}
-				}
-			} 
-			else 
-			{
-			  /*macsim file*/
-			        tsp_ascii_writer_display_value(sfile,sample);
+      if (new_sample) {	
+	/* 
+	 * There could be format specific action here 
+	 * but currently handled format do not need this
+	 * for now, only the header is different
+	 */
 
-				++complete_line;
-				/* We write the endl if we receive a whole sample line */
-				if (nb_data_receive==complete_line) 
-				{
-	  				fprintf(sfile,"\n");
-	 				complete_line = 0;
-	  				++nb_sample;
-	  				if ((0 != nb_sample_max_infile) && 
-	      			(0 == (nb_sample % nb_sample_max_infile ))) 
-					{
-	    				rewind(sfile);
-	  				}
-				}
-			}
+	tsp_ascii_writer_display_value(sfile,sample);	
+	++nb_sample_item;
+	/* We write the endl if we receive a whole sample line */
+	if (nb_awaited_sample_item==nb_sample_item) {
+	  fprintf(sfile,"\n");
+	  /* OK we have a complete line */
+	  ++nb_complete_line;
+	  /* Reset sample item counter */
+	  nb_sample_item = 0;
+
+	  /* 
+	   * if user asked for limited number of line of sample
+	   * in file, try to flush on each line
+	   * and sync before rewinding the file.
+	   */
+	  if (0 != nb_sample_max_infile) {
+	    fflush(sfile);
+	    if (nb_complete_line == nb_sample_max_infile) {
+	      nb_complete_line = 0;
+	      sync();	      
+	      rewind(sfile);
+	    } /* end if we should rewind */
+	  }
+	} else {
+	  /* write sample separator */
+	  fprintf(sfile,"\t");
+	}
       } 
-      else 
-      {
+      else {
 	tsp_usleep(1000);
       }
     } /* end of while ecriture */
@@ -822,7 +823,7 @@ tsp_ascii_writer_finalise() {
 
 /*display value*/
 int32_t 
-tsp_ascii_writer_display_value(FILE* sfile,TSP_sample_t sample)
+tsp_ascii_writer_display_value(FILE* sfile, TSP_sample_t sample)
 {
 
  switch(sample.type) {
@@ -982,14 +983,11 @@ char* new_array_label(const char* libelle,const char* profil, const char* ordre,
 	free(reponse_bis);
 	reponse_bis=NULL;
       }
-
-
       free(nouveau_libelle);
 
     }
 
     free(nouveau_profil);
-
 
   }
 
