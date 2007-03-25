@@ -1,6 +1,6 @@
 /*
 
-$Id: macsim_fmt.c,v 1.11 2006-10-18 09:58:48 erk Exp $
+$Id: macsim_fmt.c,v 1.12 2007-03-25 14:17:06 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -588,7 +588,7 @@ int32_t load_double(char* data_var,void* raw_value,const uint32_t indice_data)
 
   if(data_var==rep || '\0'!=*rep)
   {
-    STRACE_ERROR(("Error conversion double\n"));
+    STRACE_ERROR(("Error conversion double for <%s>\n",data_var));
     return TSP_STATUS_ERROR_UNKNOWN;
   }
 
