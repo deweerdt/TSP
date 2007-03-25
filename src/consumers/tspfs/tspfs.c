@@ -9,7 +9,7 @@
  * See COPYING.
  */
 
-/** 
+/**
  * @defgroup TSPFS tspfs
  * @ingroup TSP_Consumers
  *
@@ -18,7 +18,7 @@
  * symbols as files in a directory.
  *
  * \par usage: tspfs [--url=\<tsp_provider_url\>] [--sync=\<sampling period\>]|[--async] [--filter] \<mount_point\>
- * \par 
+ * \par
  * <ul>
  *   <li> \b --url                   the url to connect to, default: rpc://localhost </li>
  *   <li> \b --sync=\<period\>         use synchronous mode to read the sample values with a period \<period\> </li>
@@ -28,17 +28,17 @@
  * </ul>
  * \section Sample tspfs session
  * \verbatim
- 
+
  # Start a sample bb
  $ bb_simu -s > /dev/null 2>&1 &
- 
+
  # TSPize the bb's data
  $ bb_tsp_provide bb_simu 10 &
- 
+
  # Create the mount point, mount the tspfs filesystem
  $ mkdir mp/
  $ tspfs --ext=.txt --url=rpc://localhost/bb_simu --sync=1 mp/
- 
+
  # List the symbols
  $ ls -l mp/
  total 0
@@ -56,23 +56,23 @@
  -rw-rw-rw-  1 root root 512 jan  1  1970 POSA_0_d_DirSol[1].txt
  -rw-rw-rw-  1 root root 512 jan  1  1970 POSA_0_d_DirSol[2].txt
  -rw-rw-rw-  1 root root 512 jan  1  1970 Sequenceur_0_d_t_s.txt
- 
+
  # Display a particular value
  $ cat mp/Sequenceur_0_d_t_s.txt
  time=197600 value=3961.280000
  $ cat mp/Sequenceur_0_d_t_s.txt
  time=197680 value=3962.880000
- 
+
  # Change the display format (notice we use \012, not \n, this needs to be fixed)
  $ setfattr -n format -v 't=%d v=%e\012' ECLA_0_d_ecl_sol.txt
  $ cat ECLA_0_d_ecl_sol.txt
  t=208880 v=1.000000e+00
- 
+
  # Get the format from a symbol
  $ getfattr -n format bb_simu_int8\[0\]
  # file: bb_simu_int8[0]
  format="time=%d value=%f\012"
- 
+
  # Go wild, umount the filesystem
  $ fusermount -u mp/
  \endverbatim
@@ -96,17 +96,14 @@
 
 #define _GNU_SOURCE
 #include <getopt.h>
+#define __USE_GNU
+#include <search.h>
 
+#include <tspfs.h>
 
 #include <tsp_sys_headers.h>
 #include <tsp_prjcfg.h>
 #include <tsp_consumer.h>
-
-#define MAX_SYM_DISP_SIZE 512
-#define MAX_FORMAT_SIZE 512
-#define MAX_URL_SIZE 512
-
-#define TSPFS_DEBUG 0
 
 static int is_tsp_symbol(const char *path);
 static char *get_symname_from_path(const char *path);
@@ -125,7 +122,6 @@ static int tspfs_getattr(const char *path, struct stat *stbuf)
 
 	sym_name = get_symname_from_path(path);
 	if (!sym_name) {
-		printf("ENOMEM %s\n", path);
 		return -ENOMEM;
 	}
 
@@ -139,44 +135,6 @@ static int tspfs_getattr(const char *path, struct stat *stbuf)
 	free(sym_name);
 	return res;
 }
-
-struct tspfs_sample {
-	union {
-		TSP_sample_t sync;
-		TSP_consumer_async_sample_t async;
-	};
-	union {
-		double d;
-	} value;
-};
-
-struct tspfs {
-	/* 0 if not using synchronous mode. If > 0, this is the sync read period*/
-	int sync; 
-	/* 0 if not using asynchronous mode. If > 0, use async read */
-	int async;
-	/* url to connect to */
-	char *url;
-	/* filter the symbols need to match */
-	char *filter;
-	/* information on the requested symbols */
-	const TSP_answer_sample_t *information;
-	TSP_sample_symbol_info_list_t symbols;
-	/* a link to a provider */
-	TSP_provider_t provider;
-	/* the symbols themselves */
-	TSP_sample_t **samples;
-	/* display format for the symbols */
-	char **formats;
-	/* number of requested symbols */
-	unsigned int nr_samples;
-	/* optional file extension */
-	char *ext;
-	int ext_len;
-	/* pgi -> internal index conversion table */
-	int *idx_to_pgi;
-	int idx_to_pgi_len;
-};
 
 static struct tspfs tspfs;
 
@@ -226,7 +184,7 @@ static inline struct tspfs_sample *get_tsp_symbol_value(int index)
 
 	s = (struct tspfs_sample *)malloc(sizeof(struct tspfs_sample));
 	if (tspfs.sync) {
-		int new_sample;	
+		int new_sample;
 #ifdef TSPFS_DEBUG
 		fprintf(stderr, "QSD:get_value: idx = %d, pgi = %d\n", index,
 				tspfs.samples[index]->provider_global_index);
@@ -236,36 +194,31 @@ static inline struct tspfs_sample *get_tsp_symbol_value(int index)
 					 &new_sample);
 		s->sync = *tspfs.samples[index];
 	} else {
-		int ret;
-		/* 
+		/*
 		 * Beware that PGI is not the tspfs local 'index' since
 		 *      - filtered info may gives you non-contiguous PGI
 		 */
   		s->async.provider_global_index = tspfs.symbols
 							.TSP_sample_symbol_info_list_t_val[index]
-							.provider_global_index; 
+							.provider_global_index;
     		s->async.value_ptr  = &s->value.d;
       		s->async.value_size = sizeof(s->value.d);
-		ret = TSP_consumer_request_async_sample_read(tspfs.provider,&(s->async));	
+		TSP_consumer_request_async_sample_read(tspfs.provider,&(s->async));
 	}
 	return s;
 }
+
+
 static int get_tsp_symbol_index(const char *symbol_name)
 {
-	int i;
-	/* Compare symbols names */
-	for (i = 0; i < tspfs.symbols.TSP_sample_symbol_info_list_t_len; i++) {
-		if (!strcmp (symbol_name,
-		     tspfs.symbols.TSP_sample_symbol_info_list_t_val[i].name)) {
-#ifdef TSPFS_DEBUG
-			fprintf(stderr, "AZE:Matched: %s, %d\n", 
-				tspfs.symbols.TSP_sample_symbol_info_list_t_val[i].name, 
-				tspfs.symbols.TSP_sample_symbol_info_list_t_val[i].provider_global_index); 
-#endif
-			return i;
-		}
+	int ret;
+	ENTRY e;
+	ENTRY *ep;
 
-	}
+	e.key = (char *)symbol_name;
+	ret = hsearch_r(e, FIND, &ep, &tspfs.name_to_index);
+	if (ret)
+		return (int)ep->data;
 
 	return -1;
 }
@@ -287,7 +240,7 @@ static void tspfs_destroy(void *unused)
 			free(tspfs.formats[i]);
 	}
 
-	if (tspfs.sync) 
+	if (tspfs.sync)
 		free(tspfs.idx_to_pgi);
 
 	if (tspfs.sync && (TSP_STATUS_OK!=TSP_consumer_request_sample_destroy(tspfs.provider))) {
@@ -344,19 +297,29 @@ static int tspfs_init_connect(int argc, char **argv, char *url)
 	if (!tspfs.symbols.TSP_sample_symbol_info_list_t_val)
 		return -1;
 
+	if (!hcreate_r(tspfs.symbols.TSP_sample_symbol_info_list_t_len * 1.2, &tspfs.name_to_index)) {
+		return -1;
+	}
 	for (i = 0; i < tspfs.symbols.TSP_sample_symbol_info_list_t_len; i++) {
+		ENTRY e;
+		ENTRY *ep;
+		int ret;
+
 		tspfs.symbols.TSP_sample_symbol_info_list_t_val[i] =
 		    tspfs.information->symbols.TSP_sample_symbol_info_list_t_val[i];
 		tspfs.symbols.TSP_sample_symbol_info_list_t_val[i].name =
 		    strdup(tspfs.information->symbols.TSP_sample_symbol_info_list_t_val[i].name);
 		tspfs.symbols.TSP_sample_symbol_info_list_t_val[i].period = tspfs.sync;
 		tspfs.symbols.TSP_sample_symbol_info_list_t_val[i].phase = 0;
+
+		e.key = tspfs.symbols.TSP_sample_symbol_info_list_t_val[i].name;
+		e.data = (void *)i;
+		ret = hsearch_r(e, ENTER, &ep, &tspfs.name_to_index);
 	}
 
 	tspfs.nr_samples = tspfs.information->symbols.TSP_sample_symbol_info_list_t_len;
-	tspfs.samples =
-	    (TSP_sample_t **) malloc(sizeof(TSP_sample_t *) *
-				     tspfs.nr_samples);
+	tspfs.samples = (TSP_sample_t **) malloc(sizeof(TSP_sample_t *)
+				     		 * tspfs.nr_samples);
 	if (tspfs.sync) {
 		int i;
 		tspfs.idx_to_pgi = (int *)malloc(sizeof(int)*tspfs.nr_samples);
@@ -395,7 +358,7 @@ static int tspfs_init_connect(int argc, char **argv, char *url)
 }
 
 /*
- * TODO: this really wants to be a hashtable. 
+ * TODO: this really wants to be a hashtable.
  * Find a portable implementation
  */
 static int pgi_to_idx(int pgi) {
@@ -410,8 +373,8 @@ static int pgi_to_idx(int pgi) {
 	return -1;
 }
 /*
- * Called back each time a symbol's value changes. 
- * Only used in sync mode 
+ * Called back each time a symbol's value changes.
+ * Only used in sync mode
  */
 static void tspfs_sync_read_sample_cb (TSP_sample_t* s, void* user_data)
 {
@@ -429,8 +392,8 @@ static void *tspfs_init(void)
 	/* Do specific sync mode initialization */
 	if (tspfs.sync) {
 		TSP_consumer_request_sample(tspfs.provider, &tspfs.symbols);
-		TSP_consumer_request_sample_init(tspfs.provider, 
-						 tspfs_sync_read_sample_cb, 
+		TSP_consumer_request_sample_init(tspfs.provider,
+						 tspfs_sync_read_sample_cb,
 						 0);
 	}
 
@@ -452,14 +415,14 @@ static int tspfs_readdir(const char *path, void *buf,
 	for (i = 0; i < tspfs.symbols.TSP_sample_symbol_info_list_t_len; i++) {
 		char *fullname;
 		if (tspfs.ext) {
-			fullname = 
+			fullname =
 				(char *)malloc(sizeof(char)
 				*strlen(tspfs.symbols.TSP_sample_symbol_info_list_t_val[i].name)
 				+strlen(tspfs.ext)+2);
 			if (!fullname)
 				return -ENOMEM;
 			sprintf(fullname, "%s%s",
-				tspfs.symbols.TSP_sample_symbol_info_list_t_val[i].name, 
+				tspfs.symbols.TSP_sample_symbol_info_list_t_val[i].name,
 				tspfs.ext);
 			filler(buf, fullname, NULL, 0);
 			free(fullname);
@@ -494,7 +457,7 @@ static int tspfs_write(const char *path, const char *buf, size_t size,
 	struct tspfs_sample s;
 	char *sym_name;
 	int idx;
-	 
+
 	sym_name = get_symname_from_path(path);
 	if (!sym_name)
 		return -ENOMEM;
@@ -507,11 +470,11 @@ static int tspfs_write(const char *path, const char *buf, size_t size,
 
 	value = strtod(buf, NULL);
   	s.async.provider_global_index = tspfs.symbols
-					.TSP_sample_symbol_info_list_t_val[idx].provider_global_index; 
+					.TSP_sample_symbol_info_list_t_val[idx].provider_global_index;
     	s.async.value_ptr  = &value;
       	s.async.value_size = sizeof(value);
-	TSP_consumer_request_async_sample_write(tspfs.provider,&s.async);	
-	
+	TSP_consumer_request_async_sample_write(tspfs.provider,&s.async);
+
 	free(sym_name);
 	return size;
 }
@@ -616,7 +579,7 @@ static int tspfs_read(const char *path, char *buf, size_t size,
 		size = 0;
 
 	free(sym_name);
-	free(sample); 
+	free(sample);
 	return size;
 }
 
@@ -809,6 +772,9 @@ int main(int argc, char *argv[])
 		usage();
 		exit(1);
 	}
+
+	memset(&tspfs.name_to_index, 0, sizeof(tspfs.name_to_index));
+
 	if (tspfs_init_connect(_argc, _argv, tspfs.url) < 0) {
 		printf("Could not init connection to %s. Exiting.\n", tspfs.url);
 		exit(1);
