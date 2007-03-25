@@ -10,10 +10,9 @@
 MESSAGE(STATUS "Looking for xmlrpc-c-config...")
 FIND_PROGRAM(XMLRPCC_CONFIG_PROGRAM
   NAMES  xmlrpc-c-config
-  PATHS /usr/local/bin /usr/bin
+  PATHS /usr/local/bin /usr/bin /opt/xmlrpc /opt/xmlrpc-c
   DOC "The xmlrpc-c (xmlrpc-c.sourceforge.net) configuration tool")
-IF (XMLRPCC_CONFIG_PROGRAM)
-          
+IF (XMLRPCC_CONFIG_PROGRAM)          
     EXEC_PROGRAM(${XMLRPCC_CONFIG_PROGRAM} 
         ARGS "--version"
         OUTPUT_VARIABLE XMLRPCC_VERSION)

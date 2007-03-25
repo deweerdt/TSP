@@ -1,0 +1,23 @@
+The XML-RPC TSP command channel handler.
+
+If you want to activate XML-RPC command channel
+
+1) Install libwww and libwww-dev
+2) Get xmlrpc-c from http://xmlrpc-c.sourceforge.net/
+   Get stable xmlrpc-c-1.06.xxx
+3) Configure and install it
+
+./configure --prefix=/opt/xmlrpc
+
+or
+
+./configure --prefix=/opt/xmlrpc --enable-libxml2-backend
+
+export PATH=/opt/xmlrpc/bin:$PATH
+export LD_LIBRARY_PATH=/opt/xmlrpc/lib:$LD_LIBRARY_PATH
+export CMAKE_LIBRARY_PATH=/opt/xmlrpc/lib
+export CMAKE_PROGRAM_PATH=/opt/xmlrpc/bin
+export CMAKE_INCLUDE_PATH=/opt/xmlrpc/include
+
+4) Then configure TSP with XMLRPC enable
+cmake -DBUILD_XMLRPC=ON  /path/to/tsp/source
