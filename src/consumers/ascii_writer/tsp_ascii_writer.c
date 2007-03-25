@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer.c,v 1.29 2007-03-24 13:40:00 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer.c,v 1.30 2007-03-25 14:18:13 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -496,12 +496,15 @@ TSP_asciiwriter_read_sample(TSP_provider_t provider,
       if (new_sample) 
       {
 	/*test if macsim file*/
-	if (tsp_ascii_writer_header_style==1) 
+	if (tsp_ascii_writer_header_style==MACSIM_FileFmt) 
 	{
 	    
 	  /*TYPE_CHAR or TYPE_UCHAR is a  string of  LG_MAX_STRING_MACSIM length */
 	  /* each character of a string is send in one sample*/
-	  /* so we must retrieve all character of the string before display*/
+	  /* so we must retrieve all character of the string before display
+	   * FIXME BIG FIXME this is a nasty trick for handling string 
+	   * we should do it in a better way
+	   */
 	  if( TSP_TYPE_CHAR==sample->type
 	      || TSP_TYPE_UCHAR==sample->type )
 	  {
@@ -618,8 +621,7 @@ tsp_ascii_writer_start(FILE* sfile,
     fflush(sfile);
     break;
     
-  case MACSIM_FileFmt:
-    
+  case MACSIM_FileFmt:    
     /* 
      * array with the column title
      */
@@ -693,7 +695,7 @@ tsp_ascii_writer_start(FILE* sfile,
   {
     /*for MACSIM file nelem= nb symbol + size max of string * nb string symbol*/
     /*so  we must change nb data receive*/
-    if (tsp_ascii_writer_header_style==1) 
+    if (tsp_ascii_writer_header_style==MACSIM_FileFmt) 
     {
       /*TYPE_CHAR or TYPE_UCHAR is a  string of  LG_MAX_STRING_MACSIM length */
       if( TSP_TYPE_CHAR==symbols->TSP_sample_symbol_info_list_t_val[indice].type
