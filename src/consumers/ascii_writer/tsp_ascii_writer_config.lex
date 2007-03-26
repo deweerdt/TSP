@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer_config.lex,v 1.6 2007-03-26 09:26:32 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer_config.lex,v 1.7 2007-03-26 09:26:56 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -41,7 +41,7 @@ Purpose   : TSP ascii writer config file analyzer
 #include <stdio.h>
 #include <tsp_ascii_writer.h>
 #include "y.tab.h"
-extern char yytext[];
+extern char *yytext;
 int yyerror(char *msg) {
   printf("tsp_ascii_writer_config: line %d, col %d : %s at '%s'\n", 
 	 tsp_ascii_writer_lineno, tsp_ascii_writer_colno, msg, yytext);
