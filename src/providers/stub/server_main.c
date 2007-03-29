@@ -1,6 +1,6 @@
 /*
 
-$Id: server_main.c,v 1.14 2006-10-25 15:00:31 erk Exp $
+$Id: server_main.c,v 1.15 2007-03-29 20:42:53 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -97,7 +97,7 @@ main(int argc, char *argv[])
 {
   GLU_handle_t* GLU_stub;
   int           opt_ok=1;
-  char          c_opt;
+  int           c_opt;
   double        baseFrequency = 100.0; /* default frequency is 100Hz */
 
 /* Managing the SIGINT signal */

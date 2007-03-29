@@ -1,6 +1,6 @@
 /*
 
-$Id: client_res.c,v 1.18 2006-10-18 09:58:47 erk Exp $
+$Id: client_res.c,v 1.19 2007-03-29 20:42:53 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -125,7 +125,7 @@ int main(int argc, char *argv[]){
   TSP_provider_t providers[TSP_MAX_SERVER_NUMBER];
   int buffersBeforeStop = 0;
 
-  char myopt; /* Options */
+  int myopt; /* Options */
   char* out_file_res = NULL;
   int period=1;
   int test_mode = 1;

@@ -206,7 +206,7 @@ int set_real_time_priority(int pid, unsigned long mask)
 
 int main(int argc, char *argv[])
 {
-  char myopt; /* Options */
+  int myopt; /* Options */
   GLU_handle_t* GLU_stub = GLU_stub_create();
 
   /* Init server */

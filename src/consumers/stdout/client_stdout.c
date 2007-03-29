@@ -1,6 +1,6 @@
 /*
 
-$Id: client_stdout.c,v 1.14 2006-10-18 21:22:34 erk Exp $
+$Id: client_stdout.c,v 1.15 2007-03-29 20:42:53 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -109,7 +109,7 @@ main(int argc, char *argv[]){
   int   all_data_ok = TRUE;
   TSP_provider_t provider;
   int           opt_ok=1;
-  char          c_opt;
+  int           c_opt;
 
   /* Setup default values for non-existent option */
   provider_url = strdup("localhost");

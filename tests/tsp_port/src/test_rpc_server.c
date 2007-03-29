@@ -278,7 +278,7 @@ void rpc_svc_main(int argc, char* argv[])
     /* Main options handling */
     /*  char*   error_string;*/
     int     opt_ok  = 1;
-    char    c_opt;
+    int    c_opt;
     int    help     = 0;
     int    test_api = 0;
     int    test_rpc = 0;

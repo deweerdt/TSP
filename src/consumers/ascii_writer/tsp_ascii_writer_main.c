@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer_main.c,v 1.17 2006-11-24 07:48:58 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer_main.c,v 1.18 2007-03-29 20:42:53 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -116,7 +116,7 @@ main (int argc, char* argv[]) {
   /* Main options handling */
   char*         errorString;
   int           opt_ok=1;
-  char          c_opt;
+  int           c_opt;
     
   if (argc < 2) {
     opt_ok  = 0;

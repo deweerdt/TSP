@@ -1,6 +1,6 @@
 /*
 
-$Id: generic_consumer_main.c,v 1.10 2006-10-18 09:58:47 erk Exp $
+$Id: generic_consumer_main.c,v 1.11 2007-03-29 20:42:53 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -106,7 +106,7 @@ main(int argc, char *argv[]){
   /* Main options handling */
   /*  char*         error_string;*/
   int           opt_ok;
-  char          c_opt;
+  int           c_opt;
 
   generic_consumer_request_t req;
 

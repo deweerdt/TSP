@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/consumers/gdisp/gdispmain.c,v 1.14 2007-02-27 05:52:22 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/consumers/gdisp/gdispmain.c,v 1.15 2007-03-29 20:42:53 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -309,7 +309,7 @@ usage(char *txt) {
 int
 main (int argc, char **argv) 
 {
-  char myopt; /* Options */
+  int myopt; /* Options */
   char* config_file = NULL;
   char* tsp_prov_url = "";
 

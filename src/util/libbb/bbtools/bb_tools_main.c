@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bbtools/bb_tools_main.c,v 1.6 2006-02-26 13:36:06 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bbtools/bb_tools_main.c,v 1.7 2007-03-29 20:42:53 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -175,7 +175,7 @@ main (int argc, char ** argv) {
   /* Main options handling */
   /*  char*         error_string;*/
   int           opt_ok;
-  char          c_opt;
+  int           c_opt;
 
   opt_ok            = 1;   
   
