@@ -1,6 +1,6 @@
 /*
   
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_alias.c,v 1.6 2007-02-19 15:53:19 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_alias.c,v 1.7 2007-04-01 13:17:21 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -52,15 +52,15 @@ Purpose   : Blackboard (alias handling)
 #include "bb_alias.h"
 #include "bb_utils.h"
 
-int32_t 
+int32_t
 bb_isalias(const S_BB_DATADESC_T* data_desc) {
   assert(data_desc);
   return (data_desc->alias_target != -1);
 } /* end of bb_isalias */
 
-int32_t 
-bb_find_aliastack(volatile S_BB_T* bb,       
-		  S_BB_DATADESC_T* data_desc_stack, 
+int32_t
+bb_find_aliastack(volatile S_BB_T* bb,
+		  S_BB_DATADESC_T* data_desc_stack,
 		  int32_t* stack_max_size) {
   int32_t retval             = 0;
   int32_t current_stack_size = 1;
@@ -68,16 +68,16 @@ bb_find_aliastack(volatile S_BB_T* bb,
   assert(bb);
   assert(data_desc_stack);
   assert(stack_max_size);
-  
+
   while ((current_stack_size<(*stack_max_size)) &&
 	 bb_isalias(&data_desc_stack[current_stack_size-1])) {
 
-    data_desc_stack[current_stack_size] = 
+    data_desc_stack[current_stack_size] =
       bb_data_desc(bb)[data_desc_stack[current_stack_size-1].alias_target];
     ++current_stack_size;
   }
   if ((current_stack_size==(*stack_max_size)) && bb_isalias(&data_desc_stack[current_stack_size-1])) {
-    bb_logMsg(BB_LOG_SEVERE,"BlackBoard::bb_find_aliastack", 
+    bb_logMsg(BB_LOG_SEVERE,"BlackBoard::bb_find_aliastack",
 	      "MAX alias stacksize exceeded <%d>",
 	      *stack_max_size);
     retval = -1;
@@ -87,8 +87,8 @@ bb_find_aliastack(volatile S_BB_T* bb,
   return retval;
 } /* end of bb_find_aliastack */
 
-unsigned long 
-bb_aliasstack_offset(S_BB_DATADESC_T* data_desc_stack, 
+unsigned long
+bb_aliasstack_offset(S_BB_DATADESC_T* data_desc_stack,
 		     int32_t* index_stack,
 		     int32_t stack_size) {
   long retval;
@@ -185,7 +185,7 @@ bb_alias_publish(volatile S_BB_T *bb,
           char *n = (char *)bb_get_varname(data_desc_target);
 	        bb_logMsg(BB_LOG_SEVERE,"BlackBoard::bb_alias_publish", 
 		          "Target <%s> does not exists", n);
-          free(n);
+      free(n);
       }
     }
     /* DO NOT initialize publish data zone with default value */
@@ -209,6 +209,7 @@ bb_alias_subscribe(volatile S_BB_T* bb,
   
   void* retval;
   int32_t  idx;
+  char *n;
   
   retval = NULL;
   assert(bb);
@@ -216,7 +217,7 @@ bb_alias_subscribe(volatile S_BB_T* bb,
 
    /* We seek the data using its key (name) */
   bb_lock(bb);
-  char *n = (char *)bb_get_varname(data_desc);
+  n = (char *)bb_get_varname(data_desc);
   idx = bb_find(bb, n);
   free(n);
   if (idx==-1) {

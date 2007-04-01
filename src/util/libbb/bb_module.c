@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_module.c,v 1.2 2006-11-27 19:55:46 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_module.c,v 1.3 2007-04-01 13:17:21 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -89,7 +89,7 @@ static int bb_ioctl(struct inode *i, struct file *filp,
 		       unsigned int cmd, unsigned long arg)
 {
 	int ret = 0;
-	struct bb_device *dev; 
+	struct bb_device *dev;
 
 	dev = container_of(i->i_cdev, struct bb_device, cdev);
 
@@ -110,6 +110,7 @@ static int bb_ioctl(struct inode *i, struct file *filp,
 }
 
 static struct task_struct *test_thread;
+static int test_running = 0;
 #define MS_TO_JIFFIES(j) ((j * HZ) / 1000)
 static int bb_test(void *data)
 {
@@ -118,16 +119,20 @@ static int bb_test(void *data)
 	S_BB_T *test_bb2;
 
 	bb_create(&test_bb1, "bb_test1", 2, 200);
-	bb_create(&test_bb2, "bb_test2", 2, 200);
 	v1 = (int*)bb_simple_publish(test_bb1,"variable","bb_test1", -1, E_BB_INT32, sizeof(int), 1);
+
+	bb_create(&test_bb2, "bb_test2", 2, 200);
 	v2 = (int*)bb_simple_publish(test_bb2,"variable","bb_test2", -1, E_BB_INT32, sizeof(int), 1);
 	*v1 = 0;
 	*v2 = 0;
+
 	while(!kthread_should_stop()) {
-		schedule_timeout_interruptible(MS_TO_JIFFIES(1000));	
+		test_running = 1;
+		msleep(1000);
 		*v1=*v1+1;
 		*v2=*v2+1;
 	}
+	test_running = 0;
 	bb_destroy(&test_bb1);
 	bb_destroy(&test_bb2);
 	return 0;
@@ -165,8 +170,8 @@ static int bb_mmap(struct file *filp, struct vm_area_struct *vma)
 	/* remap pages to the user's address space */
 	ret = remap_pfn_range(vma,
 			      vma->vm_start,
-			      virt_to_phys((void *) ((unsigned long) bb)) 
-			      >> PAGE_SHIFT, 
+			      virt_to_phys((void *) ((unsigned long) bb))
+			      >> PAGE_SHIFT,
 			      vma->vm_end - vma->vm_start,
 			      PAGE_SHARED);
 	if (ret != 0)
@@ -202,12 +207,12 @@ static int __init bb_init_module(void)
 	}
 
 	bitmap_zero(present_devices, BB_DEV_MAX);
-	
+
 	/* This is here for demo purposes, activate with the param */
 	if (run_test)
 		test_thread = kthread_run(bb_test, NULL, "bb_test");
 
-	printk("Kernel black board loaded.\n");
+	printk("Kernel black board loaded %d %d.\n", bb_major, bb_minor);
 	printk("See http://savannah.nongnu.org/projects/tsp for details.\n");
 	return 0;
 
@@ -219,8 +224,9 @@ err_destroy_class:
 
 static void __exit bb_cleanup_module(void)
 {
-	if (run_test)
+	if (run_test && test_running) {
 		kthread_stop(test_thread);
+	}
 
 	spin_lock(&pdeviceslock);
 	while(!bitmap_empty(present_devices, BB_DEV_MAX)) {

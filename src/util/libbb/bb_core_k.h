@@ -8,6 +8,11 @@
 #include <linux/cdev.h>
 #include "bb_core.h"
 
+/** ioctls for the bb */
+#define BBKGETSIZE 1 /* gets the shared memory size */
+#define BBKSETSIZE 2 /* sets the shared memory size */
+
+
 extern struct file_operations bb_fops;
 extern int bb_major;
 extern int bb_minor;

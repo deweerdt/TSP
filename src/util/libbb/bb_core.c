@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.39 2007-03-01 18:45:13 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.40 2007-04-01 13:17:21 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -67,8 +67,8 @@ Purpose   : Blackboard Idiom implementation
  */
 #ifndef __KERNEL__
 static const char* E_BB_2STRING[] = {"DiscoverType",
-				     "double", 
-				     "float", 
+				     "double",
+				     "float",
 				     "int8_t",
 				     "int16_t",
 				     "int32_t",
@@ -85,11 +85,11 @@ static const char* E_BB_2STRING[] = {"DiscoverType",
 
 static const size_t E_BB_TYPE_SIZE[] = {0,
 			#ifndef __KERNEL__
-					sizeof(double), 
-					sizeof(float), 
-                        #else 
-                                        0,
-                                        0,
+					sizeof(double),
+					sizeof(float),
+      #else
+          0,
+          0,
 			#endif
 					sizeof(int8_t),
 					sizeof(int16_t),
@@ -120,12 +120,11 @@ extern struct bb_operations k_bb_ops;
    if you ever modify this, you'll probably need to modify
    enum bb_type */
 static struct bb_operations *ops[] = {
-  &sysv_bb_ops
+	&sysv_bb_ops
 #if defined(linux) || defined(__linux)
-  ,&k_bb_ops };
-#else
-};
+	,&k_bb_ops
 #endif
+};
 
 static enum bb_type bb_type(const char *name)
 {
@@ -134,7 +133,7 @@ static enum bb_type bb_type(const char *name)
 #else
 	if (!strncmp(name, "/dev/", 5))
 		return BB_KERNEL;
-	
+
 	return BB_SYSV;
 #endif /* __KERNEL__ */
 }
@@ -192,12 +191,26 @@ bb_type_string2bb_type(const char* bb_type_string) {
   return retval;
 }
 
+#ifdef __KERNEL__
+static inline char *__strdup (const char *s1)
+{
+	char *p;
+	p = (char *)kmalloc((strlen(s1)+1)*sizeof(char), GFP_KERNEL);
+	if (p != NULL)
+		strcpy (p,s1);
+	return p;
+}
+#endif
 static char *bb_get_varname_default(const S_BB_DATADESC_T *dd)
 {
+#ifdef __KERNEL__
+  return __strdup(dd->__name);
+#else
   return strdup(dd->__name);
+#endif
 }
 
-static int32_t bb_varname_max_len_default()
+static int32_t bb_varname_max_len_default(void)
 {
   return VARNAME_MAX_SIZE;
 }
@@ -212,6 +225,7 @@ bb_get_varname_fn bb_get_varname = bb_get_varname_default;
 bb_set_varname_fn bb_set_varname = bb_set_varname_default;
 bb_varname_max_len_fn bb_varname_max_len = bb_varname_max_len_default;
 
+#ifndef __KERNEL__
 static int32_t
 bb_varname_init(S_BB_T *bb)
 {
@@ -244,18 +258,18 @@ bb_varname_init(S_BB_T *bb)
     /* try to open a library */
     handle = dlopen(libname, RTLD_NOW);
     if (!handle) {
-      STRACE_WARNING(("cound not find lib %s\n", libname));
+      bb_logMsg(BB_LOG_WARNING, "cound not find lib %s\n", libname);
       return BB_NOK;
     }
     getter = dlsym(handle, getter_name);
     if (!getter) {
-      STRACE_WARNING(("cound not find symbol %s\n", getter_name));
+      bb_logMsg(BB_LOG_WARNING, "cound not find symbol %s\n", getter_name);
       return BB_NOK;
     }
   }
   setter = dlsym(handle, setter_name);
   if (!setter) {
-    STRACE_WARNING(("cound not find symbol %s\n", setter_name));
+    bb_logMsg(BB_LOG_WARNING, "cound not find symbol %s\n", setter_name);
     return BB_NOK;
   }
 
@@ -275,6 +289,13 @@ bb_varname_init(S_BB_T *bb)
 
   return BB_OK;
 }
+#else
+static int32_t
+bb_varname_init(S_BB_T *bb)
+{
+	return BB_OK;
+}
+#endif
 
 
 int32_t
@@ -358,9 +379,9 @@ bb_get_priv(volatile S_BB_T* bb)
   return (S_BB_PRIV_T *)((unsigned long)bb + (unsigned long)(bb_size(bb->max_data_desc_size, bb->max_data_size) - sizeof(S_BB_PRIV_T)));
 }
 
-int32_t 
+int32_t
 bb_find(volatile S_BB_T* bb, const char* var_name) {
-  int32_t retval;  
+  int32_t retval;
   int32_t i;
 
   retval = -1;
@@ -379,27 +400,25 @@ bb_find(volatile S_BB_T* bb, const char* var_name) {
   return retval;
 } /* end of  bb_find */
 
-S_BB_DATADESC_T* 
+S_BB_DATADESC_T*
 bb_data_desc(volatile S_BB_T* bb) {
-  
-  S_BB_DATADESC_T* retval;  
-  
+  S_BB_DATADESC_T* retval;
+
   retval = NULL;
   assert(bb);
   retval = (S_BB_DATADESC_T*) ((char*)(bb) + bb->data_desc_offset);
-  
+
   return retval;
 } /* end of bb_data_desc */
 
-void* 
+void*
 bb_data(volatile S_BB_T* bb) {
-  
-  void* retval;  
-  
+  void* retval;
+
   retval = NULL;
   assert(bb);
   retval = (char*)(bb) + bb->data_offset;
-  
+
   return retval;
 } /* end of bb_data */
 
@@ -640,12 +659,12 @@ bb_data_header_print(S_BB_DATADESC_T data_desc, FILE* pf, int32_t idx, int32_t a
   char tabs[MAX_ALIAS_LEVEL*5]="";
   char *n;
   int i;
-  
+
   for (i=0; i<(aliastack-1); i++)
     {
       strncat(tabs, oneTab, sizeof(tabs)-strlen(tabs));
     }
-  
+
   n = bb_get_varname(&data_desc);
   fprintf(pf,"%s---------- < %s > ----------\n", tabs, n);
   free(n);
@@ -983,24 +1002,24 @@ bb_attach(S_BB_T** bb, const char* pc_bb_name)
   if ((*bb)->bb_version_id < 0x0004000)
     return ret;
 
+#ifndef __KERNEL__
   if (bb_varname_init(*bb) != BB_OK) {
-    STRACE_WARNING(("Could not setup a proper varname encoding scheme\n"));
+    bb_logMsg(BB_LOG_WARNING, "%s", "Could not setup a proper varname encoding scheme\n");
   }
+#endif
   return ret;
 } /* end of bb_attach */
 
-int32_t 
+int32_t
 bb_detach(S_BB_T** bb) {
-  
   assert(bb);
   assert(*bb);
-  
+
   return ops[(*bb)->type]->bb_shmem_detach(bb);
 } /* end of bb_detach */
 
-void* 
+void*
 bb_publish(volatile S_BB_T *bb, S_BB_DATADESC_T* data_desc) {
-  
   void* retval;
   int32_t needed_size;
   char *n;
@@ -1008,7 +1027,7 @@ bb_publish(volatile S_BB_T *bb, S_BB_DATADESC_T* data_desc) {
   retval = NULL;
   assert(bb);
   assert(data_desc);
-  
+
   /* Verify that the published data is not already published
    * (key unicity) and trigger automatic subscribe
    * if key already exists.
@@ -1025,18 +1044,18 @@ bb_publish(volatile S_BB_T *bb, S_BB_DATADESC_T* data_desc) {
     bb_lock(bb);
   } else {
     /* compute required data size  */
-    needed_size = data_desc->type_size*data_desc->dimension;    
+    needed_size = data_desc->type_size*data_desc->dimension;
     /* verify available space in BB data descriptor zone */
     if (bb->n_data >= bb->max_data_desc_size) {
-      bb_logMsg(BB_LOG_SEVERE,"BlackBoard::bb_publish", 
+      bb_logMsg(BB_LOG_SEVERE,"BlackBoard::bb_publish",
 		"No more room in BB data descriptor!! [current n_data=%d]",
 		bb->n_data);
       /* verify available space in BB data zone */
     } else if ((bb->max_data_size-bb->data_free_offset) < needed_size) {
-      bb_logMsg(BB_LOG_SEVERE,"BlackBoard::bb_publish", 
+      bb_logMsg(BB_LOG_SEVERE,"BlackBoard::bb_publish",
 		"No more room in BB data zone!! [left <%d> byte(s) out of <%d> required]",
 		bb->max_data_size-bb->data_free_offset,needed_size);
-    } else {     
+    } else {
       /* Compute the free address */
       retval = (char*) bb_data(bb) + bb->data_free_offset;
       /* Update returned data descriptor */
@@ -1052,25 +1071,23 @@ bb_publish(volatile S_BB_T *bb, S_BB_DATADESC_T* data_desc) {
     }
     /* initialize publish data zone with default value */
     bb_data_initialise(bb,data_desc,NULL);
-  }    
+  }
   free(n);
-  /* no init in case of automatic subscribe */  
-  bb_unlock(bb);  
+  /* no init in case of automatic subscribe */
+  bb_unlock(bb);
   return retval;
 } /* end of bb_publish */
 
-void* 
-bb_subscribe(volatile S_BB_T *bb, 
-	     S_BB_DATADESC_T* data_desc) {
-				 
-	int32_t          indexstack[MAX_ALIAS_LEVEL];
+void*
+bb_subscribe(volatile S_BB_T *bb, S_BB_DATADESC_T* data_desc) {
+	int32_t indexstack[MAX_ALIAS_LEVEL];
   	/* zero out indexstack */
 	memset(indexstack,0,MAX_ALIAS_LEVEL*sizeof(int32_t));
-	
+
 	return bb_alias_subscribe(bb,data_desc, indexstack,MAX_ALIAS_LEVEL);
 } /* end of bb_subscribe */
 
-void* 
+void*
 bb_item_offset(volatile S_BB_T *bb, 
 	       S_BB_DATADESC_T* data_desc,
 	       const int32_t* indexstack,
@@ -1373,7 +1390,7 @@ bb_get_array_name(char * array_name,
       } else {
         n1 = bb_get_varname(&aliasstack[j]);
         n2 = bb_get_varname(&aliasstack[j+1]);
-        snprintf(part_of_name, array_name_size_max, "%s", 
+        snprintf(part_of_name, array_name_size_max, "%s",
             strstr(n1, n2 + strlen(n2)));
         free(n1);
         free(n2);
@@ -1381,11 +1398,7 @@ bb_get_array_name(char * array_name,
       strncat(array_name, part_of_name, array_name_size_max-strlen(array_name));
     }
   }
-#ifdef __KERNEL__
-  kfree (part_of_name);
-#else
   free (part_of_name);
-#endif
   return BB_OK;
 
 } /* end of get_array_name */

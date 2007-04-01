@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core_k.c,v 1.2 2006-11-27 19:42:50 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core_k.c,v 1.3 2007-04-01 13:17:21 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -52,6 +52,7 @@ Purpose   : Blackboard In-Kernel user and kernel space implementation
 #include <linux/slab.h>
 #include <linux/highmem.h>
 #include <linux/cdev.h>
+#include <linux/mutex.h>
 
 #else
 
@@ -71,14 +72,17 @@ Purpose   : Blackboard In-Kernel user and kernel space implementation
 /* dummy declaration, see the bottom of the file */
 struct bb_operations k_bb_ops;
 #ifdef __KERNEL__
-/* Array holding the used BBs, this is usefull
+/** 
+ * Array holding the used BBs, this is usefull
  * at unload time, where we want to clean up every
- * in-use bb before leaving */
+ * in-use bb before leaving
+ */
 S_BB_T *present_bbs[BB_DEV_MAX];
-/* Tracks the used/unused BBs */
+/** Tracks the used/unused BBs */
 DECLARE_BITMAP(present_devices, BB_DEV_MAX);
-/* protects access to the two bb tracking tools above */
+/** protects access to the two bb tracking tools above */
 DEFINE_SPINLOCK(pdeviceslock);
+
 #endif /* __KERNEL__ */
 
 
@@ -87,14 +91,31 @@ static int k_bb_msgq_get(S_BB_T * bb, int create)
 	return BB_OK;
 }
 
+#ifdef __KERNEL__
 static int k_bb_lock(volatile S_BB_T * bb)
 {
 	return BB_OK;
 }
+
 static int k_bb_unlock(volatile S_BB_T *bb)
 {
 	return BB_OK;
 }
+
+#else
+
+static int k_bb_lock(volatile S_BB_T * bb)
+{
+	return BB_OK;
+}
+
+static int k_bb_unlock(volatile S_BB_T *bb)
+{
+	return BB_OK;
+}
+
+#endif
+
 static int k_bb_sem_get(S_BB_T * bb, int create)
 {
 	return BB_OK;
@@ -199,7 +220,7 @@ static int k_bb_shmem_get(S_BB_T ** bb, const char *name, int n_data,
 	int err, index;
 	dev_t devno;
 
-	/* register and allocate a new character device */	
+	/* register and allocate a new character device */
 	dev = kmalloc(sizeof(*dev), GFP_KERNEL);
 	if (!dev) {
 		printk("Not enough memory to allocate device\n");
@@ -229,7 +250,7 @@ static int k_bb_shmem_get(S_BB_T ** bb, const char *name, int n_data,
 	err = cdev_add(&dev->cdev, devno, 1);
 	if(err != 0) 
 		goto err_destroy_bb;
-	
+
 	printk("New bb device created, major: %d, minor: %d\n",
 				MAJOR(devno), MINOR(devno));
 	dev->bb = *bb;

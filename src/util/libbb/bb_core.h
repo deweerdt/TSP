@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.h,v 1.35 2007-03-01 18:45:13 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.h,v 1.36 2007-04-01 13:17:21 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -455,7 +455,7 @@ typedef int32_t (*bb_varname_init_fn)(S_BB_T *);
 typedef int32_t (*bb_varname_destroy_fn)(S_BB_T *);
 typedef char *(*bb_get_varname_fn)(const S_BB_DATADESC_T *);
 typedef int32_t (*bb_set_varname_fn)(S_BB_DATADESC_T *, const char *);
-typedef int32_t (*bb_varname_max_len_fn)();
+typedef int32_t (*bb_varname_max_len_fn)(void);
 /**
  * Get the name of a variable described by @dd
  * @param[in] dd the descriptor of the variable
@@ -636,6 +636,7 @@ bb_string_value_print(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc, FILE* pf,
 
 /**
  * Print the value off a BB published data on a STDIO file stream.
+ *
  * @param[in] bb the BlackBoard where data is published
  * @param[in] data_desc the BB data descriptor. Be sure to provide
  *                      a properly initialised data_desc since the
@@ -910,7 +911,7 @@ bb_get_array_name(char * array_name,
 		  int array_name_size_max,
 		  S_BB_DATADESC_T * aliasstack, int32_t aliasstack_size,
 		  int32_t * indexstack, int32_t indexstack_len);
-		  
+
 
 /**
  * Allow the caller to verify if the message queue is
@@ -930,11 +931,27 @@ int32_t bb_msgq_isalive(S_BB_T *bb);
  * @param[in] fmt format as in printf.
  * @return 0 on success, -1 on error.
  */
-int32_t 
+int32_t
 bb_logMsg(const BB_LOG_LEVEL_T level, const char* modname, char* fmt, ...);
 
 
 /** @} */
+
+#ifdef __KERNEL__
+
+#define free(x) kfree(x)
+#define malloc(x) kmalloc(x, GFP_KERNEL)
+
+static inline char *strdup (const char *s1)
+{
+	char *p;
+	p = (char *)kmalloc((strlen(s1)+1)*sizeof(char), GFP_KERNEL);
+	if (p != NULL)
+		strcpy (p,s1);
+	return p;
+}
+
+#endif /* __KERNEL__ */
 
 #ifndef __KERNEL__
 END_C_DECLS

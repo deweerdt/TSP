@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_simple.c,v 1.15 2007-03-01 18:45:13 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_simple.c,v 1.16 2007-04-01 13:17:21 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -79,25 +79,32 @@ void* bb_simple_publish(S_BB_T* bb_simple,
     int type_size,
     int dimension) {
 
-  void* retval;
+  void* retval = NULL;
   S_BB_DATADESC_T s_data_desc;
-  char *new_name = alloca(bb_varname_max_len());
+  char *new_name;
   int ret;
 
+  new_name = malloc(sizeof(char)*bb_varname_max_len());
+  if (!new_name)
+    goto out;
   gen_var_name(new_name, module_instance, module_name, var_name);
   ret = bb_set_varname(&s_data_desc, new_name);
-	if (ret == BB_NOK)
-		return NULL;
+  if (ret == BB_NOK)
+    goto err_free;
   s_data_desc.type        = type;
   s_data_desc.type_size   = type_size;
   s_data_desc.dimension   = dimension;
   retval = bb_publish(bb_simple,&s_data_desc);
 
   if (retval == NULL) {
-    bb_logMsg(BB_LOG_SEVERE,"BlackBoard::bb_simple_publish", 
-		"Cannot publish data <%s> instance <%d> module <%s>",
-		var_name,module_instance,module_name);
-  }  
+    bb_logMsg(BB_LOG_SEVERE,"BlackBoard::bb_simple_publish",
+        "Cannot publish data <%s> instance <%d> module <%s>",
+        var_name,module_instance,module_name);
+  }
+
+err_free:
+  free(new_name);
+out:
   return retval;
 } /* end of bb_simple_publish */
 
@@ -109,20 +116,26 @@ void* bb_simple_subscribe(S_BB_T* bb_simple,
 			  E_BB_TYPE_T*  type,
 			  int* type_size,
 			  int* dimension) {
-  
-  void* retval;
+  void* retval = NULL;
   S_BB_DATADESC_T s_data_desc;
-  char *new_name = alloca(bb_varname_max_len());
+  char *new_name;
 	int ret;
 
+  new_name = malloc(sizeof(char)*bb_varname_max_len());
+  if (!new_name)
+    goto out;
   gen_var_name(new_name, module_instance, module_name, var_name);
   ret = bb_set_varname(&s_data_desc, new_name);
  	if (ret == BB_NOK)
-		return NULL;
- s_data_desc.type        = *type;
+		goto err_free;
+  s_data_desc.type        = *type;
   s_data_desc.type_size   = *type_size;
   s_data_desc.dimension   = *dimension;
-  retval = bb_subscribe(bb_simple,&s_data_desc);  
+  retval = bb_subscribe(bb_simple,&s_data_desc);
+
+err_free:
+  free(new_name);
+out:
   return retval;
 } /* end of bb_simple_subscribe */
 
@@ -139,25 +152,31 @@ void* bb_simple_alias_publish(S_BB_T* bb_simple,
   
   void* retval=NULL;
   int32_t idx;
-  char *new_target_name = alloca(bb_varname_max_len());
-  char *alias_name = alloca(bb_varname_max_len());
+  char *new_target_name;
+  char *alias_name;
 	int ret;
   S_BB_DATADESC_T alias;
   S_BB_DATADESC_T target;
   
+  alias_name = malloc(sizeof(char)*bb_varname_max_len());
+  if (!alias_name)
+    goto out;
+  new_target_name = malloc(sizeof(char)*bb_varname_max_len());
+  if (!new_target_name)
+    goto err_free_1;
   gen_var_name(new_target_name, module_instance, module_name, target_name);
   snprintf(alias_name, bb_varname_max_len(), "%s_%s",
 	   new_target_name, var_name);
   ret = bb_set_varname(&alias, alias_name);
   if (ret == BB_NOK)
-    return NULL;
+    goto err_free_2;
 
   alias.type        = type;
   alias.type_size   = type_size;
   alias.dimension   = dimension;
   alias.data_offset = offset;
   
-  /* find the index of the target (it is the target for the aliases we want to publish) */                                                                                                                          
+  /* find the index of the target (it is the target for the aliases we want to publish) */
   idx = bb_find( bb_simple, new_target_name);
   if (idx ==-1) {
     bb_logMsg(BB_LOG_SEVERE,"BlackBoard::bb_simple_alias_publish", 
@@ -174,7 +193,7 @@ void* bb_simple_alias_publish(S_BB_T* bb_simple,
     free(n);
     ret = bb_set_varname(&alias, alias_name);
 		if (ret == BB_NOK)
-			return NULL;
+			goto err_free_2;
 
     retval=(void *)bb_alias_publish(bb_simple, &alias, &target);
 
@@ -184,6 +203,11 @@ void* bb_simple_alias_publish(S_BB_T* bb_simple,
           var_name,module_instance,module_name);
     }
   } 
+err_free_2:
+  free(new_target_name);
+err_free_1:
+  free(alias_name);
+out:
   return retval;
 } /* end of bb_simple_alias_publish */
 
