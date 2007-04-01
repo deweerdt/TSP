@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_check_host_and_ip.c,v 1.4 2006-02-26 13:36:06 erk Exp $
+$Id: tsp_check_host_and_ip.c,v 1.5 2007-04-01 20:35:29 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -38,6 +38,7 @@ Purpose   : check host and ip resolution
 #include <netdb.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <rpc/rpc.h>
 #ifdef LINUX
 #include <sys/socket.h>
 #include <sys/ioctl.h>
@@ -47,6 +48,7 @@ extern int h_errno;
 int main(int argc, char* argv[]) {
   struct hostent*  myhost;
   struct hostent*  myhost_byaddr;
+  struct sockaddr_in my_addr;
   union {
     uint32_t    addr;
     uint8_t     parts[4];
@@ -84,6 +86,11 @@ int main(int argc, char* argv[]) {
 	 myu.parts[3], myu.parts[2], myu.parts[1], myu.parts[0],
 	 (myhost_byaddr->h_addrtype == AF_INET6 ?  "AF_INET6" : "AF_INET"));
 
+
+  get_myaddress(&my_addr);
+  myu.addr = (uint32_t)ntohl((uint32_t)(my_addr.sin_addr.s_addr));
+  printf("@IP returned is <%d.%d.%d.%d> (as returned by get_myaddress (rpclib))\n",
+	  myu.parts[3], myu.parts[2], myu.parts[1], myu.parts[0]);
 #ifdef LINUX
   fdIPV4 = socket(PF_INET, SOCK_DGRAM, IPPROTO_IP);
   ioctl(fdIPV4, SIOCGIFADDR, &myifrq);
