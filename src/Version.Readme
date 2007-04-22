@@ -242,12 +242,13 @@ V-0.8.2: Creation 11/29/2006    tag TSP_0_8_2
            * bug #18075 : TSP_NO_XDR_ENCODE wasn't used anymore
            * bug #18051 : received group id is corrupted.
 
-V-0.8.3: Creation ??/??/2007    tag TSP_0_8_3
+V-0.8.3: Creation 04/22/2007    tag TSP_0_8_3
         - Re-enable RPM generation with CMake                   - Robert dV --> Erk
           see patch #5688 : Fix building of RPM packages
-        - 
         - Bug Corrections 
            * bug #18802 : Bug while compiling TSP with DYN_LIB under linux
+           * bug #19625 : Dependency problem on RPM Installation
+           * bug #19354 : bb_tools read,write segfault
 
 V-0.8.x: Creation ??/??/2006    tag TSP_0_8_x
 	- XML-RPC command channel in mainstream                 - FredD-->Caribou
