@@ -12,7 +12,6 @@ SET (INCLUDE_CORE_FILE
   include/tsp_glu.h
   include/tsp_simple_trace.h
   include/tsp_sys_headers.h
-  rpc/tsp_rpc.h
   rpc/tsp_datastruct.h)
 TSP_XINCLUDE(${INCLUDE_CORE_FILE})
 
