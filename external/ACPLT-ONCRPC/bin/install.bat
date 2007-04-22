@@ -1,7 +1,7 @@
 @echo off
 echo "Installing ONC/RPC for NT..."
 ..\bin\inst_pm remove
-copy ..\bin\oncrpc.dll %SystemRoot%\system32
+copy ..\lib\oncrpc.dll %SystemRoot%\system32
 copy ..\bin\portmap.exe %SystemRoot%\system32
 if exist %SystemRoot%\system32\drivers\etc\rpc goto inst_pm
 mkdir %SystemRoot%\system32\drivers\etc
