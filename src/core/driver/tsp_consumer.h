@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_consumer.h,v 1.36 2007-01-24 10:27:31 erk Exp $
+$Id: tsp_consumer.h,v 1.37 2007-04-23 11:16:51 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -108,6 +108,9 @@ typedef struct TSP_sample
    */
   TSP_datatype_t type; 
  
+  /**
+   * Union containing the value of the item.
+   */
   union {
     double        double_value;
     float         float_value;
