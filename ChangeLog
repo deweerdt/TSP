@@ -1,4 +1,739 @@
-2006-11-29 08:34  tag TSP_0_8_2
+2007-04-24 15:02  tag TSP_0_8_3
+
+2007-04-24 15:02  deweerdt
+
+	* CMakeLists.txt (1.40, TSP_0_8_3): Release 0.8.3:  - version bump
+	  - re-allow in-tree compile
+
+2007-04-24 15:00  deweerdt
+
+	* src/Version.Readme (1.50, TSP_0_8_3): 0.8.3: Include Ruby /
+	  XMLRPC work done by Stephane in the changelog
+
+2007-04-23 13:16  erk
+
+	* src/core/driver/tsp_consumer.h (1.37, TSP_0_8_3): Minor doc
+	  comment correction
+
+2007-04-23 00:38  deweerdt
+
+	* external/ACPLT-ONCRPC/bin/install.bat (1.2, TSP_0_8_3): Update
+	  path: get oncrpc.dll from ../lib
+
+2007-04-23 00:23  deweerdt
+
+	* external/ACPLT-ONCRPC/lib/oncrpc.dll (1.3, TSP_0_8_3): Back to
+	  modified version (ie. TSP modified version) of the dll
+
+2007-04-23 00:05  deweerdt
+
+	* tests/tsp_port/src/: test_port_rpc.h (1.3), test_port_rpc_clnt.c
+	  (1.3), test_port_rpc_svc.c (1.3), test_port_rpc_xdr.c (1.3)
+	  (utags: TSP_0_8_3): Re-add removed file (temporary hack, it
+	  shouldn't be needed)
+
+2007-04-22 23:45  deweerdt
+
+	* tests/tsp_port/src/: test_port_rpc.h (1.2), test_port_rpc_clnt.c
+	  (1.2), test_port_rpc_svc.c (1.2), test_port_rpc_xdr.c (1.2):
+	  Remove unused files (added a win32 prefix to them)
+
+2007-04-22 23:43  deweerdt
+
+	* tests/tsp_port/src/: test_port_rpc.h.win32 (1.1),
+	  test_port_rpc_clnt.c.win32 (1.1), test_port_rpc_svc.c.win32
+	  (1.1), test_port_rpc_xdr.c.win32 (1.1) (utags: TSP_0_8_3): Add
+	  .win32 to windows specific files
+
+2007-04-22 23:34  deweerdt
+
+	* make/FindONCRPC.cmake (1.5, TSP_0_8_3): Use special .win32 .linux
+	  pregenerated files if rpcgen is not found
+
+2007-04-22 23:17  deweerdt
+
+	* src/core/rpc/: tsp_rpc.h (1.2), tsp_rpc_clnt.c (1.2),
+	  tsp_rpc_svc.c (1.2), tsp_rpc_xdr.c (1.2): Remove unused generated
+	  files (now moved to .win32 or .linux)
+
+2007-04-22 23:15  deweerdt
+
+	* src/core/rpc/: tsp_rpc.h.win32 (1.1), tsp_rpc_clnt.c.win32 (1.1),
+	  tsp_rpc_svc.c.win32 (1.1), tsp_rpc_xdr.c.win32 (1.1) (utags:
+	  TSP_0_8_3): Add rpcgen pregenerated files for win32
+
+2007-04-22 23:15  deweerdt
+
+	* src/core/rpc/: tsp_rpc.h.linux (1.1), tsp_rpc_clnt.c.linux (1.1),
+	  tsp_rpc_svc.c.linux (1.1), tsp_rpc_xdr.c.linux (1.1) (utags:
+	  TSP_0_8_3): Add rpcgen pregenerated files for linux
+
+2007-04-22 23:13  deweerdt
+
+	* tests/tsp_port/CMakeLists.txt (1.2, TSP_0_8_3): Build tsp_port on
+	  WIN32 only
+
+2007-04-22 23:12  deweerdt
+
+	* src/core/CMakeLists.txt (1.12, TSP_0_8_3): Remove tsp_rpc.h from
+	  dependencies (tsp_rpc.h is generated)
+
+2007-04-22 18:56  deweerdt
+
+	* src/util/libcalc/CMakeLists.txt (1.4, TSP_0_8_3): Win32 doesn't
+	  need -lm for linking
+
+2007-04-22 18:49  deweerdt
+
+	* make/FindACPLT_ONCRPC.cmake (1.3, TSP_0_8_3): Use
+	  ONCRPC_RPCGEN_PROGRAM instead of RPCGEN_PROGRAM
+
+2007-04-22 18:48  deweerdt
+
+	* CMakeLists.txt (1.39): Launch FindONCRPC in Win32 case
+
+2007-04-22 18:29  deweerdt
+
+	* src/Version.Readme (1.49): TSP v0.8.3 changes
+
+2007-04-21 18:17  deweerdt
+
+	* external/ACPLT-ONCRPC/: bin/cou_svc.exe (1.2, TSP_0_8_3),
+	  bin/do_cou.exe (1.2, TSP_0_8_3), bin/inst_pm.exe (1.2,
+	  TSP_0_8_3), bin/pm_ascii.exe (1.2, TSP_0_8_3), bin/portmap.exe
+	  (1.2, TSP_0_8_3), bin/rpcgen.exe (1.2, TSP_0_8_3),
+	  bin/rpcinfo.exe (1.2, TSP_0_8_3), lib/oncrpc.dll (1.2): Update
+	  binaries from ACPLT distribution
+
+2007-04-20 23:38  erk
+
+	* ReleaseProcess.txt (1.1, TSP_0_8_3): First attempt to describe
+	  the TSP release process
+
+2007-04-20 22:57  erk
+
+	* make/: FindMd5sum.cmake (1.1), UseDebian.cmake (1.1) (utags:
+	  TSP_0_8_3): Preliminary version of UseDebian cmake macro from
+	  Mathieu MALATERRE This macro makes it possible to build a .deb
+	  TSP packed :))
+
+2007-04-18 12:42  erk
+
+	* CMakeLists.txt (1.38): RPM building fail because RPM version
+	  should not contain '-' character so switch from 0.8.3-rc1 to
+	  0.8.3rc2
+
+2007-04-18 12:41  erk
+
+	* external/gtk-1.2/CMakeLists.txt (1.4, TSP_0_8_3): Correct bug
+	  #19625 : Dependency problem on RPM Installation We must intall
+	  the lib
+
+2007-04-01 22:35  erk
+
+	* src/util/libutil/tsp_check_host_and_ip.c (1.5, TSP_0_8_3): Add
+	  get_myaddress rcplib function test As we try to fix bug #19455
+
+2007-04-01 15:17  deweerdt
+
+	* src/util/libbb/: bb_alias.c (1.7), bb_core.c (1.40), bb_core.h
+	  (1.36), bb_core_k.c (1.3), bb_core_k.h (1.3), bb_module.c (1.3),
+	  bb_simple.c (1.16) (utags: TSP_0_8_3): - Add free->kfree and
+	  malloc->kmalloc defines to fix kernel module compile problems -
+	  Several whitespace clean-ups - Remove alloca usage, replace with
+	  mallocs
+
+2007-03-29 22:42  deweerdt
+
+	* src/consumers/ascii_writer/tsp_ascii_writer_main.c (1.18),
+	  src/consumers/gdisp/gdispmain.c (1.15),
+	  src/consumers/generic/generic_consumer_main.c (1.11),
+	  src/consumers/res_writer/client_res.c (1.19),
+	  src/consumers/stdout/client_stdout.c (1.15),
+	  src/providers/generic_reader/glu_genreader.c (1.10),
+	  src/providers/rt_stub/stub_loopOnRtc.c (1.7),
+	  src/providers/stub/server_main.c (1.15),
+	  src/util/libbb/bbtools/bb_tools_main.c (1.7),
+	  tests/tsp_port/src/test_rpc_client.c (1.3),
+	  tests/tsp_port/src/test_rpc_server.c (1.3) (utags: TSP_0_8_3):
+	  when using getopt, use an int to get its return value, not a char
+
+2007-03-26 11:26  deweerdt
+
+	* src/consumers/ascii_writer/tsp_ascii_writer_config.lex (1.7,
+	  TSP_0_8_3): Revert wrong commit
+
+2007-03-26 11:26  deweerdt
+
+	* src/consumers/ascii_writer/tsp_ascii_writer_config.lex (1.6):
+	  src/consumers/ascii_writer/tsp_ascii_writer_config.lex:44: error:
+	  conflicting types for 'yytext'
+	  src/consumers/ascii_writer/tsp_ascii_writer_config_yy.c:507:
+	  error: previous declaration of 'yytext' was here
+	  src/consumers/ascii_writer/tsp_ascii_writer_config_yy.c: In
+	  function 'yylex':
+
+2007-03-26 09:57  tag TSP_0_8_3_rc1
+
+2007-03-26 09:57  erk
+
+	* CMakeLists.txt (1.37, TSP_0_8_3_rc1): Prepare RC1 for TSP
+	  Workshop
+
+2007-03-25 23:32  deweerdt
+
+	* src/consumers/tspfs/CMakeLists.txt (1.5, TSP_0_8_3,
+	  TSP_0_8_3_rc1): Add tspfs.h include path
+
+2007-03-25 23:32  deweerdt
+
+	* src/consumers/tspfs/: tspfs.c (1.14), tspfs.h (1.1) (utags:
+	  TSP_0_8_3, TSP_0_8_3_rc1): Add hashtables to store symbol names
+	  Whitespace clean-ups
+
+2007-03-25 19:13  erk
+
+	* make/FindXMLRPCC.cmake (1.3, TSP_0_8_3, TSP_0_8_3_rc1): Fix the
+	  added pathes
+
+2007-03-25 17:50  erk
+
+	* make/FindXMLRPCC.cmake (1.2), src/core/xmlrpc/README (1.1,
+	  TSP_0_8_3, TSP_0_8_3_rc1): Search XMLRPC-C in /opt/xmlrpc and
+	  /opt/xmlrpc-c Add a README containing Steph. Galles advices
+
+2007-03-25 17:49  erk
+
+	* make/UseRPMTools.cmake (1.4, TSP_0_8_3, TSP_0_8_3_rc1): Fix
+	  message typo and wronlgy inherited ONCRPC var name
+
+2007-03-25 16:18  erk
+
+	* src/consumers/ascii_writer/tsp_ascii_writer.c (1.30, TSP_0_8_3,
+	  TSP_0_8_3_rc1): Use Symbolic value MACSIM_xx or BACH_xx instead
+	  of 1,2 etc..
+
+2007-03-25 16:17  erk
+
+	* src/providers/generic_reader/macsim_fmt.c (1.12, TSP_0_8_3,
+	  TSP_0_8_3_rc1): Add more info in ERROR message
+
+2007-03-24 14:40  erk
+
+	* src/consumers/ascii_writer/tsp_ascii_writer.c (1.29): Simplify
+	  and clarify code a bit.  Macsim and Bach main write loop is
+	  exactly the same...  Avoid spurious tabulation at the end of the
+	  line
+
+2007-03-23 22:12  erk
+
+	* src/providers/bb_provider/bb_tsp_provider.c (1.34, TSP_0_8_3,
+	  TSP_0_8_3_rc1): fix: bug #19394 : BB Provider does not handle
+	  multi-type correctly The BB provider was partially updated during
+	  the multi-type and array switch TSP 0.7.x --> TSP 0.8.x
+
+2007-03-23 20:52  erk
+
+	* src/core/ctrl/tsp_datapool.c (1.32, TSP_0_8_3, TSP_0_8_3_rc1):
+	  Add explanation about item.raw_value meaning and usage
+
+2007-03-20 11:11  deweerdt
+
+	* src/util/libbb/bb_utils.c (1.15, TSP_0_8_3, TSP_0_8_3_rc1): Fix
+	  bug #19354 (bb_tools read/write segfault)
+
+2007-03-04 22:08  erk
+
+	* src/util/libbb/bb_utils.c (1.14): We should zero out the string
+	  before strncat into it parsed_symname is OUT only parameter
+
+2007-03-04 21:21  erk
+
+	* src/consumers/ascii_writer/tsp_ascii_writer.c (1.28): Quiet
+	  compilation please
+
+2007-03-01 23:49  sgalles
+
+	* make/cc-build.xml (1.10, TSP_0_8_3, TSP_0_8_3_rc1): added
+	  comments
+
+2007-03-01 23:26  erk
+
+	* src/core/rpc/tsp_client.c (1.20, TSP_0_8_3, TSP_0_8_3_rc1): More
+	  valuable STRACE
+
+2007-03-01 19:45  deweerdt
+
+	* src/util/libbb/: CMakeLists.txt (1.13, TSP_0_8_3), bb_core.c
+	  (1.39), bb_core.h (1.35), bb_simple.c (1.15), bb_tools.c (1.31,
+	  TSP_0_8_3), bb_varname_sarray.c (1.2, TSP_0_8_3) (utags:
+	  TSP_0_8_3_rc1): -Add bb_varname_len() API, with the new
+	  bb_varname* stuff, this is varname encoding dependent -Remove
+	  hacks in bb_simple.c to use the new bb_varname_len -Move stack
+	  allocations in bb_simple to alloca() -Build the new sarray
+	  varname encoding scheme as an external library
+
+2007-03-01 19:43  deweerdt
+
+	* src/util/libbb/bb_core_sysv.c (1.4, TSP_0_8_3, TSP_0_8_3_rc1):
+	  Fix bug #19154, use MAX_SYSMSG_SIZE instead of MSG_BB_MAX_SIZE
+	  for the size of a BB message
+
+2007-03-01 18:36  erk
+
+	* src/core/ctrl/: tsp_datapool.h (1.19), tsp_session.c (1.37)
+	  (utags: TSP_0_8_3, TSP_0_8_3_rc1): Fix for bug #19179 : Garbage
+	  collector thread wrongly close TSP session
+
+2007-02-28 23:33  sgalles
+
+	* make/cc-build.xml (1.9): added comments to describe how to use
+	  cruisecontrol with tsp
+
+2007-02-28 22:58  sgalles
+
+	* src/core/xmlrpc/: tsp_xmlrpc_server.c (1.23), tsp_xmlrpc_server.c
+	  (1.24, TSP_0_8_3, TSP_0_8_3_rc1): testing cruise control
+
+2007-02-28 21:40  erk
+
+	* CMakeLists.txt (1.36), make/UseRPMTools.cmake (1.3): Update
+	  RPMTools for adding "generate" spec file feature.  Will send this
+	  version to CMake ML
+
+2007-02-28 06:39  sgalles
+
+	* make/cc-build.xml (1.8): added cruise control conf file example
+
+2007-02-28 06:30  sgalles
+
+	* src/core/xmlrpc/tsp_xmlrpc_server.c (1.22): cruise control test
+
+2007-02-28 06:27  sgalles
+
+	* src/core/xmlrpc/tsp_xmlrpc_server.c (1.21): cruise control test
+
+2007-02-28 06:22  sgalles
+
+	* src/core/xmlrpc/tsp_xmlrpc_server.c (1.20): cruise control test
+
+2007-02-28 06:18  sgalles
+
+	* make/cc-build.xml (1.7): fixed tsp dir
+
+2007-02-28 05:50  sgalles
+
+	* src/core/xmlrpc/tsp_xmlrpc_server.c (1.19): cruise control test
+
+2007-02-28 05:47  sgalles
+
+	* make/cc-build.xml (1.6): cruise control test
+
+2007-02-27 21:32  sgalles
+
+	* make/cc-build.xml (1.5): continuous integration test
+
+2007-02-27 21:19  sgalles
+
+	* make/cc-build.xml (1.4): contiunous intgration test
+
+2007-02-27 21:13  sgalles
+
+	* src/core/xmlrpc/tsp_xmlrpc_server.c (1.18): continous integration
+	  test
+
+2007-02-27 21:10  sgalles
+
+	* src/core/xmlrpc/tsp_xmlrpc_server.c (1.17): continuous
+	  integration
+
+2007-02-27 21:05  sgalles
+
+	* src/core/xmlrpc/tsp_xmlrpc_server.c (1.16): continous integration
+	  test
+
+2007-02-27 21:04  sgalles
+
+	* make/cc-build.xml (1.3): added verbose
+
+2007-02-27 21:00  sgalles
+
+	* src/core/xmlrpc/tsp_xmlrpc_server.c (1.15): continuous
+	  integration test
+
+2007-02-27 20:35  sgalles
+
+	* src/core/xmlrpc/tsp_xmlrpc_server.c (1.14): continous integration
+	  test
+
+2007-02-27 20:30  sgalles
+
+	* src/core/xmlrpc/tsp_xmlrpc_server.c (1.13): continuous
+	  integration test
+
+2007-02-27 08:14  sgalles
+
+	* make/cc-build.xml (1.2): ci test
+
+2007-02-27 08:02  sgalles
+
+	* src/core/xmlrpc/tsp_xmlrpc_server.c (1.12): ci test, removed
+	  error
+
+2007-02-27 07:58  sgalles
+
+	* src/core/xmlrpc/tsp_xmlrpc_server.c (1.11): temporary broken
+	  build for ci test
+
+2007-02-27 07:30  sgalles
+
+	* make/cc-build.xml (1.1): added Ant file for continuous build
+	  integration (cruisecontrol tool)
+
+2007-02-27 06:52  deweerdt
+
+	* src/consumers/gdisp/: CMakeLists.txt (1.6, TSP_0_8_3),
+	  gdispmain.c (1.14), interface.c (1.10, TSP_0_8_3), plotwindow.c
+	  (1.4, TSP_0_8_3), plotwindow.h (1.3, TSP_0_8_3), support.c (1.3,
+	  TSP_0_8_3), support.h (1.4, TSP_0_8_3) (utags: TSP_0_8_3_rc1):
+	  Cleanup warnings
+
+2007-02-26 22:55  deweerdt
+
+	* src/providers/bb_provider/bb_tsp_provider.c (1.33): The name
+	  needs to be assigned to as bb_utils_parsearray modifies "n"
+
+2007-02-26 22:42  deweerdt
+
+	* src/providers/bb_provider/bb_tsp_provider.c (1.32): Realloc the
+	  buffer given by bb_get_varname, it might not be long enough Fix
+	  #19158
+
+2007-02-26 20:30  sgalles
+
+	* src/core/: ctrl_init/tsp_provider_init.c (1.20),
+	  include/tsp_const_def.h (1.44) (utags: TSP_0_8_3, TSP_0_8_3_rc1):
+	  compilation with XMLRPC ON keeps RPC server on too
+
+2007-02-26 17:21  deweerdt
+
+	* src/util/libbb/bb_zip.c (1.2): Remove unused bb_zip.c file (this
+	  was renamed to bb_varname_zip.c)
+
+2007-02-25 11:13  deweerdt
+
+	* src/util/libbb/bb_varname_sarray.c (1.1): Add new
+	  bb_varname_sarray varname method
+
+2007-02-22 15:54  deweerdt
+
+	* src/util/libbb/: CMakeLists.txt (1.12), bb_core.c (1.38),
+	  bb_core.h (1.34), bb_simple.c (1.14), bb_tools.c (1.30),
+	  bb_varname_zip.c (1.1, TSP_0_8_3, TSP_0_8_3_rc1): Bug fix version
+	  for the varname patches
+
+2007-02-20 22:09  sgalles
+
+	* src/core/xmlrpc/: tsp_xmlrpc_server.c (1.10), tsp_xmlrpc_util.c
+	  (1.6, TSP_0_8_3, TSP_0_8_3_rc1): added offset support
+
+2007-02-20 20:05  sgalles
+
+	* src/core/xmlrpc/: tsp_xmlrpc_server.c (1.9), tsp_xmlrpc_util.c
+	  (1.5): sync with Ruby implementation of multi types and arrays
+
+2007-02-20 17:43  deweerdt
+
+	* src/util/libbb/: bb_core.c (1.37), bb_core.h (1.33): - Better
+	  naming for bb_ctl options - Fix a bug in the	SET_NAMING bb_ctl
+	  option
+
+2007-02-20 17:12  deweerdt
+
+	* src/util/libbb/: bb_core.c (1.36), bb_core.h (1.32): Handle bb
+	  versioning
+
+2007-02-20 17:00  deweerdt
+
+	* src/util/libbb/: CMakeLists.txt (1.11), bb_core.c (1.35),
+	  bb_core.h (1.31): Load symbols from varname_lib, add proper
+	  bb_ctl interface and documentation
+
+2007-02-20 15:53  deweerdt
+
+	* src/util/libbb/: CMakeLists.txt (1.10), bb_core.c (1.34),
+	  bb_core.h (1.30), bb_zip.c (1.1): Moved bb_{g,s}et_varname_zip to
+	  bb_zip file Building depends on FOUND_ZLIB conditionnal
+
+2007-02-20 15:39  erk
+
+	* CMakeLists.txt (1.35): Add PackageBackup target
+
+2007-02-20 15:36  erk
+
+	* make/UsePackageBackup.cmake (1.1, TSP_0_8_3, TSP_0_8_3_rc1): Add
+	  PackageBackup CMake macro
+
+2007-02-20 15:13  deweerdt
+
+	* src/util/libbb/: bb_core.c (1.33), bb_core.h (1.29): Add a
+	  private structure at the end of the black board.  It's 4Kb large,
+	  this ought to be enough for everybody :) Modified bb_size to take
+	  this new structure into account
+
+2007-02-20 08:39  deweerdt
+
+	* src/util/libbb/bb_core.h (1.28): BB version bump -> 0x4000
+
+2007-02-20 08:38  deweerdt
+
+	* src/util/libbb/: bb_core.c (1.32), bb_core.h (1.27): Remove
+	  __name_len from the datadesc
+
+2007-02-20 08:34  deweerdt
+
+	* src/util/libbb/bb_core.c (1.31): Cleanup a compile warning
+
+2007-02-20 08:34  deweerdt
+
+	* src/util/libbb/bb_core.h (1.26): Add reserved space to the
+	  datadesc
+
+2007-02-20 08:30  deweerdt
+
+	* src/: providers/bb_provider/bb_tsp_provider.c (1.31),
+	  util/libbb/bb_core.c (1.30), util/libbb/bb_simple.c (1.13),
+	  util/libbb/bb_tools.c (1.29): Rename __bb_get_varname to
+	  bb_get_varname (broke compile)
+
+2007-02-19 16:53  deweerdt
+
+	* src/util/libbb/: bb_alias.c (1.6, TSP_0_8_3_rc1), bb_core.c
+	  (1.29), bb_core.h (1.25), bb_core_sysv.c (1.3), bb_simple.c
+	  (1.12), bb_tools.c (1.28): Swith to new bb_get_varname API to get
+	  a variable's name Add bb_ctl API
+
+2007-02-19 16:52  deweerdt
+
+	* src/util/libbb/CMakeLists.txt (1.9): Added zlib to linked
+	  libraries: todo, make it optional
+
+2007-02-19 16:51  deweerdt
+
+	* src/providers/bb_provider/bb_tsp_provider.c (1.30): cvS:
+	  ----------------------------------------------------------------------
+	  bb_{g,s}et_varname related changes
+
+2007-02-17 17:53  erk
+
+	* CMakeLists.txt (1.34), make/UseRPMTools.cmake (1.2): Improve
+	  RPMTools in order to handle to be configured spec files
+
+2007-02-17 16:45  erk
+
+	* CMakeLists.txt (1.33): Bumped CMake required version up to 2.4.4
+	  since 2.4.2 and 2.4.3 does not handle our CMake Build system any
+	  more (really don't know why?)
+
+2007-02-17 13:27  sgalles
+
+	* CMakeLists.txt (1.32): fixed XMLRPC build
+
+2007-02-16 21:49  deweerdt
+
+	* CMakeLists.txt (1.31): Don't try to use rpm if rpm tools were not
+	  found
+
+2007-02-16 15:28  erk
+
+	* CMakeLists.txt (1.30), make/FindONCRPC.cmake (1.4,
+	  TSP_0_8_3_rc1), make/UseRPMTools.cmake (1.1): Added
+	  UseRPMTools.cmake and use it :)) May do little more to contribute
+	  this macro back to CMake/CPack
+
+2007-02-11 22:45  erk
+
+	* src/core/: common/tsp_encoder.c (1.11, TSP_0_8_3, TSP_0_8_3_rc1),
+	  common/tsp_encoder.h (1.7, TSP_0_8_3, TSP_0_8_3_rc1),
+	  ctrl/tsp_data_sender.c (1.27, TSP_0_8_3, TSP_0_8_3_rc1),
+	  ctrl/tsp_data_sender.h (1.11, TSP_0_8_3, TSP_0_8_3_rc1),
+	  ctrl/tsp_group_algo.c (1.23, TSP_0_8_3, TSP_0_8_3_rc1),
+	  ctrl/tsp_group_algo.h (1.11, TSP_0_8_3, TSP_0_8_3_rc1),
+	  ctrl/tsp_group_algo_data.h (1.8, TSP_0_8_3, TSP_0_8_3_rc1),
+	  ctrl/tsp_session.c (1.36), include/tsp_const_def.h (1.43): First
+	  attempt fix for bug #19008 : Cannot subscribe to large arrays We
+	  were assuming that group item was still scalar and double sized
+	  which is now wrong.  The fix may be improved but is ready for
+	  prime time testing :))
+
+2007-02-11 22:41  erk
+
+	* src/util/libbb/bbtools/bb_simu.c (1.11, TSP_0_8_3,
+	  TSP_0_8_3_rc1): Enlarge "Huge Array" in order to reproduce: bug
+	  #19008 : Cannot subscribe to large arrays
+
+2007-02-11 20:19  esteban
+
+	* src/consumers/gdisp+/gdisp_sampling.c (1.22, TSP_0_8_3,
+	  TSP_0_8_3_rc1): Checking all TSP_consummer_xxx returned code.  Do
+	  not compare returned value to TRUE or FALSE, but to
+	  TSP_STATUS_xxx.
+
+2007-02-11 00:42  erk
+
+	* src/Version.Readme (1.48, TSP_0_8_3_rc1): Small Update for
+	  avoiding missing already commited changes
+
+2007-02-11 00:28  erk
+
+	* src/consumers/generic/CMakeLists.txt (1.5, TSP_0_8_3,
+	  TSP_0_8_3_rc1): Re-Add tsp_request_xxx scripts
+
+2007-02-10 19:49  erk
+
+	* src/core/driver/: tsp_consumer.c (1.59), tsp_data_receiver.c
+	  (1.28) (utags: TSP_0_8_3, TSP_0_8_3_rc1): Partial fix of bug
+	  #18799 : targa core dump
+
+2007-02-10 11:17  erk
+
+	* INSTALL (1.7, TSP_0_8_3, TSP_0_8_3_rc1): Correct somes typos and
+	  add link to online informations
+
+2007-02-09 21:51  deweerdt
+
+	* INSTALL (1.6): Update the compilation step take into accout our
+	  cmake switch
+
+2007-02-01 23:34  erk
+
+	* src/doxy/CMakeLists.txt (1.5, TSP_0_8_3, TSP_0_8_3_rc1): Slightly
+	  improve doc generation Should only run on first build then may be
+	  "forced" through make apidoc_forced
+
+2007-01-29 20:40  erk
+
+	* src/: util/CMakeLists.txt (1.4), consumers/CMakeLists.txt (1.5)
+	  (utags: TSP_0_8_3, TSP_0_8_3_rc1): Suppress spurious Win32 port
+	  comment
+
+2007-01-29 18:04  erk
+
+	* src/util/libbb/bb_core.c (1.28): Do not compile bb_ops_k on non
+	  linux platform
+
+2007-01-29 17:52  erk
+
+	* CMakeLists.txt (1.29), make/FindONCRPC.cmake (1.3),
+	  src/core/CMakeLists.txt (1.11, TSP_0_8_3_rc1),
+	  src/core/include/tsp_sys_headers.h (1.23, TSP_0_8_3,
+	  TSP_0_8_3_rc1), src/core/misc_utils/tsp_mtgprof.h (1.5,
+	  TSP_0_8_3, TSP_0_8_3_rc1), src/util/libbb/CMakeLists.txt (1.8),
+	  src/util/libutil/CMakeLists.txt (1.4, TSP_0_8_3, TSP_0_8_3_rc1),
+	  tests/tsp_port/src/CMakeLists.txt (1.5, TSP_0_8_3,
+	  TSP_0_8_3_rc1): (re)Porting to Solaris 5.10 Seems good but not
+	  finished for BB part
+
+2007-01-29 14:41  erk
+
+	* make/FindONCRPC.cmake (1.2), src/core/CMakeLists.txt (1.10),
+	  tests/tsp_port/src/CMakeLists.txt (1.4): First step for a better
+	  way of generating ONCRPC stubs This is OK for tsp_port, now going
+	  on tsp core
+
+2007-01-29 13:35  erk
+
+	* CMakeLists.txt (1.28), make/FindACPLT_ONCRPC.cmake (1.2,
+	  TSP_0_8_3_rc1), make/FindONCRPC.cmake (1.1),
+	  tests/tsp_port/src/CMakeLists.txt (1.3): Wrote a FindONCRPC.cmake
+	  and use if See task #6439: Write FindRPC cmake package Discover
+	  RPC in a better way (more to come)
+
+2007-01-29 09:39  erk
+
+	* tests/tsp_port/src/: test_api.c (1.2, TSP_0_8_3), test_api.h
+	  (1.2, TSP_0_8_3), test_rpc_client.c (1.2), test_rpc_server.c
+	  (1.2) (utags: TSP_0_8_3_rc1): Make tsp_port compile with far less
+	  warning on Solaris (tested on Linux x86_64 too)
+
+2007-01-26 18:11  erk
+
+	* CMakeLists.txt (1.27), tests/tsp_port/src/CMakeLists.txt (1.2):
+	  redo solaris/sunos we should link with socket and nsl library
+	  socket is for socket nsl for rpc
+
+2007-01-26 18:09  erk
+
+	* src/core/include/tsp_abs_types.h (1.26, TSP_0_8_3,
+	  TSP_0_8_3_rc1): update solaris/sunos port
+
+2007-01-26 17:47  erk
+
+	* src/core/: common/tsp_decoder.c (1.6, TSP_0_8_3, TSP_0_8_3_rc1),
+	  common/tsp_encoder.c (1.10), include/tsp_sys_headers.h (1.22):
+	  Solaris and SunOS do not define alloca in stdlib.h but in
+	  alloca.h
+
+2007-01-25 22:12  erk
+
+	* make/TSPCMakeTools.cmake (1.6, TSP_0_8_3, TSP_0_8_3_rc1):
+	  Suppress unused MACRO
+
+2007-01-25 21:39  deweerdt
+
+	* src/consumers/tspfs/tspfs.c (1.13): remove inline before
+	  is_tsp_symbol() Leave the inlining decision to the compiler, it's
+	  its job after all :)
+
+2007-01-25 11:17  deweerdt
+
+	* src/consumers/tspfs/tspfs.c (1.12): Remove bogus inline
+	  annotation
+
+2007-01-24 20:50  erk
+
+	* CMakeLists.txt (1.26), make/FindDoxygen.cmake (1.4, TSP_0_8_3,
+	  TSP_0_8_3_rc1), make/FindFUSE.cmake (1.3, TSP_0_8_3,
+	  TSP_0_8_3_rc1), make/FindGTK.cmake (1.3, TSP_0_8_3,
+	  TSP_0_8_3_rc1), make/FindXML2.cmake (1.3, TSP_0_8_3,
+	  TSP_0_8_3_rc1), src/consumers/CMakeLists.txt (1.4),
+	  src/scripts/tsp.spec.in (1.2, TSP_0_8_3, TSP_0_8_3_rc1),
+	  src/scripts/tsp_profile.csh.in (1.5, TSP_0_8_3, TSP_0_8_3_rc1),
+	  src/scripts/tsp_profile.sh.in (1.5, TSP_0_8_3, TSP_0_8_3_rc1):
+	  Merged patch #5688 from Robert de Vries More work to do on RPM
+	  building though but this is functionnal and tested on FC6
+
+2007-01-24 11:27  erk
+
+	* src/core/driver/tsp_consumer.h (1.36, TSP_0_8_3_rc1): Add more
+	  helpfullcomment on the TSP_sample_t structure
+
+2007-01-24 09:06  erk
+
+	* CMakeLists.txt (1.25), make/FindGTK.cmake (1.2),
+	  make/FindXML2.cmake (1.2), src/util/libcalc/CMakeLists.txt (1.3,
+	  TSP_0_8_3_rc1): Integrate Robert de Vries patch for bug #18802 :
+	  Bug while compiling TSP with DYN_LIB under linux
+
+2006-12-07 22:26  erk
+
+	* src/doxy/tsp_doc_tree.dox (1.6, TSP_0_8_3, TSP_0_8_3_rc1): Doc
+	  update for targa ref
+
+2006-12-07 22:25  erk
+
+	* src/util/libbb/: bb_alias.h (1.5), bb_tools.h (1.9) (utags:
+	  TSP_0_8_3, TSP_0_8_3_rc1): Doxygen doc update
+
+2006-11-30 16:59  deweerdt
+
+	* src/util/libbb/bb_utils.c (1.12.2.2): Add <assert.h> header to
+	  fix bug #18422
+
+2006-11-29 08:39  erk
+
+	* ChangeLog (1.2, TSP_0_8_3, TSP_0_8_3_rc1): Added ChangeLog
+	  TSP_0_8_1:TSP_0_8_2
 
 2006-11-29 08:34  erk
 
