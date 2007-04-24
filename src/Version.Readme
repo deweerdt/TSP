@@ -249,5 +249,6 @@ V-0.8.3: Creation 04/22/2007    tag TSP_0_8_3
            * bug #18802 : Bug while compiling TSP with DYN_LIB under linux
            * bug #19625 : Dependency problem on RPM Installation
            * bug #19354 : bb_tools read,write segfault
+	   * bug #19179 : Garbage collection of sessions bug
 	- XML-RPC command channel in mainstream                 - FredD-->Caribou
         - Update Rubytsp for multi-type, Array etc...           - Caribou
