@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_url.c,v 1.1 2006-04-13 21:25:27 erk Exp $
+$Id: tsp_url.c,v 1.2 2007-04-26 18:00:41 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -77,7 +77,7 @@ tspUrlScheme_create(TspUrlScheme_t* tspUrlScheme, const char* schemeString) {
   }
   /* if scheme/protocol has been recognized return 0 */
   return (tspUrlScheme->protocol == TSP_URL_PROTO_UNKNOWN);
-};
+}
 
 int32_t 
 tspUrlScheme_destroy(TspUrlScheme_t* tspUrlScheme) {
@@ -85,7 +85,7 @@ tspUrlScheme_destroy(TspUrlScheme_t* tspUrlScheme) {
     tspUrlScheme->protocol = TSP_URL_PROTO_UNKNOWN;
   }
   return 0;
-};
+}
 
 int32_t 
 tspUrlUserInfo_create(TspUrlUserInfo_t* tspUrlUserInfo, const char* userInfoString) {
@@ -94,7 +94,7 @@ tspUrlUserInfo_create(TspUrlUserInfo_t* tspUrlUserInfo, const char* userInfoStri
   if (NULL != tspUrlUserInfo->userInfo) free(tspUrlUserInfo->userInfo);
   tspUrlUserInfo->userInfo = strdup(userInfoString);
   return 0;
-};
+}
 
 int32_t
 tspUrlUserInfo_destroy(TspUrlUserInfo_t* tspUrlUserInfo) {
@@ -102,7 +102,7 @@ tspUrlUserInfo_destroy(TspUrlUserInfo_t* tspUrlUserInfo) {
   if (NULL == tspUrlUserInfo) return retcode;
   if (NULL != tspUrlUserInfo->userInfo) free(tspUrlUserInfo->userInfo);
   return retcode;
-};
+}
 
 int32_t 
 tspUrlAuthority_create(TspUrlAuthority_t* tspUrlAuth, const char* authorityString) {
@@ -126,7 +126,7 @@ tspUrlAuthority_create(TspUrlAuthority_t* tspUrlAuth, const char* authorityStrin
     retcode &= tspUrlUserInfo_create(&(tspUrlAuth->userinfo),userInfoString);
     free(userInfoString);
     current = idxAt+1;
-  };    
+  }
   idxSemiColumn = index(current,':');
   if (NULL != idxSemiColumn) {
     tspUrlAuth->host = calloc(idxSemiColumn-current+1,sizeof(char));
@@ -135,7 +135,7 @@ tspUrlAuthority_create(TspUrlAuthority_t* tspUrlAuth, const char* authorityStrin
     tspUrlAuth->host = strdup(current);
   }
   free(myAuthString);
-};
+}
 
 int32_t 
 tspUrlAuthority_destroy(TspUrlAuthority_t* tspUrlAuth) {
@@ -144,10 +144,10 @@ tspUrlAuthority_destroy(TspUrlAuthority_t* tspUrlAuth) {
   
   if (NULL != tspUrlAuth->host) free(tspUrlAuth->host);
   tspUrlAuth->port = -1;
-};
+}
 
 int32_t 
-tspUrl_create(TspUrl_t* tspUrl; const char* urlString) {
+tspUrl_create(TspUrl_t* tspUrl, const char* urlString) {
   assert(tspUrl);
   return -1;
 }
