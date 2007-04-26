@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_url.h,v 1.1 2006-04-13 21:25:27 erk Exp $
+$Id: tsp_url.h,v 1.2 2007-04-26 17:43:10 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -116,7 +116,7 @@ int32_t tspUrlAuthority_destroy(TspUrlAuthority_t* tspUrlAuth);
  * @return 0 if URL string has been parsed properly
  *         non null otherwise.
  */
-int32_t tspUrl_create(TspUrl_t* tspUrl; const char* urlString);
+int32_t tspUrl_create(TspUrl_t* tspUrl, const char* urlString);
 
 /**
  * Destroy a Tsp Url object from
