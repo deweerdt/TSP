@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_rpc_cleanup.c,v 1.1 2006-10-18 09:58:48 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_rpc_cleanup.c,v 1.2 2007-04-26 17:51:30 deweerdt Exp $
 
 -----------------------------------------------------------------------
 

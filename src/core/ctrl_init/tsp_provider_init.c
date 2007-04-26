@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl_init/tsp_provider_init.c,v 1.20 2007-02-26 19:30:11 sgalles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl_init/tsp_provider_init.c,v 1.21 2007-04-26 17:51:30 deweerdt Exp $
 
 -----------------------------------------------------------------------
 

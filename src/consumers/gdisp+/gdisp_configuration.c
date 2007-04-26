@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_configuration.c,v 1.16 2006-11-08 21:31:12 esteban Exp $
+$Id: gdisp_configuration.c,v 1.17 2007-04-26 17:51:30 deweerdt Exp $
 
 -----------------------------------------------------------------------
 

@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/external/TspWin32/getopt.h,v 1.1 2006-10-18 08:27:56 erk Exp $
+$Header: /home/def/zae/tsp/tsp/external/TspWin32/getopt.h,v 1.2 2007-04-26 17:51:30 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
