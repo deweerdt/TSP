@@ -246,9 +246,14 @@ V-0.8.3: Creation 04/22/2007    tag TSP_0_8_3
         - Re-enable RPM generation with CMake                   - Robert dV --> Erk
           see patch #5688 : Fix building of RPM packages
         - Bug Corrections 
+           * bug #18799 : targa core dump
            * bug #18802 : Bug while compiling TSP with DYN_LIB under linux
+           * bug #19008 : Cannot subscribe to large arrays
            * bug #19625 : Dependency problem on RPM Installation
            * bug #19354 : bb_tools read,write segfault
 	   * bug #19179 : Garbage collection of sessions bug
+           * bug #19625 : Dependency problem on RPM Installation
+           * bug #19394 : BB Provider does not handle multi-type correctly
+           * bug #19718 : Include file tsp_rpc.h not installed
 	- XML-RPC command channel in mainstream                 - FredD-->Caribou
         - Update Rubytsp for multi-type, Array etc...           - Caribou
