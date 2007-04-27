@@ -15,6 +15,9 @@ SET (INCLUDE_CORE_FILE
   rpc/tsp_datastruct.h)
 TSP_XINCLUDE(${INCLUDE_CORE_FILE})
 
+#tsp_rpc.h is generated a thus deserves a special treatment
+INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/rpc/tsp_rpc.h DESTINATION include)
+
 #
 # Setup RPC machinery
 #
