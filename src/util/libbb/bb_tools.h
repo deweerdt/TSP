@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_tools.h,v 1.9 2006-12-07 21:25:21 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_tools.h,v 1.10 2007-05-04 13:35:51 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -76,6 +76,7 @@ typedef enum {E_BBTOOLS_UNKNOWN=0,
               E_BBTOOLS_SYNCHRO_RECV,
 	      E_BBTOOLS_MEMSET,
 	      E_BBTOOLS_CHECK_VERSION,
+	      E_BBTOOLS_LOAD,
               E_BBTOOLS_LASTCMD} E_BBTOOLS_CMD_T;
 
 typedef struct bbtools_request {
@@ -107,6 +108,7 @@ const char* bbtools_cmdname_tab[] = {"bb_unknown",
 				     "bb_synchro_recv",
 				     "bb_memset",
 				     "bb_check_version",
+				     "bb_load",
 				     "bb_last_cmd"
 };
 
@@ -125,6 +127,7 @@ const char* bbtools_cmdhelp_tab[] = {"unknown bbtools command",
 				     "recv [wait] synchro message from blackboard MSQ queue",
 				     "memset blackboard data region",
 				     "check blackboard version vs bb_tools runtime version",
+				     "load a file into the BB",
 				     "BB LAST COMMAND"
 };
 #else
@@ -264,6 +267,12 @@ bbtools_memset(bbtools_request_t* req);
  */
 int32_t
 bbtools_check_version(bbtools_request_t* req);
+
+/**
+ *
+ */
+int32_t
+bbtools_load(bbtools_request_t* req);
 
 /**  @} */
 

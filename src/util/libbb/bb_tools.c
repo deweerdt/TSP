@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_tools.c,v 1.31 2007-03-01 18:45:13 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_tools.c,v 1.32 2007-05-04 13:35:51 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -42,6 +42,12 @@ Purpose   : BlackBoard Idiom implementation
 #include <string.h>
 #include <libgen.h>
 #include <stdarg.h>
+#define _XOPEN_SOURCE 600
+#include <stdlib.h>
+
+#ifdef OPENSSL_FOUND
+#include <openssl/md5.h>
+#endif
 
 #include <tsp_prjcfg.h>
 #include <bb_core.h>
@@ -181,6 +187,7 @@ bbtools(bbtools_request_t* req) {
 	(E_BBTOOLS_GENERIC==req->cmd) ||  
 	(E_BBTOOLS_HELP   ==req->cmd) ||  
 	(E_BBTOOLS_CHECK_ID==req->cmd) ||
+	(E_BBTOOLS_LOAD ==req->cmd) ||
 	(E_BBTOOLS_CREATE ==req->cmd))
       /* should not try to open BB if the bbname arg is missing */
       && (req->argc > 0)
@@ -252,6 +259,9 @@ bbtools(bbtools_request_t* req) {
     break;
   case E_BBTOOLS_CHECK_VERSION:
     bbtools_check_version(req);
+    break;
+  case E_BBTOOLS_LOAD:
+    bbtools_load(req);
     break;
   default:
     req->stream = stderr;
@@ -409,7 +419,9 @@ bbtools_read(bbtools_request_t* req) {
   int32_t j;
   int32_t idx;
   char *name = alloca(bb_varname_max_len());
-  
+  struct classic_printer_priv classic_priv = { .fp = req->stream };
+  struct bb_printer printer = { &classic_priv, &classic_printer_ops };
+ 
   if (req->argc<2) {
     bbtools_logMsg(req->stream,"%s: <%d> argument(s) missing\n",
 		   bbtools_cmdname_tab[E_BBTOOLS_READ],
@@ -440,7 +452,7 @@ bbtools_read(bbtools_request_t* req) {
       nbcar += snprintf(&msg[nbcar],MSG_SIZE-nbcar,"%s","[");			 
       for (i=0;i<array_index_len;++i) {
         nbcar += snprintf(&msg[nbcar],MSG_SIZE-nbcar,"%d ",array_index[i]);
-      }			 
+      }
       nbcar += snprintf(&msg[nbcar],MSG_SIZE-nbcar," %s","]");			 
       msg[nbcar] = '\0';
       bbtools_logMsg(req->stream,
@@ -491,26 +503,26 @@ bbtools_read(bbtools_request_t* req) {
 		    	idx = 0;
 		  	}
 	  		if (req->verbose) {
-			  bb_data_header_print(sym_data_desc,req->stream,idx,1);
-			  bb_value_print(req->theBB,sym_data_desc,req->stream,array_index,array_index_len);
-			  bb_data_footer_print(sym_data_desc,req->stream,idx,1);
+			  printer.ops->bb_data_header_print(&printer, sym_data_desc,idx,1);
+			  printer.ops->bb_value_print(&printer, req->theBB,sym_data_desc,array_index,array_index_len);
+			  printer.ops->bb_data_footer_print(&printer, sym_data_desc,idx,1);
 			} else {
 			  if ((E_BB_CHAR ==sym_data_desc.type) ||
 			      (E_BB_UCHAR==sym_data_desc.type)) {
-			    bb_string_value_print(req->theBB,sym_data_desc,req->stream,array_index,array_index_len);
+			    printer.ops->bb_string_value_print(&printer, req->theBB,sym_data_desc,array_index,array_index_len);
 			  } else {
-			    bb_value_print(req->theBB,sym_data_desc,req->stream,array_index,array_index_len);
+			    printer.ops->bb_value_print(&printer, req->theBB,sym_data_desc,array_index,array_index_len);
 			  }
 			  fprintf(req->stream,"%s",req->newline);
 			}
-		}    
+		}
     }
 
   return retval;
 
 } /* end of bbtools_read */
 
-int32_t 
+int32_t
 bbtools_write(bbtools_request_t* req) {
   int32_t retval = 0;
   S_BB_DATADESC_T sym_data_desc;
@@ -641,24 +653,320 @@ bbtools_write(bbtools_request_t* req) {
   return retval;
 }  /* end of bbtools_write */
 
-int32_t 
-bbtools_dump(bbtools_request_t* req) {
+#if XML2_FOUND
+
+#include <libxml/xmlreader.h>
+
+static int process_node(xmlTextReaderPtr reader, bbtools_request_t* req)
+{
+	const xmlChar *name;
+
+	name = xmlTextReaderConstName(reader);
+	if (name == NULL) {
+		puts("aze1");
+		return -1;
+	}
+
+	if (!strcmp((char *)name, "bb")) {
+		int n_data;
+		int max_data_desc_size;
+		char *n_data_str;
+		char *max_data_desc_size_str;
+		n_data_str = (char *)xmlTextReaderGetAttribute(reader,
+				BAD_CAST "n_data");
+		n_data = atoi(n_data_str);
+		free(n_data_str);
+		max_data_desc_size_str = (char *)xmlTextReaderGetAttribute(reader,
+				BAD_CAST "max_data_desc_size");
+		max_data_desc_size = atoi(max_data_desc_size_str);
+		free(max_data_desc_size_str);
+
+		printf("n_data %d, max_data_desc_size %d\n", n_data, max_data_desc_size);
+		if (bb_attach(&req->theBB, req->bbname) != BB_OK) {
+			if (bb_create(&req->theBB, req->bbname, n_data, max_data_desc_size) != BB_OK) {
+				puts("aze2");
+				return -1;
+			}
+
+		}
+		return 0;
+	} else if (!strcmp((char *)name, "variable")) {
+		int alias_target, type, dimension, type_size, data_offset;
+		char *alias_target_str, *type_str, *dimension_str, *type_size_str, *data_offset_str;
+		char *value, *name;
+		S_BB_DATADESC_T dd;
+		void *v;
+		int i = 0;
+		char *str_to_free, *cur_val;
+		char *saveptr;
+
+		alias_target_str = (char *)xmlTextReaderGetAttribute(reader,
+				BAD_CAST "alias_target");
+		alias_target = atoi(alias_target_str);
+		type_str = (char *)xmlTextReaderGetAttribute(reader,
+				BAD_CAST "type");
+		type = atoi(type_str);
+		dimension_str = (char *)xmlTextReaderGetAttribute(reader,
+				BAD_CAST "dimension");
+		dimension = atoi(dimension_str);
+		type_size_str = (char *)xmlTextReaderGetAttribute(reader,
+				BAD_CAST "type_size");
+		type_size = atoi(type_size_str);
+		data_offset_str = (char *)xmlTextReaderGetAttribute(reader,
+				BAD_CAST "data_offset");
+		data_offset = atoi(data_offset_str);
+		name = (char *)xmlTextReaderGetAttribute(reader,
+				BAD_CAST "name");
+		value = (char *)xmlTextReaderGetAttribute(reader,
+				BAD_CAST "value");
+
+		cur_val = strdup(value);
+		str_to_free = cur_val;
+		bb_set_varname(&dd, name);
+		dd.type = type;
+		dd.dimension = dimension;
+		dd.type_size = type_size;
+		dd.data_offset = data_offset;
+		dd.alias_target = alias_target;
+
+		if (alias_target != -1) {
+			/* this is an alias */
+			bb_alias_publish(req->theBB, &dd, &bb_data_desc(req->theBB)[alias_target]);
+		} else {
+			/*
+			 Then, consider the real variables. Tought part,
+			 as this we need to restore the original values
+			 */
+			v = bb_publish(req->theBB, &dd);
+			while (i++ < dimension) {
+				int base = 10;
+				char *val;
+				val = strtok_r(cur_val, ",", &saveptr);
+				cur_val = NULL;
+				if (val && !strncmp("0x", val, 2)) {
+					val += 2;
+					base = 16;
+				}
+				switch(type) {
+					float strtof(const char *nptr, char **endptr);
+					case E_BB_DOUBLE:
+					*(double *)v = strtod(val, NULL);
+					break;
+					case E_BB_FLOAT:
+					*(float *)v = strtof(val, NULL);
+					break;
+					case E_BB_INT8:
+					*(int8_t *)v = strtol(val, NULL, base);
+					break;
+					case E_BB_INT16:
+					*(int16_t *)v = strtol(val, NULL, base);
+					break;
+					case E_BB_INT32:
+					*(int32_t *)v = strtol(val, NULL, base);
+					break;
+					case E_BB_INT64:
+					*(int64_t *)v = strtoll(val, NULL, base);
+					break;
+					case E_BB_UINT8:
+					*(uint8_t *)v = strtol(val, NULL, base);
+					break;
+					case E_BB_UINT16:
+					*(uint16_t *)v = strtol(val, NULL, base);
+					break;
+					case E_BB_UINT32:
+					*(uint32_t *)v = strtol(val, NULL, base);
+					break;
+					case E_BB_UINT64:
+					*(uint64_t *)v = strtoll(val, NULL, base);
+					break;
+					case E_BB_CHAR:
+					case E_BB_UCHAR:
+					memset(v, 0, dimension);
+					strcpy((char *)v, value);
+					i = dimension;
+					break;
+					case E_BB_USER:
+					{
+						int n;
+						for (n=0; n < type_size; n++) {
+							*(uint8_t *)v = strtol(val, NULL, base);
+							v = ((int8_t *)v) + 1;
+							val = strtok_r(cur_val, ",", &saveptr);
+							cur_val = NULL;
+							if (val && !strncmp("0x", val, 2)) {
+								val += 2;
+								base = 16;
+							}
+						}
+					}
+					continue;
+					default:
+					break;
+				}
+				v = ((int8_t *)v) + type_size;
+			}
+			free(str_to_free);
+		}
+		free(name);
+		free(value);
+		free(alias_target_str);
+		free(type_str);
+		free(dimension_str);
+		free(type_size_str);
+		free(data_offset_str);
+	} else {
+		return 0;
+	}
+
+	return 0;
+}
+
+static int load_xml_file(bbtools_request_t* req)
+{
+	xmlTextReaderPtr reader;
+	int ret;
+	char *filename = req->argv[1];
+
+	reader = xmlNewTextReaderFilename(filename);
+	if (reader != NULL) {
+		ret = xmlTextReaderRead(reader);
+		while (ret == 1) {
+			if (process_node(reader, req) < 0) {
+				puts("failed");
+				return -1;
+			}
+			ret = xmlTextReaderRead(reader);
+		}
+		xmlFreeTextReader(reader);
+		if (ret != 0) {
+			printf("%s : failed to parse\n", filename);
+		}
+	} else {
+		printf("Unable to open %s\n", filename);
+	}
+	return 0;
+}
+int32_t
+bbtools_load(bbtools_request_t* req) {
   int32_t retcode = 0;
-  if (req->argc<1) {
-    bbtools_logMsg(req->stream,"%s: <%d> argument missing\n", 
-		   bbtools_cmdname_tab[E_BBTOOLS_DUMP],
-		   1-req->argc);
+  int nr_args = 2;
+  if (req->argc<nr_args) {
+    bbtools_logMsg(req->stream,"%s: <%d> argument missing\n",
+		   bbtools_cmdname_tab[E_BBTOOLS_LOAD],
+		   nr_args-req->argc);
     bbtools_usage(req);
     retcode = -1;
     return retcode;
   }
   if (req->verbose) {
     bbtools_logMsg(req->stream,
+		   "%s: load BB <%s>\n",
+		   bbtools_cmdname_tab[E_BBTOOLS_LOAD],
+		   req->bbname);
+  }
+
+  req->bbname = strdup(req->argv[0]);
+  //retcode = bb_dump(req->theBB, &printer);
+  load_xml_file(req);
+  free(req->bbname);
+  return retcode;
+}
+#else /* XML2_FOUND */
+int32_t
+bbtools_load(bbtools_request_t* req)
+{
+	return -1;
+}
+#endif /* XML2_FOUND */
+
+int32_t
+bbtools_dump(bbtools_request_t* req)
+{
+  int32_t retcode = 0;
+  struct classic_printer_priv classic_priv;
+  struct bb_printer printer;
+  char format[BB_PRINTER_OPT_NAME_LEN];
+#ifdef OPENSSL_FOUND
+  FILE *saved_stream = req->stream;
+  int i;
+  char buf[4096];
+  int rd_bytes;
+  int fd, fd_out;
+  unsigned char md5_digest[MD5_DIGEST_LENGTH];
+  MD5_CTX ctx;
+
+  MD5_Init(&ctx);
+  req->stream = tmpfile();
+#endif
+
+  printer.priv = &classic_priv;
+  classic_priv.fp = req->stream;
+
+  if (req->argc<1) {
+    bbtools_logMsg(saved_stream,"%s: <%d> argument missing\n",
+		   bbtools_cmdname_tab[E_BBTOOLS_DUMP],
+		   1-req->argc);
+    bbtools_usage(req);
+    return -1;
+  }
+  if (req->verbose) {
+    bbtools_logMsg(saved_stream,
 		   "%s: dump BB <%s>\n",
 		   bbtools_cmdname_tab[E_BBTOOLS_DUMP],
 		   req->bbname);
   }
-  retcode = bb_dump(req->theBB,req->stream);
+
+  strcpy(format, "classic");
+  if (req->argc > 1) {
+  	strcpy(format, req->argv[1]);
+  }
+  printer.ops = get_printer_ops_from_format(format);
+  if (!printer.ops) {
+    bbtools_logMsg(saved_stream,
+		   "%s: unknown dump format <%s>\n",
+		   bbtools_cmdname_tab[E_BBTOOLS_DUMP],
+		   format);
+    return -1;
+  }
+
+  retcode = bb_dump(req->theBB, &printer);
+
+#ifdef OPENSSL_FOUND
+  /* compute md5 sum */
+  fseek(req->stream, 0L, SEEK_SET);
+  fd = fileno(req->stream);
+  fd_out = fileno(saved_stream);
+  do {
+	  rd_bytes = read(fd, buf, sizeof(buf));
+	  MD5_Update(&ctx, buf, rd_bytes);
+  } while (rd_bytes == sizeof(buf));
+  MD5_Final(md5_digest, &ctx);
+
+  fseek(req->stream, 0L, SEEK_SET);
+  /* write md5 comment on top of file */
+  if (!strcmp(format, "xml")) {
+	  write(fd_out, "<!-- ", strlen("<!-- "));
+  }
+  write(fd_out, "md5=", strlen("md5="));
+  for (i=0; i < MD5_DIGEST_LENGTH; i++) {
+	  char byte[2];
+	  sprintf(byte, "%02x", md5_digest[i]);
+	  write(fd_out, byte, strlen(byte));
+  }
+  if (!strcmp(format, "xml")) {
+	  write(fd_out, " -->", strlen(" -->"));
+  }
+  write(fd_out, "\n", strlen("\n"));
+
+  /* write the rest of the file */
+  do {
+	  rd_bytes = read(fd, buf, sizeof(buf));
+	  if (rd_bytes > 0)
+		  write(fd_out, buf, rd_bytes);
+  } while (rd_bytes == sizeof(buf));
+  fclose(req->stream);
+#endif
+
   return retcode;
 }  /* end of bbtools_dump */
 
@@ -666,7 +974,7 @@ int32_t
 bbtools_find(bbtools_request_t* req) {
   int32_t    retcode = 0;
   char*      varmatch;
-  int32_t    i; 
+  int32_t    i;
   int32_t    nmatch = 0;
 
   if (req->argc<2) {

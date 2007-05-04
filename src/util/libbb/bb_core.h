@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.h,v 1.36 2007-04-01 13:17:21 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.h,v 1.37 2007-05-04 13:35:51 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -619,69 +619,86 @@ bb_value_direct_write(void* data, S_BB_DATADESC_T data_desc, const char* value, 
 int32_t
 bb_value_direct_rawwrite(void* data, S_BB_DATADESC_T data_desc, void* value);
 
-/**
- * Print the value off a BB published data on a STDIO file stream.
- * @param[in] bb the BlackBoard where data is published
- * @param[in] data_desc the BB data descriptor. Be sure to provide
- *                      a properly initialised data_desc since the
- *                      function does not verify this. 
- * @param[in] pf the STDIO file stream pointer, should be open for writing.
- * @param[in] idxstack the indexstack (in the alias case)  @ref BBAliasLib.
- *                     it is not read if idxstack_len is 0.
- * @param[in] idxstack_len the indexstack length should be >= 0, if 0 idxstack is ignored
- */
-int32_t 
-bb_string_value_print(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc, FILE* pf,
-		      int32_t* idxstack, int32_t idxstack_len);
+struct classic_printer_priv {
+	FILE *fp;
+};
+#define BB_PRINTER_OPT_NAME_LEN 256
+struct bb_printer;
+struct bb_printer_operations {
+	char name[BB_PRINTER_OPT_NAME_LEN];
+	/**
+	 * Print the content of a data descriptor.
+	 * @param[in] bb  pointer to BB where the data reside
+	 * @param[in,out] data_desc pointer to data descriptor.
+	 * @param[in,out] pf stream file pointer to be used for printing.
+	 * @param[in] idxstack the index stack 
+	 * @param[in] idxstack_len  the size of the index stack
+	 * @return always return E_OK unless pf is NULL.
+	 */
+	 int32_t(*bb_data_print) (struct bb_printer * bp, volatile S_BB_T * bb,
+				  S_BB_DATADESC_T desc, int32_t *
+				  idxstack, int32_t idxstack_len);
+	 int32_t(*bb_data_footer_print) (struct bb_printer * bp,
+					 S_BB_DATADESC_T data_desc,
+					 int32_t idx, int32_t aliastack);
+	 /**
+	  * Print the value off a BB published data on a STDIO file stream.
+	  *
+	  * @param[in] bb the BlackBoard where data is published
+	  * @param[in] data_desc the BB data descriptor. Be sure to provide
+	  *                      a properly initialised data_desc since the
+	  *                      function does not verify this. 
+	  * @param[in] pf the STDIO file stream pointer, should be open for writing.
+	  * @param[in] idxstack the indexstack (in the alias case)  @ref BBAliasLib.
+	  *                     it is not read if idxstack_len is 0.
+	  * @param[in] idxstack_len the indexstack length should be >= 0, if 0 idxstack is ignored
+	  */
+	 int32_t(*bb_data_header_print) (struct bb_printer * bp,
+					 S_BB_DATADESC_T data_desc,
+					 int32_t idx, int32_t aliastack);
+	 int32_t(*bb_value_print) (struct bb_printer * bp, volatile
+				   S_BB_T * bb,
+				   S_BB_DATADESC_T data_desc, int32_t *
+				   idxstack, int32_t idxstack_len);
+	 /**
+	  * Print the value off a BB published data on a STDIO file stream.
+	  * @param[in] bb the BlackBoard where data is published
+	  * @param[in] data_desc the BB data descriptor. Be sure to provide
+	  *                      a properly initialised data_desc since the
+	  *                      function does not verify this. 
+	  * @param[in] pf the STDIO file stream pointer, should be open for writing.
+	  * @param[in] idxstack the indexstack (in the alias case)  @ref BBAliasLib.
+	  *                     it is not read if idxstack_len is 0.
+	  * @param[in] idxstack_len the indexstack length should be >= 0, if 0 idxstack is ignored
+	  */
+	 int32_t(*bb_string_value_print) (struct bb_printer * bp, volatile
+					  S_BB_T * bb,
+					  S_BB_DATADESC_T data_desc,
+					  int32_t * idxstack,
+					  int32_t idxstack_len);
+	int32_t (*bb_header_print)(struct bb_printer *printer, volatile S_BB_T *bb);
+	int32_t (*bb_footer_print)(struct bb_printer *printer, volatile S_BB_T *bb);
+};
 
-/**
- * Print the value off a BB published data on a STDIO file stream.
- *
- * @param[in] bb the BlackBoard where data is published
- * @param[in] data_desc the BB data descriptor. Be sure to provide
- *                      a properly initialised data_desc since the
- *                      function does not verify this. 
- * @param[in] pf the STDIO file stream pointer, should be open for writing.
- * @param[in] idxstack the indexstack (in the alias case)  @ref BBAliasLib.
- *                     it is not read if idxstack_len is 0.
- * @param[in] idxstack_len the indexstack length should be >= 0, if 0 idxstack is ignored
- */
-int32_t 
-bb_value_print(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc, FILE* pf,
-               int32_t* idxstack, int32_t idxstack_len);
+struct bb_printer {
+	void *priv;
+	struct bb_printer_operations *ops;
+};
 
-
-
-int32_t
-bb_data_header_print(S_BB_DATADESC_T data_desc, FILE* pf, int32_t idx, int32_t aliastack);
-
-int32_t
-bb_data_footer_print(S_BB_DATADESC_T data_desc, FILE* pf, int32_t idx, int32_t aliastack);
-
-
-
-/**
- * Print the content of a data descriptor.
- * @param[in] bb  pointer to BB where the data reside
- * @param[in,out] data_desc pointer to data descriptor.
- * @param[in,out] pf stream file pointer to be used for printing.
- * @param[in] idxstack the index stack 
- * @param[in] idxstack_len  the size of the index stack
- * @return always return E_OK unless pf is NULL.
- */
-int32_t 
-bb_data_print(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc, FILE* pf,
-              int32_t* idxstack, int32_t idxstack_len);
+extern struct bb_printer_operations classic_printer_ops;
+extern struct bb_printer_operations xml_printer_ops;
+struct bb_printer_operations *get_printer_ops_from_format(char *format);
 
 /**
  * Dump a blackboard to a file stream.
  * Blackboard description and all data content is dumped.
  * @param[in,out] bb  pointer to BB.
- * @param[in,out] filedesc  file stream descriptor.
+ * @param[in,out] printer  a struct bb_printer describing how to output
+ * the bb
  * @return E_OK if dump succeed E_NOK otherwise.
  */
 int32_t 
-bb_dump(volatile S_BB_T *bb, FILE* filedesc);
+bb_dump(volatile S_BB_T *bb, struct bb_printer *printer);
 
 #endif /* __KERNEL__ */
 

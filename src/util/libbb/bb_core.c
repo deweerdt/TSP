@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.40 2007-04-01 13:17:21 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.41 2007-05-04 13:35:51 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -653,12 +653,14 @@ bb_value_write(volatile S_BB_T* bb,
 
 #ifndef __KERNEL__
 
-int32_t
-bb_data_header_print(S_BB_DATADESC_T data_desc, FILE* pf, int32_t idx, int32_t aliastack) {
+
+static int32_t
+bb_data_header_print_xml(struct bb_printer *bp, S_BB_DATADESC_T data_desc, int32_t idx, int32_t aliastack) {
   const char oneTab[] = "    "; 
   char tabs[MAX_ALIAS_LEVEL*5]="";
   char *n;
   int i;
+  struct classic_printer_priv *priv = bp->priv;
 
   for (i=0; i<(aliastack-1); i++)
     {
@@ -666,28 +668,61 @@ bb_data_header_print(S_BB_DATADESC_T data_desc, FILE* pf, int32_t idx, int32_t a
     }
 
   n = bb_get_varname(&data_desc);
-  fprintf(pf,"%s---------- < %s > ----------\n", tabs, n);
+  fprintf(priv->fp,"%s<variable name=\"%s\" ", tabs, n);
   free(n);
-  fprintf(pf,"%s  alias-target = %d\n", tabs, data_desc.alias_target);
-  fprintf(pf,"%s  type         = %d  (%s)\n",tabs,data_desc.type,E_BB_2STRING[data_desc.type]);
-  fprintf(pf,"%s  dimension    = %d  \n",tabs,data_desc.dimension);
-  fprintf(pf,"%s  type_size    = %d  \n",tabs,data_desc.type_size);
-  fprintf(pf,"%s  data_offset  = %ld \n",tabs,data_desc.data_offset);
+  fprintf(priv->fp,"alias_target=\"%d\" ", data_desc.alias_target);
+  fprintf(priv->fp,"type=\"%d\" ", data_desc.type);
+  fprintf(priv->fp,"dimension=\"%d\" ",data_desc.dimension);
+  fprintf(priv->fp,"type_size=\"%d\"  ",data_desc.type_size);
+  fprintf(priv->fp,"data_offset=\"%ld\" ",data_desc.data_offset);
+  if ((idx>=0) &&
+      ((E_BB_UCHAR != data_desc.type) &&
+       (E_BB_CHAR  != data_desc.type)
+       )
+      ) {
+    fprintf(priv->fp,"index=\"%d\" value=",idx);
+  } else {
+    fprintf(priv->fp,"value=");
+  }
+  return 0;
+} /* end of bb_data_header_print */
+
+static int32_t
+bb_data_header_print(struct bb_printer *bp, S_BB_DATADESC_T data_desc, int32_t idx, int32_t aliastack) {
+  const char oneTab[] = "    "; 
+  char tabs[MAX_ALIAS_LEVEL*5]="";
+  char *n;
+  int i;
+  struct classic_printer_priv *priv = bp->priv;
+
+  for (i=0; i<(aliastack-1); i++)
+    {
+      strncat(tabs, oneTab, sizeof(tabs)-strlen(tabs));
+    }
+
+  n = bb_get_varname(&data_desc);
+  fprintf(priv->fp,"%s---------- < %s > ----------\n", tabs, n);
+  free(n);
+  fprintf(priv->fp,"%s  alias-target = %d\n", tabs, data_desc.alias_target);
+  fprintf(priv->fp,"%s  type         = %d  (%s)\n",tabs,data_desc.type,E_BB_2STRING[data_desc.type]);
+  fprintf(priv->fp,"%s  dimension    = %d  \n",tabs,data_desc.dimension);
+  fprintf(priv->fp,"%s  type_size    = %d  \n",tabs,data_desc.type_size);
+  fprintf(priv->fp,"%s  data_offset  = %ld \n",tabs,data_desc.data_offset);
   if ((idx>=0) && 
       ((E_BB_UCHAR != data_desc.type) &&
        (E_BB_CHAR  != data_desc.type)
        )
       ) {
-    fprintf(pf,"%s  value[%d]     = ",tabs,idx);
+    fprintf(priv->fp,"%s  value[%d]     = ",tabs,idx);
   } else {
-    fprintf(pf,"%s  value        = ",tabs);
+    fprintf(priv->fp,"%s  value        = ",tabs);
   }
   if ((data_desc.dimension > 1) &&
       ((E_BB_UCHAR != data_desc.type) &&
        (E_BB_CHAR  != data_desc.type)
        )
       ){
-    fprintf(pf," [ ");
+    fprintf(priv->fp," [ ");
   } 
 
   if ((idx>=0) && 
@@ -695,16 +730,24 @@ bb_data_header_print(S_BB_DATADESC_T data_desc, FILE* pf, int32_t idx, int32_t a
        (E_BB_CHAR  != data_desc.type)
        )
       ) {
-    fprintf(pf,"... ");
+    fprintf(priv->fp,"... ");
   }
   return 0;
 } /* end of bb_data_header_print */
 
-int32_t
-bb_data_footer_print(S_BB_DATADESC_T data_desc, FILE* pf, int32_t idx, int32_t aliastack) {
+static int32_t
+bb_data_footer_print_xml(struct bb_printer *bp, S_BB_DATADESC_T data_desc, int32_t idx, int32_t aliastack) {
+  struct classic_printer_priv *priv = bp->priv;
+  fprintf(priv->fp,"</variable>\n");
+
+  return 0;
+} /* end of bb_data_footer_print */
+
+static int32_t
+bb_data_footer_print(struct bb_printer *bp, S_BB_DATADESC_T data_desc, int32_t idx, int32_t aliastack) {
   const char oneTab[] = "    ";
   char tabs[MAX_ALIAS_LEVEL*5]="";
-  
+  struct classic_printer_priv *priv = bp->priv;
   int i;
   
   for (i=0; i<(aliastack-1); i++) {
@@ -716,7 +759,7 @@ bb_data_footer_print(S_BB_DATADESC_T data_desc, FILE* pf, int32_t idx, int32_t a
        (E_BB_CHAR  != data_desc.type)
        )
       ) {
-    fprintf(pf,"... ");
+    fprintf(priv->fp,"... ");
   }  
 
   if ((data_desc.dimension > 1) &&
@@ -724,20 +767,22 @@ bb_data_footer_print(S_BB_DATADESC_T data_desc, FILE* pf, int32_t idx, int32_t a
        (E_BB_CHAR  != data_desc.type)
        )
       ){
-    fprintf(pf,"]");
+    fprintf(priv->fp,"]");
   }  
-  fprintf(pf,"\n");    
-  fprintf(pf,"%s---------- ---------- ----------\n", tabs);
+  fprintf(priv->fp,"\n");    
+  fprintf(priv->fp,"%s---------- ---------- ----------\n", tabs);
   
   return 0;
 } /* end of bb_data_footer_print */
 
-int32_t 
-bb_string_value_print(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc, FILE* pf, 
+static int32_t 
+bb_string_value_print(struct bb_printer *bp, volatile S_BB_T* bb, S_BB_DATADESC_T data_desc,
 		      int32_t* idxstack, int32_t idxstack_len) {
   int32_t i,ibeg,iend;
   char* data;
   int32_t idx;
+  struct classic_printer_priv *priv = bp->priv;
+
   assert(bb);
   /* We get BB data address  */
   data = bb_item_offset(bb, &data_desc,idxstack,idxstack_len);
@@ -769,148 +814,175 @@ bb_string_value_print(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc, FILE* pf,
       if ('\0'==((char*) data)[i]) {
 	break;
       } else {
-	fprintf(pf,"%c",isprint((int)data[i]) ? ((char*) data)[i] : '?');
+	fprintf(priv->fp,"%c",isprint((int)data[i]) ? ((char*) data)[i] : '?');
       }
     }
   } else {
     /* This is not a char type ? */
-    fprintf(pf,"bb_string_value_print: Not a char type");
+    fprintf(priv->fp,"bb_string_value_print: Not a char type");
     return 1;
   }
   return 0;
 } /* end of bb_string_value_print */
 
-int32_t 
-bb_value_print(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc, FILE* pf, 
-               int32_t* idxstack, int32_t idxstack_len) {
-  
-  int32_t i,j,ibeg,iend;
-  char* data;
-  int32_t idx;
-  int32_t charNullCount;
-  assert(bb);
-  /* We get BB data address  */
-  data = bb_item_offset(bb, &data_desc,idxstack,idxstack_len);
-  
-  /* check index stack to handle index */
-  if ((idxstack_len>0) && (data_desc.dimension > 1)){
-    idx = idxstack[idxstack_len-1];
-    if (idx>=0) {
-      ibeg=0;
-      iend=1;
-    } else {
-      ibeg=0;
-      iend=data_desc.dimension;
-    }
-  } else {
-    idx = 0;
-    ibeg=0;
-    iend=data_desc.dimension;
-  }
+static int32_t
+__bb_value_print(struct bb_printer *bp, volatile S_BB_T* bb, S_BB_DATADESC_T data_desc,
+		int32_t* idxstack, int32_t idxstack_len, char separator)
+{
+	int32_t i,j,ibeg,iend;
+	char* data;
+	int32_t idx;
+	int32_t charNullCount;
+	struct classic_printer_priv *priv = bp->priv;
 
-  /* 
-   * If we have character this means we want
-   * a character-like or string-like display 
-   * HEX dump should be for UINT8/16/32/64
-   */
-  if ((E_BB_CHAR ==data_desc.type) ||
-      (E_BB_UCHAR==data_desc.type)) {
-    charNullCount = 0;
-    for (i=ibeg; i< iend; ++i) {
-      if ('\0'==((char*) data)[i]) {
-	charNullCount++;
-      } else {
-	if (charNullCount>0) {
-	  fprintf(pf,"(%d*'\\0')",charNullCount);
-	  charNullCount = 0;
-	}
-	if (isprint((int)data[i])) {
-	  fprintf(pf,"%c",((char*) data)[i]);
+	assert(bb);
+	/* We get BB data address  */
+	data = bb_item_offset(bb, &data_desc,idxstack,idxstack_len);
+
+	/* check index stack to handle index */
+	if ((idxstack_len>0) && (data_desc.dimension > 1)){
+		idx = idxstack[idxstack_len-1];
+		if (idx>=0) {
+			ibeg=0;
+			iend=1;
+		} else {
+			ibeg=0;
+			iend=data_desc.dimension;
+		}
 	} else {
-	  fprintf(pf," 0x%02X ",((char*) data)[i]);
+		idx = 0;
+		ibeg=0;
+		iend=data_desc.dimension;
 	}
-      }
-    }
-    if (charNullCount>0) {
-      fprintf(pf," (%d*'\\0')",charNullCount);
-      charNullCount = 0;
-    }
 
-/*     fprintf(pf," (0x"); */
-/*     for (i=ibeg; i< iend; ++i) { */
-/*       fprintf(pf,"%02x",((char*) data)[i]); */
-/*     } */
-/*     fprintf(pf,")"); */
-  } else {
+	/* 
+	 * If we have character this means we want
+	 * a character-like or string-like display 
+	 * HEX dump should be for UINT8/16/32/64
+	 */
+	if ((E_BB_CHAR ==data_desc.type) ||
+			(E_BB_UCHAR==data_desc.type)) {
+		charNullCount = 0;
+		for (i=ibeg; i< iend; ++i) {
+			if ('\0'==((char*) data)[i]) {
+				charNullCount++;
+			} else {
+				if (charNullCount>0) {
+					fprintf(priv->fp,"(%d*'\\0')",charNullCount);
+					charNullCount = 0;
+				}
+				if (isprint((int)data[i])) {
+					fprintf(priv->fp,"%c",((char*) data)[i]);
+				} else {
+					fprintf(priv->fp," 0x%02X ",((char*) data)[i]);
+				}
+			}
+		}
+		if (charNullCount>0 && separator == ' ') {
+			fprintf(priv->fp," (%d*'\\0')",charNullCount);
+			charNullCount = 0;
+		}
 
-    for (i=ibeg; i< iend; ++i) {    
-      switch (data_desc.type) {
-      case E_BB_DOUBLE: 
-	fprintf(pf,"%1.16f ",((double*) data)[i]);
-	break;
-      case E_BB_FLOAT:
-	fprintf(pf,"%f ",((float*) data)[i]);
-	break;
-      case E_BB_INT8:
-	fprintf(pf,"%d ",((int8_t*) data)[i]);
-	break;
-      case E_BB_INT16:
-	fprintf(pf,"%d ",((int16_t*) data)[i]);
-	break; 
-      case E_BB_INT32:
-	fprintf(pf,"%d ",((int32_t*) data)[i]);
-	break; 
-      case E_BB_INT64:
-	fprintf(pf,"%lld ",((int64_t*) data)[i]);
-	break;
-      case E_BB_UINT8:
-	fprintf(pf,"0x%x ",((uint8_t*) data)[i]);
-	break; 
-      case E_BB_UINT16:
-	fprintf(pf,"0x%x ",((uint16_t*) data)[i]);
-	break;
-      case E_BB_UINT32:
-	fprintf(pf,"0x%x ",((uint32_t*) data)[i]);
-	break;	
-      case E_BB_UINT64:
-	fprintf(pf,"0x%llx ",((uint64_t*) data)[i]);
-	break;	
-	/*     case E_BB_CHAR: */
-	/*       fprintf(pf,"0x%02x<%c> ",((char*) data)[i], */
-	/* 	      isprint((int)data[i]) ? ((char*) data)[i] : '?'); */
-	/*       break; */
-	/*     case E_BB_UCHAR: */
-	/*       fprintf(pf,"0x%02x<%c> ",((char*) data)[i], */
-	/* 	      isprint((int)data[i]) ? ((char*) data)[i] : '?'); */
-	/*       break;*/
-      case E_BB_USER:
-	for (j=0; j<data_desc.type_size; ++j) {
-	  fprintf(pf,"0x%02x ",((uint8_t*) data)[i*data_desc.type_size+j]);
-	  //bb_data_print(bb, *(&data_desc+1), pf);  
-	}
-	break; 
-      default:
-	fprintf(pf,"0x%x ",((char*) data)[i]);
-	break;
-      }
-    }
-  } 
-  return 0;
-} /* end of bb_value_print */
+		/*     fprintf(priv->fp," (0x"); */
+		/*     for (i=ibeg; i< iend; ++i) { */
+		/*       fprintf(priv->fp,"%02x",((char*) data)[i]); */
+		/*     } */
+		/*     fprintf(priv->fp,")"); */
+	} else {
 
-int32_t 
-bb_data_print(volatile S_BB_T* bb, S_BB_DATADESC_T data_desc, FILE* pf,
-              int32_t* idxstack, int32_t idxstack_len) {
-   int32_t          aliasstack_size = MAX_ALIAS_LEVEL;
-   S_BB_DATADESC_T  aliasstack[MAX_ALIAS_LEVEL];
-   
-   aliasstack[0]=data_desc;		
-   bb_find_aliastack(bb, aliasstack, &aliasstack_size);
-   bb_data_header_print(data_desc,pf,-1,aliasstack_size);
-   bb_value_print(bb,data_desc,pf,idxstack,idxstack_len);
-   bb_data_footer_print(data_desc,pf,-1,aliasstack_size);
-   return BB_OK;
-} /* end of bb_data_print */
+		for (i=ibeg; i< iend; ++i) {    
+			switch (data_desc.type) {
+				case E_BB_DOUBLE: 
+					fprintf(priv->fp,"%1.16f",((double*) data)[i]);
+					break;
+				case E_BB_FLOAT:
+					fprintf(priv->fp,"%f",((float*) data)[i]);
+					break;
+				case E_BB_INT8:
+					fprintf(priv->fp,"%d",((int8_t*) data)[i]);
+					break;
+				case E_BB_INT16:
+					fprintf(priv->fp,"%d",((int16_t*) data)[i]);
+					break; 
+				case E_BB_INT32:
+					fprintf(priv->fp,"%d",((int32_t*) data)[i]);
+					break; 
+				case E_BB_INT64:
+					fprintf(priv->fp,"%lld",((int64_t*) data)[i]);
+					break;
+				case E_BB_UINT8:
+					fprintf(priv->fp,"0x%x",((uint8_t*) data)[i]);
+					break; 
+				case E_BB_UINT16:
+					fprintf(priv->fp,"0x%x",((uint16_t*) data)[i]);
+					break;
+				case E_BB_UINT32:
+					fprintf(priv->fp,"0x%x",((uint32_t*) data)[i]);
+					break;	
+				case E_BB_UINT64:
+					fprintf(priv->fp,"0x%llx",((uint64_t*) data)[i]);
+					break;	
+					/*     case E_BB_CHAR: */
+					/*       fprintf(priv->fp,"0x%02x<%c> ",((char*) data)[i], */
+					/* 	      isprint((int)data[i]) ? ((char*) data)[i] : '?'); */
+					/*       break; */
+					/*     case E_BB_UCHAR: */
+					/*       fprintf(priv->fp,"0x%02x<%c> ",((char*) data)[i], */
+					/* 	      isprint((int)data[i]) ? ((char*) data)[i] : '?'); */
+					/*       break;*/
+				case E_BB_USER:
+					for (j=0; j<data_desc.type_size; ++j) {
+						fprintf(priv->fp,"0x%02x",((uint8_t*) data)[i*data_desc.type_size+j]);
+						if (((j+1)<data_desc.type_size) && separator != ' ') {
+							fprintf(priv->fp, "%c", separator);
+						}
+						//bb_data_print(bb, *(&data_desc+1), priv->fp);  
+					}
+					break; 
+				default:
+					fprintf(priv->fp,"0x%x",((char*) data)[i]);
+					break;
+			}
+			if ((i + 1) < iend) {
+				fprintf(priv->fp, "%c", separator);
+			}
+		}
+	} 
+	return 0;
+} /* end of __bb_value_print */
+
+static int32_t 
+bb_value_print_xml(struct bb_printer *bp, volatile S_BB_T* bb, S_BB_DATADESC_T data_desc,
+	           int32_t* idxstack, int32_t idxstack_len)
+{
+	struct classic_printer_priv *priv = bp->priv;
+	int32_t ret;
+	fprintf(priv->fp,"\"");
+	ret = __bb_value_print(bp, bb, data_desc, idxstack, idxstack_len, ',');
+	fprintf(priv->fp,"\">\n");
+	return ret;
+}
+static int32_t 
+bb_value_print(struct bb_printer *bp, volatile S_BB_T* bb, S_BB_DATADESC_T data_desc,
+	       int32_t* idxstack, int32_t idxstack_len)
+{
+	return __bb_value_print(bp, bb, data_desc, idxstack, idxstack_len, ' ');
+}
+static int32_t
+bb_data_print(struct bb_printer *bp, volatile S_BB_T * bb,
+	      S_BB_DATADESC_T data_desc, int32_t * idxstack,
+	      int32_t idxstack_len)
+{
+	int32_t aliasstack_size = MAX_ALIAS_LEVEL;
+	S_BB_DATADESC_T aliasstack[MAX_ALIAS_LEVEL];
+
+	aliasstack[0] = data_desc;
+	bb_find_aliastack(bb, aliasstack, &aliasstack_size);
+	bp->ops->bb_data_header_print(bp, data_desc, -1, aliasstack_size);
+	bp->ops->bb_value_print(bp, bb, data_desc, idxstack, idxstack_len);
+	bp->ops->bb_data_footer_print(bp, data_desc, -1, aliasstack_size);
+	return BB_OK;
+}				/* end of bb_data_print */
 #endif /* !__KERNEL__ */
 
 int32_t 
@@ -1156,9 +1228,90 @@ bb_item_offset(volatile S_BB_T *bb,
 
 #ifndef __KERNEL__
 
-int32_t 
-bb_dump(volatile S_BB_T *bb, FILE* p_filedesc) {  
-  
+static int32_t
+bb_header_print_xml(struct bb_printer *printer, volatile S_BB_T *bb)
+{
+	struct classic_printer_priv *priv = printer->priv;
+	fprintf(priv->fp,"<bb name=\"%s\" ", bb->name);
+	fprintf(priv->fp,"n_data=\"%d\" ", bb->n_data);
+	fprintf(priv->fp,"max_data_desc_size=\"%ld\">\n", bb->max_data_size);
+	return 0;
+}
+
+static int32_t
+bb_header_print(struct bb_printer *printer, volatile S_BB_T *bb)
+{
+	struct classic_printer_priv *priv = printer->priv;
+	fprintf(priv->fp,"============= <[begin] BlackBoard [%s] [begin] > ===============\n", bb->name);
+	fprintf(priv->fp,"  @start blackboard    = 0x%x\n",(unsigned int) (bb));
+	fprintf(priv->fp,"  stored data          = %d / %d [max desc]\n",
+			bb->n_data,
+			bb->max_data_desc_size);
+	fprintf(priv->fp,"  free data size       = %ld / %ld\n",
+			bb->max_data_size - bb->data_free_offset,
+			bb->max_data_size);  
+	fprintf(priv->fp,"  @data_desc           = 0x%x\n",
+			(unsigned int) (bb_data_desc(bb)));
+	fprintf(priv->fp,"  @data                = 0x%x\n",
+			(unsigned int) (bb_data(bb)));
+	fprintf(priv->fp,"================ < [begin] Data [begin] > ==================\n");
+	return 0;
+}
+
+static int32_t
+bb_footer_print_xml(struct bb_printer *printer, volatile S_BB_T *bb)
+{
+	struct classic_printer_priv *priv = printer->priv;
+	fprintf(priv->fp,"</bb>\n");
+	return 0;
+}
+
+static int32_t
+bb_footer_print(struct bb_printer *printer, volatile S_BB_T *bb)
+{
+	struct classic_printer_priv *priv = printer->priv;
+	fprintf(priv->fp,"================== < [end] Data [end] > ====================\n");
+	fprintf(priv->fp,"============== < [end] BlackBoard [%s] [end] > ================\n",
+			bb->name);
+	return 0;
+}
+
+struct bb_printer_operations xml_printer_ops =  { "xml",
+						  bb_data_print,
+						  bb_data_footer_print_xml,
+						  bb_data_header_print_xml,
+						  bb_value_print_xml,
+						  bb_string_value_print,
+						  bb_header_print_xml,
+						  bb_footer_print_xml,
+						};
+struct bb_printer_operations classic_printer_ops =  { "classic",
+						      bb_data_print,
+						      bb_data_footer_print,
+						      bb_data_header_print,
+						      bb_value_print,
+						      bb_string_value_print,
+						      bb_header_print,
+						      bb_footer_print,
+						    };
+struct bb_printer_operations *printer_operations[] = { &classic_printer_ops,
+						       &xml_printer_ops,
+						       NULL };
+
+struct bb_printer_operations *get_printer_ops_from_format(char *format)
+{
+	int i;
+	for (i=0; printer_operations[i] != NULL; i++) {
+		if (!strncmp(printer_operations[i]->name,
+			     format, BB_PRINTER_OPT_NAME_LEN)) {
+			return printer_operations[i];
+		}
+	}
+	return NULL;
+}
+int32_t
+bb_dump(volatile S_BB_T *bb, struct bb_printer *printer) {
+
   int32_t retcode;
   /* char syserr[MAX_SYSMSG_SIZE]; */
   int32_t i;
@@ -1169,29 +1322,15 @@ bb_dump(volatile S_BB_T *bb, FILE* p_filedesc) {
   S_BB_DATADESC_T  aliasstack[MAX_ALIAS_LEVEL];
   int32_t array_in_aliasstack;
 
-  
   retcode = BB_OK;
   assert(bb);
-  fprintf(p_filedesc,"============= <[begin] BlackBoard [%s] [begin] > ===============\n",
-	  bb->name);
-  fprintf(p_filedesc,"  @start blackboard    = 0x%x\n",(unsigned int) (bb));
-  fprintf(p_filedesc,"  stored data          = %d / %d [max desc]\n",
-	  bb->n_data,
-	  bb->max_data_desc_size);
-  fprintf(p_filedesc,"  free data size       = %ld / %ld\n",
-	  bb->max_data_size - bb->data_free_offset,
-	  bb->max_data_size);  
-  fprintf(p_filedesc,"  @data_desc           = 0x%x\n",
-	  (unsigned int) (bb_data_desc(bb)));
-  fprintf(p_filedesc,"  @data                = 0x%x\n",
-	  (unsigned int) (bb_data(bb)));
-  fprintf(p_filedesc,"================ < [begin] Data [begin] > ==================\n");
+  printer->ops->bb_header_print(printer, bb);
   for (i=0;i<bb->n_data;++i) {
     /* NON ALIAS CASE */
     if ((bb_data_desc(bb)[i]).alias_target == -1) {
       indexstack[0]  = 0;
       indexstack_len = 0;
-      bb_data_print(bb,bb_data_desc(bb)[i],p_filedesc,indexstack, indexstack_len);
+      printer->ops->bb_data_print(printer, bb,bb_data_desc(bb)[i],indexstack, indexstack_len);
     }
     /* ALIAS CASE */
     else {
@@ -1209,7 +1348,7 @@ bb_dump(volatile S_BB_T *bb, FILE* p_filedesc) {
 	for (j=0; j<bb_data_desc(bb)[i].dimension; j++){
 	  indexstack[0] = j;
 	  indexstack_len = 1;
-	  bb_data_print(bb, bb_data_desc(bb)[i], p_filedesc,indexstack, indexstack_len);
+	  printer->ops->bb_data_print(printer, bb, bb_data_desc(bb)[i], indexstack, indexstack_len);
 	  
 	}
       }
@@ -1218,16 +1357,14 @@ bb_dump(volatile S_BB_T *bb, FILE* p_filedesc) {
 	for (j=0; j<aliasstack[aliasstack_size-1].dimension; j++){
 	  indexstack[0] = j;
 	  indexstack_len = 1;
-	  bb_data_print(bb, bb_data_desc(bb)[i], p_filedesc,indexstack, indexstack_len);
+	  printer->ops->bb_data_print(printer, bb, bb_data_desc(bb)[i], indexstack, indexstack_len);
 	  
 	}			
       }             
     }
   }
-  fprintf(p_filedesc,"================== < [end] Data [end] > ====================\n");
-  fprintf(p_filedesc,"============== < [end] BlackBoard [%s] [end] > ================\n",
-	  bb->name);
-  
+  printer->ops->bb_footer_print(printer, bb);
+
   return retcode;
 } /* end of bb_dump */
 
