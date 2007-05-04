@@ -5,6 +5,7 @@ TSP_XSCRIPT(
   bb_findlabel 
   bb_find
   bb_dump
+  bb_load
   bb_read 
   bb_write
   bb_check_id 
