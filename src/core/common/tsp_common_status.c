@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_common_status.c,v 1.3 2007-04-26 17:51:30 deweerdt Exp $
+$Id: tsp_common_status.c,v 1.4 2007-05-12 22:10:41 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -55,7 +55,7 @@ Purpose   : Main implementation for the producer module
 #define TSP_STATUS_MSG_MAX_LENGTH 1024
 
 int32_t
-TSP_STATUS_print(FILE* fs, int32_t TSPStatus) {
+TSP_status_print(FILE* fs, int32_t TSPStatus) {
   char statusMsg[TSP_STATUS_MSG_MAX_LENGTH];
   int32_t retcode = 0;
 
@@ -67,8 +67,48 @@ TSP_STATUS_print(FILE* fs, int32_t TSPStatus) {
   return retcode;
 } /* end of TSP_STATUS_print */
 
+const char* tsp_status_name[] = { "TSP_STATUS_OK",
+				  "TSP_STATUS_NOK",
+				  "TSP_STATUS_ERROR_PROVIDER_UNREACHABLE",
+				  "TSP_STATUS_ERROR_UNKNOWN",
+				  "TSP_STATUS_ERROR_SEE_STRING",	
+				  "TSP_STATUS_ERROR_VERSION",
+				  "TSP_STATUS_ERROR_SYMBOLS",
+				  "TSP_STATUS_ERROR_SYMBOL_FILTER",
+				  "TSP_STATUS_ERROR_NOT_SUPPORTED",
+				  "TSP_STATUS_ERROR_NOT_IMPLEMENTED",
+				  "TSP_STATUS_ERROR_PGI_UNKNOWN",
+				  "TSP_STATUS_ERROR_ASYNC_READ_NOT_ALLOWED",
+				  "TSP_STATUS_ERROR_ASYNC_WRITE_NOT_ALLOWED",       
+				  "TSP_STATUS_ERROR_ASYNC_READ_NOT_SUPPORTED",	
+				  "TSP_STATUS_ERROR_ASYNC_WRITE_NOT_SUPPORTED",     	
+				  "TSP_STATUS_ERROR_MEMORY_ALLOCATION",				  
+				  "TSP_STATUS_ERROR_INVALID_CHANNEL_ID",
+				  "TSP_STATUS_ERROR_NO_MORE_GLU",
+				  "TSP_STATUS_ERROR_NO_MORE_SESSION",
+				  "TSP_STATUS_ERROR_GLU_START",
+				  "TSP_STATUS_ERROR_GLU_INITIALIZE",
+				  "TSP_STATUS_ERROR_BAD_REQUEST_ORDER",
+				  "TSP_STATUS_ERROR_DATAPOOL_INSTANTIATE",
+				  "TSP_STATUS_ERROR_THREAD_CREATE",				  
+				  "TSP_STATUS_ERROR_NOT_INITIALIZED",				  
+				  "TSP_STATUS_ERROR_INVALID_REQUEST",
+				  "TSP_STATUS_ERROR_EMPTY_REQUEST_SAMPLE"
+};
+
+const char*
+TSP_status_string(int32_t TSPStatus) {
+	if (TSPStatus<TSP_STATUS_ERROR_EMPTY_REQUEST_SAMPLE) {
+		return tsp_status_name[TSPStatus];		
+	}
+	else {
+		return "Unknown or invalid TSP Status";		
+	}		
+} /* End of TSP_status_string */
+
+
 int32_t
-TSP_STATUS_sprint(char* buffer, int32_t buffer_len, int32_t TSPStatus) {
+TSP_status_sprint(char* buffer, int32_t buffer_len, int32_t TSPStatus) {
   int32_t retcode = 0;
   switch (TSPStatus) {
   case TSP_STATUS_OK:

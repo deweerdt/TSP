@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer.c,v 1.30 2007-03-25 14:18:13 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer.c,v 1.31 2007-05-12 22:10:41 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -48,6 +48,7 @@ Purpose   : TSP ascii writer consumer
 #define ASCII_WRITER_C
 #include <tsp_ascii_writer.h>
 #include <tsp_consumer.h>
+#include <tsp_common.h>
 #include <tsp_simple_trace.h>
 #include <tsp_const_def.h>
 #include <tsp_time.h>
@@ -809,12 +810,12 @@ tsp_ascii_writer_finalise() {
 
   if (NULL != myprovider) {
     if (tsp_ascii_writer_sample_running) {
-      if (TSP_STATUS_OK!=TSP_consumer_request_sample_destroy(myprovider)) {
-	STRACE_ERROR(("TSP_request_sample_destroy ERROR??..."));
+	    if (TSP_STATUS_OK!=(retcode=TSP_consumer_request_sample_destroy(myprovider))) {
+		    STRACE_ERROR(("TSP_request_sample_destroy ERROR: %s",TSP_status_string(retcode)));
       }  
     }
-    if (TSP_STATUS_OK!=TSP_consumer_request_close(myprovider)) {
-      STRACE_ERROR(("TSP_request_close ERROR??..."));
+    if (TSP_STATUS_OK!=(retcode=TSP_consumer_request_close(myprovider))) {
+	    STRACE_ERROR(("TSP_request_close ERROR: %s",TSP_status_string(retcode)));
     }
   }
   TSP_consumer_end();

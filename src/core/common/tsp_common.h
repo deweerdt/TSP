@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_common.h,v 1.14 2006-10-18 09:58:48 erk Exp $
+$Id: tsp_common.h,v 1.15 2007-05-12 22:10:41 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -42,6 +42,7 @@ Purpose   : Main interface for the producer module
 #include <tsp_datastruct.h>
 
 /* All common includes */
+#include <tsp_common_status.h>
 #include <tsp_common_request.h>
 #include <tsp_common_filter.h>
 #include <tsp_common_ssi.h>
