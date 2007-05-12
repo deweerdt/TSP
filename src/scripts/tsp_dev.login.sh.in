@@ -13,10 +13,13 @@ export TSP_BIN_BASE=@PROJECT_BINARY_DIR@
 echo   "Using TSP_SRC_BASE=$TSP_SRC_BASE"
 echo   "Using TSP_BIN_BASE=$TSP_BIN_BASE"
 
+
+
 ##############################
 # Paths
 ##############################
 export PATH=${TSP_BIN_BASE}/${HOST_ARCH}/Debug/bin:${TSP_BIN_BASE}/scripts:${PATH}
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/xmlrpc/lib
 
 ##############################
 # DEVBASE
