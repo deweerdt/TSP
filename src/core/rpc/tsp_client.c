@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_client.c,v 1.20 2007-03-01 22:26:39 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_client.c,v 1.21 2007-05-12 22:09:32 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -76,7 +76,7 @@ CLIENT* tsp_remote_open_progid(const char *target_name, int progid)
   cl = clnt_create(target_name, progid, TSP_RPC_VERSION_INITIAL, "tcp");
 
   if (cl == (CLIENT *)0) {
-    STRACE_ERROR(("ERROR : GLOBAL clnt_create failed for host <%s> / progid <%d/0x%08X>", target_name, progid,progid));
+    STRACE_DEBUG(("ERROR : GLOBAL clnt_create failed for host <%s> / progid <%d/0x%08X>", target_name, progid,progid));
   }
   else {
     STRACE_INFO(("CONNECTED to server %s", target_name));
