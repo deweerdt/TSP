@@ -428,6 +428,14 @@ SET(CPACK_PACKAGE_VERSION_MINOR ${PACKAGE_VERSION_MINOR})
 SET(CPACK_PACKAGE_VERSION_PATCH ${PACKAGE_VERSION_PATCH})
 
 IF(WIN32)
+  # FIXME should check if it not redundant with 
+  # "manual" NSIS MSVC install
+  # advice seen on CMake ML 
+  # http://www.cmake.org/pipermail/cmake/2007-May/014048.html
+  #SET(CMAKE_INSTALL_MFC_LIBRARIES YES)
+  #INCLUDE(InstallRequiredSystemLibraries)
+  # see https://savannah.nongnu.org/task/index.php?6883
+  
     ## Customize NSIS installer
     SET(CPACK_PACKAGE_ICON "${CMAKE_SOURCE_DIR}/make/\\\\pieuvre_tsp_graph.bmp")
     SET(CPACK_NSIS_CREATE_ICONS "
