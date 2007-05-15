@@ -105,7 +105,7 @@ IF(BUILD_CONSUMER)
   
   ADD_LIBRARY(tsp_consumer ${CONSUMER_LIB_SRCS})
   TSP_LIBRARY_INSTALL(tsp_consumer) 
-  ADD_DEPENDENCIES(tsp_consumer tsp_common rpcgen_exec_clnt)
+  ADD_DEPENDENCIES(tsp_consumer tsp_common tsp_rpc_rpcgen_exec_clnt)
   IF (WIN32)
     TARGET_LINK_LIBRARIES(tsp_consumer tsp_services ${PTHREAD_LIBRARY_NAME} Ws2_32 oncrpc)
   ENDIF (WIN32)
