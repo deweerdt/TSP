@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.41 2007-05-04 13:35:51 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.42 2007-05-15 19:08:57 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -534,9 +534,9 @@ bb_data_initialise(volatile S_BB_T* bb, S_BB_DATADESC_T* data_desc,void* default
       break;
     case E_BB_USER:
       if (NULL == default_value) {
-				memset(data + (data_desc->type)*i,0,data_desc->type_size);
+				memset(data + (data_desc->type_size)*i,0,data_desc->type_size);
       } else {
-				memcpy(data + (data_desc->type)*i,default_value,data_desc->type_size);
+				memcpy(data + (data_desc->type_size)*i,default_value,data_desc->type_size);
       }
       break; 
     default:
