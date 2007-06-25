@@ -1,7 +1,9 @@
 
-TSP_XSCRIPT( 
-           tspcfg_example.xml
-	   )
+INSTALL(
+  FILES 
+  tspcfg_example.xml
+  DESTINATION ${TSP_SHARE_BASEDIR}/example)
+
 TSP_XINCLUDE(
   tspcfg_file.h
   )

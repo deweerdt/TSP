@@ -1,7 +1,8 @@
 
-TSP_XSCRIPT( 
-           stub_ascii_writer_config.dat
-	   )
+INSTALL(
+  FILES 
+  stub_ascii_writer_config.dat
+  DESTINATION ${TSP_SHARE_BASEDIR}/example)
 
 TSP_XINCLUDE(
   tsp_ascii_writer.h

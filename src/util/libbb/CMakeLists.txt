@@ -27,8 +27,7 @@ SET(BB_INCLUDE_FILES
   bb_tools.h
   bb_utils.h
   bb_sha1.h
-  bb_core_sysv.h
-  bb_core_k.h)
+  bb_core_sysv.h)
 
 IF (CMAKE_SYSTEM_NAME MATCHES "Linux")
   SET(BB_INCLUDE_FILES 
