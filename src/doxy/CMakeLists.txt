@@ -55,7 +55,7 @@ FILE(GLOB_RECURSE doc_files RELATIVE ${APIDOC_DIR} ${APIDOC_DIR}/*)
 FOREACH(file ${doc_files})
   GET_FILENAME_COMPONENT(file_prefix ${file} PATH)
   INSTALL(FILES ${APIDOC_DIR}/${file}
-    DESTINATION doc/${file_prefix})
+    DESTINATION share/doc/tsp/${file_prefix})
 ENDFOREACH(file)
 
 ENDIF (DOXYGEN_FOUND)

@@ -47,9 +47,11 @@ make install
 mkdir -p $RPM_BUILD_ROOT/etc/profile.d
 cp %{rpmprefix}/share/tsp/scripts/tsp.profile.sh $RPM_BUILD_ROOT/etc/profile.d/tsp.sh
 cp %{rpmprefix}/share/tsp/scripts/tsp.profile.csh $RPM_BUILD_ROOT/etc/profile.d/tsp.csh
-rm -rf %{rpmprefix}/doc
-tar cf - doc/api/html | (cd %{rpmprefix}; tar xf -)
-cd %{rpmprefix}/doc/api/html
+rm -rf %{rpmprefix}/share/doc/tsp
+mkdir -p %{rpmprefix}/share/doc/tsp
+cd doc
+tar cf - api/html | (cd %{rpmprefix}/share/doc/tsp; tar xf -)
+cd %{rpmprefix}/share/doc/tsp/api
 find . -type f | xargs chmod -x
 
 %clean
@@ -70,13 +72,14 @@ rm -rf build_tree
 
 %files apidoc
 %defattr(-,root,root,-)
-%{prefix}/doc
+%{prefix}/share/doc
 
 %changelog
 * Mon Jun 25 2007 Erk <eric.noulard@gmail.com>
   - merge patch 6037: New Installation Tree for TSP
     from Olivier BONHOMME
   - use CMAKE_INSTALL_PREFIX as a definition for %prefix
+  - install generated API documentation in /usr/share/doc/tsp
 * Wed Jan 24 2007 Erk <eric.noulard@gmail.com>
   - Add cmake computed BuildRequires packages
   - Restore /opt/tsp-x.y.z version prefix install
