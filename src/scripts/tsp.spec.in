@@ -72,9 +72,12 @@ rm -rf build_tree
 
 %files apidoc
 %defattr(-,root,root,-)
-%{prefix}/share/doc
+%{prefix}/share/doc/tsp
 
 %changelog
+* Mon Jun 25 2007 Erk <eric.noulard@gmail.com>
+  - late update for apidoc subpackage
+    as noticed by Olivier.    
 * Mon Jun 25 2007 Erk <eric.noulard@gmail.com>
   - merge patch 6037: New Installation Tree for TSP
     from Olivier BONHOMME
