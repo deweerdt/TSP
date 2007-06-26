@@ -2,7 +2,7 @@
 Summary:        TSP : library for a generic Transport Sampling Protocol
 Name:           tsp
 Version:        @PACKAGE_VERSION@
-Release:        1
+Release:        2
 Group:          Applications/Communications
 URL:            https://savannah.nongnu.org/projects/tsp
 License:        LGPL
