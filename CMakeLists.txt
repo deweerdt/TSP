@@ -75,6 +75,15 @@ IF (NOT CMAKE_BUILD_TYPE)
  ENDIF (CMAKE_COMPILER_IS_GNUCC)
 ENDIF (NOT CMAKE_BUILD_TYPE)
 
+# Use this in order to make Eclipse CDT parser handle error message smoothly
+# see  http://www.cmake.org/Wiki/CMake:Eclipse
+IF(CMAKE_COMPILER_IS_GNUCC)
+  SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fmessage-length=0")
+ENDIF(CMAKE_COMPILER_IS_GNUCC)
+IF(CMAKE_COMPILER_IS_GNUCXX)
+  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fmessage-length=0")
+ENDIF(CMAKE_COMPILER_IS_GNUCXX)
+ 
 SET(PACKAGE_NAME      "tsp")
 SET(PACKAGE_VERSION_MAJOR "0")
 SET(PACKAGE_VERSION_MINOR "8")
@@ -438,7 +447,7 @@ IF(WIN32)
   # http://www.cmake.org/pipermail/cmake/2007-May/014048.html
   #SET(CMAKE_INSTALL_MFC_LIBRARIES YES)
   #INCLUDE(InstallRequiredSystemLibraries)
-  # see https://savannah.nongnu.org/task/index.php?6883
+  #ï¿½see https://savannah.nongnu.org/task/index.php?6883
   
     ## Customize NSIS installer
     SET(CPACK_PACKAGE_ICON "${CMAKE_SOURCE_DIR}/make/\\\\pieuvre_tsp_graph.bmp")
