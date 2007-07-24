@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_consumer.h,v 1.37 2007-04-23 11:16:51 erk Exp $
+$Id: tsp_consumer.h,v 1.38 2007-07-24 23:30:12 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -98,7 +98,7 @@ typedef struct TSP_sample
   /**
    * If the TSP symbol is of array type
    * this is the index corresponding to
-   * the value given in @ref uvalue.
+   * the value given in TSP_sample_t::uvalue.
    * For any scalar symbol it should be 0.
    */
   int32_t array_index;
@@ -112,19 +112,19 @@ typedef struct TSP_sample
    * Union containing the value of the item.
    */
   union {
-    double        double_value;
-    float         float_value;
-    int8_t        int8_value;
-    int16_t       int16_value;
-    int32_t       int32_value;
-    int64_t       int64_value;    
-    uint8_t       uint8_value;
-    uint16_t      uint16_value;
-    uint32_t      uint32_value;
-    uint64_t      uint64_value;
-    char          char_value;
-    unsigned char uchar_value;
-    int8_t        raw_value;
+	  double        double_value; 
+	  float         float_value;  
+	  int8_t        int8_value;
+	  int16_t       int16_value;
+	  int32_t       int32_value;
+	  int64_t       int64_value;    
+	  uint8_t       uint8_value;
+	  uint16_t      uint16_value;
+	  uint32_t      uint32_value;
+	  uint64_t      uint64_value;
+	  char          char_value;
+	  unsigned char uchar_value;
+	  int8_t        raw_value;
   } uvalue;
 
 } TSP_sample_t;

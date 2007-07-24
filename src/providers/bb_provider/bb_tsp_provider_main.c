@@ -50,8 +50,9 @@ Purpose   : posix implementation for VXWORKS
 /**
  * @defgroup BB_TSPProvider BB TSP Provider
  * A TSP BlackBoard provider, this provider attach itself
- * to an existing @ref BlackBoard and offers all the published
+ * to an existing BlackBoard and offers all the published
  * data as TSP symbols.
+ * @see BlackBoard
  * @ingroup TSP_Providers
  */
 

@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_alias.h,v 1.5 2006-12-07 21:25:21 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_alias.h,v 1.6 2007-07-24 23:30:12 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -64,10 +64,10 @@ BEGIN_C_DECLS
  * @defgroup BBAliasLib The BB Alias System
  * The BB alias system is a part of the BlackBoard library
  * which enable a special publish interface called
- * @ref bb_alias_publish. When publishing alias, one does not
+ * ::bb_alias_publish. When publishing alias, one does not
  * allocate new data in the BlackBoard but only define aliases
  * on already published data. Using alias publish one may publish
- * user define type/structure (see @ref E_BB_USER) and then 
+ * user define type/structure (see #E_BB_USER) and then 
  * describe the elements of the published structure.
  * A <em> normal </em> publish is called a <em>genuine</em>
  * publish which is opposed to an <em> alias publish </em>.
@@ -88,7 +88,7 @@ int32_t bb_isalias(const S_BB_DATADESC_T* data_desc);
 
 /**
  * Build up an alias stack.
- * An alias stack is a sequence of @ref S_BB_DATADESC_T
+ * An alias stack is a sequence of #S_BB_DATADESC_T
  * describing the way to go from an alias to a genuine
  * published symbol.
  * @param[in] bb the BlackBoard

@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_datapool.h,v 1.19 2007-03-01 17:36:41 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_datapool.h,v 1.20 2007-07-24 23:30:12 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -48,7 +48,7 @@ Purpose   : Datapool implementation
  * @ingroup TSP_ProviderLib
  * The datapool library is an internal provider-side TSP API
  * which is used by the GLU in order to push sample data
- * to the \ref TSP_ProviderLib.
+ * to the TSP_ProviderLib.
  * @{
  */
 

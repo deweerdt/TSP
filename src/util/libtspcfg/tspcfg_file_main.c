@@ -1,6 +1,6 @@
 /*
 
-$Id: tspcfg_file_main.c,v 1.3 2006-06-03 21:58:59 erk Exp $
+$Id: tspcfg_file_main.c,v 1.4 2007-07-24 23:30:12 erk Exp $
 
 -----------------------------------------------------------------------
  
@@ -46,13 +46,11 @@ Purpose   : Implementation for read a xml config file
 
 /**
  * print_element_names:
- * @a_node: the initial xml node to consider.
+ * @param[in] a_node the initial xml node to consider.
  *
  * Prints the names of the all the xml elements
  * that are siblings or children of a given xml node.
  */
-
-
 static void
 print_element_names(xmlNode * a_node)
 {

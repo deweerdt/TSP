@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.h,v 1.37 2007-05-04 13:35:51 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.h,v 1.38 2007-07-24 23:30:12 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -195,8 +195,8 @@ typedef enum BB_LOG_LEVEL {
  */
 typedef enum {
   E_BB_DISCOVER=0, /*!< Discover is used by @ref bb_subscribe when discovering data type */
-  E_BB_DOUBLE=1,   /*!< An IEEE double precision floating point  */
-  E_BB_FLOAT,      /*!< An IEEE simple precision floating point  */
+  E_BB_DOUBLE=1,   /*!< An IEEE-754 double precision floating point  */
+  E_BB_FLOAT,      /*!< An IEEE-754 simple precision floating point  */
   E_BB_INT8,       /*!< An 8bit signed integer                   */
   E_BB_INT16,      /*!< A 16bit signed integer                   */
   E_BB_INT32,      /*!< A 32bit signed integer                   */
@@ -249,7 +249,7 @@ typedef struct S_BB_DATADESC {
   unsigned long data_offset;
   
   /**
-   * The index of the aliases published (@ref bb_alias_publish)
+   * The index of the aliases published (::bb_alias_publish)
    * data in the BlackBoard data descriptor array
    * -1 if genuine published data (not an alias).
    */
@@ -348,19 +348,19 @@ typedef struct S_BB_MSG {
 } S_BB_MSG_T ;
 
 /**
- * The black board type, this is tightly coupled to the 
+ * The blackboard type, this is tightly coupled to the 
  * struct bb_operations *ops[] defined in bb_core.c
  * it's used as a selector of the right set of operations
  */
 enum bb_type {
-	BB_SYSV,
-	BB_KERNEL,
+	BB_SYSV,   /*!< SysV Blackboard type       */
+	BB_KERNEL, /*!< Kernel Blackboard type     */
 };
 /**
  * BlackBoard description structure.
  * This structure describes the BlackBoard itself
  * (not data published in BlackBoard which are described
- *  by the @ref S_BB_DATADESC_T structure).
+ *  by the #S_BB_DATADESC_T structure).
  */
 typedef struct S_BB {
   /**
@@ -407,7 +407,7 @@ typedef struct S_BB {
   /** 
    * Offset (in bytes) of the next free byte 
    * in the blackboard data zone. This offset
-   * is relative to @ref data_offset
+   * is relative to #data_offset
    */
   unsigned long data_free_offset;
   /**
@@ -442,6 +442,7 @@ typedef struct S_BB_PRIV {
 
 /**
  * Get a pointer to the private structure of the BB
+ * @param[in] bb the pointer to BB structure  
  * @return a pointer to the private structure of the BB
  */
 S_BB_PRIV_T *
@@ -457,19 +458,19 @@ typedef char *(*bb_get_varname_fn)(const S_BB_DATADESC_T *);
 typedef int32_t (*bb_set_varname_fn)(S_BB_DATADESC_T *, const char *);
 typedef int32_t (*bb_varname_max_len_fn)(void);
 /**
- * Get the name of a variable described by @dd
+ * Get the name of a variable described by dd
  * @param[in] dd the descriptor of the variable
  * @return the variable name, must be freed by caller
  */
 extern bb_get_varname_fn bb_get_varname;
 /**
- * Get the name of a variable described by @dd
+ * Get the name of a variable described by dd
  * @param[in] dd the descriptor of the variable
  * @return the variable name, must be freed by caller
  */
 extern bb_set_varname_fn bb_set_varname;
 /**
- * Get the max len of a name of a variable described by @dd
+ * Get the max len of a name of a variable described by dd
  * @return the max lenght of a variable name
  */
 extern bb_varname_max_len_fn bb_varname_max_len;
@@ -491,7 +492,7 @@ bb_ctl(S_BB_T *bb, unsigned int request, ...);
 /**
  * The size (in byte) of a BlackBoard data type.
  * @param[in] bb_type a BlackBoard data type
- * @return The size (in byte) of a BlackBoard data type or -1 if bb_type equals @ref E_BB_USER
+ * @return The size (in byte) of a BlackBoard data type or -1 if bb_type equals #E_BB_USER
  *         or is unknown.
  */
 size_t 
@@ -540,7 +541,7 @@ bb_find(volatile S_BB_T* bb, const char* var_name);
 /*
  * Search a variable within a BlackBoard using fastfind algorithm.
  * @param[in] bb BlackBoard pointer
- * @param[in] fastfind_string the fastfind string build with @ref bb_fastfind_build
+ * @param[in] fastfind_string the fastfind string build with ::bb_fastfind_build
  * @param[in] var_name the name of the searched variable
  * @return index of the variable in the BB descriptor array
  */
@@ -587,7 +588,7 @@ bb_double_of(void *value, E_BB_TYPE_T bbtype);
  *                (should NOT be NULL).
  * @param[in,out] default_value default pointer to the default value used for init.
  *                         If NULL then initialize to 0.
- * @return E_OK if init OK E_NOK otherwise.
+ * @return BB_OK if init OK BB_NOK otherwise.
  */
 int32_t 
 bb_data_initialise(volatile S_BB_T* bb, S_BB_DATADESC_T* data_desc,void* default_value);
@@ -604,7 +605,7 @@ bb_data_initialise(volatile S_BB_T* bb, S_BB_DATADESC_T* data_desc,void* default
  *                      a properly initialised data_desc since the
  *                      function does not verify this. 
  * @param[in] value the string representing the value to be written to BB data
- * @param[in] idxstack the indexstack (in the alias case)  @ref BBAliasLib.
+ * @param[in] idxstack the indexstack (in the alias case see BBAliasLib).
  *                     it is not read if idxstack_len is 0.
  * @param[in] idxstack_len the indexstack length should be >= 0, if 0 idxstack is ignored
  * @return BB_OK on success BB_NOK otherwise.
@@ -633,7 +634,7 @@ struct bb_printer_operations {
 	 * @param[in,out] pf stream file pointer to be used for printing.
 	 * @param[in] idxstack the index stack 
 	 * @param[in] idxstack_len  the size of the index stack
-	 * @return always return E_OK unless pf is NULL.
+	 * @return always return BB_OK unless pf is NULL.
 	 */
 	 int32_t(*bb_data_print) (struct bb_printer * bp, volatile S_BB_T * bb,
 				  S_BB_DATADESC_T desc, int32_t *
@@ -695,7 +696,7 @@ struct bb_printer_operations *get_printer_ops_from_format(char *format);
  * @param[in,out] bb  pointer to BB.
  * @param[in,out] printer  a struct bb_printer describing how to output
  * the bb
- * @return E_OK if dump succeed E_NOK otherwise.
+ * @return BB_OK if dump succeed BB_NOK otherwise.
  */
 int32_t 
 bb_dump(volatile S_BB_T *bb, struct bb_printer *printer);
@@ -719,7 +720,7 @@ bb_dump(volatile S_BB_T *bb, struct bb_printer *printer);
  *                 (each element has an associated key)
  * @param[in] data_size the maximum data zone size (in byte) of the blackboard.
  *                     This is the sum of all data published in the blackboard.
- * @return E_OK if creation succeed E_NOK if failed.
+ * @return BB_OK if creation succeed BB_NOK if failed.
  */
 int32_t 
 bb_create(S_BB_T** bb, 
@@ -734,7 +735,7 @@ bb_create(S_BB_T** bb,
  * is detached (through @see bb_detach for example).
  * @param[in,out] bb Pointer to BB pointer.
  *                 Should not be NULL.
- * @return E_OK on success E_NOK otherwise.
+ * @return BB_OK on success BB_NOK otherwise.
  */
 int32_t 
 bb_destroy(S_BB_T** bb);
@@ -756,7 +757,7 @@ bb_data_memset(S_BB_T* bb, const char c);
  * This is a blocking call (using sys V semaphore).
  * @see bb_publish/ @see bb_subscribe automatically lock the blackboard.
  * @param[in,out] bb BB pointer, should not be NULL.
- * @return E_OK if lock succeed, E_NOK otherwise.
+ * @return BB_OK if lock succeed, BB_NOK otherwise.
  */
 int32_t 
 bb_lock(volatile S_BB_T* bb);
@@ -764,7 +765,7 @@ bb_lock(volatile S_BB_T* bb);
 /**
  * Unlock blackboard.
  * @param[in,out] bb BB pointer, should not be NULL.
- * @return E_OK if unlock succeed, E_NOK otherwise.
+ * @return BB_OK if unlock succeed, BB_NOK otherwise.
  */
 int32_t 
 bb_unlock(volatile S_BB_T* bb);
@@ -774,8 +775,8 @@ bb_unlock(volatile S_BB_T* bb);
  * @param[out] bb Pointer to BB pointer (should not be NULL).
  *               the pointed value is updated is BB attach succeed.
  * @param[in] bb_name blackboard name
- * @return  E_OK  if blackboard exists and attach succeed
- *                E_NOK otherwise.
+ * @return  BB_OK  if blackboard exists and attach succeed
+ *                BB_NOK otherwise.
  */
 int32_t 
 bb_attach(S_BB_T** bb, const char* bb_name);
@@ -783,7 +784,7 @@ bb_attach(S_BB_T** bb, const char* bb_name);
 /**
  * Detach from blackboard.
  * @param[in,out] bb Pointer to BB pointer (should not be NULL)
- * @return E_OK if blackboard exists and detach succeed E_NOK otherwise.
+ * @return BB_OK if blackboard exists and detach succeed BB_NOK otherwise.
  */
 int32_t 
 bb_detach(S_BB_T** bb);
@@ -862,7 +863,7 @@ bb_get_mem_size(volatile S_BB_T *bb);
  * @param[in,out] bb_shadow pointer to pre-allocated data zone
  *                         which will receive the shadow BB.
  * @param[in] bb_src pointer to source blackboard to be shadowed.
- * @return  E_OK on success E_NOK if not.
+ * @return  BB_OK on success BB_NOK if not.
  */
 int32_t 
 bb_shadow_get(S_BB_T *bb_shadow, volatile S_BB_T *bb_src);
@@ -873,7 +874,7 @@ bb_shadow_get(S_BB_T *bb_shadow, volatile S_BB_T *bb_src);
  * @param[in,out] bb_shadow pointer to shadow BB
  * @param[in] bb_src pointer to source BB (the same BB
  *                   initially used for making shadow)
- * @return E_OK on success.
+ * @return BB_OK on success.
  */
 int32_t 
 bb_shadow_update_data(S_BB_T *bb_shadow, volatile S_BB_T *bb_src);
@@ -893,7 +894,7 @@ bb_msg_id(volatile S_BB_T *bb);
  * and lost.
  * @param[in,out] bb pointer to BB
  * @param[in,out] msg pointer to message to be sent
- * @return E_OK on success E_NOK otherwise.
+ * @return BB_OK on success BB_NOK otherwise.
  */
 int32_t 
 bb_snd_msg(volatile S_BB_T *bb, S_BB_MSG_T* msg);
@@ -907,7 +908,7 @@ bb_snd_msg(volatile S_BB_T *bb, S_BB_MSG_T* msg);
  *                  The type of the message to be received should be
  *                  be specified on entry in the message structure
  *                  msg->mtype.
- * @return E_OK on success, E_NOK otherwise
+ * @return BB_OK on success, BB_NOK otherwise
  */
 int32_t 
 bb_rcv_msg(volatile S_BB_T *bb, S_BB_MSG_T* msg);
@@ -921,7 +922,7 @@ bb_rcv_msg(volatile S_BB_T *bb, S_BB_MSG_T* msg);
  * @param[in] aliasstack_size the size of the alias stack
  * @param[in] indexstack the index stack 
  * @param[in] indexstack_len the lenth of the index stack
- * @return E_OK on success, E_NOK otherwise
+ * @return BB_OK on success, BB_NOK otherwise
  */
 int32_t
 bb_get_array_name(char * array_name,
@@ -934,7 +935,7 @@ bb_get_array_name(char * array_name,
  * Allow the caller to verify if the message queue is
  * still working.
  * @param[in,out] bb pointer to BB.
- * @return E_OK on success, E_NOK otherwise
+ * @return BB_OK on success, BB_NOK otherwise
  */
 int32_t bb_msgq_isalive(S_BB_T *bb);
 
