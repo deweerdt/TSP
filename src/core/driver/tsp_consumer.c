@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.61 2007-05-12 22:10:41 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.62 2007-07-30 16:25:06 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -46,6 +46,7 @@ Purpose   : Main implementation for the TSP consumer library
 #include <tsp_datastruct.h>
 #include <tsp_time.h>
 #include <tsp_common.h>
+#include <tsp_simple_trace.h>
 
 /* Pool time for network data read (µs) */
 #define TSP_RECEIVER_THREAD_WAIT_FIFO_FULL (2e5)
