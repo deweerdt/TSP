@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_data_sender.c,v 1.27 2007-02-11 21:45:56 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_data_sender.c,v 1.28 2007-07-30 16:25:26 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -323,7 +323,7 @@ TSP_data_sender_send(TSP_data_sender_t _sender, TSP_groups_t _groups, time_stamp
 	   * to multi-type handling 
 	   */
 	  /* STRACE_DEBUG(("Gr=%d V=%f", group_index, *(double*)(group->items[i].data))); */
-	  STRACE_DEBUG(("Gr=%d Ne=%d", group_index, group->items[i].nelem));
+	  STRACE_DEBUG_MORE(("Gr=%d Ne=%d", group_index, group->items[i].nelem));
 	  
 	  /* Call encode function */
 	  assert(group->items[i].data_encoder);
