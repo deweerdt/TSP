@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/misc_utils/tsp_ringbuf.h,v 1.8 2006-10-18 09:58:48 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/misc_utils/tsp_ringbuf.h,v 1.9 2007-07-30 16:24:25 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -47,6 +47,12 @@ Purpose   : fast Ring Buffer
 
 BEGIN_C_DECLS
 
+/**
+ * @defgroup TSP_RingbufLib TSP Ring buffer (macros) 
+ * @ingroup TSP_CommonLib
+ * TSP Ring buffer implemented using MACRO (for efficiency)
+ * @{
+ */
 
 /*
 --
@@ -60,7 +66,8 @@ BEGIN_C_DECLS
 #define RINGBUF_DYNAMIC_SZ
 #endif
 
-/* 
+/**
+ * The ring buffer size should be 4 bytes aligned. 
  * On definit une taille qui soit un multiple
  * de 4 car certaines CPU alignent les structures
  * sur des multiples de 2 octets (MVME 162) et d'autre 
@@ -69,7 +76,10 @@ BEGIN_C_DECLS
 #define RINGBUF_SZ(sz)		((sz) + 1 + (4-(((sz) + 1) % 4)))
 
 
-/* For number x, get the nearest superior or equal number, multiple of base */
+/**
+ * For number \a x, get the nearest superior or equal number, 
+ * multiple of base 
+ */
 #define RINGBUF_MULTSUP(x, base)     (( (base) - ( (x) % (base) )) % (base) + (x) )
 
 #define RINGBUF_DECLARE_TYPE(TypeName, ItemType, sz) \
@@ -235,6 +245,7 @@ BEGIN_C_DECLS
   {									\
     int mul_offset =  RINGBUF_MULTSUP((sizeof(ItemType) + nbSpareBytes),sizeof(ItemType)) / sizeof(ItemType); \
     name = (TypeName*)malloc(sizeof(TypeName) + (sizeof(ItemType) * mul_offset  * sz)); \
+    STRACE_DEBUG(("RINGBUF_PTR_INIT request %d Kbytes (sizeof(" #TypeName ")=%d,sizeof(" #ItemType ")=%d,mul_offset=%d,sz=%d)",(sizeof(TypeName) + (sizeof(ItemType) *mul_offset  * sz))/1024,sizeof(TypeName),sizeof(ItemType),mul_offset,sz)); \
     if(NULL!=name) {							\
       (name)->size   = sz;						\
       (name)->put   = 0;						\
@@ -353,6 +364,8 @@ BEGIN_C_DECLS
 		: \
 			(name)->get - (name)->put \
 	)
+
+/** @} end group TSP_RingbufLib */ 
 
 END_C_DECLS
 
