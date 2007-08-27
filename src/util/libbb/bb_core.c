@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.44 2007-08-27 15:40:21 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.45 2007-08-27 15:42:48 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -628,9 +628,7 @@ bb_value_write(volatile S_BB_T* bb,
   
   retval = BB_OK;
 
-  if ((NULL != strstr(value,"0x")) | 
-      (NULL != strstr(value,"0X"))
-      ) {
+  if (!strncasecmp(value, "0x", 2)) {
     hexval  = 1;
   } else {
     hexval = 0;
