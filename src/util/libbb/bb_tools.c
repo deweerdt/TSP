@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_tools.c,v 1.34 2007-08-27 15:10:55 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_tools.c,v 1.35 2007-08-27 17:03:16 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -53,6 +53,9 @@ Purpose   : BlackBoard Idiom implementation
 #define BB_TOOLS_C
 #include <bb_tools.h>
 #include <bb_simple.h>
+#if XML2_FOUND
+#include <libxml/xmlreader.h>
+#endif /* XML2_FOUND */
 
 void bbtools_logMsg(FILE * stream, char *fmt, ...)
 {
@@ -574,8 +577,6 @@ int32_t bbtools_write(bbtools_request_t * req)
 
 #if XML2_FOUND
 
-#include <libxml/xmlreader.h>
-
 static int process_node(xmlTextReaderPtr reader, bbtools_request_t * req)
 {
 	const xmlChar *name;
@@ -601,7 +602,6 @@ static int process_node(xmlTextReaderPtr reader, bbtools_request_t * req)
 		printf("n_data %d, max_data_desc_size %d\n", n_data, max_data_desc_size);
 		if (bb_attach(&req->theBB, req->bbname) != BB_OK) {
 			if (bb_create(&req->theBB, req->bbname, n_data, max_data_desc_size) != BB_OK) {
-				puts("aze2");
 				return -1;
 			}
 
@@ -645,78 +645,43 @@ static int process_node(xmlTextReaderPtr reader, bbtools_request_t * req)
 		} else {
 			/*
 			   Then, consider the real variables. Tought part,
-			   as this we need to restore the original values
+			   as we need to restore the original values
 			 */
 			v = bb_publish(req->theBB, &dd);
 			while (i++ < dimension) {
-				int base = 10;
 				char *val;
+				int is_hex = !strncasecmp(value, "0x", 2);
 				val = strtok_r(cur_val, ",", &saveptr);
 				cur_val = NULL;
-				if (val && !strncmp("0x", val, 2)) {
-					val += 2;
-					base = 16;
-				}
 				switch (type) {
-					float strtof(const char *nptr, char **endptr);
-				case E_BB_DOUBLE:
-					*(double *) v = strtod(val, NULL);
-					break;
-				case E_BB_FLOAT:
-					*(float *) v = strtof(val, NULL);
-					break;
-				case E_BB_INT8:
-					*(int8_t *) v = strtol(val, NULL, base);
-					break;
-				case E_BB_INT16:
-					*(int16_t *) v = strtol(val, NULL, base);
-					break;
-				case E_BB_INT32:
-					*(int32_t *) v = strtol(val, NULL, base);
-					break;
-				case E_BB_INT64:
-					*(int64_t *) v = strtoll(val, NULL, base);
-					break;
-				case E_BB_UINT8:
-					*(uint8_t *) v = strtol(val, NULL, base);
-					break;
-				case E_BB_UINT16:
-					*(uint16_t *) v = strtol(val, NULL, base);
-					break;
-				case E_BB_UINT32:
-					*(uint32_t *) v = strtol(val, NULL, base);
-					break;
-				case E_BB_UINT64:
-					*(uint64_t *) v = strtoll(val, NULL, base);
-					break;
-				case E_BB_CHAR:
-				case E_BB_UCHAR:
-					memset(v, 0, dimension);
-					strcpy((char *) v, value);
-					i = dimension;
-					break;
-				case E_BB_USER:
-					{
-						int n;
-						for (n = 0; n < type_size; n++) {
-							*(uint8_t *) v = strtol(val, NULL, base);
-							v = ((int8_t *) v) + 1;
-							val = strtok_r(cur_val, ",", &saveptr);
-							cur_val = NULL;
-							if (val && !strncmp("0x", val, 2)) {
-								val += 2;
-								base = 16;
+					case E_BB_CHAR:
+					case E_BB_UCHAR:
+						memset(v, 0, dimension);
+						strcpy((char *) v, value);
+						i = dimension;
+						break;
+					case E_BB_USER:
+						{
+							int n;
+							for (n = 0; n < type_size; n++) {
+								*(uint8_t *) v = strtol(val, NULL, is_hex ? 16 : 10);
+								v = ((int8_t *) v) + 1;
+								val = strtok_r(cur_val, ",", &saveptr);
+								cur_val = NULL;
+								if (val && !strncmp("0x", val, 2)) {
+									val += 2;
+									is_hex = 1;
+								}
 							}
 						}
+						continue;
+					default:
+						bb_value_direct_write(v, dd, val, is_hex);
+						v = ((int8_t *)v)+type_size;
 					}
-					continue;
-				default:
-					break;
 				}
-				v = ((int8_t *) v) + type_size;
+				free(str_to_free);
 			}
-			free(str_to_free);
-		}
 		free(name);
 		free(value);
 		free(alias_target_str);
@@ -790,24 +755,17 @@ int32_t bbtools_dump(bbtools_request_t * req)
 	struct classic_printer_priv classic_priv;
 	struct bb_printer printer;
 	char format[BB_PRINTER_OPT_NAME_LEN];
-	FILE *saved_stream = req->stream;
-	int i;
-	unsigned char buf[4096];
-	int rd_bytes;
-	int fd, fd_out;
-
-	req->stream = tmpfile();
 
 	printer.priv = &classic_priv;
 	classic_priv.fp = req->stream;
 
 	if (req->argc < 1) {
-		bbtools_logMsg(saved_stream, "%s: <%d> argument missing\n", bbtools_cmdname_tab[E_BBTOOLS_DUMP], 1 - req->argc);
+		bbtools_logMsg(req->stream, "%s: <%d> argument missing\n", bbtools_cmdname_tab[E_BBTOOLS_DUMP], 1 - req->argc);
 		bbtools_usage(req);
 		return -1;
 	}
 	if (req->verbose) {
-		bbtools_logMsg(saved_stream, "%s: dump BB <%s>\n", bbtools_cmdname_tab[E_BBTOOLS_DUMP], req->bbname);
+		bbtools_logMsg(req->stream, "%s: dump BB <%s>\n", bbtools_cmdname_tab[E_BBTOOLS_DUMP], req->bbname);
 	}
 
 	strcpy(format, "classic");
@@ -815,23 +773,13 @@ int32_t bbtools_dump(bbtools_request_t * req)
 		strcpy(format, req->argv[1]);
 	}
 	printer.ops = get_printer_ops_from_format(format);
+
 	if (!printer.ops) {
-		bbtools_logMsg(saved_stream, "%s: unknown dump format <%s>\n", bbtools_cmdname_tab[E_BBTOOLS_DUMP], format);
+		bbtools_logMsg(req->stream, "%s: unknown dump format <%s>\n", bbtools_cmdname_tab[E_BBTOOLS_DUMP], format);
 		return -1;
 	}
 
 	retcode = bb_dump(req->theBB, &printer);
-
-	fseek(req->stream, 0L, SEEK_SET);
-	write(fd_out, "\n", strlen("\n"));
-
-	/* write the file */
-	do {
-		rd_bytes = read(fd, buf, sizeof(buf));
-		if (rd_bytes > 0)
-			write(fd_out, buf, rd_bytes);
-	} while (rd_bytes == sizeof(buf));
-	fclose(req->stream);
 
 	return retcode;
 }/* end of bbtools_dump */
