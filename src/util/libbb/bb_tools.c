@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_tools.c,v 1.33 2007-08-27 14:55:38 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_tools.c,v 1.34 2007-08-27 15:10:55 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -53,7 +53,6 @@ Purpose   : BlackBoard Idiom implementation
 #define BB_TOOLS_C
 #include <bb_tools.h>
 #include <bb_simple.h>
-#include <bb_sha1.h>
 
 void bbtools_logMsg(FILE * stream, char *fmt, ...)
 {
@@ -796,10 +795,7 @@ int32_t bbtools_dump(bbtools_request_t * req)
 	unsigned char buf[4096];
 	int rd_bytes;
 	int fd, fd_out;
-	unsigned char sha1_digest[SHA1HashSize];
-	SHA1Context ctx;
 
-	SHA1Reset(&ctx);
 	req->stream = tmpfile();
 
 	printer.priv = &classic_priv;
@@ -826,33 +822,10 @@ int32_t bbtools_dump(bbtools_request_t * req)
 
 	retcode = bb_dump(req->theBB, &printer);
 
-	/* compute sha1 sum */
 	fseek(req->stream, 0L, SEEK_SET);
-	fd = fileno(req->stream);
-	fd_out = fileno(saved_stream);
-	do {
-		rd_bytes = read(fd, buf, sizeof(buf));
-		SHA1Input(&ctx, buf, rd_bytes);
-	} while (rd_bytes == sizeof(buf));
-	SHA1Result(&ctx, sha1_digest);
-
-	fseek(req->stream, 0L, SEEK_SET);
-	/* write sha1 comment on top of file */
-	if (!strcmp(format, "xml")) {
-		write(fd_out, "<!-- ", strlen("<!-- "));
-	}
-	write(fd_out, "sha1=", strlen("sha1="));
-	for (i = 0; i < SHA1HashSize; i++) {
-		char byte[2];
-		sprintf(byte, "%02x", sha1_digest[i]);
-		write(fd_out, byte, strlen(byte));
-	}
-	if (!strcmp(format, "xml")) {
-		write(fd_out, " -->", strlen(" -->"));
-	}
 	write(fd_out, "\n", strlen("\n"));
 
-	/* write the rest of the file */
+	/* write the file */
 	do {
 		rd_bytes = read(fd, buf, sizeof(buf));
 		if (rd_bytes > 0)
