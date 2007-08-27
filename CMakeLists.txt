@@ -188,15 +188,6 @@ ENDIF (BUILD_XMLRPC)
 # for building your own CMake module
 #
 
-################ OpenSSL Check ####################
-MESSAGE(STATUS "Looking for openssl")
-FIND_PACKAGE(OpenSSL)
-IF (OPENSSL_FOUND)
-  ADD_DEFINITIONS(-DOPENSSL_FOUND)
-  MESSAGE(STATUS "Looking for openssl - found")
-ELSE (OPENSSL_FOUND)
-  MESSAGE(STATUS "Looking for openssl - not found")
-ENDIF (OPENSSL_FOUND)
 ################ Open GL Check ####################
 MESSAGE(STATUS "Looking for OpenGL")
 FIND_PACKAGE(OpenGL)
