@@ -25,12 +25,19 @@ TSP releases should be done with the following steps:
    SET(PACKAGE_VERSION_MINOR "8")
    SET(PACKAGE_VERSION_PATCH "3")
 
-4) commit the modified files
+4) Reset the rpm build number to 1 in the src/scripts/tsp.spec.in file
+   [for example:]
+   modify
+	Release:        2
+   to
+	Release:        1
+
+5) commit the modified files
    tsp/src/Version.Readme
    tsp/CMakeLists.txt
    with a meaningfull comment saying you are preparing a tsp version
 
-5) Do a fresh checkout somewhere
+6) Do a fresh checkout somewhere
    Build tsp from your pristine source tree
    --- remember that TSP currently only build out-of-source ---
 
@@ -38,7 +45,7 @@ TSP releases should be done with the following steps:
          Linux ix86 wth gcc  (32bits)
          Windows win32 with Visual Studio 2003
 
-6) Run autotests :))
+7) Run autotests :))
    Which means for today run as many tests as you can do
          - Linux (tsp_stub_server, tsp_stdout_client,
                   tsp_ascii_writer, tsp_gdisp, targa, tspfs, 
@@ -46,7 +53,7 @@ TSP releases should be done with the following steps:
            The time you have is your only enemy here...
          - Win32 (tsp_stub_server, tsp_stdout_client)
 
-7) Tag tsp tree with appropriate version
+8) Tag tsp tree with appropriate version
 
    cvs tag TSP_0_8_3 tsp
 
@@ -62,18 +69,18 @@ TSP releases should be done with the following steps:
    force the tag on it:
    cvs tag -F TSP_0_8_3 tsp/Changelog
 
-8) Make tsp packages using cpack
+9) Make tsp packages using cpack
      - tar.gz (sources and binaries) [mandatory]
      - RPM (sources and binaries)    [optional]
      - .deb (coming soon)            [optional]
      - Win32 NSIS binary installer   [recommended]
 
-8) Tests your packages or ask for help to test them
+10) Tests your packages or ask for help to test them
    on tsp-devel
    Fix packaging trouble if any and move the previous tag 
    if any commit occured.
 
-9) digitally sign the packages you made and put them
+11) digitally sign the packages you made and put them
    in the download area:
    https://savannah.gnu.org/maintenance/DownloadArea
 
@@ -106,10 +113,10 @@ tsp/tsp-x.y.z/documentations
 contains symlinks to tsp/documentations/*
 >>>>>>>>>>>>>>>>>>>>>>   
 
-10) Check is the download area has been properly updated
+12) Check is the download area has been properly updated
      http://download.savannah.nongnu.org/releases/tsp/
 
-11) post the appropriate news on Savannah TSP pages
+13) post the appropriate news on Savannah TSP pages
    https://savannah.nongnu.org/news/submit.php?group=tsp
 
    DON'T MAIL to tsp-devel since news are 
