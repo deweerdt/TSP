@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.42 2007-05-15 19:08:57 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.43 2007-08-27 15:35:54 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -563,14 +563,12 @@ bb_value_direct_write(void* data, S_BB_DATADESC_T data_desc, const char* value, 
   retval = BB_OK;
 
   switch (data_desc.type) {
-#ifndef __KERNEL__
   case E_BB_DOUBLE: 
     ((double *)data)[0] = atof(value);
     break;
   case E_BB_FLOAT:
     ((float *)data)[0] = atof(value);
     break;
-#endif
   case E_BB_INT8:
     ((int8_t*)data)[0] = strtol(value,(char **)NULL,hexval ? 16 : 10);
     break; 
