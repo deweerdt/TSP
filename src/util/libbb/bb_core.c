@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.43 2007-08-27 15:35:54 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.44 2007-08-27 15:40:21 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -624,18 +624,14 @@ bb_value_write(volatile S_BB_T* bb,
   char* data;
   int retval;
   int hexval;
-  int lenval;
   assert(bb);
   
   retval = BB_OK;
-
-  lenval = strlen(value);
 
   if ((NULL != strstr(value,"0x")) | 
       (NULL != strstr(value,"0X"))
       ) {
     hexval  = 1;
-    lenval -= 2;
   } else {
     hexval = 0;
   }
