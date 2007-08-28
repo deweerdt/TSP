@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_group.c,v 1.11 2006-10-21 08:48:00 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_group.c,v 1.12 2007-08-28 09:44:30 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -116,7 +116,7 @@ TSP_group_create_group_table(const TSP_sample_symbol_info_list_t* symbols, int g
 	  if(group_id == symbols->TSP_sample_symbol_info_list_t_val[i].provider_group_index)
 	    {
 	      
-	      table->groups[group_id].items[rank].symbol_info = &(symbols->TSP_sample_symbol_info_list_t_val[i]);
+	      memcpy(&table->groups[group_id].items[rank].symbol_info, &symbols->TSP_sample_symbol_info_list_t_val[i], sizeof(symbols->TSP_sample_symbol_info_list_t_val[i]));
 	      table->groups[group_id].items[rank].provider_global_index = symbols->TSP_sample_symbol_info_list_t_val[i].provider_global_index;
 
 	      /*find the dat type and decode and load  the data */

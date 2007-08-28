@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_group_data.h,v 1.8 2006-04-07 10:37:17 morvan Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_group_data.h,v 1.9 2007-08-28 09:44:30 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -50,7 +50,7 @@ for performance reason may include this header
 
 struct TSP_group_item_t
 {
-  TSP_sample_symbol_info_t* symbol_info;
+  TSP_sample_symbol_info_t symbol_info;
   int provider_global_index;
 
   int sizeof_encoded_item;

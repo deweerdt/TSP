@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_data_receiver.c,v 1.28 2007-02-10 18:49:37 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_data_receiver.c,v 1.29 2007-08-28 09:44:29 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -216,7 +216,7 @@ int TSP_data_receiver_receive(TSP_data_receiver_t _receiver,
 		     
 		       /* decode received data */
 		      ret = (groups[group_index].items[rank].data_decoder)(groups[group_index].decode_buffer,
-									   groups[group_index].items[rank].symbol_info->nelem,
+									   groups[group_index].items[rank].symbol_info.nelem,
 									   in_buf);
 		      if(!ret)
 			{
@@ -229,8 +229,8 @@ int TSP_data_receiver_receive(TSP_data_receiver_t _receiver,
 		       * for scalar offset should be 0 and nelem = dimension = 1
 		       * 
 		       */
-		      for(i=groups[group_index].items[rank].symbol_info->offset;
-			  i < groups[group_index].items[rank].symbol_info->offset+groups[group_index].items[rank].symbol_info->nelem;
+		      for(i=groups[group_index].items[rank].symbol_info.offset;
+			  i < groups[group_index].items[rank].symbol_info.offset+groups[group_index].items[rank].symbol_info.nelem;
 			  ++i)
 		      {
 
@@ -243,8 +243,8 @@ int TSP_data_receiver_receive(TSP_data_receiver_t _receiver,
 			/*---------------*/
 
 
-		        sample->type=groups[group_index].items[rank].symbol_info->type;
-		        switch( groups[group_index].items[rank].symbol_info->type) {
+		        sample->type=groups[group_index].items[rank].symbol_info.type;
+		        switch( groups[group_index].items[rank].symbol_info.type) {
 			case TSP_TYPE_DOUBLE :
 			  sample->uvalue.double_value= ((double *)groups[group_index].decode_buffer)[i];
 			  break;

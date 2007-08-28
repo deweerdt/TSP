@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.62 2007-07-30 16:25:06 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.63 2007-08-28 09:44:30 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -778,6 +778,7 @@ TSP_consumer_request_information(TSP_provider_t provider) {
   TSP_request_information_t req_info;
   TSP_answer_sample_t* ans_sample = 0;
   int32_t retcode = TSP_STATUS_ERROR_UNKNOWN;
+  int i;
 	
   STRACE_REQUEST(("INFORMATION"));	
   TSP_CHECK_SESSION(otsp, TSP_STATUS_ERROR_INVALID_CHANNEL_ID);
@@ -820,8 +821,13 @@ TSP_consumer_request_information(TSP_provider_t provider) {
       STRACE_ERROR(("Unable to store answer information in session"));
     }
   }
-			
-  return retcode;	
+
+  for(i=0; i < ans_sample->symbols.TSP_sample_symbol_info_list_t_len; i++) {
+	  free(ans_sample->symbols.TSP_sample_symbol_info_list_t_val[i].name);
+  }
+  free(ans_sample->symbols.TSP_sample_symbol_info_list_t_val);
+
+  return retcode;
 } /* TSP_consumer_request_information */
 
 
@@ -991,6 +997,7 @@ TSP_consumer_request_sample(TSP_provider_t provider, TSP_sample_symbol_info_list
   int32_t retcode = TSP_STATUS_ERROR_UNKNOWN;
   TSP_answer_sample_t* ans_sample = 0;
   TSP_request_sample_t req_sample;
+  int i;
   
   STRACE_REQUEST(("SAMPLE"));		
   TSP_CHECK_SESSION(otsp, TSP_STATUS_ERROR_INVALID_CHANNEL_ID);
@@ -1063,6 +1070,10 @@ TSP_consumer_request_sample(TSP_provider_t provider, TSP_sample_symbol_info_list
 	    STRACE_ERROR(("Function TSP_group_create_group_table failed"));	   
     }
   }
+  for(i=0; i < ans_sample->symbols.TSP_sample_symbol_info_list_t_len; i++) {
+	  free(ans_sample->symbols.TSP_sample_symbol_info_list_t_val[i].name);
+  }
+  free(ans_sample->symbols.TSP_sample_symbol_info_list_t_val);
   return retcode;
 } /* end of TSP_consumer_request_sample */
 
@@ -1138,7 +1149,8 @@ TSP_consumer_request_sample_init(TSP_provider_t provider, TSP_sample_callback_t 
       
     /* Create the data receiver */
     otsp->receiver = TSP_data_receiver_create(ans_sample->data_address, callback, user_data);
-      
+    free(ans_sample->data_address);
+
       if(otsp->receiver)
 	{
 	  int status;
