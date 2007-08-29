@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.45 2007-08-27 15:42:48 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.46 2007-08-29 14:10:00 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -665,7 +665,7 @@ bb_data_header_print_xml(struct bb_printer *bp, S_BB_DATADESC_T data_desc, int32
   fprintf(priv->fp,"alias_target=\"%d\" ", data_desc.alias_target);
   fprintf(priv->fp,"type=\"%d\" ", data_desc.type);
   fprintf(priv->fp,"dimension=\"%d\" ",data_desc.dimension);
-  fprintf(priv->fp,"type_size=\"%d\"  ",data_desc.type_size);
+  fprintf(priv->fp,"type_size=\"%zd\"  ",data_desc.type_size);
   fprintf(priv->fp,"data_offset=\"%ld\" ",data_desc.data_offset);
   if ((idx>=0) &&
       ((E_BB_UCHAR != data_desc.type) &&
@@ -698,7 +698,7 @@ bb_data_header_print(struct bb_printer *bp, S_BB_DATADESC_T data_desc, int32_t i
   fprintf(priv->fp,"%s  alias-target = %d\n", tabs, data_desc.alias_target);
   fprintf(priv->fp,"%s  type         = %d  (%s)\n",tabs,data_desc.type,E_BB_2STRING[data_desc.type]);
   fprintf(priv->fp,"%s  dimension    = %d  \n",tabs,data_desc.dimension);
-  fprintf(priv->fp,"%s  type_size    = %d  \n",tabs,data_desc.type_size);
+  fprintf(priv->fp,"%s  type_size    = %zd  \n",tabs,data_desc.type_size);
   fprintf(priv->fp,"%s  data_offset  = %ld \n",tabs,data_desc.data_offset);
   if ((idx>=0) && 
       ((E_BB_UCHAR != data_desc.type) &&
@@ -1014,7 +1014,7 @@ bb_destroy(S_BB_T** bb) {
   assert(*bb);  
   /* 
    * On signale la destruction en cours pour les processes qui
-   * resteraient attachés
+   * resteraient attachï¿½s
    */
   (*bb)->status = BB_STATUS_DESTROYED;
   retcode = ops[(*bb)->type]->bb_sem_destroy(*bb);
@@ -1235,17 +1235,17 @@ bb_header_print(struct bb_printer *printer, volatile S_BB_T *bb)
 {
 	struct classic_printer_priv *priv = printer->priv;
 	fprintf(priv->fp,"============= <[begin] BlackBoard [%s] [begin] > ===============\n", bb->name);
-	fprintf(priv->fp,"  @start blackboard    = 0x%x\n",(unsigned int) (bb));
+	fprintf(priv->fp,"  @start blackboard    = 0x%zx\n",(uintptr_t) (bb));
 	fprintf(priv->fp,"  stored data          = %d / %d [max desc]\n",
 			bb->n_data,
 			bb->max_data_desc_size);
 	fprintf(priv->fp,"  free data size       = %ld / %ld\n",
 			bb->max_data_size - bb->data_free_offset,
 			bb->max_data_size);  
-	fprintf(priv->fp,"  @data_desc           = 0x%x\n",
-			(unsigned int) (bb_data_desc(bb)));
-	fprintf(priv->fp,"  @data                = 0x%x\n",
-			(unsigned int) (bb_data(bb)));
+	fprintf(priv->fp,"  @data_desc           = 0x%zx\n",
+			(uintptr_t) (bb_data_desc(bb)));
+	fprintf(priv->fp,"  @data                = 0x%zx\n",
+			(uintptr_t) (bb_data(bb)));
 	fprintf(priv->fp,"================ < [begin] Data [begin] > ==================\n");
 	return 0;
 }
