@@ -1,6 +1,6 @@
 /*
 
-$Id: client_callback_stdout.c,v 1.5 2006-04-24 22:17:47 erk Exp $
+$Id: client_callback_stdout.c,v 1.6 2007-08-30 08:27:46 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -41,23 +41,24 @@ The callback function is used to harvest data
 #include "tsp_consumer.h"
 
 #include "calc_func.h"
+#include "tsp_time.h"
 
 /*#include "fortify.h"*/
 
 static int test_mode = 0;
 static TSP_provider_t* providers = 0;
-static test_is_finished = FALSE;
+static int test_is_finished = FALSE;
 static int all_data_ok = TRUE;
 
 /* Number of samples  that will be counted before the data check test pass */
 #define TSP_TEST_COUNT_SAMPLES 200*1000
-#define TSP_NANOSLEEP_PERIOD_US (100*1000) /*µS*/
+#define TSP_NANOSLEEP_PERIOD_US (100*1000) /*ï¿½S*/
 
 #define USER_DATA "Hi ! I'm the user data that'll be used for the callback user data test ! "
 
 void test_callback(TSP_sample_t* sample, void* user_data){
 
-  static int i;int j;
+  static int i;
   static int t = -1000;  
   static int count_samples = 0;
 
@@ -102,15 +103,13 @@ int main(int argc, char *argv[]){
 
   const TSP_answer_sample_t*  information;
   TSP_sample_symbol_info_list_t symbols;
-
-  int i, j, count=0;
+  
+  int i;
   int nb_providers;
   int period=0;
   char* name;
 
   char symbol_buf[50];
-  int test_ok = TRUE;
-
 
   /*Fortify_EnterScope();*/
   printf ("#===========================================================================#\n");
@@ -137,7 +136,7 @@ int main(int argc, char *argv[]){
       return -1;
     }
 
- once_again:
+/* FIXME who does ever used this label ? once_again: */
   
   /*-------------------------------------------------------------------------------------------------------*/ 
   /* TEST : STAGE 001 | STEP 001 */
