@@ -40,6 +40,12 @@ ADD_CUSTOM_COMMAND(
 SET(ASCII_SRC ${ASCII_SRC}
 ${ASCII_YACC_OUTPUT})
 
+ #inhibit compiler warning for generated files
+ IF (CMAKE_COMPILER_IS_GNUCC)
+     SET_SOURCE_FILES_PROPERTIES(${ASCII_LEX_OUTPUT} ${ASCII_YACC_OUTPUT}
+	                            PROPERTIES COMPILE_FLAGS "-w")
+ ENDIF(CMAKE_COMPILER_IS_GNUCC) 	    
+
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/src/consumers/ascii_writer/)
 
 ADD_EXECUTABLE(tsp_ascii_writer-bin ${ASCII_WRITER_SRC})
