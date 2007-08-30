@@ -111,11 +111,23 @@ MACRO(ONCRPC_SETUP)
    ${RPC_GENERATED_FILE_PREFIX}_clnt.c
    ${RPC_GENERATED_FILE_PREFIX}_xdr.c
    ${RPC_GENERATED_FILE_PREFIX}.h)
- 
+   
+ #inhibit compiler warning for generated files
+ IF (CMAKE_COMPILER_IS_GNUCC)
+     SET_SOURCE_FILES_PROPERTIES(${${RPC_PREFIX}_RPCGEN_OUTPUT_CLNT} 
+	                            PROPERTIES COMPILE_FLAGS "-w")
+ ENDIF(CMAKE_COMPILER_IS_GNUCC) 	                            
+	                            
  SET(${RPC_PREFIX}_RPCGEN_OUTPUT_SVC
    ${RPC_GENERATED_FILE_PREFIX}_svc.c
    ${RPC_GENERATED_FILE_PREFIX}_xdr.c
    ${RPC_GENERATED_FILE_PREFIX}.h)
+   
+ #inhibit compiler warning for generated files
+ IF (CMAKE_COMPILER_IS_GNUCC)
+     SET_SOURCE_FILES_PROPERTIES(${${RPC_PREFIX}_RPCGEN_OUTPUT_SVC} 
+	                            PROPERTIES COMPILE_FLAGS "-w")
+ ENDIF(CMAKE_COMPILER_IS_GNUCC) 
 
  ADD_CUSTOM_TARGET(${RPC_PREFIX}_rpcgen_exec_svc
    DEPENDS ${${RPC_PREFIX}_RPCGEN_OUTPUT_SVC}
