@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_server.c,v 1.33 2006-10-21 08:48:00 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_server.c,v 1.34 2007-08-30 15:14:43 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -299,27 +299,27 @@ static void TSP_rpc_stop(TSP_rpc_request_config_t *config)
     }
 }
 
-int TSP_rpc_request(TSP_provider_request_handler_t* this)
+int TSP_rpc_request(TSP_provider_request_handler_t* cthis)
 {
-  this->config             = TSP_rpc_request_config;
-  this->run                = TSP_rpc_request_run;
-  this->stop               = TSP_rpc_request_stop;
-  this->url                = TSP_rpc_request_url;
+  cthis->config             = TSP_rpc_request_config;
+  cthis->run                = TSP_rpc_request_run;
+  cthis->stop               = TSP_rpc_request_stop;
+  cthis->url                = TSP_rpc_request_url;
 #if defined (WIN32)
   /* structure pthread_t different under Windows */
   this->tid.p              = -1;
 #else
-  this->tid                = (pthread_t)-1;
+  cthis->tid                = (pthread_t)-1;
 #endif
-  this->config_param       = calloc(1, sizeof(TSP_rpc_request_config_t));
+  cthis->config_param       = calloc(1, sizeof(TSP_rpc_request_config_t));
 
-  this->status             = TSP_RQH_STATUS_IDLE;
+  cthis->status             = TSP_RQH_STATUS_IDLE;
   return TRUE;
 }
 
-int TSP_rpc_request_config(TSP_provider_request_handler_t* this)
+int TSP_rpc_request_config(TSP_provider_request_handler_t* cthis)
 {
-  TSP_rpc_request_config_t *config = (TSP_rpc_request_config_t *)(this->config_param);
+  TSP_rpc_request_config_t *config = (TSP_rpc_request_config_t *)(cthis->config_param);
   char  hostname[MAXHOSTNAMELEN+1];
   char* servername;
   int  hostnameOk;
@@ -339,7 +339,7 @@ int TSP_rpc_request_config(TSP_provider_request_handler_t* this)
   config->server_number = TSP_rpc_init(config);
   if(config->server_number < 0) {
       STRACE_ERROR(("unable to register any RPC progid :\n\tcheck RPC daemons, or use tsp_rpc_cleanup to clean-up all TSP RPC port mapping"));
-      this->status = TSP_RQH_STATUS_IDLE;
+      cthis->status = TSP_RQH_STATUS_IDLE;
       
       return FALSE;
   }
@@ -365,7 +365,7 @@ int TSP_rpc_request_config(TSP_provider_request_handler_t* this)
     sprintf(config->url, /* TSP_URL_MAXLENGTH, pour snprintf quand Solaris 2.5 sera mort */
 	    TSP_URL_FORMAT, TSP_RPC_PROTOCOL, hostname, servername, config->server_number);
     
-    this->status = TSP_RQH_STATUS_CONFIGURED;
+    cthis->status = TSP_RQH_STATUS_CONFIGURED;
     
     return TRUE;
   }
@@ -374,38 +374,38 @@ int TSP_rpc_request_config(TSP_provider_request_handler_t* this)
 
 
 
-void* TSP_rpc_request_run(TSP_provider_request_handler_t* this)
+void* TSP_rpc_request_run(void* cthis)
 {
-
-  TSP_rpc_request_config_t *config = (TSP_rpc_request_config_t *)(this->config_param);
+  TSP_provider_request_handler_t* rthis = (TSP_provider_request_handler_t*) cthis;
+  TSP_rpc_request_config_t *config = (TSP_rpc_request_config_t *)(rthis->config_param);
 
   /* pthread_detach(pthread_self()); */ /* FIXME shoudl we do this */ 
 
   if(config->server_number >= 0)
     {
-      this->status = TSP_RQH_STATUS_RUNNING;
+      rthis->status = TSP_RQH_STATUS_RUNNING;
       TSP_rpc_run(config);
-      this->status = TSP_RQH_STATUS_IDLE;
+      rthis->status = TSP_RQH_STATUS_IDLE;
    }
 
   return (void*)NULL;
 } /* end of TSP_rpc_request_run */
 
-char *TSP_rpc_request_url(TSP_provider_request_handler_t* this)
+char *TSP_rpc_request_url(TSP_provider_request_handler_t* cthis)
 {
-  TSP_rpc_request_config_t *config = (TSP_rpc_request_config_t*)(this->config_param);
-  if(this->status == TSP_RQH_STATUS_RUNNING)
+  TSP_rpc_request_config_t *config = (TSP_rpc_request_config_t*)(cthis->config_param);
+  if(cthis->status == TSP_RQH_STATUS_RUNNING)
     return config->url;
   else
     return NULL;
 }
 
-int TSP_rpc_request_stop(TSP_provider_request_handler_t* this)
+int TSP_rpc_request_stop(TSP_provider_request_handler_t* cthis)
 {
-  TSP_rpc_request_config_t *config = (TSP_rpc_request_config_t*)(this->config_param);
+  TSP_rpc_request_config_t *config = (TSP_rpc_request_config_t*)(cthis->config_param);
   
   TSP_rpc_stop(config);
-  this->status = TSP_RQH_STATUS_STOPPED;
+  cthis->status = TSP_RQH_STATUS_STOPPED;
 
   return TRUE;
 } /* end of TSP_rpc_request_stop */

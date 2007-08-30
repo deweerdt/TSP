@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_server.h,v 1.11 2006-10-18 09:58:48 erk Exp $
+$Id: tsp_server.h,v 1.12 2007-08-30 15:14:42 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -51,7 +51,7 @@ Purpose   :
 
 int TSP_rpc_request(TSP_provider_request_handler_t* cthis);
 int TSP_rpc_request_config(TSP_provider_request_handler_t* cthis);
-void* TSP_rpc_request_run(TSP_provider_request_handler_t* cthis);
+void* TSP_rpc_request_run(void* cthis);
 int TSP_rpc_request_stop(TSP_provider_request_handler_t* cthis);
 char* TSP_rpc_request_url(TSP_provider_request_handler_t* cthis);
 
