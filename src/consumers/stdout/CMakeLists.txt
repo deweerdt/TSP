@@ -2,6 +2,7 @@ SET(EXE_NAME tsp_stdout_client)
 
 SET(STDOUT_SRC client_stdout)
 
+INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/src//util/libcalc)
 IF (WIN32)
     INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/external/TspWin32)
 ENDIF (WIN32)

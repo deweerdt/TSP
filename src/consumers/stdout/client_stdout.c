@@ -1,6 +1,6 @@
 /*
 
-$Id: client_stdout.c,v 1.15 2007-03-29 20:42:53 deweerdt Exp $
+$Id: client_stdout.c,v 1.16 2007-08-30 15:26:25 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -47,6 +47,8 @@ Purpose   : Simple consumer test that print samples received to stdout
 #include <tsp_prjcfg.h>
 #include <tsp_consumer.h>
 #include <tsp_time.h>
+#include "calc_func.h"
+
 
 /**
  * @defgroup TSP_Stdout Stdout Client Consumer
@@ -96,15 +98,14 @@ main(int argc, char *argv[]){
   const TSP_answer_sample_t*  information;
   TSP_sample_symbol_info_list_t symbols;
 
-  int   i, j;
+  int   i;
   int   retcode=0;
   int   period=1;
   char* provider_url;
   int   count_samples;
   int   nb_samples;
   int   nb_symbols;
-  char  symbol_buf[50];
-  int   test_ok = TRUE;
+  char  symbol_buf[50];  
   int   test_mode = 0;
   int   all_data_ok = TRUE;
   TSP_provider_t provider;
@@ -322,8 +323,6 @@ main(int argc, char *argv[]){
   while(1) {
     int new_sample;
     TSP_sample_t sample;
-    int pgi;
-    int j;
     int t;
       
     new_sample = FALSE;
