@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_data_sender.c,v 1.28 2007-07-30 16:25:26 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_data_sender.c,v 1.29 2007-11-02 15:30:13 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -43,6 +43,7 @@ stream  for the asked symbols
 #endif
 
 #include <tsp_sys_headers.h>
+#include <tsp_abs_types.h>
 #include <rpc/types.h>
 #include <rpc/xdr.h>
 #include <tsp_data_sender.h>

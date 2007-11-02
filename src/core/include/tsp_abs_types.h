@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_abs_types.h,v 1.26 2007-01-26 17:09:52 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_abs_types.h,v 1.27 2007-11-02 15:30:12 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -234,6 +234,18 @@ typedef	int32_t	int_least32_t;
 typedef	int64_t	int_least64_t; 
 
 #endif /* OpenBSD / i386 */
+
+/* RTEMS */
+#if defined (TSP_RTEMS)
+# define TSP_BYTE_ORDER TSP_LITTLE_ENDIAN
+# define TSP_SYSTEM_HAVE_NANOSLEEP
+# define TSP_HAVE_INT64 1
+# define TSP_INT64_CONSTANT(val)  (val##LL)
+# define TSP_GUINT64_FORMAT "llu"
+
+#endif /* _TSP_RTEMS_ */
+
+
 
 /*-----------------------------------------------------*/
 

@@ -1,6 +1,6 @@
 /*
  
-$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_const_def.h,v 1.44 2007-02-26 19:30:11 sgalles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_const_def.h,v 1.45 2007-11-02 15:30:13 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -294,7 +294,7 @@ typedef struct  TSP_otsp_server_info_t TSP_otsp_server_info_t;
 	{ \
 		if ( 0 != status ) \
 		{ \
-			STRACE_ERROR(("TSP_CHECK_THREAD : ERROR : Thread API Error"))  \
+			STRACE_ERROR(("TSP_CHECK_THREAD : ERROR : Thread API Error status =%d",status))  \
 			return ret; \
 		} \
 	}	

@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_sys_headers.h,v 1.23 2007-01-29 16:52:39 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_sys_headers.h,v 1.24 2007-11-02 15:30:12 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -67,7 +67,7 @@ int _rpcsvcdirty;
 
 #include <string.h>
 
-#ifndef WIN32
+#if  !defined(WIN32) && !defined(TSP_RTEMS)
 #include <strings.h>
 #endif
 
