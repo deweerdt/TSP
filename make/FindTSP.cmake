@@ -1,4 +1,15 @@
+# - This module looks for TSP installation
+# TSP is an Open Source implementation of Transport Sample Protocol
+# See https://savannah.nongnu.org/projects/tsp or http://www.ts2p.org/
+# If you have a non-standard TSP installation
+# You may help this script to find the appropriate
+# TSP installation by setting TSP_CUSTOM_HOME
+# before calling FIND_PACKAGE(TSP REQUIRED)
+# If TSP_CUSTOM_HOME is not set then TSP is search 
+# if TSP_HOME env var is set
+# then use /usr 
 #
+# Once done this will define:
 # try to find TSP components
 #
 # TSP_INCLUDE_DIRS         - Directories to include to use TSP
@@ -10,16 +21,28 @@
 # TSP_BB_EXECUTABLE_DIRS   - Directories to include to use TSP
 # TSP_BB_FOUND             - If false, don't try to use TSP BlackBoard
 #
+
+MACRO(MESSAGE_QUIETLY QUIET TYPE MSG)
+   IF(NOT ${QUIET})
+       MESSAGE(${TYPE} "${MSG}")
+   ENDIF(NOT ${QUIET})
+ENDMACRO(MESSAGE_QUIETLY QUIET TYPE MSG)
+
 IF (NOT TSP_FIND_QUIETLY)
-  MESSAGE(STATUS "Looking for TSP...")
+  MESSAGE_QUIETLY(TSP_FIND_QUIETLY STATUS "Looking for TSP...")
 ENDIF (NOT TSP_FIND_QUIETLY)
 
 IF (TSP_CUSTOM_HOME)
   SET(TSP_FIND_HOME ${TSP_CUSTOM_HOME})
-  MESSAGE(STATUS "Using TSP_CUSTOM_HOME : ${TSP_FIND_HOME}")
+  MESSAGE_QUIETLY(TSP_FIND_QUIETLY STATUS "Using TSP_CUSTOM_HOME : ${TSP_FIND_HOME}")
 ELSE (TSP_CUSTOM_HOME)
-  SET(TSP_FIND_HOME $ENV{TSP_HOME})
-  MESSAGE(STATUS "Using TSP_HOME : ${TSP_FIND_HOME}")
+  IF ("$ENV{TSP_HOME}" STRGREATER "")
+     SET(TSP_FIND_HOME "$ENV{TSP_HOME}")
+     MESSAGE_QUIETLY(TSP_FIND_QUIETLY STATUS "Using environment defined TSP_HOME : ${TSP_FIND_HOME}")
+  ENDIF ("$ENV{TSP_HOME}" STRGREATER "")
+  IF (NOT TSP_FIND_HOME)
+     SET(TSP_FIND_HOME "/usr")
+  ENDIF (NOT TSP_FIND_HOME)
 ENDIF (TSP_CUSTOM_HOME)
 
 SET(TSP_INCLUDE_DIRS)
@@ -28,8 +51,7 @@ SET(TSP_EXECUTABLE_DIRS)
 
 FIND_PATH(TSP_EXECUTABLE_PATH tsp_stub_server
   ${TSP_FIND_HOME}/bin
-  /opt/tsp/bin
-  NO_DEFAULT_PATH)
+  /opt/tsp/bin)
 
 IF (TSP_EXECUTABLE_PATH)
   SET(TSP_EXECUTABLE_DIRS ${TSP_EXECUTABLE_DIRS} ${TSP_EXECUTABLE_PATH})
@@ -37,8 +59,7 @@ ENDIF(TSP_EXECUTABLE_PATH)
 
 FIND_PATH(TSP_SCRIPTS_PATH tsp.profile.sh
   ${TSP_FIND_HOME}/scripts
-  /opt/tsp/scripts
-  NO_DEFAULT_PATH)
+  /opt/tsp/scripts)
 
 IF (TSP_SCRIPTS_PATH)
   SET(TSP_EXECUTABLE_DIRS ${TSP_EXECUTABLE_DIRS} ${TSP_SCRIPTS_PATH})
@@ -46,8 +67,7 @@ ENDIF(TSP_SCRIPTS_PATH)
 
 FIND_PATH(TSP_INCLUDE_PATH tsp_consumer.h
   ${TSP_FIND_HOME}/include
-  /opt/tsp/include
-  NO_DEFAULT_PATH)
+  /opt/tsp/include)
 
 IF (TSP_INCLUDE_PATH)
   SET(TSP_INCLUDE_DIRS ${TSP_INCLUDE_DIRS} ${TSP_INCLUDE_PATH})
@@ -58,8 +78,7 @@ FIND_LIBRARY(TSP_CONSUMER_LIBRARY
   tsp_consumer
   PATHS
   ${TSP_FIND_HOME}/lib
-  /opt/tsp/lib
-  NO_DEFAULT_PATH)
+  /opt/tsp/lib)
 
 IF (TSP_CONSUMER_LIBRARY) 
   SET(TSP_LIBRARIES ${TSP_LIBRARIES} ${TSP_CONSUMER_LIBRARY})
@@ -77,9 +96,9 @@ MARK_AS_ADVANCED(
 
 IF (NOT TSP_FIND_QUIETLY)
   IF (TSP_FOUND)
-    MESSAGE(STATUS "Looking for TSP... - found ${TSP_INCLUDE_DIRS}")
+    MESSAGE_QUIETLY(TSP_FIND_QUIETLY STATUS "Looking for TSP... - found ${TSP_INCLUDE_DIRS}")
   ELSE (TSP_FOUND)
-    MESSAGE(STATUS "Looking for TSP... - NOT found")
+    MESSAGE_QUIETLY(TSP_FIND_QUIETLY STATUS "Looking for TSP... - NOT found")
   ENDIF (TSP_FOUND)
 ENDIF (NOT TSP_FIND_QUIETLY)
 
@@ -90,7 +109,7 @@ SET(TSP_BB_EXECUTABLE_DIRS)
 FIND_PATH(TSP_BB_EXECUTABLE_PATH bb_tools
   ${TSP_FIND_HOME}/bin
   /opt/tsp/bin
-  NO_DEFAULT_PATH)
+  )
 
 IF (TSP_BB_EXECUTABLE_PATH)
   SET(TSP_BB_EXECUTABLE_DIRS ${TSP_BB_EXECUTABLE_DIRS} ${TSP_BB_EXECUTABLE_PATH})
@@ -99,7 +118,7 @@ ENDIF(TSP_BB_EXECUTABLE_PATH)
 FIND_PATH(TSP_BB_SCRIPTS_PATH bb_read
   ${TSP_FIND_HOME}/scripts
   /opt/tsp/scripts
-  NO_DEFAULT_PATH)
+  )
 
 IF (TSP_BB_SCRIPTS_PATH)
   SET(TSP_BB_EXECUTABLE_DIRS ${TSP_BB_EXECUTABLE_DIRS} ${TSP_BB_SCRIPTS_PATH})
@@ -108,7 +127,7 @@ ENDIF(TSP_BB_SCRIPTS_PATH)
 FIND_PATH(TSP_BB_INCLUDE_PATH bb_core.h
   ${TSP_FIND_HOME}/include
   /opt/tsp/include
-  NO_DEFAULT_PATH)
+  )
 
 IF (TSP_BB_INCLUDE_PATH)
   SET(TSP_BB_INCLUDE_DIRS ${TSP_BB_INCLUDE_DIRS} ${TSP_BB_INCLUDE_PATH})
@@ -120,7 +139,7 @@ FIND_LIBRARY(TSP_BB_LIBRARY
   PATHS
   ${TSP_FIND_HOME}/lib
   /opt/tsp/lib
-  NO_DEFAULT_PATH)
+  )
 
 IF (TSP_BB_LIBRARY) 
   SET(TSP_BB_LIBRARIES ${TSP_BB_LIBRARIES} ${TSP_BB_LIBRARY})
