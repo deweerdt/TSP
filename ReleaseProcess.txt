@@ -126,5 +126,5 @@ contains symlinks to tsp/documentations/*
    approve it before it appears on first page.
 
 
-You are roght this process IS painful and should be automated (a lot...)
+You are right this process IS painful and should be automated (a lot...)
 be sure we are working on it :))
