@@ -27,12 +27,12 @@ IF (UNIX)
     DOC "The RPM builder tool")
   
   IF (RPMTools_RPMBUILD_EXECUTABLE)
-    MESSAGE(STATUS "Looking for RPMTools... - found rpmuild is ${RPMTools_RPMBUILD_EXECUTABLE}")
+    MESSAGE(STATUS "Looking for rpmbuild... - found rpmuild is ${RPMTools_RPMBUILD_EXECUTABLE}")
     SET(RPMTools_RPMBUILD_FOUND "YES")
     GET_FILENAME_COMPONENT(RPMTools_BINARY_DIRS ${RPMTools_RPMBUILD_EXECUTABLE} PATH)
   ELSE (RPMTools_RPMBUILD_EXECUTABLE) 
     SET(RPMTools_RPMBUILD_FOUND "NO")
-    MESSAGE(STATUS "Looking for RPMTools... - rpmbuild NOT FOUND")
+    MESSAGE(STATUS "Looking for rpmbuild... - rpmbuild NOT FOUND")
   ENDIF (RPMTools_RPMBUILD_EXECUTABLE) 
   
   # Detect if CPack was included or not
