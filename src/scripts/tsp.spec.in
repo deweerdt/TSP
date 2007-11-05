@@ -10,7 +10,11 @@ Vendor:		The TSP Team Worldwide
 Source:         %{name}-%{version}-Source.tar.gz
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root
 Requires:	pkgconfig 
-BuildRequires:	cmake @XML2_DEVEL_PACKAGE@ @GTK_DEVEL_PACKAGE@ @FUSE_DEVEL_PACKAGE@ @DOXYGEN_PACKAGE@ @DOXYGEN_DOT_PACKAGE@ @GLUT_DEVEL_PACKAGE@
+BuildRequires:	cmake @XML2_DEVEL_PACKAGE@ @GTK_DEVEL_PACKAGE@ @FUSE_DEVEL_PACKAGE@ @DOXYGEN_PACKAGE@ @DOXYGEN_DOT_PACKAGE@ @GLUT_DEVEL_PACKAGE@ 
+
+
+%define make_apidoc @MAKE_APIDOC@
+
 
 %package apidoc
 Group: 	 Documentation
@@ -37,9 +41,15 @@ cd ..
 rm -rf build_tree
 mkdir build_tree
 cd build_tree
+%if %{make_apidoc}
 cmake -DBUILD_API_DOC:bool=ON -DCMAKE_INSTALL_PREFIX=%{rpmprefix} ../%{tspsrcdirname}
+%else
+cmake -DCMAKE_INSTALL_PREFIX=%{rpmprefix} ../%{tspsrcdirname}
+%endif
 make
+%if %{make_apidoc}
 make apidoc
+%endif
   
 %install 
 cd ../build_tree
@@ -47,12 +57,15 @@ make install
 mkdir -p $RPM_BUILD_ROOT/etc/profile.d
 cp %{rpmprefix}/share/tsp/scripts/tsp.profile.sh $RPM_BUILD_ROOT/etc/profile.d/tsp.sh
 cp %{rpmprefix}/share/tsp/scripts/tsp.profile.csh $RPM_BUILD_ROOT/etc/profile.d/tsp.csh
+%if %{make_apidoc}
 rm -rf %{rpmprefix}/share/doc/tsp
 mkdir -p %{rpmprefix}/share/doc/tsp
 cd doc
 tar cf - api/html | (cd %{rpmprefix}/share/doc/tsp; tar xf -)
 cd %{rpmprefix}/share/doc/tsp/api
-find . -type f | xargs chmod -x
+find . -type f | xargs chmod -xcmake -DBUILD_API_DOC:bool=ON -DCMAKE_INSTALL_PREFIX=%{rpmprefix} ../%{tspsrcdirname}
+
+%endif
 
 %clean
 rm -rf %{tspsrcdirname}
@@ -70,9 +83,11 @@ rm -rf build_tree
 %attr(0755, root, root) %{prefix}/lib/pkgconfig/*
 %attr(0755, root, root) /etc/profile.d/*
 
+%if %{make_apidoc}
 %files apidoc
 %defattr(-,root,root,-)
 %{prefix}/share/doc/tsp
+%endif
 
 %changelog
 * Mon Jun 25 2007 Erk <eric.noulard@gmail.com>
