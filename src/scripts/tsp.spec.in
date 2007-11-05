@@ -63,8 +63,7 @@ mkdir -p %{rpmprefix}/share/doc/tsp
 cd doc
 tar cf - api/html | (cd %{rpmprefix}/share/doc/tsp; tar xf -)
 cd %{rpmprefix}/share/doc/tsp/api
-find . -type f | xargs chmod -xcmake -DBUILD_API_DOC:bool=ON -DCMAKE_INSTALL_PREFIX=%{rpmprefix} ../%{tspsrcdirname}
-
+find . -type f | xargs chmod -x
 %endif
 
 %clean
