@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.46 2007-08-29 14:10:00 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.47 2007-11-06 08:47:02 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -1042,7 +1042,7 @@ bb_data_memset(S_BB_T* bb, const char c) {
 
 int32_t 
 bb_lock(volatile S_BB_T* bb) {
-  return ops[bb->type]->bb_unlock(bb);
+  return ops[bb->type]->bb_lock(bb);
 } /* end of bb_lock */
 
 int32_t 
