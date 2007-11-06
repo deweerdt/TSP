@@ -13,7 +13,7 @@ Requires:	pkgconfig
 BuildRequires:	cmake @XML2_DEVEL_PACKAGE@ @GTK_DEVEL_PACKAGE@ @FUSE_DEVEL_PACKAGE@ @DOXYGEN_PACKAGE@ @DOXYGEN_DOT_PACKAGE@ @GLUT_DEVEL_PACKAGE@ 
 
 
-%define make_apidoc @MAKE_APIDOC@
+%define make_apidoc @RPM_MAKE_APIDOC@
 
 
 %package apidoc
