@@ -62,7 +62,7 @@ build of TSP, in a tool such as cruisecontrol  -->
 
 <!--
 ***********************************************
-Exemple of CruiseControl config.xml configuration file  :
+Example of CruiseControl config.xml configuration file  :
 ***********************************************
 
 <cruisecontrol>
