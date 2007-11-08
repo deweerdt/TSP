@@ -111,24 +111,12 @@ MACRO(ONCRPC_SETUP)
    ${RPC_GENERATED_FILE_PREFIX}_clnt.c
    ${RPC_GENERATED_FILE_PREFIX}_xdr.c
    ${RPC_GENERATED_FILE_PREFIX}.h)
-   
- #inhibit compiler warning for generated files
- IF (CMAKE_COMPILER_IS_GNUCC AND CMAKE_MINOR_VERSION GREATER 5) 
-    SET_SOURCE_FILES_PROPERTIES(${${RPC_PREFIX}_RPCGEN_OUTPUT_CLNT} 
-	                            PROPERTIES COMPILE_FLAGS "-w")
- ENDIF(CMAKE_COMPILER_IS_GNUCC AND CMAKE_MINOR_VERSION GREATER 5) 	                            
-	                            
+                          	                            
  SET(${RPC_PREFIX}_RPCGEN_OUTPUT_SVC
    ${RPC_GENERATED_FILE_PREFIX}_svc.c
    ${RPC_GENERATED_FILE_PREFIX}_xdr.c
    ${RPC_GENERATED_FILE_PREFIX}.h)
    
- #inhibit compiler warning for generated files
- IF (CMAKE_COMPILER_IS_GNUCC AND CMAKE_MINOR_VERSION GREATER 5)
-     SET_SOURCE_FILES_PROPERTIES(${${RPC_PREFIX}_RPCGEN_OUTPUT_SVC} 
-	                            PROPERTIES COMPILE_FLAGS "-w")
- ENDIF(CMAKE_COMPILER_IS_GNUCC AND CMAKE_MINOR_VERSION GREATER 5) 
-
  ADD_CUSTOM_TARGET(${RPC_PREFIX}_rpcgen_exec_svc
    DEPENDS ${${RPC_PREFIX}_RPCGEN_OUTPUT_SVC}
    )
@@ -220,6 +208,19 @@ MACRO(ONCRPC_SETUP)
    ENDIF (ONCRPC_RPCGEN_FOUND)
    
  ENDIF (WIN32)
+ #inhibit compiler warning for generated files
+ # Note that the inhibition is COMPILER dependent ...
+ IF (CMAKE_PATCH_VERSION GREATER 3)
+    # GNU CC specific warning stop
+    IF (CMAKE_COMPILER_IS_GNUCC) 
+      MESSAGE(STATUS "INHIBIT Compiler warning for  generated files")
+      SET_SOURCE_FILES_PROPERTIES(${${RPC_PREFIX}_RPCGEN_OUTPUT_CLNT} 
+	                                                            PROPERTIES COMPILE_FLAGS "-w -Wno-unused")
+	                            
+	  SET_SOURCE_FILES_PROPERTIES(${${RPC_PREFIX}_RPCGEN_OUTPUT_SVC} 
+	                                                           PROPERTIES COMPILE_FLAGS "-w -Wno-unused") 
+    ENDIF(CMAKE_COMPILER_IS_GNUCC)
+  ENDIF(CMAKE_PATCH_VERSION GREATER 3) 	     
 ENDMACRO(ONCRPC_SETUP)
 
 MARK_AS_ADVANCED(
