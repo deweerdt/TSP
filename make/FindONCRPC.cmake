@@ -210,7 +210,6 @@ MACRO(ONCRPC_SETUP)
  ENDIF (WIN32)
  #inhibit compiler warning for generated files
  # Note that the inhibition is COMPILER dependent ...
- IF (CMAKE_PATCH_VERSION GREATER 3)
     # GNU CC specific warning stop
     IF (CMAKE_COMPILER_IS_GNUCC) 
       MESSAGE(STATUS "INHIBIT Compiler warning for  generated files")
@@ -219,8 +218,7 @@ MACRO(ONCRPC_SETUP)
 	                            
 	  SET_SOURCE_FILES_PROPERTIES(${${RPC_PREFIX}_RPCGEN_OUTPUT_SVC} 
 	                                                           PROPERTIES COMPILE_FLAGS "-w -Wno-unused") 
-    ENDIF(CMAKE_COMPILER_IS_GNUCC)
-  ENDIF(CMAKE_PATCH_VERSION GREATER 3) 	     
+    ENDIF(CMAKE_COMPILER_IS_GNUCC) 	     
 ENDMACRO(ONCRPC_SETUP)
 
 MARK_AS_ADVANCED(
