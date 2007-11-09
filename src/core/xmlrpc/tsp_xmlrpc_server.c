@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/xmlrpc/tsp_xmlrpc_server.c,v 1.24 2007-02-28 22:01:43 sgalles Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/xmlrpc/tsp_xmlrpc_server.c,v 1.25 2007-11-09 23:20:41 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -110,7 +110,7 @@ xmlrpc_value * tsp_request_open_xmlrpc(xmlrpc_env *env, xmlrpc_value *param_arra
 }
 
 
-void *tsp_request_close_xmlrpc(xmlrpc_env *env, xmlrpc_value *param_array, void *user_data)
+xmlrpc_value *tsp_request_close_xmlrpc(xmlrpc_env *env, xmlrpc_value *param_array, void *user_data)
 {
 
   xmlrpc_value *xr_result;
@@ -285,22 +285,7 @@ tsp_request_sample_destroy_xmlrpc (xmlrpc_env *env,
 }
 
 /*==================================================================*/
-
-int TSP_xmlrpc_request(TSP_provider_request_handler_t* this)
-{
-  this->config             = TSP_xmlrpc_request_config;
-  this->run                = TSP_xmlrpc_request_run;
-  this->stop               = TSP_xmlrpc_request_stop;
-  this->url                = TSP_xmlrpc_request_url;
-  this->tid                = (pthread_t)-1;
-
-  this->config_param       = calloc(1, sizeof(TSP_xmlrpc_request_config_t));    
-
-  this->status             = TSP_RQH_STATUS_IDLE;
-  return TRUE;
-}
-
-static clean_exit() 
+static void clean_exit(void)
 {
   _exit(0);
 }
@@ -378,6 +363,35 @@ static void TSP_xmlrpc_run(TSP_xmlrpc_request_config_t *config)
   return;
 }
 
+void *TSP_xmlrpc_request_run(void *arg)
+{
+  TSP_provider_request_handler_t* this = arg;
+  TSP_xmlrpc_request_config_t *config = (TSP_xmlrpc_request_config_t *)(this->config_param);
+
+  if(config->server_number >= 0) {
+	this->status = TSP_RQH_STATUS_RUNNING;
+	TSP_xmlrpc_run(config);
+	this->status = TSP_RQH_STATUS_IDLE;
+  }
+
+  return 0;
+} /* end of TSP_xmlrpc_request_run */
+
+
+int TSP_xmlrpc_request(TSP_provider_request_handler_t* this)
+{
+  this->config             = TSP_xmlrpc_request_config;
+  this->run                = TSP_xmlrpc_request_run;
+  this->stop               = TSP_xmlrpc_request_stop;
+  this->url                = TSP_xmlrpc_request_url;
+  this->tid                = (pthread_t)-1;
+
+  this->config_param       = calloc(1, sizeof(TSP_xmlrpc_request_config_t));    
+
+  this->status             = TSP_RQH_STATUS_IDLE;
+  return TRUE;
+}
+
 int TSP_xmlrpc_request_config(TSP_provider_request_handler_t* this)
 {
 
@@ -387,20 +401,6 @@ int TSP_xmlrpc_request_config(TSP_provider_request_handler_t* this)
 } /* end of TSP_xmlrpc_request_config */
 
 
-
-void* TSP_xmlrpc_request_run(TSP_provider_request_handler_t* this)
-{
-
-  TSP_xmlrpc_request_config_t *config = (TSP_xmlrpc_request_config_t *)(this->config_param);
-
-  if(config->server_number >= 0) {
-	this->status = TSP_RQH_STATUS_RUNNING;
-	TSP_xmlrpc_run(config);
-	this->status = TSP_RQH_STATUS_IDLE;
-  }
-
-  return (void*)NULL;
-} /* end of TSP_xmlrpc_request_run */
 
 char *TSP_xmlrpc_request_url(TSP_provider_request_handler_t* this)
 {
@@ -413,8 +413,6 @@ char *TSP_xmlrpc_request_url(TSP_provider_request_handler_t* this)
 
 int TSP_xmlrpc_request_stop(TSP_provider_request_handler_t* this)
 {
-  TSP_xmlrpc_request_config_t *config = (TSP_xmlrpc_request_config_t*)(this->config_param);
-  
   this->status = TSP_RQH_STATUS_STOPPED;
 
   return TRUE;
