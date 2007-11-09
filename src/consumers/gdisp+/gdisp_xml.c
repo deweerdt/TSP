@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_xml.c,v 1.9 2007-04-26 17:51:30 deweerdt Exp $
+$Id: gdisp_xml.c,v 1.10 2007-11-09 18:25:32 rhdv Exp $
 
 -----------------------------------------------------------------------
 
@@ -345,14 +345,14 @@ gdisp_xmlIndent( xmlTextWriterPtr  writer,
 {
 
   xmlChar spaces[3] = { ' ', ' ', '\0' };
-  gint    nbSpaces  = strlen(spaces);
+  gint    nbSpaces  = xmlStrlen(spaces);
 
   if (mode == GD_INCREASE_INDENTATION) {
-    strcat(indentBuffer,spaces);
+    xmlStrcat(indentBuffer,spaces);
   }
   else if (mode == GD_DECREASE_INDENTATION) {
-    if (strlen(indentBuffer) >= nbSpaces) {
-      indentBuffer[strlen(indentBuffer) - nbSpaces] = '\0';
+    if (xmlStrlen(indentBuffer) >= nbSpaces) {
+      indentBuffer[xmlStrlen(indentBuffer) - nbSpaces] = '\0';
     }
   }
 #ifdef XMLWRITER_SUPPORTED
@@ -498,10 +498,10 @@ gdisp_xmlWriteAttributeList ( xmlTextWriterPtr  writer,
     /*
      * Retreive attribute name and value.
      */
-    attributeName  = (gchar*)attributeList->data;
+    attributeName  = attributeList->data;
 
     attributeList  = g_list_next(attributeList);
-    attributeValue = (gchar*)attributeList->data;
+    attributeValue = attributeList->data;
 
 #ifdef XMLWRITER_SUPPORTED
     errorCode = xmlTextWriterWriteAttribute(writer,
@@ -580,7 +580,7 @@ gdisp_getIntegerProperty ( xmlChar *property,
     return defaultValue;
   }
   else {
-    return atoi(property);
+     return atoi((char*)property);
   }
 
 }

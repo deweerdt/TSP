@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_sampling.c,v 1.22 2007-02-11 19:19:25 esteban Exp $
+$Id: gdisp_sampling.c,v 1.23 2007-11-09 18:25:32 rhdv Exp $
 
 -----------------------------------------------------------------------
 
@@ -1062,6 +1062,8 @@ gdisp_preSamplingThread (void *data )
   fprintf(stdout,"End of pre-sampling thread.\n");
   fflush (stdout);
 #endif
+
+  gdisp_freeSymbolsForSampling(kernel);
 
   pthread_exit((void*)TRUE);
 

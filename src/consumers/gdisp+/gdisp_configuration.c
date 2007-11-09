@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_configuration.c,v 1.17 2007-04-26 17:51:30 deweerdt Exp $
+$Id: gdisp_configuration.c,v 1.18 2007-11-09 18:25:32 rhdv Exp $
 
 -----------------------------------------------------------------------
 
@@ -61,6 +61,8 @@ File      : Graphic Tool Configuration Management.
                              PRIVATE DEFINITIONS
  --------------------------------------------------------------------
 */
+
+#define UTF8_TO_CHAR (char*)
 
 #define GD_PROVIDER_URL     1
 #define GD_PROVIDER_SYMBOLS 2
@@ -755,13 +757,13 @@ gdisp_saveProviderSampledSymbols ( Kernel_T         *kernel,
   SampleList_T *pSampleList    = (SampleList_T*)NULL;
   guint         pSampleMax     = 0;
   guint         sPgi           = 1;
-  xmlChar      *typeBuffer     = (xmlChar*)NULL;
-  xmlChar       indexBuffer     [256];
-  xmlChar       dimensionBuffer [256];
-  xmlChar       offsetBuffer    [256];
-  xmlChar       nElemBuffer     [256];
-  xmlChar       periodBuffer    [256];
-  xmlChar       phaseBuffer     [256];
+  char         *typeBuffer     = NULL;
+  char          indexBuffer     [256];
+  char          dimensionBuffer [256];
+  char          offsetBuffer    [256];
+  char          nElemBuffer     [256];
+  char          periodBuffer    [256];
+  char          phaseBuffer     [256];
 
 #define GD_SAMPLE_PGI_AS_STRING_LENGTH 10
   gchar         samplePGIasStringBuffer[GD_SAMPLE_PGI_AS_STRING_LENGTH];
@@ -1108,7 +1110,7 @@ gdisp_loadProviderSymbolsForSampling ( Kernel_T   *kernel,
    */
   symbolTableNode = gdisp_xmlGetChildren(document,
 					 providerNode,
-					 "SampledSymbols/sampledSymbol");
+					 BAD_CAST "SampledSymbols/sampledSymbol");
 
   if (symbolTableNode != (xmlNodeSet*)NULL && symbolTableNode->nodeNr > 0) {
 
@@ -1136,45 +1138,45 @@ gdisp_loadProviderSymbolsForSampling ( Kernel_T   *kernel,
 	 cptSymbol++) {
 
       symbolNode      = symbolTableNode->nodeTab[cptSymbol];
-      symbolIndex     = xmlGetProp(symbolNode,"index" );
-      symbolName      = xmlGetProp(symbolNode,"name"  );
-      symbolType      = xmlGetProp(symbolNode,"type"  );
+      symbolIndex     = xmlGetProp(symbolNode, BAD_CAST "index" );
+      symbolName      = xmlGetProp(symbolNode, BAD_CAST "name"  );
+      symbolType      = xmlGetProp(symbolNode, BAD_CAST "type"  );
       if (symbolType == (xmlChar*)NULL) {
-	symbolType = gdisp_strDup("F64");
+	symbolType = xmlCharStrdup("F64");
       }
-      symbolDimension = xmlGetProp(symbolNode,"dim"   );
+      symbolDimension = xmlGetProp(symbolNode, BAD_CAST "dim"   );
       if (symbolDimension == (xmlChar*)NULL) {
-	symbolDimension = gdisp_strDup("1");
+	symbolDimension = xmlCharStrdup("1");
       }
-      symbolOffset    = xmlGetProp(symbolNode,"offset");
+      symbolOffset    = xmlGetProp(symbolNode, BAD_CAST "offset");
       if (symbolOffset == (xmlChar*)NULL) {
-	symbolOffset = gdisp_strDup("0");
+	symbolOffset = xmlCharStrdup("0");
       }
-      symbolNelem     = xmlGetProp(symbolNode,"nelem" );
+      symbolNelem     = xmlGetProp(symbolNode, BAD_CAST "nelem" );
       if (symbolNelem == (xmlChar*)NULL) {
-	symbolNelem = gdisp_strDup("0");
+	symbolNelem = xmlCharStrdup("0");
       }
-      symbolPeriod    = xmlGetProp(symbolNode,"period");
+      symbolPeriod    = xmlGetProp(symbolNode, BAD_CAST "period");
       if (symbolPeriod == (xmlChar*)NULL) {
-	symbolPeriod = gdisp_strDup("1");
+	symbolPeriod = xmlCharStrdup("1");
       }
-      symbolPhase     = xmlGetProp(symbolNode,"phase" );
+      symbolPhase     = xmlGetProp(symbolNode, BAD_CAST "phase" );
       if (symbolPhase == (xmlChar*)NULL) {
-	symbolPhase = gdisp_strDup("0");
+	symbolPhase = xmlCharStrdup("0");
       }
 
       if (symbolIndex != (xmlChar*)NULL && symbolName != (xmlChar*)NULL) {
 
-	theSymbol->sPgi            = gdisp_atoi(symbolIndex,0);
-	theSymbol->sInfo.name      = gdisp_strDup(symbolName);
+	theSymbol->sPgi            = gdisp_atoi(UTF8_TO_CHAR symbolIndex,0);
+	theSymbol->sInfo.name      = gdisp_strDup(UTF8_TO_CHAR symbolName);
 
-	theSymbol->sInfo.type      = gdisp_getTypeFromString(symbolType);
-	theSymbol->sInfo.dimension = gdisp_atoi(symbolDimension,1);
-	theSymbol->sInfo.offset    = gdisp_atoi(symbolOffset,   0);
+	theSymbol->sInfo.type      = gdisp_getTypeFromString(UTF8_TO_CHAR symbolType);
+	theSymbol->sInfo.dimension = gdisp_atoi(UTF8_TO_CHAR symbolDimension,1);
+	theSymbol->sInfo.offset    = gdisp_atoi(UTF8_TO_CHAR symbolOffset,   0);
 	theSymbol->sInfo.nelem     =
-	              gdisp_atoi(symbolNelem,theSymbol->sInfo.dimension);
-	theSymbol->sInfo.period    = gdisp_atoi(symbolPeriod,   1);
-	theSymbol->sInfo.phase     = gdisp_atoi(symbolPhase,    0);
+	              gdisp_atoi(UTF8_TO_CHAR symbolNelem,theSymbol->sInfo.dimension);
+	theSymbol->sInfo.period    = gdisp_atoi(UTF8_TO_CHAR symbolPeriod,   1);
+	theSymbol->sInfo.phase     = gdisp_atoi(UTF8_TO_CHAR symbolPhase,    0);
 
 	theSymbol->sMinimum        = - G_MAXDOUBLE;
 	theSymbol->sMaximum        = + G_MAXDOUBLE;
@@ -1251,7 +1253,7 @@ gdisp_loadTargetProviders ( Kernel_T *kernel,
    */
   providerTableNode = gdisp_xmlGetChildren(document,
 					   (xmlNode*)NULL,
-					   "//Kernel/Provider");
+					   BAD_CAST "//Kernel/Provider");
 
   if (providerTableNode != (xmlNodeSet*)NULL &&
                                     providerTableNode->nodeNr > 0) {
@@ -1261,7 +1263,7 @@ gdisp_loadTargetProviders ( Kernel_T *kernel,
 	 cptProvider++) {
 
       providerNode  = providerTableNode->nodeTab[cptProvider];
-      propertyValue = xmlGetProp(providerNode,"url");
+      propertyValue = xmlGetProp(providerNode, BAD_CAST "url");
 
       switch (infoType) {
 
@@ -1270,14 +1272,14 @@ gdisp_loadTargetProviders ( Kernel_T *kernel,
 	/*
 	 * Store the provider url in the kernel.
 	 */
-	gdisp_addUrl(kernel,propertyValue);
+	gdisp_addUrl(kernel, UTF8_TO_CHAR propertyValue);
 
 	break;
 
       case GD_PROVIDER_SYMBOLS :
 
 	provider = gdisp_getProviderByOriginalUrl(kernel,
-						  propertyValue /* Url */ );
+						  UTF8_TO_CHAR propertyValue /* Url */ );
 
 	if (provider != (Provider_T*)NULL) {
 
@@ -1343,7 +1345,7 @@ gdisp_addSampledSymbolToPlot ( Kernel_T         *kernel,
    */
   symbolTableNode = gdisp_xmlGetChildren(document,
 					 plotNode,
-					 "sampledSymbol");
+					 BAD_CAST "sampledSymbol");
 
   if (symbolTableNode != (xmlNodeSet*)NULL && symbolTableNode->nodeNr > 0) {
 
@@ -1356,13 +1358,13 @@ gdisp_addSampledSymbolToPlot ( Kernel_T         *kernel,
       /*
        * Get back all symbol information : index, zone.
        */
-      symbolIndex = xmlGetProp(symbolNode,"index");
-      symbolZone  = xmlGetProp(symbolNode,"zone");
+      symbolIndex = xmlGetProp(symbolNode, BAD_CAST "index");
+      symbolZone  = xmlGetProp(symbolNode, BAD_CAST "zone");
 
       if (symbolIndex != (xmlChar*)NULL) {
 
 	symbol = gdisp_getSymbolInConfByIndex(kernel,
-					      gdisp_atoi(symbolIndex,0));
+					      gdisp_atoi(UTF8_TO_CHAR symbolIndex,0));
 
 	if (symbol != (Symbol_T*)NULL) {
 
@@ -1449,7 +1451,7 @@ gdisp_loadTargetPlots ( Kernel_T *kernel,
    */
   plotTableNode = gdisp_xmlGetChildren(document,
 				       pageNode,
-				       "Plot");
+				       BAD_CAST "Plot");
 
   if (plotTableNode != (xmlNodeSet*)NULL && plotTableNode->nodeNr > 0) {
 
@@ -1463,34 +1465,34 @@ gdisp_loadTargetPlots ( Kernel_T *kernel,
        * Get back all plot information : type, row, column.
        * and create the plot.
        */
-      property = xmlGetProp(plotNode,"type");
+      property = xmlGetProp(plotNode, BAD_CAST "type");
       if (property != (xmlChar*)NULL) {
 	plotType = (*kernel->getPlotTypeFromPlotName)(kernel,
 						      (gchar*)property);
 	xmlFree(property);
       }
       
-      property = xmlGetProp(plotNode,"row");
+      property = xmlGetProp(plotNode, BAD_CAST "row");
       if (property != (xmlChar*)NULL) {
-	plotRow = gdisp_atoi(property,0);
+	plotRow = gdisp_atoi(UTF8_TO_CHAR property,0);
 	xmlFree(property);
       }
 
-      property = xmlGetProp(plotNode,"column");
+      property = xmlGetProp(plotNode, BAD_CAST "column");
       if (property != (xmlChar*)NULL) {
-	plotColumn = gdisp_atoi(property,0);
+	plotColumn = gdisp_atoi(UTF8_TO_CHAR property,0);
 	xmlFree(property);
       }
 
-      property = xmlGetProp(plotNode,"nbRows");
+      property = xmlGetProp(plotNode, BAD_CAST "nbRows");
       if (property != (xmlChar*)NULL) {
-	plotNbRows = gdisp_atoi(property,0);
+	plotNbRows = gdisp_atoi(UTF8_TO_CHAR property,0);
 	xmlFree(property);
       }
 
-      property = xmlGetProp(plotNode,"nbColumns");
+      property = xmlGetProp(plotNode, BAD_CAST "nbColumns");
       if (property != (xmlChar*)NULL) {
-	plotNbColumns = gdisp_atoi(property,0);
+	plotNbColumns = gdisp_atoi(UTF8_TO_CHAR property,0);
 	xmlFree(property);
       }
 
@@ -1568,7 +1570,7 @@ gdisp_loadTargetPages ( Kernel_T *kernel,
    */
   pageTableNode = gdisp_xmlGetChildren(document,
 				       (xmlNode*)NULL,
-				       "//Graphics/Page");
+				       BAD_CAST "//Graphics/Page");
 
   if (pageTableNode != (xmlNodeSet*)NULL && pageTableNode->nodeNr > 0) {
 
@@ -1582,16 +1584,16 @@ gdisp_loadTargetPages ( Kernel_T *kernel,
        * Get back all page information : title, rows, columns.
        * and create the page.
        */
-      pageTitle   = xmlGetProp(pageNode,"title");
-      pageRows    = xmlGetProp(pageNode,"rows");
-      pageColumns = xmlGetProp(pageNode,"columns");
+      pageTitle   = xmlGetProp(pageNode, BAD_CAST "title");
+      pageRows    = xmlGetProp(pageNode, BAD_CAST "rows");
+      pageColumns = xmlGetProp(pageNode, BAD_CAST "columns");
 
       if (pageRows != (xmlChar*)NULL && pageColumns != (xmlChar*)NULL) {
 
 	newPage = gdisp_allocateGraphicPage(kernel,
 					    (gchar*)pageTitle,
-					    gdisp_atoi(pageRows,0),
-					    gdisp_atoi(pageColumns,0));
+					    gdisp_atoi(UTF8_TO_CHAR pageRows,0),
+					    gdisp_atoi(UTF8_TO_CHAR pageColumns,0));
 
 	/*
 	 * Create all plots of the page.

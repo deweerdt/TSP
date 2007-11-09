@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_symbols.c,v 1.12 2006-08-05 20:50:30 esteban Exp $
+$Id: gdisp_symbols.c,v 1.13 2007-11-09 18:25:32 rhdv Exp $
 
 -----------------------------------------------------------------------
 
@@ -478,7 +478,7 @@ gdisp_dataRequestDNDCallback (GtkWidget        *widget /* symbol cList */,
   gtk_selection_data_set(selectionData,
 			 GDK_SELECTION_TYPE_STRING,
 			 8,	/* 8 bits per character */
-			 action,
+			 (guchar*)action,
 			 strlen(action));
 
 }

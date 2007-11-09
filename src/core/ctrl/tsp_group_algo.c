@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_group_algo.c,v 1.23 2007-02-11 21:45:56 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_group_algo.c,v 1.24 2007-11-09 18:25:32 rhdv Exp $
 
 -----------------------------------------------------------------------
 
@@ -369,7 +369,6 @@ uint32_t
 TSP_group_algo_get_biggest_group_size(TSP_groups_t* groups) {
     
   TSP_algo_table_t* group_table = (TSP_algo_table_t*)groups;
-  int i;
   assert(groups);
 
   return group_table->group_max_byte_size;

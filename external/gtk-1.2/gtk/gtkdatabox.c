@@ -176,7 +176,7 @@ enum {
   LAST_SIGNAL
 };
 
-static gint gtk_databox_signals[LAST_SIGNAL] = { 0 };
+static guint gtk_databox_signals[LAST_SIGNAL] = { 0 };
 
 guint
 gtk_databox_get_type ()

@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_plot2D.c,v 1.24 2006-09-28 19:37:54 esteban Exp $
+$Id: gdisp_plot2D.c,v 1.25 2007-11-09 18:25:32 rhdv Exp $
 
 -----------------------------------------------------------------------
 
@@ -92,8 +92,10 @@ static void
 gdisp_manageSymbolNameWindow ( Kernel_T *kernel,
 			       Plot2D_T *plot,
 			       GList    *symbolList);
+#ifdef DEBUG_2D
 static void
 gdisp_debugDumpData (char *txt, Plot2D_T *plot);
+#endif
 
 
 /*
@@ -1677,8 +1679,8 @@ gdisp_plot2DMotionNotify (GtkWidget      *area,
   Kernel_T *kernel     = (Kernel_T*)data;
   Plot2D_T *plot       = (Plot2D_T*)NULL;
 
-  guint     xPosition  =               0;
-  guint     yPosition  =               0;
+  gint     xPosition  =               0;
+  gint     yPosition  =               0;
 
   GDISP_TRACE(3,"Motion notify event.\n");
 
@@ -3068,6 +3070,7 @@ gdisp_initPlot2DSystem (Kernel_T     *kernel,
  --------------------------------------------------------------------
 */
 
+#ifdef DEBUG_2D
 static void
 gdisp_debugDumpData ( char     *txt,
 		      Plot2D_T *plot )
@@ -3139,4 +3142,4 @@ gdisp_debugDumpData ( char     *txt,
   fclose (fp);
 
 }
-
+#endif	/* DEBUG_2D */

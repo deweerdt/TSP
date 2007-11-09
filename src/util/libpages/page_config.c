@@ -9,28 +9,30 @@
 
 
 /* Don't forget to update PGC_var_type_t  AND var_type_str */
-static xmlChar* X_var_type_str[] = { "DOUBLE", "TITLE", "HEXA", "BIN", "STRING", NULL};
-static xmlChar* X_widget_type_str[] = { "view", "draw" ,NULL};
+static xmlChar* X_var_type_str[] = { BAD_CAST "DOUBLE", BAD_CAST "TITLE", BAD_CAST "HEXA", BAD_CAST "BIN", BAD_CAST "STRING", NULL};
+static xmlChar* X_widget_type_str[] = { BAD_CAST "view", BAD_CAST "draw" ,NULL};
 
-const xmlChar* PGC_LABEL_DOC="page_config";
-const xmlChar* PGC_LABEL_TRUE="true";
-const xmlChar* PGC_LABEL_FALSE="false";
-const xmlChar* PGC_LABEL_TITLE="title";
-const xmlChar* PGC_LABEL_X="x";
-const xmlChar* PGC_LABEL_Y="y";
-const xmlChar* PGC_LABEL_WIDTH="width";
-const xmlChar* PGC_LABEL_HEIGHT="height";
-const xmlChar* PGC_LABEL_VISIBLE="visible";
-const xmlChar* PGC_LABEL_NAME="name";
-const xmlChar* PGC_LABEL_TYPE="type";
-const xmlChar* PGC_LABEL_LEGEND="legend";
-const xmlChar* PGC_LABEL_PERIOD="period";
-const xmlChar* PGC_LABEL_DISPLAY_FREQUENCY="display_frequency";
-const xmlChar* PGC_LABEL_WIDGET="widget";
-const xmlChar* PGC_LABEL_ROWS="rows";
-const xmlChar* PGC_LABEL_NO_BORDER="no_border";
-const xmlChar* PGC_LABEL_DURATION="duration";
+const xmlChar* PGC_LABEL_DOC = BAD_CAST "page_config";
+const xmlChar* PGC_LABEL_TRUE = BAD_CAST "true";
+const xmlChar* PGC_LABEL_FALSE = BAD_CAST "false";
+const xmlChar* PGC_LABEL_TITLE = BAD_CAST "title";
+const xmlChar* PGC_LABEL_X = BAD_CAST "x";
+const xmlChar* PGC_LABEL_Y = BAD_CAST "y";
+const xmlChar* PGC_LABEL_WIDTH = BAD_CAST "width";
+const xmlChar* PGC_LABEL_HEIGHT = BAD_CAST "height";
+const xmlChar* PGC_LABEL_VISIBLE = BAD_CAST "visible";
+const xmlChar* PGC_LABEL_NAME = BAD_CAST "name";
+const xmlChar* PGC_LABEL_TYPE = BAD_CAST "type";
+const xmlChar* PGC_LABEL_LEGEND = BAD_CAST "legend";
+const xmlChar* PGC_LABEL_PERIOD = BAD_CAST "period";
+const xmlChar* PGC_LABEL_DISPLAY_FREQUENCY = BAD_CAST "display_frequency";
+const xmlChar* PGC_LABEL_WIDGET = BAD_CAST "widget";
+const xmlChar* PGC_LABEL_ROWS = BAD_CAST "rows";
+const xmlChar* PGC_LABEL_NO_BORDER = BAD_CAST "no_border";
+const xmlChar* PGC_LABEL_DURATION = BAD_CAST "duration";
 
+
+#define UTF_TO_CHAR (char*)
 
 struct PGC_instance_t
 {
@@ -61,7 +63,7 @@ struct PGC_instance_t
       xmlChar* buf = xmlGetProp(node, name); \
       if(buf) \
 	{ \
-	  value = atoi(buf); \
+	  value = atoi(UTF_TO_CHAR buf);		\
 	  xmlFree(buf); \
         } \
       else \
@@ -76,7 +78,7 @@ struct PGC_instance_t
       xmlChar* buf = xmlGetProp(node, name); \
       if(buf) \
 	{ \
-	  value = atoi(buf); \
+	  value = atoi(UTF_TO_CHAR buf);		\
 	  xmlFree(buf); \
         } \
       else \
@@ -92,7 +94,7 @@ struct PGC_instance_t
       xmlChar* buf = xmlGetProp(node, name); \
       if(buf) \
 	{ \
-	  value = atof(buf); \
+	  value = atof(UTF_TO_CHAR buf);		\
 	  xmlFree(buf); \
         } \
       else \
@@ -108,7 +110,7 @@ struct PGC_instance_t
       xmlChar* buf = xmlGetProp(node, name); \
       if(buf) \
 	{ \
-	  value = atof(buf); \
+	  value = atof(UTF_TO_CHAR buf);		\
 	  xmlFree(buf); \
         } \
       else \
@@ -122,7 +124,7 @@ struct PGC_instance_t
       xmlChar* buf = xmlGetProp(node, name); \
       if(buf) \
 	{ \
-	  value = strdup(buf); \
+	  value = strdup(UTF_TO_CHAR buf); \
           xmlFree(buf); \
         } \
       else \
@@ -137,7 +139,7 @@ struct PGC_instance_t
       xmlChar* buf = xmlGetProp(node, name); \
       if(buf) \
 	{ \
-	  value = strdup(buf); \
+	  value = strdup(UTF_TO_CHAR buf); \
           xmlFree(buf); \
         } \
       else \

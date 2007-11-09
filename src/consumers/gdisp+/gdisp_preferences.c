@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_preferences.c,v 1.8 2006-09-21 20:19:59 esteban Exp $
+$Id: gdisp_preferences.c,v 1.9 2007-11-09 18:25:32 rhdv Exp $
 
 -----------------------------------------------------------------------
 
@@ -79,7 +79,7 @@ gdisp_loadPreferences ( Kernel_T *kernel,
    * Get back information.
    */
   preferenceTableNode =
-    gdisp_xmlGetChildren(document,(xmlNode*)NULL,"//Preferences/preference");
+    gdisp_xmlGetChildren(document,(xmlNode*)NULL, BAD_CAST "//Preferences/preference");
 
   if (preferenceTableNode != (xmlNodeSet*)NULL &&
       preferenceTableNode->nodeNr > 0) {
@@ -129,7 +129,7 @@ gdisp_loadPreferenceFile ( Kernel_T *kernel )
 
   FILE    *stream   = (FILE*)NULL;
   xmlDoc  *document = (xmlDoc*)NULL;
-  xmlChar  completeFilename[256];
+  char  completeFilename[256];
 
 
   /*
@@ -199,11 +199,11 @@ gdisp_savePreferenceFile ( Kernel_T *kernel )
 
   int               errorCode      = 0;
   xmlTextWriterPtr  writer         = (xmlTextWriterPtr)NULL;
-  xmlChar          *attributeValue = (xmlChar*)NULL;
+  char             *attributeValue = NULL;
   xmlChar          *tmp            = (xmlChar*)NULL;
   xmlChar           indentBuffer    [256];
-  xmlChar           completeFilename[256];
-  xmlChar           stringValue     [256];
+  char              completeFilename[256];
+  char              stringValue     [256];
 
   /*
    * Caution.
@@ -337,7 +337,7 @@ gdisp_savePreferenceFile ( Kernel_T *kernel )
    * Path to graphic modules.
    */
   attributeValue = kernel->pathToGraphicModules;
-  if (attributeValue == (xmlChar*)NULL) {
+  if (attributeValue == NULL) {
     attributeValue = "unknown";
   }
   errorCode      = gdisp_xmlWriteAttributes(writer,
