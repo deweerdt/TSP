@@ -1,6 +1,8 @@
-TSP_XSCRIPT( 
-           stub_targa_config.xml
-	   )
+INSTALL(
+  FILES 
+  stub_targa_config.xml
+  DESTINATION ${TSP_SHARE_BASEDIR}/example)
+
 SET(TARGA_SRC
   gdisp_main gdisp_kernel
   gdisp_preferences gdisp_configuration

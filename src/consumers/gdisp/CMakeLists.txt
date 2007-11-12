@@ -1,6 +1,7 @@
-TSP_XSCRIPT( 
-           stub_gdisp_config.xml
-	   )
+INSTALL(
+  FILES 
+  stub_gdisp_config.xml
+  DESTINATION ${TSP_SHARE_BASEDIR}/example)
 
 SET(GDISP_SRC interface
 support gdispmain
