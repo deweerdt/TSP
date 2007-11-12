@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_abs_types.h,v 1.27 2007-11-02 15:30:12 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_abs_types.h,v 1.28 2007-11-12 18:05:28 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -166,20 +166,15 @@ typedef unsigned __int64 	u_int64_t;
 #endif /* Linux / Intel */
 
 
-/* Linux / Powerpc */ 							
-#if defined (__linux__) &&  defined (__powerpc__)  
+/* Linux / Powerpc and Arm */ 							
+#if defined (__linux__) &&  (defined (__powerpc__) || defined (__arm__))
 # include <stdint.h>							
 # define TSP_BYTE_ORDER TSP_BIG_ENDIAN			
 # define TSP_INT64_CONSTANT(val)  (val##LL) 	
 # define TSP_GUINT64_FORMAT "llu"				
 # define TSP_SYSTEM_HAVE_NANOSLEEP 1			
 # define TSP_HAVE_INT64 1						
-#endif /* Linux / Powerpc */						
-												
-												
-
-												
-
+#endif /* Linux / Powerpc and Arm */
 
 
 /* OSF1 / Alpha */
