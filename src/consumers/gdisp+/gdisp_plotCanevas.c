@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_plotCanevas.c,v 1.7 2006-09-28 19:37:54 esteban Exp $
+$Id: gdisp_plotCanevas.c,v 1.8 2007-11-14 21:53:19 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -92,7 +92,7 @@ gdisp_create<<<-canevas->>> (Kernel_T *kernel)
  * Destroy a plot opaque structure.
  */
 static void
-gdisp_destroy<<<-canevas--->(Kernel_T *kernel,
+gdisp_destroy<<<-canevas->(Kernel_T *kernel,
 			     void     *data)
 {
 
@@ -188,8 +188,7 @@ gdisp_show<<<-canevas->>> (Kernel_T  *kernel,
  * Return to calling process what king of plot we are.
  */
 static PlotType_T
-gdisp_get<<<-canevas->>>Type (Kernel_T *kernel,
-			      void     *data)
+gdisp_get<<<-canevas->>>Type (Kernel_T *kernel)
 {
 
   <<<-canevas->>>_T *plot = (<<<-canevas->>>_T*)data;
@@ -378,11 +377,13 @@ gdisp_get<<<-canevas->>>Information (Kernel_T         *kernel,
   /*
    *   - Name,
    *   - Formula,
-   *   - Descripton for tooltip purpose.
+   *   - Description for tooltip purpose,
+   *   - Logo.
    */
   information->psName        = "Give me a name";
   information->psFormula     = "Y = F ( X )";
   information->psDescription = "A typical skeleton for plots";
+  information->psLogo        = (char**)NULL;
 
 }
 
@@ -458,15 +459,15 @@ gdisp_init<<<-canevas->>>System (Kernel_T     *kernel,
    */
   plotSystem->psCreate              = gdisp_create<<-canevas->>;
   plotSystem->psDestroy             = gdisp_destroy<<-canevas->>;
-  plotSystem->psSetParent           = gdisp_set<<-canevas->>Parent;
+  plotSystem->psSetParent           = gdisp_set<<-canevas->>ParentWidget;
   plotSystem->psGetTopLevelWidget   = gdisp_get<<-canevas->>TopLevelWidget;
   plotSystem->psSetDimensions       = gdisp_set<<-canevas->>InitialDimensions;
   plotSystem->psShow                = gdisp_show<<-canevas->>;
   plotSystem->psGetType             = gdisp_get<<-canevas->>Type;
   plotSystem->psAddSymbols          = gdisp_addSymbolsTo<<-canevas->>;
   plotSystem->psGetSymbols          = gdisp_getSymbolsFrom<<-canevas->>;
-  plotSystem->psGetSymbolAttributes = gdisp_getSymbolAttributes<<-canevas-->>;
-  plotSystem->psSetSymbolAttributes = gdisp_setSymbolAttributes<<-canevas-->>;
+  plotSystem->psGetSymbolAttributes = gdisp_getSymbolAttributes<<-canevas->>;
+  plotSystem->psSetSymbolAttributes = gdisp_setSymbolAttributes<<-canevas->>;
   plotSystem->psStartStep           = gdisp_startStepOn<<-canevas->>;
   plotSystem->psStep                = gdisp_stepOn<<-canevas->>;
   plotSystem->psStopStep            = gdisp_stopStepOn<<-canevas->>;

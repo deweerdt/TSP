@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_plot2D.c,v 1.25 2007-11-09 18:25:32 rhdv Exp $
+$Id: gdisp_plot2D.c,v 1.26 2007-11-14 21:53:19 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -1686,7 +1686,7 @@ gdisp_plot2DMotionNotify (GtkWidget      *area,
 
 
   /*
-   * Graphic area has lost the focus.
+   * Get private data.
    */
   plot = (Plot2D_T*)gtk_object_get_data(GTK_OBJECT(area),
 					"plotPointer");
@@ -2987,7 +2987,7 @@ gdisp_getPlot2DDropZones (Kernel_T *kernel)
     zone.pszIcon        = gdisp_yLogo;
     g_array_append_val(p2dDropZones,zone);
 
-    /* adjust mempry */
+    /* adjust memory */
     p2dDropZones = g_array_set_size(p2dDropZones,
 				    2 /* two zones */ );
 

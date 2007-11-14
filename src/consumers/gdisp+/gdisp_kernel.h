@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_kernel.h,v 1.32 2006-11-08 21:31:12 esteban Exp $
+$Id: gdisp_kernel.h,v 1.33 2007-11-14 21:53:19 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -180,15 +180,19 @@ typedef enum {
 /*
  * Ha Ha...
  * Here is now the description of what a symbol looks like within GDisp+.
- *  - sReference  : must be incremented each time the symbol is dropped on
- *                  a graphic plot. It is up to graphic plots to increment
- *                  the 'sReference' variable, and to decrement it each time
- *                  the symbol is no longer requested by the plot.
- *  - sPgi        : symbol producer general index.
- *  - sInfo       : structure coming from TSP core.
- *                  contains : name, index, period and phase.
- *  - sLastValue  : the double precision value of the symbol.
- *  - sTimeTag    : the time tag of the symbol value.
+ *  - sReference   : must be incremented each time the symbol is dropped on
+ *                   a graphic plot. It is up to graphic plots to increment
+ *                   the 'sReference' variable, and to decrement it each time
+ *                   the symbol is no longer requested by the plot.
+ *  - sPgi         : symbol producer general index.
+ *  - sInfo        : structure coming from TSP core.
+ *                   contains : name, index, period and phase.
+ *  - sExtInfoList : list of external information provided by the TSP link.
+ *  - sLastValue   : the double precision value of the symbol.
+ *  - sTimeTag     : the time tag of the symbol value.
+ *  - sMinimum     : minimum value of the symbol.
+ *  - sMaximum     : maximum value if the symbol.
+ *  - sUnit        : symbol unit.
  */
 
 #define GD_SAMPLE_PGI_AS_STRING_LENGTH 10
@@ -341,6 +345,8 @@ typedef struct Provider_T_ {
  *  - GD_PLOT_TEXT    : alphanumeric evolution of symbols.
  *  - GD_PLOT_2D      : y = f(t) or y = f(x)
  *  - GD_PLOT_ORBITAL : a spacecraft orbiting around the Earth.
+ *  - GD_PLOT_SHEET   : a spreadsheet management.
+ *  - GD_PLOT_EARTH   : an earth plot for longitude/latitude trajectories.
  *  - GD_PLOT_2D5     : z = f(x,y). (not implemented)
  *  - GD_PLOT_3D      : full colored tri-dimensional object. (not implemented)
  */
@@ -351,6 +357,8 @@ typedef enum {
   GD_PLOT_TEXT,
   GD_PLOT_2D,
   GD_PLOT_ORBITAL,
+  GD_PLOT_SHEET,
+  GD_PLOT_EARTH,
   /* END ------------------------------------ */
   GD_MAX_PLOT /* this last one defines the limit */
 

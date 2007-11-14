@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_modules.c,v 1.1 2006-08-05 20:50:30 esteban Exp $
+$Id: gdisp_modules.c,v 1.2 2007-11-14 21:53:19 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -387,6 +387,14 @@ gdisp_loadStaticGraphicModules ( Kernel_T  *kernel )
 
     case GD_PLOT_TEXT :
       gdisp_initPlotTextSystem(kernel,plotSystem);
+      break;
+
+    case GD_PLOT_SHEET :
+      gdisp_initPlotSheetSystem(kernel,plotSystem);
+      break;
+
+    case GD_PLOT_EARTH :
+      gdisp_initPlotEarthSystem(kernel,plotSystem);
       break;
 
     case GD_PLOT_ORBITAL :

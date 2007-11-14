@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_prototypes.h,v 1.23 2006-11-08 21:31:12 esteban Exp $
+$Id: gdisp_prototypes.h,v 1.24 2007-11-14 21:53:20 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -193,10 +193,22 @@ void       gdisp_initPlot2DSystem (Kernel_T     *kernel,
 				   PlotSystem_T *plotSystem);
 
 /*
+ * From gdisp_plotEarth.c
+ */
+void       gdisp_initPlotEarthSystem (Kernel_T     *kernel,
+				      PlotSystem_T *plotSystem);
+
+/*
  * From gdisp_plotText.c
  */
 void       gdisp_initPlotTextSystem (Kernel_T     *kernel,
 				     PlotSystem_T *plotSystem);
+
+/*
+ * From gdisp_plotSheet.c
+ */
+void       gdisp_initPlotSheetSystem (Kernel_T     *kernel,
+				      PlotSystem_T *plotSystem);
 
 /*
  * From gdisp_plotOrbital.c

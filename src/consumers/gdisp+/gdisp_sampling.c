@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_sampling.c,v 1.23 2007-11-09 18:25:32 rhdv Exp $
+$Id: gdisp_sampling.c,v 1.24 2007-11-14 21:53:20 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -1063,7 +1063,19 @@ gdisp_preSamplingThread (void *data )
   fflush (stdout);
 #endif
 
+  /*
+   * ========================== WARNING ======================
+   * From esteban.
+   * I disagree with the calling of the procedure here.
+   * It is meant for being called when the sampling process is over, whereas
+   * it is not the case at the end of this thread.
+   * As this procedure does nothing by now, it is not a hurry to find the correct
+   * place (should be at the end of the 'stopSamplingProcess' procedure according to me).
+   */
   gdisp_freeSymbolsForSampling(kernel);
+  /*
+   * esteban.
+   */
 
   pthread_exit((void*)TRUE);
 

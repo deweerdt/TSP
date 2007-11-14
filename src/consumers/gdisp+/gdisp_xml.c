@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_xml.c,v 1.10 2007-11-09 18:25:32 rhdv Exp $
+$Id: gdisp_xml.c,v 1.11 2007-11-14 21:53:20 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -348,7 +348,7 @@ gdisp_xmlIndent( xmlTextWriterPtr  writer,
   gint    nbSpaces  = xmlStrlen(spaces);
 
   if (mode == GD_INCREASE_INDENTATION) {
-    xmlStrcat(indentBuffer,spaces);
+    strcat(indentBuffer,spaces);
   }
   else if (mode == GD_DECREASE_INDENTATION) {
     if (xmlStrlen(indentBuffer) >= nbSpaces) {

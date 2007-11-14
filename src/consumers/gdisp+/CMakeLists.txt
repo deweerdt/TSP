@@ -20,7 +20,7 @@ SET(TARGA_SRC ${TARGA_SRC}
   gdisp_utils gdisp_toString
   gdisp_xml gdisp_format
   gdisp_dataBox gdisp_popupMenu
-  gdisp_plot2D gdisp_plotText)
+  gdisp_plotSheet gdisp_plotEarth gdisp_plot2D gdisp_plotText)
 
 IF(OPENGL_FOUND AND OPENGL_GLU_FOUND)
   SET(TARGA_SRC ${TARGA_SRC}
@@ -35,7 +35,7 @@ ADD_DEFINITIONS(${XML2_CFLAGS})
 TARGET_LINK_LIBRARIES(targa 
   ${GTK_LIBRARY} 
   tsp_consumer tsp_common tsp_services tsp_util 
-  gtk_1.2_utils)
+  gtk_1.2_utils gtk_1.2_extra)
 
 IF (XML2_FOUND) 
   TARGET_LINK_LIBRARIES(targa 
@@ -49,9 +49,10 @@ ENDIF(OPENGL_FOUND AND OPENGL_GLU_FOUND)
 
 ADD_DEPENDENCIES(targa 
   tsp_consumer tsp_common tsp_services tsp_util
-  gtk_1.2_utils)
+  gtk_1.2_utils gtk_1.2_extra)
 
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/external/gtk-1.2)
+INCLUDE_DIRECTORIES(/home/garay/GTK/gtk+extra-0.99.17/gtkextra)
 
 IF(SHAREDLIB_ENABLED)
   ADD_LIBRARY(tsp_gdispUtils gdisp_utils gdisp_toString gdisp_xml gdisp_format)
@@ -60,6 +61,10 @@ IF(SHAREDLIB_ENABLED)
   TSP_LIBRARY_INSTALL(tsp_gdispPlot2D)
   ADD_LIBRARY(tsp_gdispPlotText gdisp_plotText)
   TSP_LIBRARY_INSTALL(tsp_gdispPlotText)
+  ADD_LIBRARY(tsp_gdispPlotSheet gdisp_plotSheet)
+  TSP_LIBRARY_INSTALL(tsp_gdispPlotSheet)
+  ADD_LIBRARY(tsp_gdispPlotEarth gdisp_plotEarth)
+  TSP_LIBRARY_INSTALL(tsp_gdispPlotEarth)
   IF(OPENGL_FOUND AND OPENL_GLU_FOUND)
     ADD_LIBRARY(tsp_gdispPlotOrbital gdisp_plotOrbital gdisp_openglUtils)
     TSP_LIBRARY_INSTALL(tsp_gdispPlotOrbital)

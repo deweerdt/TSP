@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_pages.c,v 1.13 2006-08-05 20:50:30 esteban Exp $
+$Id: gdisp_pages.c,v 1.14 2007-11-14 21:53:19 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -610,7 +610,14 @@ gdisp_dragMotionDNDCallback (GtkWidget      *pageWindow,
    * Move icon window according to mouse position.
    * Update content with the correct pixmap according to drop authorization.
    */
-  if (currentZone == (PlotSystemZone_T*)NULL) {
+  if (currentZone != (PlotSystemZone_T*)NULL &&
+      currentZone->pszIcon != (char**)NULL) {
+
+    iconPixmap = gdisp_getPixmapByAddr(kernel,
+				       currentZone->pszIcon,
+				       page->pWindow);
+  }
+  else {
 
     if (canDrop == TRUE) {
 
@@ -626,13 +633,6 @@ gdisp_dragMotionDNDCallback (GtkWidget      *pageWindow,
 				       page->pWindow);
 
     }
-
-  }
-  else {
-
-      iconPixmap = gdisp_getPixmapByAddr(kernel,
-					 currentZone->pszIcon,
-					 page->pWindow);
 
   }
 
