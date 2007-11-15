@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_utils.c,v 1.15 2007-03-20 10:11:33 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_utils.c,v 1.16 2007-11-15 20:10:19 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -250,7 +250,7 @@ bb_utils_parsearrayname(const char*    provided_symname,
   remain = remaining_symname;
 
   while ((NULL != remain) && (0 == retcode)) {
-    retcode &= bb_utils_parseone_array(current_symname,
+    retcode = bb_utils_parseone_array(current_symname,
         symname_part,parsed_symname_maxlen,
         &array_index[i],
         &remain,parsed_symname_maxlen);
