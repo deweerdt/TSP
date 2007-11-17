@@ -19,15 +19,8 @@ SET(TARGA_SRC
 SET(TARGA_SRC ${TARGA_SRC}
   gdisp_utils gdisp_toString
   gdisp_xml gdisp_format
-  gdisp_dataBox gdisp_popupMenu   
-  gdisp_plotEarth 
-  gdisp_plot2D 
-  gdisp_plotText)
-  
-IF(GTK_EXTRA_FOUND)
-    SET(TARGA_SRC ${TARGA_SRC}
-        gdisp_plotSheet)
-ENDIF(GTK_EXTRA_FOUND)
+  gdisp_dataBox gdisp_popupMenu
+  gdisp_plotSheet gdisp_plotEarth gdisp_plot2D gdisp_plotText)
 
 IF(OPENGL_FOUND AND OPENGL_GLU_FOUND)
   SET(TARGA_SRC ${TARGA_SRC}
@@ -43,10 +36,6 @@ TARGET_LINK_LIBRARIES(targa
   ${GTK_LIBRARY} 
   tsp_consumer tsp_common tsp_services tsp_util 
   gtk_1.2_utils)
-  
-IF (GTK_EXTRA_FOUND)
-    TARGET_LINK_LIBRARIES(targa gtk_1.2_extra)
-ENDIF (GTK_EXTRA_FOUND)
 
 IF (XML2_FOUND) 
   TARGET_LINK_LIBRARIES(targa 
@@ -58,8 +47,11 @@ IF (OPENGL_FOUND AND OPENGL_GLU_FOUND)
     GL GLU)
 ENDIF(OPENGL_FOUND AND OPENGL_GLU_FOUND)
 
+ADD_DEPENDENCIES(targa 
+  tsp_consumer tsp_common tsp_services tsp_util
+  gtk_1.2_utils)
+
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/external/gtk-1.2)
-INCLUDE_DIRECTORIES(/home/garay/GTK/gtk+extra-0.99.17/gtkextra)
 
 IF(SHAREDLIB_ENABLED)
   ADD_LIBRARY(tsp_gdispUtils gdisp_utils gdisp_toString gdisp_xml gdisp_format)

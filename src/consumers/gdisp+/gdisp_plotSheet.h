@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_plotSheet.h,v 1.1 2007-11-14 21:53:20 esteban Exp $
+$Id: gdisp_plotSheet.h,v 1.2 2007-11-17 14:46:29 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -44,13 +44,7 @@ File      : Definition of 'spreadsheet plot' private structures.
 
 #include <gdk/gdk.h>
 #include <gdk/gdkkeysyms.h>
-
-#include "gtksheet.h"
-#include "gtkitementry.h"
-#include "gtkcombobox.h"
-#include "gtkbordercombo.h"
-#include "gtkcolorcombo.h"
-#include "gtkfontcombo.h"
+#include <gtk/gtkextra.h>
 
 #include "gdisp_popupMenu.h"
 

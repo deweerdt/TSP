@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_modules.c,v 1.3 2007-11-17 14:11:25 erk Exp $
+$Id: gdisp_modules.c,v 1.4 2007-11-17 14:46:29 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -390,7 +390,7 @@ gdisp_loadStaticGraphicModules ( Kernel_T  *kernel )
       break;
 
     case GD_PLOT_SHEET :
-/*      gdisp_initPlotSheetSystem(kernel,plotSystem); */
+      gdisp_initPlotSheetSystem(kernel,plotSystem);
       break;
 
     case GD_PLOT_EARTH :
