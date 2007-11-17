@@ -1,0 +1,4 @@
+#define STDC_HEADERS 1
+#define HAVE_UNISTD_H 1
+#define HAVE_DIRENT_H 1
+#define HAVE_FNMATCH_H 1
