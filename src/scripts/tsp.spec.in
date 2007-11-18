@@ -57,7 +57,7 @@ rm -rf build_tree
 mkdir build_tree
 cd build_tree
 %if %{make_apidoc}
-cmake -DBUILD_API_DOC:bool=ON -DCMAKE_INSTALL_PREFIX=%{rpmprefix} ../%{tspsrcdirname}
+cmake -DBUILD_API_DOC:bool=ON -DCMAKE_INSTALL_PREFIX=%{rpmprefix} -DPKGCONFIG_INSTALL_PREFIX=@CMAKE_INSTALL_PREFIX@ ../%{tspsrcdirname}
 %else
 cmake -DCMAKE_INSTALL_PREFIX=%{rpmprefix} ../%{tspsrcdirname}
 %endif
