@@ -1416,7 +1416,7 @@ gtk_entry_insert_text (GtkEditable *editable,
   gint max_length;
   gint i;
 
-  guchar *new_text_nt;
+  gchar *new_text_nt;
   gint insertion_length;
   GdkWChar *insertion_text;
   
@@ -1473,7 +1473,7 @@ gtk_entry_insert_text (GtkEditable *editable,
   else
     for (insertion_length=0; new_text_nt[insertion_length]; insertion_length++)
       insertion_text[insertion_length] = new_text_nt[insertion_length];
-  if (new_text_nt != (guchar *)new_text)
+  if (new_text_nt != new_text)
     g_free (new_text_nt);
 
   /* Make sure we do not exceed the maximum size of the entry. */
@@ -1629,7 +1629,7 @@ gtk_entry_get_chars      (GtkEditable   *editable,
 
   if (start_pos <= end_pos)
     {
-      guchar *mbstr;
+      gchar *mbstr;
       if (entry->use_wchar)
 	{
 	  GdkWChar ch;

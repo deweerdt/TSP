@@ -326,7 +326,7 @@ gtk_plot_gdk_set_dash                               (GtkPlotPC *pc,
                                                     gint num_values)
 {
   gchar list[] = {'\0','\1','\2','\3','\4','\5','\6','\7'};
-  gchar dash[1000] = "";
+  gint8 dash[1000] = "";
   gint i;
 
   if(!GTK_PLOT_GDK(pc)->gc) return;

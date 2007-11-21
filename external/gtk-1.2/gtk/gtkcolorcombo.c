@@ -42,7 +42,7 @@ enum {
    LAST_SIGNAL
 };
 
-static gint color_combo_signals[LAST_SIGNAL] = {0};
+static guint color_combo_signals[LAST_SIGNAL] = {0};
 
 
 static char *default_colors[]={

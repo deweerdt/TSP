@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_xml.c,v 1.12 2007-11-17 14:50:42 esteban Exp $
+$Id: gdisp_xml.c,v 1.13 2007-11-21 18:19:58 rhdv Exp $
 
 -----------------------------------------------------------------------
 
@@ -55,6 +55,8 @@ File      : Graphic Tool XML management.
 #include "gdisp_prototypes.h"
 #include "gdisp_xml.h"
 
+
+#define UTF8_TO_CHAR (char*)
 
 /*
  --------------------------------------------------------------------
@@ -344,11 +346,11 @@ gdisp_xmlIndent( xmlTextWriterPtr  writer,
 		 char              mode )
 {
 
-  xmlChar spaces[3] = { ' ', ' ', '\0' };
-  gint    nbSpaces  = xmlStrlen(spaces);
+  char spaces[3] = { ' ', ' ', '\0' };
+  size_t nbSpaces  = sizeof(spaces) - 1;
 
   if (mode == GD_INCREASE_INDENTATION) {
-    strcat(BAD_CAST indentBuffer,BAD_CAST spaces);
+    strcat(UTF8_TO_CHAR indentBuffer, spaces);
   }
   else if (mode == GD_DECREASE_INDENTATION) {
     if (xmlStrlen(indentBuffer) >= nbSpaces) {

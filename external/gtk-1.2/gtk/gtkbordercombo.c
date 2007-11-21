@@ -39,7 +39,7 @@ enum {
    LAST_SIGNAL
 };
 
-static gint border_combo_signals[LAST_SIGNAL] = {0};
+static guint border_combo_signals[LAST_SIGNAL] = {0};
 
 
 static char *xpm_border[]={

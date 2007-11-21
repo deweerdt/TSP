@@ -1835,6 +1835,7 @@ gtk_sheet_flash(gpointer data)
   GtkSheet *sheet;
   gint x,y,width,height;
   GdkRectangle clip_area;
+  gint8 dashes[2] = { 4, 4};
 
   sheet=GTK_SHEET(data);
 
@@ -1901,9 +1902,9 @@ gtk_sheet_flash(gpointer data)
   sheet->interval=sheet->interval+1;
   if(sheet->interval==TIME_INTERVAL) sheet->interval=0;
 
-  gdk_gc_set_dashes(sheet->xor_gc, sheet->interval, "\4\4", 2);
+  gdk_gc_set_dashes(sheet->xor_gc, sheet->interval, dashes, sizeof(dashes));
   gtk_sheet_draw_flashing_range(sheet, sheet->clip_range);
-  gdk_gc_set_dashes(sheet->xor_gc, 0, "\4\4", 2);
+  gdk_gc_set_dashes(sheet->xor_gc, 0, dashes, sizeof(dashes));
 
   GDK_THREADS_LEAVE();
 
@@ -6812,7 +6813,7 @@ draw_xor_rectangle(GtkSheet *sheet, GtkSheetRange range)
 
    gdk_gc_set_clip_rectangle(sheet->xor_gc, &clip_area);
 
-   for(i=-1;i<=1;i=i++)
+   for (i=-1; i<=1; i++)
      gdk_draw_rectangle(sheet->sheet_window,
                         sheet->xor_gc,
 		        FALSE,

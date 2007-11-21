@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_plotEarth.c,v 1.1 2007-11-14 21:53:19 esteban Exp $
+$Id: gdisp_plotEarth.c,v 1.2 2007-11-21 18:19:58 rhdv Exp $
 
 -----------------------------------------------------------------------
 
@@ -307,8 +307,8 @@ gdisp_earthMotionNotify (GtkWidget      *area,
 
   /* Kernel_T *kernel     = (Kernel_T*)data; */
   Earth_T  *plot       = (Earth_T*)NULL;
-  guint     xPosition  = 0;
-  guint     yPosition  = 0;
+  gint     xPosition  = 0;
+  gint     yPosition  = 0;
 
   /*
    * Get private data.

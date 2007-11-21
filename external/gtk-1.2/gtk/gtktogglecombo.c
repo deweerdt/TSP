@@ -42,7 +42,7 @@ enum {
    LAST_SIGNAL
 };
 
-static gint toggle_combo_signals[LAST_SIGNAL] = {0};
+static guint toggle_combo_signals[LAST_SIGNAL] = {0};
 
 
 static void         gtk_toggle_combo_class_init      (GtkToggleComboClass *klass);
