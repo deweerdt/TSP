@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_plotEarthData.c,v 1.1 2007-11-14 21:53:19 esteban Exp $
+$Id: gdisp_plotEarthData.c,v 1.2 2007-11-21 21:55:35 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -42,7 +42,7 @@ File      : Definition of 'earth' polygons (frontiers included)
 /*
  * Continent bounding box. (lonMin, lonMax, latMin, latMax)
  */
-float
+static float
 gdisp_earthZoneBoundingBox[] = {
 -3.141593, +3.319035, -1.493711, +1.459968
 };
@@ -50,7 +50,7 @@ gdisp_earthZoneBoundingBox[] = {
 /*
  * Number of points per continent zones (polygons).
  */
-unsigned int
+static unsigned int
 gdisp_nbPointsPerEarthZones[] = { 
 274,  20,   4,   6,   7,   8,   8,  12,  13,  20,
   4,   6,   5,   8,  14,  26, 127,  73, 121,  28,
@@ -80,7 +80,7 @@ gdisp_nbPointsPerEarthZones[] = {
 /*
  * Continent point coordinates (longitude,latitude).
  */
-float
+static float
 gdisp_earthZoneLonLatCoordinates[] = { 
 /* zone 1 with 274 points. */
 -2.074034, +1.208058, -2.098760, +1.212421, -2.117667, +1.218821, -2.146755, +1.218821,
@@ -2463,7 +2463,7 @@ gdisp_earthZoneLonLatCoordinates[] = {
 /*
  * Number of points per frontier zones (polygons).
  */
-unsigned int
+static unsigned int
 gdisp_nbPointsPerFrontierZones[] = { 
  19,   6,  18,  14,  19,  12,   6,   4,   4,   8,
   5,   4,   3,   3,  47,  16,  28,   3,  48,  31,
@@ -2486,7 +2486,7 @@ gdisp_nbPointsPerFrontierZones[] = {
 /*
  * Frontier point coordinates (longitude,latitude).
  */
-float
+static float
 gdisp_frontierZoneLonLatCoordinates[] = { 
 /* zone 1 with 19 points. */
 -2.274163, +0.956440, -2.263691, +0.973893, -2.295107, +0.989601, -2.324778, +1.019272,
@@ -3299,3 +3299,64 @@ gdisp_frontierZoneLonLatCoordinates[] = {
 +1.181588, +0.649262  
 };
 
+
+/*
+ * ----------------------------------------------------------------------------
+ */
+
+void
+gdisp_getEarthData ( float        **earthBoundingBox,
+		     unsigned int  *nbEarthZones,
+		     unsigned int **nbPointsPerEarthZones,
+		     float        **earthZoneLonLatCoordinates,
+		     unsigned int  *nbFrontierZones,
+		     unsigned int **nbPointsPerFrontierZones,
+		     float        **frontierZoneLonLatCoordinates )
+{
+
+  /*
+   * Earth Bounding Box.
+   *  as a table of 4 floats : lonMin, lonMax, latMin, latMax.
+   */
+  *earthBoundingBox = gdisp_earthZoneBoundingBox;
+
+  /*
+   * Number of zones that define the entire Earth.
+   */
+  *nbEarthZones = sizeof(gdisp_nbPointsPerEarthZones) /
+                  sizeof(gdisp_nbPointsPerEarthZones[0]);
+
+  /*
+   * Number of points for each zone.
+   *  as a table of unsigned integers.
+   */
+  *nbPointsPerEarthZones = gdisp_nbPointsPerEarthZones;
+
+  /*
+   * Earth Zone Coordinates.
+   *  as a table of longitude and latitude informations.
+   *         table[] = { lon1, lat1, lon2, lat2, ..., lonN, latN };
+   */
+  *earthZoneLonLatCoordinates = gdisp_earthZoneLonLatCoordinates;
+
+  /*
+   * Number of zones that define all the country boundaries.
+   */
+  *nbFrontierZones = sizeof(gdisp_nbPointsPerFrontierZones) /
+                     sizeof(gdisp_nbPointsPerFrontierZones[0]);
+
+  /*
+   * Number of points for each boundary.
+   *  as a table of unsigned integers.
+   */
+  *nbPointsPerFrontierZones = gdisp_nbPointsPerFrontierZones;
+
+  /*
+   * Earth Boundary Coordinates.
+   *  as a table of longitude and latitude informations.
+   *         table[] = { lon1, lat1, lon2, lat2, ..., lonN, latN };
+   */
+  *frontierZoneLonLatCoordinates = gdisp_frontierZoneLonLatCoordinates;
+
+}
+		     

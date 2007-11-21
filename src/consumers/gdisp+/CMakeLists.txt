@@ -20,7 +20,7 @@ SET(TARGA_SRC ${TARGA_SRC}
   gdisp_utils gdisp_toString
   gdisp_xml gdisp_format
   gdisp_dataBox gdisp_popupMenu
-  gdisp_plotSheet gdisp_plotEarth gdisp_plot2D gdisp_plotText)
+  gdisp_plotSheet gdisp_plotEarth gdisp_plotEarthData gdisp_plot2D gdisp_plotText)
 
 IF(OPENGL_FOUND AND OPENGL_GLU_FOUND)
   SET(TARGA_SRC ${TARGA_SRC}

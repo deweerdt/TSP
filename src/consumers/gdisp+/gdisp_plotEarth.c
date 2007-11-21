@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_plotEarth.c,v 1.2 2007-11-21 18:19:58 rhdv Exp $
+$Id: gdisp_plotEarth.c,v 1.3 2007-11-21 21:55:35 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -72,6 +72,96 @@ File      : Earth plot system.
 */
 
 /*
+ * Draw into back buffer.
+ */
+static void
+gdisp_earthDrawBackBuffer ( Kernel_T *kernel,
+			    Earth_T  *plot )
+{
+
+  gfloat    centerLon            = (gfloat)0;
+  gfloat    centerLat            = (gfloat)0;
+  gfloat    halfBackBufferWidth  = (gfloat)0;
+  gfloat    halfBackBufferHeight = (gfloat)0;
+  gfloat    coeffLon             = (gfloat)0;
+  gfloat    coeffLat             = (gfloat)0;
+  guint     currentZone          = 0;
+  guint     currentPoint         = 0;
+  guint    *nbPointPtr           = (guint*)NULL;
+  gfloat   *coordPtr             = (gfloat*)NULL;
+  GdkPoint *pointPtr             = (GdkPoint*)NULL;
+
+  GdkPoint  ethPointTable[500]; /* FIXME */
+
+  /*
+   * Clear back-buffer.
+   */
+  gdk_gc_set_foreground(plot->ethGContext,
+			&kernel->colors[_BLACK_]);
+
+  gdk_draw_rectangle(plot->ethBackBuffer,
+		     plot->ethGContext,
+		     TRUE, /* rectangle is filled */
+		     0,
+		     0,
+		     plot->ethAreaWidth,
+		     plot->ethAreaHeight);
+
+  /*
+   * Draw Earth with white color.
+   */
+  gdk_gc_set_foreground(plot->ethGContext,
+			&kernel->colors[_WHITE_]);
+
+  /*
+   * Deduce Earth center from Earth bounding box.
+   */
+  centerLon = (plot->ethEarthBoundingBox[0] + plot->ethEarthBoundingBox[1]) / (gfloat)2;
+  centerLat = (plot->ethEarthBoundingBox[2] + plot->ethEarthBoundingBox[3]) / (gfloat)2;
+
+  halfBackBufferWidth  = (gfloat)plot->ethAreaWidth  / (gfloat)2;
+  halfBackBufferHeight = (gfloat)plot->ethAreaHeight / (gfloat)2;
+
+  coeffLon  = halfBackBufferWidth  / (plot->ethEarthBoundingBox[1] - centerLon);
+  coeffLat  = halfBackBufferHeight / (plot->ethEarthBoundingBox[3] - centerLat);
+
+  /*
+   * Loop over all existing Earth zones.
+   */
+  nbPointPtr = plot->ethNbPointsPerEarthZones;
+  coordPtr   = plot->ethEarthZoneLonLatCoordinates;
+
+  for (currentZone=0; currentZone<plot->ethNbEarthZones; currentZone++) {
+
+    pointPtr = ethPointTable;
+
+    for (currentPoint=0; currentPoint<*nbPointPtr; currentPoint++) {
+
+      pointPtr->x = (gint16)(halfBackBufferWidth  + ((*coordPtr++ - centerLon) * coeffLon));
+      pointPtr->y = (gint16)(halfBackBufferHeight - ((*coordPtr++ - centerLat) * coeffLat));
+
+      pointPtr++;
+
+    }
+
+    gdk_draw_lines(plot->ethBackBuffer,
+		   plot->ethGContext,
+		   ethPointTable,
+		   *nbPointPtr);
+
+    nbPointPtr++;
+
+  }
+
+  /*
+   * Back buffer is now clean.
+   */
+  plot->ethBackBufferIsDirty = FALSE;
+
+}
+
+
+/*
  * Treat 'expose' X event.
  * What shall I do when the graphic area has to be refreshed ?
  */
@@ -81,13 +171,8 @@ gdisp_earthExpose (GtkWidget       *area,
 		   gpointer         data)
 {
 
-  Kernel_T *kernel       = (Kernel_T*)data;
+  /* Kernel_T *kernel       = (Kernel_T*)data; */
   Earth_T  *plot         = (Earth_T*)NULL;
-  gint      windowX      = 0;
-  gint      windowY      = 0;
-  gint      windowWidth  = 0;
-  gint      windowHeight = 0;
-  gint      windowDepth  = 0;
 
   /*
    * Graphic area has now to be repainted.
@@ -98,25 +183,32 @@ gdisp_earthExpose (GtkWidget       *area,
   gdk_gc_set_clip_rectangle(plot->ethGContext,
 			    &event->area);
 
+#if defined(GD_EARTH_NOTHING)
+
   gdk_gc_set_foreground(plot->ethGContext,
 			&kernel->colors[_BLACK_]);
-
-  gdk_window_get_geometry(plot->ethArea->window,
-			  &windowX,
-			  &windowY,
-			  &windowWidth,
-			  &windowHeight,
-			  &windowDepth);
 
   gdk_draw_rectangle(plot->ethArea->window,
 		     plot->ethGContext,
 		     TRUE, /* rectangle is filled */
 		     0,
 		     0,
-		     windowWidth,
-		     windowHeight);
+		     plot->ethAreaWidth,
+		     plot->ethAreaHeight);
 
-  /* FIXME */
+#else
+
+  gdk_draw_pixmap(plot->ethArea->window,
+		  plot->ethGContext,
+		  plot->ethBackBuffer,
+		  0,
+		  0,
+		  0,
+		  0,
+		  plot->ethArea->allocation.width,
+		  plot->ethArea->allocation.height);
+
+#endif
 
   gdk_gc_set_clip_rectangle(plot->ethGContext,
 			    (GdkRectangle*)NULL);
@@ -136,7 +228,7 @@ gdisp_earthConfigure (GtkWidget         *area,
 		      gpointer           data)
 {
 
-  /* Kernel_T *kernel = (Kernel_T*)data; */
+  Kernel_T *kernel = (Kernel_T*)data;
   Earth_T  *plot   = (Earth_T*)NULL;
 
   /*
@@ -187,8 +279,9 @@ gdisp_earthConfigure (GtkWidget         *area,
    * The configure operation is done after a resize request.
    * So refresh back buffer.
    */
+  plot->ethBackBufferIsDirty = TRUE;
 
-  /* FIXME */
+  gdisp_earthDrawBackBuffer(kernel,plot);
 
   return TRUE;
 
@@ -307,8 +400,8 @@ gdisp_earthMotionNotify (GtkWidget      *area,
 
   /* Kernel_T *kernel     = (Kernel_T*)data; */
   Earth_T  *plot       = (Earth_T*)NULL;
-  gint     xPosition  = 0;
-  gint     yPosition  = 0;
+  gint      xPosition  = 0;
+  gint      yPosition  = 0;
 
   /*
    * Get private data.
@@ -427,6 +520,17 @@ gdisp_createEarth (Kernel_T *kernel)
   plot->ethGContext =
     gdk_gc_new(GTK_WIDGET(kernel->widgets.mainBoardWindow)->window);
   plot->ethFont     = kernel->fonts[GD_FONT_SMALL][GD_FONT_FIXED];
+
+  /*
+   * Get back Earth and Frontier Data for plotting.
+   */
+  gdisp_getEarthData(&plot->ethEarthBoundingBox,
+		     &plot->ethNbEarthZones,
+		     &plot->ethNbPointsPerEarthZones,
+		     &plot->ethEarthZoneLonLatCoordinates,
+		     &plot->ethNbFrontierZones,
+		     &plot->ethNbPointsPerFrontierZones,
+		     &plot->ethFrontierZoneLonLatCoordinates);
 
   /*
    * Return the opaque structure.

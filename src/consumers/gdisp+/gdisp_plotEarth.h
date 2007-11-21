@@ -1,6 +1,6 @@
 /*
 
-$Id: gdisp_plotEarth.h,v 1.1 2007-11-14 21:53:19 esteban Exp $
+$Id: gdisp_plotEarth.h,v 1.2 2007-11-21 21:55:35 esteban Exp $
 
 -----------------------------------------------------------------------
 
@@ -62,6 +62,7 @@ typedef struct Earth_T_ {
   GdkGC               *ethGContext;
   GdkFont             *ethFont;
   GdkPixmap           *ethBackBuffer;
+  gboolean             ethBackBufferIsDirty;
 
   /*
    * Parent widget.
@@ -73,7 +74,30 @@ typedef struct Earth_T_ {
    */
   PopupMenu_T         *ethMainMenu;
 
+  /*
+   * Data for Earth and Frontier plotting.
+   */
+  gfloat              *ethEarthBoundingBox;
+  guint                ethNbEarthZones;
+  guint               *ethNbPointsPerEarthZones;
+  gfloat              *ethEarthZoneLonLatCoordinates;
+  guint                ethNbFrontierZones;
+  guint               *ethNbPointsPerFrontierZones;
+  gfloat              *ethFrontierZoneLonLatCoordinates;
+
 } Earth_T;
+
+/*
+ * Prototype.
+ */
+void
+gdisp_getEarthData ( float        **earthBoundingBox,
+		     unsigned int  *nbEarthZones,
+		     unsigned int **nbPointsPerEarthZones,
+		     float        **earthZoneLonLatCoordinates,
+		     unsigned int  *nbFrontierZones,
+		     unsigned int **nbPointsPerFrontierZones,
+		     float        **frontierZoneLonLatCoordinates );
 
 
 #endif /* __EARTH_PLOT_H__ */
