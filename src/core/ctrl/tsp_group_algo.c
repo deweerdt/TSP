@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_group_algo.c,v 1.24 2007-11-09 18:25:32 rhdv Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_group_algo.c,v 1.25 2007-11-30 14:37:10 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -38,7 +38,7 @@ and use groups
  */
 
 #include <string.h>
-#ifdef WIN32
+#ifdef _WIN32
     #define assert(exp)     ((void)0)
 #else
     #include <assert.h>
@@ -329,9 +329,12 @@ TSP_group_algo_create_symbols_table(const TSP_sample_symbol_info_list_t* in_symb
 	table->groups[group_id].items[rank].nelem        = in_info->nelem;
 	
 	/* complete les infos */
-        /* cast en int32_t pour Windows : WIN32 ?FIXME erk: pourquoi? */
-	table->groups[group_id].items[rank].data = 
-	  (int32_t)TSP_datapool_get_symbol_value(datapool, in_info->provider_global_index)
+    /* cast en int32_t pour Windows : WIN32 ?FIXME erk: pourquoi? */
+	table->groups[group_id].items[rank].data =
+#if _WIN32
+	  (int32_t)
+#endif
+	  TSP_datapool_get_symbol_value(datapool, in_info->provider_global_index)
 	  + in_info->offset * TSP_data_channel_get_encoded_size(in_info->type);
 	
 	/* 2 - In the out symbol table */
