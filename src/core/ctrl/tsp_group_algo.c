@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_group_algo.c,v 1.25 2007-11-30 14:37:10 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_group_algo.c,v 1.26 2007-11-30 15:38:22 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -50,6 +50,7 @@ and use groups
 
 #include "tsp_datapool.h"
 #include "tsp_data_sender.h"
+#include "tsp_common.h"
 #include <tsp_encoder.h>
 #include <tsp_decoder.h>
 
@@ -329,13 +330,25 @@ TSP_group_algo_create_symbols_table(const TSP_sample_symbol_info_list_t* in_symb
 	table->groups[group_id].items[rank].nelem        = in_info->nelem;
 	
 	/* complete les infos */
-    /* cast en int32_t pour Windows : WIN32 ?FIXME erk: pourquoi? */
+    /*    
+     * Beware of the following code hereafter
+     * We are doing void* / char* pointer arithmetic in order
+     * to get the requested element of TSP symbol
+     * which may be an array.
+     * So     
+     *  # TSP_datapool_get_symbol_value
+     *    gives us the address of the first element in the array
+     * 
+     *  # + in_info->offset * tsp_type_size[in_info->type]
+     *    should offset to the requested first element.
+     *    
+     *    The static array 'tsp_type_size' gives us the
+     *    appropriate size of the 'native' type.             
+     */
 	table->groups[group_id].items[rank].data =
-#if _WIN32
-	  (int32_t)
-#endif
+	  (char*)
 	  TSP_datapool_get_symbol_value(datapool, in_info->provider_global_index)
-	  + in_info->offset * TSP_data_channel_get_encoded_size(in_info->type);
+	  + in_info->offset * tsp_type_size[in_info->type];
 	
 	/* 2 - In the out symbol table */
 	
