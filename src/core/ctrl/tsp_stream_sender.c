@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_stream_sender.c,v 1.23 2006-10-21 08:48:00 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_stream_sender.c,v 1.24 2007-11-30 15:42:01 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -37,7 +37,7 @@ stream  to the consumers.
 
 #include <signal.h>
 #include <pthread.h>
-#ifdef WIN32
+#ifdef _WIN32
     #include <Windows.h>
     #include <WinSock2.h>
     #include <ws2tcpip.h>
@@ -51,7 +51,7 @@ stream  to the consumers.
     #include <assert.h>
 #endif
 
-#if !defined (VXWORKS) && !defined(WIN32)
+#if !defined (VXWORKS) && !defined(_WIN32)
 #include <strings.h> /* for bzero */
 #endif
 #include <string.h>  /* for bzero too :=} */
@@ -66,10 +66,10 @@ stream  to the consumers.
 
 #define TSP_DATA_ADDRESS_STRING_SIZE 256
 
-/* (µs) */
+/* (ï¿½s) */
 #define TSP_STREAM_SENDER_CONNECTION_POLL_TIME ((int)(1e5))
 
-/* (µs) */
+/* (ï¿½s) */
 #define TSP_STREAM_SENDER_FIFO_POLL_TIME       ((int)(1e5))
 
 struct TSP_socket_t
@@ -128,7 +128,7 @@ struct TSP_socket_t
 typedef struct TSP_socket_t TSP_socket_t;
 
 /* Signal functions */
-#if defined (WIN32)
+#if defined (_WIN32)
     /* no SIGPIPE signal uner Windows (waitforsingle obect insteed) */
 #else
 typedef void Sigfunc(int);
@@ -177,7 +177,7 @@ void* TSP_streamer_sender_thread_sender(void* arg)
 
   item = RINGBUF_PTR_GETBYADDR(sock->out_ringbuf);
   /* FIXME : gerer l'arret */
-  /* Gerer l'impossibilité d'envoyer */
+  /* Gerer l'impossibilitï¿½ d'envoyer */
   while(connection_ok && !sock->is_stopped)
     {
       while (item && connection_ok)
@@ -257,7 +257,7 @@ static void* TSP_streamer_sender_connector(void* arg)
     
   /* Accept connection on socket */
   STRACE_DEBUG(("Thread acceptor started waiting for client to connect %d", sock->hClient));
-#if defined (WIN32)  
+#if defined (_WIN32)  
   sock->hClient = accept(sock->socketId, NULL, NULL);
 #else
   /* FIXME */
@@ -302,7 +302,7 @@ TSP_stream_sender_t TSP_stream_sender_create(int fifo_size, int buffer_size)
     uint8_t     parts[4];
   } myu;
 
-#if defined (WIN32)
+#if defined (_WIN32)
   /* no SIGPIPE signal under Windows (waitforsingleobject insteed) */
 #else
   /* First disable SIGPIPE signal to avoir being crashed by a disconnected client*/
@@ -530,7 +530,7 @@ TSP_stream_sender_send(TSP_stream_sender_t sender, const char *buffer, int buffe
       errno = 0;
 #endif
       /* FIXME is it really an error to get 0 as nwrite? */
-#ifdef WIN32
+#ifdef _WIN32
 	if( (nwrite = send(identSocket, &buffer[Total], bufferLen,0)) <= 0 ) {
     if( _errno == EINTR ) {
 #else
@@ -541,7 +541,7 @@ TSP_stream_sender_send(TSP_stream_sender_t sender, const char *buffer, int buffe
 	  nwrite = 0;
 	}
 	else {		  
-#ifdef WIN32
+#ifdef _WIN32
      STRACE_DEBUG(("send failed with errno = %d : <%s>",WSAGetLastError(),strerror(errno)));   
 #else
 	  STRACE_ERROR(("send failed with errno = %d : <%s>",errno,strerror(errno)));

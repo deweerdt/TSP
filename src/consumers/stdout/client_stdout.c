@@ -1,6 +1,6 @@
 /*
 
-$Id: client_stdout.c,v 1.16 2007-08-30 15:26:25 erk Exp $
+$Id: client_stdout.c,v 1.17 2007-11-30 15:42:01 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -35,7 +35,7 @@ Purpose   : Simple consumer test that print samples received to stdout
 -----------------------------------------------------------------------
 */
 
-#ifdef WIN32
+#ifdef _WIN32
     #define assert(exp)     ((void)0)
     #include  "getopt.h"
 #else

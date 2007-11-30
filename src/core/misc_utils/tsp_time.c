@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/misc_utils/tsp_time.c,v 1.11 2006-10-18 09:58:48 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/misc_utils/tsp_time.c,v 1.12 2007-11-30 15:42:02 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -41,7 +41,7 @@ Purpose   : Interface for tsp time functions
 
 #include "tsp_time.h"
 
-#if defined (WIN32)
+#if defined (_WIN32)
 #include <rpc/rpc.h>
 #endif
 tsp_hrtime_t tsp_gethrtime()

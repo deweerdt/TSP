@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_stream_receiver.c,v 1.13 2006-10-21 08:48:00 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_stream_receiver.c,v 1.14 2007-11-30 15:42:00 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -37,7 +37,7 @@ stream  from the producer for the asked symbols. This layer is the network layer
 
 #include "tsp_sys_headers.h"
 
-#if defined (WIN32)
+#if defined (_WIN32)
 #include <Windows.h>
 #include <WinSock2.h>
 #else
@@ -251,7 +251,7 @@ TSP_stream_receiver_receive(TSP_stream_receiver_t receiver, char *buffer, int bu
 	  
 /* AP : Migration sous Windows */
 /* sous windows _errno est la variable globale */
-#ifdef WIN32
+#ifdef _WIN32
 		if ( (nread = recv(identSocket, &buffer[Total], bufferLen,0)) < 0)
 	  {
           if( _errno == EINTR )

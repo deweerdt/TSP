@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_common_ssei.c,v 1.10 2006-10-18 09:58:48 erk Exp $
+$Id: tsp_common_ssei.c,v 1.11 2007-11-30 15:42:01 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -43,7 +43,7 @@ Purpose   : Main implementation for the producer module
 #include <tsp_const_def.h>
 #define TSP_COMMON_SSEI_C
 #include <tsp_common_ssei.h>
-#ifdef WIN32
+#ifdef _WIN32
     #define assert(exp)     ((void)0)
 #else
     #include <assert.h>

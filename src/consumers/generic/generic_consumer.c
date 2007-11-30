@@ -1,6 +1,6 @@
 /*
 
-$Id: generic_consumer.c,v 1.17 2006-10-21 09:28:03 erk Exp $
+$Id: generic_consumer.c,v 1.18 2007-11-30 15:42:02 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -35,7 +35,7 @@ Purpose   : Generic tsp consumer
 -----------------------------------------------------------------------
 */
 #include <stdlib.h>
-#ifdef WIN32
+#ifdef _WIN32
     #define assert(exp)     ((void)0)
 #else
     #include <unistd.h>

@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <rpc/rpc.h>
 
-#ifdef WIN32
+#ifdef _WIN32
     #include <ws2tcpip.h>
     #include "getopt.h"
 #else
@@ -117,7 +117,7 @@ void main_rpc(const char* provided_host)
 
 int client_socket(const char* provided_host)
 {
-#ifdef WIN32
+#ifdef _WIN32
     WSADATA wsaData;
     SOCKET ConnectSocket = INVALID_SOCKET;
 #else
@@ -155,7 +155,7 @@ int client_socket(const char* provided_host)
     }
 
     // Initialize Winsock
-#ifdef WIN32
+#ifdef _WIN32
     iResult = WSAStartup(MAKEWORD(2,2), &wsaData);
     if (iResult != 0) {
         test_printf("WSAStartup failed: %d\n", iResult);
@@ -184,7 +184,7 @@ int client_socket(const char* provided_host)
         ConnectSocket = socket(ptr->ai_family, ptr->ai_socktype, 
             ptr->ai_protocol);
         if (ConnectSocket == INVALID_SOCKET) {
-#ifdef WIN32
+#ifdef _WIN32
             test_printf("Error at socket(): %ld\n", WSAGetLastError());
 #else
             perror("Error at socket()");
@@ -220,7 +220,7 @@ int client_socket(const char* provided_host)
     // Send an initial buffer
     iResult = send( ConnectSocket, sendbuf, (int)strlen(sendbuf), 0 );
     if (iResult == SOCKET_ERROR) {
-#ifdef WIN32
+#ifdef _WIN32
         test_printf("send failed: %d\n", WSAGetLastError());
 #endif
         closesocket(ConnectSocket);
@@ -231,7 +231,7 @@ int client_socket(const char* provided_host)
     test_printf("Bytes <%s> Sent: %ld\n", sendbuf, iResult);
 
     // shutdown the connection since no more data will be sent
-#ifdef WIN32
+#ifdef _WIN32
     iResult = shutdown(ConnectSocket, SD_SEND);
     if (iResult == SOCKET_ERROR) {
         test_printf("shutdown failed: %d\n", WSAGetLastError());
@@ -260,7 +260,7 @@ int client_socket(const char* provided_host)
         }
         else
         {
-#ifdef WIN32
+#ifdef _WIN32
             test_printf("recv failed: %d\n", WSAGetLastError());
 #else
             perror("recv");
@@ -288,7 +288,7 @@ void rpc_clnt_main(int argc, char* argv[])
     int    test_sock = 0;
     char*  provided_host = NULL;
 
-#ifdef WIN32
+#ifdef _WIN32
     rpc_nt_init();
 #endif
     
@@ -354,7 +354,7 @@ void rpc_clnt_main(int argc, char* argv[])
         }
     }
 
-#ifdef WIN32
+#ifdef _WIN32
     rpc_nt_exit();
 #endif
 

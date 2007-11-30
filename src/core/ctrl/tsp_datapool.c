@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_datapool.c,v 1.32 2007-03-23 19:52:15 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_datapool.c,v 1.33 2007-11-30 15:42:00 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -37,7 +37,7 @@ may be unified in this source .
 -----------------------------------------------------------------------
  */
 
-#ifdef WIN32
+#ifdef _WIN32
     #define assert(exp)     ((void)0)
 #else
     #include <assert.h>

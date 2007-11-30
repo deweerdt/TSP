@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <rpc/rpc.h>
 #include <pthread.h>
-#ifdef WIN32
+#ifdef _WIN32
     #include <ws2tcpip.h>
     #include "getopt.h" 
 #else
@@ -112,7 +112,7 @@ void main_rpc()
 
 int server_socket()
 {
-#ifdef WIN32
+#ifdef _WIN32
     WSADATA wsaData;
 #endif
     SOCKET ListenSocket = INVALID_SOCKET,
@@ -154,7 +154,7 @@ int server_socket()
     // Create a SOCKET for connecting to server
     ListenSocket = socket(result->ai_family, result->ai_socktype, result->ai_protocol);
     if (ListenSocket == INVALID_SOCKET) {
-#ifdef WIN32
+#ifdef _WIN32
         test_printf("socket failed: %ld\n", WSAGetLastError());
 #else
 	perror("socket");
@@ -167,7 +167,7 @@ int server_socket()
     // Setup the TCP listening socket
     iResult = bind( ListenSocket, result->ai_addr, (int)result->ai_addrlen);
     if (iResult == SOCKET_ERROR) {
-#ifdef WIN32
+#ifdef _WIN32
         test_printf("bind failed: %d\n", WSAGetLastError());
 #else
 	perror("bind");
@@ -182,7 +182,7 @@ int server_socket()
 
     iResult = listen(ListenSocket, SOMAXCONN);
     if (iResult == SOCKET_ERROR) {
-#ifdef WIN32
+#ifdef _WIN32
         test_printf("listen failed: %d\n", WSAGetLastError());
 #else
 	perror("listen");
@@ -195,7 +195,7 @@ int server_socket()
     // Accept a client socket
     ClientSocket = accept(ListenSocket, NULL, NULL);
     if (ClientSocket == INVALID_SOCKET) {
-#ifdef WIN32
+#ifdef _WIN32
         test_printf("accept failed: %d\n", WSAGetLastError());
 #else
 	perror("accept");
@@ -227,7 +227,7 @@ int server_socket()
         }
         else  
         {
-#ifdef WIN32
+#ifdef _WIN32
             test_printf("recv failed: %d\n", WSAGetLastError());
 #else
 	    perror("recv");
@@ -242,7 +242,7 @@ int server_socket()
     // Echo the buffer back to the sender
     iResult = send( ClientSocket, recvbuf, strlen(recvbuf), 0 );
     if (iResult == SOCKET_ERROR) {
-#ifdef WIN32
+#ifdef _WIN32
         test_printf("send failed: %d\n", WSAGetLastError());
 #else
 	perror("send");
@@ -255,7 +255,7 @@ int server_socket()
 
     test_printf("Bytes <%s> Sent: %ld\n", recvbuf, iResult);
     
-#ifdef WIN32
+#ifdef _WIN32
     // shutdown the connection since we're done
     iResult = shutdown(ClientSocket, SD_SEND);
     if (iResult == SOCKET_ERROR) {
@@ -284,7 +284,7 @@ void rpc_svc_main(int argc, char* argv[])
     int    test_rpc = 0;
     int    test_sock = 0;
     
-#ifdef WIN32
+#ifdef _WIN32
     rpc_nt_init();
 #endif
 
@@ -344,7 +344,7 @@ void rpc_svc_main(int argc, char* argv[])
         }
     }
 
-#ifdef WIN32
+#ifdef _WIN32
     rpc_nt_exit();
 #endif
 }

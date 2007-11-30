@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/common/tsp_decoder.c,v 1.7 2007-07-30 16:25:36 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/common/tsp_decoder.c,v 1.8 2007-11-30 15:42:01 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -48,7 +48,7 @@ Purpose   :  Implementation for the functions used to decode the data received
 #include <alloca.h>
 #endif
 
-#ifdef WIN32
+#ifdef _WIN32
     #define assert(exp)     ((void)0)
     #include <malloc.h>
 #else

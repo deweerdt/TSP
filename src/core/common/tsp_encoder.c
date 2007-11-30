@@ -1,7 +1,7 @@
 
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/common/tsp_encoder.c,v 1.11 2007-02-11 21:45:56 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/common/tsp_encoder.c,v 1.12 2007-11-30 15:42:01 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -49,7 +49,7 @@ Purpose   :  Implementation for the functions used to encode the type
 #include <alloca.h>
 #endif
 
-#if defined (WIN32)
+#if defined (_WIN32)
     #include <malloc.h>
     #define assert(exp)     ((void)0)
 #else    

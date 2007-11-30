@@ -1,6 +1,6 @@
 /*
 
-$Id: generic_consumer_main.c,v 1.11 2007-03-29 20:42:53 deweerdt Exp $
+$Id: generic_consumer_main.c,v 1.12 2007-11-30 15:42:02 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -37,7 +37,7 @@ Purpose   : Generic tsp consumer
 #include <stdio.h>
 #include <malloc.h>
 #include <stdlib.h>
-#ifdef WIN32
+#ifdef _WIN32
     #define assert(exp)     ((void)0)
     #include  "getopt.h"
 #else
@@ -98,7 +98,7 @@ my_sighandler(int signum) {
 int 
 main(int argc, char *argv[]){
 
-#if !defined (WIN32)
+#if !defined (_WIN32)
   struct sigaction   my_action;
   struct sigaction   old_action;
 #endif
@@ -112,7 +112,7 @@ main(int argc, char *argv[]){
 
   opt_ok            = 1;   
 
-#if defined (WIN32)
+#if defined (_WIN32)
   /* Intercept the CTRL-C signal */  
   (void) signal(SIGINT, my_sighandler);
 #else

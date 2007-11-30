@@ -1,6 +1,6 @@
 /*
 
-$Id: server_main.c,v 1.15 2007-03-29 20:42:53 deweerdt Exp $
+$Id: server_main.c,v 1.16 2007-11-30 15:42:02 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -41,12 +41,12 @@ Purpose   : Implementation for the glue_server, for stub test
 
 #include "tsp_provider_init.h"
 
-#if defined (WIN32)
+#if defined (_WIN32)
 #include "tsp_time.h"
 typedef unsigned long sigset_t;
 #endif
 
-#ifdef WIN32
+#ifdef _WIN32
     #define assert(exp)     ((void)0)
     #include  "getopt.h"
 #else
@@ -56,7 +56,7 @@ typedef unsigned long sigset_t;
 
 GLU_handle_t* GLU_stub_create(double baseFrequency);
 
-#if defined (WIN32)
+#if defined (_WIN32)
 static int sigint_reveived = 0;
 /* intercept signal function : call once */
 void intrpt(int signum)
@@ -101,7 +101,7 @@ main(int argc, char *argv[])
   double        baseFrequency = 100.0; /* default frequency is 100Hz */
 
 /* Managing the SIGINT signal */
-#if defined (WIN32)
+#if defined (_WIN32)
   /* intercept SIGINT signal */
   if ( SIG_ERR == signal(SIGINT, intrpt))
   {
@@ -178,7 +178,7 @@ main(int argc, char *argv[])
     }
     /* print out TSP URL */
     TSP_provider_urls(TSP_PUBLISH_URLS_PRINT | TSP_PUBLISH_URLS_FILE);
-#if defined (WIN32)
+#if defined (_WIN32)
     /* Wait until the intercept signal function is call */
     while (!sigint_reveived)
     {

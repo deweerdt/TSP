@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_server.c,v 1.34 2007-08-30 15:14:43 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_server.c,v 1.35 2007-11-30 15:42:02 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -305,7 +305,7 @@ int TSP_rpc_request(TSP_provider_request_handler_t* cthis)
   cthis->run                = TSP_rpc_request_run;
   cthis->stop               = TSP_rpc_request_stop;
   cthis->url                = TSP_rpc_request_url;
-#if defined (WIN32)
+#if defined (_WIN32)
   /* structure pthread_t different under Windows */
   this->tid.p              = -1;
 #else

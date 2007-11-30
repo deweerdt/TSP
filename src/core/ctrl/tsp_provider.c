@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_provider.c,v 1.56 2006-10-18 09:58:48 erk Exp $
+$Id: tsp_provider.c,v 1.57 2007-11-30 15:42:01 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -36,7 +36,7 @@ Purpose   : Main implementation for the producer module
  */
 
 /* FIXME car sinon pb avec pthread_self*/
-#ifdef WIN32
+#ifdef _WIN32
     #define assert(exp)     ((void)0)
 #else
     #include <assert.h>

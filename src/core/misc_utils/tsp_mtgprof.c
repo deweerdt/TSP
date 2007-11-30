@@ -20,7 +20,7 @@ int gprof_pthread_create(pthread_t * thread, pthread_attr_t * attr,
     /* Initialize the wrapper structure */
     wrapper_data.start_routine = start_routine;
     wrapper_data.arg = arg;
-#if defined (WIN32)
+#if defined (_WIN32)
     /* FIXME under Windows : interval timer */
 #else
     getitimer(ITIMER_PROF, &wrapper_data.itimer);
@@ -55,7 +55,7 @@ static void * wrapper_routine(void * data)
     void * arg = ((wrapper_t*)data)->arg;
 
     /* Set the profile timer value */
-#if defined (WIN32)
+#if defined (_WIN32)
     /* FIXME under Windows : interval timer */
 #else
     setitimer(ITIMER_PROF, &((wrapper_t*)data)->itimer, NULL);

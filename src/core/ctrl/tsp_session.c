@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.c,v 1.37 2007-03-01 17:36:41 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.c,v 1.38 2007-11-30 15:42:01 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -41,7 +41,7 @@ opened session from a client
 #include <machine/endian.h>
 #endif /* __OpenBSD__ */
 
-#ifdef WIN32
+#ifdef _WIN32
     #define assert(exp)     ((void)0)
 #else
     #include <assert.h>

@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_common.c,v 1.9 2006-11-24 18:15:38 erk Exp $
+$Id: tsp_common.c,v 1.10 2007-11-30 15:42:01 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -44,7 +44,7 @@ Purpose   : Main implementation for the producer module
 #define TSP_COMMON_C
 #include <tsp_common.h>
 
-#ifdef WIN32
+#ifdef _WIN32
     #define assert(exp)     ((void)0)
 #else
     #include <assert.h>

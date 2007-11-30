@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_request_handler.c,v 1.7 2006-10-21 08:48:00 erk Exp $
+$Id: tsp_request_handler.c,v 1.8 2007-11-30 15:42:00 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -152,7 +152,7 @@ TSP_provider_rqh_manager_init() {
   rqh_manager_if.nb_running_rhq = 0;
   /* RAZ handlers array */ 
   for (i=0;i<TSP_provider_rqh_manager_get_max_nb();++i) {
-#if defined (WIN32)
+#if defined (_WIN32)
     /* structure pthread_t different under Windows */
     rqh_manager_if.request_handlers[i].tid.p              = 0;
 #else

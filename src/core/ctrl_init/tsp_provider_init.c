@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl_init/tsp_provider_init.c,v 1.21 2007-04-26 17:51:30 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl_init/tsp_provider_init.c,v 1.22 2007-11-30 15:42:02 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -52,13 +52,13 @@ Purpose   : Function calls to launch a TSP Provider program
 int32_t 
 TSP_provider_init(GLU_handle_t* theGLU, int* argc, char** argv[]) {
 
-#if defined (WIN32)
+#if defined (_WIN32)
   WSADATA WSAData;
 #endif
 
   int32_t retcode = TSP_STATUS_OK;
 
-#if defined (WIN32)
+#if defined (_WIN32)
   if (WSAStartup(MAKEWORD(2,2), &WSAData)) {
 	WSACleanup();
 	retcode = TSP_STATUS_NOK;
@@ -140,7 +140,7 @@ TSP_provider_end() {
 
   /* remove any published URL */
   {
-#if !defined (WIN32)
+#if !defined (_WIN32)
     char systemCmd[512];
     sprintf(systemCmd, "rm -f /tmp/TSP.%d", getpid());
     system(systemCmd);
@@ -150,7 +150,7 @@ TSP_provider_end() {
   /* Call handlers end function */
   TSP_provider_rqh_manager_end();
 
-#if defined (WIN32)
+#if defined (_WIN32)
     WSACleanup();
 #endif
 } /* end of TSP_provider_end */
@@ -182,7 +182,7 @@ TSP_provider_urls(int pub_mode) {
 
 	      if(pub_mode & TSP_PUBLISH_URLS_FILE)
 		{
-#if !defined (WIN32)
+#if !defined (_WIN32)
 		  char systemCmd[512];
 		  sprintf(systemCmd, "echo \"%s\" > /tmp/TSP.%d", url, getpid());
 		  system(systemCmd);

@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_rpc_cleanup.c,v 1.2 2007-04-26 17:51:30 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_rpc_cleanup.c,v 1.3 2007-11-30 15:42:02 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -70,13 +70,13 @@ Purpose   :
 
 int main(void)
 {
-#if defined (WIN32)
+#if defined (_WIN32)
   WSADATA WSAData;
 #endif
 
   int servernumber;
 
-#if defined (WIN32)
+#if defined (_WIN32)
   if (WSAStartup(MAKEWORD(2,2), &WSAData)) {
 	WSACleanup();
     return -1;
@@ -88,7 +88,7 @@ int main(void)
       svc_unregister (TSP_get_progid(servernumber), TSP_RPC_VERSION_INITIAL);
       pmap_unset (TSP_get_progid(servernumber), TSP_RPC_VERSION_INITIAL);
     }
-#if defined (WIN32)
+#if defined (_WIN32)
     WSACleanup();
 #endif
   return 0;

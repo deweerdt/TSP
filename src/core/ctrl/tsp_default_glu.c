@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_default_glu.c,v 1.21 2006-10-18 09:58:48 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_default_glu.c,v 1.22 2007-11-30 15:42:00 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -37,7 +37,7 @@ Purpose   : Implementation for the object GLU_handle_t
 -----------------------------------------------------------------------
  */
 
-#ifdef WIN32
+#ifdef _WIN32
     #define assert(exp)     ((void)0)
 #else
     #include <assert.h>
@@ -58,7 +58,7 @@ int32_t GLU_handle_create(GLU_handle_t** glu, const char* name, const GLU_server
   *glu = calloc(1,sizeof(GLU_handle_t));
   assert(*glu);
   /* set up field values */
-#if defined (WIN32)
+#if defined (_WIN32)
   /* structure pthread_t different under Windows */
   (*glu)->tid.p           = 0;
 #else
@@ -161,7 +161,7 @@ GLU_get_instance_default(GLU_handle_t* this,
 
 int32_t
 GLU_start_default(GLU_handle_t* this) {
-#if defined (WIN32)
+#if defined (_WIN32)
   /* structure pthread_t different under Windows */
   if (0==this->tid.p) {
 #else

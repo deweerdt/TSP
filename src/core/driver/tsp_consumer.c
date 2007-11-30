@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.63 2007-08-28 09:44:30 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.64 2007-11-30 15:42:00 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -48,7 +48,7 @@ Purpose   : Main implementation for the TSP consumer library
 #include <tsp_common.h>
 #include <tsp_simple_trace.h>
 
-/* Pool time for network data read (µs) */
+/* Pool time for network data read (ï¿½s) */
 #define TSP_RECEIVER_THREAD_WAIT_FIFO_FULL (2e5)
 
 /**
@@ -325,7 +325,7 @@ TSP_consumer_init(int* argc, char** argv[]) {
   int found_stream_stop = FALSE;
   char* p;
   int32_t retcode = TSP_STATUS_OK;
-#if defined (WIN32)
+#if defined (_WIN32)
   WSADATA WSAData;
 #endif
 
@@ -413,7 +413,7 @@ TSP_consumer_init(int* argc, char** argv[]) {
   *argc = final_argc;
   *argv = X_argv;
 
-#if defined (WIN32)  
+#if defined (_WIN32)  
   if (WSAStartup(MAKEWORD(2,2), &WSAData)) {
 	WSACleanup();
 	retcode = TSP_STATUS_NOK;
@@ -436,7 +436,7 @@ TSP_consumer_end() {
 
   /* This is the end my friend ... the end ...*/
 
-#if defined (WIN32)
+#if defined (_WIN32)
    WSACleanup();
 #endif
    /* By the way. do ->NOT<- free X_tsp_argv and X_argv,
@@ -1100,7 +1100,7 @@ TSP_request_provider_thread_receiver(void* arg)
   TSP_otsp_t* otsp = (TSP_otsp_t*)arg;
   int is_fifo_full;  
 
-#if defined(WIN32)
+#if defined(_WIN32)
   STRACE_INFO(("Receiver thread started. Id=%u", (uint32_t)pthread_self().p)); 
 #else
   STRACE_INFO(("Receiver thread started. Id=%u", (uint32_t)pthread_self())); 
@@ -1275,31 +1275,31 @@ TSP_consumer_read_sample(TSP_provider_t provider,
 	    {
 	    case TSP_DUMMY_PROVIDER_GLOBAL_INDEX_EOF :
 	      STRACE_INFO (("status message EOF"));
-	      /* FIXME : get last error à gerer ? */
+	      /* FIXME : get last error ï¿½ gerer ? */
 	      break;
 	    case TSP_DUMMY_PROVIDER_GLOBAL_INDEX_RECONF :
 	      STRACE_INFO (("status message RECONF"));
-	      /* FIXME : get last error à gerer ? */
+	      /* FIXME : get last error ï¿½ gerer ? */
 	      break;
 	    case TSP_DUMMY_PROVIDER_GLOBAL_INDEX_RECEIVER_ERROR :
 	      STRACE_WARNING (("status message RECEIVER ERROR"));
 	      TSP_consumer_private_goUnreachable(&retcode,otsp);
-	      /* FIXME : get last error à gerer ? */
+	      /* FIXME : get last error ï¿½ gerer ? */
 	      break;
 	    case TSP_DUMMY_PROVIDER_GLOBAL_INDEX_GLU_DATA_LOST :
 	      STRACE_WARNING (("status message GLU DATA LOST. Some data were lost by the GLU on the provider side. "
 			       "is the provider too slow ?"));
-	      /* FIXME : get last error à gerer ? */
+	      /* FIXME : get last error ï¿½ gerer ? */
 	      break;
 	    case TSP_DUMMY_PROVIDER_GLOBAL_INDEX_CONSUMER_DATA_LOST :
 	      STRACE_WARNING (("status message CONSUMER DATA LOST. Some data were lost for this consumer"
 			       " on the provider side. Is the consumer too slow, or"
 			       " the network overloaded ?"));
-	      /* FIXME : get last error à gerer ? */
+	      /* FIXME : get last error ï¿½ gerer ? */
 	      break;
 	    default:
 	      STRACE_ERROR (("Unknown status message"));
-	      /* FIXME : get last error à gerer ? */
+	      /* FIXME : get last error ï¿½ gerer ? */
 	    }
 	}
     }      

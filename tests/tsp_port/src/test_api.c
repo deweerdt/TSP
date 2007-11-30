@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include <pthread.h>
-#ifdef WIN32
+#ifdef _WIN32
   #include <windows.h>
 #else
   #include <netdb.h>
@@ -46,7 +46,7 @@ int test_printf( char * format, ... )
    char * buffer;
 
    va_start( args, format );
-#ifdef WIN32
+#ifdef _WIN32
    len = _vscprintf( format, args ) // _vscprintf doesn't count
                                + 1; // terminating '\0'
 #else 
@@ -253,7 +253,7 @@ void test_memoire()
     test_printf("calloc %d %d %c\n", ssi->a, ssi->i, ssi->status_str); 
     free(ssi);
     
-#ifdef WIN32
+#ifdef _WIN32
     out_temp = _alloca(sizeof(int)*4);
 #else
     out_temp = alloca(sizeof(int)*4);
@@ -269,7 +269,7 @@ void test_memoire()
     }
     test_printf("\n");
 
-#ifdef WIN32
+#ifdef _WIN32
     Sleep(1000);
 #else
     sleep(1);
