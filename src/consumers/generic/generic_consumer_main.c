@@ -1,6 +1,6 @@
 /*
 
-$Id: generic_consumer_main.c,v 1.12 2007-11-30 15:42:02 erk Exp $
+$Id: generic_consumer_main.c,v 1.13 2007-12-08 13:56:41 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -131,7 +131,7 @@ main(int argc, char *argv[]){
   generic_consumer_request_create(&req);
 
   /* Analyse command line parameters */
-  while (opt_ok && (EOF != (c_opt = getopt(argc,argv,"u:hnsv")))) {    
+  while (opt_ok && (EOF != (c_opt = getopt(argc,argv,"+u:hnsv")))) {    
     switch (c_opt) {
     case 'u':
       opt_ok+=2;      
@@ -161,7 +161,7 @@ main(int argc, char *argv[]){
       break;
     } /* end of switch */
   } /* end of while */
-     
+  
   /* indicates number of global options to skip */
   req.nb_global_opt = opt_ok-1;
   req.argv          = argv;

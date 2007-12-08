@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bbtools/bb_tools_main.c,v 1.7 2007-03-29 20:42:53 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bbtools/bb_tools_main.c,v 1.8 2007-12-08 14:00:22 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -189,7 +189,7 @@ main (int argc, char ** argv) {
   bbtools_init(&the_request);
   
   /* Analyse command line parameters */
-  while (opt_ok && (EOF != (c_opt = getopt(argc,argv,"nsvh")))) {    
+  while (opt_ok && (EOF != (c_opt = getopt(argc,argv,"+nsvh")))) {    
     switch (c_opt) {
     case 's':
       the_request.silent  = 1;
