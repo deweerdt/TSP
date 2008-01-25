@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.c,v 1.38 2007-11-30 15:42:01 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.c,v 1.39 2008-01-25 16:00:35 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -534,7 +534,7 @@ TSP_session_create_data_sender_by_channel(channel_id_t channel_id) {
    */
   if (NULL==session->session_data->groups) {
     retcode = TSP_STATUS_ERROR_BAD_REQUEST_ORDER;
-    return retcode;
+    goto out;
   }
 
   session->session_data->sender = NULL;
@@ -602,6 +602,7 @@ TSP_session_create_data_sender_by_channel(channel_id_t channel_id) {
     }
   }
   
+out:
   TSP_UNLOCK_MUTEX(&X_session_list_mutex,FALSE);  
   return retcode;
 }
@@ -684,7 +685,8 @@ TSP_session_get_symbols_global_index_by_channel(channel_id_t channel_id,
     
     if (pg_indexes == NULL) {
       STRACE_ERROR(("Unable to allocate memory for global provider index"));
-      return FALSE;
+      ret = FALSE;
+      goto out;
     }
   
     /* Get global provider indexes */
@@ -694,6 +696,7 @@ TSP_session_get_symbols_global_index_by_channel(channel_id_t channel_id,
       ret=FALSE;
     }
      
+out:
     TSP_UNLOCK_MUTEX(&X_session_list_mutex,FALSE);
 
   return ret;
