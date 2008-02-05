@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_client.c,v 1.21 2007-05-12 22:09:32 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_client.c,v 1.22 2008-02-05 18:54:10 rhdv Exp $
 
 -----------------------------------------------------------------------
 
@@ -44,13 +44,13 @@ Purpose   :
 int tsp_wrap_rpc_clnt_set_timeout(CLIENT *client, int timeout);
 
 #define LOCAL_RPCCHECK_NORETURN  	if( server == (TSP_server_t)0)  \
-                                        { STRACE_ERROR(("RPCCHECK failed")) ;} 
+                                        { STRACE_ERROR("RPCCHECK failed") ;} 
 
 #define LOCAL_RPCCHECK_FALSE  	if( server == (TSP_server_t)0)  \
-				{ STRACE_ERROR(("RPCCHECK failed")) ; return FALSE ;} 
+				{ STRACE_ERROR("RPCCHECK failed") ; return FALSE ;} 
 				
 #define LOCAL_RPCCHECK_0  	if( server == (TSP_server_t)0) \
-				{ STRACE_ERROR(("RPCCHECK failed")) ; return 0 ;} 
+				{ STRACE_ERROR("RPCCHECK failed") ; return 0 ;} 
 
 TSP_provider_info_t * tsp_provider_information(TSP_server_t server)
 {
@@ -76,10 +76,10 @@ CLIENT* tsp_remote_open_progid(const char *target_name, int progid)
   cl = clnt_create(target_name, progid, TSP_RPC_VERSION_INITIAL, "tcp");
 
   if (cl == (CLIENT *)0) {
-    STRACE_DEBUG(("ERROR : GLOBAL clnt_create failed for host <%s> / progid <%d/0x%08X>", target_name, progid,progid));
+    STRACE_DEBUG("ERROR : GLOBAL clnt_create failed for host <%s> / progid <%d/0x%08X>", target_name, progid,progid);
   }
   else {
-    STRACE_INFO(("CONNECTED to server %s", target_name));
+    STRACE_INFO("CONNECTED to server %s", target_name);
     /* Set time out */
     tsp_wrap_rpc_clnt_set_timeout(cl, TSP_RPC_CONNECT_TIMEOUT);    
   }
@@ -107,7 +107,7 @@ int TSP_remote_open_server( const char *protocol,
 
   if(strcmp(protocol, TSP_RPC_PROTOCOL) != 0)
     {
-      STRACE_ERROR(("Protocol %s not handled, use %s", protocol, TSP_RPC_PROTOCOL));
+      STRACE_ERROR("Protocol %s not handled, use %s", protocol, TSP_RPC_PROTOCOL);
     }
   else if((server_id < prodid_max_number) && (server_id >=0) )
     {
@@ -129,42 +129,42 @@ int TSP_remote_open_server( const char *protocol,
 				 strlen(server_name)) == 0)
 			{
 			  strcpy(server_info, server_info_t->info);
-			  STRACE_INFO(("Server opened : '%s'", server_info));
+			  STRACE_INFO("Server opened : '%s'", server_info);
 			  ret = TRUE;
 			}
 		      else
 			{
-			  STRACE_INFO(("Not the requested server : '%s'", server_info_t->info));
+			  STRACE_INFO("Not the requested server : '%s'", server_info_t->info);
 			  TSP_remote_close_server(*server);
 			  ret = FALSE;
 			}
 		    }
 		  else
 		    {
-		      STRACE_ERROR(("Returned info string too long"));
+		      STRACE_ERROR("Returned info string too long");
 		    }
 		}
 	      else
 		{
-		  STRACE_ERROR(("%s", clnt_sperror(*server, "sp_server_info_1\n") ));
+		  STRACE_ERROR("%s", clnt_sperror(*server, "sp_server_info_1"));
 		}
 	      
 	    }
 	  else
 	    {
-	      STRACE_DEBUG(("tsp_remote_open_progid failed"));
+	      STRACE_DEBUG("tsp_remote_open_progid failed");
 	    }
 			
 	}
       else
 	{
-	  STRACE_ERROR(("No ProgId for Server Id=%d", server_id));
+	  STRACE_ERROR("No ProgId for Server Id=%d", server_id);
 	}
 		
     }
   else
     {
-      STRACE_ERROR(("server_id %d too high", server_id));
+      STRACE_ERROR("server_id %d too high", server_id);
     }
 	
   return ret;

@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_datapool.c,v 1.33 2007-11-30 15:42:00 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_datapool.c,v 1.34 2008-02-05 18:54:10 rhdv Exp $
 
 -----------------------------------------------------------------------
 
@@ -71,7 +71,7 @@ TSP_datapool_t X_global_datapool = {FALSE,FALSE,0,0,0};
 { \
 	if( (index) >= (obj).size ) \
 	{ \
-		STRACE_ERROR(("ERROR :-->OUT : provider_global_index %d does not exist !",(index))) \
+		STRACE_ERROR("ERROR :-->OUT : provider_global_index %d does not exist !",(index)); \
 		return ret; \
 	} \
 }
@@ -114,25 +114,25 @@ TSP_datapool_push_commit(TSP_datapool_t* datapool, time_stamp_t time_stamp, GLU_
     
   case GLU_GET_EOF :
     TSP_session_all_session_send_msg_ctrl(TSP_MSG_CTRL_EOF);
-    STRACE_INFO(("GLU sent EOF"));
+    STRACE_INFO("GLU sent EOF");
     /* End of flow. Our datapool is dead */
     datapool->terminated = TRUE;
     break;
     
   case GLU_GET_RECONF :
     TSP_session_all_session_send_msg_ctrl(TSP_MSG_CTRL_RECONF);
-    STRACE_INFO(("GLU sent RECONF"));
+    STRACE_INFO("GLU sent RECONF");
     /* End of flow. Our datapool is dead */
     datapool->terminated = TRUE;
     break;
     
   case GLU_GET_DATA_LOST :
     TSP_session_all_session_send_msg_ctrl(TSP_MSG_CTRL_GLU_DATA_LOST);
-    STRACE_INFO(("GLU sent DATA_LOST"));
+    STRACE_INFO("GLU sent DATA_LOST");
     break;
     
   default:
-    STRACE_ERROR(("?"));
+    STRACE_ERROR("?");
     assert(0);
   }    
   return 0;  

@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/providers/bb_provider/bb_tsp_provider.c,v 1.34 2007-03-23 21:12:53 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/providers/bb_provider/bb_tsp_provider.c,v 1.35 2008-02-05 18:54:11 rhdv Exp $
 
 -----------------------------------------------------------------------
 
@@ -402,7 +402,7 @@ BB_GLU_init(GLU_handle_t* cthis, int fallback_argc, char* fallback_argv[]) {
 		} else  { /* skip unhandled BB type */ 
 			char *n;
 			n = bb_get_varname(&bb_data_desc(shadow_bb)[i]);
-			STRACE_INFO(("Skipping unhandled symbol type <%d> name <%s>",bb_data_desc(shadow_bb)[i].type, n));
+			STRACE_INFO("Skipping unhandled symbol type <%d> name <%s>",bb_data_desc(shadow_bb)[i].type, n);
 			free(n);
 		}
 	} /* loop over bb items */
@@ -446,7 +446,7 @@ BB_GLU_get_pgi(GLU_handle_t* cthis, TSP_sample_symbol_info_list_t* symbol_list, 
   void *sym_value;
   char *n;
 
-  STRACE_INFO(("Starting symbol Valid nb_symbol=%u",symbol_list->TSP_sample_symbol_info_list_t_len));
+  STRACE_INFO("Starting symbol Valid nb_symbol=%u",symbol_list->TSP_sample_symbol_info_list_t_len);
   /* For each requested symbols, check by name, and find the provider global index */
   for (i = 0 ; i < symbol_list->TSP_sample_symbol_info_list_t_len ; i++) {
 
@@ -458,17 +458,17 @@ BB_GLU_get_pgi(GLU_handle_t* cthis, TSP_sample_symbol_info_list_t* symbol_list, 
           n,
           VARNAME_MAX_SIZE,
           array_index, &array_index_len)) {
-      STRACE_INFO  (("%s: cannot parse symname <%s>",
+      STRACE_INFO("%s: cannot parse symname <%s>",
             "BB_GLU_get_pgi",
-            symbol_list->TSP_sample_symbol_info_list_t_val[i].name));
+            symbol_list->TSP_sample_symbol_info_list_t_val[i].name);
       ret = FALSE;
       free(n);
       continue;
     } 	 
     else {
-      STRACE_DEBUG  (("%s: array name <%s> parsed to symname <%s>",
+      STRACE_DEBUG("%s: array name <%s> parsed to symname <%s>",
             "BB_GLU_get_pgi",
-            symbol_list->TSP_sample_symbol_info_list_t_val[i].name, n));
+            symbol_list->TSP_sample_symbol_info_list_t_val[i].name, n);
       /* search if the symbol is published in the blackboard */
       bb_set_varname(&sym_data_desc, n);
       sym_data_desc.type      = E_BB_DISCOVER;
@@ -477,8 +477,8 @@ BB_GLU_get_pgi(GLU_handle_t* cthis, TSP_sample_symbol_info_list_t* symbol_list, 
       sym_value = bb_alias_subscribe(shadow_bb,&sym_data_desc,array_index,array_index_len);    	
 
       if (NULL==sym_value) {
-        STRACE_INFO  (("symbol <%s> not found in BB <%s>",
-              n, shadow_bb->name));
+        STRACE_INFO("symbol <%s> not found in BB <%s>",
+              n, shadow_bb->name);
         pg_indexes[i] = -1;	     
         ret = FALSE;
         free(n);
@@ -488,8 +488,8 @@ BB_GLU_get_pgi(GLU_handle_t* cthis, TSP_sample_symbol_info_list_t* symbol_list, 
         /* find the index of the symbol in the BB */
         bbidx = bb_find(shadow_bb, n);
 
-        STRACE_DEBUG(("Validate symbol: orig_name=<%s>, short=<%s>",
-              symbol_list->TSP_sample_symbol_info_list_t_val[i].name, n));
+        STRACE_DEBUG("Validate symbol: orig_name=<%s>, short=<%s>",
+              symbol_list->TSP_sample_symbol_info_list_t_val[i].name, n);
 
         /* 
          * Array index is in reverse order of aliasstack.
@@ -509,7 +509,7 @@ BB_GLU_get_pgi(GLU_handle_t* cthis, TSP_sample_symbol_info_list_t* symbol_list, 
         if (-1==bbidx) {
           pg_indexes[i] = -1;
           ret=FALSE;
-          STRACE_INFO(("Symbol=%s, not found",symbol_list->TSP_sample_symbol_info_list_t_val[i].name));
+          STRACE_INFO("Symbol=%s, not found",symbol_list->TSP_sample_symbol_info_list_t_val[i].name);
           free(n);
           continue;
         } else {
@@ -523,9 +523,9 @@ BB_GLU_get_pgi(GLU_handle_t* cthis, TSP_sample_symbol_info_list_t* symbol_list, 
             /* validate */
             if ((aliasstack[j].dimension > 1) && (aliasstack[j].dimension < array_index[array_index_ptr])) {
               char *n = bb_get_varname(&aliasstack[j]);
-              STRACE_INFO(("Symbol=%s, found but index=%d out of range for element <%s>",
+              STRACE_INFO("Symbol=%s, found but index=%d out of range for element <%s>",
                     symbol_list->TSP_sample_symbol_info_list_t_val[i].name,
-                    array_index[array_index_ptr], n));
+                    array_index[array_index_ptr], n);
               ret = FALSE;
               free(n);
             }
@@ -578,7 +578,7 @@ BB_GLU_get_pgi(GLU_handle_t* cthis, TSP_sample_symbol_info_list_t* symbol_list, 
             }
 
             pg_indexes[i] = bbindex_to_pgi[bbidx] + pgi_offset;
-            STRACE_INFO(("Symbol=%s, found index=%d",symbol_list->TSP_sample_symbol_info_list_t_val[i].name,pg_indexes[i]));
+            STRACE_INFO("Symbol=%s, found index=%d",symbol_list->TSP_sample_symbol_info_list_t_val[i].name,pg_indexes[i]);
           }
         }
       }
@@ -591,7 +591,7 @@ BB_GLU_get_pgi(GLU_handle_t* cthis, TSP_sample_symbol_info_list_t* symbol_list, 
         &(pg_indexes[i]));
   }
 
-  STRACE_INFO(("End of symbol Valid")); 
+  STRACE_INFO("End of symbol Valid");
 
   return ret;
 } /* BB_GLU_get_pgi */
@@ -680,7 +680,7 @@ BB_GLU_async_sample_write(GLU_handle_t* glu,
 	char   strvalue[256];
 	void*  genuineBBdata;
 	
-	STRACE_INFO(("BB_PROVIDER want to AsyncWrite : pgi <%d> with value : 0x%X (value_size=%d)",provider_global_index, (uint32_t)value_ptr,value_size));
+	STRACE_INFO("BB_PROVIDER want to AsyncWrite : pgi <%d> with value : 0x%X (value_size=%d)",provider_global_index, (uint32_t)value_ptr,value_size);
 	
 	/* FIXME : Should use the pgi to cast properly the data versus the real type */
 	value = *(double*)value_ptr;
@@ -693,7 +693,7 @@ BB_GLU_async_sample_write(GLU_handle_t* glu,
 			char *n;
 	    data_desc = bbdatadesc_by_pgi[provider_global_index];
 			n = bb_get_varname(data_desc);
-	    STRACE_INFO(("About to write on symbol <%s> value <%f> (strvalue=%s)...",n,value,strvalue));	    
+	    STRACE_INFO("About to write on symbol <%s> value <%f> (strvalue=%s)...",n,value,strvalue);
 			free(n);
 	    /* 
 	     * Note that we should write to genuine BB not the shadow ... 
@@ -705,13 +705,13 @@ BB_GLU_async_sample_write(GLU_handle_t* glu,
 	                   (value_by_pgi[provider_global_index] - bb_data(shadow_bb));
 	    retcode = bb_value_direct_write(genuineBBdata,*data_desc,strvalue,0);
 	  } else {
-	    STRACE_INFO(("BB_GLU : pgi = %d is not allowed to be written",provider_global_index));
+	    STRACE_INFO("BB_GLU : pgi = %d is not allowed to be written",provider_global_index);
 	  }
 	} else {
-	  STRACE_INFO(("BB_GLU : pgi = %d is not valid provider_global_index",provider_global_index));	
+	  STRACE_INFO("BB_GLU : pgi = %d is not valid provider_global_index",provider_global_index);
 	}
 	
-	STRACE_DEBUG(("BB_PROVIDER After AsyncWrite : value %f return :%d",*((double*)value_by_pgi[provider_global_index]), retcode));
+	STRACE_DEBUG("BB_PROVIDER After AsyncWrite : value %f return :%d",*((double*)value_by_pgi[provider_global_index]), retcode);
 
 	return retcode;
 } /* end of BB_GLU_async_sample_write */
@@ -723,15 +723,15 @@ BB_GLU_async_sample_read(GLU_handle_t* glu,
 	int retcode = BB_NOK; 
 	void*  genuineBBdata;
 	
-	STRACE_DEBUG(("BB_PROVIDER want to AsyncRead : pgi <%d> (value_size allowed=%d)",provider_global_index,*value_size));
+	STRACE_DEBUG("BB_PROVIDER want to AsyncRead : pgi <%d> (value_size allowed=%d)",provider_global_index,*value_size);
 	
 	/* try to read */
 	if (provider_global_index>=0 && provider_global_index<nbTspSymbols) {
 			char *n;
 	    data_desc = bbdatadesc_by_pgi[provider_global_index];
 			n = bb_get_varname(data_desc);
-	    STRACE_INFO(("About to read from symbol <%s> value...",n));
-			free(n);
+	    STRACE_INFO("About to read from symbol <%s> value...",n);
+	    free(n);
 	    /* 
 	     * Note that we should read from genuine BB not the shadow ... 
 	     * since the shadow may be overwritten immediatly on next update cycle
@@ -743,13 +743,13 @@ BB_GLU_async_sample_read(GLU_handle_t* glu,
 	    
 	    *((double*)value_ptr) = bb_double_of(genuineBBdata,
 						 bbdatadesc_by_pgi[provider_global_index]->type);
-	    STRACE_INFO(("AsyncRead value is <%f>.",*((double*)value_ptr)));
+	    STRACE_INFO("AsyncRead value is <%f>.",*((double*)value_ptr));
 	    retcode = BB_OK;	
 	} else {
-	  STRACE_INFO(("BB_GLU : pgi = %d is not valid provider_global_index",provider_global_index));	
+	  STRACE_INFO("BB_GLU : pgi = %d is not valid provider_global_index",provider_global_index);
 	}
 	
-	STRACE_DEBUG(("BB_PROVIDER After AsyncRead : value %f return :%d",*((double*)value_ptr), retcode));
+	STRACE_DEBUG("BB_PROVIDER After AsyncRead : value %f return :%d",*((double*)value_ptr), retcode);
 
 	return retcode;
 } /* end of BB_GLU_async_sample_read */

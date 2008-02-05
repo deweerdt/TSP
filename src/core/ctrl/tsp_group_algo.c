@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_group_algo.c,v 1.26 2007-11-30 15:38:22 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_group_algo.c,v 1.27 2008-02-05 18:54:10 rhdv Exp $
 
 -----------------------------------------------------------------------
 
@@ -101,14 +101,14 @@ int TSP_group_algo_get_nb_groups(const TSP_sample_symbol_info_list_t* symbols)
     
     /* We calculate the LCM for the period of all symbols */
     int ppcm = (symbols->TSP_sample_symbol_info_list_t_val[0].period);
-    STRACE_DEBUG(("Frequency_ratio No0= %d", ppcm));
+    STRACE_DEBUG("Frequency_ratio No0= %d", ppcm);
     
     for( i = 1 ; i < nb_symbols ; i++) {	
       
       int frequency_ratio =
 	(symbols->TSP_sample_symbol_info_list_t_val[i].period);
       
-      STRACE_DEBUG(("Frequency_ratio No%u= %d", i, frequency_ratio));
+      STRACE_DEBUG("Frequency_ratio No%u= %d", i, frequency_ratio);
       
       /* LCM */         
       PPCM(ppcm,frequency_ratio, ppcm); 
@@ -118,9 +118,9 @@ int TSP_group_algo_get_nb_groups(const TSP_sample_symbol_info_list_t* symbols)
     
   }
   else {
-    STRACE_WARNING(("No symbols in list !"));    
+    STRACE_WARNING("No symbols in list !");
   }
-  STRACE_INFO(("Found <%d> group(s) for request with <%d> symbol(s)",nb_groups,nb_symbols));
+  STRACE_INFO("Found <%d> group(s) for request with <%d> symbol(s)",nb_groups,nb_symbols);
   return nb_groups;    
 }
 
@@ -155,7 +155,7 @@ TSP_group_algo_get_group_size(const TSP_sample_symbol_info_list_t* symbols,
       }      
     }
     
-  STRACE_INFO(("Group_size for group[%d] is %d", group_id, group_size));    
+  STRACE_INFO("Group_size for group[%d] is %d", group_id, group_size);
   return group_size;
 }
 
@@ -180,7 +180,7 @@ TSP_group_algo_get_groups_summed_size(const TSP_sample_symbol_info_list_t* symbo
     groups_summed_size += TSP_group_algo_get_group_size(symbols, group_id,&group_byte_size); 
   }
     
-  STRACE_INFO(("Groups_summed_size is %d", groups_summed_size));
+  STRACE_INFO("Groups_summed_size is %d", groups_summed_size);
     
   return groups_summed_size;
 } /* end of TSP_group_algo_get_groups_summed_size */
@@ -253,8 +253,8 @@ TSP_group_algo_allocate_group_table(const TSP_sample_symbol_info_list_t* symbols
 
     }
 
-  STRACE_INFO(("Max group size      = %d", table->max_group_len));  
-  STRACE_INFO(("Group max byte size = %d", table->group_max_byte_size));
+  STRACE_INFO("Max group size      = %d", table->max_group_len);
+  STRACE_INFO("Group max byte size = %d", table->group_max_byte_size);
   return table;
 } /* TSP_group_algo_allocate_group_table */
                                                              
@@ -320,7 +320,7 @@ TSP_group_algo_create_symbols_table(const TSP_sample_symbol_info_list_t* in_symb
       /* Does - it belong to the group */
       if (BELONGS_TO_GROUP(in_info->period, in_info->phase , group_id) ) {		
 	/*Yes, we add it*/
-	STRACE_DEBUG(("Adding provider_global_index %d at group %d and rank %d",in_info->provider_global_index,group_id,rank));
+	STRACE_DEBUG("Adding provider_global_index %d at group %d and rank %d",in_info->provider_global_index,group_id,rank);
 	/* 1 - In the out group table */
 	
 	/* find the encoder of the data type */

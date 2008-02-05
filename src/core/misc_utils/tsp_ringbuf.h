@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/misc_utils/tsp_ringbuf.h,v 1.9 2007-07-30 16:24:25 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/misc_utils/tsp_ringbuf.h,v 1.10 2008-02-05 18:54:10 rhdv Exp $
 
 -----------------------------------------------------------------------
 
@@ -245,7 +245,7 @@ BEGIN_C_DECLS
   {									\
     int mul_offset =  RINGBUF_MULTSUP((sizeof(ItemType) + nbSpareBytes),sizeof(ItemType)) / sizeof(ItemType); \
     name = (TypeName*)malloc(sizeof(TypeName) + (sizeof(ItemType) * mul_offset  * sz)); \
-    STRACE_DEBUG(("RINGBUF_PTR_INIT request %d Kbytes (sizeof(" #TypeName ")=%d,sizeof(" #ItemType ")=%d,mul_offset=%d,sz=%d)",(sizeof(TypeName) + (sizeof(ItemType) *mul_offset  * sz))/1024,sizeof(TypeName),sizeof(ItemType),mul_offset,sz)); \
+    STRACE_DEBUG("RINGBUF_PTR_INIT request %d Kbytes (sizeof(" #TypeName ")=%d,sizeof(" #ItemType ")=%d,mul_offset=%d,sz=%d)",(sizeof(TypeName) + (sizeof(ItemType) *mul_offset  * sz))/1024,sizeof(TypeName),sizeof(ItemType),mul_offset,sz); \
     if(NULL!=name) {							\
       (name)->size   = sz;						\
       (name)->put   = 0;						\

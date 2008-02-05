@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_server.c,v 1.35 2007-11-30 15:42:02 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_server.c,v 1.36 2008-02-05 18:54:11 rhdv Exp $
 
 -----------------------------------------------------------------------
 
@@ -179,7 +179,7 @@ int * tsp_request_async_sample_write_1_svc(TSP_async_sample_t async_sample_write
   
 
   /* endianity managment*/
-/*   STRACE_DEBUG(("Len=%d,  pgi = %d value = %f et ret = %d", async_sample_write.data.data_len, async_sample_write.provider_global_index,(double*)(async_sample_write.data.data_val),ret)); */
+/*   STRACE_DEBUG("Len=%d,  pgi = %d value = %f et ret = %d", async_sample_write.data.data_len, async_sample_write.provider_global_index,(double*)(async_sample_write.data.data_val),ret); */
 
 /*   switch (async_sample_write.data.data_len) { */
 /*   case 2:  */
@@ -196,11 +196,11 @@ int * tsp_request_async_sample_write_1_svc(TSP_async_sample_t async_sample_write
 /*   } */
 	
 
-  STRACE_DEBUG(("TSP_SERVER Before async_write : pgi %d value %s return %d ",async_sample_write.provider_global_index,async_sample_write.data.data_val,ret ));
+  STRACE_DEBUG("TSP_SERVER Before async_write : pgi %d value %s return %d ",async_sample_write.provider_global_index,async_sample_write.data.data_val,ret);
   
   ret = TSP_provider_request_async_sample_write(&async_sample_write);	
   
-  STRACE_DEBUG(("TSP_SERVER After async_write : pgi %d value %s return %d ",async_sample_write.provider_global_index,async_sample_write.data.data_val,ret ));
+  STRACE_DEBUG("TSP_SERVER After async_write : pgi %d value %s return %d ",async_sample_write.provider_global_index,async_sample_write.data.data_val,ret);
 
   return &ret;
   
@@ -211,7 +211,7 @@ TSP_async_sample_t * tsp_request_async_sample_read_1_svc(TSP_async_sample_t asyn
   static TSP_async_sample_t ret;
   
   /* endianity managment*/
-/*   STRACE_DEBUG(("Len=%d,  pgi = %d value = %f et ret = %d", async_sample_read.data.data_len, async_sample_read.provider_global_index,(double*)(async_sample_read.data.data_val),ret)); */
+/*   STRACE_DEBUG("Len=%d,  pgi = %d value = %f et ret = %d", async_sample_read.data.data_len, async_sample_read.provider_global_index,(double*)(async_sample_read.data.data_val),ret); */
 
 /*   switch (async_sample_read.data.data_len) { */
 /*   case 2:  */
@@ -268,27 +268,27 @@ static void TSP_rpc_run(TSP_rpc_request_config_t *config)
   config->xprt = svctcp_create(RPC_ANYSOCK, 0, 0);
   if (config->xprt == NULL) 
     {
-      STRACE_ERROR(("Cannot create TCP service"));
+      STRACE_ERROR("Cannot create TCP service");
       return;
     }
 
   if (!svc_register(config->xprt, rpc_progid, TSP_RPC_VERSION_INITIAL, tsp_rpc_1, IPPROTO_TCP))
     {
-      STRACE_ERROR(("RPC server unable to register ProgId=%X",  rpc_progid));
+      STRACE_ERROR("RPC server unable to register ProgId=%X",  rpc_progid);
       return;
     }
 
-  STRACE_DEBUG(("RPC server is being be started with ProgId=%X", rpc_progid));
+  STRACE_DEBUG("RPC server is being be started with ProgId=%X", rpc_progid);
   
-  STRACE_DEBUG(("launching svc_run..."));
+  STRACE_DEBUG("launching svc_run...");
   svc_run();
-  STRACE_INFO(("svc_run returned"));
+  STRACE_INFO("svc_run returned");
 
 }
 
 static void TSP_rpc_stop(TSP_rpc_request_config_t *config)
 {
-  /* STRACE_DEBUG(("calling svc_exit...")); */
+  /* STRACE_DEBUG("calling svc_exit..."); */
   /* svc_destroy(config->xprt); */
 
   /* Clean-up Port map so that next provider could use this ProgId */
@@ -338,7 +338,7 @@ int TSP_rpc_request_config(TSP_provider_request_handler_t* cthis)
   
   config->server_number = TSP_rpc_init(config);
   if(config->server_number < 0) {
-      STRACE_ERROR(("unable to register any RPC progid :\n\tcheck RPC daemons, or use tsp_rpc_cleanup to clean-up all TSP RPC port mapping"));
+      STRACE_ERROR("unable to register any RPC progid :\n\tcheck RPC daemons, or use tsp_rpc_cleanup to clean-up all TSP RPC port mapping");
       cthis->status = TSP_RQH_STATUS_IDLE;
       
       return FALSE;
@@ -348,7 +348,7 @@ int TSP_rpc_request_config(TSP_provider_request_handler_t* cthis)
 #if NUMERIC_HOST
     myhost = gethostbyname(hostname);
     if (myhost == NULL) {
-      STRACE_ERROR(("Cannot gethostbyname '(hostname --> @IP)' for host <%s> check your /etc/hosts file.\n",hostname));
+      STRACE_ERROR("Cannot gethostbyname '(hostname --> @IP)' for host <%s> check your /etc/hosts file.",hostname);
       /* be tolerant we keep going with hostname but... consumer may not handle this properly */    
     } else {
      /* 

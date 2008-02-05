@@ -1,6 +1,6 @@
 /*
 
-$Id: server_main.c,v 1.16 2007-11-30 15:42:02 erk Exp $
+$Id: server_main.c,v 1.17 2008-02-05 18:54:12 rhdv Exp $
 
 -----------------------------------------------------------------------
 
@@ -105,7 +105,7 @@ main(int argc, char *argv[])
   /* intercept SIGINT signal */
   if ( SIG_ERR == signal(SIGINT, intrpt))
   {
-    STRACE_ERROR(("Error initialisation signal intercept function"));
+    STRACE_ERROR("Error initialisation signal intercept function");
     exit(1);
   }
 #else

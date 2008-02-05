@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_common_status.c,v 1.5 2007-11-30 15:42:01 erk Exp $
+$Id: tsp_common_status.c,v 1.6 2008-02-05 18:54:09 rhdv Exp $
 
 -----------------------------------------------------------------------
 
@@ -39,7 +39,7 @@ Purpose   : Main implementation for the producer module
 #include <tsp_sys_headers.h>
 #include <tsp_abs_types.h>
 #include <tsp_datastruct.h>
-#include <tsp_simple_trace.h>
+#include <tsp_common_trace.h>
 #include <tsp_const_def.h>
 #include <tsp_common_macros.h>
 #define TSP_COMMON_STATUS_C

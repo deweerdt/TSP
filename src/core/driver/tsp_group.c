@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_group.c,v 1.12 2007-08-28 09:44:30 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_group.c,v 1.13 2008-02-05 18:54:10 rhdv Exp $
 
 -----------------------------------------------------------------------
 
@@ -132,10 +132,10 @@ TSP_group_create_group_table(const TSP_sample_symbol_info_list_t* symbols, int g
 				       table->groups[group_id].items[rank].sizeof_encoded_item :
 				       decode_buffer_maxsize);
 	      
-	      STRACE_DEBUG(("Added to group table Id=%d, Gr=%d, Rank=%d", 
+	      STRACE_DEBUG("Added to group table Id=%d, Gr=%d, Rank=%d", 
 			    table->groups[group_id].items[rank].provider_global_index,
 			    group_id,
-			    rank));
+			    rank);
 	      rank++; 
 	      i++;
 	    }  

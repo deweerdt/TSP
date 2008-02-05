@@ -244,11 +244,11 @@ static void tspfs_destroy(void *unused)
 		free(tspfs.idx_to_pgi);
 
 	if (tspfs.sync && (TSP_STATUS_OK!=TSP_consumer_request_sample_destroy(tspfs.provider))) {
-		STRACE_ERROR(("Function TSP_consumer_request_sample_destroy failed"));
+		STRACE_ERROR("Function TSP_consumer_request_sample_destroy failed");
 	}
 
 	if (TSP_STATUS_OK!=TSP_consumer_request_close(tspfs.provider)) {
-		STRACE_ERROR(("Function TSP_consumer_request_close failed"));
+		STRACE_ERROR("Function TSP_consumer_request_close failed");
 	}
 
 	TSP_consumer_end();

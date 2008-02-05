@@ -1,6 +1,6 @@
 /*
 
-$Id: generic_consumer_main.c,v 1.13 2007-12-08 13:56:41 erk Exp $
+$Id: generic_consumer_main.c,v 1.14 2008-02-05 18:54:09 rhdv Exp $
 
 -----------------------------------------------------------------------
 
@@ -124,7 +124,7 @@ main(int argc, char *argv[]){
 #endif
 
   if(TSP_STATUS_OK!=TSP_consumer_init(&argc, &argv)) {
-      STRACE_ERROR(("TSP init failed"));
+      STRACE_ERROR("TSP init failed");
       return -1;
   }
 

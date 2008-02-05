@@ -1,6 +1,6 @@
 /*
 
-$Id: tspcfg_file.c,v 1.4 2006-10-18 23:44:38 erk Exp $
+$Id: tspcfg_file.c,v 1.5 2008-02-05 18:54:12 rhdv Exp $
 
 -----------------------------------------------------------------------
  
@@ -148,7 +148,7 @@ int32_t TSP_TspCfgSampleList_initialize(TspCfgSampleList_T *tspCfgSampleList,
     if (NULL==tspCfgSampleList->implicit_type)
     {
       retcode = TSP_STATUS_ERROR_MEMORY_ALLOCATION;
-      STRACE_ERROR(("Cannot strdup <%s>",implicit_type));
+      STRACE_ERROR("Cannot strdup <%s>",implicit_type);
     }
  } 
  else
@@ -162,7 +162,7 @@ int32_t TSP_TspCfgSampleList_initialize(TspCfgSampleList_T *tspCfgSampleList,
     if (NULL==tspCfgSampleList->implicit_access)
     {
       retcode = TSP_STATUS_ERROR_MEMORY_ALLOCATION;
-      STRACE_ERROR(("Cannot strdup <%s>",implicit_access));
+      STRACE_ERROR("Cannot strdup <%s>",implicit_access);
     }
  } 
  else
@@ -176,7 +176,7 @@ int32_t TSP_TspCfgSampleList_initialize(TspCfgSampleList_T *tspCfgSampleList,
     if (NULL==tspCfgSampleList->implicit_provider)
     {
       retcode = TSP_STATUS_ERROR_MEMORY_ALLOCATION;
-      STRACE_ERROR(("Cannot strdup <%s>",implicit_provider));
+      STRACE_ERROR("Cannot strdup <%s>",implicit_provider);
     }
  } 
  else
@@ -190,7 +190,7 @@ int32_t TSP_TspCfgSampleList_initialize(TspCfgSampleList_T *tspCfgSampleList,
     if (NULL==tspCfgSampleList->renamed)
     {
       retcode = TSP_STATUS_ERROR_MEMORY_ALLOCATION;
-      STRACE_ERROR(("Cannot strdup <%s>",renamed));
+      STRACE_ERROR("Cannot strdup <%s>",renamed);
     }
  } 
  else
@@ -299,7 +299,7 @@ TSP_TspCfgProvider_initialize(TspCfgProvider_T *provider,char* name, char*  url,
     if (NULL==provider->name)
     {
       retcode = TSP_STATUS_ERROR_MEMORY_ALLOCATION;
-      STRACE_ERROR(("Cannot strdup <%s>",name));
+      STRACE_ERROR("Cannot strdup <%s>",name);
     }
 
   } 
@@ -322,7 +322,7 @@ TSP_TspCfgProvider_initialize(TspCfgProvider_T *provider,char* name, char*  url,
     if (NULL==provider->url)
     {
       retcode = TSP_STATUS_ERROR_MEMORY_ALLOCATION;
-      STRACE_ERROR(("Cannot strdup <%s>",url));
+      STRACE_ERROR("Cannot strdup <%s>",url);
     }
   } 
   else

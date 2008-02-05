@@ -8,8 +8,8 @@
 #define die_if_fault_occurred(x) \
 { \
     if ((x)->fault_occurred) { \
-        STRACE_ERROR(("XML-RPC Fault: %s (%d)\n", \
-					  (x)->fault_string, (x)->fault_code)); \
+        STRACE_ERROR("XML-RPC Fault: %s (%d)", \
+					  (x)->fault_string, (x)->fault_code); \
         exit(1); \
     } \
 }

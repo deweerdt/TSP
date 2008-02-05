@@ -1,6 +1,6 @@
 /*
 
-$Id: glue_res.c,v 1.14 2006-04-23 22:28:43 erk Exp $
+$Id: glue_res.c,v 1.15 2008-02-05 18:54:12 rhdv Exp $
 
 -----------------------------------------------------------------------
  
@@ -90,7 +90,7 @@ void RES_GLU_loop()
     {
       if(d_read_r(obj->h_res, obj->res_values) == EOF)
 	{
-	  STRACE_DEBUG (("EOF for time=%d, val[0]=%g", obj->time_stamp, *((double*)item.raw_value)));
+	  STRACE_DEBUG("EOF for time=%d, val[0]=%g", obj->time_stamp, *((double*)item.raw_value));
 	  if(!_wait_eof)
 	    {
 	      state = GLU_GET_EOF;
@@ -122,7 +122,7 @@ void RES_GLU_loop()
 	      TSP_datapool_push_next_item(res_GLU->datapool,&item);
 
 	      if(i==0)
-		STRACE_INFO (("New record : time=%d, val[0]=%g", obj->time_stamp, *((double*)item.raw_value)));
+		STRACE_INFO("New record : time=%d, val[0]=%g", obj->time_stamp, *((double*)item.raw_value));
 	    }
       
 	}
@@ -161,7 +161,7 @@ int RES_GLU_init(GLU_handle_t* this, int fallback_argc, char* fallback_argv[])
       /* FIXME : quand la fonction renvera un code d'erreur, le verifier ! */
       obj->time_stamp = -1;
 
-      STRACE_INFO(("stream_init = '%s'", res_file));
+      STRACE_INFO("stream_init = '%s'", res_file);
       obj->h_res = d_ropen_r(res_file, &(obj->use_dbl));
 	 
       if( obj->h_res )
@@ -169,9 +169,9 @@ int RES_GLU_init(GLU_handle_t* this, int fallback_argc, char* fallback_argv[])
 	  obj->nbvar = d_rval_r(obj->h_res, 'v');
 	  nbrec = d_rval_r(obj->h_res, 'r');
 
-	  STRACE_INFO(("Total number of records = %d", nbrec));
-	  STRACE_INFO(("Total number of variables = %d", obj->nbvar));
-	  STRACE_INFO(("Data type = %s", obj->use_dbl ? "DOUBLE" : "FLOAT" ));
+	  STRACE_INFO("Total number of records = %d", nbrec);
+	  STRACE_INFO("Total number of variables = %d", obj->nbvar);
+	  STRACE_INFO("Data type = %s", obj->use_dbl ? "DOUBLE" : "FLOAT");
 
 	  obj->ssiList = TSP_SSIList_new(obj->nbvar+1);
 	  assert(obj->ssiList);
@@ -211,7 +211,7 @@ int RES_GLU_init(GLU_handle_t* this, int fallback_argc, char* fallback_argv[])
 	}
       else
 	{
-	  STRACE_ERROR(("Function d_rval_r failed for file : '%s'", res_file));
+	  STRACE_ERROR("Function d_rval_r failed for file : '%s'", res_file);
 	}
 
        if(fallback_argc > GLU_RES_WAIT_EOF)
@@ -221,7 +221,7 @@ int RES_GLU_init(GLU_handle_t* this, int fallback_argc, char* fallback_argv[])
     }
   else
     {
-      STRACE_ERROR((GLU_STREAM_INIT_USAGE));
+      STRACE_ERROR(GLU_STREAM_INIT_USAGE);
       ret = FALSE;
     }
 

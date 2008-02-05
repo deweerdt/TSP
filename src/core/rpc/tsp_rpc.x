@@ -1,6 +1,6 @@
 /* -*- idl -*-
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_rpc.x,v 1.42 2006-10-25 14:40:30 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_rpc.x,v 1.43 2008-02-05 18:54:11 rhdv Exp $
 
 -----------------------------------------------------------------------
 
@@ -755,4 +755,4 @@ program TSP_RPC {
 %}
 #endif
 
-%#define TSP_STRACE_RPC_ERROR(cl, pResult) if(!pResult)  {  STRACE_ERROR(("%s", clnt_sperror(cl, "")));  }
+%#define TSP_STRACE_RPC_ERROR(cl, pResult) if(!pResult)  {  STRACE_ERROR("%s", clnt_sperror(cl, ""));  }

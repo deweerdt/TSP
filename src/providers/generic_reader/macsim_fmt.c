@@ -1,6 +1,6 @@
 /*
 
-$Id: macsim_fmt.c,v 1.12 2007-03-25 14:17:06 erk Exp $
+$Id: macsim_fmt.c,v 1.13 2008-02-05 18:54:12 rhdv Exp $
 
 -----------------------------------------------------------------------
 
@@ -588,7 +588,7 @@ int32_t load_double(char* data_var,void* raw_value,const uint32_t indice_data)
 
   if(data_var==rep || '\0'!=*rep)
   {
-    STRACE_ERROR(("Error conversion double for <%s>\n",data_var));
+    STRACE_ERROR("Error conversion double for <%s>",data_var);
     return TSP_STATUS_ERROR_UNKNOWN;
   }
 
@@ -607,7 +607,7 @@ int32_t load_float(char* data_var,void* raw_value,const uint32_t indice_data)
 
   if(data_var==rep || '\0'!=*rep)
   {
-    STRACE_ERROR(("Error conversion float\n"));
+    STRACE_ERROR("Error conversion float");
     return TSP_STATUS_ERROR_UNKNOWN;
   }
 
@@ -625,7 +625,7 @@ int32_t load_int8(char* data_var,void* raw_value,const uint32_t indice_data)
 
   if(data_var==rep || '\0'!=*rep)
   {
-    STRACE_ERROR(("Error conversion int8\n"));
+    STRACE_ERROR("Error conversion int8");
     return TSP_STATUS_ERROR_UNKNOWN;
   }
 
@@ -644,7 +644,7 @@ int32_t load_int16(char* data_var,void* raw_value,const uint32_t indice_data)
 
   if(data_var==rep || '\0'!=*rep)
   {
-    STRACE_ERROR(("Error conversion int16\n"));
+    STRACE_ERROR("Error conversion int16");
     return TSP_STATUS_ERROR_UNKNOWN;
   }
 
@@ -663,7 +663,7 @@ int32_t load_int32(char* data_var,void* raw_value,const uint32_t indice_data)
 
   if(data_var==rep || '\0'!=*rep)
   {
-    STRACE_ERROR(("Error conversion int32\n"));
+    STRACE_ERROR("Error conversion int32");
     return TSP_STATUS_ERROR_UNKNOWN;
   }
   return TSP_STATUS_OK;
@@ -681,7 +681,7 @@ int32_t load_int64(char* data_var,void* raw_value,const uint32_t indice_data)
 
   if(data_var==rep || '\0'!=*rep)
   {
-    STRACE_ERROR(("Error conversion int64\n"));
+    STRACE_ERROR("Error conversion int64");
     return TSP_STATUS_ERROR_UNKNOWN;
   }
   return TSP_STATUS_OK;
@@ -699,7 +699,7 @@ int32_t load_uint8(char* data_var,void* raw_value,const uint32_t indice_data)
 
   if(data_var==rep || '\0'!=*rep)
   {
-    STRACE_ERROR(("Error conversion uint8\n"));
+    STRACE_ERROR("Error conversion uint8");
     return TSP_STATUS_ERROR_UNKNOWN;
   }
   return TSP_STATUS_OK;
@@ -717,7 +717,7 @@ int32_t load_uint16(char* data_var,void* raw_value,const uint32_t indice_data)
 
   if(data_var==rep || '\0'!=*rep)
   {
-    STRACE_ERROR(("Error conversion uint16\n"));
+    STRACE_ERROR("Error conversion uint16");
     return TSP_STATUS_ERROR_UNKNOWN;
   }
   return TSP_STATUS_OK;
@@ -735,7 +735,7 @@ int32_t load_uint32(char* data_var,void* raw_value,const uint32_t indice_data)
 
   if(data_var==rep || '\0'!=*rep)
   {
-    STRACE_ERROR(("Error conversion uint32\n"));
+    STRACE_ERROR("Error conversion uint32");
     return TSP_STATUS_ERROR_UNKNOWN;
   }
   return TSP_STATUS_OK;
@@ -753,7 +753,7 @@ int32_t load_uint64(char* data_var,void* raw_value,const uint32_t indice_data)
 
   if(data_var==rep || '\0'!=*rep)
   {
-    STRACE_ERROR(("Error conversion uint64\n"));
+    STRACE_ERROR("Error conversion uint64");
     return TSP_STATUS_ERROR_UNKNOWN;
   }
   return TSP_STATUS_OK;

@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.c,v 1.39 2008-01-25 16:00:35 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.c,v 1.40 2008-02-05 18:54:10 rhdv Exp $
 
 -----------------------------------------------------------------------
 
@@ -58,7 +58,7 @@ opened session from a client
   {									\
     if( NULL == (session = TSP_get_session(channel_id) ) )		\
       {									\
-	STRACE_ERROR(("Unable to get session for channel_id=%u",channel_id)); \
+	STRACE_ERROR("Unable to get session for channel_id=%u",channel_id); \
 	TSP_UNLOCK_MUTEX(&X_session_list_mutex,ret);			\
       }									\
   }
@@ -114,7 +114,7 @@ TSP_get_session(channel_id_t channel_id) {
 	
   for( i = 0 ;  i < X_session_nb ; i++) {
     if( X_session_t[i].channel_id == channel_id ) {
-      STRACE_DEBUG(("Channel_id = <%d> is session Idx <%d>", channel_id,i));
+      STRACE_DEBUG("Channel_id = <%d> is session Idx <%d>", channel_id,i);
       assert(X_session_t[i].session_data);
       session = &(X_session_t[i]);
       break;			
@@ -122,7 +122,7 @@ TSP_get_session(channel_id_t channel_id) {
   }
   
   if( NULL == session ) { 
-    STRACE_ERROR(("No session found for channel_id=%u", channel_id));    
+    STRACE_ERROR("No session found for channel_id=%u", channel_id);
   }
 	
   return session ;
@@ -144,11 +144,11 @@ TSP_session_change_stateTo(TSP_session_t* session, TSP_session_state_t newState)
   case TSP_SESSION_STATE_REQUEST_SAMPLE_DESTROY_OK:
   case TSP_SESSION_STATE_BROKEN_LINK:
   case TSP_SESSION_STATE_CLOSE_ON_EOF:
-    STRACE_INFO(("Session was in state <%d> goes to <%d>",session->state,newState))
+    STRACE_INFO("Session was in state <%d> goes to <%d>",session->state,newState);
     session->state = newState;
     break;
   default:
-    STRACE_ERROR(("Unknown transition from state <%d> to <%d> IGNORED.",session->state,newState));
+    STRACE_ERROR("Unknown transition from state <%d> to <%d> IGNORED.",session->state,newState);
     retcode = TSP_STATUS_ERROR_UNKNOWN; 
     break;
   }
@@ -161,7 +161,7 @@ static void
 TSP_session_close_session(channel_id_t channel_id) {
   int ret = FALSE;
   TSP_session_t* session = NULL;
-  STRACE_DEBUG(("Request Closing session channel_id = %d", channel_id));
+  STRACE_DEBUG("Request Closing session channel_id = %d", channel_id);
   session = TSP_get_session(channel_id);
   if (NULL != session) {
     assert(session->session_data);
@@ -170,12 +170,12 @@ TSP_session_close_session(channel_id_t channel_id) {
     /* Fill the hole with latest element */
     *session = X_session_t[X_session_nb - 1];
     X_session_nb--;
-    STRACE_DEBUG(("X_session_nb now = %d.", X_session_nb));
+    STRACE_DEBUG("X_session_nb now = %d.", X_session_nb);
     ret = TRUE;
   }
 
   if(!ret) {
-    STRACE_WARNING(("Unable to find session number %d", channel_id));
+    STRACE_WARNING("Unable to find session number %d", channel_id);
   }
 
 } /* end of TSP_session_close_session */
@@ -257,7 +257,7 @@ TSP_add_session(channel_id_t* new_channel_id, GLU_handle_t* glu_h) {
 
   /* Is there room left for the new session ? */
   if( X_session_nb == TSP_MAX_CLIENT_NUMBER) {
-    STRACE_ERROR(("Max session number reached : %d", TSP_MAX_CLIENT_NUMBER));
+    STRACE_ERROR("Max session number reached : %d", TSP_MAX_CLIENT_NUMBER);
     /* do not forget to unlock!! */
     TSP_UNLOCK_MUTEX(&X_session_list_mutex,TSP_STATUS_ERROR_UNKNOWN);
     return TSP_STATUS_ERROR_NO_MORE_SESSION;
@@ -266,7 +266,7 @@ TSP_add_session(channel_id_t* new_channel_id, GLU_handle_t* glu_h) {
   /* Create a new channel Id*/
   *new_channel_id = X_count_channel_id++;
   
-  STRACE_DEBUG(("I've found room in X_session_t for the new session. Id in X_session_t is %d", X_session_nb));
+  STRACE_DEBUG("I've found room in X_session_t for the new session. Id in X_session_t is %d", X_session_nb);
   
   /* The position is always X_session_nb, 
    * 'coz' any holes in array are filled during session removal 
@@ -288,7 +288,7 @@ TSP_add_session(channel_id_t* new_channel_id, GLU_handle_t* glu_h) {
   /* OK, there's a new session*/
   X_session_nb++;
   
-  STRACE_INFO(("New consumer registered with TSP channel_id=%u", *new_channel_id ));
+  STRACE_INFO("New consumer registered with TSP channel_id=%u", *new_channel_id);
   	
   TSP_UNLOCK_MUTEX(&X_session_list_mutex,FALSE);
 
@@ -355,7 +355,7 @@ TSP_session_create_symbols_table_by_channel(const TSP_request_sample_t* req_samp
       TSP_group_algo_get_group_number(session->session_data->groups);
   }
   else {
-    STRACE_ERROR(("Function TSP_group_algo_create_symbols_table failed"));    
+    STRACE_ERROR("Function TSP_group_algo_create_symbols_table failed");
   }
     
   TSP_UNLOCK_MUTEX(&X_session_list_mutex,FALSE);
@@ -404,7 +404,7 @@ int TSP_session_send_msg_ctrl_by_channel(channel_id_t channel_id, TSP_msg_ctrl_t
       ) {
 
     if(!TSP_data_sender_send_msg_ctrl(session->session_data->sender, msg_ctrl)) {
-      STRACE_WARNING(("Data link broken for session No %d",channel_id ));
+      STRACE_WARNING("Data link broken for session No %d",channel_id);
       session->state = TSP_SESSION_STATE_BROKEN_LINK;
     }
   } else {
@@ -440,13 +440,13 @@ TSP_session_all_session_send_data(time_stamp_t t) {
       while (1==waitconsumer) {
 
 	if (TSP_SESSION_STATE_BROKEN_LINK==currentSession->state) {
-	  STRACE_DEBUG(("Data link broken (during wait loop) for session = %d / idx = %d.",currentSession->channel_id,i));
+	  STRACE_DEBUG("Data link broken (during wait loop) for session = %d / idx = %d.",currentSession->channel_id,i);
 	  waitconsumer = 0;
 	  continue;
 	}
 	
 	if (TSP_SESSION_STATE_CLOSED==currentSession->state) {
-	  STRACE_DEBUG(("Session closed (during wait loop) for session = %d / idx = %d.",currentSession->channel_id,i));
+	  STRACE_DEBUG("Session closed (during wait loop) for session = %d / idx = %d.",currentSession->channel_id,i);
 	  waitconsumer = 0;
 	  continue;
 	}
@@ -462,7 +462,7 @@ TSP_session_all_session_send_data(time_stamp_t t) {
 	tsp_usleep(500000);	
 	TSP_LOCK_MUTEX(&X_session_list_mutex,);
 
-	STRACE_DEBUG(("Waiting session (session = %d / idx = %d) to reach SAMPLING state now %d...",currentSession->channel_id,i,currentSession->state));
+	STRACE_DEBUG("Waiting session (session = %d / idx = %d) to reach SAMPLING state now %d...",currentSession->channel_id,i,currentSession->state);
 
 	if (TSP_SESSION_STATE_REQUEST_SAMPLE_INIT_OK == currentSession->state) {
 	  if (TRUE==TSP_data_sender_is_consumer_connected(currentSession->session_data->sender)) {
@@ -481,7 +481,7 @@ TSP_session_all_session_send_data(time_stamp_t t) {
 				 X_session_t[i].session_data->groups, 
 				 t))
 	  {
-	    STRACE_WARNING(("Data link broken for session No %d",X_session_t[i].channel_id ));
+	    STRACE_WARNING("Data link broken for session No %d",X_session_t[i].channel_id);
 	    X_session_t[i].state = TSP_SESSION_STATE_BROKEN_LINK;		  
 	  }
       }
@@ -504,7 +504,7 @@ TSP_session_all_session_send_msg_ctrl(TSP_msg_ctrl_t msg_ctrl) {
       {
 	
 	if(!TSP_data_sender_send_msg_ctrl(X_session_t[i].session_data->sender, msg_ctrl)) {
-	  STRACE_WARNING(("Data link broken for session No %d",X_session_t[i].channel_id ));
+	  STRACE_WARNING("Data link broken for session No %d",X_session_t[i].channel_id);
 	  X_session_t[i].state = TSP_SESSION_STATE_BROKEN_LINK;	      
 	} else if (TSP_MSG_CTRL_EOF==msg_ctrl) {
 	  /* terminate session on EOF (passive GLU case) please */
@@ -556,12 +556,12 @@ TSP_session_create_data_sender_by_channel(channel_id_t channel_id) {
     if ( base_frequency > 0.0 ) {
       ringbuf_size = TSP_STREAM_SENDER_RINGBUF_SIZE * base_frequency;
       
-      STRACE_DEBUG(("Stream sender ringbuf size will be : %d items (i.e. %d seconds)",
-		    ringbuf_size,
-		    TSP_STREAM_SENDER_RINGBUF_SIZE));
+      STRACE_DEBUG("Stream sender ringbuf size will be : %d items (i.e. %d seconds)",
+		   ringbuf_size,
+		   TSP_STREAM_SENDER_RINGBUF_SIZE);
     }
     else {
-      STRACE_ERROR(("GLU return base frequency = %f", base_frequency));
+      STRACE_ERROR("GLU return base frequency = %f", base_frequency);
       retcode = TSP_STATUS_ERROR_UNKNOWN;
     }
   }
@@ -571,10 +571,10 @@ TSP_session_create_data_sender_by_channel(channel_id_t channel_id) {
   /*--------------------*/
   if (TSP_STATUS_OK==retcode) {
     uint32_t max_group_size = TSP_group_algo_get_biggest_group_size(session->session_data->groups);
-    STRACE_DEBUG(("Channel Id <%d> has Max TSP Group Size <%d> byte(s)",
-		  channel_id,max_group_size));
-    STRACE_DEBUG(("Using RINBUF size of <%d> byte(s)",
-		  ringbuf_size));
+    STRACE_DEBUG("Channel Id <%d> has Max TSP Group Size <%d> byte(s)",
+		  channel_id,max_group_size);
+    STRACE_DEBUG("Using RINBUF size of <%d> byte(s)",
+		  ringbuf_size);
     session->session_data->sender = TSP_data_sender_create(ringbuf_size, max_group_size);      
     if(NULL != session->session_data->sender) {
       /* If there's no fifo, 
@@ -589,16 +589,16 @@ TSP_session_create_data_sender_by_channel(channel_id_t channel_id) {
 	 */
 	if (0!=(session->session_data->glu_h->start(session->session_data->glu_h))) {
 	  retcode = TSP_STATUS_ERROR_GLU_START;
-	  STRACE_ERROR(("Unable to start GLU (PASSIVE case)"));
+	  STRACE_ERROR("Unable to start GLU (PASSIVE case)");
 	} else {
-	  STRACE_DEBUG(("PASSIVE GLU started."));
+	  STRACE_DEBUG("PASSIVE GLU started.");
 	  retcode = TSP_STATUS_OK;
 	}
       }
     }
     else {
       retcode = TSP_STATUS_ERROR_UNKNOWN;
-      STRACE_ERROR(("function TSP_data_sender_create failed"));      
+      STRACE_ERROR("function TSP_data_sender_create failed");
     }
   }
   
@@ -647,7 +647,7 @@ const char* TSP_session_get_data_address_string_by_channel(channel_id_t channel_
     
   TSP_UNLOCK_MUTEX(&X_session_list_mutex,FALSE);
 
-  STRACE_DEBUG_MORE(("data_address='%s'",data_address ));
+  STRACE_DEBUG_MORE("data_address='%s'",data_address);
 
     
   return data_address;
@@ -684,7 +684,7 @@ TSP_session_get_symbols_global_index_by_channel(channel_id_t channel_id,
     TSP_GET_SESSION(session, channel_id, FALSE);    
     
     if (pg_indexes == NULL) {
-      STRACE_ERROR(("Unable to allocate memory for global provider index"));
+      STRACE_ERROR("Unable to allocate memory for global provider index");
       ret = FALSE;
       goto out;
     }
@@ -692,7 +692,7 @@ TSP_session_get_symbols_global_index_by_channel(channel_id_t channel_id,
     /* Get global provider indexes */
     myGLU = session->session_data->glu_h;
     if (myGLU->get_pgi(myGLU,symbol_list,pg_indexes) == FALSE) {
-      STRACE_ERROR(("Some symbols have not been found"));
+      STRACE_ERROR("Some symbols have not been found");
       ret=FALSE;
     }
      
@@ -724,7 +724,7 @@ TSP_session_get_garbage_session(channel_id_t* channel_id) {
     /* Garbage collect Data link broken session */
     if (X_session_t[i].state == TSP_SESSION_STATE_BROKEN_LINK ) {
       found = TRUE;
-      STRACE_INFO(("Garbage Collector thread found broken link session <%d>",X_session_t[i].channel_id));
+      STRACE_INFO("Garbage Collector thread found broken link session <%d>",X_session_t[i].channel_id);
       *channel_id = X_session_t[i].channel_id;
       break;
     } 
@@ -754,7 +754,7 @@ TSP_session_get_garbage_session(channel_id_t* channel_id) {
 	     (TSP_SESSION_STATE_REQUEST_SAMPLE_DESTROY_OK == X_session_t[i].state)
 	     )
 	    ){
-	  STRACE_INFO(("Garbage Collector thread found Datapool TERMINATED for session <%d>",X_session_t[i].channel_id));
+	  STRACE_INFO("Garbage Collector thread found Datapool TERMINATED for session <%d>",X_session_t[i].channel_id);
 	  found = TRUE;
 	  *channel_id = X_session_t[i].channel_id;
 	}

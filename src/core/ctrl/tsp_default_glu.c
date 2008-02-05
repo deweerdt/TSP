@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_default_glu.c,v 1.22 2007-11-30 15:42:00 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_default_glu.c,v 1.23 2008-02-05 18:54:10 rhdv Exp $
 
 -----------------------------------------------------------------------
 
@@ -197,7 +197,7 @@ GLU_get_pgi_default(GLU_handle_t* this, TSP_sample_symbol_info_list_t* symbol_li
 	pg_indexes[i]=looked_for->provider_global_index;
       }
       if(found) {
-	STRACE_INFO(("Found symbol <%s> pgi=<%d> ",  looked_for->name, looked_for->provider_global_index));	   
+	STRACE_INFO("Found symbol <%s> pgi=<%d> ",  looked_for->name, looked_for->provider_global_index);
 	break;
       }
       
@@ -205,7 +205,7 @@ GLU_get_pgi_default(GLU_handle_t* this, TSP_sample_symbol_info_list_t* symbol_li
     if(!found) {
       retcode = FALSE;
       pg_indexes[i]= -1;
-      STRACE_INFO(("Unable to find symbol '%s'",  looked_for->name));	   
+      STRACE_INFO("Unable to find symbol '%s'",  looked_for->name);
     }
     
     found = FALSE;     
@@ -213,7 +213,7 @@ GLU_get_pgi_default(GLU_handle_t* this, TSP_sample_symbol_info_list_t* symbol_li
     
     if(!found) {
       retcode = FALSE;
-      STRACE_INFO(("No good data in symbol '%s'",  looked_for->name));	   
+      STRACE_INFO("No good data in symbol '%s'",  looked_for->name);
     }
   }
   return retcode;
@@ -251,7 +251,7 @@ GLU_get_filtered_ssi_list_default(GLU_handle_t* this, int filter_kind, char* fil
 
   switch (filter_kind) {
   case TSP_FILTER_SIMPLE:
-    STRACE_INFO(("Requested filter kind <%d>, filter string = <%s>",filter_kind,filter_string));
+    STRACE_INFO("Requested filter kind <%d>, filter string = <%s>",filter_kind,filter_string);
     /* first loop to count matching symbols */
     nb_match      = 0;
     matched_index = calloc(complete_symbol_list.TSP_sample_symbol_info_list_t_len,sizeof(int32_t));
@@ -261,13 +261,13 @@ GLU_get_filtered_ssi_list_default(GLU_handle_t* this, int filter_kind, char* fil
 	nb_match++;	
       }
     }
-    STRACE_INFO(("Nb Match(es) is <%d>",nb_match));
+    STRACE_INFO("Nb Match(es) is <%d>",nb_match);
     /* second loop if nb_match > 0 */
     if (nb_match>0) {
       TSP_SSIList_finalize(&(answer_sample->symbols));
       TSP_SSIList_initialize(&(answer_sample->symbols),nb_match);
       for (i=0;i<nb_match;i++) {
-	STRACE_DEBUG(("Adding <%s> to answer_sample...",complete_symbol_list.TSP_sample_symbol_info_list_t_val[matched_index[i]].name));
+	STRACE_DEBUG("Adding <%s> to answer_sample...",complete_symbol_list.TSP_sample_symbol_info_list_t_val[matched_index[i]].name);
 	TSP_SSI_copy(&(answer_sample->symbols.TSP_sample_symbol_info_list_t_val[i]),
 		     complete_symbol_list.TSP_sample_symbol_info_list_t_val[matched_index[i]]);
       }
@@ -307,7 +307,7 @@ GLU_get_ssi_list_fromPGI_default(struct GLU_handle_t* this,
     }
     else {
       SSI_list->TSP_sample_symbol_info_list_t_val[i].provider_global_index=-1;      
-      STRACE_INFO(("Unable to find symbol '%s'",  SSI_list->TSP_sample_symbol_info_list_t_val[i].name));      
+      STRACE_INFO("Unable to find symbol '%s'",  SSI_list->TSP_sample_symbol_info_list_t_val[i].name);
       ret=TSP_STATUS_ERROR_SYMBOLS;      
     }
   }
@@ -372,14 +372,14 @@ GLU_validate_sample_default( TSP_sample_symbol_info_t* looked_for,
   if(looked_for->period < 1) 
   {
     *pg_indexes=-1;
-    STRACE_DEBUG(("Invalid period"));
+    STRACE_DEBUG("Invalid period");
     return FALSE;
   }
 
   if(looked_for->phase < 0) 
   {
     *pg_indexes=-1;
-    STRACE_DEBUG(("Invalid phase"));
+    STRACE_DEBUG("Invalid phase");
     return FALSE;
   }
 	  
@@ -389,7 +389,7 @@ GLU_validate_sample_default( TSP_sample_symbol_info_t* looked_for,
     if(looked_for->type != compared->type)
     {
       *pg_indexes=-1;
-       STRACE_DEBUG(("Invalid type"));
+       STRACE_DEBUG("Invalid type");
       return FALSE;
 
     }
@@ -405,7 +405,7 @@ GLU_validate_sample_default( TSP_sample_symbol_info_t* looked_for,
     if(looked_for->offset >= compared->dimension)
     {
       *pg_indexes=-1;
-      STRACE_DEBUG(("Invalid offset"));
+      STRACE_DEBUG("Invalid offset");
       return FALSE;
     }
  }
@@ -415,7 +415,7 @@ GLU_validate_sample_default( TSP_sample_symbol_info_t* looked_for,
     if((looked_for->offset + looked_for->nelem - 1) >= compared->dimension)
     {
       *pg_indexes=-1;
-      STRACE_DEBUG(("Invalid nelem"));
+      STRACE_DEBUG("Invalid nelem");
       return FALSE;
     }
  }
@@ -430,7 +430,7 @@ GLU_validate_sample_default( TSP_sample_symbol_info_t* looked_for,
     if(looked_for->dimension != compared->dimension)
     {
       *pg_indexes=-1;
-      STRACE_DEBUG(("Invalid dimension"));
+      STRACE_DEBUG("Invalid dimension");
       return FALSE;
     }
  }

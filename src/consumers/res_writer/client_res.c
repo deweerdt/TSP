@@ -1,6 +1,6 @@
 /*
 
-$Id: client_res.c,v 1.19 2007-03-29 20:42:53 deweerdt Exp $
+$Id: client_res.c,v 1.20 2008-02-05 18:54:09 rhdv Exp $
 
 -----------------------------------------------------------------------
 
@@ -86,12 +86,12 @@ void catch_ctrl_c(int i)
 {
   stop = TRUE;
 
-  STRACE_TEST(("Waiting eol and saving file..."));
+  STRACE_TEST("Waiting eol and saving file...");
 }
 
 void usage (char *txt)
 {
-  STRACE_ERROR(("USAGE : %s -f: [-u:] [-tmdh]", txt));
+  STRACE_ERROR("USAGE : %s -f: [-u:] [-tmdh]", txt);
   printf("\t -f filename   : output RES format filename\n");
   printf("\t[-u serverURL] : TSP Universal Resource Locator\n\n");
   printf(TSP_URL_FORMAT_USAGE);
@@ -139,11 +139,11 @@ int main(int argc, char *argv[]){
   MySignal(SIGINT, catch_ctrl_c);
 
 
-  STRACE_INFO(("Autodetect CPU : %d bits", sizeof(long)*8));
+  STRACE_INFO("Autodetect CPU : %d bits", sizeof(long)*8);
 
   /* TSP Init */
   if(TSP_STATUS_OK!=TSP_consumer_init(&argc, &argv)) {
-    STRACE_ERROR(("TSP init failed"));
+    STRACE_ERROR("TSP init failed");
     return -1;
   }
       
@@ -160,7 +160,7 @@ int main(int argc, char *argv[]){
 	    nb_providers++;
 	  else
 	    {
-	      STRACE_ERROR(("Cannot connect to %s", optarg));
+	      STRACE_ERROR("Cannot connect to %s", optarg);
 	    }
 	  break;
 	case 'f':   out_file_res = optarg;      break;
@@ -180,7 +180,7 @@ int main(int argc, char *argv[]){
       providers[nb_providers++] = TSP_consumer_connect_url(NULL);
       if(!providers[0])
         {
-          STRACE_ERROR(("Cannot connect to a TSP provider on local host"));
+          STRACE_ERROR("Cannot connect to a TSP provider on local host");
           usage(argv[0]);
 	 }
     }
@@ -191,7 +191,7 @@ int main(int argc, char *argv[]){
       /* Open requested provider */
       /*-------------------------*/ 
       if (TSP_STATUS_OK!=TSP_consumer_request_open(providers[provider], 0, 0 )) {
-	STRACE_ERROR(("TSP_request_provider_open failed"));
+	STRACE_ERROR("TSP_request_provider_open failed");
 	return -1;
       }
  
@@ -203,7 +203,7 @@ int main(int argc, char *argv[]){
 	{
 	  if(TSP_STATUS_OK!=TSP_consumer_request_information(providers[provider]))
 	    {
-	      STRACE_ERROR(("TSP_request_provider_information failed"));
+	      STRACE_ERROR("TSP_request_provider_information failed");
 	      return -1;
 	    }
 	  
@@ -219,7 +219,7 @@ int main(int argc, char *argv[]){
       
       for( i = 0 ; i< symbols[provider].TSP_sample_symbol_info_list_t_len ; i++)
 	{
-	  STRACE_INFO(("Id=%d Sym='%s'",i, information->symbols.TSP_sample_symbol_info_list_t_val[i].name));
+	  STRACE_INFO("Id=%d Sym='%s'",i, information->symbols.TSP_sample_symbol_info_list_t_val[i].name);
 	  symbols[provider].TSP_sample_symbol_info_list_t_val[i].name = information->symbols.TSP_sample_symbol_info_list_t_val[i].name;
 	  symbols[provider].TSP_sample_symbol_info_list_t_val[i].period = period;
 	  symbols[provider].TSP_sample_symbol_info_list_t_val[i].phase = 0;
@@ -245,7 +245,7 @@ int main(int argc, char *argv[]){
 	  symbols[provider].TSP_sample_symbol_info_list_t_len = 10;
 	  break;
 	default:
-	  STRACE_ERROR(("Unknown test number"));
+	  STRACE_ERROR("Unknown test number");
 	  return -1;
 	}
 
@@ -260,7 +260,7 @@ int main(int argc, char *argv[]){
       /* Ask for sample list */
       /*---------------------*/ 
       if(TSP_STATUS_OK!=TSP_consumer_request_sample(providers[provider],&symbols[provider])) {
-	STRACE_ERROR(("TSP_request_provider_sample failed"));
+	STRACE_ERROR("TSP_request_provider_sample failed");
 	return -1;
       }
     }
@@ -273,7 +273,7 @@ int main(int argc, char *argv[]){
     /* Start sampling */
     /*----------------*/ 
     if (TSP_STATUS_OK!=TSP_consumer_request_sample_init(providers[provider],0,0)) {
-	STRACE_ERROR(("TSP_request_provider_sample_init failed"));
+	STRACE_ERROR("TSP_request_provider_sample_init failed");
 	return -1;
       }
   }
@@ -283,7 +283,7 @@ int main(int argc, char *argv[]){
   /* Loop on data read */
   /*-------------------*/ 
   
-  STRACE_INFO(("file=%s", out_file_res));
+  STRACE_INFO("file=%s", out_file_res);
   d_wopen(out_file_res);
   d_wcom(""); /* No comment */
 

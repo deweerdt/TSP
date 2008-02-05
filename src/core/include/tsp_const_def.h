@@ -1,6 +1,6 @@
 /*
  
-$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_const_def.h,v 1.45 2007-11-02 15:30:13 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_const_def.h,v 1.46 2008-02-05 18:54:10 rhdv Exp $
 
 -----------------------------------------------------------------------
 
@@ -276,7 +276,7 @@ typedef struct  TSP_otsp_server_info_t TSP_otsp_server_info_t;
 	{ \
 		if ( 0 == p ) \
 		{ \
-			STRACE_ERROR(("TSP_CHECK_ALLOC : ERROR : Memory allocation failed"))  \
+			STRACE_ERROR("TSP_CHECK_ALLOC: Memory allocation failed");	\
 			return ret; \
 		} \
 	}
@@ -285,7 +285,7 @@ typedef struct  TSP_otsp_server_info_t TSP_otsp_server_info_t;
 	{ \
 		if ( NULL == p ) \
 		{ \
-			STRACE_ERROR(("TSP_CHECK_POINTER : NULL POINTER : " # msg ))  \
+			STRACE_ERROR("TSP_CHECK_POINTER: NULL POINTER : " # msg );	\
 			return ret; \
 		} \
 	}
@@ -294,7 +294,7 @@ typedef struct  TSP_otsp_server_info_t TSP_otsp_server_info_t;
 	{ \
 		if ( 0 != status ) \
 		{ \
-			STRACE_ERROR(("TSP_CHECK_THREAD : ERROR : Thread API Error status =%d",status))  \
+			STRACE_ERROR("TSP_CHECK_THREAD: Thread API Error status =%d",status); \
 			return ret; \
 		} \
 	}	
@@ -303,7 +303,7 @@ typedef struct  TSP_otsp_server_info_t TSP_otsp_server_info_t;
 	{ \
 		if ( 0 != pthread_mutex_lock(mutex) )\
 		{ \
-			STRACE_ERROR(("TSP_LOCK_MUTEX : ERROR : Mutex Lock Error"))  \
+			STRACE_ERROR("TSP_LOCK_MUTEX: Mutex Lock Error"); \
 			return ret; \
 		} \
 	}	
@@ -312,7 +312,7 @@ typedef struct  TSP_otsp_server_info_t TSP_otsp_server_info_t;
 	{ \
 		if ( 0 != pthread_mutex_unlock(mutex) ) \
 		{ \
-			STRACE_ERROR(("TSP_UNLOCK_MUTEX : ERROR : Mutex Unlock Error"))  \
+			STRACE_ERROR("TSP_UNLOCK_MUTEX: Mutex Unlock Error"); \
 			return ret; \
 		} \
 	}	

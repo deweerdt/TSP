@@ -1,6 +1,6 @@
 /*
 
-$Id: glue_stub.c,v 1.6 2006-02-26 13:36:06 erk Exp $
+$Id: glue_stub.c,v 1.7 2008-02-05 18:54:12 rhdv Exp $
 
 -----------------------------------------------------------------------
 
@@ -119,12 +119,12 @@ void* STUB_GLU_thread(GLU_handle_t* arg)
       TSP_datapool_push_commit(my_time, GLU_GET_NEW_ITEM);
       
 
-      if (!(my_time%1000))  STRACE_INFO(("TOP %d : %s=%g \t%s=%g \t%s=%g \t%s=%g", my_time,
+      if (!(my_time%1000))  STRACE_INFO("TOP %d : %s=%g \t%s=%g \t%s=%g \t%s=%g", my_time,
 					 X_sample_symbol_info_list_val[0].name, memo_val[0],
 					 X_sample_symbol_info_list_val[1].name, memo_val[1],
 					 X_sample_symbol_info_list_val[2].name, memo_val[2],
 					 X_sample_symbol_info_list_val[3].name, memo_val[3]
-					));
+					);
       my_time++;    
     }
     

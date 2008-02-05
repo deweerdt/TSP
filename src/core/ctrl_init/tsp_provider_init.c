@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl_init/tsp_provider_init.c,v 1.22 2007-11-30 15:42:02 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl_init/tsp_provider_init.c,v 1.23 2008-02-05 18:54:10 rhdv Exp $
 
 -----------------------------------------------------------------------
 
@@ -125,7 +125,7 @@ TSP_provider_run(int spawn_mode) {
       }
     }
   else {
-    STRACE_ERROR(("Call TSP_provider_init first, and then call TSP_provider_run ! "));
+    STRACE_ERROR("Call TSP_provider_init first, and then call TSP_provider_run ! ");
     retcode = TSP_STATUS_ERROR_UNKNOWN;
   }
   
@@ -191,11 +191,11 @@ TSP_provider_urls(int pub_mode) {
 
 	      if(pub_mode & TSP_PUBLISH_URLS_SNMP)
 		/* TODO */
-		STRACE_ERROR(("SNMP publication of TSP URLs not yet implemented\n"));
+		STRACE_ERROR("SNMP publication of TSP URLs not yet implemented");
 	    }
 	  else
 	    {
-	      STRACE_ERROR(("Request Handler #%d did not provided an URL", rank));
+	      STRACE_ERROR("Request Handler #%d did not provided an URL", rank);
 	      urls[rank] = strdup("");
 	    }
 	}

@@ -1,6 +1,6 @@
 /*
 
-$Id: glue_stub.c,v 1.29 2006-10-25 15:00:31 erk Exp $
+$Id: glue_stub.c,v 1.30 2008-02-05 18:54:12 rhdv Exp $
 
 -----------------------------------------------------------------------
 
@@ -165,7 +165,7 @@ void* STUB_GLU_thread(void* athis)
 		*((uint8_t*)item.raw_value) = 10; /* (uint8_t)calc_func(index, my_time);*/
 		break;
 	      default:
-		STRACE_ERROR(("Unhandled TSP datatype =%d",X_sample_symbol_info_list_val[index].type));
+		STRACE_ERROR("Unhandled TSP datatype =%d",X_sample_symbol_info_list_val[index].type);
 	 
 	      }
 	      }
@@ -195,12 +195,12 @@ void* STUB_GLU_thread(void* athis)
       my_time++;    
       
       /* print out some pseudo time for debug purpose */
-      if (!(my_time%1000))  STRACE_INFO(("TOP %d : %s=%g \t%s=%g \t%s=%g \t%s=%g", my_time,
+      if (!(my_time%1000))  STRACE_INFO("TOP %d : %s=%g \t%s=%g \t%s=%g \t%s=%g", my_time,
 					 X_sample_symbol_info_list_val[0].name, memo_val[0],
 					 X_sample_symbol_info_list_val[1].name, memo_val[1],
 					 X_sample_symbol_info_list_val[2].name, memo_val[2],
 					 X_sample_symbol_info_list_val[3].name, memo_val[3]
-					));
+					);
     }
     
   return cthis;
@@ -482,7 +482,7 @@ STUB_GLU_get_ssei_list_fromPGI(struct GLU_handle_t* cthis,
 
   /* Store all global indexes into list including NOT FOUND ones */
   for ( i=0 ; i < pgis_len;++i) {    
-    STRACE_DEBUG(("Getting extended info for PGI <%d>",pgis[i]));
+    STRACE_DEBUG("Getting extended info for PGI <%d>",pgis[i]);
     if(-1!=pgis[i]) {
 
       SSEI_list->TSP_sample_symbol_extended_info_list_t_val[i].provider_global_index=pgis[i]; 

@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_data_receiver.c,v 1.29 2007-08-28 09:44:29 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_data_receiver.c,v 1.30 2008-02-05 18:54:10 rhdv Exp $
 
 -----------------------------------------------------------------------
 
@@ -107,7 +107,7 @@ static int TSP_data_receiver_process_reserved_group_id(int group_index, TSP_samp
 	break;
     
     default:	 
-      STRACE_ERROR(("Group id % in not a reserved group", group_index));
+      STRACE_ERROR("Group id % in not a reserved group", group_index);
       ret = FALSE;
     }
   
@@ -137,7 +137,7 @@ TSP_data_receiver_t TSP_data_receiver_create(const char* data_address, TSP_sampl
   if( 0 == receiver->stream_receiver)
     {
       /* FIXME : bof...*/
-      STRACE_ERROR(("TSP_stream_receiver_create failed")); 
+      STRACE_ERROR("TSP_stream_receiver_create failed"); 
       free(receiver->buf);receiver->buf = 0;
       free(receiver);
       receiver = 0;
@@ -220,7 +220,7 @@ int TSP_data_receiver_receive(TSP_data_receiver_t _receiver,
 									   in_buf);
 		      if(!ret)
 			{
-			  STRACE_ERROR(("decoder function failed"));
+			  STRACE_ERROR("decoder function failed");
 			  break;
 			}
 
@@ -299,7 +299,7 @@ int TSP_data_receiver_receive(TSP_data_receiver_t _receiver,
 			case TSP_TYPE_UNKNOWN:
 			  
 			default:
-			  STRACE_WARNING(("Impossible TSP TYPE in decode??"));
+			  STRACE_WARNING("Impossible TSP TYPE in decode??");
 			  sample->uvalue.raw_value= ((uint8_t*)groups[group_index].decode_buffer)[i];
                                break;
 			       
@@ -331,7 +331,7 @@ int TSP_data_receiver_receive(TSP_data_receiver_t _receiver,
 		{
 		  if(!receiver_stopped)
 		    {
-		      STRACE_WARNING(("Unable to receive samples"));
+		      STRACE_WARNING("Unable to receive samples");
 		      /* Add in fifo a message to report the incident via the read_sample API*/
 		      TSP_data_receiver_process_receiver_error(sample_fifo);
 		    }
@@ -344,7 +344,7 @@ int TSP_data_receiver_receive(TSP_data_receiver_t _receiver,
 	      ret = TSP_data_receiver_process_reserved_group_id(group_index, sample_fifo);
 	      if(!ret)
 		{
-		  STRACE_ERROR(("The received group id is corrupted. This should not happen..."));
+		  STRACE_ERROR("The received group id is corrupted. This should not happen...");
 		  assert(0);
 		  TSP_data_receiver_process_receiver_error(sample_fifo);
 		}
@@ -355,7 +355,7 @@ int TSP_data_receiver_receive(TSP_data_receiver_t _receiver,
 	{
 	  if(!receiver_stopped)
 	    {		  
-	      STRACE_WARNING(("Unable to receive group size and time stamp, provider died?"));
+	      STRACE_WARNING("Unable to receive group size and time stamp, provider died?");
 	      /* Add in fifo a message to report the incident via the read sample API*/
 	      TSP_data_receiver_process_receiver_error(sample_fifo);
 	    }

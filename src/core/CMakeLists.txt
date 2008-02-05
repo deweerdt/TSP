@@ -10,7 +10,6 @@ SET (INCLUDE_CORE_FILE
   include/tsp_abs_types.h
   include/tsp_const_def.h
   include/tsp_glu.h
-  include/tsp_simple_trace.h
   include/tsp_sys_headers.h
   rpc/tsp_datastruct.h)
 TSP_XINCLUDE(${INCLUDE_CORE_FILE})
@@ -65,6 +64,7 @@ SET(COMMON_LIB_SRCS
   common/tsp_common_ssei
   common/tsp_common_as
   common/tsp_common_status
+  common/tsp_common_trace
   common/tsp_encoder
   common/tsp_decoder)
 

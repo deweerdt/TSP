@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_common_ssi.c,v 1.8 2006-10-18 09:58:48 erk Exp $
+$Id: tsp_common_ssi.c,v 1.9 2008-02-05 18:54:09 rhdv Exp $
 
 -----------------------------------------------------------------------
 
@@ -39,7 +39,7 @@ Purpose   : Main implementation for the producer module
 #include <tsp_sys_headers.h>
 #include <tsp_abs_types.h>
 #include <tsp_datastruct.h>
-#include <tsp_simple_trace.h>
+#include <tsp_common_trace.h>
 #include <tsp_const_def.h>
 #define TSP_COMMON_SSI_C
 #include <tsp_common_ssi.h>
@@ -114,7 +114,7 @@ TSP_SSI_initialize(TSP_sample_symbol_info_t* ssi,
     ssi->name                 = strdup(name);
     if (NULL==ssi->name) {
       retcode = TSP_STATUS_ERROR_MEMORY_ALLOCATION;
-      STRACE_ERROR(("Cannot strdup <%s>",name));
+      STRACE_ERROR("Cannot strdup <%s>",name);
     }
   } else {
     ssi->name                 = NULL;

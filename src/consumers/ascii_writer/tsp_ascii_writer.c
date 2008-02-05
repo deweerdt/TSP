@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer.c,v 1.31 2007-05-12 22:10:41 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer.c,v 1.32 2008-02-05 18:54:08 rhdv Exp $
 
 -----------------------------------------------------------------------
 
@@ -49,7 +49,6 @@ Purpose   : TSP ascii writer consumer
 #include <tsp_ascii_writer.h>
 #include <tsp_consumer.h>
 #include <tsp_common.h>
-#include <tsp_simple_trace.h>
 #include <tsp_const_def.h>
 #include <tsp_time.h>
 /*#include <macsim_fmt.h>*/
@@ -142,7 +141,7 @@ tsp_ascii_writer_initialise(int* argc, char** argv[]) {
 
   retcode = TSP_consumer_init(argc, argv);
   if (TSP_STATUS_OK!=retcode) {
-    STRACE_ERROR(("TSP init failed"));    
+    STRACE_ERROR("TSP init failed");
   } 
   return retcode;
 }  /* end of tsp_ascii_writer_initialise */
@@ -164,7 +163,7 @@ tsp_ascii_writer_add_var(char* symbol_name) {
     /* increment first since initialised to -1 */
     ++tsp_ascii_writer_current_var;
     g_tsp_symbols[tsp_ascii_writer_current_var].name = strdup(symbol_name);
-    STRACE_INFO(("Added var <%s>",symbol_name));
+    STRACE_INFO("Added var <%s>",symbol_name);
     retcode =0;
   }
   return retcode;
@@ -174,7 +173,7 @@ int32_t
 tsp_ascii_writer_add_var_period(int32_t period) {
   if (NULL != g_tsp_symbols) {
     g_tsp_symbols[tsp_ascii_writer_current_var].period = period;
-    STRACE_INFO(("Period <%d>",period));
+    STRACE_INFO("Period <%d>",period);
   }
   return 0;
 } /* tsp_ascii_writer_add_var_period */
@@ -199,15 +198,15 @@ tsp_ascii_writer_load_config(const char* conffilename,
   yyin = fopen(conffilename,"r");
   if (((FILE*)(NULL)) == yyin) {    
     strncpy(syserr,strerror(errno),TSP_MAX_SYSMSG_SIZE);
-    STRACE_ERROR(("Cannot open config file <%s> (%s)",conffilename,syserr));
+    STRACE_ERROR("Cannot open config file <%s> (%s)",conffilename,syserr);
     retcode = TSP_STATUS_ERROR_AW_CONFIG_FILE_INVALID;
   }
   /* Lets parse the config file */
   if (TSP_STATUS_OK == retcode) {    
-    STRACE_INFO(("Parsing config file..."));
+    STRACE_INFO("Parsing config file...");
     /* First parse used for COUNTING requested symbols */
     yyparse();
-    STRACE_INFO(("<%d> variables requested...",tsp_ascii_writer_nb_var));
+    STRACE_INFO("<%d> variables requested...",tsp_ascii_writer_nb_var);
     if (0!=tsp_ascii_writer_parse_error) {
       retcode = TSP_STATUS_ERROR_AW_CONFIG_FILE_PARSE_ERROR;
     }
@@ -321,13 +320,13 @@ tsp_ascii_writer_validate_symbols(TSP_sample_symbol_info_list_t* requestedSSIL,
     myprovider = TSP_consumer_connect_url(tsp_provider_url);
     /* Verify if the provider was reached */
     if (0==myprovider) {
-      STRACE_ERROR(("Unreachable or no TSP provider running at TSP URL <%s> ?!?",tsp_provider_url));
+      STRACE_ERROR("Unreachable or no TSP provider running at TSP URL <%s> ?!?",tsp_provider_url);
       retcode = TSP_STATUS_ERROR_PROVIDER_UNREACHABLE;
       return retcode;
     } else  {
       retcode =TSP_consumer_request_open(myprovider, 0, 0 );
       if (TSP_STATUS_OK!=retcode) {
-	STRACE_ERROR(("TSP_request_open to TSP URL <%s> FAILED",tsp_provider_url));
+	STRACE_ERROR("TSP_request_open to TSP URL <%s> FAILED",tsp_provider_url);
 	return retcode;
       }
     }
@@ -366,9 +365,9 @@ tsp_ascii_writer_validate_symbols(TSP_sample_symbol_info_list_t* requestedSSIL,
     for (i=0;i<TSP_SSIList_getSize(current_requestedSSIL);++i) { 
       
       currentSymbol = TSP_SSIList_getSSI(current_requestedSSIL,i);
-      STRACE_INFO(("Examining symbol <%s> of pgi <%d>",
+      STRACE_INFO("Examining symbol <%s> of pgi <%d>",
 		   currentSymbol->name,
-		   currentSymbol->provider_global_index));
+		   currentSymbol->provider_global_index);
 
       if (currentSymbol->provider_global_index == -1)  {
 	my_logMsg("Checking for symbol like <%s> on provider side.\n",currentSymbol->name);
@@ -439,7 +438,7 @@ tsp_ascii_writer_validate_symbols(TSP_sample_symbol_info_list_t* requestedSSIL,
       if (currentSymbol->phase >= 0) {
 	TSP_SSI_copy(TSP_SSIList_getSSI(*validatedSSIL,valid_index),
 		     *currentSymbol);
-	STRACE_DEBUG(("Asking for TSP var = <%s>",currentSymbol->name));
+	STRACE_DEBUG("Asking for TSP var = <%s>",currentSymbol->name);
 	++valid_index;
       } /* end if tsp_symbols[i].phase >= 0 */
     } /* loop over nb_symbols */
@@ -454,7 +453,7 @@ tsp_ascii_writer_validate_symbols(TSP_sample_symbol_info_list_t* requestedSSIL,
     retcode = TSP_consumer_request_sample(myprovider,validatedSSIL);
     if (TSP_STATUS_OK!=retcode) {
       TSP_consumer_print_invalid_symbols(stderr,validatedSSIL,tsp_provider_url);
-      STRACE_ERROR(("(final) TSP request sample refused by the provider?huh?..."));
+      STRACE_ERROR("(final) TSP request sample refused by the provider?huh?...");
       return retcode;
     }
   }
@@ -473,7 +472,7 @@ tsp_ascii_writer_validate_symbols(TSP_sample_symbol_info_list_t* requestedSSIL,
 
     retcode = TSP_consumer_request_extended_information(myprovider, pgis, pgis_len);
     if (TSP_STATUS_OK!=retcode) {
-      STRACE_ERROR(("TSP request extended information refused by the provider?huh?..."));
+      STRACE_ERROR("TSP request extended information refused by the provider?huh?...");
       free(pgis);
     }
     free(pgis);
@@ -720,12 +719,12 @@ tsp_ascii_writer_start(FILE* sfile,
 
   /* Demarrage des sample au niveau provider */
   if(TSP_STATUS_OK!=TSP_consumer_request_sample_init(myprovider,0,0)) {
-    STRACE_ERROR(("Sample init refused by the provider??..."));
+    STRACE_ERROR("Sample init refused by the provider??...");
     retcode = -1;
   }
 
   tsp_ascii_writer_sample_running = 1;
-  STRACE_DEBUG(("Begin sample read...\n"));
+  STRACE_DEBUG("Begin sample read...");
   if (0 == retcode) 
   {
     nb_sample_item    = 0;
@@ -811,11 +810,11 @@ tsp_ascii_writer_finalise() {
   if (NULL != myprovider) {
     if (tsp_ascii_writer_sample_running) {
 	    if (TSP_STATUS_OK!=(retcode=TSP_consumer_request_sample_destroy(myprovider))) {
-		    STRACE_ERROR(("TSP_request_sample_destroy ERROR: %s",TSP_status_string(retcode)));
+		    STRACE_ERROR("TSP_request_sample_destroy ERROR: %s",TSP_status_string(retcode));
       }  
     }
     if (TSP_STATUS_OK!=(retcode=TSP_consumer_request_close(myprovider))) {
-	    STRACE_ERROR(("TSP_request_close ERROR: %s",TSP_status_string(retcode)));
+	    STRACE_ERROR("TSP_request_close ERROR: %s",TSP_status_string(retcode));
     }
   }
   TSP_consumer_end();

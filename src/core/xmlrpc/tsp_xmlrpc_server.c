@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/xmlrpc/tsp_xmlrpc_server.c,v 1.25 2007-11-09 23:20:41 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/xmlrpc/tsp_xmlrpc_server.c,v 1.26 2008-02-05 18:54:11 rhdv Exp $
 
 -----------------------------------------------------------------------
 
@@ -84,7 +84,7 @@ xmlrpc_value *tsp_provider_information_xmlrpc(xmlrpc_env *env, xmlrpc_value *par
   TSP_provider_info_t server_info;
 
   server_info.info = strdup(GLU_get_server_name());
-  STRACE_DEBUG(("server_info.info: %s\n",server_info.info));
+  STRACE_DEBUG("server_info.info: %s",server_info.info);
   return xmlrpc_build_value(env, "{s:s}", "info", server_info.info);
 }
 
@@ -296,7 +296,7 @@ static void TSP_xmlrpc_run(TSP_xmlrpc_request_config_t *config)
   xmlrpc_registry * registry;
   xmlrpc_env env;
 
-  STRACE_DEBUG(("Launched Abyss server"));
+  STRACE_DEBUG("Launched Abyss server");
 
   atexit(clean_exit);
 
@@ -357,9 +357,9 @@ static void TSP_xmlrpc_run(TSP_xmlrpc_request_config_t *config)
   //TODO: make it configurable
   serverparm.log_file_name = "/dev/stderr";
 
-  STRACE_INFO(("Starting abyss server..."));
+  STRACE_INFO("Starting abyss server...");
   xmlrpc_server_abyss(&env, &serverparm, XMLRPC_APSIZE(log_file_name));
-  STRACE_ERROR(("Abyss server returned"));
+  STRACE_ERROR("Abyss server returned");
   return;
 }
 

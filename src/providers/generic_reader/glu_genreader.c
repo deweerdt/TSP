@@ -1,6 +1,6 @@
 /*
 
-$Id: glu_genreader.c,v 1.10 2007-03-29 20:42:53 deweerdt Exp $
+$Id: glu_genreader.c,v 1.11 2008-02-05 18:54:11 rhdv Exp $
 
 -----------------------------------------------------------------------
  
@@ -99,7 +99,7 @@ GENREADER_GLU_run(void* arg)
       /*end of line no good*/
       if(END_SAMPLE_SET!=rep && item.provider_global_index>=genreader->ssi_list->TSP_sample_symbol_info_list_t_len)
       {
-	STRACE_ERROR(("ERROR: file format is not good (not enough or too much symbol or end of line no good\n"));
+	STRACE_ERROR("file format is not good (not enough or too much symbol or end of line no good");
 	break;
       }
 

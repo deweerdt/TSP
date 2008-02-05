@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_stream_sender.c,v 1.24 2007-11-30 15:42:01 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_stream_sender.c,v 1.25 2008-02-05 18:54:10 rhdv Exp $
 
 -----------------------------------------------------------------------
 
@@ -167,13 +167,13 @@ void* TSP_streamer_sender_thread_sender(void* arg)
      
   /* Wait for consumer connection before we send data */  
 
-  STRACE_DEBUG(("Thread stream sender created : waiting for client to connect..."));
+  STRACE_DEBUG("Thread stream sender created : waiting for client to connect...");
   while(!sock->client_is_connected)
     {
       tsp_usleep(TSP_STREAM_SENDER_CONNECTION_POLL_TIME);
      
     }
-  STRACE_DEBUG(("Client connected ! Send loop starts !"));
+  STRACE_DEBUG("Client connected ! Send loop starts !");
 
   item = RINGBUF_PTR_GETBYADDR(sock->out_ringbuf);
   /* FIXME : gerer l'arret */
@@ -194,10 +194,10 @@ void* TSP_streamer_sender_thread_sender(void* arg)
 
   if(!sock->is_stopped)
     {
-      STRACE_DEBUG(("Connection with client was lost ! "));
+      STRACE_DEBUG("Connection with client was lost ! ");
     }
 
-  STRACE_DEBUG(("End of fifo thread stream sender"));
+  STRACE_DEBUG("End of fifo thread stream sender");
   return &status;
 }
 
@@ -241,7 +241,7 @@ static void TSP_stream_sender_save_address_string(TSP_socket_t* sock,
   strcat(sock->data_address, ":");    
   strcat(sock->data_address, strPort);
     
-  STRACE_DEBUG_MORE(("address='%s'", sock->data_address));
+  STRACE_DEBUG_MORE("address='%s'", sock->data_address);
 }
 
 static void* TSP_streamer_sender_connector(void* arg)
@@ -256,7 +256,7 @@ static void* TSP_streamer_sender_connector(void* arg)
   pthread_detach(pthread_self());
     
   /* Accept connection on socket */
-  STRACE_DEBUG(("Thread acceptor started waiting for client to connect %d", sock->hClient));
+  STRACE_DEBUG("Thread acceptor started waiting for client to connect %d", sock->hClient);
 #if defined (_WIN32)  
   sock->hClient = accept(sock->socketId, NULL, NULL);
 #else
@@ -267,10 +267,10 @@ static void* TSP_streamer_sender_connector(void* arg)
   if(sock->hClient > 0) {
     /* OK, the client is connected */
     sock->client_is_connected = TRUE;
-    STRACE_DEBUG(("New connection accepted on socket client socket %d", sock->hClient));
+    STRACE_DEBUG("New connection accepted on socket client socket %d", sock->hClient);
   }
   else {
-    STRACE_ERROR(("Accept error"));
+    STRACE_ERROR("Accept error");
     close(sock->socketId);
     return 0;
   }
@@ -283,7 +283,7 @@ const char* TSP_stream_sender_get_data_address_string(TSP_stream_sender_t sender
     
   TSP_socket_t* sock = (TSP_socket_t*)sender;
     
-  STRACE_INFO(("-->address='%s'", sock->data_address));
+  STRACE_INFO("-->address='%s'", sock->data_address);
 
   return sock->data_address;
 }
@@ -307,19 +307,19 @@ TSP_stream_sender_t TSP_stream_sender_create(int fifo_size, int buffer_size)
 #else
   /* First disable SIGPIPE signal to avoir being crashed by a disconnected client*/
   if( SIG_ERR == MySignal(SIGPIPE, SIG_IGN)) {
-    STRACE_ERROR(("Unable to disable SIGPIPE signal"));
+    STRACE_ERROR("Unable to disable SIGPIPE signal");
     return 0;
   }
 #endif
   if( -1 == gethostname(host, TSP_MAXHOSTNAMELEN))
     {
-      STRACE_ERROR(("gethostname error"));
+      STRACE_ERROR("gethostname error");
 
       return 0;
     }
   myhost = gethostbyname(host);
   if (myhost == NULL) {
-    STRACE_ERROR(("Cannot gethostbyname '(hostname --> @IP)' for host <%s> check your /etc/hosts file.\n",host));
+    STRACE_ERROR("Cannot gethostbyname '(hostname --> @IP)' for host <%s> check your /etc/hosts file.",host);
     /* be tolerant we keep going with hostname but... consumer may not handle this properly */    
   } else {
      /* 
@@ -352,7 +352,7 @@ TSP_stream_sender_t TSP_stream_sender_create(int fifo_size, int buffer_size)
       status = setsockopt(sock->socketId, SOL_SOCKET, SO_SNDBUF, (void * )&OptInt, sizeof(OptInt));
       if (status == -1)
 	{
-	  STRACE_ERROR(("Probleme with set socket size"));
+	  STRACE_ERROR("Problem with set socket size");
 
 	  close(sock->socketId);
 	  return 0;
@@ -365,7 +365,7 @@ TSP_stream_sender_t TSP_stream_sender_create(int fifo_size, int buffer_size)
 			  (void *) &OptInt, sizeof(OptInt));
       if (status == -1)
 	{
-          STRACE_ERROR(("pb set local address reuse"));
+          STRACE_ERROR("pb set local address reuse");
 	  close(sock->socketId);
 	  return 0;
 	}
@@ -376,7 +376,7 @@ TSP_stream_sender_t TSP_stream_sender_create(int fifo_size, int buffer_size)
 			  (void *) &OptInt, sizeof(OptInt));
       if (status == -1)
 	{
-	  STRACE_ERROR(("pb set periodic state control"));
+	  STRACE_ERROR("pb set periodic state control");
 
 	  close(sock->socketId);
 	  return 0;
@@ -388,7 +388,7 @@ TSP_stream_sender_t TSP_stream_sender_create(int fifo_size, int buffer_size)
 			  sizeof(OptInt));
       if (status == -1)
 	{
-	  STRACE_ERROR(("pb set TCP no delay"));
+	  STRACE_ERROR("pb set TCP no delay");
 
 	  close(sock->socketId);
 	  return 0;
@@ -423,7 +423,7 @@ TSP_stream_sender_t TSP_stream_sender_create(int fifo_size, int buffer_size)
 	      }
 	    else
 	      {
-		STRACE_ERROR(("getsockname failed"));
+		STRACE_ERROR("getsockname failed");
 		  
 		close(sock->socketId);
 		return 0;
@@ -431,7 +431,7 @@ TSP_stream_sender_t TSP_stream_sender_create(int fifo_size, int buffer_size)
 	  }
 	else
 	  {
-	    STRACE_ERROR(("pb bind to socket"));
+	    STRACE_ERROR("pb bind to socket");
 	    
 	    close(sock->socketId);
 	    return 0;
@@ -443,7 +443,7 @@ TSP_stream_sender_t TSP_stream_sender_create(int fifo_size, int buffer_size)
       status = listen (sock->socketId, SOMAXCONN);
       if (status == -1)
 	{
-	  STRACE_ERROR(("pb listening to socket"));
+	  STRACE_ERROR("pb listening to socket");
 
 	  close(sock->socketId);
 	  return 0;
@@ -455,7 +455,7 @@ TSP_stream_sender_t TSP_stream_sender_create(int fifo_size, int buffer_size)
 	{
 	  if(!TSP_stream_sender_init_bufferized(sock))
 	    {
-	      STRACE_ERROR(("Function TSP_stream_sender_init_bufferized failed"));
+	      STRACE_ERROR("Function TSP_stream_sender_init_bufferized failed");
 	      close(sock->socketId);	  
 	      return 0;
 	    }
@@ -542,9 +542,9 @@ TSP_stream_sender_send(TSP_stream_sender_t sender, const char *buffer, int buffe
 	}
 	else {		  
 #ifdef _WIN32
-     STRACE_DEBUG(("send failed with errno = %d : <%s>",WSAGetLastError(),strerror(errno)));   
+	  STRACE_DEBUG("send failed with errno = %d : <%s>",WSAGetLastError(),strerror(errno));
 #else
-	  STRACE_ERROR(("send failed with errno = %d : <%s>",errno,strerror(errno)));
+	  STRACE_ERROR("send failed with errno = %d : <%s>",errno,strerror(errno));
 #endif
 	  sock->connection_ok = FALSE;
 	  return FALSE;
@@ -554,7 +554,7 @@ TSP_stream_sender_send(TSP_stream_sender_t sender, const char *buffer, int buffe
       bufferLen -= nwrite;
     } /* end while buffer not written fully */ 
   } else {
-    STRACE_ERROR(("identSocket = %d",identSocket));
+    STRACE_ERROR("identSocket = %d",identSocket);
     return (FALSE);
   }
 

@@ -1,6 +1,6 @@
 /*
 
-$Id: client_group.c,v 1.8 2007-11-09 18:25:32 rhdv Exp $
+$Id: client_group.c,v 1.9 2008-02-05 18:54:09 rhdv Exp $
 
 -----------------------------------------------------------------------
 
@@ -140,7 +140,7 @@ int main(int argc, char *argv[]){
 
   if(TSP_STATUS_OK!=TSP_consumer_init(&argc, &argv))
     {
-      STRACE_ERROR(("TSP init failed"));
+      STRACE_ERROR("TSP init failed");
       return -1;
     }
 
@@ -153,7 +153,7 @@ int main(int argc, char *argv[]){
     }
   else
     {
-      STRACE_ERROR(("USAGE %s : server period\n", argv[0]));
+      STRACE_ERROR("USAGE %s : server period", argv[0]);
       return -1;
     }
 
@@ -167,12 +167,12 @@ int main(int argc, char *argv[]){
       for( i = 0 ; i<nb_providers ; i++)
 	{
 	  const char* info = TSP_consumer_get_connected_name(providers[i]) ;
-	  STRACE_INFO(("Server Nb %d, info = '%s'", i,info));
+	  STRACE_INFO("Server Nb %d, info = '%s'", i,info);
 	  
 	  /* Check name */
 	  if(strcmp(info, "StubbedServer"))
 	    {
-	      STRACE_ERROR(("Serveur name corrupted"));
+	      STRACE_ERROR("Server name corrupted");
 	      return -1;
 	    }
 	  
@@ -180,7 +180,7 @@ int main(int argc, char *argv[]){
     }
   else
     {
-      STRACE_ERROR(("Unable to find any provider for host"));
+      STRACE_ERROR("Unable to find any provider for host");
       return -1;
     }
 
@@ -193,7 +193,7 @@ int main(int argc, char *argv[]){
   /* Le 1er provider existe puisqu'il y en a au moins 1 */
 
   if(TSP_STATUS_OK!=TSP_consumer_request_open(providers[0], 0, 0)) {
-    STRACE_ERROR(("TSP_request_provider_open failed"));
+    STRACE_ERROR("TSP_request_provider_open failed");
     return -1;
   }
   
@@ -203,13 +203,13 @@ int main(int argc, char *argv[]){
   /*-------------------------------------------------------------------------------------------------------*/ 
   if(TSP_STATUS_OK!=TSP_consumer_request_information(providers[0]))
     {
-      STRACE_ERROR(("TSP_request_provider_information failed"));
+      STRACE_ERROR("TSP_request_provider_information failed");
       return -1;
     }
   
   /* How many symbols do we want to send ? */
   for(requested_nb = 0; data_test[requested_nb].index != (-2); requested_nb++);
-  STRACE_INFO(("Total number of requested symbols = %d", requested_nb));
+  STRACE_INFO("Total number of requested symbols = %d", requested_nb);
 
 
   symbols.TSP_sample_symbol_info_list_t_len = requested_nb;
@@ -227,7 +227,7 @@ int main(int argc, char *argv[]){
   /*-------------------------------------------------------------------------------------------------------*/ 
   if(TSP_STATUS_OK!=TSP_consumer_request_sample(providers[0], &symbols))
     {
-      STRACE_ERROR(("TSP_request_provider_sample failed"));
+      STRACE_ERROR("TSP_request_provider_sample failed");
       return -1;
     }
 
@@ -241,7 +241,7 @@ int main(int argc, char *argv[]){
 
   if( group_nb != groups->table_len )
     {
-      STRACE_ERROR(("Wrong groups total number"));
+      STRACE_ERROR("Wrong groups total number");
       return -1;
     }
 
@@ -254,7 +254,7 @@ int main(int argc, char *argv[]){
 	for(size = 0; group_test[i].index[size] != (-1); size++);
 	if ( size != groups->groups[i].group_len )
 	  {
-	    STRACE_ERROR(("Wrong groups size"));
+	    STRACE_ERROR("Wrong groups size");
 	    return -1;
 	  }
       }
@@ -268,13 +268,13 @@ int main(int argc, char *argv[]){
 	{
 	  if (  group_test[i].index[j] != groups->groups[i].items[j].provider_global_index )
 	    {
-	      STRACE_ERROR(("Wrong provider global index"));
+	      STRACE_ERROR("Wrong provider global index");
 	      return -1;
 	    }
 	}
     }
 
-  STRACE_TEST(("STAGE 002 | STEP 001 : PASSED"));
+  STRACE_TEST("STAGE 002 | STEP 001 : PASSED");
   printf ("#=========================================================#\n");
   printf ("# End <test_group> OK #\n");
   printf ("#=========================================================#\n");

@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_data_sender.c,v 1.30 2007-11-30 15:42:00 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_data_sender.c,v 1.31 2008-02-05 18:54:09 rhdv Exp $
 
 -----------------------------------------------------------------------
 
@@ -91,7 +91,7 @@ TSP_data_sender_create(int fifo_size, uint32_t group_max_byte_size) {
   sender->fifo_full   = FALSE;
   sender->buffer_size = TSP_DATA_STREAM_MAX_BUFFER_SIZE(group_max_byte_size);
 
-  STRACE_DEBUG(("Data Sender buffer size is: <%d> byte(s)",sender->buffer_size));
+  STRACE_DEBUG("Data Sender buffer size is: <%d> byte(s)",sender->buffer_size);
   /* Create the sender stream with its fifo size*/
   sender->stream_sender = (TSP_data_sender_t)TSP_stream_sender_create(fifo_size, sender->buffer_size);
   if (sender->stream_sender) {      
@@ -109,7 +109,7 @@ TSP_data_sender_create(int fifo_size, uint32_t group_max_byte_size) {
     }
   }
   else {
-    STRACE_ERROR(("Function TSP_stream_sender_create failed"));
+    STRACE_ERROR("Function TSP_stream_sender_create failed");
     free(sender);
     sender = NULL;
   }
@@ -201,7 +201,7 @@ TSP_data_sender_to_stream_sender(TSP_struct_data_sender_t* data_sender,
       if(!TSP_stream_sender_send(data_sender->stream_sender,
 				 TSP_STREAM_SENDER_ITEM_BUF(tosend),
 				 tosend->len) ) {
-	  STRACE_WARNING(("Function TSP_stream_sender_send failed "));
+	  STRACE_WARNING("Function TSP_stream_sender_send failed ");
 	  ret = FALSE;
 	}  
     }
@@ -242,7 +242,7 @@ int TSP_data_sender_send_msg_ctrl(TSP_data_sender_t sender, TSP_msg_ctrl_t msg_c
       tsp_reserved_group = TSP_RESERVED_GROUP_CONSUMER_DATA_LOST;
       break;
     default:
-      STRACE_ERROR(("We should not be there..."));
+      STRACE_ERROR("We should not be there...");
       assert(0);
       return FALSE;
     }
@@ -323,8 +323,8 @@ TSP_data_sender_send(TSP_data_sender_t _sender, TSP_groups_t _groups, time_stamp
 	   * FIXME : we cannot STRACE_DEBUG value simply due
 	   * to multi-type handling 
 	   */
-	  /* STRACE_DEBUG(("Gr=%d V=%f", group_index, *(double*)(group->items[i].data))); */
-	  STRACE_DEBUG_MORE(("Gr=%d Ne=%d", group_index, group->items[i].nelem));
+	  /* STRACE_DEBUG("Gr=%d V=%f", group_index, *(double*)(group->items[i].data)); */
+	  STRACE_DEBUG_MORE("Gr=%d Ne=%d", group_index, group->items[i].nelem);
 	  
 	  /* Call encode function */
 	  assert(group->items[i].data_encoder);
@@ -333,7 +333,7 @@ TSP_data_sender_send(TSP_data_sender_t _sender, TSP_groups_t _groups, time_stamp
 						buf_char,
 						data_sender->buffer_size - ( buf_char - buf_main) );
 	  if ( 0 == size ) {
-	    STRACE_ERROR(("data_encoder failed"));	    
+	    STRACE_ERROR("data_encoder failed");
 	    ret = FALSE;
 	    break;
 	  }

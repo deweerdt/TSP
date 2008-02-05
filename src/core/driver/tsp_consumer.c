@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.64 2007-11-30 15:42:00 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.65 2008-02-05 18:54:10 rhdv Exp $
 
 -----------------------------------------------------------------------
 
@@ -46,7 +46,6 @@ Purpose   : Main implementation for the TSP consumer library
 #include <tsp_datastruct.h>
 #include <tsp_time.h>
 #include <tsp_common.h>
-#include <tsp_simple_trace.h>
 
 /* Pool time for network data read (�s) */
 #define TSP_RECEIVER_THREAD_WAIT_FIFO_FULL (2e5)
@@ -58,12 +57,12 @@ Purpose   : Main implementation for the TSP consumer library
 	{ \
 		if (0 == session) \
 		{  \
-			STRACE_ERROR(("The session object is NULL !")) \
+			STRACE_ERROR("The session object is NULL !");	\
 			return (ret); \
 		} \
 		if( TSP_UNDEFINED_CHANNEL_ID == session->channel_id) \
 		{  \
-			STRACE_ERROR(("No Channel Id available, the session need to be opened first !")) \
+			STRACE_ERROR("No Channel Id available, the session need to be opened first !"); \
 			return (ret); \
 		} \
 	}
@@ -163,7 +162,7 @@ TSP_consumer_private_goUnreachable(int32_t* retcode, TSP_otsp_t* otsp)
 	assert(retcode);	
 	assert(otsp);
 	
-	STRACE_WARNING(("Unable to communicate with provider, going UNREACHABLE."))
+	STRACE_WARNING("Unable to communicate with provider, going UNREACHABLE.");
 	*retcode     = TSP_STATUS_ERROR_PROVIDER_UNREACHABLE;
 	/* 
 	 * As soon as TSP provider is unreachable flag RPC server as dead i.e. NULL 
@@ -192,8 +191,8 @@ TSP_consumer_store_informations(TSP_otsp_t* otsp, TSP_answer_sample_t* ans_sampl
   otsp->information.max_client_number     = ans_sample->max_client_number;
   otsp->information.current_client_number = ans_sample->current_client_number;
   
-  STRACE_DEBUG(("Number of symbols found in answer = %d",symbols_number));
-  STRACE_INFO(("Provider base frequency = %f Hz", ans_sample->base_frequency));
+  STRACE_DEBUG("Number of symbols found in answer = %d",symbols_number);
+  STRACE_INFO("Provider base frequency = %f Hz", ans_sample->base_frequency);
   
   /* allocate memory to store those symbols */
   otsp->information.symbols.TSP_sample_symbol_info_list_t_len = symbols_number;
@@ -310,9 +309,9 @@ void TSP_delete_object_tsp(TSP_otsp_t* o) {
 
 void 
 TSP_print_object_tsp(TSP_otsp_t* o) {	
-  STRACE_INFO(("----------------------------------------------"));
-  STRACE_INFO(("SERVER_INFO->INFO='%s'\n", o->server_info.info));
-  STRACE_INFO(("----------------------------------------------"));
+  STRACE_INFO("----------------------------------------------");
+  STRACE_INFO("SERVER_INFO->INFO='%s'", o->server_info.info);
+  STRACE_INFO("----------------------------------------------");
 }
 
 /*-------------------------------------------------------------------*/
@@ -344,7 +343,7 @@ TSP_consumer_init(int* argc, char** argv[]) {
       if(p && (p == (*argv)[i] )) {
 	
 	  /* TSP Arg */
-	  STRACE_INFO(("Tsp ARG : '%s'", (*argv)[i]));
+	  STRACE_INFO("Tsp ARG : '%s'", (*argv)[i]);
 	  
 	  /* Look for start flag */
 	  if(!strcmp(TSP_ARG_STREAM_INIT_START, (*argv)[i]))
@@ -362,7 +361,7 @@ TSP_consumer_init(int* argc, char** argv[]) {
 		}
 	      else
 		{
-		  STRACE_WARNING(("Unexpected "TSP_ARG_STREAM_INIT_START));
+		  STRACE_WARNING("Unexpected "TSP_ARG_STREAM_INIT_START);
 		  retcode = TSP_STATUS_ERROR_UNKNOWN;
 		}
 	    }
@@ -374,14 +373,14 @@ TSP_consumer_init(int* argc, char** argv[]) {
 		}
 	      else
 		{
-		  STRACE_WARNING(("Unexpected "TSP_ARG_STREAM_INIT_STOP));
+		  STRACE_WARNING("Unexpected "TSP_ARG_STREAM_INIT_STOP);
 		  retcode = TSP_STATUS_ERROR_UNKNOWN;
 		}
 	    }
 	  else
 	    {
 	      /* Unkown option */
-	      STRACE_WARNING(("Unknown TSP option : '%s'",(*argv)[i] ));
+	      STRACE_WARNING("Unknown TSP option : '%s'",(*argv)[i]);
 	      retcode = TSP_STATUS_ERROR_UNKNOWN;
 	    }
 	}
@@ -405,7 +404,7 @@ TSP_consumer_init(int* argc, char** argv[]) {
   
   if( found_stream_start && !found_stream_stop )
     {
-      STRACE_WARNING(("A " TSP_ARG_STREAM_INIT_STOP " flag was expected"));
+      STRACE_WARNING("A " TSP_ARG_STREAM_INIT_STOP " flag was expected");
       retcode = TSP_STATUS_ERROR_UNKNOWN;
     }
 
@@ -424,7 +423,7 @@ TSP_consumer_init(int* argc, char** argv[]) {
     X_tsp_init_ok = TRUE;
   } else {
     X_tsp_init_ok = FALSE;
-    STRACE_WARNING((TSP_ARG_CONSUMER_USAGE));
+    STRACE_WARNING(TSP_ARG_CONSUMER_USAGE);
   }
 
   return retcode;  
@@ -442,7 +441,7 @@ TSP_consumer_end() {
    /* By the way. do ->NOT<- free X_tsp_argv and X_argv,
       the main code may be using them... */
 
-  STRACE_INFO(("TSP Consumer End..."));
+  STRACE_INFO("TSP Consumer End...");
 } /* TSP_consumer_end */
 
 TSP_provider_t
@@ -525,7 +524,7 @@ TSP_consumer_connect_url(const char*  url) {
   if( servernumber >= 0 )
     {
       sprintf(url_lkup, TSP_URL_FORMAT, protocol, hostname, servername, servernumber);
-      STRACE_INFO(("Trying to connect to <%s>", url_lkup ));
+      STRACE_INFO("Trying to connect to <%s>", url_lkup);
 
       /* Is server name/number alive on given host on that protocol ?*/ 
       if(TSP_remote_open_server(  protocol,
@@ -540,7 +539,7 @@ TSP_consumer_connect_url(const char*  url) {
 	  return (TSP_provider_t*)TSP_new_object_tsp(server, url_lkup);
 	}
       
-      STRACE_INFO(("No TSP provider on URL <%s>", url_lkup));
+      STRACE_INFO("No TSP provider on URL <%s>", url_lkup);
       return NULL;
     }
   else {
@@ -553,11 +552,11 @@ TSP_consumer_connect_url(const char*  url) {
       if(provider)
 	return provider;
     }
-    STRACE_INFO(("No TSP provider based on URL <%s>", url));
+    STRACE_INFO("No TSP provider based on URL <%s>", url);
     return NULL;    
   }
   
-  STRACE_ERROR(("Cannot parse such URL %s", url));
+  STRACE_ERROR("Cannot parse such URL %s", url);
   return NULL;
 } /* end of TSP_consumer_connect_url */
 
@@ -596,7 +595,7 @@ void TSP_consumer_connect_all(const char*  host_name, TSP_provider_t** providers
 	  TSP_server_t server;
 	  TSP_server_info_string_t server_info;
 
-	  STRACE_DEBUG(("Trying to open server No %d", i));
+	  STRACE_DEBUG("Trying to open server No %d", i);
 
 	  /* Is server number 'i' alive ?*/ 
 	  if(TSP_remote_open_server(  TSP_DEFAULT_PROTOCOL,
@@ -610,7 +609,7 @@ void TSP_consumer_connect_all(const char*  host_name, TSP_provider_t** providers
 	      (*providers)[*nb_providers] = TSP_new_object_tsp(server, server_info);
 	      if( 0 == (*providers)[*nb_providers])
 		{
-		  STRACE_ERROR(("TSP_new_object_tsp failed for No=%d", i));
+		  STRACE_ERROR("TSP_new_object_tsp failed for No=%d", i);
 		  (*nb_providers) = 0;
 		  return;
 
@@ -620,17 +619,17 @@ void TSP_consumer_connect_all(const char*  host_name, TSP_provider_t** providers
 	    }
 	  else
 	    {
-	      STRACE_DEBUG(("unable to open server No %d for target '%s'", i, host_name));
+	      STRACE_DEBUG("unable to open server No %d for target '%s'", i, host_name);
 	    }
 				
 	}
     }
   else
     {
-      STRACE_ERROR(("Unable to get server max number"));
+      STRACE_ERROR("Unable to get server max number");
     }
 
-  STRACE_INFO(("%d server opened", *nb_providers));
+  STRACE_INFO("%d server opened", *nb_providers);
 }
 
 
@@ -657,7 +656,7 @@ void TSP_consumer_disconnect_all(TSP_provider_t providers[])
     }
   else
     {
-      STRACE_ERROR(("Unable to get server max number"));
+      STRACE_ERROR("Unable to get server max number");
     }
   
   free(providers);
@@ -683,7 +682,7 @@ TSP_consumer_request_open(TSP_provider_t provider,
   TSP_answer_open_t* ans_open = 0;
   int32_t retcode = TSP_STATUS_OK;
 
-  STRACE_REQUEST(("OPEN"));
+  STRACE_REQUEST("OPEN");
        
   assert(X_tsp_init_ok);
   
@@ -698,7 +697,7 @@ TSP_consumer_request_open(TSP_provider_t provider,
       /* Check if a command line exists and trace a warning */
       if( 0 != X_tsp_argv.TSP_argv_t_len )
 	{
-	  STRACE_WARNING(("Overriding command line stream initialisation by custom stream initialisation")); 
+	  STRACE_WARNING("Overriding command line stream initialisation by custom stream initialisation"); 
 	}
       req_open.argv.TSP_argv_t_val = custom_argv;
       req_open.argv.TSP_argv_t_len = custom_argc;
@@ -714,16 +713,16 @@ TSP_consumer_request_open(TSP_provider_t provider,
 	  otsp->channel_id = ans_open->channel_id;
 	  break;
 	case TSP_STATUS_ERROR_SEE_STRING :
-	  STRACE_WARNING(("Provider error : %s", ans_open->status_str));
+	  STRACE_WARNING("Provider error : %s", ans_open->status_str);
 	  break;
 	case TSP_STATUS_ERROR_UNKNOWN :
-	  STRACE_WARNING(("Provider unknown error"));
+	  STRACE_WARNING("Provider unknown error");
 	  break;
 	case TSP_STATUS_ERROR_VERSION :
-	  STRACE_WARNING(("Provider version error"));
+	  STRACE_WARNING("Provider version error");
 	  break;
 	default:
-	  STRACE_ERROR(("The provider sent an unreferenced error. It looks like a bug."));
+	  STRACE_ERROR("The provider sent an unreferenced error. It looks like a bug.");
 	  break;
 	}
     }
@@ -732,7 +731,7 @@ TSP_consumer_request_open(TSP_provider_t provider,
     }		
   }
   else {
-    STRACE_ERROR(("This provider need to be tsp_consumer_connect_url first"));    
+    STRACE_ERROR("This provider need to be tsp_consumer_connect_url first");
   }
   
   return retcode;	
@@ -752,14 +751,14 @@ TSP_consumer_request_close(TSP_provider_t provider)
   TSP_request_close_t req_close;
   int32_t retcode = TSP_STATUS_OK;
 
-  STRACE_REQUEST(("CLOSE"));	
+  STRACE_REQUEST("CLOSE");
 
   TSP_CHECK_SESSION(otsp, TSP_STATUS_ERROR_INVALID_CHANNEL_ID);
 	
   req_close.version_id = TSP_PROTOCOL_VERSION;
   req_close.channel_id = otsp->channel_id;
 	
-  STRACE_DEBUG(("TSP_request_close(ing) channel_id=%u", otsp->channel_id));
+  STRACE_DEBUG("TSP_request_close(ing) channel_id=%u", otsp->channel_id);
 	
   if (NULL==TSP_request_close(&req_close, otsp->server)) {
 	  TSP_consumer_private_goUnreachable(&retcode,otsp);
@@ -780,7 +779,7 @@ TSP_consumer_request_information(TSP_provider_t provider) {
   int32_t retcode = TSP_STATUS_ERROR_UNKNOWN;
   int i;
 	
-  STRACE_REQUEST(("INFORMATION"));	
+  STRACE_REQUEST("INFORMATION");	
   TSP_CHECK_SESSION(otsp, TSP_STATUS_ERROR_INVALID_CHANNEL_ID);
 
   /* Delete allocation of any previous call */
@@ -800,13 +799,13 @@ TSP_consumer_request_information(TSP_provider_t provider) {
 	case TSP_STATUS_OK :
 	  break;
 	case TSP_STATUS_ERROR_UNKNOWN :
-	  STRACE_WARNING(("Provider unknown error"));
+	  STRACE_WARNING("Provider unknown error");
 	  break;
 	case TSP_STATUS_ERROR_VERSION :
-	  STRACE_WARNING(("Provider version error"));
+	  STRACE_WARNING("Provider version error");
 	  break;
 	default:
-	  STRACE_ERROR(("The provider sent an unreferenced error. It looks like a bug."));
+	  STRACE_ERROR("The provider sent an unreferenced error. It looks like a bug.");
 	  break;
 	}
     } 
@@ -818,7 +817,7 @@ TSP_consumer_request_information(TSP_provider_t provider) {
   if( TSP_STATUS_OK == retcode ) {
     retcode = TSP_consumer_store_informations(otsp,ans_sample);
     if (TSP_STATUS_OK != retcode) {
-      STRACE_ERROR(("Unable to store answer information in session"));
+      STRACE_ERROR("Unable to store answer information in session");
     }
   }
 
@@ -840,7 +839,7 @@ TSP_consumer_request_filtered_information(TSP_provider_t provider, int filter_ki
   TSP_answer_sample_t* ans_sample = 0;
   int32_t retcode = TSP_STATUS_ERROR_UNKNOWN;
 		
-  STRACE_REQUEST(("FILTERED INFORMATION"));	
+  STRACE_REQUEST("FILTERED INFORMATION");
   TSP_CHECK_SESSION(otsp, TSP_STATUS_ERROR_INVALID_CHANNEL_ID);
 
   /* Delete allocation of any previous call */
@@ -860,19 +859,19 @@ TSP_consumer_request_filtered_information(TSP_provider_t provider, int filter_ki
 	case TSP_STATUS_OK :
 	  break;
 	case TSP_STATUS_ERROR_SYMBOL_FILTER :
-	  STRACE_WARNING(("Symbol filter error"));
+	  STRACE_WARNING("Symbol filter error");
 	  break;
         case TSP_STATUS_ERROR_SYMBOLS :	  
-	  STRACE_WARNING(("Symbols error"));
+	  STRACE_WARNING("Symbols error");
 	  break;
 	case TSP_STATUS_ERROR_UNKNOWN :
-	  STRACE_WARNING(("Provider unknown error"));
+	  STRACE_WARNING("Provider unknown error");
 	  break;
 	case TSP_STATUS_ERROR_VERSION :
-	  STRACE_WARNING(("Provider version error"));
+	  STRACE_WARNING("Provider version error");
 	  break;
 	default:
-	  STRACE_ERROR(("The provider sent an unreferenced error. It looks like a bug."));
+	  STRACE_ERROR("The provider sent an unreferenced error. It looks like a bug.");
 	  break;
 	}
     } 
@@ -882,7 +881,7 @@ TSP_consumer_request_filtered_information(TSP_provider_t provider, int filter_ki
 
   if( TSP_STATUS_OK == retcode ) {
     if (TSP_STATUS_OK != TSP_consumer_store_informations(otsp,ans_sample)) {
-      STRACE_ERROR(("Unable to store answer information in session"));
+      STRACE_ERROR("Unable to store answer information in session");
     }
   }
 			
@@ -897,7 +896,7 @@ TSP_consumer_request_extended_information(TSP_provider_t provider, int32_t* pgis
   TSP_answer_extended_information_t* ans_extinfo;
   int32_t i;
 
-  STRACE_REQUEST(("EXTENDED INFORMATION"));	
+  STRACE_REQUEST("EXTENDED INFORMATION");
   TSP_CHECK_SESSION(otsp, FALSE);  
   TSP_consumer_delete_extended_informations(otsp);
 
@@ -924,19 +923,19 @@ TSP_consumer_request_extended_information(TSP_provider_t provider, int32_t* pgis
     case TSP_STATUS_OK :
       break;
     case TSP_STATUS_ERROR_SYMBOL_FILTER :
-      STRACE_WARNING(("Symbol filter error"));
+      STRACE_WARNING("Symbol filter error");
       break;
     case TSP_STATUS_ERROR_PGI_UNKNOWN :	  
-      STRACE_WARNING(("Some provided PGI were unknown"));
+      STRACE_WARNING("Some provided PGI were unknown");
       break;
     case TSP_STATUS_ERROR_UNKNOWN :
-      STRACE_WARNING(("Provider unknown error"));
+      STRACE_WARNING("Provider unknown error");
       break;
     case TSP_STATUS_ERROR_VERSION :
-      STRACE_WARNING(("Provider version error"));
+      STRACE_WARNING("Provider version error");
       break;
     default:
-      STRACE_ERROR(("The provider sent an unreferenced error=%d. It looks like a bug.",ans_extinfo->status));
+      STRACE_ERROR("The provider sent an unreferenced error=%d. It looks like a bug.",ans_extinfo->status);
       break;
     }
     TSP_consumer_store_extended_informations(otsp,ans_extinfo);
@@ -999,7 +998,7 @@ TSP_consumer_request_sample(TSP_provider_t provider, TSP_sample_symbol_info_list
   TSP_request_sample_t req_sample;
   int i;
   
-  STRACE_REQUEST(("SAMPLE"));		
+  STRACE_REQUEST("SAMPLE");
   TSP_CHECK_SESSION(otsp, TSP_STATUS_ERROR_INVALID_CHANNEL_ID);
 	
   req_sample.version_id = TSP_PROTOCOL_VERSION;
@@ -1035,19 +1034,19 @@ TSP_consumer_request_sample(TSP_provider_t provider, TSP_sample_symbol_info_list
     case TSP_STATUS_OK :
       break;
     case TSP_STATUS_ERROR_UNKNOWN :
-      STRACE_WARNING(("Provider unknown error"));
+      STRACE_WARNING("Provider unknown error");
       break;
     case TSP_STATUS_ERROR_VERSION :
-      STRACE_WARNING(("Provider version error"));
+      STRACE_WARNING("Provider version error");
       break;
     case TSP_STATUS_ERROR_SYMBOLS :
-      STRACE_WARNING(("Provider symbols error"));
+      STRACE_WARNING("Provider symbols error");
       break;
     case TSP_STATUS_ERROR_INVALID_REQUEST :
-      STRACE_WARNING(("Provider says request is invalid"));
+      STRACE_WARNING("Provider says request is invalid");
       break;
     default:
-      STRACE_ERROR(("The provider sent an unreferenced error. It looks like a bug."));
+      STRACE_ERROR("The provider sent an unreferenced error. It looks like a bug.");
       break;
     }
   
@@ -1056,7 +1055,7 @@ TSP_consumer_request_sample(TSP_provider_t provider, TSP_sample_symbol_info_list
   /* Create group table and store requested symbols */
   /*-------------------------------------------------*/
   if (TSP_STATUS_OK==retcode) {
-    STRACE_INFO(("Total group number = %d", ans_sample->provider_group_number));
+    STRACE_INFO("Total group number = %d", ans_sample->provider_group_number);
     /* Create group table but delete any previous allocation*/
     TSP_group_delete_group_table(otsp->groups);
     otsp->groups = TSP_group_create_group_table(&(ans_sample->symbols), ans_sample->provider_group_number);
@@ -1067,7 +1066,7 @@ TSP_consumer_request_sample(TSP_provider_t provider, TSP_sample_symbol_info_list
     }
     else {
 	    retcode = TSP_STATUS_ERROR_MEMORY_ALLOCATION;	    
-	    STRACE_ERROR(("Function TSP_group_create_group_table failed"));	   
+	    STRACE_ERROR("Function TSP_group_create_group_table failed");
     }
   }
   for(i=0; i < ans_sample->symbols.TSP_sample_symbol_info_list_t_len; i++) {
@@ -1088,7 +1087,7 @@ const TSP_sample_symbol_info_list_t* TSP_consumer_get_requested_sample(TSP_provi
     return &(otsp->requested_sym);
   }
   else {
-    STRACE_ERROR(("TSP_consumer_request_sample must be called first"));
+    STRACE_ERROR("TSP_consumer_request_sample must be called first");
     return NULL;
   }
 } /* TSP_consumer_get_requested_sample */
@@ -1101,9 +1100,9 @@ TSP_request_provider_thread_receiver(void* arg)
   int is_fifo_full;  
 
 #if defined(_WIN32)
-  STRACE_INFO(("Receiver thread started. Id=%u", (uint32_t)pthread_self().p)); 
+  STRACE_INFO("Receiver thread started. Id=%u", (uint32_t)pthread_self().p); 
 #else
-  STRACE_INFO(("Receiver thread started. Id=%u", (uint32_t)pthread_self())); 
+  STRACE_INFO("Receiver thread started. Id=%u", (uint32_t)pthread_self()); 
 #endif
 
   while(TRUE)
@@ -1118,7 +1117,7 @@ TSP_request_provider_thread_receiver(void* arg)
 	}
       else
         {
-	  STRACE_INFO(("function TSP_data_receiver_receive returned FALSE. End of Thread"));
+	  STRACE_INFO("function TSP_data_receiver_receive returned FALSE. End of Thread");
 	  break;
         }
  
@@ -1135,7 +1134,7 @@ TSP_consumer_request_sample_init(TSP_provider_t provider, TSP_sample_callback_t 
   TSP_answer_sample_init_t* ans_sample = 0;
   TSP_request_sample_init_t req_sample;
 
-  STRACE_REQUEST(("SAMPLE INIT"));	
+  STRACE_REQUEST("SAMPLE INIT");
   TSP_CHECK_SESSION(otsp, TSP_STATUS_ERROR_INVALID_CHANNEL_ID);
   
   req_sample.version_id = TSP_PROTOCOL_VERSION;
@@ -1145,7 +1144,7 @@ TSP_consumer_request_sample_init(TSP_provider_t provider, TSP_sample_callback_t 
   
   if (NULL!=ans_sample) {
     retcode = ans_sample->status;
-    STRACE_DEBUG(("data_address = '%s'", ans_sample->data_address));
+    STRACE_DEBUG("data_address = '%s'", ans_sample->data_address);
       
     /* Create the data receiver */
     otsp->receiver = TSP_data_receiver_create(ans_sample->data_address, callback, user_data);
@@ -1178,7 +1177,7 @@ TSP_consumer_request_sample_init(TSP_provider_t provider, TSP_sample_callback_t 
 	}
       else
 	{
-	  STRACE_ERROR(("Unable to create data receiver"));
+	  STRACE_ERROR("Unable to create data receiver");
 	  
 	}
     }
@@ -1198,7 +1197,7 @@ TSP_consumer_request_sample_destroy(TSP_provider_t provider) {
   TSP_answer_sample_destroy_t* ans_sample = 0;
   TSP_request_sample_destroy_t req_sample;
 	
-  STRACE_REQUEST(("SAMPLE DESTROY"));
+  STRACE_REQUEST("SAMPLE DESTROY");
 
   TSP_CHECK_SESSION(otsp, FALSE);
   
@@ -1218,13 +1217,13 @@ TSP_consumer_request_sample_destroy(TSP_provider_t provider) {
 	case TSP_STATUS_OK :
 	  break;
 	case TSP_STATUS_ERROR_UNKNOWN :
-	  STRACE_WARNING(("Provider unknown error"));
+	  STRACE_WARNING("Provider unknown error");
 	  break;
 	case TSP_STATUS_ERROR_VERSION :
-	  STRACE_WARNING(("Provider version error"));
+	  STRACE_WARNING("Provider version error");
 	  break;
 	default:
-	  STRACE_ERROR(("The provider sent an unreferenced error. It looks like a bug."));
+	  STRACE_ERROR("The provider sent an unreferenced error. It looks like a bug.");
 	  break;
 	}
     }
@@ -1270,35 +1269,35 @@ TSP_consumer_read_sample(TSP_provider_t provider,
 	  
 	  /* GIGAFIXME : We need some kind of get_last_error to read
 	     these values thrue the consumer API */
-	  STRACE_INFO(("Received status message %X",  sample->provider_global_index));
+	  STRACE_INFO("Received status message %X",  sample->provider_global_index);
 	  switch(sample->provider_global_index)
 	    {
 	    case TSP_DUMMY_PROVIDER_GLOBAL_INDEX_EOF :
-	      STRACE_INFO (("status message EOF"));
+	      STRACE_INFO("status message EOF");
 	      /* FIXME : get last error � gerer ? */
 	      break;
 	    case TSP_DUMMY_PROVIDER_GLOBAL_INDEX_RECONF :
-	      STRACE_INFO (("status message RECONF"));
+	      STRACE_INFO("status message RECONF");
 	      /* FIXME : get last error � gerer ? */
 	      break;
 	    case TSP_DUMMY_PROVIDER_GLOBAL_INDEX_RECEIVER_ERROR :
-	      STRACE_WARNING (("status message RECEIVER ERROR"));
+	      STRACE_WARNING("status message RECEIVER ERROR");
 	      TSP_consumer_private_goUnreachable(&retcode,otsp);
 	      /* FIXME : get last error � gerer ? */
 	      break;
 	    case TSP_DUMMY_PROVIDER_GLOBAL_INDEX_GLU_DATA_LOST :
-	      STRACE_WARNING (("status message GLU DATA LOST. Some data were lost by the GLU on the provider side. "
-			       "is the provider too slow ?"));
+	      STRACE_WARNING("status message GLU DATA LOST. Some data were lost by the GLU on the provider side. "
+			     "is the provider too slow ?");
 	      /* FIXME : get last error � gerer ? */
 	      break;
 	    case TSP_DUMMY_PROVIDER_GLOBAL_INDEX_CONSUMER_DATA_LOST :
-	      STRACE_WARNING (("status message CONSUMER DATA LOST. Some data were lost for this consumer"
-			       " on the provider side. Is the consumer too slow, or"
-			       " the network overloaded ?"));
+	      STRACE_WARNING("status message CONSUMER DATA LOST. Some data were lost for this consumer"
+			     " on the provider side. Is the consumer too slow, or"
+			     " the network overloaded ?");
 	      /* FIXME : get last error � gerer ? */
 	      break;
 	    default:
-	      STRACE_ERROR (("Unknown status message"));
+	      STRACE_ERROR("Unknown status message");
 	      /* FIXME : get last error � gerer ? */
 	    }
 	}
@@ -1320,9 +1319,10 @@ TSP_consumer_request_async_sample_write(TSP_provider_t provider,
   TSP_async_sample_t async_write;
   int32_t ret = TSP_STATUS_ERROR_UNKNOWN;
   TSP_otsp_t* otsp = (TSP_otsp_t*)provider;
-   STRACE_REQUEST(("ASYNC WRITE")); 
+
+  STRACE_REQUEST("ASYNC WRITE");
+
   /* As there are a two level structure for hidding all RPC stuff, we need to copy the struct fields */
-  
   async_write.provider_global_index = async_sample_write->provider_global_index;
   async_write.data.data_val         = async_sample_write->value_ptr;
   async_write.data.data_len         = async_sample_write->value_size;
@@ -1337,7 +1337,7 @@ TSP_consumer_request_async_sample_write(TSP_provider_t provider,
 	    TSP_consumer_private_goUnreachable(&ret, otsp);	    
     }
   } else {
-    STRACE_ERROR(("This provider is not in a valid state (missing 'TSP_consumer_connect_url'?"));
+    STRACE_ERROR("This provider is not in a valid state (missing 'TSP_consumer_connect_url'?");
   }
      
   return ret;
@@ -1354,7 +1354,9 @@ TSP_consumer_request_async_sample_read(TSP_provider_t provider,
   
   int32_t ret = TSP_STATUS_ERROR_UNKNOWN;
   TSP_otsp_t* otsp = (TSP_otsp_t*)provider;
-  STRACE_REQUEST(("ASYNC READ")); 
+
+  STRACE_REQUEST("ASYNC READ");
+
   /* update internal RPC structure */
   async_read_param.provider_global_index  = async_sample_read->provider_global_index;
   async_read_param.data.data_val = async_sample_read->value_ptr;
@@ -1362,18 +1364,18 @@ TSP_consumer_request_async_sample_read(TSP_provider_t provider,
 
   
   if(NULL != otsp) {   
-    STRACE_DEBUG(("TSP consumer async read for pgi <%d>\n",async_sample_read->provider_global_index));
+    STRACE_DEBUG("TSP consumer async read for pgi <%d>",async_sample_read->provider_global_index);
 
     async_read_result = TSP_request_async_sample_read(&async_read_param,otsp->server);
-    STRACE_DEBUG(("async_read_result is <0x%X>\n", (unsigned int)async_read_result));
+    STRACE_DEBUG("async_read_result is <0x%X>", (unsigned int)async_read_result);
 
     /* Provider has probably died */
     if (async_read_result == NULL) {
 	    TSP_consumer_private_goUnreachable(&ret,otsp);
     } else {
-      STRACE_DEBUG(("async_read_result->pgi=%d\n", async_read_result->provider_global_index));
-      STRACE_DEBUG(("async_read_result->value_size=%d\n", async_sample_read->value_size));
-      STRACE_DEBUG(("async_read_result->data.data_val = 0x%X\n", (unsigned int)async_read_result->data.data_val));
+      STRACE_DEBUG("async_read_result->pgi=%d", async_read_result->provider_global_index);
+      STRACE_DEBUG("async_read_result->value_size=%d", async_sample_read->value_size);
+      STRACE_DEBUG("async_read_result->data.data_val = 0x%X", (unsigned int)async_read_result->data.data_val);
       if (-1 == async_read_result->provider_global_index) {
 	ret = TSP_STATUS_ERROR_PGI_UNKNOWN;
       } else {
@@ -1391,7 +1393,7 @@ TSP_consumer_request_async_sample_read(TSP_provider_t provider,
     }
   }
   else{
-    STRACE_ERROR(("This provider is not in a valid state (missing 'TSP_consumer_connect_url'?"));
+    STRACE_ERROR("This provider is not in a valid state (missing 'TSP_consumer_connect_url'?");
   }
      
   return ret;
@@ -1460,7 +1462,7 @@ TSP_sample2double(TSP_sample_t sample) {
     */
   default:
     /* nothing to do 0 */
-    STRACE_WARNING(("No possible conversion for type <%d>", sample.type));
+    STRACE_WARNING("No possible conversion for type <%d>", sample.type);
     break;
   }
   return retval;

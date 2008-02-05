@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/common/tsp_decoder.c,v 1.8 2007-11-30 15:42:01 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/common/tsp_decoder.c,v 1.9 2008-02-05 18:54:09 rhdv Exp $
 
 -----------------------------------------------------------------------
 
@@ -41,7 +41,6 @@ Purpose   :  Implementation for the functions used to decode the data received
  
 #include <tsp_const_def.h>
 #include <tsp_datastruct.h>
-#include <tsp_simple_trace.h>
 #include <tsp_decoder.h>
 
 #if defined(sun) || defined(__sun)
@@ -69,7 +68,7 @@ int32_t TSP_data_channel_double_decoder(void* out_double, uint32_t dimension,  c
   {
     if( xdr_double(&xhandle, (double*)out_double+i) != TRUE)
     {
-      STRACE_ERROR(("Function xdr_double failed"));
+      STRACE_ERROR("Function xdr_double failed");
       return FALSE;
     }
     else
@@ -83,7 +82,7 @@ int32_t TSP_data_channel_double_decoder(void* out_double, uint32_t dimension,  c
   for(i=0;i<dimension;++i)
   {
     ((uint64_t*)out_double)[i] = TSP_DECODE_DOUBLE_TO_UINT64(in_buf+(i*TSP_SIZEOF_ENCODED_DOUBLE));   
-    STRACE_DEBUG_MORE(("decoded DOUBLE = %f, (received) encoded DOUBLE=0x%08llx",((double*)out_double)[i],((uint64_t*)in_buf)[i]));
+    STRACE_DEBUG_MORE("decoded DOUBLE = %f, (received) encoded DOUBLE=0x%08llx",((double*)out_double)[i],((uint64_t*)in_buf)[i]);
   }
 #endif
 
@@ -105,7 +104,7 @@ int32_t TSP_data_channel_float_decoder(void* out_float, uint32_t dimension,  cha
   {
     if( xdr_float(&xhandle, (float*)out_float+i) != TRUE)
     {
-      STRACE_ERROR(("Function xdr_float failed"));
+      STRACE_ERROR("Function xdr_float failed");
       return FALSE;
     }
     else
@@ -182,7 +181,7 @@ int32_t TSP_data_channel_int32_decoder(void* out_int32, uint32_t dimension,  cha
   {
     if( xdr_int(&xhandle, (int32_t*)out_int32+i) != TRUE)
     {
-      STRACE_ERROR(("Function xdr_float failed"));
+      STRACE_ERROR("Function xdr_float failed");
       return FALSE;
     }
     else
@@ -217,7 +216,7 @@ int32_t TSP_data_channel_int64_decoder(void* out_int64, uint32_t dimension,  cha
   {
     if( xdr_hyper(&xhandle, (int64_t*)out_int64+i) != TRUE)
     {
-      STRACE_ERROR(("Function xdr_float failed"));
+      STRACE_ERROR("Function xdr_float failed");
       return FALSE;
     }
     else
@@ -292,7 +291,7 @@ int32_t TSP_data_channel_uint32_decoder(void* out_uint32, uint32_t dimension,  c
   {
     if( xdr_int(&xhandle, (uint32_t*)out_uint32+i) != TRUE)
     {
-      STRACE_ERROR(("Function xdr_float failed"));
+      STRACE_ERROR("Function xdr_float failed");
       return FALSE;
     }
     else
@@ -327,7 +326,7 @@ int32_t TSP_data_channel_uint64_decoder(void* out_uint64, uint32_t dimension,  c
   {
     if( xdr_hyper(&xhandle, (uint64_t*)out_uint64+i) != TRUE)
     {
-      STRACE_ERROR(("Function xdr_float failed"));
+      STRACE_ERROR("Function xdr_float failed");
       return FALSE;
     }
     else
@@ -508,9 +507,8 @@ TSP_data_channel_get_encoded_size(TSP_datatype_t type) {
     return TSP_SIZEOF_ENCODED_USER;
         
   default:
-    STRACE_ERROR(("Unknown TSP Type <%d>",type))
+    STRACE_ERROR("Unknown TSP Type <%d>",type);
     return 0;
-
   }
 }
 

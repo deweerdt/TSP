@@ -276,7 +276,7 @@ struct TSP_provider_info_t {
 	char *info;
 };
 typedef struct TSP_provider_info_t TSP_provider_info_t;
-#define TSP_STRACE_RPC_ERROR(cl, pResult) if(!pResult) { STRACE_ERROR(("%s", clnt_sperror(cl, ""))); }
+#define TSP_STRACE_RPC_ERROR(cl, pResult) if(!pResult) { STRACE_ERROR("%s", clnt_sperror(cl, "")); }
 
 struct tsp_request_filtered_information_1_argument {
 	TSP_request_information_t arg1;

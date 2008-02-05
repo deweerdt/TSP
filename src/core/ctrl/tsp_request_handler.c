@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_request_handler.c,v 1.8 2007-11-30 15:42:00 erk Exp $
+$Id: tsp_request_handler.c,v 1.9 2008-02-05 18:54:10 rhdv Exp $
 
 -----------------------------------------------------------------------
 
@@ -80,7 +80,7 @@ TSP_provider_rqh_manager_get(int rank) {
   TSP_provider_request_handler_t*  retval = NULL;
 
   if ((rank<0) || (rank>TSP_provider_rqh_manager_get_max_nb())) {
-    STRACE_ERROR(("Invalid request handler RANK=%d, max=%d",rank,TSP_provider_rqh_manager_get_max_nb()));
+    STRACE_ERROR("Invalid request handler RANK=%d, max=%d",rank,TSP_provider_rqh_manager_get_max_nb());
   }
   else {
     retval = &rqh_manager_if.request_handlers[rank];
@@ -116,13 +116,13 @@ TSP_provider_rqh_manager_install(int rank, tsp_request_handler_ft rqh_constructo
   else {
     /* Verify the adressed rqh was not already installed */
     if (rqh_p->status != TSP_RQH_STATUS_NOTINSTALLED) {
-      STRACE_ERROR(("Could not replace an installed request handler"));
+      STRACE_ERROR("Could not replace an installed request handler");
       retval = FALSE;
     }
     else {
        /* Really install handler */
       if (!rqh_constructor(rqh_p)) {
-	STRACE_ERROR(("Invalid request handler constructor"));
+	STRACE_ERROR("Invalid request handler constructor");
 	retval = FALSE;
       }
     } /* (rqh_p->status == TSP_RQH_STATUS_RUNNING) [else] */
@@ -211,11 +211,11 @@ TSP_provider_rqh_manager_refresh() {
 		    {
 		      rqh_manager_if.nb_running_rhq++;
 		      /*FIXME: should not reference rpc explicitely */
-		      /*STRACE_INFO(("Request handler # %d started with URL %s", rank, TSP_rpc_request_url(rqh_p)));*/
+		      /*STRACE_INFO("Request handler # %d started with URL %s", rank, TSP_rpc_request_url(rqh_p));*/
 		    }
 		  else
 		    {
-		      STRACE_ERROR(("Request handler # %d could not start properly", rank));
+		      STRACE_ERROR("Request handler # %d could not start properly", rank);
 		    }
 		}
 	    }
@@ -261,7 +261,7 @@ int TSP_provider_rqh_manager_end()
 
 	  if(rqh_p->status != TSP_RQH_STATUS_STOPPED)
 	    {
-	      STRACE_ERROR(("Could not stop handler # %d, canceling", rank));
+	      STRACE_ERROR("Could not stop handler # %d, canceling", rank);
 	      pthread_cancel(rqh_p->tid);
 	    }
 	  rqh_manager_if.nb_running_rhq--;
@@ -281,5 +281,5 @@ void TSP_provider_rqh_manager_waitend() {
     pthread_cond_wait(&rqh_manager_if.cond,&rqh_manager_if.mutex);
   }
   TSP_UNLOCK_MUTEX(&rqh_manager_if.mutex,);
-  STRACE_DEBUG(("No more Request Hanndler running -->terminate"));
+  STRACE_DEBUG("No more Request Hanndler running -->terminate");
 } /* end of TSP_provider_rqh_manager_waitend */

@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_utils.c,v 1.16 2007-11-15 20:10:19 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_utils.c,v 1.17 2008-02-05 18:54:12 rhdv Exp $
 
 -----------------------------------------------------------------------
 
@@ -46,7 +46,7 @@ Purpose   : Blackboard Idiom utilities
 #include <tsp_sys_headers.h>
 #include <bb_utils.h>
 #include <bb_sha1.h>
-#include "tsp_simple_trace.h"
+#include "tsp_common_trace.h"
 
 char* 
 bb_utils_build_shm_name(const char* shm_name) {

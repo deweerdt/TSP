@@ -1,7 +1,7 @@
 
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/common/tsp_encoder.c,v 1.12 2007-11-30 15:42:01 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/common/tsp_encoder.c,v 1.13 2008-02-05 18:54:09 rhdv Exp $
 
 -----------------------------------------------------------------------
 
@@ -40,7 +40,7 @@ Purpose   :  Implementation for the functions used to encode the type
 #include <rpc/xdr.h>
 
 #include <tsp_const_def.h>
-#include <tsp_simple_trace.h>
+#include <tsp_common_trace.h>
 #include <tsp_datastruct.h>
 #include <tsp_encoder.h>
 #include <tsp_decoder.h>
@@ -80,7 +80,7 @@ TSP_data_channel_double_encoder(void*    v_double,
   }
   
   if (size  < taille ) {
-    STRACE_ERROR(("buffer is too small"));
+    STRACE_ERROR("buffer is too small");
     return 0;
   }
   
@@ -94,7 +94,7 @@ TSP_data_channel_double_encoder(void*    v_double,
   {
     if( xdr_double(&xhandle, pt_double+i) != TRUE)
     {
-       STRACE_ERROR(("Function xdr_double failed"));
+       STRACE_ERROR("Function xdr_double failed");
        return 0;
     }
   }
@@ -106,7 +106,7 @@ TSP_data_channel_double_encoder(void*    v_double,
    
   for (i=0;i<dimension;++i) {
     ((uint64_t*)out_buf)[i] = TSP_ENCODE_DOUBLE_TO_UINT64(pt_double+i);
-    STRACE_DEBUG_MORE(("DOUBLE = %f, encoded DOUBLE=0x%08llx",*pt_double,((uint64_t*)out_buf)[i]));
+    STRACE_DEBUG_MORE("DOUBLE = %f, encoded DOUBLE=0x%08llx",*pt_double,((uint64_t*)out_buf)[i]);
   } 
   
   return (uint32_t)(taille);
@@ -140,7 +140,7 @@ TSP_data_channel_float_encoder(void*    v_float,
   }
 
   if (size  < taille ) {
-    STRACE_ERROR(("buffer is too small"));
+    STRACE_ERROR("buffer is too small");
     return 0;
   }
 
@@ -154,7 +154,7 @@ TSP_data_channel_float_encoder(void*    v_float,
   {
     if( xdr_float(&xhandle, pt_float+i) != TRUE)
     {
-       STRACE_ERROR(("Function xdr_float failed"));
+       STRACE_ERROR("Function xdr_float failed");
        return 0;
     }
   }
@@ -252,7 +252,7 @@ TSP_data_channel_int32_encoder(void*    v_int32,
   }
 
   if (size  < taille) {
-    STRACE_ERROR(("buffer is too small"));
+    STRACE_ERROR("buffer is too small");
     return 0;
   }
 
@@ -266,7 +266,7 @@ TSP_data_channel_int32_encoder(void*    v_int32,
   {
     if( xdr_int(&xhandle, pt_int32+i) != TRUE)
     {
-       STRACE_ERROR(("Function xdr_int failed"));
+       STRACE_ERROR("Function xdr_int failed");
        return 0;
     }
   }
@@ -309,7 +309,7 @@ TSP_data_channel_int64_encoder(void*    v_int64,
   }
 
   if (size  < taille ) {
-     STRACE_ERROR(("buffer is too small"));
+     STRACE_ERROR("buffer is too small");
      return 0;
   }
 
@@ -323,7 +323,7 @@ TSP_data_channel_int64_encoder(void*    v_int64,
   {
     if( xdr_hyper(&xhandle, pt_int64+i) != TRUE)
     {
-       STRACE_ERROR(("Function xdr_hyper failed"));
+       STRACE_ERROR("Function xdr_hyper failed");
        return 0;
     }
   }
@@ -417,7 +417,7 @@ TSP_data_channel_uint32_encoder(void*    v_uint32,
   }
 
   if (size  < taille) {
-    STRACE_ERROR(("buffer is too small"));
+    STRACE_ERROR("buffer is too small");
     return 0;
   }
 
@@ -431,7 +431,7 @@ TSP_data_channel_uint32_encoder(void*    v_uint32,
   {
     if( xdr_int(&xhandle, pt_uint32+i) != TRUE)
     {
-       STRACE_ERROR(("Function xdr_int failed"));
+       STRACE_ERROR("Function xdr_int failed");
        return 0;
     }
   }
@@ -476,7 +476,7 @@ TSP_data_channel_uint64_encoder(void*    v_uint64,
   }
 
   if (size  < taille) {
-    STRACE_ERROR(("buffer is too small"));
+    STRACE_ERROR("buffer is too small");
     return 0;
   }
 
@@ -490,7 +490,7 @@ TSP_data_channel_uint64_encoder(void*    v_uint64,
   {
     if( xdr_hyper(&xhandle, pt_uint64+i) != TRUE)
     {
-       STRACE_ERROR(("Function xdr_long failed"));
+       STRACE_ERROR("Function xdr_long failed");
        return 0;
     }
   }

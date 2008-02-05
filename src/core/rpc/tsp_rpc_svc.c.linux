@@ -18,7 +18,7 @@
 #ifndef SIG_PF
 #define SIG_PF void(*)(int)
 #endif
-#define TSP_STRACE_RPC_ERROR(cl, pResult) if(!pResult) { STRACE_ERROR(("%s", clnt_sperror(cl, ""))); }
+#define TSP_STRACE_RPC_ERROR(cl, pResult) if(!pResult) { STRACE_ERROR("%s", clnt_sperror(cl, "")); }
 
 static TSP_provider_info_t *
 _tsp_provider_information_1 (void  *argp, struct svc_req *rqstp)

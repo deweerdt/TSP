@@ -16,7 +16,7 @@ int tsp_wrap_rpc_clnt_set_timeout(CLIENT *client, int timeout)
  tv.tv_usec = 0;
  return clnt_control(client, CLSET_TIMEOUT, (char *)&tv);
 }
-#define TSP_STRACE_RPC_ERROR(cl, pResult) if(!pResult) { STRACE_ERROR(("%s", clnt_sperror(cl, ""))); }
+#define TSP_STRACE_RPC_ERROR(cl, pResult) if(!pResult) { STRACE_ERROR("%s", clnt_sperror(cl, "")); }
 
 /* Default timeout can be changed using clnt_control() */
 static struct timeval TIMEOUT = { 25, 0 };

@@ -857,4 +857,4 @@ xdr_tsp_request_filtered_information_1_argument (XDR *xdrs, tsp_request_filtered
 		 return FALSE;
 	return TRUE;
 }
-#define TSP_STRACE_RPC_ERROR(cl, pResult) if(!pResult) { STRACE_ERROR(("%s", clnt_sperror(cl, ""))); }
+#define TSP_STRACE_RPC_ERROR(cl, pResult) if(!pResult) { STRACE_ERROR("%s", clnt_sperror(cl, "")); }

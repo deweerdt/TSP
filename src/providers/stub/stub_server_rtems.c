@@ -1,6 +1,6 @@
 /*
 
-$Id: stub_server_rtems.c,v 1.2 2007-11-30 15:42:02 erk Exp $
+$Id: stub_server_rtems.c,v 1.3 2008-02-05 18:54:12 rhdv Exp $
 
 -----------------------------------------------------------------------
 
@@ -107,7 +107,7 @@ int main_stub_server(int argc, char *argv[])
   /* intercept SIGINT signal */
   if ( SIG_ERR == signal(SIGINT, intrpt))
   {
-    STRACE_ERROR(("Error initialisation signal intercept function"));
+    STRACE_ERROR("Error initialisation signal intercept function");
     exit(1);
   }
 #else

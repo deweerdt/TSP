@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.47 2007-11-06 08:47:02 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.48 2008-02-05 18:54:12 rhdv Exp $
 
 -----------------------------------------------------------------------
 
@@ -54,7 +54,7 @@ Purpose   : Blackboard Idiom implementation
 #include <tsp_abs_types.h>
 #include <tsp_abs_types.h>
 #include <tsp_sys_headers.h>
-#include <tsp_simple_trace.h>
+#include <tsp_common_trace.h>
 
 #endif /* __KERNEL__ */
 
@@ -1579,18 +1579,18 @@ bb_logMsg(const BB_LOG_LEVEL_T level, const char* who, char* fmt, ...) {
     
   case BB_LOG_ABORT:
   case BB_LOG_SEVERE:
-    STRACE_ERROR(("%s : %s",who,message));
+    STRACE_ERROR("%s : %s",who,message);
     break;
   case BB_LOG_WARNING:
-    STRACE_WARNING(("%s : %s",who,message));
+    STRACE_WARNING("%s : %s",who,message);
     break;
   case BB_LOG_INFO:
   case BB_LOG_CONFIG:
-    STRACE_INFO(("%s : %s",who,message));
+    STRACE_INFO("%s : %s",who,message);
     break;
   case BB_LOG_FINE:
   case BB_LOG_FINER:
-    STRACE_DEBUG(("%s : %s",who,message));
+    STRACE_DEBUG("%s : %s",who,message);
 
   }
   return 0;

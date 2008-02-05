@@ -1,5 +1,5 @@
 #include "tsp_xmlrpc_util.h"
-#include "tsp_simple_trace.h"
+#include "tsp_common_trace.h"
 
 
 
@@ -221,7 +221,7 @@ xmlrpc_value_to_TSP_request_sample (xmlrpc_env *env,
   
   die_if_fault_occurred(env);
 
-  STRACE_DEBUG(("Nombre de symboles: %d\n\n", req_sample->symbols.TSP_sample_symbol_info_list_t_len));
+  STRACE_DEBUG("Number of symbols: %d", req_sample->symbols.TSP_sample_symbol_info_list_t_len);
 
 
   req_sample->symbols.TSP_sample_symbol_info_list_t_val = malloc(sizeof(TSP_sample_symbol_info_t)*req_sample->symbols.TSP_sample_symbol_info_list_t_len);

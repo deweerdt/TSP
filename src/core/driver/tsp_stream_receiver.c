@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_stream_receiver.c,v 1.14 2007-11-30 15:42:00 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_stream_receiver.c,v 1.15 2008-02-05 18:54:10 rhdv Exp $
 
 -----------------------------------------------------------------------
 
@@ -86,7 +86,7 @@ TSP_stream_receiver_t TSP_stream_receiver_create(const  char* data_address)
   str_port = strtok_r(NULL, ":", &last);
   port = (unsigned short)atoi(str_port);
   
-  STRACE_DEBUG(("Connection Data : Host='%s' port=%u", host, (unsigned int)port));
+  STRACE_DEBUG("Connection Data : Host='%s' port=%u", host, (unsigned int)port);
 
   /* Init socket */
   sock->socketId = socket(AF_INET, SOCK_STREAM, 0);
@@ -98,7 +98,7 @@ TSP_stream_receiver_t TSP_stream_receiver_create(const  char* data_address)
       status = setsockopt(sock->socketId, SOL_SOCKET, SO_RCVBUF, (void * )&OptInt, sizeof(OptInt));
       if (status == -1)
 	{
-	  STRACE_ERROR(("Probleme with set socket size"));
+	  STRACE_ERROR("Probleme with set socket size");
 
 	  close(sock->socketId);
 	  free(sock);
@@ -112,7 +112,7 @@ TSP_stream_receiver_t TSP_stream_receiver_create(const  char* data_address)
 			  (void *) &OptInt, sizeof(OptInt));
       if (status == -1)
 	{
-          STRACE_ERROR(("pb set local address reuse"));
+          STRACE_ERROR("pb set local address reuse");
 	  close(sock->socketId);
 	  free(sock);
 	  return 0;
@@ -125,7 +125,7 @@ TSP_stream_receiver_t TSP_stream_receiver_create(const  char* data_address)
 			  (void *) &OptInt, sizeof(OptInt));
       if (status == -1)
 	{
-	  STRACE_ERROR(("pb set periodic state control"));
+	  STRACE_ERROR("pb set periodic state control");
 
 	  close(sock->socketId);
 	  free(sock);
@@ -138,7 +138,7 @@ TSP_stream_receiver_t TSP_stream_receiver_create(const  char* data_address)
 			  sizeof(OptInt));
       if (status == -1)
 	{
-	  STRACE_ERROR(("pb set TCP no delay"));
+	  STRACE_ERROR("pb set TCP no delay");
 
 	  close(sock->socketId);
 	  free(sock);
@@ -150,7 +150,7 @@ TSP_stream_receiver_t TSP_stream_receiver_create(const  char* data_address)
       Host_p = gethostbyname(host);
       if (Host_p == (struct hostent *) NULL)
 	{
-	  STRACE_ERROR(("pb get host by name"));
+	  STRACE_ERROR("pb get host by name");
 
 	  close(sock->socketId);
 	  free(sock);
@@ -181,7 +181,7 @@ TSP_stream_receiver_t TSP_stream_receiver_create(const  char* data_address)
     
       if (status == -1)
 	{
-	  STRACE_ERROR(("pb connecting to socket"));
+	  STRACE_ERROR("pb connecting to socket");
 	  close(sock->socketId);
 	  free(sock);
 	  return 0;
@@ -267,13 +267,13 @@ TSP_stream_receiver_receive(TSP_stream_receiver_t receiver, char *buffer, int bu
 	      else 
 		  {
 		  
-		    STRACE_INFO(("read failed"));
+		    STRACE_INFO("read failed");
 		    return FALSE;
 		  }
 	  }
       else if (nread == 0)
 	  {
-		  STRACE_INFO(("Received socket EOF"));
+		  STRACE_INFO("Received socket EOF");
 		  return FALSE;
 	  }
 	  
