@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_common_request.h,v 1.3 2006-10-18 09:58:48 erk Exp $
+$Id: tsp_common_request.h,v 1.4 2008-02-05 18:48:12 rhdv Exp $
 
 -----------------------------------------------------------------------
 
@@ -42,7 +42,7 @@ Purpose   : Main interface for the producer module
 #include <tsp_datastruct.h>
 
 /**
- * @define TSP_CommonLib_Request Generic Request Handling
+ * @defgroup TSP_CommonLib_Request Generic Request Handling
  * The generic request handling API.
  * @ingroup TSP_CommonLib
  * @{
