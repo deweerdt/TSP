@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bbtools/bb_simu.c,v 1.12 2008-02-23 21:48:35 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bbtools/bb_simu.c,v 1.13 2008-02-24 12:50:40 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -112,7 +112,7 @@ int main(int argc, char **argv)
 	while ((opt = getopt(argc, argv, "sxh")) != -1) {
 		switch (opt) {
 		case 's':
-			synchro = 0;
+			synchro = 1;
 			break;
 		case 'x':
 			signal(SIGINT, sigint_handler);
@@ -319,8 +319,7 @@ int main(int argc, char **argv)
 					printf("Synchro GO...");
 					fflush(stdout);
 				}
-				bb_simple_synchro_go(mybb,
-						     BB_SIMPLE_MSGID_SYNCHRO_COPY);
+				bb_simple_synchro_go(mybb, BB_SIMPLE_MSGID_SYNCHRO_COPY);
 				if (*display_level & 0x4) {
 					printf("OK.\n");
 				}
