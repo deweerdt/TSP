@@ -40,7 +40,7 @@ OPTION(USE_XDR_LIB_ENCODING
 OPTION(BUILD_BB_KERNEL_MODULE
   "Build the Black Board kernel module" OFF)
 
-IF (WIN32)        
+IF (WIN32)
   OPTION(BUILD_WIN32_PTHREADWIN32
     "Build under Windows with PthreadWin32" ON)
   
@@ -405,6 +405,17 @@ ENDIF (BUILD_ONLY_TSP_PORT)
 
 ENABLE_TESTING()
 ADD_TEST(TestSocket ${EXECUTABLE_OUTPUT_PATH}/tsp_port_test -t socket -u localhost)
+
+## Patch generating target
+
+# TODO: -kk doesn't work, googling only reports a few unsolved problem
+# reports.
+# The echo is needed because cvs diff returns an error if it finds any
+# difference between the files (!).
+ADD_CUSTOM_TARGET(patch cvs diff -u | tee patch.diff || echo -n ''
+                  COMMENT "Generating 'patch.diff' ready for review at tsp-devel@nongnu.org")
+
+## Packaging related stuff
 
 SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "The Transport Sample Protocol")
 SET(CPACK_PACKAGE_VENDOR "The TSP Team")
