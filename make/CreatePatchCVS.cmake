@@ -11,6 +11,7 @@ FIND_PROGRAM(CVS_COMMAND
              NAMES cvs 
              DOC "The command line cvs command")
 
+# TODO: -kk doesn't work, googling only reports a few unsolved problem reports.
 SET(CVS_DIFF_ARGS "diff -u")
 MESSAGE(STATUS "CVS Patch:: Generating patch using CVS...")
 MESSAGE(STATUS "CVS Patch:: Using command     : ${CVS_COMMAND} ${CVS_DIFF_ARGS}")

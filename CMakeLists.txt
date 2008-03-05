@@ -407,13 +407,12 @@ ENABLE_TESTING()
 ADD_TEST(TestSocket ${EXECUTABLE_OUTPUT_PATH}/tsp_port_test -t socket -u localhost)
 
 ## Patch generating target
-
-# TODO: -kk doesn't work, googling only reports a few unsolved problem
-# reports.
-# The echo is needed because cvs diff returns an error if it finds any
-# difference between the files (!).
-ADD_CUSTOM_TARGET(patch cvs diff -u | tee patch.diff || echo -n ''
-                  COMMENT "Generating 'patch.diff' ready for review at tsp-devel@nongnu.org")
+# The custom target is using a cmake script which in turn
+# use execute_process, 
+# this way we may find a flexible way to build the patch
+ADD_CUSTOM_TARGET(patch 
+                  COMMAND ${CMAKE_COMMAND} -DWDIR:PATH=${CMAKE_SOURCE_DIR} -DODIR:PATH=${CMAKE_BINARY_DIR} -P ${CMAKE_SOURCE_DIR}/make/CreatePatchCVS.cmake                                                      
+                  COMMENT "Generating patch file ready for review at tsp-devel@nongnu.org")
 
 ## Packaging related stuff
 
