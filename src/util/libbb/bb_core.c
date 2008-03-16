@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.48 2008-02-05 18:54:12 rhdv Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.49 2008-03-16 20:54:59 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -106,11 +106,18 @@ static const size_t E_BB_TYPE_SIZE[] = {0,
 
 #ifdef __KERNEL__
 /* In case we're compiling kernel code, there's really no need
-   for the sysv code */
+   for the sysv or posix code */
 static struct bb_operations sysv_bb_ops;
+static struct bb_operations posix_bb_ops;
 extern struct bb_operations k_bb_ops;
+
 #else
 extern struct bb_operations sysv_bb_ops;
+
+#if defined(USE_POSIX_BB)
+extern struct bb_operations posix_bb_ops;
+#endif
+
 #if defined(linux) || defined(__linux)
 extern struct bb_operations k_bb_ops;
 #endif
@@ -123,6 +130,13 @@ static struct bb_operations *ops[] = {
 	&sysv_bb_ops
 #if defined(linux) || defined(__linux)
 	,&k_bb_ops
+#else
+	,NULL
+#endif /* linux */
+#if defined(USE_POSIX_BB)
+	,&posix_bb_ops
+#else
+	,NULL
 #endif
 };
 
@@ -130,18 +144,19 @@ static enum bb_type bb_type(const char *name)
 {
 #ifdef __KERNEL__
 	return BB_KERNEL;
-#else
+#endif /* __KERNEL__ */
+
 	if (!strncmp(name, "/dev/", 5))
 		return BB_KERNEL;
-
+	if (!strncmp(name, "p:/", 3)) {
+		return BB_POSIX;
+	}
 	return BB_SYSV;
-#endif /* __KERNEL__ */
 }
 
-size_t 
-sizeof_bb_type(E_BB_TYPE_T bb_type) {
+size_t sizeof_bb_type(E_BB_TYPE_T bb_type) {
   size_t retval = 0;
-  if ((bb_type>=1) && (bb_type<E_BB_USER)) {
+  if ((bb_type >= 1) && (bb_type < E_BB_USER)) {
     retval = E_BB_TYPE_SIZE[bb_type];
   }
   return retval;
@@ -225,7 +240,7 @@ bb_get_varname_fn bb_get_varname = bb_get_varname_default;
 bb_set_varname_fn bb_set_varname = bb_set_varname_default;
 bb_varname_max_len_fn bb_varname_max_len = bb_varname_max_len_default;
 
-#ifndef __KERNEL__
+#if !defined (__KERNEL__)  && !defined (TSP_RTEMS)
 static int32_t
 bb_varname_init(S_BB_T *bb)
 {

@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.h,v 1.38 2007-07-24 23:30:12 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.h,v 1.39 2008-03-16 20:54:59 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -71,6 +71,8 @@ Purpose   : BlackBoard Idiom implementation
 #include <stdio.h>
 #include <sys/types.h>
 #include <tsp_abs_types.h>
+#include <mqueue.h>
+#include <semaphore.h>
 
 #endif /* __KERNEL__ */
 
@@ -325,7 +327,19 @@ struct sysv_private {
 	int msg_id;
 };
 
-
+/**
+ * POSIX specific data, part of the S_BB_T structure
+ */
+struct posix_private {
+	/* shm file descriptor */
+	int fd;
+	/** the size of the allocated black board */
+	int shm_size;
+	/* posix semaphore handle */
+	sem_t *sem_id ;
+	/* posix message queue handle */
+	mqd_t msg_id;
+};
 /**
  * BlackBoard message definition.
  * This type must conform to the constraint of
@@ -355,6 +369,7 @@ typedef struct S_BB_MSG {
 enum bb_type {
 	BB_SYSV,   /*!< SysV Blackboard type       */
 	BB_KERNEL, /*!< Kernel Blackboard type     */
+	BB_POSIX
 };
 /**
  * BlackBoard description structure.
@@ -426,6 +441,7 @@ typedef struct S_BB {
   union {
 	struct sysv_private sysv;
 	struct kernel_private k;
+	struct posix_private posix;
   } priv;
 
 } S_BB_T;
@@ -751,7 +767,7 @@ bb_data_memset(S_BB_T* bb, const char c);
 
 /**
  * Lock blackboard.
- * A BlackBoard should be locked befaore any structural change
+ * A BlackBoard should be locked before any structural change
  * or to protect different process against each other from
  * concurrent modifications.
  * This is a blocking call (using sys V semaphore).

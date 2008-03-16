@@ -1,8 +1,21 @@
+OPTION(BUILD_POSIX_BB
+  "Posix API for Blackboards" OFF)
+
+IF(BUILD_POSIX_BB)
+	SET(POSIX_BB_SRC bb_core_posix.c)
+	SET(POSIX_BB_INC bb_core_posix.h)
+	ADD_DEFINITIONS(-DUSE_POSIX_BB)
+ELSE(BUILD_POSIX_BB)
+	SET(POSIX_BB_SRC "")
+	SET(POSIX_BB_INC "")
+ENDIF(BUILD_POSIX_BB)
+
 SET(_SRC
   bb_utils bb_alias
   bb_core bb_simple
   bb_sha1 bb_tools 
-  bb_core_sysv.c)
+  bb_core_sysv.c
+  ${POSIX_BB_SRC})
 
 SET(LIB_VARNAME_SARRAY_SRC bb_varname_sarray.c)
 
@@ -27,7 +40,8 @@ SET(BB_INCLUDE_FILES
   bb_tools.h
   bb_utils.h
   bb_sha1.h
-  bb_core_sysv.h)
+  bb_core_sysv.h
+  ${POSIX_BB_INC})
 
 IF (CMAKE_SYSTEM_NAME MATCHES "Linux")
   SET(BB_INCLUDE_FILES 
@@ -54,6 +68,10 @@ ADD_LIBRARY(bb ${_SRC})
 IF (XML2_FOUND)
   TARGET_LINK_LIBRARIES(bb ${XML2_LIBRARY})
 ENDIF (XML2_FOUND)
+TSP_LIBRARY_INSTALL(bb)
+IF (BUILD_POSIX_BB)
+  TARGET_LINK_LIBRARIES(bb rt)
+ENDIF (BUILD_POSIX_BB)
 TSP_LIBRARY_INSTALL(bb)
 TARGET_LINK_LIBRARIES(bb ${PTHREAD_LIBRARY_NAME} dl)
 ADD_LIBRARY(sarray ${LIB_VARNAME_SARRAY_SRC})

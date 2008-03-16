@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_abs_types.h,v 1.28 2007-11-12 18:05:28 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_abs_types.h,v 1.29 2008-03-16 20:54:59 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -234,6 +234,27 @@ typedef	int64_t	int_least64_t;
 #if defined (TSP_RTEMS)
 # define TSP_BYTE_ORDER TSP_LITTLE_ENDIAN
 # define TSP_SYSTEM_HAVE_NANOSLEEP
+# define TSP_HAVE_INT64 1
+# define TSP_INT64_CONSTANT(val)  (val##LL)
+# define TSP_GUINT64_FORMAT "llu"
+
+#endif /* _TSP_RTEMS_ */
+
+
+
+/* RTEMS */
+#if defined (TSP_RTEMS)
+# include <sys/types.h>		 /* for types compatibility */
+# include <rtems/stdint.h>
+
+#if defined (pc386)
+# define TSP_BYTE_ORDER TSP_LITTLE_ENDIAN
+#else
+# define TSP_BYTE_ORDER TSP_BIG_ENDIAN
+#endif	/* Endianness */
+
+# define TSP_SYSTEM_HAVE_NANOSLEEP
+//# define TSP_SYSTEM_HAVE_THREADSAFE_USLEEP
 # define TSP_HAVE_INT64 1
 # define TSP_INT64_CONSTANT(val)  (val##LL)
 # define TSP_GUINT64_FORMAT "llu"

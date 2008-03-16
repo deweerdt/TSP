@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_utils.c,v 1.17 2008-02-05 18:54:12 rhdv Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_utils.c,v 1.18 2008-03-16 20:55:00 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -70,21 +70,20 @@ bb_utils_build_shm_name(const char* shm_name) {
 char*
 bb_utils_build_sem_name(const char* sem_name) {
   
-  char* retval;
+  char* retval = NULL;
   int i_size_name;
   const char * prefix = "/";
   const char * postfix = "_sem";
 
   i_size_name = strlen(sem_name)+strlen(prefix)+strlen(postfix)+1;
-  retval = NULL;
   retval = (char *) malloc(i_size_name*sizeof(char));
+
   if (retval!=NULL) {
     strncpy(retval,prefix,strlen(prefix));
     strncpy(retval+strlen(prefix),sem_name,strlen(sem_name));
     strncpy(retval+strlen(prefix)+strlen(sem_name),postfix,strlen(postfix));
     retval[i_size_name-1] = '\0';
   }
-
   return retval;
 } /* end of bb_utils_build_sem_name */
 

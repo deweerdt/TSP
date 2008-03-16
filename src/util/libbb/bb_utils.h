@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_utils.h,v 1.12 2006-11-27 20:05:22 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_utils.h,v 1.13 2008-03-16 20:55:00 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -40,7 +40,10 @@ Purpose   : Blackboard Idiom utilities
 #ifdef __KERNEL__
 #include <linux/types.h>
 #else
-#include <sys/ipc.h>
+#ifndef TSP_RTEMS
+# include <sys/ipc.h>
+#endif /* _TSP_RTEMS_ */
+
 #include <sys/types.h>
 
 #include <tsp_abs_types.h>

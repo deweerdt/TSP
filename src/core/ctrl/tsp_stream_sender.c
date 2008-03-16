@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_stream_sender.c,v 1.25 2008-02-05 18:54:10 rhdv Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_stream_sender.c,v 1.26 2008-03-16 20:54:59 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -51,7 +51,7 @@ stream  to the consumers.
     #include <assert.h>
 #endif
 
-#if !defined (VXWORKS) && !defined(_WIN32)
+#if !defined (VXWORKS) && !defined(_WIN32) && !defined(TSP_RTEMS)
 #include <strings.h> /* for bzero */
 #endif
 #include <string.h>  /* for bzero too :=} */
