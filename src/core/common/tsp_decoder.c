@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/common/tsp_decoder.c,v 1.9 2008-02-05 18:54:09 rhdv Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/common/tsp_decoder.c,v 1.10 2008-03-24 23:56:20 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -43,7 +43,7 @@ Purpose   :  Implementation for the functions used to decode the data received
 #include <tsp_datastruct.h>
 #include <tsp_decoder.h>
 
-#if defined(sun) || defined(__sun)
+#if defined(sun) || defined(__sun) || defined(__rtems__)
 #include <alloca.h>
 #endif
 

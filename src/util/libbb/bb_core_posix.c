@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core_posix.c,v 1.1 2008-03-16 20:55:00 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core_posix.c,v 1.2 2008-03-24 23:56:21 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -47,7 +47,9 @@ Note	  : Most of the code was written by Eric, and was historically
 #include <semaphore.h>
 #include <pthread.h>
 #include <fcntl.h>
-#include <sys/mman.h>
+#if !defined(__rtems__)
+#  include <sys/mman.h>
+#endif
 
 #include "bb_core_posix.h"
 #include "bb_core.h"
@@ -57,10 +59,11 @@ Note	  : Most of the code was written by Eric, and was historically
 #define LOG(x, ...)
 
 
-#if defined(TSP_RTEMS)
+#if defined(__rtems__)
+/* FIXME to implement */
 static int shm_open(const char *name, int oflag, mode_t mode)
 {
-	return malloc(0);
+	return 0;
 }
 #endif
 
@@ -176,7 +179,11 @@ static int posix_bb_shmem_detach(S_BB_T ** bb)
 	assert(bb);
 	assert(*bb);
 
+#if defined(__rtems__)
 	retcode = shm_unlink((char *)*bb);
+#else
+	retcode = free((char *)*bb);
+#endif
 	*bb = NULL;
 	if (!retcode)
 		return BB_OK;

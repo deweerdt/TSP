@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_simple.c,v 1.17 2008-03-16 20:55:00 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_simple.c,v 1.18 2008-03-24 23:56:21 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -37,11 +37,11 @@ Purpose   : BlackBoard Idiom implementation
 #ifndef __KERNEL__
 #include <sys/types.h>
 
-#if !defined TSP_RTEMS
+#if !defined(__rtems__)
 # include <sys/msg.h>
 #else
 # include <mqueue.h>
-#endif /* TSP_RTEMS */
+#endif /* !__rtems__ */
 
 #include <string.h>
 #endif /* __KERNEL__ */

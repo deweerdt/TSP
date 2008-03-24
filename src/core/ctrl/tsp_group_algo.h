@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_group_algo.h,v 1.11 2007-02-11 21:45:56 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_group_algo.h,v 1.12 2008-03-24 23:56:20 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -54,7 +54,7 @@ typedef  void* TSP_groups_t;
  * to the value in the group table
  * @return TRUE=OK
  */
-int TSP_group_algo_create_symbols_table(const TSP_sample_symbol_info_list_t* symbols,
+int32_t TSP_group_algo_create_symbols_table(const TSP_sample_symbol_info_list_t* symbols,
 					TSP_sample_symbol_info_list_t* out_symbols,
 					TSP_groups_t* out_groups,
 					TSP_datapool_t* datapool);

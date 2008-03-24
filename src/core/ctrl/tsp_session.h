@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.h,v 1.20 2006-10-18 09:58:48 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.h,v 1.21 2008-03-24 23:56:20 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -50,7 +50,7 @@ opened session from a client
  * @param glu_h The GLU handled that will be linked to the session
  * @return TRUE or FALSE. TRUE = OK.
  */
-int TSP_add_session(channel_id_t* new_channel_id, GLU_handle_t* glu_h);
+int32_t TSP_add_session(channel_id_t* new_channel_id, GLU_handle_t* glu_h);
 
 /**
  * Session initialisation.

@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.49 2008-03-16 20:54:59 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.50 2008-03-24 23:56:21 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -39,14 +39,16 @@ Purpose   : Blackboard Idiom implementation
 #include <string.h>
 #include <stdlib.h>
 #include <sys/types.h>
-#include <sys/mman.h>
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <errno.h>
 #include <unistd.h>
 #include <assert.h>
 #include <ctype.h>
-#include <dlfcn.h>
+#if !defined(__rtems__)
+#  include <dlfcn.h>
+#  include <sys/mman.h>
+#endif
 #ifndef RTLD_DEFAULT
 #define RTLD_DEFAULT (void *)0
 #endif
@@ -240,7 +242,7 @@ bb_get_varname_fn bb_get_varname = bb_get_varname_default;
 bb_set_varname_fn bb_set_varname = bb_set_varname_default;
 bb_varname_max_len_fn bb_varname_max_len = bb_varname_max_len_default;
 
-#if !defined (__KERNEL__)  && !defined (TSP_RTEMS)
+#if !defined (__KERNEL__)  && !defined (__rtems__)
 static int32_t
 bb_varname_init(S_BB_T *bb)
 {

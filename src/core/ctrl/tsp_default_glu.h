@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_default_glu.h,v 1.8 2006-10-18 09:58:48 erk Exp $
+$Id: tsp_default_glu.h,v 1.9 2008-03-24 23:56:20 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -137,17 +137,17 @@ GLU_get_filtered_ssi_list_default(GLU_handle_t* cthis,
 
 int32_t
 GLU_get_ssi_list_fromPGI_default(struct GLU_handle_t* cthis, 
-				 int* pgis, int pgis_len, 
+				 int32_t* pgis, int32_t pgis_len, 
 				 TSP_sample_symbol_info_list_t* SSI_list);
 
 int32_t
 GLU_get_ssei_list_fromPGI_default(struct GLU_handle_t* cthis, 
-				  int* pgis, int pgis_len, 
+				  int32_t* pgis, int32_t pgis_len, 
   				  TSP_sample_symbol_extended_info_list_t* SSEI_list);
 
 int32_t
 GLU_async_sample_read_default(struct GLU_handle_t* cthis, 
-			      int pgi, 
+			      int32_t pgi, 
 			      void* value_ptr, uint32_t* value_size);
 
 int32_t

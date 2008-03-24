@@ -1,6 +1,6 @@
 /*
 
-$Id: stub_server_rtems.c,v 1.3 2008-02-05 18:54:12 rhdv Exp $
+$Id: stub_server_rtems.c,v 1.4 2008-03-24 23:56:21 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -41,36 +41,12 @@ Purpose   : Implementation for the glue_server, for stub test
 
 #include "tsp_provider_init.h"
 
-#include "stub_server_rtems.h"
-
-
-#if defined (_WIN32)
-#include "tsp_time.h"
-typedef unsigned long sigset_t;
-#endif
-
-#ifdef _WIN32
-    #define assert(exp)     ((void)0)
-    #include  "getopt.h"
-#else
-    #include <unistd.h>
-    #include <assert.h>
-#endif
+#include <unistd.h>
+#include <assert.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 GLU_handle_t* GLU_stub_create(double baseFrequency);
-
-#if defined (_WIN32)
-static int sigint_reveived = 0;
-/* intercept signal function : call once */
-void intrpt(int signum)
-{
-    /* managed the SIGINT signal */
-    (void) signal(SIGINT, SIG_DFL);
-    /* End of the waiting */
-    sigint_reveived = 1;
-    /* could be modified to use CreateEvent, SetEvent and WaitForSingleObject functions */
-}
-#endif
 
 /**
  * @defgroup TSP_StubbedServer Stubbed Provider

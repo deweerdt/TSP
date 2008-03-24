@@ -1,6 +1,6 @@
 /*
   
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_alias.c,v 1.7 2007-04-01 13:17:21 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_alias.c,v 1.8 2008-03-24 23:56:21 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -40,7 +40,9 @@ Purpose   : Blackboard (alias handling)
 #include <string.h>
 #include <stdlib.h>
 #include <sys/types.h>
-#include <sys/mman.h>
+#if !defined(__rtems__)
+#  include <sys/mman.h>
+#endif
 #include <unistd.h>
 #include <assert.h>
 

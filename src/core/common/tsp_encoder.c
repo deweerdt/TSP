@@ -1,7 +1,7 @@
 
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/common/tsp_encoder.c,v 1.13 2008-02-05 18:54:09 rhdv Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/common/tsp_encoder.c,v 1.14 2008-03-24 23:56:20 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -45,7 +45,7 @@ Purpose   :  Implementation for the functions used to encode the type
 #include <tsp_encoder.h>
 #include <tsp_decoder.h>
 
-#if defined(sun) || defined(__sun)
+#if defined(sun) || defined(__sun) || defined(__rtems__)
 #include <alloca.h>
 #endif
 

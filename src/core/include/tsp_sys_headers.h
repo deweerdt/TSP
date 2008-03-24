@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_sys_headers.h,v 1.24 2007-11-02 15:30:12 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_sys_headers.h,v 1.25 2008-03-24 23:56:21 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -48,7 +48,7 @@ int _rpcsvcdirty;
 #endif /* __OpenBSD__ */
 
 /* FIXME using POSIX_SOURCE on SOLARIS gives me very strange compilation trouble (Erk) */
-#if !defined(_POSIX_SOURCE) && !(defined(sun) || defined(__sun))
+#if !defined(_POSIX_SOURCE) && !(defined(sun) || defined(__sun) || defined(__rtems__))
 #define _POSIX_SOURCE
 #define _POSIX_C_SOURCE 199506L
 #endif
@@ -67,7 +67,7 @@ int _rpcsvcdirty;
 
 #include <string.h>
 
-#if  !defined(WIN32) && !defined(TSP_RTEMS)
+#if  !defined(WIN32) && !defined(__rtems__)
 #include <strings.h>
 #endif
 

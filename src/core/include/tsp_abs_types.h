@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_abs_types.h,v 1.29 2008-03-16 20:54:59 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_abs_types.h,v 1.30 2008-03-24 23:56:20 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -230,27 +230,21 @@ typedef	int64_t	int_least64_t;
 
 #endif /* OpenBSD / i386 */
 
-/* RTEMS */
-#if defined (TSP_RTEMS)
-# define TSP_BYTE_ORDER TSP_LITTLE_ENDIAN
-# define TSP_SYSTEM_HAVE_NANOSLEEP
-# define TSP_HAVE_INT64 1
-# define TSP_INT64_CONSTANT(val)  (val##LL)
-# define TSP_GUINT64_FORMAT "llu"
-
-#endif /* _TSP_RTEMS_ */
-
-
 
 /* RTEMS */
-#if defined (TSP_RTEMS)
+#if defined (__rtems__)
+#ifdef _POSIX_SOURCE
+#undef _POSIX_SOURCE
+#endif
 # include <sys/types.h>		 /* for types compatibility */
-# include <rtems/stdint.h>
+# include <stdint.h>
 
-#if defined (pc386)
+#if defined (__i386__)
 # define TSP_BYTE_ORDER TSP_LITTLE_ENDIAN
-#else
+#elif defined (sparc)
 # define TSP_BYTE_ORDER TSP_BIG_ENDIAN
+#else
+# error Unknown hardware for rtems, please edit src/core/include/tsp_abs_types.h
 #endif	/* Endianness */
 
 # define TSP_SYSTEM_HAVE_NANOSLEEP
@@ -259,7 +253,7 @@ typedef	int64_t	int_least64_t;
 # define TSP_INT64_CONSTANT(val)  (val##LL)
 # define TSP_GUINT64_FORMAT "llu"
 
-#endif /* _TSP_RTEMS_ */
+#endif /* __rtems__ */
 
 
 

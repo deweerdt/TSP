@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_provider.h,v 1.23 2006-10-18 21:23:51 erk Exp $
+$Id: tsp_provider.h,v 1.24 2008-03-24 23:56:20 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -60,9 +60,9 @@ BEGIN_C_DECLS
  * @param[in,out] argc   the number of argument of the main
  * @param[in,out] argv   array of argument of size argc.
  */
-int TSP_provider_private_init(GLU_handle_t* theGLU, int* argc, char** argv[]);
+int32_t TSP_provider_private_init(GLU_handle_t* theGLU, int* argc, char** argv[]);
 
-int TSP_provider_private_run();
+int32_t TSP_provider_private_run();
 
 const char* TSP_provider_get_name();
 
@@ -93,9 +93,9 @@ int TSP_provider_is_initialized();
 int TSP_provider_get_server_number();
 int TSP_provider_get_server_base_number( );
 
-int TSP_provider_request_async_sample_write(TSP_async_sample_t* async_sample_write);
+int32_t TSP_provider_request_async_sample_write(TSP_async_sample_t* async_sample_write);
 
-int TSP_provider_request_async_sample_read(TSP_async_sample_t* async_sample_read);
+int32_t TSP_provider_request_async_sample_read(TSP_async_sample_t* async_sample_read);
 
 void  TSP_provider_request_extended_information(TSP_request_extended_information_t* req_extinfo, 
 						TSP_answer_extended_information_t* ans_extinfo);
