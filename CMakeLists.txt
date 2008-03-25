@@ -87,6 +87,7 @@ ENDIF(CMAKE_COMPILER_IS_GNUCXX)
 #Generic is a hack, Platform/Rtems should be submitted to cmake team
 IF(CMAKE_SYSTEM_NAME STREQUAL "Generic")
 	SET(BUILD_RTEMS ON)
+	SET(BUILD_CONSUMER OFF)
 ENDIF(CMAKE_SYSTEM_NAME STREQUAL "Generic")
  
 SET(PACKAGE_NAME      "tsp")
