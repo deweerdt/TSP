@@ -50,8 +50,10 @@ IF (WIN32)
   OPTION(BUILD_SHARED
     "Build libraries as DLL" ON)
 ELSE (WIN32)
-  OPTION(BUILD_SHARED
-    "Build libraries as shared library" ON)
+  IF (NOT CMAKE_SYSTEM_NAME STREQUAL "Generic")
+    OPTION(BUILD_SHARED
+      "Build libraries as shared library" ON)
+  ENDIF (NOT CMAKE_SYSTEM_NAME STREQUAL "Generic")
 ENDIF (WIN32)
 
 IF (NOT USE_XDR_LIB_ENCODING)
