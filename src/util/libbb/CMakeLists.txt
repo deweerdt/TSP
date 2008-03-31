@@ -30,6 +30,7 @@ SET(_SRC
   bb_alias
   bb_core bb_simple
   bb_sha1 bb_tools 
+  bb_utils
   ${SYSV_BB_SRC}
   ${POSIX_BB_SRC})
 
@@ -38,11 +39,6 @@ SET(LIB_VARNAME_SARRAY_SRC bb_varname_sarray.c)
 IF(ZLIB_FOUND)
 SET(LIB_VARNAME_ZIP_SRC ${_SRC} bb_varname_zip.c)
 ENDIF(ZLIB_FOUND)
-
-# FIXME: this includes sys/ipc.h directly, needs cleanup
-IF(NOT BUILD_RTEMS)
-  SET(_SRC ${_SRC} bb_utils.c)
-ENDIF(NOT BUILD_RTEMS)
 
 #
 # bb_core_k kernel device API on works on linux
