@@ -1,23 +1,23 @@
 #
-# - Try to find a usable ONC RPC library (aka SUN RPC) and rpcgen program 
+# - Try to find a usable ONC RPC library (aka SUN RPC) and rpcgen program
 # See ftp://ftp.rfc-editor.org/in-notes/rfc1831.txt
 #
 # Once done this will define:
 #
 # ONCRPC_FOUND             - true if all necessary components are found
-# ONCRPC_RPCGEN_EXECUTABLE - the rpcgen program 
+# ONCRPC_RPCGEN_EXECUTABLE - the rpcgen program
 # ONCRPC_LIBRARY           - the library you need to link with (if any), may be void
-# ONCRPC_INCLUDE           - 
+# ONCRPC_INCLUDE           -
 # ONCRPC_BINARY_DIRS       - the directory(ies) where the rpcgen program resides
 # ONCRPC_LIBRARY_DIRS      - the directory(ies) where libraries reside
 # ONCRPC_INCLUDE_DIRS      - the directory(ies) where ONC RPC includes file are found
 #
-# ONCRPC_SETUP(RPC_INPUT_FILE_PREFIX, 
-#              RPC_GENERATED_DIR_PREFIX, 
+# ONCRPC_SETUP(RPC_INPUT_FILE_PREFIX,
+#              RPC_GENERATED_DIR_PREFIX,
 #              RPC_GENERATED_FILE_PREFIX,
-#              RPC_DEPENDS)   
+#              RPC_DEPENDS)
 #
-#   RPC_INPUT_FILE_PREFIX     - 
+#   RPC_INPUT_FILE_PREFIX     -
 #   RPC_GENERATED_DIR_PREFIX  -
 #   RPC_GENERATED_FILE_PREFIX -
 #   RPC_DEPENDS               -
@@ -26,24 +26,24 @@
 IF (WIN32)
   SET(PATH_DIR ${CMAKE_SOURCE_DIR}/external/ACPLT-ONCRPC c:/oncrpc)
 ELSE (WIN32)
-  SET(PATH_DIR /usr/bin /usr/lib) 
+  SET(PATH_DIR /usr/bin /usr/lib)
 ENDIF(WIN32)
 
 MESSAGE(STATUS "Looking for ONC-RPC library and programs...")
 
-FIND_PROGRAM(ONCRPC_RPCGEN_EXECUTABLE 
-  NAMES rpcgen 
+FIND_PROGRAM(ONCRPC_RPCGEN_EXECUTABLE
+  NAMES rpcgen
   PATHS ${PATH_DIR}
   PATH_SUFFIXES bin
   DOC "The ONC-RPC stub/skeleton generator")
-IF (ONCRPC_RPCGEN_EXECUTABLE) 
+IF (ONCRPC_RPCGEN_EXECUTABLE)
   MESSAGE(STATUS "Looking for ONCRPC... - found rpcgen is ${ONCRPC_RPCGEN_EXECUTABLE}")
   SET(ONCRPC_RPCGEN_FOUND "YES")
   GET_FILENAME_COMPONENT(ONCRPC_BINARY_DIRS ${ONCRPC_RPCGEN_EXECUTABLE} PATH)
-ELSE (ONCRPC_RPCGEN_EXECUTABLE) 
+ELSE (ONCRPC_RPCGEN_EXECUTABLE)
   SET(ONCRPC_RPCGEN_FOUND "NO")
   MESSAGE(STATUS "Looking for ONCRPC... - rpcgen NOT FOUND")
-ENDIF (ONCRPC_RPCGEN_EXECUTABLE) 
+ENDIF (ONCRPC_RPCGEN_EXECUTABLE)
 
 IF (CMAKE_SYSTEM_NAME STREQUAL "SunOS")
   SET(ONCRPC_LIBRARY_NAME "rpc;nsl")
@@ -53,7 +53,7 @@ ENDIF (CMAKE_SYSTEM_NAME STREQUAL "SunOS")
 
 FIND_LIBRARY(ONCRPC_LIBRARY
 	NAMES ${ONCRPC_LIBRARY_NAME}
-	PATHS ${PATH_DIR}	
+	PATHS ${PATH_DIR}
 	PATH_SUFFIXES lib librpc
 	DOC "The ONC-RPC Library")
 
@@ -63,11 +63,11 @@ IF (NOT ONCRPC_LIBRARY)
     SET(ONCRPC_NOLIB_NEEDED YES)
     MESSAGE(STATUS "Looking for ONCRPC... - ONC-RPC library not FOUND on UNIX system --> considered embedded in libc.")
   ELSE (UNIX)
-    MESSAGE(STATUS "Looking for ONCRPC... - ONCRPC lib : NOT FOUND")    
+    MESSAGE(STATUS "Looking for ONCRPC... - ONCRPC lib : NOT FOUND")
   ENDIF (UNIX)
-ELSE (NOT ONCRPC_LIBRARY)  
+ELSE (NOT ONCRPC_LIBRARY)
   MESSAGE(STATUS "Looking for ONCRPC... - found ONCRPC lib : ${ONCRPC_LIBRARY}")
-  GET_FILENAME_COMPONENT(ONCRPC_LIBRARY_DIRS ${ONCRPC_LIBRARY} PATH)      
+  GET_FILENAME_COMPONENT(ONCRPC_LIBRARY_DIRS ${ONCRPC_LIBRARY} PATH)
 ENDIF (NOT ONCRPC_LIBRARY)
 
 FIND_FILE(ONCRPC_INCLUDE
@@ -81,7 +81,7 @@ IF (ONCRPC_INCLUDE)
   GET_FILENAME_COMPONENT(INCLUDE_DIR1 ${ONCRPC_INCLUDE} PATH)
   GET_FILENAME_COMPONENT(INCLUDE_DIR2 ${INCLUDE_DIR1} PATH)
   # Suming up the search directory which may contents the onc-rpc includes
-  SET(ONCRPC_INCLUDE_DIRS ${INCLUDE_DIR1} ${INCLUDE_DIR2})  
+  SET(ONCRPC_INCLUDE_DIRS ${INCLUDE_DIR1} ${INCLUDE_DIR2})
 ELSE (ONCRPC_INCLUDE)
   MESSAGE(STATUS "Looking for ONCRPC... - ONC-RPC include : NOT FOUND")
 ENDIF (ONCRPC_INCLUDE)
@@ -98,7 +98,7 @@ ELSE (ONCRPC_RPCGEN_EXECUTABLE AND ONCRPC_INCLUDE)
 ENDIF (ONCRPC_RPCGEN_EXECUTABLE AND ONCRPC_INCLUDE)
 
 MACRO(ONCRPC_SETUP)
-  
+
  SET(RPC_INPUT_FILE_PREFIX     ${ARGV0})
  GET_FILENAME_COMPONENT(RPC_PREFIX ${RPC_INPUT_FILE_PREFIX} NAME_WE)
  SET(RPC_GENERATED_DIR_PREFIX  ${ARGV1})
@@ -106,17 +106,17 @@ MACRO(ONCRPC_SETUP)
  SET(RPC_DEPENDS               ${ARGV3})
 
  FILE(MAKE_DIRECTORY ${RPC_GENERATED_DIR_PREFIX})
-  
+
  SET(${RPC_PREFIX}_RPCGEN_OUTPUT_CLNT
    ${RPC_GENERATED_FILE_PREFIX}_clnt.c
    ${RPC_GENERATED_FILE_PREFIX}_xdr.c
    ${RPC_GENERATED_FILE_PREFIX}.h)
-                          	                            
+
  SET(${RPC_PREFIX}_RPCGEN_OUTPUT_SVC
    ${RPC_GENERATED_FILE_PREFIX}_svc.c
    ${RPC_GENERATED_FILE_PREFIX}_xdr.c
    ${RPC_GENERATED_FILE_PREFIX}.h)
-   
+
  ADD_CUSTOM_TARGET(${RPC_PREFIX}_rpcgen_exec_svc
    DEPENDS ${${RPC_PREFIX}_RPCGEN_OUTPUT_SVC}
    )
@@ -124,10 +124,10 @@ MACRO(ONCRPC_SETUP)
  ADD_CUSTOM_TARGET(${RPC_PREFIX}_rpcgen_exec_clnt
    DEPENDS ${${RPC_PREFIX}_RPCGEN_OUTPUT_CLNT}
    )
- 
- IF (WIN32)   
+
+ IF (WIN32)
    #####################################################
-   # Currently NO good RPCGEN on Windows 
+   # Currently NO good RPCGEN on Windows
    # Just using Linux generated files.
    MESSAGE(STATUS "No good RPCGEN on WIN32 using Linux pregenerated files...")
    #####################################################
@@ -137,54 +137,54 @@ MACRO(ONCRPC_SETUP)
    CONFIGURE_FILE(${RPC_INPUT_FILE_PREFIX}_svc.c.win32
      ${RPC_GENERATED_FILE_PREFIX}_svc.c
      COPYONLY)
-   
+
    CONFIGURE_FILE(${RPC_INPUT_FILE_PREFIX}_clnt.c.win32
      ${RPC_GENERATED_FILE_PREFIX}_clnt.c
      COPYONLY)
-   
+
    CONFIGURE_FILE(${RPC_INPUT_FILE_PREFIX}_xdr.c.win32
      ${RPC_GENERATED_FILE_PREFIX}_xdr.c
      COPYONLY)
-   
+
    CONFIGURE_FILE(${RPC_INPUT_FILE_PREFIX}.h.win32
      ${RPC_GENERATED_FILE_PREFIX}.h
      COPYONLY)
-   
+
  ELSE (WIN32)
-   
+
    IF (ONCRPC_RPCGEN_FOUND)
-     #  Note how CMake forced us to escape '#' sequence using '\\#'   
+     #  Note how CMake forced us to escape '#' sequence using '\\#'
      ADD_CUSTOM_COMMAND(
-       OUTPUT ${RPC_GENERATED_FILE_PREFIX}_svc.c 
+       OUTPUT ${RPC_GENERATED_FILE_PREFIX}_svc.c
        COMMAND echo "\\#ifdef VXWORKS" >  ${RPC_GENERATED_FILE_PREFIX}_svc.c
        COMMAND echo "\\#define static extern" >> ${RPC_GENERATED_FILE_PREFIX}_svc.c
        COMMAND echo "\\#endif /* !VXWORKS */" >> ${RPC_GENERATED_FILE_PREFIX}_svc.c
        COMMAND ${ONCRPC_RPCGEN_EXECUTABLE} -N -C -m ${RPC_INPUT_FILE_PREFIX}.x >> ${RPC_GENERATED_FILE_PREFIX}_svc.c
-       DEPENDS 
+       DEPENDS
        ${RPC_DEPENDS}
        ${RPC_INPUT_FILE_PREFIX}.x
        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-     
+
      ADD_CUSTOM_COMMAND(
-       OUTPUT ${RPC_GENERATED_FILE_PREFIX}_clnt.c 
+       OUTPUT ${RPC_GENERATED_FILE_PREFIX}_clnt.c
        COMMAND ${ONCRPC_RPCGEN_EXECUTABLE} -N -C -l ${RPC_INPUT_FILE_PREFIX}.x > ${RPC_GENERATED_FILE_PREFIX}_clnt.c
-       DEPENDS      
+       DEPENDS
        ${RPC_DEPENDS}
        ${RPC_INPUT_FILE_PREFIX}.x
        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-     
+
      ADD_CUSTOM_COMMAND(
        OUTPUT ${RPC_GENERATED_FILE_PREFIX}_xdr.c
        COMMAND ${ONCRPC_RPCGEN_EXECUTABLE} -N -C -c ${RPC_INPUT_FILE_PREFIX}.x > ${RPC_GENERATED_FILE_PREFIX}_xdr.c
-       DEPENDS 
+       DEPENDS
        ${RPC_DEPENDS}
        ${RPC_INPUT_FILE_PREFIX}.x
        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-     
+
      ADD_CUSTOM_COMMAND(
        OUTPUT ${RPC_GENERATED_FILE_PREFIX}.h
        COMMAND ${ONCRPC_RPCGEN_EXECUTABLE} -N -C -h ${RPC_INPUT_FILE_PREFIX}.x > ${RPC_GENERATED_FILE_PREFIX}.h
-       DEPENDS 
+       DEPENDS
        ${RPC_DEPENDS}
        ${RPC_INPUT_FILE_PREFIX}.x
        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
@@ -192,33 +192,33 @@ MACRO(ONCRPC_SETUP)
      CONFIGURE_FILE(${RPC_INPUT_FILE_PREFIX}_svc.c.linux
        ${RPC_GENERATED_FILE_PREFIX}_svc.c
        COPYONLY)
-   
+
      CONFIGURE_FILE(${RPC_INPUT_FILE_PREFIX}_clnt.c.linux
        ${RPC_GENERATED_FILE_PREFIX}_clnt.c
        COPYONLY)
-     
+
      CONFIGURE_FILE(${RPC_INPUT_FILE_PREFIX}_xdr.c.linux
        ${RPC_GENERATED_FILE_PREFIX}_xdr.c
        COPYONLY)
-     
+
      CONFIGURE_FILE(${RPC_INPUT_FILE_PREFIX}.h.linux
        ${RPC_GENERATED_FILE_PREFIX}.h
        COPYONLY)
-   
+
    ENDIF (ONCRPC_RPCGEN_FOUND)
-   
+
  ENDIF (WIN32)
  #inhibit compiler warning for generated files
  # Note that the inhibition is COMPILER dependent ...
     # GNU CC specific warning stop
-    IF (CMAKE_COMPILER_IS_GNUCC) 
+    IF (CMAKE_COMPILER_IS_GNUCC)
       MESSAGE(STATUS "INHIBIT Compiler warning for  generated files")
-      SET_SOURCE_FILES_PROPERTIES(${${RPC_PREFIX}_RPCGEN_OUTPUT_CLNT} 
+      SET_SOURCE_FILES_PROPERTIES(${${RPC_PREFIX}_RPCGEN_OUTPUT_CLNT}
 	                                                            PROPERTIES COMPILE_FLAGS "-w -Wno-unused")
-	                            
-	  SET_SOURCE_FILES_PROPERTIES(${${RPC_PREFIX}_RPCGEN_OUTPUT_SVC} 
-	                                                           PROPERTIES COMPILE_FLAGS "-w -Wno-unused") 
-    ENDIF(CMAKE_COMPILER_IS_GNUCC) 	     
+
+	  SET_SOURCE_FILES_PROPERTIES(${${RPC_PREFIX}_RPCGEN_OUTPUT_SVC}
+	                                                           PROPERTIES COMPILE_FLAGS "-w -Wno-unused")
+    ENDIF(CMAKE_COMPILER_IS_GNUCC)
 ENDMACRO(ONCRPC_SETUP)
 
 MARK_AS_ADVANCED(
