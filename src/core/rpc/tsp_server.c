@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_server.c,v 1.36 2008-02-05 18:54:11 rhdv Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_server.c,v 1.37 2008-04-01 09:35:50 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -258,6 +258,7 @@ static int TSP_rpc_init(TSP_rpc_request_config_t *config)
   return config->server_number;
 }
 
+#if !defined(__rtems__)
 static void TSP_rpc_run(TSP_rpc_request_config_t *config)
 {
   int32_t rpc_progid = TSP_get_progid(config->server_number);
@@ -285,6 +286,55 @@ static void TSP_rpc_run(TSP_rpc_request_config_t *config)
   STRACE_INFO("svc_run returned");
 
 }
+#else
+static void TSP_rpc_run(TSP_rpc_request_config_t *config)
+{
+	int32_t rpc_progid = TSP_get_progid(config->server_number);
+	int sock;
+	struct sockaddr_in srv_addr;
+	SVCXPRT *transp;
+	bool_t status;
+
+	/*
+	 * Create socket
+	 */
+	sock = socket (AF_INET, SOCK_STREAM, IPPROTO_TCP);
+	if (sock < 0) {
+		perror ("socket creation problem");
+		return 1;
+	}
+
+	/*
+	 * Bind to local address
+	 */
+	srv_addr.sin_family = htons (AF_INET);
+	srv_addr.sin_port = htons (TCP_PORT);
+	srv_addr.sin_addr.s_addr = htonl (INADDR_ANY);
+	if (bind (sock, (struct sockaddr *)&srv_addr, sizeof srv_addr) < 0) {
+		STRACE_ERROR("RPC server unable to register ProgId=%X",  strerror(errno));
+		return 2;
+	}
+
+	/*
+	 * Create TCP server
+	 */
+	config->xprt = svctcp_create(sock, 0, 0);
+	if (config->xprt == NULL) {
+		STRACE_ERROR(("Cannot create TCP service"));
+		return;
+	}
+	if (!svc_register(config->xprt, rpc_progid, TSP_RPC_VERSION_INITIAL, tsp_rpc_1, 0))
+	{
+		STRACE_ERROR("RPC server unable to register ProgId=%X",  rpc_progid);
+		return;
+	}
+	STRACE_DEBUG(("RPC server is being be started with ProgId=%X", rpc_progid));
+
+	STRACE_DEBUG("launching svc_run...");
+	svc_run();
+	STRACE_INFO("svc_run returned");
+}
+#endif /* !defined(__rtems__) */
 
 static void TSP_rpc_stop(TSP_rpc_request_config_t *config)
 {

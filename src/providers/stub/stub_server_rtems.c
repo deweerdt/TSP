@@ -1,6 +1,6 @@
 /*
 
-$Id: stub_server_rtems.c,v 1.4 2008-03-24 23:56:21 deweerdt Exp $
+$Id: stub_server_rtems.c,v 1.5 2008-04-01 09:35:51 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -38,15 +38,40 @@ Purpose   : Implementation for the glue_server, for stub test
 */
 
 #include <signal.h>
+#include <stdio.h>
 
 #include "tsp_provider_init.h"
 
-#include <unistd.h>
-#include <assert.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include "stub_server_rtems.h"
+
+
+#if defined (WIN32)
+#include "tsp_time.h"
+typedef unsigned long sigset_t;
+#endif
+
+#ifdef WIN32
+    #define assert(exp)     ((void)0)
+    #include  "getopt.h"
+#else
+    #include <unistd.h>
+    #include <assert.h>
+#endif
 
 GLU_handle_t* GLU_stub_create(double baseFrequency);
+
+#if defined (WIN32)
+static int sigint_reveived = 0;
+/* intercept signal function : call once */
+void intrpt(int signum)
+{
+    /* managed the SIGINT signal */
+    (void) signal(SIGINT, SIG_DFL);
+    /* End of the waiting */
+    sigint_reveived = 1;
+    /* could be modified to use CreateEvent, SetEvent and WaitForSingleObject functions */
+}
+#endif
 
 /**
  * @defgroup TSP_StubbedServer Stubbed Provider
@@ -76,14 +101,14 @@ int main_stub_server(int argc, char *argv[])
   GLU_handle_t* GLU_stub;
   int           opt_ok=1;
   int           c_opt;
-  double        baseFrequency = 100.0; /* default frequency is 100Hz */
+  double        baseFrequency = 100.0; /* default frequency is 100Hz: 100.0 */
 
 /* Managing the SIGINT signal */
-#if defined (_WIN32)
+#if defined (WIN32)
   /* intercept SIGINT signal */
   if ( SIG_ERR == signal(SIGINT, intrpt))
   {
-    STRACE_ERROR("Error initialisation signal intercept function");
+    STRACE_ERROR(("Error initialisation signal intercept function"));
     exit(1);
   }
 #else
@@ -156,7 +181,7 @@ int main_stub_server(int argc, char *argv[])
     }
     /* print out TSP URL */
     TSP_provider_urls(TSP_PUBLISH_URLS_PRINT | TSP_PUBLISH_URLS_FILE);
-#if defined (_WIN32)
+#if defined (WIN32)
     /* Wait until the intercept signal function is call */
     while (!sigint_reveived)
     {

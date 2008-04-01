@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.50 2008-03-24 23:56:21 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.51 2008-04-01 09:35:51 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -129,7 +129,11 @@ extern struct bb_operations k_bb_ops;
    if you ever modify this, you'll probably need to modify
    enum bb_type */
 static struct bb_operations *ops[] = {
+#if !defined(__rtems__)
 	&sysv_bb_ops
+#else
+	NULL
+#endif
 #if defined(linux) || defined(__linux)
 	,&k_bb_ops
 #else
@@ -1034,7 +1038,7 @@ bb_destroy(S_BB_T** bb) {
    * resteraient attach�s
    */
   (*bb)->status = BB_STATUS_DESTROYED;
-  retcode = ops[(*bb)->type]->bb_sem_destroy(*bb);
+   retcode = ops[(*bb)->type]->bb_sem_destroy(*bb);
   if (retcode != BB_OK)
   	goto out;
   retcode = ops[(*bb)->type]->bb_msgq_destroy(*bb);
@@ -1043,7 +1047,7 @@ bb_destroy(S_BB_T** bb) {
   retcode = ops[(*bb)->type]->bb_shmem_destroy(bb);
   if (retcode != BB_OK)
   	goto out;
-    
+   
 out:
   return retcode;
 } /* end of bb_destroy */

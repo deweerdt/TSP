@@ -13,6 +13,7 @@
 extern "C" {
 #endif
 
+#define TCP_PORT 15236
 
 enum TSP_status_t {
 	TSP_STATUS_OK = 0,

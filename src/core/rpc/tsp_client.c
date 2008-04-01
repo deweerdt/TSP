@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_client.c,v 1.22 2008-02-05 18:54:10 rhdv Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_client.c,v 1.23 2008-04-01 09:35:50 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -65,6 +65,43 @@ TSP_provider_info_t * tsp_provider_information(TSP_server_t server)
   return result;
 }	
 
+#if defined(__rtems__)
+CLIENT* tsp_remote_open_progid(const char *target_name, int progid)
+{
+  int sock;
+  struct hostent *hp;
+  struct sockaddr_in farAddr;
+  CLIENT* cl;
+
+  /* modifie */
+  hp = gethostbyname (target_name);
+  if (hp == NULL) {
+          fprintf (stderr, "No server %s\n", target_name);
+          return 2;
+  }
+  /*
+   * Set up server address
+   * TCP_PORT = 15376 fixe pour RTEMS
+   */
+  farAddr.sin_family = hp->h_addrtype;
+  farAddr.sin_port = htons (TCP_PORT);
+  memcpy((char*)&farAddr.sin_addr, hp->h_addr, hp->h_length);
+
+  cl = clnttcp_create (&farAddr, TSP_RPC, TSP_RPC_VERSION_INITIAL, &sock, 0, 0);
+
+  if (cl == (CLIENT *)0) {
+    STRACE_DEBUG("ERROR : GLOBAL clnt_create failed for host <%s> / progid <%d/0x%08X>", target_name, progid,progid);
+  }
+  else {
+    STRACE_INFO("CONNECTED to server %s", target_name);
+    /* Set time out */
+    tsp_wrap_rpc_clnt_set_timeout(cl, TSP_RPC_CONNECT_TIMEOUT);
+  }
+
+  return cl;
+}
+
+#else
 CLIENT* tsp_remote_open_progid(const char *target_name, int progid)
 {
 
@@ -87,6 +124,7 @@ CLIENT* tsp_remote_open_progid(const char *target_name, int progid)
   return cl;
 	
 }
+#endif /* defined(__rtems__) */
 
 int TSP_remote_open_server( const char *protocol,
 			    const char *target_name,
