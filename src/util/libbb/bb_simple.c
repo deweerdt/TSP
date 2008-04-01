@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_simple.c,v 1.18 2008-03-24 23:56:21 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_simple.c,v 1.19 2008-04-01 09:33:17 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -318,7 +318,7 @@ bb_simple_thread_synchro_go(int msg_type) {
   retcode = BB_OK;
   
   return retcode;
-} /* end of bb_simple_synchro_go */
+} /* end of bb_simple_thread_synchro_go */
 #endif /* __KERNEL__ */
 
 #ifdef __KERNEL__
@@ -352,7 +352,7 @@ bb_simple_thread_synchro_wait(int msg_type) {
   retcode = BB_OK;
   
   return retcode;
-} /* end of bb_simple_synchro_wait */
+} /* end of bb_simple_thread_synchro_wait */
 #endif /* __KERNEL__ */
 
 #ifdef __KERNEL__
