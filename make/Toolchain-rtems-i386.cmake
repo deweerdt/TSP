@@ -1,4 +1,3 @@
-#Set it to Generic for now
 SET(CMAKE_SYSTEM_NAME Rtems)
 
 # specify the cross compiler
