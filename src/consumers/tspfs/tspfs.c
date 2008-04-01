@@ -341,8 +341,7 @@ static int tspfs_init_connect(int argc, char **argv, char *url)
 		}
 	}
 
-	tspfs.formats =
-	    (char **) malloc(sizeof(char *) * tspfs.nr_samples);
+	tspfs.formats = malloc(sizeof(char *) * tspfs.nr_samples);
 
 	if (!tspfs.formats) {
 		free(tspfs.symbols.TSP_sample_symbol_info_list_t_val);
@@ -369,7 +368,7 @@ static int pgi_to_idx(int pgi) {
 		}
 	}
 	/* shouldn't happen */
-	assert(1==1);
+	assert(1);
 	return -1;
 }
 /*
