@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_tools.c,v 1.36 2007-09-04 23:37:20 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_tools.c,v 1.37 2008-04-01 15:42:55 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -198,9 +198,6 @@ int32_t bbtools(bbtools_request_t * req)
 		}
 	}
 
-	/* FIXME should assign retval using 
-	 * retcode from bb_<cmd>
-	 */
 	switch (req->cmd) {
 	case E_BBTOOLS_UNKNOWN:
 		req->stream = stderr;
@@ -210,50 +207,51 @@ int32_t bbtools(bbtools_request_t * req)
 	case E_BBTOOLS_GENERIC:
 		req->stream = stdout;
 		bbtools_usage(req);
+		return -1;
 		break;
 	case E_BBTOOLS_HELP:
 		req->stream = stdout;
 		bbtools_usage(req);
-		return -1;
+		return 0;
 		break;
 	case E_BBTOOLS_READ:
-		bbtools_read(req);
+		retval = bbtools_read(req);
 		break;
 	case E_BBTOOLS_WRITE:
-		bbtools_write(req);
+		retval = bbtools_write(req);
 		break;
 	case E_BBTOOLS_DUMP:
-		bbtools_dump(req);
+		retval = bbtools_dump(req);
 		break;
 	case E_BBTOOLS_FIND:
-		bbtools_find(req);
+		retval = bbtools_find(req);
 		break;
 	case E_BBTOOLS_CHECK_ID:
 		return bbtools_check_id(req);
 		break;
 	case E_BBTOOLS_DESTROY:
-		bbtools_destroy(req);
+		retval = bbtools_destroy(req);
 		break;
 	case E_BBTOOLS_CREATE:
-		bbtools_create(req);
+		retval = bbtools_create(req);
 		break;
 	case E_BBTOOLS_PUBLISH:
-		bbtools_publish(req);
+		retval = bbtools_publish(req);
 		break;
 	case E_BBTOOLS_SYNCHRO_SEND:
-		bbtools_synchro_send(req);
+		retval = bbtools_synchro_send(req);
 		break;
 	case E_BBTOOLS_SYNCHRO_RECV:
-		bbtools_synchro_recv(req);
+		retval = bbtools_synchro_recv(req);
 		break;
 	case E_BBTOOLS_MEMSET:
-		bbtools_memset(req);
+		retval = bbtools_memset(req);
 		break;
 	case E_BBTOOLS_CHECK_VERSION:
-		bbtools_check_version(req);
+		retval = bbtools_check_version(req);
 		break;
 	case E_BBTOOLS_LOAD:
-		bbtools_load(req);
+		retval = bbtools_load(req);
 		break;
 	default:
 		req->stream = stderr;
