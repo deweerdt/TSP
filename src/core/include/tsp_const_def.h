@@ -1,6 +1,6 @@
 /*
  
-$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_const_def.h,v 1.46 2008-02-05 18:54:10 rhdv Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_const_def.h,v 1.47 2008-04-05 20:05:22 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -84,9 +84,14 @@ Purpose   : definitions and const that must have a program wide scope
 #define TSP_STREAM_SENDER_RINGBUF_SIZE 10
 #endif
 
-
-/** used to calculate the socket buffer size */
-#define TSP_DATA_STREAM_MAX_HEADER_SIZE 1024
+/** 
+ * This ill-named 'header' size is the size
+ * needed for encoding group header which
+ *        an int for timestamp
+ *        an int for group id (normal or reserved)
+ * This is used to calculate socket buffer size. 
+ */
+#define TSP_DATA_STREAM_MAX_HEADER_SIZE 2*sizeof(int)
 
 /** No more than 2MB buffer size which is already HUGE */
 #define TSP_DATA_STREAM_MAX_BUFFER_MAXSIZE (1024*1024*2)

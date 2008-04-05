@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.c,v 1.40 2008-02-05 18:54:10 rhdv Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_session.c,v 1.41 2008-04-05 20:05:22 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -573,7 +573,7 @@ TSP_session_create_data_sender_by_channel(channel_id_t channel_id) {
     uint32_t max_group_size = TSP_group_algo_get_biggest_group_size(session->session_data->groups);
     STRACE_DEBUG("Channel Id <%d> has Max TSP Group Size <%d> byte(s)",
 		  channel_id,max_group_size);
-    STRACE_DEBUG("Using RINBUF size of <%d> byte(s)",
+    STRACE_DEBUG("Using RINGBUF size of <%d> byte(s)",
 		  ringbuf_size);
     session->session_data->sender = TSP_data_sender_create(ringbuf_size, max_group_size);      
     if(NULL != session->session_data->sender) {
