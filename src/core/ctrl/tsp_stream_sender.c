@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_stream_sender.c,v 1.27 2008-03-24 23:56:20 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_stream_sender.c,v 1.28 2008-04-25 06:49:41 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -176,8 +176,8 @@ void* TSP_streamer_sender_thread_sender(void* arg)
   STRACE_DEBUG("Client connected ! Send loop starts !");
 
   item = RINGBUF_PTR_GETBYADDR(sock->out_ringbuf);
-  /* FIXME : gerer l'arret */
-  /* Gerer l'impossibilit� d'envoyer */
+  /* FIXME : handle the stop case cleanly */
+  /*         hanlde unable to send case   */
   while(connection_ok && !sock->is_stopped)
     {
       while (item && connection_ok)
@@ -338,7 +338,7 @@ TSP_stream_sender_t TSP_stream_sender_create(int fifo_size, int buffer_size)
   sock->socketId = 0;
   sock->fifo_size = fifo_size;
   sock->buffer_size = buffer_size;
-  sock->out_ringbuf = 0;
+  sock->out_ringbuf = NULL;
   sock->client_is_connected = FALSE;
   sock->is_stopped = FALSE;
   sock->connection_ok = TRUE;
@@ -491,7 +491,7 @@ void TSP_stream_sender_destroy(TSP_stream_sender_t sender)
      {
          free(sock->out_item);sock->out_item = 0;
      }
-   sock->out_ringbuf = 0;
+   sock->out_ringbuf = NULL;
    free(sock);     
 
 }
