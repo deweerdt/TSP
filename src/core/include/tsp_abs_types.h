@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_abs_types.h,v 1.30 2008-03-24 23:56:20 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_abs_types.h,v 1.31 2008-04-27 16:01:58 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -69,10 +69,12 @@ Purpose   : Type abstraction : Stolen from GLIB public headers
 # define TSP_HAVE_INT64 1
 # if  defined(__sparcv9)
 #   define TSP_INT64_CONSTANT(val)  (val##L)
-#   define TSP_GUINT64_FORMAT "lu"
+#   define TSP_UINT64_FORMAT "lu"
+#   define TSP_INT64_FORMAT "l"
 # else /* not sparcv9, an old one */
 #   define TSP_INT64_CONSTANT(val)  (val##LL)
-#   define TSP_GUINT64_FORMAT "llu"
+#   define TSP_UINT64_FORMAT "llu"
+#   define TSP_INT64_FORMAT "ll"
     /* Old sparc lacks from simple types, need to do it by our own */
 #   ifndef _SYS_INT_TYPES_H 
 #	ifndef _UINT16_T
@@ -159,8 +161,13 @@ typedef unsigned __int64 	u_int64_t;
 #if defined (__linux__) &&  ( defined (__i386__)  || defined (__x86_64__) )
 # include <stdint.h>
 # define TSP_BYTE_ORDER TSP_LITTLE_ENDIAN
+#if defined (__x86_64__)
+# define TSP_INT64_CONSTANT(val)  (val##L)
+# define TSP_UINT64_FORMAT "lu"
+#else
 # define TSP_INT64_CONSTANT(val)  (val##LL)
-# define TSP_GUINT64_FORMAT "llu"
+# define TSP_UINT64_FORMAT "llu"    
+#endif
 # define TSP_SYSTEM_HAVE_NANOSLEEP 1
 # define TSP_HAVE_INT64 1
 #endif /* Linux / Intel */
@@ -171,7 +178,7 @@ typedef unsigned __int64 	u_int64_t;
 # include <stdint.h>							
 # define TSP_BYTE_ORDER TSP_BIG_ENDIAN			
 # define TSP_INT64_CONSTANT(val)  (val##LL) 	
-# define TSP_GUINT64_FORMAT "llu"				
+# define TSP_UINT64_FORMAT "llu"				
 # define TSP_SYSTEM_HAVE_NANOSLEEP 1			
 # define TSP_HAVE_INT64 1						
 #endif /* Linux / Powerpc and Arm */
@@ -183,7 +190,7 @@ typedef unsigned __int64 	u_int64_t;
 typedef int_least16_t int16_t;
 # define TSP_INT64_CONSTANT(val)  (val##L)
 # define TSP_BYTE_ORDER TSP_LITTLE_ENDIAN
-# define TSP_GUINT64_FORMAT "lu"
+# define TSP_UINT64_FORMAT "lu"
 # define TSP_SYSTEM_HAVE_NANOSLEEP 1
 # define TSP_HAVE_INT64 1
 #endif /* OSF1 / Alpha */
@@ -193,7 +200,7 @@ typedef int_least16_t int16_t;
 /* this works for VxWorks version 5.5.1 and WIND version 2.6 */
 # include <inttypes.h>
 # define TSP_BYTE_ORDER TSP_BIG_ENDIAN
-# define TSP_GUINT64_FORMAT "llu"
+# define TSP_UINT64_FORMAT "llu"
 # undef TSP_SYSTEM_HAVE_GETHRTIME 
 # define TSP_SYSTEM_HAVE_NANOSLEEP
 # define TSP_HAVE_INT64 1
@@ -208,7 +215,7 @@ typedef int_least16_t int16_t;
 #else
 # define TSP_BYTE_ORDER TSP_LITTLE_ENDIAN
 #endif /* Endianness */
-# define TSP_GUINT64_FORMAT "llu"
+# define TSP_UINT64_FORMAT "llu"
 # define TSP_SYSTEM_HAVE_NANOSLEEP
 # define TSP_HAVE_INT64 1
 
@@ -218,7 +225,7 @@ typedef int_least16_t int16_t;
 #if defined (__OpenBSD__) &&  defined (__i386__)
 # define TSP_INT64_CONSTANT(val)  (val##LL)
 # define TSP_BYTE_ORDER TSP_LITTLE_ENDIAN
-# define TSP_GUINT64_FORMAT "llu"
+# define TSP_UINT64_FORMAT "llu"
 # define TSP_SYSTEM_HAVE_NANOSLEEP
 # define TSP_HAVE_INT64 1
 
@@ -251,7 +258,7 @@ typedef	int64_t	int_least64_t;
 //# define TSP_SYSTEM_HAVE_THREADSAFE_USLEEP
 # define TSP_HAVE_INT64 1
 # define TSP_INT64_CONSTANT(val)  (val##LL)
-# define TSP_GUINT64_FORMAT "llu"
+# define TSP_UINT64_FORMAT "llu"
 
 #endif /* __rtems__ */
 

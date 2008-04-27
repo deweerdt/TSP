@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/common/tsp_decoder.c,v 1.10 2008-03-24 23:56:20 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/common/tsp_decoder.c,v 1.11 2008-04-27 16:01:58 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -40,6 +40,7 @@ Purpose   :  Implementation for the functions used to decode the data received
 #include <rpc/xdr.h>
  
 #include <tsp_const_def.h>
+#include <tsp_abs_types.h>
 #include <tsp_datastruct.h>
 #include <tsp_decoder.h>
 
@@ -82,7 +83,7 @@ int32_t TSP_data_channel_double_decoder(void* out_double, uint32_t dimension,  c
   for(i=0;i<dimension;++i)
   {
     ((uint64_t*)out_double)[i] = TSP_DECODE_DOUBLE_TO_UINT64(in_buf+(i*TSP_SIZEOF_ENCODED_DOUBLE));   
-    STRACE_DEBUG_MORE("decoded DOUBLE = %f, (received) encoded DOUBLE=0x%08llx",((double*)out_double)[i],((uint64_t*)in_buf)[i]);
+    STRACE_DEBUG_MORE("decoded DOUBLE = %f, (received) encoded DOUBLE=0x%lx",((double*)out_double)[i],((uint64_t*)in_buf)[i]);
   }
 #endif
 

@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.65 2008-02-05 18:54:10 rhdv Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.66 2008-04-27 16:01:58 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -1367,7 +1367,7 @@ TSP_consumer_request_async_sample_read(TSP_provider_t provider,
     STRACE_DEBUG("TSP consumer async read for pgi <%d>",async_sample_read->provider_global_index);
 
     async_read_result = TSP_request_async_sample_read(&async_read_param,otsp->server);
-    STRACE_DEBUG("async_read_result is <0x%X>", (unsigned int)async_read_result);
+    STRACE_DEBUG("async_read_result is <0x%p>", async_read_result);
 
     /* Provider has probably died */
     if (async_read_result == NULL) {
@@ -1375,7 +1375,7 @@ TSP_consumer_request_async_sample_read(TSP_provider_t provider,
     } else {
       STRACE_DEBUG("async_read_result->pgi=%d", async_read_result->provider_global_index);
       STRACE_DEBUG("async_read_result->value_size=%d", async_sample_read->value_size);
-      STRACE_DEBUG("async_read_result->data.data_val = 0x%X", (unsigned int)async_read_result->data.data_val);
+      STRACE_DEBUG("async_read_result->data.data_val = 0x%p", async_read_result->data.data_val);
       if (-1 == async_read_result->provider_global_index) {
 	ret = TSP_STATUS_ERROR_PGI_UNKNOWN;
       } else {

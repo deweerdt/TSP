@@ -1,6 +1,6 @@
 /*
 
-$Id: client_res.c,v 1.20 2008-02-05 18:54:09 rhdv Exp $
+$Id: client_res.c,v 1.21 2008-04-27 16:02:49 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -46,7 +46,7 @@ Purpose   : Simple consummer for testing groups configuration
 #include <libUTIL.h>
 
 
-/*µS*/
+/*ï¿½S*/
 #define TSP_NANOSLEEP_PERIOD_US (200*1000)
 
 
@@ -139,7 +139,7 @@ int main(int argc, char *argv[]){
   MySignal(SIGINT, catch_ctrl_c);
 
 
-  STRACE_INFO("Autodetect CPU : %d bits", sizeof(long)*8);
+  STRACE_INFO("Autodetect CPU : %zu bits", sizeof(long)*8);
 
   /* TSP Init */
   if(TSP_STATUS_OK!=TSP_consumer_init(&argc, &argv)) {
