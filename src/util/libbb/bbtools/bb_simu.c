@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bbtools/bb_simu.c,v 1.13 2008-02-24 12:50:40 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bbtools/bb_simu.c,v 1.14 2008-05-02 14:55:34 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -214,8 +214,8 @@ int main(int argc, char **argv)
 		Toto[i] = i;
 	}
 	for (i = 0; i < 3; ++i) {
-		printf("@Toto = 0x%x, Toto[%d] = %d\n",
-		       (unsigned int) &Toto[i], i, Toto[i]);
+		printf("@Toto = %p, Toto[%d] = %d\n",
+		       &Toto[i], i, Toto[i]);
 	}
 
 	Titi =
@@ -224,7 +224,7 @@ int main(int argc, char **argv)
 					 1);
 	*Titi = 3.14159;
 
-	printf("@Titi = 0x%x, Titi = %f\n", (unsigned int) Titi, *Titi);
+	printf("@Titi = %p, Titi = %f\n", Titi, *Titi);
 
 	Tata =
 	    (double *) bb_simple_publish(mybb, "Tata", basename(argv[0]),

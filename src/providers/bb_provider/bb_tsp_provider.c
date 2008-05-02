@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/providers/bb_provider/bb_tsp_provider.c,v 1.35 2008-02-05 18:54:11 rhdv Exp $
+$Header: /home/def/zae/tsp/tsp/src/providers/bb_provider/bb_tsp_provider.c,v 1.36 2008-05-02 14:55:34 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -680,7 +680,7 @@ BB_GLU_async_sample_write(GLU_handle_t* glu,
 	char   strvalue[256];
 	void*  genuineBBdata;
 	
-	STRACE_INFO("BB_PROVIDER want to AsyncWrite : pgi <%d> with value : 0x%X (value_size=%d)",provider_global_index, (uint32_t)value_ptr,value_size);
+	STRACE_INFO("BB_PROVIDER want to AsyncWrite : pgi <%d> with value : %p (value_size=%d)",provider_global_index, value_ptr, value_size);
 	
 	/* FIXME : Should use the pgi to cast properly the data versus the real type */
 	value = *(double*)value_ptr;

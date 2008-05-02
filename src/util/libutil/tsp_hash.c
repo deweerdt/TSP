@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libutil/tsp_hash.c,v 1.5 2006-07-08 11:41:03 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libutil/tsp_hash.c,v 1.6 2008-05-02 14:55:34 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -132,7 +132,7 @@ int hash_append_recurse(hash_t *hash, int mpi, char *string, void *id)
       
       if(idx < 0)
 	{
-	  printf("<%c> is out of scope for <%s> = %d\n", *string, _string, (int)id);
+	  printf("<%c> is out of scope for <%s> = %p\n", *string, _string, id);
 	  return -1;
 	}
 	  
@@ -239,7 +239,7 @@ void hash_dump_recurse(hash_t *hash, int mpi, char *string)
 
   /**/
   if(table->id != 0)
-    printf("%s = %d\n", _string, (int)table->id);
+    printf("%s = %p\n", _string, table->id);
   /**/
 
   for(i=hash->first; i<=hash->last; i++)
@@ -302,7 +302,7 @@ void hash_dump(hash_t *hash, int level)
        printf("%c",i);
      printf("\n\n");
       
-     printf("%d tables of %d bytes each : memory = %.3f Mbytes\n", hash->nb_tables, HASH_MEMPOOL_LENGTH(hash), (double) hash->nb_tables * HASH_MEMPOOL_LENGTH(hash) / (1024*1024));
+     printf("%d tables of %ld bytes each : memory = %.3f Mbytes\n", hash->nb_tables, HASH_MEMPOOL_LENGTH(hash), (double) hash->nb_tables * HASH_MEMPOOL_LENGTH(hash) / (1024*1024));
      printf("%d total characters : ", hash->nb_chars);
      printf("density = %.6f\n\n", (double) hash->nb_tables / hash->nb_chars);
 

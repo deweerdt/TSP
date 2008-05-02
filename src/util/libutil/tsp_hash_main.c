@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libutil/tsp_hash_main.c,v 1.2 2006-07-08 13:59:05 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libutil/tsp_hash_main.c,v 1.3 2008-05-02 14:55:34 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -87,7 +87,7 @@ main (int argc, char** argv) {
   int                  dump = 0;
   int                  use_strcmp = FALSE;
   hash_t             *hash;
-  int                 i;
+  long                 i;
   char                string[1024], *p;
 
   /* Check line command arguments */
@@ -124,7 +124,7 @@ main (int argc, char** argv) {
       if((p=strchr(string,' '))) *p = 0;
       if((p=strchr(string,'\t'))) *p = 0;
       if((p=strchr(string,'\n'))) *p = 0;
-      hash_append(hash, string, (void*)i);
+      hash_append(hash, string, (void *)i);
       i++;
     }
 
@@ -144,7 +144,7 @@ main (int argc, char** argv) {
       if((p=strchr(string,' '))) *p = 0;
       if((p=strchr(string,'\t'))) *p = 0;
       if((p=strchr(string,'\n'))) *p = 0;
-      if((int)hash_get(hash, string) != i) printf("Error for %s, id is not %d\n", string, i);
+      if((long)hash_get(hash, string) != i) printf("Error for %s, id is not %ld\n", string, i);
       i++;
     }
 
@@ -178,7 +178,7 @@ main (int argc, char** argv) {
 	  if((p=strchr(string,' '))) *p = 0;
 	  if((p=strchr(string,'\t'))) *p = 0;
 	  if((p=strchr(string,'\n'))) *p = 0;
-	  if(strcmp_get(string) != i) printf("Error for %s, id is not %d\n", string, i);
+	  if(strcmp_get(string) != i) printf("Error for %s, id is not %ld\n", string, i);
 	  i++;
 	}
       fclose(fp);
