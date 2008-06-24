@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libutil/tsp_hash.c,v 1.6 2008-05-02 14:55:34 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libutil/tsp_hash.c,v 1.7 2008-06-24 19:32:02 rhdv Exp $
 
 -----------------------------------------------------------------------
 
@@ -302,7 +302,7 @@ void hash_dump(hash_t *hash, int level)
        printf("%c",i);
      printf("\n\n");
       
-     printf("%d tables of %ld bytes each : memory = %.3f Mbytes\n", hash->nb_tables, HASH_MEMPOOL_LENGTH(hash), (double) hash->nb_tables * HASH_MEMPOOL_LENGTH(hash) / (1024*1024));
+     printf("%d tables of %ld bytes each : memory = %.3f Mbytes\n", hash->nb_tables, (long int)HASH_MEMPOOL_LENGTH(hash), (double) hash->nb_tables * HASH_MEMPOOL_LENGTH(hash) / (1024*1024));
      printf("%d total characters : ", hash->nb_chars);
      printf("density = %.6f\n\n", (double) hash->nb_tables / hash->nb_chars);
 
