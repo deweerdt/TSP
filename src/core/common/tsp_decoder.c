@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/common/tsp_decoder.c,v 1.12 2008-06-24 19:32:02 rhdv Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/common/tsp_decoder.c,v 1.13 2008-06-25 10:17:09 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -83,7 +83,7 @@ int32_t TSP_data_channel_double_decoder(void* out_double, uint32_t dimension,  c
   for(i=0;i<dimension;++i)
   {
     ((uint64_t*)out_double)[i] = TSP_DECODE_DOUBLE_TO_UINT64(in_buf+(i*TSP_SIZEOF_ENCODED_DOUBLE));   
-    STRACE_DEBUG_MORE("decoded DOUBLE = %f, (received) encoded DOUBLE=0x%llx",((double*)out_double)[i],((uint64_t*)in_buf)[i]);
+    STRACE_DEBUG_MORE("decoded DOUBLE = %f, (received) encoded DOUBLE=0x%"TSP_UINT64_FORMAT,((double*)out_double)[i],((uint64_t*)in_buf)[i]);
   }
 #endif
 
