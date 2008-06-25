@@ -412,7 +412,6 @@ ELSE (BUILD_ONLY_TSP_PORT)
 ENDIF (BUILD_ONLY_TSP_PORT)
 
 ENABLE_TESTING()
-ADD_TEST(TestSocket ${EXECUTABLE_OUTPUT_PATH}/tsp_port_test -t socket -u localhost)
 
 ## Patch generating target
 # The custom target is using a cmake script which in turn
