@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.51 2008-04-01 09:35:51 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.52 2008-06-25 11:13:08 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -921,7 +921,7 @@ __bb_value_print(struct bb_printer *bp, volatile S_BB_T* bb, S_BB_DATADESC_T dat
 					fprintf(priv->fp,"%d",((int32_t*) data)[i]);
 					break; 
 				case E_BB_INT64:
-					fprintf(priv->fp,"%lld",((int64_t*) data)[i]);
+					fprintf(priv->fp,"%"BB_INT64_FORMAT"d",((int64_t*) data)[i]);
 					break;
 				case E_BB_UINT8:
 					fprintf(priv->fp,"0x%x",((uint8_t*) data)[i]);
@@ -933,7 +933,7 @@ __bb_value_print(struct bb_printer *bp, volatile S_BB_T* bb, S_BB_DATADESC_T dat
 					fprintf(priv->fp,"0x%x",((uint32_t*) data)[i]);
 					break;	
 				case E_BB_UINT64:
-					fprintf(priv->fp,"0x%llx",((uint64_t*) data)[i]);
+					fprintf(priv->fp,"0x%"BB_INT64_FORMAT"x",((uint64_t*) data)[i]);
 					break;	
 					/*     case E_BB_CHAR: */
 					/*       fprintf(priv->fp,"0x%02x<%c> ",((char*) data)[i], */

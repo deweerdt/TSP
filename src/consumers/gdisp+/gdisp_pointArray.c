@@ -192,8 +192,8 @@ void
 dparray_printFields (DoublePointArray_T *pArray)
 {
 
-  printf ("Structure pArray : 0x%X \n", (unsigned int)pArray         );
-  printf ("\t ->samples	    : 0x%X \n", (unsigned int)pArray->samples);
+  printf ("Structure pArray : 0x%p \n", pArray         );
+  printf ("\t ->samples	    : 0x%p \n", pArray->samples);
   printf ("\t ->nbSamples   : %d   \n", pArray->nbSamples     );
   printf ("\t ->maxSamples  : %d   \n", pArray->maxSamples    );
   printf ("\t ->current     : %d   \n", pArray->current       );

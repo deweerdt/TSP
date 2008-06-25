@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.h,v 1.39 2008-03-16 20:54:59 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.h,v 1.40 2008-06-25 11:13:09 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -75,6 +75,14 @@ Purpose   : BlackBoard Idiom implementation
 #include <semaphore.h>
 
 #endif /* __KERNEL__ */
+
+#if defined(__i386__) 
+#define BB_INT64_FORMAT "ll"
+#elif defined(__x86_64__)
+#define BB_INT64_FORMAT "l"
+#else
+#define BB_INT64_FORMAT "ll"
+#endif
 
 /**
  * @defgroup BlackBoard BlackBoard (BB)
@@ -458,7 +466,7 @@ typedef struct S_BB_PRIV {
 
 /**
  * Get a pointer to the private structure of the BB
- * @param[in] bb the pointer to BB structure  
+ *ï¿½@param[in] bb the pointer to BB structure  
  * @return a pointer to the private structure of the BB
  */
 S_BB_PRIV_T *
