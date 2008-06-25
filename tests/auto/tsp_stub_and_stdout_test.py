@@ -55,7 +55,7 @@ stub.stdin  = file(stub.name + ".in",'w+')
 stdout.stdout = file(stdout.name + ".out",'w+')
 #stdout.stdin  = file(stdout.name + ".in",'w+')
 
-dtest.DTester.logger.setLevel(level=logging.DEBUG)
+dtest.DTester.logger.setLevel(level=logging.WARNING)
 
 stub.addRunStep("ok",True,"TSP Stub and Stdout Starts")
 stub.addRunStep("runCommand",command=stub_param['path'])
