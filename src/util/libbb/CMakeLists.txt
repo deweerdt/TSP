@@ -118,11 +118,16 @@ IF(BUILD_BB_KERNEL_MODULE)
     bb_core.c bb_alias.c
     bb_core_k.c bb_module.c
     bb_simple.c)
+
+  SET(MODULE_HDR 
+    bb_alias.h bb_core.h
+    bb_core_k.h bb_simple.h 
+    bb_utils.h)
     
-  ADD_CUSTOM_COMMAND(OUTPUT bb.ko
-    COMMAND ${CMAKE_SOURCE_DIR}/src/util/libbb/build_module.sh
-    DEPENDS ${MODULE_SRC}
+  ADD_CUSTOM_COMMAND(OUTPUT ${CMAKE_BINARY_DIR}/src/util/libbb/kbuild/bb.ko
+    COMMAND ${CMAKE_SOURCE_DIR}/src/util/libbb/build_module.sh ${CMAKE_SOURCE_DIR}/src/util/libbb ${CMAKE_BINARY_DIR}/src/util/libbb
+    DEPENDS ${MODULE_SRC} ${MODULE_HDR}
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/util/libbb)
-  ADD_CUSTOM_TARGET(kernel_module ALL DEPENDS bb.ko)
+  ADD_CUSTOM_TARGET(kernel_module ALL DEPENDS ${CMAKE_BINARY_DIR}/src/util/libbb/kbuild/bb.ko)
 ENDIF(BUILD_BB_KERNEL_MODULE)
 
