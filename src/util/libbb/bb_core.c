@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.52 2008-06-25 11:13:08 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.53 2008-06-26 09:53:37 jaggy Exp $
 
 -----------------------------------------------------------------------
 
@@ -110,7 +110,6 @@ static const size_t E_BB_TYPE_SIZE[] = {0,
 /* In case we're compiling kernel code, there's really no need
    for the sysv or posix code */
 static struct bb_operations sysv_bb_ops;
-static struct bb_operations posix_bb_ops;
 extern struct bb_operations k_bb_ops;
 
 #else

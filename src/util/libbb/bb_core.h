@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.h,v 1.40 2008-06-25 11:13:09 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.h,v 1.41 2008-06-26 09:53:37 jaggy Exp $
 
 -----------------------------------------------------------------------
 
@@ -335,6 +335,7 @@ struct sysv_private {
 	int msg_id;
 };
 
+#ifndef __KERNEL__
 /**
  * POSIX specific data, part of the S_BB_T structure
  */
@@ -348,6 +349,7 @@ struct posix_private {
 	/* posix message queue handle */
 	mqd_t msg_id;
 };
+#endif /* __KERNEL*/
 /**
  * BlackBoard message definition.
  * This type must conform to the constraint of
@@ -449,7 +451,9 @@ typedef struct S_BB {
   union {
 	struct sysv_private sysv;
 	struct kernel_private k;
+#ifndef __KERNEL__
 	struct posix_private posix;
+#endif /* __KERNEL__ */
   } priv;
 
 } S_BB_T;
