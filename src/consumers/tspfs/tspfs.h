@@ -5,7 +5,6 @@
 #include <tsp_prjcfg.h>
 #include <tsp_consumer.h>
 
-#define __USE_GNU
 #include <search.h>
 
 #define MAX_SYM_DISP_SIZE 512

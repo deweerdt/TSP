@@ -94,9 +94,7 @@
 #include <assert.h>
 #include <stddef.h>
 
-#define _GNU_SOURCE
 #include <getopt.h>
-#define __USE_GNU
 #include <search.h>
 
 #include <tspfs.h>
