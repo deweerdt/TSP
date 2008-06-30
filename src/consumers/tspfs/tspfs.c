@@ -207,7 +207,7 @@ static inline struct tspfs_sample *get_tsp_symbol_value(int index)
 }
 
 
-static int get_tsp_symbol_index(const char *symbol_name)
+static long get_tsp_symbol_index(const char *symbol_name)
 {
 	int ret;
 	ENTRY e;
@@ -216,7 +216,7 @@ static int get_tsp_symbol_index(const char *symbol_name)
 	e.key = (char *)symbol_name;
 	ret = hsearch_r(e, FIND, &ep, &tspfs.name_to_index);
 	if (ret)
-		return (int)ep->data;
+		return (long)ep->data;
 
 	return -1;
 }
@@ -258,7 +258,7 @@ static void tspfs_destroy(void *unused)
 static int tspfs_init_connect(int argc, char **argv, char *url)
 {
 
-	int i;
+	long i;
 
 	if (TSP_STATUS_OK!=TSP_consumer_init(&argc, &argv)) {
 	  printf("TSP Initialization failed\n");
@@ -453,7 +453,7 @@ static int tspfs_write(const char *path, const char *buf, size_t size,
 	double value;
 	struct tspfs_sample s;
 	char *sym_name;
-	int idx;
+	long idx;
 
 	sym_name = get_symname_from_path(path);
 	if (!sym_name)
@@ -480,7 +480,7 @@ static int tspfs_read(const char *path, char *buf, size_t size,
 		      off_t offset, struct fuse_file_info *fi)
 {
 	size_t len;
-	int idx;
+	long idx;
 	struct tspfs_sample *sample;
 	char *sym_name;
 	char sym_display[MAX_SYM_DISP_SIZE];
@@ -500,7 +500,7 @@ static int tspfs_read(const char *path, char *buf, size_t size,
 		char *format;
 		format = "";
 #ifdef TSPFS_DEBUG
-		fprintf(stderr,"AZE:Symbol is : %s type: %d pgi: %d, idx: %d\n", sym_name, sample->sync.type, sample->sync.provider_global_index, idx);
+		fprintf(stderr,"Symbol is : %s type: %d pgi: %d, idx: %ld\n", sym_name, sample->sync.type, sample->sync.provider_global_index, idx);
 #endif
 		switch (sample->sync.type) {
 			case TSP_TYPE_DOUBLE:
@@ -525,7 +525,7 @@ static int tspfs_read(const char *path, char *buf, size_t size,
 				break;
 			case TSP_TYPE_INT64:
 				sprintf(sym_display, "t=%d v=%lld %%lld\n", sample->sync.time,
-					sample->sync.uvalue.int64_value);
+					(long long)sample->sync.uvalue.int64_value);
 				break;
 			case TSP_TYPE_UINT8:
 				sprintf(sym_display, "t=%d v=%u %%u\n", sample->sync.time,
@@ -541,7 +541,7 @@ static int tspfs_read(const char *path, char *buf, size_t size,
 				break;
 			case TSP_TYPE_UINT64:
 				sprintf(sym_display, "t=%d v=%llu %%llu\n", sample->sync.time,
-					sample->sync.uvalue.uint64_value);
+					(unsigned long long)sample->sync.uvalue.uint64_value);
 				break;
 			case TSP_TYPE_CHAR:
 				sprintf(sym_display, "t=%d v=%c %%c\n", sample->sync.time,
