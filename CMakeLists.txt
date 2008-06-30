@@ -40,6 +40,9 @@ OPTION(USE_XDR_LIB_ENCODING
 OPTION(BUILD_BB_KERNEL_MODULE
   "Build the Black Board kernel module" OFF)
 
+OPTION(BUILD_BB_KERNEL_DEBIAN_PACKAGE
+  "Build the Black Board kernel debian module-assistant package" OFF)
+
 IF (WIN32)
   OPTION(BUILD_WIN32_PTHREADWIN32
     "Build under Windows with PthreadWin32" ON)

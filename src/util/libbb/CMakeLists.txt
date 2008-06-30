@@ -109,25 +109,56 @@ ENDIF(BUILD_SCRIPT_BINDING)
 
  
 # Build a kernel module
-# This is a bit tricky: building a kernel module needs a Makefile which
-# is not the one provided by cmake. The workaround is in build_module.sh
-# which copies Makefile.k to Makefile, does the build and then restores
-# the original Makefile.
-IF(BUILD_BB_KERNEL_MODULE)
-  SET(MODULE_SRC 
-    bb_core.c bb_alias.c
-    bb_core_k.c bb_module.c
-    bb_simple.c)
+# This is a bit tricky: building a kernel module needs a Makefile
+# which is not the one provided by cmake.
+# The workaround is in build_module.sh which creates a "kbuild"
+# directory, copies everythings needed in it and does the build.
+SET(MODULE_SRC 
+  bb_core.c bb_alias.c
+  bb_core_k.c bb_module.c
+  bb_simple.c)
 
-  SET(MODULE_HDR 
-    bb_alias.h bb_core.h
-    bb_core_k.h bb_simple.h 
-    bb_utils.h)
-    
+SET(MODULE_HDR 
+  bb_alias.h bb_core.h
+  bb_core_k.h bb_simple.h 
+  bb_utils.h)
+
+IF(BUILD_BB_KERNEL_MODULE)
+   
   ADD_CUSTOM_COMMAND(OUTPUT ${CMAKE_BINARY_DIR}/src/util/libbb/kbuild/bb.ko
     COMMAND ${CMAKE_SOURCE_DIR}/src/util/libbb/build_module.sh ${CMAKE_SOURCE_DIR}/src/util/libbb ${CMAKE_BINARY_DIR}/src/util/libbb
-    DEPENDS ${MODULE_SRC} ${MODULE_HDR}
+    DEPENDS Makefile.k ${MODULE_SRC} ${MODULE_HDR}
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/util/libbb)
   ADD_CUSTOM_TARGET(kernel_module ALL DEPENDS ${CMAKE_BINARY_DIR}/src/util/libbb/kbuild/bb.ko)
+
 ENDIF(BUILD_BB_KERNEL_MODULE)
 
+
+# Build a debian kernel module-assistant package
+# This is a bit tricky: building a debian kernel module-assistant
+# package needs a special evironment which is not the one provided by
+# cmake.
+# The workaround is in build_kbb_debian.sh which creates a
+# "kbb_debian_build" directory, copies everythings needed in it and
+# does the build.
+SET(DEBIAN_KBB_BUILD_FILE
+  kbb_debian/README.Debian
+  kbb_debian/changelog.in
+  kbb_debian/compat
+  kbb_debian/control
+  kbb_debian/control.modules.in
+  kbb_debian/copyright
+  kbb_debian/kbb-_KVERS_.postinst.modules.in
+  kbb_debian/rules)
+
+IF(BUILD_BB_KERNEL_DEBIAN_PACKAGE)
+
+  CONFIGURE_FILE(kbb_debian/changelog.in ${CMAKE_BINARY_DIR}/src/util/libbb/debian_changelog @ONLY)
+
+  ADD_CUSTOM_COMMAND(OUTPUT ${CMAKE_BINARY_DIR}/src/util/libbb/kbb-source_${PACKAGE_VERSION}-1_all.deb
+    COMMAND ${CMAKE_SOURCE_DIR}/src/util/libbb/build_kbb_debian.sh ${CMAKE_SOURCE_DIR}/src/util/libbb ${CMAKE_BINARY_DIR}/src/util/libbb
+    DEPENDS Makefile.k ${MODULE_SRC} ${MODULE_HDR} ${DEBIAN_KBB_BUILD_FILE}
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/util/libbb)
+  ADD_CUSTOM_TARGET(debian_kbb ALL DEPENDS ${CMAKE_BINARY_DIR}/src/util/libbb/kbb-source_${PACKAGE_VERSION}-1_all.deb)
+
+ENDIF(BUILD_BB_KERNEL_DEBIAN_PACKAGE)

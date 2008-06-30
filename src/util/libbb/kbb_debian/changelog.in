@@ -1,0 +1,12 @@
+kbb (@PACKAGE_VERSION@-1) stable; urgency=low
+
+  * Last Official release
+
+ -- Jerome Arbez-Gindre <jerome.arbez-gindre@thalesaleniaspace.com>  Wed, 22 May 2008 14:27:00 +0100
+
+kbb (0.0.1-1) unstable; urgency=low
+
+  * Initial release (Closes: #nnnn)  <nnnn is the bug number of your ITP>
+
+ -- Jerome Arbez-Gindre <jerome.arbez-gindre@thalesaleniaspace.com>  Wed, 13 Feb 2008 09:17:57 +0100
+

@@ -1,0 +1,14 @@
+Source: kbb
+Section: unknown
+Priority: extra
+Maintainer: Jerome Arbez-Gindre <jeromearbezgindre@gmail.com>
+Build-Depends: debhelper (>= 5), bzip2
+Standards-Version: 3.7.2
+
+Package: kbb-source
+Architecture: all
+Depends: module-assistant, debhelper (>= 5), make, bzip2
+Description: Source for the kbb kernel module.
+ This package provides the source code for the kbb kernel modules.
+ The kbb package is also required in order to make use of these
+ modules. Kernel source or headers are required to compile these modules.

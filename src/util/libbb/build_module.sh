@@ -1,6 +1,7 @@
 #!/bin/sh
-# This helper script switches Makefiles between the one needed for the 
-# module and the "main" one
+
+# This helper script creates a kbuild buiding environment... fill it
+# with whatever is needed before building
 
 SRC_DIR=$1
 DST_DIR=$2

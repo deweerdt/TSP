@@ -1,0 +1,20 @@
+Source: kbb
+Section: unknown
+Priority: optional
+Maintainer: Jerome Arbez-Gindre <jeromearbezgindre@gmail.com>
+Build-Depends: debhelper (>= 5)
+Standards-Version: 3.7.2
+
+Package: kbb-_KVERS_
+Architecture: any
+Provides: kbb
+Description: kbb module for Linux (kernel _KVERS_).
+ This package contains the loadable kernel modules for the
+ kernel version of the TSP blackboard.
+ .
+ This package contains the compiled kernel module for _KVERS_
+ .
+ If you have compiled your own kernel, you will most likely need to build
+ your own kbb. The kbb-source package has been
+ provided for use with the Debian's module-assistant or kernel-package
+ utilities to produce a version of kbb for your kernel.

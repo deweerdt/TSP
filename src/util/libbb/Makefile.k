@@ -13,6 +13,29 @@ PWD	:= $(shell pwd)
 all:
 	$(MAKE) -C $(KDIR) M=$(PWD) modules
 
+install:: all
+	for file in `find . -name "*.ko"` ; do						\
+		mkdir -p $(DESTDIR)/lib/modules/$(KVER)/$(MDIR)/`dirname $$file` ;	\
+		cp $$file $(DESTDIR)/lib/modules/$(KVER)/$(MDIR)/$$file ;		\
+	done
+
+clean::
+	$(MAKE) -C $(KDIR) M=$(CURDIR) clean
+
 endif
 
 
+src_package: kbb-$(VERSION).tar.gz
+
+install_src:
+	for file in `find . -name "*.[ch]" -o -name "Makefile"` ; do	\
+		mkdir -p $(DESTDIR)/`dirname $$file` ;			\
+		cp $$file $(DESTDIR)/$$file ;				\
+	done
+
+kbb-$(VERSION).tar.gz:
+	$(MAKE) DESTDIR=kbb-$(VERSION) install_src
+	tar zcf $@ kbb-$(VERSION)
+	rm -rf mkdir kbb-$(VERSION)
+
+.PHONY: clean install test_compile rpm
