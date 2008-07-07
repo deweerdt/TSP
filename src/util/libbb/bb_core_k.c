@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core_k.c,v 1.3 2007-04-01 13:17:21 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core_k.c,v 1.4 2008-07-07 14:22:26 jaggy Exp $
 
 -----------------------------------------------------------------------
 
@@ -53,6 +53,7 @@ Purpose   : Blackboard In-Kernel user and kernel space implementation
 #include <linux/highmem.h>
 #include <linux/cdev.h>
 #include <linux/mutex.h>
+#include <linux/device.h>
 
 #else
 
@@ -216,20 +217,20 @@ static int allocate_bb(S_BB_T ** bb, const char *name, int n_data,
 static int k_bb_shmem_get(S_BB_T ** bb, const char *name, int n_data,
 			     int data_size, int create)
 {
-	struct bb_device *dev;
+	struct bb_device *bb_dev;
 	int err, index;
-	dev_t devno;
+	struct class_device *class;
 
 	/* register and allocate a new character device */
-	dev = kmalloc(sizeof(*dev), GFP_KERNEL);
-	if (!dev) {
+	bb_dev = kmalloc(sizeof(*bb_dev), GFP_KERNEL);
+	if (!bb_dev) {
 		printk("Not enough memory to allocate device\n");
 		return BB_NOK;
 	}
 
-	cdev_init(&dev->cdev, &bb_fops);
-	dev->cdev.owner = THIS_MODULE;
-	dev->cdev.ops = &bb_fops;
+	cdev_init(&bb_dev->cdev, &bb_fops);
+	bb_dev->cdev.owner = THIS_MODULE;
+	bb_dev->cdev.ops = &bb_fops;
 
 	spin_lock(&pdeviceslock);
 	index = find_first_zero_bit(present_devices, BB_DEV_MAX);
@@ -246,24 +247,41 @@ static int k_bb_shmem_get(S_BB_T ** bb, const char *name, int n_data,
 	present_bbs[index] = *bb;
 	spin_unlock(&pdeviceslock);
 
-	devno = MKDEV(bb_major, bb_minor + index);
-	err = cdev_add(&dev->cdev, devno, 1);
-	if(err != 0) 
+	bb_dev->devno = MKDEV(bb_major, bb_minor + index);
+	err = cdev_add(&bb_dev->cdev, bb_dev->devno, 1);
+	if(err != 0)
 		goto err_destroy_bb;
+	bb_dev->name = strdup(name);
 
-	printk("New bb device created, major: %d, minor: %d\n",
-				MAJOR(devno), MINOR(devno));
-	dev->bb = *bb;
-	(*bb)->priv.k.dev = dev;
+	if (bb_dev->name == NULL)
+		goto err_destroy_cdev;
+
+	class = class_device_create(bb_dev_class, NULL, bb_dev->devno,
+				    NULL, bb_dev->name);
+
+	if (IS_ERR(class)) {
+		printk ("class_device_create \"%s\" FAILED with errno %ld\n",
+			name, PTR_ERR(class));
+		goto err_free_name_mem;
+	}
+
+	printk("New bb device created, major: %d, minor: %d name: %s\n",
+	       MAJOR(bb_dev->devno), MINOR(bb_dev->devno), bb_dev->name);
+	bb_dev->bb = *bb;
+	(*bb)->priv.k.dev = bb_dev;
 	(*bb)->priv.k.index = index;
 
 	return BB_OK;
 
+err_free_name_mem:
+	kfree(bb_dev->name);
+err_destroy_cdev:
+	cdev_del (&bb_dev->cdev) ;
 err_destroy_bb:
 	bb_destroy(bb);
 err_unlock:
 	spin_unlock(&pdeviceslock);
-	kfree(dev);
+	kfree(bb_dev);
 	return BB_NOK;
 }
 #else
@@ -280,6 +298,8 @@ static int32_t k_bb_shmem_destroy(S_BB_T ** bb)
 {
 	unsigned long virt_addr;
 
+	class_device_destroy(bb_dev_class, (*bb)->priv.k.dev->devno);
+	kfree((*bb)->priv.k.dev->name);
 	cdev_del(&(*bb)->priv.k.dev->cdev);
 	spin_lock(&pdeviceslock);
 	clear_bit((*bb)->priv.k.index, present_devices);

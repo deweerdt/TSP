@@ -20,12 +20,14 @@ extern S_BB_T *present_bbs[BB_DEV_MAX];
 extern DECLARE_BITMAP(present_devices, BB_DEV_MAX);
 extern spinlock_t pdeviceslock;
 
+extern struct class *bb_dev_class;
+
 struct bb_device {
 	struct S_BB *bb;
 	/* represents the char device, useless in user space */
 	struct cdev cdev;
-	int major;
-	int minor;
+	dev_t devno;
+	char *name;
 };
 
 

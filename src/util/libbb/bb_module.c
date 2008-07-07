@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_module.c,v 1.4 2008-07-07 14:08:56 jaggy Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_module.c,v 1.5 2008-07-07 14:22:25 jaggy Exp $
 
 -----------------------------------------------------------------------
 
@@ -63,7 +63,7 @@ Purpose   : Blackboard kernel module
 static int run_test = 0;
 module_param(run_test, int, 0);
 
-static struct class *bb_dev_class;
+struct class *bb_dev_class = NULL;
 static dev_t bb_devt;
 int bb_major;
 int bb_minor = 0;
