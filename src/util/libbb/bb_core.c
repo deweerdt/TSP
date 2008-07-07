@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.53 2008-06-26 09:53:37 jaggy Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.54 2008-07-07 13:27:29 jaggy Exp $
 
 -----------------------------------------------------------------------
 
@@ -1050,6 +1050,10 @@ bb_destroy(S_BB_T** bb) {
 out:
   return retcode;
 } /* end of bb_destroy */
+#ifdef __KERNEL__
+EXPORT_SYMBOL_GPL(bb_destroy);
+#endif
+
 
 int32_t
 bb_data_memset(S_BB_T* bb, const char c) { 
