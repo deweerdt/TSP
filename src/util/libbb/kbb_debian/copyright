@@ -1,23 +1,57 @@
 This package was debianized by Jerome Arbez-Gindre <Jeromearbezgindre@gmail.com> on
 Thu, 26 Jun 2008 14:41:14 +0200.
 
-It was downloaded from <url://example.com>
+It was downloaded from http://savannah.nongnu.org/projects/tsp
 
 Upstream Author(s): 
 
-    <put author's name and email here>
-    <likewise for another author>
+	Original Authors
+	----------------
+	Yves DUFRENNE - 
+	Stephane GALLES	- 
+	Eric NOULARD (Erk) - eric.noulard@gmail.com 
+	Robert PAGNOT
+	Maintainers : tsp@astrium.eads.net, eric.noulard@gmail.com
+	
+	Other Contributors
+	-------------------
+	Marc LE ROY,
+	   the 'RES file lib' (libUTIL) used for some tests
+	Ivano COLTELLACCI,
+	   the initial RINGBUF implementation
+	Jerome LACHAIZE,
+	  the initial VxWorks port
+	Cesare BERTONA,
+	  the BlackBoard VxWorks port
+	Olivier MONARET,
+	  Visu3D consumer
+	Frederic BLANCHET-MOMAS - pepeone@gmail.com,
+	  the Linux PPC port
+	Thomas TESTASECCA,
+	  Blackboard Alias System and some Blackboard optimization
+	Miguel SENNOUN,
+	  Blackboard Alias System
+	Pierre MALLARD,
+	  Perl TSP binding
+	Julien BRUTUS
+	  Python TSP binding
+	Alan PRAT
+	  Win32 Port with Frederik DEWEERDT and Eric NOULARD
+	Frederik DEWEERDT
+	  Linux Kernel Blackboard, Win32 Port, FreeBSD port and more...
 
 Copyright: 
 
-    <Copyright (C) YYYY Name OfAuthor>
-    <likewise for another author>
+	Copyright (c) 2002 Yves DUFRENNE, Stephane GALLES, Eric NOULARD and Robert PAGNOT 
 
 License:
 
-    <Put the license of the package here indented by 4 spaces>
+	This library is free software; you can redistribute it and/or
+	modify it under the terms of the GNU Lesser General Public
+	License as published by the Free Software Foundation; either
+	version 2.1 of the License, or (at your option) any later version.
 
-The Debian packaging is (C) 2008, Jerome Arbez-Gindre <Jerome.arbez-gindre@thalesaleniaspace.com> and
+The Debian packaging is (C) 2008, Jerome Arbez-Gindre <Jeromearbezgindre@gmail.com> and
 is licensed under the GPL, see `/usr/share/common-licenses/GPL'.
 
 # Please also look if there are files or directories which have a

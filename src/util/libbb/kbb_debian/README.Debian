@@ -1,10 +1,9 @@
-ksatdriver for Debian
----------------------
+kbb for Debian
+--------------
 
-The Debian kbb source package provides two packages,
+The Debian kbb source package provides one packages,
 
- 1) kbb, which the provides the userspace daemon
- 2) kbb-source, which provides the source for the kernel modules
+   kbb-source, which provides the source for the kernel modules
 
 The kbb-source package can be used in several ways,
 
@@ -18,5 +17,5 @@ The kbb-source package can be used in several ways,
    and install a module specific to the system you are building on and is
    not under control of the packaging system.
 
- -- Jérôme Arbez-Gindre <jerome.arbez-gindre@laposte.net>, Thu, 26 Jun 2008 14:48:00 +0200
+ -- Jérôme Arbez-Gindre <jeromearbezgindre@gmail.com>, Tue,  8 Jul 2008 09:28:33 +0200
 
