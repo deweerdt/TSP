@@ -5,44 +5,23 @@ It was downloaded from http://savannah.nongnu.org/projects/tsp
 
 Upstream Author(s): 
 
-	Original Authors
-	----------------
-	Yves DUFRENNE - 
-	Stephane GALLES	- 
-	Eric NOULARD (Erk) - eric.noulard@gmail.com 
-	Robert PAGNOT
-	Maintainers : tsp@astrium.eads.net, eric.noulard@gmail.com
-	
-	Other Contributors
-	-------------------
-	Marc LE ROY,
-	   the 'RES file lib' (libUTIL) used for some tests
-	Ivano COLTELLACCI,
-	   the initial RINGBUF implementation
-	Jerome LACHAIZE,
-	  the initial VxWorks port
+	Jerome ARBEZ-GINDRE
+	         Linux Kernel Blackboard
 	Cesare BERTONA,
-	  the BlackBoard VxWorks port
-	Olivier MONARET,
-	  Visu3D consumer
-	Frederic BLANCHET-MOMAS - pepeone@gmail.com,
-	  the Linux PPC port
-	Thomas TESTASECCA,
-	  Blackboard Alias System and some Blackboard optimization
-	Miguel SENNOUN,
-	  Blackboard Alias System
-	Pierre MALLARD,
-	  Perl TSP binding
-	Julien BRUTUS
-	  Python TSP binding
-	Alan PRAT
-	  Win32 Port with Frederik DEWEERDT and Eric NOULARD
+	         the BlackBoard VxWorks port
 	Frederik DEWEERDT
-	  Linux Kernel Blackboard, Win32 Port, FreeBSD port and more...
-
+	         Linux Kernel Blackboard, FreeBSD port and more...
+	Eric NOULARD
+	         Initial Blackboard implementation and design
+	Miguel SENNOUN,
+	         Blackboard Alias System
+	Thomas TESTASECCA,
+	         Blackboard Alias System and some Blackboard optimization
+	
 Copyright: 
 
-	Copyright (c) 2002 Yves DUFRENNE, Stephane GALLES, Eric NOULARD and Robert PAGNOT 
+	Copyright (c) 2004 Jerome ARBEZ-GINDRE, Cesare BERTONA, Frederik DEWEERDT,
+		      	   Eric NOULARD, Miguel SENNOUN and Thomas TESTASECCA,
 
 License:
 
