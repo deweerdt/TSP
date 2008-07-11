@@ -1,6 +1,6 @@
 /*
 
-$Id: client_stdout.c,v 1.18 2008-02-05 18:54:09 rhdv Exp $
+$Id: client_stdout.c,v 1.19 2008-07-11 19:44:06 rhdv Exp $
 
 -----------------------------------------------------------------------
 
@@ -73,6 +73,72 @@ Purpose   : Simple consumer test that print samples received to stdout
 /* Number of samples  that will be counted before the data check test pass */
 #define TSP_TEST_COUNT_SAMPLES 10  
 #define TSP_NANOSLEEP_PERIOD_US (100*1000) /* 10Hz */
+
+
+/*print value*/
+int32_t 
+tsp_sample_print(TSP_sample_t sample)
+{
+ switch(sample.type) {
+
+  case TSP_TYPE_DOUBLE :
+    printf("%1.15G", sample.uvalue.double_value);
+    break;
+    
+  case TSP_TYPE_FLOAT :
+    printf("%1.15G", sample.uvalue.float_value);
+    break;
+    
+  case TSP_TYPE_INT8 :
+    printf("%d", sample.uvalue.int8_value);
+    break;
+    
+  case TSP_TYPE_INT16:
+    printf("%d", sample.uvalue.int16_value);
+    break;
+    
+  case TSP_TYPE_INT32 :
+    printf("%d", sample.uvalue.int32_value);
+    break;
+      
+  case TSP_TYPE_INT64 :
+    printf("%lld", sample.uvalue.int64_value);
+    break;
+    
+  case TSP_TYPE_UINT8:
+    printf("%u", sample.uvalue.uint8_value);
+    break;
+    
+  case TSP_TYPE_UINT16:
+    printf("%u", sample.uvalue.uint16_value);
+    break;
+    
+  case TSP_TYPE_UINT32:
+    printf("%u", sample.uvalue.uint32_value);
+    break;
+    
+  case TSP_TYPE_UINT64:
+    printf("%llu", sample.uvalue.uint64_value);
+    break;
+    
+  case TSP_TYPE_CHAR:
+    printf("%c", sample.uvalue.char_value);
+    break;
+    
+  case TSP_TYPE_UCHAR:
+    printf("%c", sample.uvalue.uchar_value);
+    break;
+    
+  case TSP_TYPE_RAW:
+    printf("%c", sample.uvalue.raw_value);
+    break;
+    
+  default:
+    return -1;
+  }
+
+  return 0;
+}
 
 
 void 
@@ -275,16 +341,22 @@ main(int argc, char *argv[]){
   }
       
   STRACE_TEST("STAGE 001 | STEP 003 : PASSED");
+
+  if (nb_symbols > TSP_SSIList_getSize(information->symbols)) {
+      STRACE_INFO("%d symbols requested, %d available", nb_symbols, TSP_SSIList_getSize(information->symbols));
+      nb_symbols = TSP_SSIList_getSize(information->symbols);
+  }
   
   /* Initialize symbols list */
   TSP_SSIList_initialize(&symbols,nb_symbols);
 
   /* Update requested sample period */
-  printf("%s: Asking for %d symbols\n", argv[0],nb_symbols);
-  for (i = 0 ; i < TSP_SSIList_getSize(symbols) ; ++i) {
-    TSP_SSI_initialize_request_minimal(TSP_SSIList_getSSI(symbols,i),
-				       TSP_SSIList_getSSI(information->symbols,i)->name,
-				       period);
+  printf("%s: Asking for %d symbols\n", argv[0], nb_symbols);
+  for (i = 0 ; i < nb_symbols; ++i) {
+    TSP_SSI_copy(TSP_SSIList_getSSI(symbols,i),
+		 *TSP_SSIList_getSSI(information->symbols,i));
+    TSP_SSIList_getSSI(symbols,i)->period = period;
+
     printf("   symbol <%d> is <%s>\n",i,TSP_SSIList_getSSI(symbols,i)->name);
   }
 
@@ -338,12 +410,13 @@ main(int argc, char *argv[]){
 	      ) {
 	    count_samples++;
 	    if ((count_samples <= nb_samples) || (0==nb_samples)) {
-	      printf("\nNew Sample Set nb[%d] time=%d %s=%f", count_samples, sample.time, 
-		     TSP_SSIList_getSSI(symbols,sample.provider_global_index)->name,
-		     sample.uvalue.double_value);
+	      printf("\nNew Sample Set nb[%d] time=%d %s=", count_samples, sample.time, 
+		     TSP_SSIList_getSSI(symbols,sample.provider_global_index)->name);
+	      tsp_sample_print(sample);
 	    }
 	  } else {
-	    printf(" %s=%f",TSP_SSIList_getSSI(symbols,sample.provider_global_index)->name,sample.uvalue.double_value);
+	      printf(" %s=", TSP_SSIList_getSSI(symbols,sample.provider_global_index)->name);
+	      tsp_sample_print(sample);
 	  }
 	  	    
 	  /* We know how stubbed server symbols values are computed so verify the values */
@@ -352,6 +425,7 @@ main(int argc, char *argv[]){
 	    
 	    /* pgi == 0 is t so don't check for t*/
 	    if(sample.provider_global_index != 0) {
+		assert(sample.type == TSP_TYPE_DOUBLE);
 	      if( (ABS(sample.uvalue.double_value - calc) > 1e-7) && (t == (sample.time - 1)) ) {
 		STRACE_ERROR("!!!!ERROR : T=%u, I=%d, V1=%f, V2=%f", sample.time,i,sample.uvalue.double_value,calc);
 		all_data_ok = FALSE;
