@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer.c,v 1.32 2008-02-05 18:54:08 rhdv Exp $
+$Header: /home/def/zae/tsp/tsp/src/consumers/ascii_writer/tsp_ascii_writer.c,v 1.33 2008-07-11 18:30:45 rhdv Exp $
 
 -----------------------------------------------------------------------
 
@@ -65,26 +65,8 @@ static TSP_provider_t myprovider;
 static char tc_output_buffer[OUTPUT_STREAM_BUFFER_SIZE];
 static int stop_it = 0;
 
-/*format to print macsim value in the different type*/
-const static char* fmt_tab[] = { 0,
-			      "%1.15G",
-			      "%1.15G",
-			      "%d",
-			      "%d",
-			      "%d",
-			      "%d",
-			      "%d",
-			      "%d",
-			      "%d",
-			      "%d",
-			      "%s",
-			      "%s",
-			      "%c",
-			      0				
-};
-
 /*type macsim name*/
-const static char* libelle_type_tab_macsim[] = { "unknown",
+static const char* libelle_type_tab_macsim[] = { "unknown",
 			      "double",
 			      "float",
 			      "entier",
@@ -181,6 +163,7 @@ tsp_ascii_writer_add_var_period(int32_t period) {
 int32_t 
 tsp_ascii_writer_add_comment(char* comment) {
   /* FIXME add dictionnary reconstruction facility */
+    (void)comment;
   return 0;
 } /* tsp_ascii_writer_add_var_period */
  
@@ -303,7 +286,7 @@ tsp_ascii_writer_validate_symbols(TSP_sample_symbol_info_list_t* requestedSSIL,
   const TSP_answer_sample_t* current_tsp_info=NULL;
   int32_t nbSymbolMatch;
   int32_t nbRequestedSymbols; 
-  int32_t i;
+  uint32_t i;
   int32_t valid_index;
   int32_t forced_period;
   TSP_sample_symbol_info_list_t current_requestedSSIL;
@@ -461,7 +444,7 @@ tsp_ascii_writer_validate_symbols(TSP_sample_symbol_info_list_t* requestedSSIL,
   /* Now send request sample for retrieving extended information */
   if (TSP_STATUS_OK==retcode) {
     int32_t * pgis;
-    int32_t pgis_len;
+    uint32_t pgis_len;
     
     pgis_len =TSP_SSIList_getSize(*validatedSSIL);
     pgis=malloc(sizeof(int32_t) * pgis_len);
@@ -491,7 +474,7 @@ TSP_asciiwriter_read_sample(TSP_provider_t provider,
   int32_t indice=0;
 
   /* write loop */
-  while (TSP_STATUS_OK==(retcode =TSP_consumer_read_sample(myprovider,sample, new_sample)) && !stop_it) 
+  while (TSP_STATUS_OK==(retcode =TSP_consumer_read_sample(provider,sample, new_sample)) && !stop_it) 
   {
       if (new_sample) 
       {
@@ -555,7 +538,7 @@ tsp_ascii_writer_start(FILE* sfile,
   
   int32_t retcode;
   int             new_sample;
-  int             symbol_index;
+  unsigned int             symbol_index;
   TSP_sample_t    sample;
   const TSP_sample_symbol_info_list_t*  symbols;
   TSP_sample_symbol_info_t* currentSSI;
@@ -571,7 +554,7 @@ tsp_ascii_writer_start(FILE* sfile,
   char            charbuf[MAX_VAR_NAME_SIZE];
   int             symbol_dim;
   int32_t         nb_sample_item;
-  int		  indice;
+  unsigned int		  indice;
   int32_t         nb_awaited_sample_item=0;
   
   char** tab_colonne=NULL;
@@ -831,57 +814,55 @@ tsp_ascii_writer_display_value(FILE* sfile, TSP_sample_t sample)
  switch(sample.type) {
 
   case TSP_TYPE_DOUBLE :
-    fprintf(sfile,fmt_tab[sample.type],sample.uvalue.double_value);
+    fprintf(sfile, "%1.15G", sample.uvalue.double_value);
     break;
     
   case TSP_TYPE_FLOAT :
-    fprintf(sfile,fmt_tab[sample.type],sample.uvalue.float_value);
+    fprintf(sfile, "%1.15G", sample.uvalue.float_value);
     break;
     
   case TSP_TYPE_INT8 :
-    fprintf(sfile,fmt_tab[sample.type],sample.uvalue.int8_value);
+    fprintf(sfile, "%d", sample.uvalue.int8_value);
     break;
     
   case TSP_TYPE_INT16:
-    fprintf(sfile,fmt_tab[sample.type],sample.uvalue.int16_value);
+    fprintf(sfile, "%d", sample.uvalue.int16_value);
     break;
     
   case TSP_TYPE_INT32 :
-      fprintf(sfile,fmt_tab[sample.type],sample.uvalue.int32_value);
-      break;
+    fprintf(sfile, "%d", sample.uvalue.int32_value);
+    break;
       
   case TSP_TYPE_INT64 :
-    fprintf(sfile,fmt_tab[sample.type],sample.uvalue.int64_value);
+    fprintf(sfile, "%lld", sample.uvalue.int64_value);
     break;
     
   case TSP_TYPE_UINT8:
-    fprintf(sfile,fmt_tab[sample.type],sample.uvalue.uint8_value);
+    fprintf(sfile, "%u", sample.uvalue.uint8_value);
     break;
     
   case TSP_TYPE_UINT16:
-    fprintf(sfile,fmt_tab[sample.type],sample.uvalue.uint16_value);
+    fprintf(sfile, "%u", sample.uvalue.uint16_value);
     break;
     
   case TSP_TYPE_UINT32:
-    fprintf(sfile,fmt_tab[sample.type],sample.uvalue.uint32_value);
+    fprintf(sfile, "%u", sample.uvalue.uint32_value);
     break;
     
   case TSP_TYPE_UINT64:
-    fprintf(sfile,fmt_tab[sample.type],sample.uvalue.uint64_value);
+    fprintf(sfile, "%llu", sample.uvalue.uint64_value);
     break;
     
   case TSP_TYPE_CHAR:
-    /*fprintf(sfile,fmt_tab[sample.type],sample.uvalue.char_value);*/
-    fprintf(sfile,fmt_tab[sample.type],tsp_ascii_writer_tab_char);
+    fprintf(sfile, "%s", tsp_ascii_writer_tab_char);
     break;
     
   case TSP_TYPE_UCHAR:
-    /*fprintf(sfile,fmt_tab[sample.type],sample.uvalue.uchar_value);*/
-    fprintf(sfile,fmt_tab[sample.type],tsp_ascii_writer_tab_uchar);
+    fprintf(sfile, "%s", tsp_ascii_writer_tab_uchar);
     break;
     
   case TSP_TYPE_RAW:
-    fprintf(sfile,fmt_tab[sample.type],sample.uvalue.raw_value);
+    fprintf(sfile, "%c", sample.uvalue.raw_value);
     break;
     
   default:
