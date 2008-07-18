@@ -1,8 +1,7 @@
 prefix=@PKGCONFIG_INSTALL_PREFIX@
-exec_prefix=@PKGCONFIG_INSTALL_PREFIX@/bin
-libdir=@PKGCONFIG_INSTALL_PREFIX@/lib
-includedir=@PKGCONFIG_INSTALL_PREFIX@/include/tsp
-
+exec_prefix=${prefix}/bin
+libdir=${prefix}/lib
+includedir=${prefix}/include/tsp
 
 Name: tsp
 Version: @PACKAGE_VERSION@
