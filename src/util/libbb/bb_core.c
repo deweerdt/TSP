@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.54 2008-07-07 13:27:29 jaggy Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.55 2008-07-18 15:09:53 jaggy Exp $
 
 -----------------------------------------------------------------------
 
@@ -63,6 +63,7 @@ Purpose   : Blackboard Idiom implementation
 #include "bb_alias.h"
 #include "bb_utils.h"
 #include "bb_core.h"
+#include "bb_local.h"
 
 /**
  * Convert type to string for display use.
@@ -1017,7 +1018,9 @@ bb_create(S_BB_T** bb,
   	goto err;
 
   retcode = ops[(*bb)->type]->bb_msgq_get(*bb, 1);
-  
+
+  bb_init_local(*bb);
+
 err:
   return retcode;
 } /* end of bb_create */
@@ -1031,7 +1034,10 @@ bb_destroy(S_BB_T** bb) {
   int32_t retcode;
   
   assert(bb);
-  assert(*bb);  
+  assert(*bb);
+
+  bb_clear_local(*bb);
+
   /* 
    * On signale la destruction en cours pour les processes qui
    * resteraient attach�s
@@ -1095,6 +1101,9 @@ bb_attach(S_BB_T** bb, const char* pc_bb_name)
     bb_logMsg(BB_LOG_WARNING, "%s", "Could not setup a proper varname encoding scheme\n");
   }
 #endif
+
+  bb_init_local(*bb);
+
   return ret;
 } /* end of bb_attach */
 
@@ -1102,6 +1111,8 @@ int32_t
 bb_detach(S_BB_T** bb) {
   assert(bb);
   assert(*bb);
+
+  bb_clear_local(*bb);
 
   return ops[(*bb)->type]->bb_shmem_detach(bb);
 } /* end of bb_detach */

@@ -1,5 +1,5 @@
 MODULE_NAME = bb
-${MODULE_NAME}-objs := bb_core.o bb_alias.o bb_core_k.o bb_module.o bb_simple.o
+${MODULE_NAME}-objs := bb_core.o bb_alias.o bb_core_k.o bb_module.o bb_simple.o bb_local.o bb_callback.o 
 
 MDIR := kernel/drivers/misc/
 KVER ?= $(shell uname -r)

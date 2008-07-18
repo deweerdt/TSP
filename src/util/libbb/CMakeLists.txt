@@ -27,10 +27,12 @@ ELSE(BUILD_SYSV_BB)
 ENDIF(BUILD_SYSV_BB)
 
 SET(_SRC
-  bb_alias
-  bb_core bb_simple
-  bb_sha1 bb_tools 
-  bb_utils
+  bb_alias.c
+  bb_core.c bb_simple.c
+  bb_sha1.c bb_tools.c
+  bb_utils.c
+  bb_local.c
+  bb_callback.c
   ${SYSV_BB_SRC}
   ${POSIX_BB_SRC})
 
@@ -56,6 +58,8 @@ SET(BB_INCLUDE_FILES
   bb_tools.h
   bb_utils.h
   bb_sha1.h
+  bb_local.h
+  bb_callback.h
   ${SYSV_BB_INC}
   ${POSIX_BB_INC})
 
@@ -116,12 +120,14 @@ ENDIF(BUILD_SCRIPT_BINDING)
 SET(MODULE_SRC 
   bb_core.c bb_alias.c
   bb_core_k.c bb_module.c
-  bb_simple.c)
+  bb_simple.c bb_alias.c 
+  bb_callback.c )
 
 SET(MODULE_HDR 
   bb_alias.h bb_core.h
   bb_core_k.h bb_simple.h 
-  bb_utils.h)
+  bb_utils.h bb_alias.h
+  bb_callback.h)
 
 IF(BUILD_BB_KERNEL_MODULE)
    
