@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.h,v 1.43 2008-07-21 12:10:26 jaggy Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.h,v 1.44 2008-07-21 12:13:26 jaggy Exp $
 
 -----------------------------------------------------------------------
 
@@ -311,10 +311,7 @@ struct bb_device;
 struct kernel_private {
 	/** the size of the allocated black board */
 	unsigned long shm_size;
-	/** in-kernel structure, points to the char device */
-	struct bb_device *dev;
-	/** the index of the char device, used for cleaup
-	 * purposes */
+	/** the index of the char device, used for cleaup purposes */
 	int index;
 };
 

@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core_k.c,v 1.6 2008-07-21 12:10:26 jaggy Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core_k.c,v 1.7 2008-07-21 12:13:26 jaggy Exp $
 
 -----------------------------------------------------------------------
 
@@ -273,7 +273,7 @@ static int k_bb_shmem_get(S_BB_T ** bb, struct S_BB_LOCAL *local,
 	printk("New bb device created, major: %d, minor: %d name: %s\n",
 	       MAJOR(bb_dev->devno), MINOR(bb_dev->devno), bb_dev->name);
 	bb_dev->bb = *bb;
-	(*bb)->priv.k.dev = bb_dev;
+	local->dev = bb_dev;
 	(*bb)->priv.k.index = index;
 
 	return BB_OK;
@@ -304,9 +304,9 @@ static int32_t k_bb_shmem_destroy(S_BB_T ** bb, struct S_BB_LOCAL *local)
 {
 	unsigned long virt_addr;
 
-	class_device_destroy(bb_dev_class, (*bb)->priv.k.dev->devno);
-	kfree((*bb)->priv.k.dev->name);
-	cdev_del(&(*bb)->priv.k.dev->cdev);
+	class_device_destroy(bb_dev_class, local->dev->devno);
+	kfree(local->dev->name);
+	cdev_del(&local->dev->cdev);
 	spin_lock(&pdeviceslock);
 	clear_bit((*bb)->priv.k.index, present_devices);
 	spin_unlock(&pdeviceslock);
