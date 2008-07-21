@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_callback.c,v 1.4 2008-07-21 12:02:27 jaggy Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_callback.c,v 1.5 2008-07-21 12:07:15 jaggy Exp $
 
 -----------------------------------------------------------------------
 
@@ -58,8 +58,10 @@ struct S_BB_SUBSCRIBE {
 
 #ifdef __KERNEL__
 
-int32_t bb_msg_subscribe(struct S_BB *bb, const struct S_BB_MSG *msg,
-			 void (*callback)(struct S_BB *bb, struct S_BB_MSG *msg))
+int32_t bb_msg_subscribe(struct S_BB *bb, void *context,
+			 const struct S_BB_MSG *msg,
+			 void (*callback)(struct S_BB *bb, void *context,
+					  struct S_BB_MSG *msg))
 {
 	return BB_NOK;
 }
