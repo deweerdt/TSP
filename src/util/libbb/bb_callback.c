@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_callback.c,v 1.1 2008-07-18 15:09:53 jaggy Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_callback.c,v 1.2 2008-07-21 08:45:56 jaggy Exp $
 
 -----------------------------------------------------------------------
 
@@ -70,6 +70,13 @@ int32_t bb_msg_unsubscribe(struct S_BB *bb, const struct S_BB_MSG *msg)
 
 }
 EXPORT_SYMBOL_GPL(bb_msg_unsubscribe);
+
+int32_t bb_msg_unsubscribe_all(struct S_BB *bb)
+{
+	return BB_NOK;
+
+}
+EXPORT_SYMBOL_GPL(bb_msg_unsubscribe_all);
 
 #else /* __KERNEL__ */
 static void *thread_routine(void * arg);
