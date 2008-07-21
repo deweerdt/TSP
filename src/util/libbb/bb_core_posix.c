@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core_posix.c,v 1.2 2008-03-24 23:56:21 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core_posix.c,v 1.3 2008-07-21 08:45:17 jaggy Exp $
 
 -----------------------------------------------------------------------
 
@@ -182,7 +182,7 @@ static int posix_bb_shmem_detach(S_BB_T ** bb)
 #if defined(__rtems__)
 	retcode = shm_unlink((char *)*bb);
 #else
-	retcode = free((char *)*bb);
+	free((char *)*bb);
 #endif
 	*bb = NULL;
 	if (!retcode)
