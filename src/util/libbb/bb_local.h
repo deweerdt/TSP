@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_local.h,v 1.2 2008-07-21 11:55:09 jaggy Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_local.h,v 1.3 2008-07-21 12:10:25 jaggy Exp $
 
 -----------------------------------------------------------------------
 
@@ -44,6 +44,12 @@ struct S_BB_SUBSCRIBE;
 
 typedef struct S_BB_LOCAL {
 #ifdef __KERNEL__
+	/** 
+	 * The actual pointer to the allocated memory,
+	 * this is needed as the BB must be aligned on a
+	 * PAGE_SIZE boundary, kmalloc_ptr is the _real_
+	 * start of the allocate memory */
+	void *kmalloc_ptr;
 #else /* __KERNEL__ */
 	struct S_BB_SUBSCRIBE * subscribed;
 #endif /* __KERNEL__ */

@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core_k.c,v 1.5 2008-07-21 11:55:10 jaggy Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core_k.c,v 1.6 2008-07-21 12:10:26 jaggy Exp $
 
 -----------------------------------------------------------------------
 
@@ -69,6 +69,7 @@ Purpose   : Blackboard In-Kernel user and kernel space implementation
 #include "bb_core.h"
 #include "bb_core_k.h"
 #include "bb_utils.h"
+#include "bb_local.h"
 
 /* dummy declaration, see the bottom of the file */
 struct bb_operations k_bb_ops;
@@ -166,8 +167,9 @@ static int k_bb_shmem_attach(S_BB_T ** bb, struct S_BB_LOCAL *local,
 #endif /* __KERNEL__ */
 
 #ifdef __KERNEL__
-static int allocate_bb(S_BB_T ** bb, const char *name, int n_data,
-			     int data_size, int create)
+static int allocate_bb(S_BB_T ** bb, struct S_BB_LOCAL *local,
+                       const char *name, int n_data,
+                       int data_size, int create)
 {
 	int shm_size;
 	void *kmalloc_ptr;
@@ -210,7 +212,7 @@ static int allocate_bb(S_BB_T ** bb, const char *name, int n_data,
                 (*bb)->data_free_offset = 0;
                 (*bb)->status = BB_STATUS_GENUINE;
                 (*bb)->priv.k.shm_size = shm_size;
-                (*bb)->priv.k.kmalloc_ptr = kmalloc_ptr;
+                local->kmalloc_ptr = kmalloc_ptr;
         }
         (*bb)->type = BB_KERNEL;
 	return BB_OK;
@@ -242,7 +244,7 @@ static int k_bb_shmem_get(S_BB_T ** bb, struct S_BB_LOCAL *local,
 		goto err_unlock;
 	}
 	set_bit(index, present_devices);
-	err = allocate_bb(bb, name, n_data, data_size, create);
+	err = allocate_bb(bb, local, name, n_data, data_size, create);
 	if (err != BB_OK) {
 		printk("Cannot allocate BB\n");
 		goto err_unlock;
@@ -315,7 +317,7 @@ static int32_t k_bb_shmem_destroy(S_BB_T ** bb, struct S_BB_LOCAL *local)
 		/* clear all pages */
 		ClearPageReserved(virt_to_page(virt_addr));
 	}
-	kfree((*bb)->priv.k.kmalloc_ptr);
+	kfree(local->kmalloc_ptr);
 	*bb = NULL;
 
 	return BB_OK;
