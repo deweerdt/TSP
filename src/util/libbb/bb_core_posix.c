@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core_posix.c,v 1.3 2008-07-21 08:45:17 jaggy Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core_posix.c,v 1.4 2008-07-21 11:55:10 jaggy Exp $
 
 -----------------------------------------------------------------------
 
@@ -173,7 +173,7 @@ static int posix_bb_sem_get(S_BB_T *bb, int create)
  * Detache le segment de memoire partagee
  * posix rtems ok
  */
-static int posix_bb_shmem_detach(S_BB_T ** bb)
+static int posix_bb_shmem_detach(S_BB_T ** bb, struct S_BB_LOCAL *local)
 {
 	int32_t retcode = BB_OK;
 	assert(bb);
@@ -195,7 +195,8 @@ static int posix_bb_shmem_detach(S_BB_T ** bb)
 /*
  * posix_bb_shmem_attach : posix Rtems ok
  */
-static int posix_bb_shmem_attach(S_BB_T ** bb, const char *name)
+static int posix_bb_shmem_attach(S_BB_T ** bb, struct S_BB_LOCAL *local,
+                                 const char *name)
 {
 	int i_bb, fd_shm, retcode;
 	int success = FALSE;
@@ -227,6 +228,7 @@ static int posix_bb_shmem_attach(S_BB_T ** bb, const char *name)
  *	posix_bb_shmem_get : posix rtems ok
  */
 static int posix_bb_shmem_get(S_BB_T ** bb,
+                              struct S_BB_LOCAL *local,
 			      const char *name,
 			      int n_data,
 			      int data_size,
@@ -294,7 +296,7 @@ static int posix_bb_shmem_get(S_BB_T ** bb,
 /*
  *	posix_bb_shmem_destroy
  */
-static int32_t posix_bb_shmem_destroy(S_BB_T ** bb)
+static int32_t posix_bb_shmem_destroy(S_BB_T ** bb, struct S_BB_LOCAL *local)
 {
 	int32_t retcode = BB_OK;
 	int i_bb, j_bb;

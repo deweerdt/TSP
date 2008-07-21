@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core_sysv.c,v 1.4 2007-03-01 18:43:35 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core_sysv.c,v 1.5 2008-07-21 11:55:10 jaggy Exp $
 
 -----------------------------------------------------------------------
 
@@ -175,7 +175,7 @@ static int sysv_bb_sem_get(S_BB_T * bb, int create)
 	return BB_NOK;
 }
 
-static int sysv_bb_shmem_detach(S_BB_T ** bb)
+static int sysv_bb_shmem_detach(S_BB_T ** bb, struct S_BB_LOCAL *local)
 {
 	int32_t retcode;
 
@@ -192,7 +192,8 @@ static int sysv_bb_shmem_detach(S_BB_T ** bb)
 	*bb = NULL;
 	return retcode;
 }
-static int sysv_bb_shmem_attach(S_BB_T ** bb, const char *name)
+static int sysv_bb_shmem_attach(S_BB_T ** bb, struct S_BB_LOCAL *local,
+                                const char *name)
 {
 	int fd_shm, retcode;
 	char *name_shm;
@@ -237,8 +238,8 @@ static int sysv_bb_shmem_attach(S_BB_T ** bb, const char *name)
 	return retcode;
 
 }
-static int sysv_bb_shmem_get(S_BB_T ** bb, const char *name, int n_data,
-			     int data_size, int create)
+static int sysv_bb_shmem_get(S_BB_T ** bb, struct S_BB_LOCAL *local, const char *name,
+                             int n_data, int data_size, int create)
 {
 	unsigned long flags = 0;
 	char *shm_name;
@@ -293,7 +294,7 @@ err:
 	return BB_NOK;
 }
 
-static int32_t sysv_bb_shmem_destroy(S_BB_T ** bb)
+static int32_t sysv_bb_shmem_destroy(S_BB_T ** bb, struct S_BB_LOCAL *local)
 {
 	int32_t retcode;
 	char *name_shm;

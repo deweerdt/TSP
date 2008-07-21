@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.h,v 1.41 2008-06-26 09:53:37 jaggy Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.h,v 1.42 2008-07-21 11:55:10 jaggy Exp $
 
 -----------------------------------------------------------------------
 
@@ -271,6 +271,7 @@ typedef struct S_BB_DATADESC {
 
 struct S_BB;
 struct S_BB_MSG;
+struct S_BB_LOCAL;
 
 /**
  * Implementation agnostic operations, for now these
@@ -280,12 +281,14 @@ struct S_BB_MSG;
  * - in-kernel bb_create, bb_publish
  */
 struct bb_operations {
-	int (*bb_shmem_get)(struct S_BB ** bb, const char *name, int n_data, 
-				int data_size, int create);
+	int (*bb_shmem_get)(struct S_BB ** bb, struct S_BB_LOCAL *local,
+                            const char *name, int n_data, 
+                            int data_size, int create);
 
-	int (*bb_shmem_attach)(struct S_BB ** bb, const char *name);
-	int (*bb_shmem_detach)(struct S_BB ** bb);
-	int (*bb_shmem_destroy)(struct S_BB **bb);
+	int (*bb_shmem_attach)(struct S_BB ** bb, struct S_BB_LOCAL *local,
+                               const char *name);
+	int (*bb_shmem_detach)(struct S_BB ** bb, struct S_BB_LOCAL *local);
+	int (*bb_shmem_destroy)(struct S_BB **bb, struct S_BB_LOCAL *local);
 
 	int (*bb_sem_get)(struct S_BB *bb, int create);
 	int (*bb_lock)(volatile struct S_BB *bb);

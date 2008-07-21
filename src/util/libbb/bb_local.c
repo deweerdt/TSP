@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_local.c,v 1.1 2008-07-18 15:09:53 jaggy Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_local.c,v 1.2 2008-07-21 11:55:09 jaggy Exp $
 
 -----------------------------------------------------------------------
 
@@ -63,7 +63,22 @@ static void bb_local_initialize(struct S_BB_LOCAL *local)
 	return;
 }
 
-int32_t bb_init_local(struct S_BB *bb)
+struct S_BB_LOCAL *bb_local_new(void)
+{
+        struct S_BB_LOCAL *local = malloc(sizeof(*local));
+        
+        if (local)
+                bb_local_initialize (local);
+        return local;
+}
+
+void bb_local_delete (struct S_BB_LOCAL *local)
+{
+        free(local);
+}
+
+
+int32_t bb_attach_local(struct S_BB *bb, struct S_BB_LOCAL *local)
 {
 	int i;
 	struct S_BB_2_LOCAL *free_entry = NULL;
@@ -89,14 +104,7 @@ int32_t bb_init_local(struct S_BB *bb)
 	}
 
 	free_entry->bb = bb;
-	free_entry->local = malloc(sizeof(*(free_entry->local)));
-
-	if (!free_entry->local) {
-		free_entry->bb = NULL;
-		return BB_NOK;
-	}
-
-	bb_local_initialize(free_entry->local);
+	free_entry->local = local;
 
 	return BB_OK;
 }
@@ -110,14 +118,13 @@ struct S_BB_LOCAL *bb_get_local(const S_BB_T *bb)
 	return NULL;
 }
 
-int32_t bb_clear_local(struct S_BB *bb)
+int32_t bb_detach_local(struct S_BB *bb)
 {
 	int i;
 	for (i = 0 ; i < MAX_LOCAL ; i++) {
 		if (bb2local[i].bb == bb) {
 			bb2local[i].bb = NULL;
 			bb_msg_unsubscribe_all(bb);
-			free(bb2local[i].local);
 			return BB_OK;
 		}
 	}

@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_local.h,v 1.1 2008-07-18 15:09:53 jaggy Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_local.h,v 1.2 2008-07-21 11:55:09 jaggy Exp $
 
 -----------------------------------------------------------------------
 
@@ -49,19 +49,34 @@ typedef struct S_BB_LOCAL {
 #endif /* __KERNEL__ */
 } S_BB_LOCAL_T;
 
+
 /**
- * A function to initilize local structure attached to a BlackBoard
+ * A function to create and initiliaze a local structure
+ * 
+ * @return a valid pointer if the operation succeeded, NULL otherwise.
+ */
+struct S_BB_LOCAL *bb_local_new(void);
+
+/**
+ * A function to delete a local structure
+ *
+ * @param[in] local a BB local pointer
+ */
+void bb_local_delete(struct S_BB_LOCAL *local);
+
+/**
+ * A function to attach a local structure to a BlackBoard
  * @param[in] bb a BlackBoard pointer
  * @return BB_OK is the operation succeeded, BB_NOK otherwise.
  */
-int32_t bb_init_local(struct S_BB *bb);
+int32_t bb_attach_local(struct S_BB *bb, struct S_BB_LOCAL *local);
 
 /**
  * A function to clear local structure attached to a BlackBoard
  * @param[in] bb a BlackBoard pointer
  * @return BB_OK is the operation succeeded, BB_NOK otherwise.
  */
-int32_t bb_clear_local(struct S_BB *bb);
+int32_t bb_detach_local(struct S_BB *bb);
 
 /**
  * A function to get local structure attached to a BlackBoard

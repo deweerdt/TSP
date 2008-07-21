@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.55 2008-07-18 15:09:53 jaggy Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.56 2008-07-21 11:55:10 jaggy Exp $
 
 -----------------------------------------------------------------------
 
@@ -1006,10 +1006,17 @@ bb_create(S_BB_T** bb,
 
   enum bb_type type;
   int32_t retcode;
+  struct S_BB_LOCAL *local;
+  
   assert(bb);
-
+  local = bb_local_new();
+  if (local == NULL) {
+          retcode = BB_NOK;
+          goto err;
+  }
+  
   type = bb_type(pc_bb_name);
-  retcode = ops[type]->bb_shmem_get(bb, pc_bb_name, n_data, data_size, 1);
+  retcode = ops[type]->bb_shmem_get(bb, local, pc_bb_name, n_data, data_size, 1);
   if (retcode != BB_OK)
   	goto err;
 
@@ -1019,7 +1026,7 @@ bb_create(S_BB_T** bb,
 
   retcode = ops[(*bb)->type]->bb_msgq_get(*bb, 1);
 
-  bb_init_local(*bb);
+  bb_attach_local(*bb, local);
 
 err:
   return retcode;
@@ -1032,12 +1039,17 @@ int32_t
 bb_destroy(S_BB_T** bb) {
   
   int32_t retcode;
+  struct S_BB_LOCAL *local;
   
   assert(bb);
   assert(*bb);
-
-  bb_clear_local(*bb);
-
+  
+  local = bb_get_local(*bb);
+  if (local == NULL) {
+          retcode = BB_NOK;
+          goto out;
+  }
+  
   /* 
    * On signale la destruction en cours pour les processes qui
    * resteraient attach�s
@@ -1049,11 +1061,12 @@ bb_destroy(S_BB_T** bb) {
   retcode = ops[(*bb)->type]->bb_msgq_destroy(*bb);
   if (retcode != BB_OK)
   	goto out;
-  retcode = ops[(*bb)->type]->bb_shmem_destroy(bb);
+  retcode = ops[(*bb)->type]->bb_shmem_destroy(bb, local);
   if (retcode != BB_OK)
   	goto out;
-   
+  
 out:
+  bb_local_delete(local);
   return retcode;
 } /* end of bb_destroy */
 #ifdef __KERNEL__
@@ -1086,9 +1099,16 @@ bb_attach(S_BB_T** bb, const char* pc_bb_name)
 {
   enum bb_type type;
   int ret;
+  struct S_BB_LOCAL *local;
+  
+  assert(bb);
+
+  local = bb_local_new();
+  if (local == NULL)
+          return  BB_NOK;
 
   type = bb_type(pc_bb_name);
-  ret = ops[type]->bb_shmem_attach(bb, pc_bb_name);
+  ret = ops[type]->bb_shmem_attach(bb, local, pc_bb_name);
   if (ret != BB_OK)
     return ret;
 
@@ -1102,19 +1122,29 @@ bb_attach(S_BB_T** bb, const char* pc_bb_name)
   }
 #endif
 
-  bb_init_local(*bb);
+  bb_attach_local(*bb, local);
 
   return ret;
 } /* end of bb_attach */
 
 int32_t
 bb_detach(S_BB_T** bb) {
-  assert(bb);
-  assert(*bb);
+        int32_t ret ;
+        struct S_BB_LOCAL *local;
+  
+        assert(bb);
+        assert(*bb);
+  
+        local = bb_get_local(*bb);
+        if (local == NULL) {
+                return BB_NOK;
+        }
 
-  bb_clear_local(*bb);
+        ret =  ops[(*bb)->type]->bb_shmem_detach(bb, local);
 
-  return ops[(*bb)->type]->bb_shmem_detach(bb);
+        bb_local_delete(local);
+
+        return ret;
 } /* end of bb_detach */
 
 void*

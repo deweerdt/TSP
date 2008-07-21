@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core_k.c,v 1.4 2008-07-07 14:22:26 jaggy Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core_k.c,v 1.5 2008-07-21 11:55:10 jaggy Exp $
 
 -----------------------------------------------------------------------
 
@@ -122,18 +122,20 @@ static int k_bb_sem_get(S_BB_T * bb, int create)
 	return BB_OK;
 }
 
-static int k_bb_shmem_detach(S_BB_T ** bb)
+static int k_bb_shmem_detach(S_BB_T ** bb, struct S_BB_LOCAL *local)
 {
 	return BB_OK;
 }
 
 #ifdef __KERNEL__
-static int k_bb_shmem_attach(S_BB_T ** bb, const char *name)
+static int k_bb_shmem_attach(S_BB_T ** bb, struct S_BB_LOCAL *local,
+                             const char *name)
 {
 	return BB_OK;
 }
 #else
-static int k_bb_shmem_attach(S_BB_T ** bb, const char *name)
+static int k_bb_shmem_attach(S_BB_T ** bb, struct S_BB_LOCAL *local,
+                             const char *name)
 {
 	int fd;
 	int shm_size;
@@ -214,8 +216,9 @@ static int allocate_bb(S_BB_T ** bb, const char *name, int n_data,
 	return BB_OK;
 }
 
-static int k_bb_shmem_get(S_BB_T ** bb, const char *name, int n_data,
-			     int data_size, int create)
+static int k_bb_shmem_get(S_BB_T ** bb, struct S_BB_LOCAL *local,
+                          const char *name, int n_data,
+                          int data_size, int create)
 {
 	struct bb_device *bb_dev;
 	int err, index;
@@ -285,8 +288,9 @@ err_unlock:
 	return BB_NOK;
 }
 #else
-static int k_bb_shmem_get(S_BB_T ** bb, const char *name, int n_data,
-			     int data_size, int create)
+static int k_bb_shmem_get(S_BB_T ** bb, struct S_BB_LOCAL *local,
+                          const char *name, int n_data,
+                          int data_size, int create)
 {
 	return BB_OK;
 }
@@ -294,7 +298,7 @@ static int k_bb_shmem_get(S_BB_T ** bb, const char *name, int n_data,
 
 
 #ifdef __KERNEL__
-static int32_t k_bb_shmem_destroy(S_BB_T ** bb)
+static int32_t k_bb_shmem_destroy(S_BB_T ** bb, struct S_BB_LOCAL *local)
 {
 	unsigned long virt_addr;
 
@@ -317,7 +321,7 @@ static int32_t k_bb_shmem_destroy(S_BB_T ** bb)
 	return BB_OK;
 } /* end of k_bb_shmem_destroy */
 #else
-static int32_t k_bb_shmem_destroy(S_BB_T ** bb)
+static int32_t k_bb_shmem_destroy(S_BB_T ** bb, struct S_BB_LOCAL *local)
 {
 	return BB_OK;
 }
