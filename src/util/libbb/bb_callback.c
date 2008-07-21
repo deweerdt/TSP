@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_callback.c,v 1.3 2008-07-21 11:50:57 jaggy Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_callback.c,v 1.4 2008-07-21 12:02:27 jaggy Exp $
 
 -----------------------------------------------------------------------
 
@@ -48,7 +48,8 @@ Purpose   : BlackBoard Message Callback implementation
 
 struct S_BB_SUBSCRIBE {
 	struct S_BB_MSG msg;
-	void (*callback)(struct S_BB *bb, struct S_BB_MSG *msg);
+	void (*callback)(struct S_BB *bb, void *context, struct S_BB_MSG *msg);
+	void *context;
 	struct S_BB *bb;
 	pthread_t thread;
 	struct S_BB_SUBSCRIBE *next;
@@ -81,8 +82,10 @@ EXPORT_SYMBOL_GPL(bb_msg_unsubscribe_all);
 #else /* __KERNEL__ */
 static void *thread_routine(void * arg);
 
-int32_t bb_msg_subscribe(struct S_BB *bb, const struct S_BB_MSG *msg,
-			 void (*callback)(struct S_BB *bb, struct S_BB_MSG *msg))
+int32_t bb_msg_subscribe(struct S_BB *bb, void *context,
+			 const struct S_BB_MSG *msg,
+			 void (*callback)(struct S_BB *bb, void *context,
+					  struct S_BB_MSG *msg))
 {
 	struct S_BB_SUBSCRIBE **last_subscribe;
 	struct S_BB_LOCAL *local = bb_get_local(bb);
@@ -108,6 +111,7 @@ int32_t bb_msg_subscribe(struct S_BB *bb, const struct S_BB_MSG *msg,
 	(*last_subscribe)->next = NULL;
 	(*last_subscribe)->msg.mtype = msg->mtype;
 	(*last_subscribe)->callback = callback;
+	(*last_subscribe)->context = context;
 	(*last_subscribe)->bb = bb;
 
 	if (pthread_create(&(*last_subscribe)->thread, NULL,
@@ -140,7 +144,8 @@ static void * thread_routine(void * arg)
 				  "bb_rcv_msg failed -> thread stoped\n");
 			return NULL;
 		}
-		subscribe->callback(subscribe->bb, &subscribe->msg);
+		subscribe->callback(subscribe->bb, subscribe->context,
+				    &subscribe->msg);
 	}
 }
 

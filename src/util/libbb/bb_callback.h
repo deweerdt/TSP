@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_callback.h,v 1.1 2008-07-18 15:09:53 jaggy Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_callback.h,v 1.2 2008-07-21 12:02:27 jaggy Exp $
 
 -----------------------------------------------------------------------
 
@@ -65,8 +65,10 @@ struct S_BB_MSG;
  *                   the message is received.
  * @return BB_OK on success, BB_NOK otherwise
  */
-int32_t bb_msg_subscribe(struct S_BB *bb, const struct S_BB_MSG *msg,
-			 void (*callback)(struct S_BB *bb, struct S_BB_MSG *msg));
+int32_t bb_msg_subscribe(struct S_BB *bb, void *context,
+			 const struct S_BB_MSG *msg,
+			 void (*callback)(struct S_BB *bb, void *context,
+					  struct S_BB_MSG *msg));
 
 /**
  * Stops the thread which is waiting for a message on the BB message
