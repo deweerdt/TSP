@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_callback.c,v 1.2 2008-07-21 08:45:56 jaggy Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_callback.c,v 1.3 2008-07-21 11:50:57 jaggy Exp $
 
 -----------------------------------------------------------------------
 
@@ -135,10 +135,9 @@ static void * thread_routine(void * arg)
 
 	while (1) {
 		if (bb_rcv_msg(subscribe->bb,
-			       &subscribe->msg) != BB_OK) {
+			       &subscribe->msg) == BB_NOK) {
 			bb_logMsg(BB_LOG_WARNING, MOD_NAME,
-				  "bb_rcv_msg failed -> thread stoped\n",
-				  retcode);
+				  "bb_rcv_msg failed -> thread stoped\n");
 			return NULL;
 		}
 		subscribe->callback(subscribe->bb, &subscribe->msg);
