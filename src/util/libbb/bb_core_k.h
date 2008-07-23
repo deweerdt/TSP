@@ -33,5 +33,12 @@ struct bb_device {
 
 #endif /* __KERNEL__ */
 
+#define CN_IDX_BB 11   /* idealy defined in kernel/connector.h */
+
+#define INDEX_MAX_VAL		((1 << (NBIT_FOR_INDEX))-1)
+
+#if BB_DEV_MAX > INDEX_MAX_VAL
+#	error Not enought space to store index in id.idx (kernel connectors)
+#endif /* BB_DEV_MAX > INDEX_MAX_VAL */
 
 #endif /* __BB_CORE_K_H__ */

@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.56 2008-07-21 11:55:10 jaggy Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.57 2008-07-23 15:18:06 jaggy Exp $
 
 -----------------------------------------------------------------------
 
@@ -1049,8 +1049,10 @@ bb_destroy(S_BB_T** bb) {
           retcode = BB_NOK;
           goto out;
   }
-  
-  /* 
+
+  bb_detach_local(*bb);
+
+  /*
    * On signale la destruction en cours pour les processes qui
    * resteraient attach�s
    */
@@ -1129,16 +1131,17 @@ bb_attach(S_BB_T** bb, const char* pc_bb_name)
 
 int32_t
 bb_detach(S_BB_T** bb) {
-        int32_t ret ;
-        struct S_BB_LOCAL *local;
-  
-        assert(bb);
-        assert(*bb);
-  
-        local = bb_get_local(*bb);
-        if (local == NULL) {
-                return BB_NOK;
-        }
+	int32_t ret ;
+	struct S_BB_LOCAL *local;
+	assert(bb);
+	assert(*bb);
+
+	local = bb_get_local(*bb);
+	if (local == NULL) {
+		return BB_NOK;
+	}
+
+	bb_detach_local(*bb);
 
         ret =  ops[(*bb)->type]->bb_shmem_detach(bb, local);
 

@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core_k.c,v 1.7 2008-07-21 12:13:26 jaggy Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core_k.c,v 1.8 2008-07-23 15:18:05 jaggy Exp $
 
 -----------------------------------------------------------------------
 
@@ -54,6 +54,7 @@ Purpose   : Blackboard In-Kernel user and kernel space implementation
 #include <linux/cdev.h>
 #include <linux/mutex.h>
 #include <linux/device.h>
+#include <linux/connector.h>
 
 #else
 
@@ -63,6 +64,11 @@ Purpose   : Blackboard In-Kernel user and kernel space implementation
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <stdio.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <linux/connector.h>
+#include <linux/netlink.h>
+#include <errno.h>
 
 #endif /* __KERNEL__ */
 
@@ -70,6 +76,9 @@ Purpose   : Blackboard In-Kernel user and kernel space implementation
 #include "bb_core_k.h"
 #include "bb_utils.h"
 #include "bb_local.h"
+
+#define MOD_NAME "BB_CORE_K"
+
 
 /* dummy declaration, see the bottom of the file */
 struct bb_operations k_bb_ops;
@@ -132,7 +141,7 @@ static int k_bb_shmem_detach(S_BB_T ** bb, struct S_BB_LOCAL *local)
 static int k_bb_shmem_attach(S_BB_T ** bb, struct S_BB_LOCAL *local,
                              const char *name)
 {
-	return BB_OK;
+	return BB_NOK;
 }
 #else
 static int k_bb_shmem_attach(S_BB_T ** bb, struct S_BB_LOCAL *local,
@@ -331,12 +340,162 @@ static int32_t k_bb_shmem_destroy(S_BB_T ** bb, struct S_BB_LOCAL *local)
 
 static int32_t k_bb_msgq_recv(volatile S_BB_T * bb, S_BB_MSG_T * msg)
 {
+#ifdef __KERNEL__
+	return BB_NOK;
+#else /* __KERNEL__ */
+	int s;
+	struct sockaddr_nl l_local;
+	char buf[MAX_SYSMSG_SIZE + sizeof(struct nlmsghdr) + sizeof(struct cn_msg)];
+	struct nlmsghdr *nlmsghdr;
+	struct cn_msg *cn_msg;
+	int len;
+	int recv_ok = 0;
+
+	/* mtype si stored on the NBIT_FOR_MTYPE LSB bits of cb_id.val */
+	if (msg->mtype > MTYPE_MASK)
+		return BB_NOK;
+
+	s = socket(PF_NETLINK, SOCK_DGRAM, NETLINK_CONNECTOR);
+	if (s == -1) {
+		bb_logMsg(BB_LOG_SEVERE,"socket failed: ",
+			  strerror (errno));
+		return BB_NOK;
+	}
+	l_local.nl_family = AF_NETLINK;
+	l_local.nl_groups = 1 << (CN_IDX_BB - 1); /* bitmask of requested groups */
+	l_local.nl_pid = 0;
+
+	if (bind(s, (struct sockaddr *)&l_local, sizeof(struct sockaddr_nl)) == -1) {
+		bb_logMsg(BB_LOG_SEVERE,"bind failed: ",
+			  strerror (errno));
+		close(s);
+		return -1;
+	}
+
+	memset(buf, 0, sizeof(buf));
+
+	while (!recv_ok) {
+		len = recv(s, buf, sizeof(buf), 0);
+		if (len == -1) {
+			bb_logMsg(BB_LOG_SEVERE,"recv failed: ",
+				  strerror (errno));
+			close(s);
+			return BB_NOK;
+		}
+
+		nlmsghdr = (struct nlmsghdr *)buf;
+
+		if (nlmsghdr->nlmsg_type != NLMSG_DONE) {
+			bb_logMsg(BB_LOG_SEVERE,"%s", "Error message received.");
+			continue;
+		}
+
+		cn_msg = (struct cn_msg *)NLMSG_DATA(nlmsghdr);
+
+		if (cn_msg->id.val !=
+		    MTYPE_INDEX_2_VAL(msg->mtype, bb->priv.k.index)) {
+			continue;
+		}
+
+		if (cn_msg->id.idx != CN_IDX_BB) {
+			continue;
+		}
+
+		if (cn_msg->len > MAX_SYSMSG_SIZE) {
+			bb_logMsg(BB_LOG_SEVERE, MOD_NAME, "message too long [%d]\n",
+				  cn_msg->len);
+			close (s);
+			return BB_NOK;
+		}
+		memcpy(msg->mtext, cn_msg->data, cn_msg->len);
+		recv_ok = 1;
+	}
+
+
+	close(s);
 	return BB_OK;
-}
+#endif /* __KERNEL__ */
+	}
+
+#ifndef __KERNEL__
+static int netlink_send(int s, struct cn_msg *msg);
+#endif /* __KERNEL__ */
 
 static int32_t k_bb_msgq_send(volatile S_BB_T * bb, S_BB_MSG_T * msg)
 {
+#ifdef __KERNEL__
+	char buf[MAX_SYSMSG_SIZE + sizeof(struct cn_msg)];
+
+	struct cn_msg *cn_msg = (struct cn_msg *)buf;
+	int ret;
+
+	/* mtype si stored on the NBIT_FOR_MTYPE LSB bits of cb_id.val */
+	if (msg->mtype > MTYPE_MASK)
+		return BB_NOK;
+
+	cn_msg->id.idx = CN_IDX_BB;
+	cn_msg->id.val = MTYPE_INDEX_2_VAL(msg->mtype, bb->priv.k.index);
+	cn_msg->seq = 0;
+	cn_msg->ack = 0;
+	cn_msg->len = MAX_SYSMSG_SIZE;
+
+	memcpy (cn_msg->data, msg->mtext, MAX_SYSMSG_SIZE);
+
+	ret = cn_netlink_send(cn_msg, CN_IDX_BB, gfp_any());
+
+	if ( ret < 0 && ret != -ESRCH) {
+		printk ("BB %s : Sending idx [%d] val[0x%08x] FAILED "
+			"with errno %d\n", bb->name,
+			cn_msg->id.idx, cn_msg->id.val, ret);
+		return BB_NOK;
+	}
+
 	return BB_OK;
+#else /* __KERNEL__ */
+	int s;
+	struct sockaddr_nl l_local;
+	char buf[MAX_SYSMSG_SIZE + sizeof(struct cn_msg)];
+	struct cn_msg *cn_msg;
+	int len;
+
+	s = socket(PF_NETLINK, SOCK_DGRAM, NETLINK_CONNECTOR);
+	if (s == -1) {
+		bb_logMsg(BB_LOG_SEVERE,"socket failed: ",
+			  strerror (errno));
+		return BB_NOK;
+	}
+	l_local.nl_family = AF_NETLINK;
+	l_local.nl_groups = 1 << (CN_IDX_BB -1); /* bitmask of requested groups */
+	l_local.nl_pid = 0;
+
+	if (bind(s, (struct sockaddr *)&l_local, sizeof(struct sockaddr_nl)) == -1) {
+		bb_logMsg(BB_LOG_SEVERE,"bind failed: ",
+			  strerror (errno));
+		close(s);
+		return -1;
+	}
+
+	cn_msg = (struct cn_msg *)buf;
+
+	cn_msg->id.idx = CN_IDX_BB;
+	cn_msg->id.val = MTYPE_INDEX_2_VAL(msg->mtype, bb->priv.k.index);
+	cn_msg->seq = 0;
+	cn_msg->ack = 0;
+	cn_msg->len = MAX_SYSMSG_SIZE;
+
+	memcpy (cn_msg->data, msg->mtext, MAX_SYSMSG_SIZE);
+
+	len = netlink_send(s, cn_msg);
+
+	if (len == -1) {
+		bb_logMsg(BB_LOG_SEVERE,"send failed: ",
+			  strerror (errno));
+		close(s);
+		return BB_NOK;
+	}
+	close(s);
+	return BB_OK;
+#endif /* __KERNEL__ */
 }
 
 static int32_t k_bb_msgq_isalive(S_BB_T * bb)
@@ -371,3 +530,38 @@ struct bb_operations k_bb_ops = {
 	.bb_msgq_isalive = k_bb_msgq_isalive,
 	.bb_msgq_destroy = k_bb_msgq_destroy,
 };
+
+
+#ifndef __KERNEL__
+static int seq = 0;
+static int netlink_send(int s, struct cn_msg *msg)
+{
+	struct nlmsghdr *nlh;
+	unsigned int size;
+	int err;
+	char buf[CONNECTOR_MAX_MSG_SIZE];
+	struct cn_msg *m;
+
+	size = NLMSG_SPACE(sizeof(struct cn_msg) + msg->len);
+
+	nlh = (struct nlmsghdr *)buf;
+	nlh->nlmsg_seq = seq++;
+	nlh->nlmsg_pid = getpid();
+	nlh->nlmsg_type = NLMSG_DONE;
+	nlh->nlmsg_len = NLMSG_LENGTH(size - sizeof(*nlh));
+	nlh->nlmsg_flags = 0;
+
+	m = NLMSG_DATA(nlh);
+
+	memcpy(m, msg, sizeof(*m) + msg->len);
+
+	err = send(s, nlh, size, 0);
+	if (err == -1) {
+		bb_logMsg(BB_LOG_SEVERE, "Failed to send: %s [%d].\n",
+			  strerror(errno), errno);
+	}
+
+	return err;
+}
+
+#endif /* __KERNEL__ */

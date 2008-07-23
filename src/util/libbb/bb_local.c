@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_local.c,v 1.2 2008-07-21 11:55:09 jaggy Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_local.c,v 1.3 2008-07-23 15:18:05 jaggy Exp $
 
 -----------------------------------------------------------------------
 
@@ -41,9 +41,15 @@ Purpose   : BlackBoard Local Data
 #define MOD_NAME "BB_LOCAL"
 
 #ifdef __KERNEL__
-#define fprintf(fd,fmt,pr...) printk(fmt, ## pr)
-#endif /* __KERNEL__*/
 
+#include "bb_core_k.h"
+#define fprintf(fd,fmt,pr...) printk(fmt, ## pr)
+
+struct S_BB_LOCAL *present_locals[BB_DEV_MAX] =
+{ [0]			= NULL,
+  [BB_DEV_MAX-1]	= NULL};
+
+#else /* __KERNEL__ */
 struct S_BB_2_LOCAL
 {
 	const struct S_BB *bb;
@@ -51,32 +57,63 @@ struct S_BB_2_LOCAL
 };
 
 #define MAX_LOCAL (255)
-static struct S_BB_2_LOCAL bb2local[MAX_LOCAL] = {{NULL,NULL},};
+static struct S_BB_2_LOCAL bb2local[MAX_LOCAL] =
+{[0]			= {NULL,NULL},
+ [MAX_LOCAL - 1]	= {NULL,NULL}};
+
+#endif /* __KERNEL__ */
 
 static void bb_local_initialize(struct S_BB_LOCAL *local)
 {
 #ifdef __KERNEL__
-#else /* __KERNEL__ */
-	local->subscribed = NULL;
+	local->kmalloc_ptr = NULL;
+	local->dev = NULL;
 #endif /* __KERNEL__ */
+	local->subscribed = NULL;
 
 	return;
 }
 
 struct S_BB_LOCAL *bb_local_new(void)
 {
-        struct S_BB_LOCAL *local = malloc(sizeof(*local));
-        
-        if (local)
-                bb_local_initialize (local);
-        return local;
+	struct S_BB_LOCAL *local = malloc(sizeof(*local));
+
+	if (local)
+		bb_local_initialize (local);
+	return local;
 }
 
 void bb_local_delete (struct S_BB_LOCAL *local)
 {
-        free(local);
+	free(local);
 }
 
+#ifdef __KERNEL__
+
+int32_t bb_attach_local(struct S_BB *bb, struct S_BB_LOCAL *local)
+{
+	if (present_locals[bb->priv.k.index] != NULL)
+		return BB_NOK;
+
+	present_locals[bb->priv.k.index] = local;
+	return BB_OK;
+}
+
+struct S_BB_LOCAL *bb_get_local(const S_BB_T *bb)
+{
+	return present_locals[bb->priv.k.index];
+}
+
+int32_t bb_detach_local(struct S_BB *bb)
+{
+	/* this must be done first (can still use
+	   bb_get_local)*/
+	bb_msg_unsubscribe_all(bb);
+	present_locals[bb->priv.k.index] = NULL;
+	return BB_OK;
+}
+
+#else /* __KERNEL__ */
 
 int32_t bb_attach_local(struct S_BB *bb, struct S_BB_LOCAL *local)
 {
@@ -120,15 +157,20 @@ struct S_BB_LOCAL *bb_get_local(const S_BB_T *bb)
 
 int32_t bb_detach_local(struct S_BB *bb)
 {
+#ifndef __KERNEL__
+#define printk printf
+#endif
 	int i;
 	for (i = 0 ; i < MAX_LOCAL ; i++) {
 		if (bb2local[i].bb == bb) {
-			bb2local[i].bb = NULL;
+			/* this must be done first (can still use
+			 bb_get_local)*/
 			bb_msg_unsubscribe_all(bb);
+			bb2local[i].bb = NULL;
 			return BB_OK;
 		}
 	}
-
 	return BB_NOK;
 }
 
+#endif /* __KERNEL__ */

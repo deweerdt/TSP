@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_local.h,v 1.4 2008-07-21 12:13:26 jaggy Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_local.h,v 1.5 2008-07-23 15:18:05 jaggy Exp $
 
 -----------------------------------------------------------------------
 
@@ -42,25 +42,31 @@ Purpose   : BlackBoard Local Data
 
 struct S_BB_SUBSCRIBE;
 
+/**
+ * BlackBoard local data descriptor.
+ * Any field declared in S_BB_T is shared between every users which
+ * are attach to this BB.
+ * This structure contains every field which need toi be loacl to a
+ * particular BB user.
+ */
 typedef struct S_BB_LOCAL {
 #ifdef __KERNEL__
-	/** 
-	 * The actual pointer to the allocated memory,
-	 * this is needed as the BB must be aligned on a
-	 * PAGE_SIZE boundary, kmalloc_ptr is the _real_
-	 * start of the allocate memory */
+	/** The actual pointer to the allocated memory, this is needed
+	    as the BB must be aligned on a PAGE_SIZE boundary,
+	    kmalloc_ptr is the _real_ start of the allocate memory */
 	void *kmalloc_ptr;
 	/** in-kernel structure, points to the char device */
 	struct bb_device *dev;
-#else /* __KERNEL__ */
-	struct S_BB_SUBSCRIBE * subscribed;
 #endif /* __KERNEL__ */
+	/** single chained list to keep track to message
+	    subscribtions */
+	struct S_BB_SUBSCRIBE *subscribed;
 } S_BB_LOCAL_T;
 
 
 /**
  * A function to create and initiliaze a local structure
- * 
+ *
  * @return a valid pointer if the operation succeeded, NULL otherwise.
  */
 struct S_BB_LOCAL *bb_local_new(void);

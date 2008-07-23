@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.h,v 1.44 2008-07-21 12:13:26 jaggy Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.h,v 1.45 2008-07-23 15:18:05 jaggy Exp $
 
 -----------------------------------------------------------------------
 
@@ -148,6 +148,11 @@ Purpose   : BlackBoard Idiom implementation
  * to be sent by BlackBoard message queue.
  */
 #define MAX_SYSMSG_SIZE     255
+
+#if MAX_SYSMSG_SIZE > 1024
+#	warning This constant should not excceed 1ko (it is used to declare buffers in kernel stack)
+#endif
+
 /**
  * The maximum size of the BB message queue(s).
  */
@@ -992,6 +997,19 @@ static inline char *strdup (const char *s1)
 }
 
 #endif /* __KERNEL__ */
+
+
+#define NBIT_FOR_MTYPE		(24)
+#define NBIT_FOR_INDEX		(32 - (NBIT_FOR_MTYPE))
+
+#define MTYPE_MASK		((1 << (NBIT_FOR_MTYPE))-1)
+#define MTYPE_INDEX_2_VAL(__mtype, __index)		\
+	(((__index) << NBIT_FOR_MTYPE) |		\
+	 ((__mtype) &   MTYPE_MASK))
+#define VAL_2_MTYPE(__val)			\
+	((__val) & MTYPE_MASK)
+#define VAL_2_INDEX(__val)			\
+	((__val) >> NBIT_FOR_MTYPE)
 
 #ifndef __KERNEL__
 END_C_DECLS

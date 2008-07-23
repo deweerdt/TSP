@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_module.c,v 1.5 2008-07-07 14:22:25 jaggy Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_module.c,v 1.6 2008-07-23 15:18:05 jaggy Exp $
 
 -----------------------------------------------------------------------
 
@@ -59,6 +59,7 @@ Purpose   : Blackboard kernel module
 #include "bb_core.h"
 #include "bb_core_k.h"
 #include "bb_simple.h"
+#include "bb_callback.h"
 
 static int run_test = 0;
 module_param(run_test, int, 0);
@@ -109,6 +110,9 @@ static int bb_ioctl(struct inode *i, struct file *filp,
 	return ret;
 }
 
+static void msg_callback(struct S_BB *bb, void * context,
+			 struct S_BB_MSG *msg);
+
 static struct task_struct *test_thread;
 static int test_running = 0;
 #define MS_TO_JIFFIES(j) ((j * HZ) / 1000)
@@ -117,6 +121,8 @@ static int bb_test(void *data)
 	int *v1, *v2;
 	S_BB_T *test_bb1;
 	S_BB_T *test_bb2;
+	struct S_BB_MSG msg;
+
 
 	bb_create(&test_bb1, "bb_test1", 2, 200);
 	v1 = (int*)bb_simple_publish(test_bb1,"variable","bb_test1", -1, E_BB_INT32, sizeof(int), 1);
@@ -126,16 +132,34 @@ static int bb_test(void *data)
 	*v1 = 0;
 	*v2 = 0;
 
+	msg.mtype = 10;
+	bb_msg_subscribe(test_bb2, "Coucou bb2 10",  &msg, msg_callback);
+
+	msg.mtype = 20;
+	bb_msg_subscribe(test_bb1, "Coucou bb1 20",  &msg, msg_callback);
+
+
 	while(!kthread_should_stop()) {
 		test_running = 1;
 		msleep(1000);
 		*v1=*v1+1;
 		*v2=*v2+1;
+
+		bb_simple_synchro_go(test_bb1, 10);
+		bb_simple_synchro_go(test_bb2, 20);
 	}
 	test_running = 0;
 	bb_destroy(&test_bb1);
 	bb_destroy(&test_bb2);
 	return 0;
+}
+
+static void msg_callback(struct S_BB *bb, void* context, struct S_BB_MSG *msg)
+{
+	(void)bb;
+	printk("BB : Received msg (bb [%s] context [%s] mtype [%ld])\n",
+		bb->name, (char *)context, msg->mtype);
+	return;
 }
 
 static int bb_mmap(struct file *filp, struct vm_area_struct *vma)
