@@ -1,3 +1,5 @@
+INCLUDE(CheckIncludeFiles)
+
 OPTION(BUILD_SYSV_BB
   "SysV API for Blackboards" ON)
 OPTION(BUILD_POSIX_BB
@@ -46,9 +48,15 @@ ENDIF(ZLIB_FOUND)
 # bb_core_k kernel device API on works on linux
 #
 IF (CMAKE_SYSTEM_NAME MATCHES "Linux")
-  SET(_SRC
-    ${_SRC}
-    bb_core_k.c)
+  CHECK_INCLUDE_FILES(linux/connector.h CONNECTOR_AVAILABLE CONNECTOR_AVAILABLE)
+  IF (CONNECTOR_AVAILABLE)
+    ADD_DEFINITIONS(-DCONNECTOR_AVAILABLE)
+    SET(_SRC
+      ${_SRC}
+      bb_core_k.c)
+  ELSE (CONNECTOR_AVAILABLE)
+    MESSAGE ("Missing linux/connector.h: No kernel blackboards access from userspace")
+  ENDIF (CONNECTOR_AVAILABLE)
 ENDIF (CMAKE_SYSTEM_NAME MATCHES "Linux")
 
 SET(BB_INCLUDE_FILES

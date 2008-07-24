@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.57 2008-07-23 15:18:06 jaggy Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.58 2008-07-24 07:46:41 jaggy Exp $
 
 -----------------------------------------------------------------------
 
@@ -87,13 +87,13 @@ static const char* E_BB_2STRING[] = {"DiscoverType",
 #endif
 
 static const size_t E_BB_TYPE_SIZE[] = {0,
-			#ifndef __KERNEL__
+/* #ifndef __KERNEL__ */
 					sizeof(double),
 					sizeof(float),
-      #else
-          0,
-          0,
-			#endif
+/* #else */
+/*					0, */
+/*					0, */
+/* #endif */
 					sizeof(int8_t),
 					sizeof(int16_t),
 					sizeof(int32_t),
@@ -107,39 +107,39 @@ static const size_t E_BB_TYPE_SIZE[] = {0,
 					0,
 					0};
 
-#ifdef __KERNEL__
 /* In case we're compiling kernel code, there's really no need
    for the sysv or posix code */
-static struct bb_operations sysv_bb_ops;
-extern struct bb_operations k_bb_ops;
+#ifndef __KERNEL__
 
-#else
 extern struct bb_operations sysv_bb_ops;
 
 #if defined(USE_POSIX_BB)
 extern struct bb_operations posix_bb_ops;
 #endif
 
-#if defined(linux) || defined(__linux)
+#endif /*! __KERNEL__*/
+
+#if	   (defined(linux) || defined(__linux))				\
+	&& (defined (CONNECTOR_AVAILABLE) || defined (__KERNEL__))
 extern struct bb_operations k_bb_ops;
-#endif
-#endif
+#endif /* linux */
 
 /* Note: This is thigtly related to enum bb_type in bb_core.h,
    if you ever modify this, you'll probably need to modify
    enum bb_type */
 static struct bb_operations *ops[] = {
-#if !defined(__rtems__)
+#if !defined(__rtems__) && !defined (__KERNEL__)
 	&sysv_bb_ops
 #else
 	NULL
 #endif
-#if defined(linux) || defined(__linux)
+#if	   (defined(linux) || defined(__linux))				\
+	&& (defined (CONNECTOR_AVAILABLE) || defined (__KERNEL__))
 	,&k_bb_ops
 #else
 	,NULL
 #endif /* linux */
-#if defined(USE_POSIX_BB)
+#if defined(USE_POSIX_BB) && !defined (__KERNEL__)
 	,&posix_bb_ops
 #else
 	,NULL
