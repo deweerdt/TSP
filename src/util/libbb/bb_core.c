@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.58 2008-07-24 07:46:41 jaggy Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.c,v 1.59 2008-07-24 13:27:33 jaggy Exp $
 
 -----------------------------------------------------------------------
 
@@ -1516,7 +1516,7 @@ bb_shadow_update_data(S_BB_T *bb_shadow,
 } /* end of bb_shadow_update_data */
 
 
-int32_t 
+ssize_t
 bb_snd_msg(volatile S_BB_T *bb,
 		S_BB_MSG_T* msg) {
   
@@ -1528,7 +1528,7 @@ bb_snd_msg(volatile S_BB_T *bb,
 } /* end of bb_snd_msg */
 
 
-int32_t 
+ssize_t
 bb_rcv_msg(volatile S_BB_T *bb,
 		S_BB_MSG_T* msg) {
     

@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.h,v 1.45 2008-07-23 15:18:05 jaggy Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core.h,v 1.46 2008-07-24 13:27:33 jaggy Exp $
 
 -----------------------------------------------------------------------
 
@@ -921,9 +921,9 @@ bb_msg_id(volatile S_BB_T *bb);
  * and lost.
  * @param[in,out] bb pointer to BB
  * @param[in,out] msg pointer to message to be sent
- * @return BB_OK on success BB_NOK otherwise.
+ * @return the size of the sent message on success, -1 on error.
  */
-int32_t 
+ssize_t
 bb_snd_msg(volatile S_BB_T *bb, S_BB_MSG_T* msg);
 
 
@@ -935,9 +935,9 @@ bb_snd_msg(volatile S_BB_T *bb, S_BB_MSG_T* msg);
  *                  The type of the message to be received should be
  *                  be specified on entry in the message structure
  *                  msg->mtype.
- * @return BB_OK on success, BB_NOK otherwise
+ * @return the size of the sent message on success, -1 on error.
  */
-int32_t 
+ssize_t
 bb_rcv_msg(volatile S_BB_T *bb, S_BB_MSG_T* msg);
 
 /**
