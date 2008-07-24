@@ -5,6 +5,8 @@ MDIR := kernel/drivers/misc/
 KVER ?= $(shell uname -r)
 KDIR ?= /lib/modules/$(KVER)/build
 
+EXTRA_CFLAGS = @KERNEL_BUILD_EXTRA_CFLAGS@
+
 ifneq ($(KERNELRELEASE),)
 
 obj-m   := $(MODULE_NAME).o

@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_module.c,v 1.6 2008-07-23 15:18:05 jaggy Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_module.c,v 1.7 2008-07-24 13:09:11 jaggy Exp $
 
 -----------------------------------------------------------------------
 
@@ -174,8 +174,8 @@ static int bb_mmap(struct file *filp, struct vm_area_struct *vma)
 	/* sanity check, assert that the user doesn't request more
 	 * than available */
 	if (vsize > (bb->priv.k.shm_size + 2 * PAGE_SIZE)) {
-		printk("mmap requested more than available: %lu > %lu\n", 
-			vsize, bb->priv.k.shm_size + 2 * PAGE_SIZE);
+		printk("mmap requested more than available: %lu > %lu\n",
+		       vsize, bb->priv.k.shm_size + 2 * PAGE_SIZE);
 		return -EINVAL;
 	}
 
@@ -187,8 +187,10 @@ static int bb_mmap(struct file *filp, struct vm_area_struct *vma)
 
 	/* In theory, this could be writeable, at least for root */
 	/* Disable it for now, as this needs testing */
-        if (vma->vm_flags & VM_WRITE)
+#if !defined ALLOW_KBB_WRITE_ACCESS_FROM_USERSPACE
+	if (vma->vm_flags & VM_WRITE)
 		return -EPERM;
+#endif /* !defined ALLOW_KBB_WRITE_ACCESS_FROM_USERSPACE */
 
 
 	/* remap pages to the user's address space */

@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core_k.c,v 1.8 2008-07-23 15:18:05 jaggy Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core_k.c,v 1.9 2008-07-24 13:09:11 jaggy Exp $
 
 -----------------------------------------------------------------------
 
@@ -144,6 +144,13 @@ static int k_bb_shmem_attach(S_BB_T ** bb, struct S_BB_LOCAL *local,
 	return BB_NOK;
 }
 #else
+
+#ifdef  ALLOW_KBB_WRITE_ACCESS_FROM_USERSPACE
+#define MMAP_PROT (PROT_READ | PROT_WRITE)
+#else /* ALLOW_KBB_WRITE_ACCESS_FROM_USERSPACE */
+#define MMAP_PROT (PROT_READ)
+#endif /* ALLOW_KBB_WRITE_ACCESS_FROM_USERSPACE */
+
 static int k_bb_shmem_attach(S_BB_T ** bb, struct S_BB_LOCAL *local,
                              const char *name)
 {
@@ -165,7 +172,7 @@ static int k_bb_shmem_attach(S_BB_T ** bb, struct S_BB_LOCAL *local,
 	munmap(*bb, sizeof(S_BB_T));
 
 	/* ... then remap with the size of the BB + _data_ */
-        *bb = mmap(0, shm_size, PROT_READ, MAP_FILE | MAP_SHARED, fd, 0);
+        *bb = mmap(0, shm_size, MMAP_PROT, MAP_FILE | MAP_SHARED, fd, 0);
         if(*bb == MAP_FAILED) {
 		close(fd);
 		return BB_NOK;
