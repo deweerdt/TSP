@@ -183,7 +183,7 @@ IF(BUILD_BB_KERNEL_DEBIAN_PACKAGE)
 
   ADD_CUSTOM_COMMAND(OUTPUT ${CMAKE_BINARY_DIR}/src/util/libbb/kbb-source_${PACKAGE_VERSION}-1_all.deb
     COMMAND ${CMAKE_SOURCE_DIR}/src/util/libbb/build_kbb_debian.sh ${CMAKE_SOURCE_DIR}/src/util/libbb ${CMAKE_BINARY_DIR}/src/util/libbb
-    DEPENDS Makefile.k ${MODULE_SRC} ${MODULE_HDR} ${DEBIAN_KBB_BUILD_FILE}
+    DEPENDS Makefile.k.in ${MODULE_SRC} ${MODULE_HDR} ${DEBIAN_KBB_BUILD_FILE}
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/util/libbb)
   ADD_CUSTOM_TARGET(debian_kbb ALL DEPENDS ${CMAKE_BINARY_DIR}/src/util/libbb/kbb-source_${PACKAGE_VERSION}-1_all.deb)
 
