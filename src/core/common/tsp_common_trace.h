@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_common_trace.h,v 1.1 2008-02-05 18:54:09 rhdv Exp $
+$Id: tsp_common_trace.h,v 1.2 2008-08-02 11:01:46 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -39,14 +39,17 @@ Purpose   : Tracing and error/warning message generation
 #define _TSP_COMMON_TRACE_H
 
 #include <stdarg.h>
+#include <tsp_prjcfg.h>
 
 typedef void (*TSP_trace_func)(int level, const char *source, const char *file, const char *func, int line, const char *format, va_list args);
 
 #if __GNUC__ >= 3
 #define PRINTF_ATTRIBUTE __attribute__ ((__format__ (__printf__, 5, 6)))
+#else
+#define PRINTF_ATTRIBUTE
 #endif
 
-void TSP_trace(int level, const char *file, const char *func, int line, const char *format, ...) PRINTF_ATTRIBUTE;
+_EXPORT_TSP_COMMON void TSP_trace(int level, const char *file, const char *func, int line, const char *format, ...) PRINTF_ATTRIBUTE;
 
 void TSP_trace_install(TSP_trace_func trace_func);
 

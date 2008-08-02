@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_abs_types.h,v 1.32 2008-06-25 11:12:27 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/include/tsp_abs_types.h,v 1.33 2008-08-02 11:01:47 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -110,6 +110,10 @@ Purpose   : Type abstraction : Stolen from GLIB public headers
 /* Windows */
 #if defined (WIN32)
 #include <stddef.h>
+# define TSP_INT64_CONSTANT(val)  (val##LL)
+# define TSP_UINT64_FORMAT "llu"
+# define TSP_XINT64_FORMAT "llx"
+# define TSP_INT64_FORMAT "ll"
 /* with UWin */
 #if defined (_UWIN)
 

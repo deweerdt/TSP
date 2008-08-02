@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_common_trace.c,v 1.1 2008-02-05 18:54:09 rhdv Exp $
+$Id: tsp_common_trace.c,v 1.2 2008-08-02 11:01:46 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -38,7 +38,6 @@ Purpose   : Tracing and error/warning message generation
 #include <stdio.h>
 #include <stdarg.h>
 #include <stdlib.h>
-#include <stdbool.h>
 #include <errno.h>
 #include <assert.h>
 
@@ -90,11 +89,12 @@ static void _trace(int level, const char *file, const char *func, int line, cons
 
 static void init_strace_debug_level(void)
 {
+    char *end;
+    int new_level;
     char *strace_env = getenv("STRACE_DEBUG");
     if (strace_env == NULL) return;
 
-    char *end;
-    int new_level = strtoul(strace_env, &end, 0);
+    new_level = strtoul(strace_env, &end, 0);
     assert(errno != EINVAL); /* programming error, base contains an unsupported value */
     if (*end != 0) {
 	_trace(STRACE_LEVEL_ERROR, __FILE__, __func__, __LINE__, "STRACE_DEBUG environment variable has trailing garbage");
@@ -111,10 +111,10 @@ static void init_strace_debug_level(void)
 
 void TSP_trace(int level, const char *file, const char *func, int line, const char *format, ...)
 {
-    static bool first_time = true;
+    static int first_time = 1;
 
     if (first_time) {
-	first_time = false;
+	first_time = 0;
 	init_strace_debug_level();
     }
     if ((0==level) || (strace_debug_level & level) ) {

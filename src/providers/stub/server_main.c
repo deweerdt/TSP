@@ -1,6 +1,6 @@
 /*
 
-$Id: server_main.c,v 1.17 2008-02-05 18:54:12 rhdv Exp $
+$Id: server_main.c,v 1.18 2008-08-02 11:01:47 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -42,13 +42,14 @@ Purpose   : Implementation for the glue_server, for stub test
 #include "tsp_provider_init.h"
 
 #if defined (_WIN32)
+#include  <stdio.h>
 #include "tsp_time.h"
-typedef unsigned long sigset_t;
-#endif
+#include  "getopt.h"
 
-#ifdef _WIN32
-    #define assert(exp)     ((void)0)
-    #include  "getopt.h"
+#define assert(exp)     ((void)0)
+
+typedef unsigned long sigset_t;
+
 #else
     #include <unistd.h>
     #include <assert.h>

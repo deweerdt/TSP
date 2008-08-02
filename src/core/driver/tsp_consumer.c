@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.66 2008-04-27 16:01:58 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/driver/tsp_consumer.c,v 1.67 2008-08-02 11:01:47 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -821,10 +821,13 @@ TSP_consumer_request_information(TSP_provider_t provider) {
     }
   }
 
+#if !defined(_WIN32)
+  /* ACPTL-ONCRPC allocates ans_sample on the stack, do not free it on Windows */
   for(i=0; i < ans_sample->symbols.TSP_sample_symbol_info_list_t_len; i++) {
 	  free(ans_sample->symbols.TSP_sample_symbol_info_list_t_val[i].name);
   }
   free(ans_sample->symbols.TSP_sample_symbol_info_list_t_val);
+#endif
 
   return retcode;
 } /* TSP_consumer_request_information */
@@ -1069,10 +1072,15 @@ TSP_consumer_request_sample(TSP_provider_t provider, TSP_sample_symbol_info_list
 	    STRACE_ERROR("Function TSP_group_create_group_table failed");
     }
   }
+
+#if !defined(_WIN32)
+  /* ACPTL-ONCRPC allocates ans_sample on the stack, do not free it on Windows */
   for(i=0; i < ans_sample->symbols.TSP_sample_symbol_info_list_t_len; i++) {
 	  free(ans_sample->symbols.TSP_sample_symbol_info_list_t_val[i].name);
   }
   free(ans_sample->symbols.TSP_sample_symbol_info_list_t_val);
+#endif
+
   return retcode;
 } /* end of TSP_consumer_request_sample */
 
@@ -1148,7 +1156,10 @@ TSP_consumer_request_sample_init(TSP_provider_t provider, TSP_sample_callback_t 
       
     /* Create the data receiver */
     otsp->receiver = TSP_data_receiver_create(ans_sample->data_address, callback, user_data);
+#if !defined(_WIN32)
+    /* ACPTL-ONCRPC allocates ans_sample on the stack, do not free it on Windows */
     free(ans_sample->data_address);
+#endif
 
       if(otsp->receiver)
 	{

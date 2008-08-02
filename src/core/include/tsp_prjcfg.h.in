@@ -2,7 +2,7 @@
 
 @configure_input@
 
-$Id: tsp_prjcfg.h.in,v 1.10 2008-02-05 18:54:10 rhdv Exp $
+$Id: tsp_prjcfg.h.in,v 1.11 2008-08-02 11:01:47 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -49,8 +49,6 @@ Purpose   : some includes
  */
 #define TSP_SOURCE_VERSION "@PACKAGE_VERSION@"
 
-#include <tsp_common_trace.h>
-
 /*
  * The following macro is used under windows system to declare 
  * the DLLs tsp_provider, tsp_common entries points
@@ -82,6 +80,8 @@ Purpose   : some includes
 #else
 #  define _EXTERN_TSP_COMMON extern
 #endif
+
+#include <tsp_common_trace.h>
 
 /* 
  * The TSP doxygen modules are now defined
