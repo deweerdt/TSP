@@ -3,6 +3,8 @@
 
 #define BB_DEV_MAX 128
 
+#include <linux/connector.h>
+
 #ifdef __KERNEL__
 #include <linux/fs.h>
 #include <linux/cdev.h>
@@ -33,7 +35,10 @@ struct bb_device {
 
 #endif /* __KERNEL__ */
 
-#define CN_IDX_BB 11   /* idealy defined in kernel/connector.h */
+#ifndef CN_IDX_BB
+#define CN_IDX_BB 5   /* idealy defined in kernel/connector.h (done
+		       * since 2.6.27)*/
+#endif /* CN_IDX_BB */
 
 #define INDEX_MAX_VAL		((1 << (NBIT_FOR_INDEX))-1)
 
