@@ -1,6 +1,8 @@
 PROJECT(TSP C)
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.4.4)
+INCLUDE(${CMAKE_ROOT}/Modules/Dart.cmake)
+MARK_AS_ADVANCED(TCL_TCLSH DART_ROOT)
 
 # May be used to print extensive system informations
 #INCLUDE(CMakePrintSystemInformation)
@@ -424,6 +426,10 @@ ELSE (BUILD_ONLY_TSP_PORT)
 ENDIF (BUILD_ONLY_TSP_PORT)
 
 ENABLE_TESTING()
+IF(BUILD_TESTING)
+  SET(BUILDNAME "${BUILDNAME}" CACHE STRING "Debian SID x86_64")
+  MARK_AS_ADVANCED(BUILDNAME)
+ENDIF(BUILD_TESTING)
 
 ## Patch generating target
 # The custom target is using a cmake script which in turn
