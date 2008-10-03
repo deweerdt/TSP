@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_common_trace.h,v 1.2 2008-08-02 11:01:46 deweerdt Exp $
+$Id: tsp_common_trace.h,v 1.3 2008-10-03 07:49:29 rhdv Exp $
 
 -----------------------------------------------------------------------
 
@@ -56,11 +56,13 @@ void TSP_trace_install(TSP_trace_func trace_func);
 void TSP_trace_set_debug_level(unsigned long int level);
 
 
+#ifndef S_SPLINT_S
 #if defined(__GNUC__) || defined(_MSC_VER)
 #define __func__ __FUNCTION__
 #else
 #define __func__ "where?"
 #endif
+#endif	/* S_SPLINT_S */
 
 #define STRACE_LEVEL_ERROR       (0)
 #define STRACE_LEVEL_WARNING     (1)
