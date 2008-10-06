@@ -426,10 +426,6 @@ ELSE (BUILD_ONLY_TSP_PORT)
 ENDIF (BUILD_ONLY_TSP_PORT)
 
 ENABLE_TESTING()
-IF(BUILD_TESTING)
-  SET(BUILDNAME "${BUILDNAME}" CACHE STRING "Debian SID x86_64")
-  MARK_AS_ADVANCED(BUILDNAME)
-ENDIF(BUILD_TESTING)
 
 ## Patch generating target
 # The custom target is using a cmake script which in turn
