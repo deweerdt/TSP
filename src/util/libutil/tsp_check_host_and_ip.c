@@ -1,6 +1,6 @@
 /*
 
-$Id: tsp_check_host_and_ip.c,v 1.5 2007-04-01 20:35:29 erk Exp $
+$Id: tsp_check_host_and_ip.c,v 1.6 2008-11-12 12:32:39 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -60,7 +60,8 @@ int main(int argc, char* argv[]) {
   struct ifreq       myifrq;
 #endif
 
-  
+ 
+
   gethostname(name,1024);
   printf("hostname is  <%s> (as reported by gethostname)\n",name);
   myhost = gethostbyname(name);
@@ -68,29 +69,31 @@ int main(int argc, char* argv[]) {
     fprintf(stderr,"Cannot 'gethostbyname (hostname --> @IP)' check your /etc/hosts file.\n");
     exit(1);
   }
-  myu.addr = (uint32_t)ntohl(*((uint32_t*)myhost->h_addr_list[0]));
-  printf("@IP returned is <%d.%d.%d.%d> <addrtype= %s> (as reported by gethostbyname)\n",
-	 myu.parts[3], myu.parts[2], myu.parts[1], myu.parts[0],
-	 (myhost->h_addrtype == AF_INET6 ?  "AF_INET6" : "AF_INET"));
-  
+
+  myu.addr =*((uint32_t*)myhost->h_addr_list[0]);
+
+   printf("@IP returned is <%d.%d.%d.%d> <addrtype= %s> (as reported by gethostbyname)\n",
+	 myu.parts[0], myu.parts[1], myu.parts[2], myu.parts[3],
+	 (myhost->h_addrtype == AF_INET6 ?  "AF_INET6" : "AF_INET"));  
+
   myhost_byaddr = gethostbyaddr(myhost->h_addr_list[0], myhost->h_length,myhost->h_addrtype);
-  
+
   if (myhost_byaddr == NULL) {
     fprintf(stderr, "Cannot 'gethostbyaddr (@IP --> hostname)' check your /etc/hosts file\n");
     exit(1);
   }
-  myu.addr = (uint32_t)ntohl(*((uint32_t*)myhost_byaddr->h_addr_list[0]));
-  
-  printf("hostname returned is <%s> for @IP <%d.%d.%d.%d> <addrtype= %s> (as reported by gethostbyaddr)\n",
-	 myhost_byaddr->h_name,
-	 myu.parts[3], myu.parts[2], myu.parts[1], myu.parts[0],
-	 (myhost_byaddr->h_addrtype == AF_INET6 ?  "AF_INET6" : "AF_INET"));
 
+  myu.addr =*((uint32_t*)myhost_byaddr->h_addr_list[0]);
+
+  printf("hostname returned is <%s> for @IP <%d.%d.%d.%d> <addrtype= %s> (as reported by gethostbyaddr)\n",
+     myhost_byaddr->h_name,
+     myu.parts[0], myu.parts[1], myu.parts[2], myu.parts[3],
+     (myhost_byaddr->h_addrtype == AF_INET6 ?  "AF_INET6" : "AF_INET"));
 
   get_myaddress(&my_addr);
-  myu.addr = (uint32_t)ntohl((uint32_t)(my_addr.sin_addr.s_addr));
+  myu.addr = (uint32_t)(my_addr.sin_addr.s_addr);
   printf("@IP returned is <%d.%d.%d.%d> (as returned by get_myaddress (rpclib))\n",
-	  myu.parts[3], myu.parts[2], myu.parts[1], myu.parts[0]);
+	  myu.parts[0], myu.parts[1], myu.parts[2], myu.parts[3]);
 #ifdef LINUX
   fdIPV4 = socket(PF_INET, SOCK_DGRAM, IPPROTO_IP);
   ioctl(fdIPV4, SIOCGIFADDR, &myifrq);

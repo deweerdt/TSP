@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_stream_sender.c,v 1.28 2008-04-25 06:49:41 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/ctrl/tsp_stream_sender.c,v 1.29 2008-11-12 12:32:40 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -327,8 +327,9 @@ TSP_stream_sender_t TSP_stream_sender_create(int fifo_size, int buffer_size)
       * to avoid name -> IP resolution on consumer side 
       */
     memset(host,0,sizeof(host));
-    myu.addr = (uint32_t)ntohl(*((uint32_t*)myhost->h_addr_list[0]));
-    sprintf(host,"%d.%d.%d.%d",myu.parts[3], myu.parts[2], myu.parts[1], myu.parts[0]);
+    myu.addr =*((uint32_t*)myhost->h_addr_list[0]);
+    sprintf(host,"%d.%d.%d.%d",myu.parts[0], myu.parts[1], myu.parts[2], myu.parts[3]);
+
   }
      
   sock = (TSP_socket_t*)calloc(1, sizeof(TSP_socket_t));

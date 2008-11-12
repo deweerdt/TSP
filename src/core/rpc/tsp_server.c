@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_server.c,v 1.38 2008-08-02 11:01:47 deweerdt Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/rpc/tsp_server.c,v 1.39 2008-11-12 12:32:39 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -406,9 +406,12 @@ int TSP_rpc_request_config(TSP_provider_request_handler_t* cthis)
       * to avoid name -> IP resolution on consumer side 
       */
       memset(hostname,0,sizeof(hostname));
-      myu.addr = (uint32_t)ntohl(*((uint32_t*)myhost->h_addr_list[0]));
-      sprintf(hostname,"%d.%d.%d.%d",myu.parts[3], myu.parts[2], myu.parts[1], myu.parts[0]);
+      myu.addr =*((uint32_t*)myhost->h_addr_list[0]);
+
+      sprintf(hostname,"%d.%d.%d.%d",myu.parts[0], myu.parts[1], myu.parts[2], myu.parts[3]);
+
     }
+
 #endif
     servername = (char*)TSP_provider_get_name();
     

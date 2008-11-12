@@ -152,7 +152,7 @@ MACRO(ONCRPC_SETUP)
 
  ELSE (WIN32)
 
-   IF (CMAKE_SYSTEM_NAME MATCHES "Linux")
+   IF (CMAKE_SYSTEM_NAME MATCHES "Linux" OR CMAKE_SYSTEM_NAME STREQUAL "SunOS")
      IF (ONCRPC_RPCGEN_FOUND)
        #  Note how CMake forced us to escape '#' sequence using '\\#'
        ADD_CUSTOM_COMMAND(
