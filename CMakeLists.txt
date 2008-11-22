@@ -482,7 +482,7 @@ IF(WIN32)
     ## Customize NSIS installer
     SET(CPACK_PACKAGE_ICON "${CMAKE_SOURCE_DIR}/make/\\\\pieuvre_tsp_graph.bmp")
     SET(CPACK_NSIS_CREATE_ICONS "
-		CreateShortCut \\\"$SMPROGRAMS\\\\$STARTMENU_FOLDER\\\\TSP Help.lnk\\\" \\\"$INSTDIR\\\\doc\\\\html\\\\tsp.chm\\\"
+		CreateShortCut \\\"$SMPROGRAMS\\\\$STARTMENU_FOLDER\\\\TSP Help.lnk\\\" \\\"$INSTDIR\\\\share\\\\doc\\\\tsp\\\\html\\\\tsp.chm\\\"
 		CreateShortCut \\\"$SMPROGRAMS\\\\$STARTMENU_FOLDER\\\\TSP RPC CleanUp.lnk\\\" \\\"$INSTDIR\\\\bin\\\\tsp_rpc_cleanup.exe\\\"
 	    CreateShortCut \\\"$SMPROGRAMS\\\\$STARTMENU_FOLDER\\\\TSP StubServer.lnk\\\" \\\"$INSTDIR\\\\bin\\\\tsp_stub_server.exe\\\"
 	    CreateShortCut \\\"$SMPROGRAMS\\\\$STARTMENU_FOLDER\\\\TSP StdOutClient.lnk\\\" \\\"$INSTDIR\\\\bin\\\\tsp_stdout_client.exe\\\" \\\"-p 10 -s 2 -n 0\\\"
