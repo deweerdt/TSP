@@ -1,7 +1,7 @@
 
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/common/tsp_encoder.c,v 1.16 2008-06-25 10:17:09 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/common/tsp_encoder.c,v 1.17 2008-11-22 19:58:10 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -294,7 +294,7 @@ TSP_data_channel_int64_encoder(void*    v_int64,
   int64_t *pt_int64;
   uint32_t i,taille;
 
-#ifndef TSP_NO_XDR_ENCODE
+#if !defined(TSP_NO_XDR_ENCODE) && !defined(_WIN32)
 
   XDR xhandle;
 
@@ -315,7 +315,7 @@ TSP_data_channel_int64_encoder(void*    v_int64,
 
   pt_int64=(int64_t*)v_int64;
 
-#ifndef TSP_NO_XDR_ENCODE
+#if !defined(TSP_NO_XDR_ENCODE) && !defined(_WIN32)
 
   xdrmem_create(&xhandle, out_buf,  size, XDR_ENCODE);
 
@@ -461,7 +461,7 @@ TSP_data_channel_uint64_encoder(void*    v_uint64,
   uint64_t *pt_uint64;
   uint32_t i,taille;
 
-#ifndef TSP_NO_XDR_ENCODE
+#if !defined(TSP_NO_XDR_ENCODE) && !defined(_WIN32)
 
   XDR xhandle;
 
@@ -482,7 +482,7 @@ TSP_data_channel_uint64_encoder(void*    v_uint64,
 
   pt_uint64=(uint64_t*)v_uint64;
 
-#ifndef TSP_NO_XDR_ENCODE
+#if !defined(TSP_NO_XDR_ENCODE) && !defined(_WIN32)
 
   xdrmem_create(&xhandle, out_buf,  size, XDR_ENCODE);
 

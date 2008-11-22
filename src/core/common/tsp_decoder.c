@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/core/common/tsp_decoder.c,v 1.13 2008-06-25 10:17:09 erk Exp $
+$Header: /home/def/zae/tsp/tsp/src/core/common/tsp_decoder.c,v 1.14 2008-11-22 19:58:10 deweerdt Exp $
 
 -----------------------------------------------------------------------
 
@@ -208,7 +208,7 @@ int32_t TSP_data_channel_int64_decoder(void* out_int64, uint32_t dimension,  cha
   uint32_t i;
 
 
-#ifndef TSP_NO_XDR_ENCODE
+#if !defined(TSP_NO_XDR_ENCODE ) && !defined(_WIN32)
 
   XDR xhandle;
   xdrmem_create(&xhandle, in_buf, TSP_SIZEOF_ENCODED_INT64, XDR_DECODE);
@@ -318,7 +318,7 @@ int32_t TSP_data_channel_uint64_decoder(void* out_uint64, uint32_t dimension,  c
   uint32_t i;
 
 
-#ifndef TSP_NO_XDR_ENCODE
+#if !defined(TSP_NO_XDR_ENCODE ) && !defined(_WIN32)
 
   XDR xhandle;
   xdrmem_create(&xhandle, in_buf, TSP_SIZEOF_ENCODED_UINT64, XDR_DECODE);
