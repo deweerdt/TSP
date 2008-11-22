@@ -45,6 +45,7 @@ FIND_PROGRAM(DOXYGEN_DOT_EXECUTABLE
   NAMES dot
   PATHS "$ENV{ProgramFiles}/ATT/Graphviz/bin"
   "C:/Program Files/ATT/Graphviz/bin"
+  "C:/Program Files/Graphviz 2.21/bin"
   [HKEY_LOCAL_MACHINE\\SOFTWARE\\ATT\\Graphviz;InstallPath]/bin
   /Applications/Graphviz.app/Contents/MacOS
   /Applications/Doxygen.app/Contents/Resources
