@@ -507,6 +507,7 @@ IF(WIN32)
 		    CreateDirectory \\\"$SYSDIR\\\\drivers\\\\etc\\\"
 		    CopyFiles \\\"$INSTDIR\\\\external\\\\oncrpc\\\\etc\\\\rpc\\\" \\\"$SYSDIR\\\\drivers\\\\etc\\\"
 		    ExecWait  \\\"$INSTDIR\\\\external\\\\oncrpc\\\\bin\\\\inst_pm.exe $SYSDIR\\\\portmap.exe\\\"			
+		    ExecWait  \\\"net start portmap\\\"
 		")
 	ENDIF (BUILD_WIN32_ACPLT_ONCPRC AND ACPLT_ONCRPC_FOUND)
 	
