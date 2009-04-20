@@ -1,6 +1,6 @@
 /*
 
-$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core_sysv.c,v 1.5 2008-07-21 11:55:10 jaggy Exp $
+$Header: /home/def/zae/tsp/tsp/src/util/libbb/bb_core_sysv.c,v 1.6 2009-04-20 19:43:26 erk Exp $
 
 -----------------------------------------------------------------------
 
@@ -81,7 +81,13 @@ static int sysv_bb_lock(volatile S_BB_T * bb)
 {
 	int32_t retcode;
 	struct sembuf s_semop;
-
+	
+	/* shadow do not honor locking
+	 * they have neither semaphore nor msgqueue attached
+	 */
+	if (BB_STATUS_SHADOW == bb->status) {
+	  return BB_OK;
+	}
 	assert(bb);
 
 	s_semop.sem_num = 0;
